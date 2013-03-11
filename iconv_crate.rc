@@ -1,0 +1,72 @@
+#[link(name = "riconv",
+       vers = "0.1" ,
+       author = "Servo Team" )];
+#[crate_type = "lib"];
+
+extern mod std;
+use core::str::* ;
+use core::vec::* ;
+use core::libc::{c_char, c_void, size_t};
+use core::libc::c_int ;
+use core::libc::types::common::c99::uint32_t;
+use core::libc::* ;
+
+
+
+extern mod iconv_wrapper {
+    fn rust_iconv_open( tocode: * u8 , fromcode : * u8) -> u64;
+    fn rust_iconv(s: u64, inbuf : ** u8 , insize : * size_t , outbuf : ** u8 , outsize : * size_t ) -> size_t ;
+    fn rust_iconv_close(s: u64) -> c_int ;
+}
+
+/* Safe functions */
+
+pub fn riconv_initialized(hnd : u64) -> bool {
+    unsafe {
+        let nptr : u64 = -1 as u64;
+        io::println(fmt!("\n ICONV_CRATE::In riconv_initialized = %? = %? ", nptr,hnd));
+        hnd != nptr
+    }
+}
+
+pub fn riconv_initialize() -> u64 {
+    unsafe {
+        io::println(fmt!("\n ICONV_CRATE::In riconv_initialize  "));
+        -1 as u64
+    }
+}
+
+pub fn safe_riconv_open( tocode: &str , fromcode : &str ) -> u64 {
+    unsafe {
+        let tobytes = str::to_bytes(tocode) ;
+        let frombytes = str::to_bytes(fromcode) ;
+        iconv_wrapper::rust_iconv_open( vec::raw::to_ptr(tobytes) ,  vec::raw::to_ptr(frombytes) ) 
+    }
+}
+
+pub fn safe_riconv (hnd : u64, inbuf : &str , insize : &size_t , outbuf : &str  , outsize : &size_t ) -> size_t  {
+    unsafe {
+        let null_len : size_t = 0 ;
+        if insize == ~0 
+        {
+            iconv_wrapper::rust_iconv(hnd, ptr::null()  , &null_len , ptr::null() , &null_len  ) 
+        }
+        
+        else {
+            let mut tobytes = str::to_bytes(inbuf) ;
+            let mut outbytes = str::to_bytes(outbuf) ;
+            iconv_wrapper::rust_iconv(hnd , &vec::raw::to_ptr(tobytes)  , insize  , &vec::raw::to_ptr(outbytes) , outsize ) 
+        }
+    }
+}
+
+pub fn safe_riconv_close(hnd: u64) -> int {
+    unsafe {
+        io::println(fmt!("\n ICONV_CRATE::In safe_riconv_close called = %? ", hnd));
+        iconv_wrapper::rust_iconv_close(hnd) as int
+    }
+}
+
+
+
+
