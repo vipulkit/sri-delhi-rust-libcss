@@ -11,7 +11,11 @@ use core::libc::c_int ;
 use core::libc::types::common::c99::uint32_t;
 use core::libc::* ;
 
-
+pub struct  chunk_result {
+    mut outbuf : ~[u8] ,
+    mut len_processed : u64 ,
+    mut err_state : int 
+}
 
 extern mod iconv_wrapper {
     fn rust_iconv_open( tocode: * u8 , fromcode : * u8) -> u64;
@@ -44,7 +48,10 @@ pub fn safe_riconv_open( tocode: &str , fromcode : &str ) -> u64 {
     }
 }
 
-pub fn safe_riconv (hnd : u64, inbuf : &str , insize : &size_t , outbuf : &str  , outsize : &size_t , err : &int ) -> size_t  {
+pub fn safe_riconv (hnd : u64, inbuf : ~[u8] ) -> chunk_result  {
+    let mut result : chunk_result = chunk_result{ outbuf:~[] , len_processed:0 , err_state:0};
+    return result ;
+    /*
     unsafe {
         let null_len : size_t = 0 ;
         if insize == ~0 
@@ -58,6 +65,7 @@ pub fn safe_riconv (hnd : u64, inbuf : &str , insize : &size_t , outbuf : &str  
             iconv_wrapper::rust_iconv(hnd , &vec::raw::to_ptr(tobytes)  , insize  , &vec::raw::to_ptr(outbytes) , outsize , err ) 
         }
     }
+    */
 }
 
 pub fn safe_riconv_close(hnd: u64) -> int {
