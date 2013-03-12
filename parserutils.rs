@@ -785,25 +785,30 @@ io::println("line______##");//sandeep
 		}
 		self.print_inputstream(stream);
 		io::println("line______&&");//sandeep	
-		let utf8:&str= "";
+		let utf8:~[u8]= ~[];
+		let mut processedLen: uint;
 		let raw:@mut ~[u8] = @mut ~[];
 		*raw <-> stream.raw;
 		let raw_length = raw.len();
         io::println("line______&&");
 		/* Try to fill utf8 buffer from the raw data */
-		//pRslt = self.parserutils__filter_process_chunk(stream.input, raw.to_str(), &(raw_length as u64), utf8, &100);
+		pRslt = self.parserutils__filter_process_chunk(copy stream.input,copy *raw);
+		*raw <-> stream.raw;
 		io::println("line______&&**");
-		match(pRslt)
+		match(copy pRslt)
 		{
-			PARSERUTILS_GENERAL_OK =>{}
+			PARSERUTILS_FILTER_PROCESS_CHUNK_OK((len,data)) =>{
+				stream.public.utf8=append(copy stream.public.utf8,data);
+				processedLen=len as uint;
+			}
 			_=>return pRslt
 		}
 io::println("line______&&&");//sandeep
 		*raw <-> stream.raw;
-		let mut Iter = 0;
-		while(Iter < utf8.len())
+		//let mut Iter = 0;
+		//while(Iter < utf8.len())
 		{
-			stream.public.utf8.insert(stream.public.utf8.len(),utf8[Iter]);
+			//stream.public.utf8.append(utf8);
 		}
 
 		/* _NOMEM implies that there's more input to read than available space
@@ -811,7 +816,7 @@ io::println("line______&&&");//sandeep
 		
 
 		/* Remove the raw data we've processed from the raw buffer */
-        stream.raw= slice(stream.raw,stream.raw.len() - raw_length,stream.raw.len()-1);
+        stream.raw= slice(stream.raw,processedLen,stream.raw.len()-1);
 		
 		/* Fix up the utf8 buffer information */
 		
