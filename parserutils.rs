@@ -309,7 +309,7 @@ io::println("abcdefgh++++++");
 			return PARSERUTILS_BADPARAM;
 		}
 		
-		let iconv_result : riconv::chunk_result = riconv::safe_riconv(input.iconv_h,move inbuf) ;
+		let iconv_result = riconv::safe_riconv(input.iconv_h, inbuf) ;
 
 		if iconv_result.len_processed==0 {
 			if iconv_result.err_state==1 {
@@ -322,7 +322,7 @@ io::println("abcdefgh++++++");
 				return PARSERUTILS_ICONV_ERROR ;
 			}
 		}
-		PARSERUTILS_FILTER_PROCESS_CHUNK_OK( (iconv_result.len_processed,copy iconv_result.outbuf) )
+		PARSERUTILS_FILTER_PROCESS_CHUNK_OK( (iconv_result.len_processed, copy iconv_result.outbuf) )
 	}
 		
 	pub fn parserutils_inputstream_create(&self,enc: ~str,

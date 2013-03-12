@@ -12,9 +12,9 @@ use core::libc::types::common::c99::uint32_t;
 use core::libc::* ;
 
 pub struct  chunk_result {
-    mut outbuf : ~[u8] ,
-    mut len_processed : u64 ,
-    mut err_state : int 
+    outbuf : ~[u8] ,
+    len_processed : u64 ,
+    err_state : int 
 }
 
 extern mod iconv_wrapper {
@@ -48,8 +48,8 @@ pub fn safe_riconv_open( tocode: &str , fromcode : &str ) -> u64 {
     }
 }
 
-pub fn safe_riconv (hnd : u64, inbuf : ~[u8] ) -> chunk_result  {
-    let mut result : chunk_result = chunk_result{ outbuf:~[] , len_processed:0 , err_state:0};
+pub fn safe_riconv (hnd : u64, inbuf : ~[u8] ) -> ~chunk_result  {
+    let mut result = ~chunk_result{ outbuf:~[] , len_processed:0 , err_state:0};
     return result ;
     /*
     unsafe {
