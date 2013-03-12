@@ -15,7 +15,7 @@ use core::libc::* ;
 
 extern mod iconv_wrapper {
     fn rust_iconv_open( tocode: * u8 , fromcode : * u8) -> u64;
-    fn rust_iconv(s: u64, inbuf : ** u8 , insize : * size_t , outbuf : ** u8 , outsize : * size_t ) -> size_t ;
+    fn rust_iconv(s: u64, inbuf : ** u8 , insize : * size_t , outbuf : ** u8 , outsize : * size_t , error : * int ) -> size_t ;
     fn rust_iconv_close(s: u64) -> c_int ;
 }
 
@@ -44,18 +44,18 @@ pub fn safe_riconv_open( tocode: &str , fromcode : &str ) -> u64 {
     }
 }
 
-pub fn safe_riconv (hnd : u64, inbuf : &str , insize : &size_t , outbuf : &str  , outsize : &size_t ) -> size_t  {
+pub fn safe_riconv (hnd : u64, inbuf : &str , insize : &size_t , outbuf : &str  , outsize : &size_t , err : &int ) -> size_t  {
     unsafe {
         let null_len : size_t = 0 ;
         if insize == ~0 
         {
-            iconv_wrapper::rust_iconv(hnd, ptr::null()  , &null_len , ptr::null() , &null_len  ) 
+            iconv_wrapper::rust_iconv(hnd, ptr::null()  , &null_len , ptr::null() , &null_len , err ) 
         }
         
         else {
             let mut tobytes = str::to_bytes(inbuf) ;
             let mut outbytes = str::to_bytes(outbuf) ;
-            iconv_wrapper::rust_iconv(hnd , &vec::raw::to_ptr(tobytes)  , insize  , &vec::raw::to_ptr(outbytes) , outsize ) 
+            iconv_wrapper::rust_iconv(hnd , &vec::raw::to_ptr(tobytes)  , insize  , &vec::raw::to_ptr(outbytes) , outsize , err ) 
         }
     }
 }
