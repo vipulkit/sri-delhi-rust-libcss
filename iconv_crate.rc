@@ -98,9 +98,8 @@ pub fn safe_riconv (hnd : u64, inbuf : ~[u8] ) -> ~chunk_result  {
             result.ret_val = iconv_wrapper::rust_iconv(hnd , &c_input, &c_inargs  , &c_output , &c_ouargs , &err ) ;
 
             //let mut copy_out : &mut [u8] = &mut [] ;
-            let out : ~[u8] = vec::from_buf(c_oubuf,(c_outsize- c_ouargs)as uint);
-            result.outbuf = copy out ;
-            io::println(fmt!("\n Print Values  =%?=%?=%?= ",c_outsize,c_ouargs,out));
+            result.outbuf = vec::from_buf(c_oubuf,(c_outsize- c_ouargs)as uint); ;
+            //io::println(fmt!("\n Print Values  =%?=%?=%?= ",c_outsize,c_ouargs,out));
             //copy_c_to_rust(c_oubuf,copy_out, (c_outsize- c_ouargs) as uint) ;
             //io::println(fmt!("\n String in rust form is =%?=%?= ",copy_out,err));
             result.len_processed=c_inargs ;
@@ -108,7 +107,7 @@ pub fn safe_riconv (hnd : u64, inbuf : ~[u8] ) -> ~chunk_result  {
             iconv_wrapper::DeallocateBuffer(c_inbuf);
             iconv_wrapper::DeallocateBuffer(c_oubuf);
         }
-        return result ;
+        result
     }
 }
 
