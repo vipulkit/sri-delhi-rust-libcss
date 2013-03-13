@@ -1,5 +1,5 @@
 #[link(name = "riconv",
-       vers = "0.1" ,
+       vers = "1.0" ,
        author = "Servo Team" )];
 #[crate_type = "lib"];
 
@@ -27,17 +27,6 @@ extern mod iconv_wrapper {
 }
 
 /* Safe functions */
-
-
-pub fn copy_c_to_rust(c_ptr : *u8 , r_ptr : &mut [u8], len : uint)  {
-    // Caution :: Inflate rust array before copying 
-    unsafe {
-        let dptr = ::cast::transmute_mut_unsafe( vec::raw::to_ptr(r_ptr) );
-        //let sptr = ::cast::transmute_mut_unsafe(c_ptr);
-        ptr::copy_memory(dptr, c_ptr, len);
-    }
-}
-
 pub fn copy_rust_to_c(r_ptr : ~[u8] , c_ptr : *u8 , len : uint )  {
     // Caution :: Allocate C array before copying 
     unsafe {
@@ -86,25 +75,20 @@ pub fn safe_riconv (hnd : u64, inbuf : ~[u8] ) -> ~chunk_result  {
         else {
             let c_insize : size_t = inbuf.len() as  u64;
             let c_outsize : size_t = (c_insize+1)*4 ;
-            let c_input : * u8 = iconv_wrapper::AllocateBuffer(c_insize as int );
-            copy_rust_to_c(copy inbuf, c_input, c_insize as uint );
+            //let c_input : * u8 = iconv_wrapper::AllocateBuffer(c_insize as int );
+            //copy_rust_to_c(copy inbuf, c_input, c_insize as uint );
             let mut c_output : *u8 = iconv_wrapper::AllocateBuffer( c_outsize as int );
 
-            let c_inargs = c_insize ;
-            let c_ouargs = c_outsize ;
-            let c_inbuf = c_input ;
-            let c_oubuf = c_output ;
+            let mut c_inargs = c_insize ;
+            let mut c_ouargs = c_outsize ;
+            //let mut c_inbuf = c_input ;
+            let mut c_oubuf = c_output ;
 
-            result.ret_val = iconv_wrapper::rust_iconv(hnd , &c_input, &c_inargs  , &c_output , &c_ouargs , &err ) ;
-
-            //let mut copy_out : &mut [u8] = &mut [] ;
+            result.ret_val = iconv_wrapper::rust_iconv(hnd , &vec::raw::to_ptr(inbuf) /*c_input*/, &c_inargs  , &c_output , &c_ouargs , &err ) ;
             result.outbuf = vec::from_buf(c_oubuf,(c_outsize- c_ouargs)as uint); ;
-            //io::println(fmt!("\n Print Values  =%?=%?=%?= ",c_outsize,c_ouargs,out));
-            //copy_c_to_rust(c_oubuf,copy_out, (c_outsize- c_ouargs) as uint) ;
-            //io::println(fmt!("\n String in rust form is =%?=%?= ",copy_out,err));
             result.len_processed=c_inargs ;
             result.err_state=err ;
-            iconv_wrapper::DeallocateBuffer(c_inbuf);
+            //iconv_wrapper::DeallocateBuffer(c_inbuf);
             iconv_wrapper::DeallocateBuffer(c_oubuf);
         }
         result
