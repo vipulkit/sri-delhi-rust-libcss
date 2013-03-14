@@ -168,7 +168,7 @@ impl lwc {
 		(string_to_cmp1.is_case_insensitive && string_to_cmp2.is_case_insensitive)
 	}
 
-	pub fn lwc_string_length(&self , string: @lwc_string) -> uint {
+	static pub fn lwc_string_length( string: @lwc_string) -> uint {
 		string.length
 	}
 
@@ -176,7 +176,7 @@ impl lwc {
 		string.hash
 	}
 
-	pub fn lwc_string_data(&self , string: @lwc_string) -> @str {
+	static pub fn lwc_string_data(string: @lwc_string) -> @str {
 		string.string
 	}
 }

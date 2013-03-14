@@ -4,13 +4,15 @@
 
 
 extern mod parserutils;
+extern mod wapcaplet;
+use wapcaplet::*;
 use core::cast;
 use core::vec::* ; 
 use core::str::* ;
 use core::str::raw::* ;
 use core::vec::raw::* ;
 use parserutils::* ;
-
+use core::dvec::DVec;
 
 /*
  * This file is part of Rust-LibCSS.
@@ -25,15 +27,15 @@ type css_fixed = i32;
 pub type lwc_hash = u32;
 pub type lwc_refcounter = u32;
 
-pub struct lwc_string {
-      	prevptr : Option<~lwc_string> , 
-        next : Option<~lwc_string>,
+/*pub struct lwc_string {
+      	prevptr : Option<&lwc_string> , 
+        next : Option<&lwc_string>,
         len : u64, 
         hash : lwc_hash,
         refcnt : lwc_refcounter	,
-        insensitive : Option<~lwc_string> 
+        insensitive : Option<&lwc_string> 
 }
-
+*/
 //TO DO: Should be moved to types  ---- Start
 /**
  * Source of charset information, in order of importance.
@@ -130,12 +132,414 @@ pub struct css_qname {
 	 * Local part of qualified name
 	 */
 	name : ~lwc_string 
+}  
+//pub type css_code_t  =  ~[u32];
+
+pub struct css_style{
+
+	bytecode:~[css_code_t] ,
+	used : u32,
+	allocated: u32/*,
+	sheet:@css_stylesheet*/
+
+
+}
+
+pub enum css_selector_type {
+	CSS_SELECTOR_ELEMENT,
+	CSS_SELECTOR_CLASS,
+	CSS_SELECTOR_ID,
+	CSS_SELECTOR_PSEUDO_CLASS,
+	CSS_SELECTOR_PSEUDO_ELEMENT,
+	CSS_SELECTOR_ATTRIBUTE,
+	CSS_SELECTOR_ATTRIBUTE_EQUAL,
+	CSS_SELECTOR_ATTRIBUTE_DASHMATCH,
+	CSS_SELECTOR_ATTRIBUTE_INCLUDES,
+	CSS_SELECTOR_ATTRIBUTE_PREFIX,
+	CSS_SELECTOR_ATTRIBUTE_SUFFIX,
+	CSS_SELECTOR_ATTRIBUTE_SUBSTRING
+
+	}
+
+
+pub	enum css_combinator {
+	CSS_COMBINATOR_NONE,
+	CSS_COMBINATOR_ANCESTOR,
+	CSS_COMBINATOR_PARENT,
+	CSS_COMBINATOR_SIBLING,
+	CSS_COMBINATOR_GENERIC_SIBLING
 } 
 
+
+pub enum css_selector_detail_value_type {
+	CSS_SELECTOR_DETAIL_VALUE_STRING,
+	CSS_SELECTOR_DETAIL_VALUE_NTH
+} 
+
+struct tempStruct{
+		a:u32,
+		b: u32
+	}  	
+pub struct css_selector_detail_value {
+	string:&str,		/*< Interned string, or NULL */
+	nth:tempStruct			/*< Data for x = an + b */
+} 
+
+pub struct css_selector_detail {
+	qname:css_qname,			/*< Interned name */
+	value:css_selector_detail_value,	/** Detail value */
+
+	type_of     :int ,    		    /*< Type of selector */
+	comb        :int ,    		    /*< Type of combinator */
+	next        :int ,     		    /*< Another selector detail 
+						             * follows */
+	value_type  :int,		        /*< Type of value field */
+	negate      :int ,   		    /*< Detail match is inverted */
+}
+enum css_selector_node
+{
+	SomeSelectorNode(@mut css_rule),
+  	NoSelectorNode
+}
+struct css_selector {
+	combinator:@mut css_selector_node,		/*< Combining selector */
+
+	rule:@css_rule ,				/*< Owning rule */
+
+/*#define CSS_SPECIFICITY_A 0x01000000
+#define CSS_SPECIFICITY_B 0x00010000
+#define CSS_SPECIFICITY_C 0x00000100
+#define CSS_SPECIFICITY_D 0x00000001*/
+	CSS_SPECIFICITY_A:uint,
+	CSS_SPECIFICITY_B:uint,
+	CSS_SPECIFICITY_C:uint,
+	CSS_SPECIFICITY_D:uint,
+
+	specificity:u32,			/*< Specificity of selector */
+
+	 data:css_selector_detail		/*< Selector data */
+}
+
+
+pub enum css_rule_type {
+	CSS_RULE_UNKNOWN,
+	CSS_RULE_SELECTOR,
+	CSS_RULE_CHARSET,
+	CSS_RULE_IMPORT,
+	CSS_RULE_MEDIA,
+	CSS_RULE_FONT_FACE,
+	CSS_RULE_PAGE
+}
+
+pub enum css_rule_parent_type {
+	CSS_RULE_PARENT_STYLESHEET,
+	CSS_RULE_PARENT_RULE
+}
+enum rule_stylesheet
+{
+	rule(int),  //update int toproper value
+	stylesheet(int)
+}
+enum css_rule_node
+{
+	SomeRuleNode(@mut css_rule),
+  	NoRuleNode
+}
+pub struct css_rule {
+	parent:@rule_stylesheet,		
+			/**< containing rule or owning 
+						 * stylesheet (defined by ptype)
+						 */
+	next:@mut css_rule_node ,				/**< next in list */
+	prev:@mut css_rule_node ,				/**< previous in list */
+
+	rule_type  :  uint,		/**< css_rule_type */
+		     index : uint,		/**< index in sheet */
+		     items : uint,		/**< # items in rule */
+		     ptype : uint		/*< css_rule_parent_type */
+}
+
+pub struct css_rule_selector {
+	 base:css_rule,
+
+	 selectors:@@css_selector,
+	 style:css_style 
+}
+pub struct css_rule_media {
+	base:css_rule ,
+
+	media:u64,
+
+	first_child:@css_rule,
+	last_child:@css_rule
+}
+pub struct css_rule_font_face {
+	base :css_rule,
+
+	font_face:@css_font_face 
+}
+
+pub struct css_font_face {
+	font_family:~lwc_string,
+	srcs:@css_font_face_src,
+	n_srcs:u32,
+	
+	/*
+	 * Bit allocations:
+	 *
+	 *    76543210
+	 *  1 __wwwwss	font-weight | font-style
+	 */
+	bits:~[u8*1]
+	
+	//css_allocator_fn alloc;
+	//void *pw;
+}
+
+pub struct css_font_face_src {
+	location:~lwc_string,
+	/*
+	 * Bit allocations:
+	 *
+	 *    76543210
+	 *  1 _fffffll	format | location type
+	 */
+	bits:~[u8*1]
+}
+
+pub struct css_rule_page {
+	base:css_rule ,
+
+	selector:@css_selector ,
+	style:@css_style 
+}
+
+pub struct css_rule_import {
+	base:css_rule ,
+
+	url:~lwc_string,
+	media:u64,
+
+	sheet:@css_stylesheet
+}
+pub struct css_rule_charset {
+	base:css_rule ,
+
+	encoding:~lwc_string	/* \todo use MIB enum? */
+}
+pub type  css_import_notification_fn =  ~extern fn(pw:~[u8],
+		 parent:@css_stylesheet,  url:~lwc_string, media:u64) -> css_error;
+pub type  css_url_resolution_fn =  ~extern fn(pw:~[u8],
+		base:~str, rel:~lwc_string , abs:@~lwc_string ) -> css_error;
+pub type  css_color_resolution_fn =  ~extern fn(pw:~[u8],
+		name:~lwc_string,  color:@css_color) -> css_error;
+pub type  css_font_resolution_fn =  ~extern fn(pw:~[u8],
+		name:~lwc_string,  system_font:@css_system_font) -> css_error;
+pub struct css_stylesheet {
+	//selectors:@css_selector_hash,	TODO REPLACE WITH BUILT IN HASH TABLE
+		/**< Hashtable of selectors */
+
+	rule_count:u32,			/**< Number of rules in sheet */
+	rule_list:@css_rule ,			/**< List of rules in sheet */
+	last_rule:@css_rule ,			/**< Last rule in list */
+
+	disabled:bool,				/**< Whether this sheet is 
+						 * disabled */
+
+	url:~str,				/**< URL of this sheet */
+	title:~str,			/**< Title of this sheet */
+
+	level:css_language_level ,		/**< Language level of sheet */
+	parser:@css_parser ,			/**< Core parser for sheet */
+	parser_frontend:~[u8],			/**< Frontend parser */////////look for type
+	propstrings:@~lwc_string,		/**< Property strings, for parser */
+
+	quirks_allowed:bool,			/**< Quirks permitted */
+	quirks_used:bool,			/**< Quirks actually used */
+
+	inline_style:bool,			/**< Is an inline style */
+
+	size:size_t,				/**< Size, in bytes */
+
+	 import:css_import_notification_fn,	/**< Import notification function */
+	import_pw:~[u8],			/**< Private word *////////look for type
+
+	 resolve:css_url_resolution_fn,		/**< URL resolution function */
+	resolve_pw:~[u8],			/**< Private word *////////look for type
+
+	 color:css_color_resolution_fn,		/**< Colour resolution function */
+	color_pw:~[u8],				/**< Private word *////////look for type
+
+	/** System font resolution function */
+	 font:css_font_resolution_fn,		
+	font_pw:~[u8],				/**< Private word *////////look for type
+
+
+	// alloc:css_allocator_fn,			/**< Allocation function */
+	//pw:~[u8],				/**< Private word */
+  
+	cached_style:@css_style ,		/**< Cache for style parsing */
+  
+	string_vector:@~lwc_string,            /**< Bytecode string vector */
+	string_vector_l:u32,              /**< The string vector allocated
+					 * length in entries */
+	string_vector_c:u32               /*< The number of string 
+						 * vector entries used */ 
+}
+enum css_parser_event {
+	CSS_PARSER_START_STYLESHEET,
+	CSS_PARSER_END_STYLESHEET,
+	CSS_PARSER_START_RULESET,
+	CSS_PARSER_END_RULESET,
+	CSS_PARSER_START_ATRULE,
+	CSS_PARSER_END_ATRULE,
+	CSS_PARSER_START_BLOCK,
+	CSS_PARSER_END_BLOCK,
+	CSS_PARSER_BLOCK_CONTENT,
+	CSS_PARSER_DECLARATION
+}
+pub enum css_token_type { 
+	CSS_TOKEN_IDENT, CSS_TOKEN_ATKEYWORD, CSS_TOKEN_HASH,
+	CSS_TOKEN_FUNCTION, CSS_TOKEN_STRING, CSS_TOKEN_INVALID_STRING, 
+	CSS_TOKEN_URI, CSS_TOKEN_UNICODE_RANGE, CSS_TOKEN_CHAR, 
+	CSS_TOKEN_NUMBER, CSS_TOKEN_PERCENTAGE, CSS_TOKEN_DIMENSION,
+
+	/* Those tokens that want strings interned appear above */
+	CSS_TOKEN_LAST_INTERN,
+
+ 	CSS_TOKEN_CDO, CSS_TOKEN_CDC, CSS_TOKEN_S, CSS_TOKEN_COMMENT, 
+	CSS_TOKEN_INCLUDES, CSS_TOKEN_DASHMATCH, CSS_TOKEN_PREFIXMATCH, 
+	CSS_TOKEN_SUFFIXMATCH, CSS_TOKEN_SUBSTRINGMATCH, CSS_TOKEN_EOF 
+}
+struct CONTEXT{
+		first:u8,		/**< First character read for token */
+		 origBytes:size_t,	/**< Storage of current number of 
+					 * bytes read, for rewinding */
+		 lastWasStar:bool,	/**< Whether the previous character 
+					 * was an asterisk */
+		lastWasCR:bool ,		/**< Whether the previous character
+					 * was CR */
+		 bytesForURL:size_t,	/**< Input bytes read for "url(", for 
+					 * rewinding */
+		dataLenForURL:size_t ,	/**< Output length for "url(", for
+					 * rewinding */
+		 hexCount:int		/*< Counter for reading hex digits */
+	} 
+struct css_lexer
+{
+	 input:@parserutils_inputstream,	/**< Inputstream containing CSS */
+
+	bytesReadForToken:size_t ,	/**< Total bytes read from the 
+					 * inputstream for the current token */
+
+	 token:css_token,		/**< The current token */
+
+	escapeSeen:bool ,		/**< Whether an escape sequence has 
+					 * been seen while processing the input
+					 * for the current token */
+	unescapedTokenData:~[u8],	/**< Buffer containing 
+					 	 * unescaped token data 
+						 * (used iff escapeSeen == true)
+						 */
+
+	state    : uint,	/**< Current state */
+		     substate :uint,	/**< Current substate */
+
+	 context:CONTEXT,			/**< Context for the current state */
+
+	emit_comments:bool ,		/**< Whether to emit comment tokens */
+
+	currentCol:u32,		/**< Current column in source */
+	currentLine:u32		/*< Current line in source */
+
+	//css_allocator_fn alloc;		/**< Memory (de)allocation function */
+	//void *pw;			/**< Pointer to client-specific data */
+}
+
+struct DATA{
+                data:~[u8],
+                len:size_t,
+        }
+ struct css_token {
+	token_type:css_token_type,
+
+    data:DATA,
+
+	idata:~lwc_string ,
+	
+	col:u32,
+	line:u32,
+}
+pub type  css_parser_event_handler =  ~extern fn( event_type:css_parser_event, 
+		tokens:~[u8] , pw:~[u8]) -> css_error;
+pub struct css_parser
+{
+	stream:@parserutils_inputstream,	/**< The inputstream */
+	lexer:@css_lexer,		/**< The lexer to use */
+
+	quirks:bool,			/**< Whether to enable parsing quirks */
+
+//#define STACK_CHUNK 32
+    STACK_CHUNK: uint,
+	states:DVec<u8>,	/**< Stack of states */
+
+	tokens:~[u8],	/**< Vector of pending tokens */
+
+	pushback:@css_token,	/**< Push back buffer */
+
+	parseError:bool,		/**< A parse error has occurred */
+	open_items:DVec<u8>,	/**< Stack of open brackets */
+
+	match_char:u8,		/**< Close bracket type for parseAny */
+
+	last_was_ws:bool,		/**< Last token was whitespace */
+
+	 event:css_parser_event_handler,	/**< Client's event handler */
+	event_pw:~[u8]		/*< Client data for event handler */
+
+	//css_allocator_fn alloc;		/**< Memory (de)allocation function */
+	//void *pw;			/**< Client-specific private data */
+}
+
+
+/*struct css_selector_hash {
+	elements:hash_t,
+
+	classes:hash_t,
+
+	ids:hash_t,
+
+	universal:hash_entry,
+
+	hash_size:size_t
+
+	//css_allocator_fn alloc;
+	//void *pw;
+}*/
 //TO DO Stop for types
 
 //To Do Should be moved to properties
+enum lwc_error
+{
+	lwc_error_ok		= 0,	/**< No error. */
+	lwc_error_oom		= 1,	/**< Out of memory. */
+	lwc_error_range		= 2	/*< Substring internment out of range. */
+}
+pub fn css_error_from_lwc_error( err:lwc_error)->css_error
+{
+        match (err) {
+         lwc_error_ok=>
+                {return CSS_OK;},
+         lwc_error_oom=>
+                {return CSS_NOMEM;},
+         lwc_error_range=>
+                {return CSS_BADPARM;}/*,
+        _=>{}*/
+                
 
+        }
+        return CSS_INVALID;
+}
 
 	pub enum css_background_attachment_e {
 		CSS_BACKGROUND_ATTACHMENT_INHERIT	= 0x0,
@@ -1915,7 +2319,169 @@ type  colour =  u32;
 pub enum shape {
 	SHAPE_RECT = 0
 } 
+pub fn isDigit( c:char)-> bool
+{
+	return '0' <= c && c <= '9';
+}
+pub fn isHex(c:char)->bool 
+{
+	return isDigit(c) || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F');
+}
+pub fn charToHex( mut c: char)-> u32
+{
+	c -= '0';
 
+	if (c as u8> 9)
+		{c -= 'A' - '9' - 1 as char;}
+
+	if (c as u8 > 15)
+		{c -= 'a' - 'A';}
+
+	return c as u32;
+}
+
+//pub type css_fixed = 32;
+
+/*pub fn lwc_string_length(string:~lwc_string)-> size_t
+{
+        assert(string);
+        
+        return string.len;
+}
+
+
+pub fn lwc_string_data(string:~lwc_string)-> ~str
+{
+        assert(string);
+        
+        return CSTR_OF(string);
+}*/
+pub fn css__number_from_lwc_string(string:@lwc_string,
+		int_only:bool , consumed:@mut int)-> css_fixed
+{
+	
+		if(lwc::lwc_string_length(string)== 0)
+		{
+			return 0;
+		} 
+    return  css__number_from_string(lwc::lwc_string_data(string),int_only,consumed);
+	/*return css__number_from_string(
+			(uint8_t *)lwc_string_data(string),
+			lwc_string_length(string),
+			int_only,
+			consumed);*/
+}
+
+pub fn css__number_from_string(data:@str/*, len:size_t*/ ,
+		int_only:bool , consumed:@mut int )-> css_fixed
+{
+    let mut sign:int = 1;
+    let mut len = data.len();
+    let mut iter = 0;
+	let mut intpart:i32 = 0;
+	let mut fracpart:i32 = 0;
+	let mut pwr:i32 = 1;
+
+    if len == 0
+    {
+    	return 0;
+    }
+
+	if (data[iter] == '-' as u8) {
+		sign = -1;
+		len -= 1;
+		iter += 1;
+	} else if (data[iter] == '+' as u8) {
+		len -= 1;
+		iter += 1;
+	}
+
+	if (len == 0) {
+		*consumed = 0;
+		return 0;
+	} else {
+		if (data[iter] == '.' as u8) {
+			if (len == 1 || data[iter+1] < '0' as u8|| '9' as u8 < data[iter+1]) {
+				*consumed = 0 ;
+				return 0;
+			}
+		} else if (data[iter] < '0' as u8 || '9' as u8 < data[iter]) {
+			*consumed = 0;
+			return 0;
+		}
+	}
+
+
+    /* Now extract intpart, assuming base 10 */
+	while (len > 0) {
+		/* Stop on first non-digit */
+		if (data[iter] < '0' as u8 || '9' as u8 < data[iter])
+			{break;}
+
+		/* Prevent overflow of 'intpart'; proper clamping below */
+		if (intpart < (1 << 22)) {
+			intpart *= 10;
+			intpart += (data[iter] - '0' as u8) as i32;
+		}
+		iter += 1;
+		len -=1;
+	}
+
+
+    /* And fracpart, again, assuming base 10 */
+	if (int_only == false && len > 1 && data[iter] == '.' as u8 && 
+			('0' as u8 <= data[iter + 1] && data[iter + 1] <= '9' as u8)) {
+		iter += 1;
+		len -= 1;
+
+		while (len > 0) {
+			if (data[iter] < '0' as u8 || '9' as u8 < data[iter])
+				{break;}
+
+			if (pwr < 1000000) {
+				pwr *= 10;
+				fracpart *= 10;
+				fracpart += (data[iter] - '0' as u8) as i32;
+			}
+			iter += 1;
+			len -= 1;
+		}//
+		fracpart = ((1 << 10) * fracpart + pwr/2) / pwr;
+		if (fracpart >= (1 << 10)) {
+			intpart += 1;
+			fracpart &= (1 << 10) - 1;
+		}
+	}
+
+	*consumed = iter;
+
+
+	if (sign > 0) {
+		/* If the result is larger than we can represent,
+		 * then clamp to the maximum value we can store. */
+		if (intpart >= (1 << 21)) {
+			intpart = (1 << 21) - 1;
+			fracpart = (1 << 10) - 1;
+		}
+	}
+	else {
+		/* If the negated result is smaller than we can represent
+		 * then clamp to the minimum value we can store. */
+		if (intpart >= (1 << 21)) {
+			intpart = -(1 << 21);
+			fracpart = 0;
+		}
+		else {
+			intpart = -intpart;
+			if (fracpart != 0) {
+				fracpart = (1 << 10) - fracpart;
+				intpart -= 1;
+			}
+		}
+	}
+
+	return (intpart << 10) | fracpart;
+}
 pub fn buildOPV(opcode : css_properties_e , flags : u8 , value : u16 ) -> css_code_t {
 
 	(( (opcode as int)  & 0x3ff) | ((flags as int)<< 10) | (((value as int)& 0x3fff)  << 18) ) as u32
