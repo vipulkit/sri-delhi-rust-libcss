@@ -60,6 +60,7 @@ pub struct parserutils_filter {
 pub enum parserutils_result
 {
 	PARSERUTILS_FILTER_CREATE_OK(@parserutils_filter),
+	PARSERUTILS_FILTER_PROCESS_CHUNK_OK((u64,~[u8])),
 	PARSERUTILS_INPUTSTREAM_CREATE_OK(@parserutils_inputstream_private),
 	PARSERUTILS_CHARSET_EXT_OK((@u16,@u32)),
 	PARSERUTILS_CHARSET_TRY_OK(@u16),
@@ -228,10 +229,9 @@ io::println("abcdefgh++++++");
 			iconv_h : riconv::riconv_initialize(),
 			pw : ~[]
 		};
-		let x=self.parserutils_charset_mibenum_from_name(int_enc);
-		match x {
-			0 => return PARSERUTILS_BADENCODING,
-			_ => f.int_enc = x 
+		f.int_enc =self.parserutils_charset_mibenum_from_name(int_enc);
+		if f.int_enc==0 {
+			return PARSERUTILS_BADENCODING ;
 		}
 
 		f.pw = copy pw;
@@ -301,72 +301,30 @@ io::println("abcdefgh++++++");
 		}	
 	}
 
-	
-	pub fn parserutils__filter_process_chunk(&self, input : @parserutils_filter ,inbuf : &str , insize : &size_t,
-									 			outbuf :  &str  , outsize : &size_t ) -> parserutils_result {
-		if input.int_enc==0 || inbuf.len()==0 || *insize==0 {
+	pub fn parserutils__filter_process_chunk(&self, input : @parserutils_filter ,inbuf : ~[u8] ) -> parserutils_result {
+
+		io::println(fmt!("\n Input arguments to the process chunk is =%?= ",inbuf));
+		
+		if ( input.int_enc==0 )||( inbuf.len()==0 ) {
 			return PARSERUTILS_BADPARAM;
 		}
+		
+		let iconv_result = riconv::safe_riconv(input.iconv_h, inbuf) ;
 
-		// Allocation sufficient length of null data in the outbuf 
-		let mut output : ~str = ~"" ;
-		// assuming ANSI (1 byte) to linux-wide-char ( 4byte ) conversion == http://en.wikipedia.org/wiki/UTF-32 ==
-		str::reserve(&mut output,(insize*4+4) as uint); 
-
-		let error_num : int = 0 ;
-		let iconv_result : size_t = riconv::safe_riconv(input.iconv_h,inbuf,insize,outbuf,outsize,&error_num) ;
-
-		if iconv_result==(-1 as size_t) {
-			
-			match error_num {
-				1 => return PARSERUTILS_NOMEM ,
-				2 => {
-					//if outsize<3 {
-					//	return PARSERUTILS_NOMEM;
-					//}
-
-						output[0] = 0xef;
-						output[1] = 0xbf;
-						output[2] = 0xbd;
-
-						let mut inptr : u64 = 1 ;
-						let mut optr : u64 = 3 ;
-
-						while inptr<*insize {
-							let mut temp_output : &str = "" ; 
-							let temp_result : size_t = riconv::safe_riconv(input.iconv_h,inbuf.slice(inptr as uint,(insize-1) as uint),&(insize-inptr),temp_output,outsize,&error_num) ;
-
-							if temp_result==(-1 as size_t) || error!=2 {
-								return PARSERUTILS_NOMEM ;
-							}
-
-							//if outsize<3 {
-							//	return PARSERUTILS_NOMEM;
-							//}
-
-							output[optr] = 0xef ;
-							output[optr+1] = 0xbf;
-							output[optr+2] = 0xbd;
-
-							optr += 3 ;
-							inptr += 1 ;
-
-						}
-						if error_num==1 {
-							return PARSERUTILS_NOMEM;
-						}
-						else {
-							return PARSERUTILS_FILTER_CREATE_OK(input);
-						}
-				} ,
-				_ => return PARSERUTILS_ICONV_ERROR 
+		if iconv_result.len_processed==0 {
+			if iconv_result.err_state==1 {
+				return PARSERUTILS_NOMEM ;
+			}
+			if iconv_result.err_state==2 {
+				return PARSERUTILS_BADPARAM ;
+			}
+			else {
+				return PARSERUTILS_ICONV_ERROR ;
 			}
 		}
-
-		PARSERUTILS_FILTER_CREATE_OK(input)
-
+		PARSERUTILS_FILTER_PROCESS_CHUNK_OK( (iconv_result.len_processed, copy iconv_result.outbuf) )
 	}
-
+		
 	pub fn parserutils_inputstream_create(&self,enc: ~str,
 		encsrc: u32,  csdetect: parserutils_charset_detect_func, pw : ~[u8] )-> parserutils_result
 	{
@@ -713,7 +671,7 @@ io::println("abcdefgh++++++");
 
 	pub fn parserutils_inputstream_refill_buffer(&self,
 		stream:@parserutils_inputstream_private)-> parserutils_result{
-		let mut pRslt:parserutils_result;
+		let mut pRslt:parserutils_result = PARSERUTILS_GENERAL_OK ;
 		if (stream.done_first_chunk == false) {
 			//parserutils_filter_optparams params;
 
@@ -827,26 +785,30 @@ io::println("line______##");//sandeep
 		}
 		self.print_inputstream(stream);
 		io::println("line______&&");//sandeep	
-		let utf8:&str= "";
+		let utf8:~[u8]= ~[];
+		let mut processedLen: uint;
 		let raw:@mut ~[u8] = @mut ~[];
 		*raw <-> stream.raw;
 		let raw_length = raw.len();
         io::println("line______&&");
 		/* Try to fill utf8 buffer from the raw data */
-		pRslt = self.parserutils__filter_process_chunk(stream.input, 
-				raw.to_str(), &(raw_length as u64), utf8, &100);
+		pRslt = self.parserutils__filter_process_chunk(copy stream.input,copy *raw);
+		*raw <-> stream.raw;
 		io::println("line______&&**");
-		match(pRslt)
+		match(copy pRslt)
 		{
-			PARSERUTILS_GENERAL_OK =>{}
+			PARSERUTILS_FILTER_PROCESS_CHUNK_OK((len,data)) =>{
+				stream.public.utf8=append(copy stream.public.utf8,data);
+				processedLen=len as uint;
+			}
 			_=>return pRslt
 		}
 io::println("line______&&&");//sandeep
 		*raw <-> stream.raw;
-		let mut Iter = 0;
-		while(Iter < utf8.len())
+		//let mut Iter = 0;
+		//while(Iter < utf8.len())
 		{
-			stream.public.utf8.insert(stream.public.utf8.len(),utf8[Iter]);
+			//stream.public.utf8.append(utf8);
 		}
 
 		/* _NOMEM implies that there's more input to read than available space
@@ -854,7 +816,7 @@ io::println("line______&&&");//sandeep
 		
 
 		/* Remove the raw data we've processed from the raw buffer */
-        stream.raw= slice(stream.raw,stream.raw.len() - raw_length,stream.raw.len()-1);
+        stream.raw= slice(stream.raw,processedLen,stream.raw.len()-1);
 		
 		/* Fix up the utf8 buffer information */
 		

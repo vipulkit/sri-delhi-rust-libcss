@@ -156,7 +156,7 @@ impl lwc {
 		}
 	}
 
-	pub fn lwc_string_isequal(&self , str1: @lwc_string , str2: @lwc_string) ->bool {
+	static pub fn lwc_string_isequal(str1: @lwc_string , str2: @lwc_string) ->bool {
 		managed::ptr_eq(str1 , str2)
 	}
 
@@ -164,19 +164,19 @@ impl lwc {
 		self.__lwc_intern(string_to_intern.string, true)
 	}
 
-	pub fn lwc_string_caseless_isequal(&self , string_to_cmp1: @lwc_string , string_to_cmp2: @lwc_string) ->bool {
+	static pub fn lwc_string_caseless_isequal(string_to_cmp1: @lwc_string , string_to_cmp2: @lwc_string) ->bool {
 		(string_to_cmp1.is_case_insensitive && string_to_cmp2.is_case_insensitive)
 	}
 
-	pub fn lwc_string_length(&self , string: @lwc_string) -> uint {
+	static pub fn lwc_string_length(string: @lwc_string) -> uint {
 		string.length
 	}
 
-	pub fn lwc_string_hash_value(&self , string: @lwc_string) -> u32 {
+	static pub fn lwc_string_hash_value(string: @lwc_string) -> u32 {
 		string.hash
 	}
 
-	pub fn lwc_string_data(&self , string: @lwc_string) -> @str {
+	static pub fn lwc_string_data(string: @lwc_string) -> @str {
 		string.string
 	}
 }
