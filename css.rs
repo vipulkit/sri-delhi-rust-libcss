@@ -5,6 +5,7 @@
 
 extern mod parserutils;
 extern mod wapcaplet;
+
 use wapcaplet::*;
 use core::cast;
 use core::vec::* ; 
@@ -27,15 +28,6 @@ type css_fixed = i32;
 pub type lwc_hash = u32;
 pub type lwc_refcounter = u32;
 
-/*pub struct lwc_string {
-      	prevptr : Option<&lwc_string> , 
-        next : Option<&lwc_string>,
-        len : u64, 
-        hash : lwc_hash,
-        refcnt : lwc_refcounter	,
-        insensitive : Option<&lwc_string> 
-}
-*/
 //TO DO: Should be moved to types  ---- Start
 /**
  * Source of charset information, in order of importance.
@@ -126,12 +118,12 @@ pub struct css_qname {
 	 * '*' for any namespace (including none)
 	 * URI for a specific namespace
 	 */
-	ns : ~lwc_string ,
+	ns : @lwc_string ,
 
 	/**
 	 * Local part of qualified name
 	 */
-	name : ~lwc_string 
+	name : @lwc_string 
 }  
 //pub type css_code_t  =  ~[u32];
 
@@ -176,13 +168,11 @@ pub enum css_selector_detail_value_type {
 	CSS_SELECTOR_DETAIL_VALUE_NTH
 } 
 
-struct tempStruct{
-		a:u32,
-		b: u32
-	}  	
+
 pub struct css_selector_detail_value {
 	string:&str,		/*< Interned string, or NULL */
-	nth:tempStruct			/*< Data for x = an + b */
+	a:u32,
+	b:u32			/*< Data for x = an + b */
 } 
 
 pub struct css_selector_detail {
@@ -196,13 +186,13 @@ pub struct css_selector_detail {
 	value_type  :int,		        /*< Type of value field */
 	negate      :int ,   		    /*< Detail match is inverted */
 }
-enum css_selector_node
-{
-	SomeSelectorNode(@mut css_rule),
-  	NoSelectorNode
-}
+// enum css_selector_node
+// {
+// 	SomeSelectorNode(@mut css_selector_node),
+//   	NoSelectorNode
+// }
 struct css_selector {
-	combinator:@mut css_selector_node,		/*< Combining selector */
+	combinator:@[css_selector],		/*< Combining selector */
 
 	rule:@css_rule ,				/*< Owning rule */
 
@@ -280,7 +270,7 @@ pub struct css_rule_font_face {
 }
 
 pub struct css_font_face {
-	font_family:~lwc_string,
+	font_family:@lwc_string,
 	srcs:@css_font_face_src,
 	n_srcs:u32,
 	
@@ -297,7 +287,7 @@ pub struct css_font_face {
 }
 
 pub struct css_font_face_src {
-	location:~lwc_string,
+	location:@lwc_string,
 	/*
 	 * Bit allocations:
 	 *
@@ -317,7 +307,7 @@ pub struct css_rule_page {
 pub struct css_rule_import {
 	base:css_rule ,
 
-	url:~lwc_string,
+	url:@lwc_string,
 	media:u64,
 
 	sheet:@css_stylesheet
@@ -325,19 +315,19 @@ pub struct css_rule_import {
 pub struct css_rule_charset {
 	base:css_rule ,
 
-	encoding:~lwc_string	/* \todo use MIB enum? */
+	encoding:@lwc_string	/* \todo use MIB enum? */
 }
 pub type  css_import_notification_fn =  ~extern fn(pw:~[u8],
-		 parent:@css_stylesheet,  url:~lwc_string, media:u64) -> css_error;
+		 parent:@css_stylesheet,  url:@lwc_string, media:u64) -> css_result;
 pub type  css_url_resolution_fn =  ~extern fn(pw:~[u8],
-		base:~str, rel:~lwc_string , abs:@~lwc_string ) -> css_error;
+		base:~str, rel:@lwc_string , abs:@lwc_string ) -> css_result;
 pub type  css_color_resolution_fn =  ~extern fn(pw:~[u8],
-		name:~lwc_string,  color:@css_color) -> css_error;
+		name:@lwc_string,  color:@css_color) -> css_result;
 pub type  css_font_resolution_fn =  ~extern fn(pw:~[u8],
-		name:~lwc_string,  system_font:@css_system_font) -> css_error;
+		name:@lwc_string,  system_font:@css_system_font) -> css_result;
 pub struct css_stylesheet {
 	//selectors:@css_selector_hash,	TODO REPLACE WITH BUILT IN HASH TABLE
-		/**< Hashtable of selectors */
+		/* < Hashtable of selectors */
 
 	rule_count:u32,			/**< Number of rules in sheet */
 	rule_list:@css_rule ,			/**< List of rules in sheet */
@@ -350,9 +340,9 @@ pub struct css_stylesheet {
 	title:~str,			/**< Title of this sheet */
 
 	level:css_language_level ,		/**< Language level of sheet */
-	parser:@css_parser ,			/**< Core parser for sheet */
+	parser:@mut css_parser_node ,			/**< Core parser for sheet */
 	parser_frontend:~[u8],			/**< Frontend parser */////////look for type
-	propstrings:@~lwc_string,		/**< Property strings, for parser */
+	propstrings:@ mut[@lwc_string ],		/**< Property strings, for parser */
 
 	quirks_allowed:bool,			/**< Quirks permitted */
 	quirks_used:bool,			/**< Quirks actually used */
@@ -380,7 +370,7 @@ pub struct css_stylesheet {
   
 	cached_style:@css_style ,		/**< Cache for style parsing */
   
-	string_vector:@~lwc_string,            /**< Bytecode string vector */
+	string_vector:@[@lwc_string],            /**< Bytecode string vector */
 	string_vector_l:u32,              /**< The string vector allocated
 					 * length in entries */
 	string_vector_c:u32               /*< The number of string 
@@ -465,19 +455,26 @@ struct DATA{
 
     data:DATA,
 
-	idata:~lwc_string ,
+	idata:@lwc_string ,
 	
 	col:u32,
 	line:u32,
 }
-pub type  css_parser_event_handler =  ~extern fn( event_type:css_parser_event, 
-		tokens:~[u8] , pw:~[u8]) -> css_error;
+pub type css_parser_event_handler =  ~extern fn( event_type:css_parser_event, 
+		tokens:~[u8] , pw:@css_language) -> css_result;
+
+enum css_parser_node
+{
+	SomeParserNode(@mut css_parser),
+  	NoParserNode
+}
+
 pub struct css_parser
 {
 	stream:@parserutils_inputstream,	/**< The inputstream */
 	lexer:@css_lexer,		/**< The lexer to use */
 
-	quirks:bool,			/**< Whether to enable parsing quirks */
+	mut quirks:bool,			/**< Whether to enable parsing quirks */
 
 //#define STACK_CHUNK 32
     STACK_CHUNK: uint,
@@ -494,8 +491,8 @@ pub struct css_parser
 
 	last_was_ws:bool,		/**< Last token was whitespace */
 
-	 event:css_parser_event_handler,	/**< Client's event handler */
-	event_pw:~[u8]		/*< Client data for event handler */
+	mut event:css_parser_event_handler,	/**< Client's event handler */
+	mut event_pw:@css_language		/*< Client data for event handler */
 
 	//css_allocator_fn alloc;		/**< Memory (de)allocation function */
 	//void *pw;			/**< Client-specific private data */
@@ -519,27 +516,13 @@ pub struct css_parser
 //TO DO Stop for types
 
 //To Do Should be moved to properties
-enum lwc_error
-{
-	lwc_error_ok		= 0,	/**< No error. */
-	lwc_error_oom		= 1,	/**< Out of memory. */
-	lwc_error_range		= 2	/*< Substring internment out of range. */
-}
-pub fn css_error_from_lwc_error( err:lwc_error)->css_error
-{
-        match (err) {
-         lwc_error_ok=>
-                {return CSS_OK;},
-         lwc_error_oom=>
-                {return CSS_NOMEM;},
-         lwc_error_range=>
-                {return CSS_BADPARM;}/*,
-        _=>{}*/
-                
+// enum lwc_error
+// {
+// 	lwc_error_ok		= 0,	/**< No error. */
+// 	lwc_error_oom		= 1,	*< Out of memory. 
+// 	lwc_error_range		= 2	/*< Substring internment out of range. */
+// }
 
-        }
-        return CSS_INVALID;
-}
 
 	pub enum css_background_attachment_e {
 		CSS_BACKGROUND_ATTACHMENT_INHERIT	= 0x0,
@@ -1160,63 +1143,33 @@ pub fn css_error_from_lwc_error( err:lwc_error)->css_error
 //Stop for properties
 
 //To Do Should move to errors ---- Start
-pub enum css_error {
-		CSS_OK               = 0,
-		CSS_NOMEM            = 1,
-		CSS_BADPARM          = 2,
-		CSS_INVALID          = 3,
-		CSS_FILENOTFOUND     = 4,
-		CSS_NEEDDATA         = 5,
-		CSS_BADCHARSET       = 6,
-		CSS_EOF              = 7,
-		CSS_IMPORTS_PENDING  = 8,
-		CSS_PROPERTY_NOT_SET = 9
-	}
-
-pub fn css_error_to_string(css_err : css_error ) -> ~str {
-	let mut result : ~str ;
-
-
-	match css_err {
-	 CSS_OK =>
-		result = ~"No error",
-
-	 CSS_NOMEM =>
-		result = ~"Insufficient memory",
-
-	 CSS_BADPARM => 
-		result = ~"Bad parameter",
-
-	 CSS_INVALID =>
-		result = ~"Invalid input",
-
-	 CSS_FILENOTFOUND =>
-		result = ~"File not found",
-
-	 CSS_NEEDDATA =>
-		result = ~"Insufficient data",
-
-	 CSS_BADCHARSET => 
-		result = ~"BOM and charset mismatch",
-
-	 CSS_EOF => 
-		result = ~"EOF encountered",
-	
-	 CSS_IMPORTS_PENDING =>
-		result = ~"Imports pending",
-		
-	 CSS_PROPERTY_NOT_SET =>
-		result = ~"Property not set",
+pub enum css_result {
+		//CSS_OK  ,
+		CSS_GENERAL_OK,
+		CSS_LANGUAGE_CREATED(@css_language),
+		CSS_PROPSTRINGS_OK(@[@lwc_string]),
+		CSS_NOMEM,
+		CSS_BADPARM,
+		CSS_INVALID,
+		CSS_FILENOTFOUND,
+		CSS_NEEDDATA,
+		CSS_BADCHARSET,
+		CSS_EOF,
+		CSS_IMPORTS_PENDING,
+		CSS_PROPERTY_NOT_SET,
+		//CSS_LWC_INTERN_STRING_OK([@lwc_string])
 		
 	}
-
-	result
+enum css_parser_opttype {
+	CSS_PARSER_QUIRKS,
+	CSS_PARSER_EVENT_HANDLER
 }
+
 
 
 //Stop for error
 
-/**
+/*
  * Callback to resolve an URL
  *
  * \param pw    Client data
@@ -1226,9 +1179,9 @@ pub fn css_error_to_string(css_err : css_error ) -> ~str {
  * \param abs   Pointer to location to receive result
  * \return CSS_OK on success, appropriate error otherwise.
  */
-//fn css_url_resolution_fn() -> @fn (pw:~[u8],base:~str, rel:lwc_string, abs: ~str) -> css_error{ }
+//fn css_url_resolution_fn() -> @fn (pw:~[u8],base:~str, rel:lwc_string, abs: ~str) -> css_result{ }
 
-/**
+/*
  * Callback to be notified of the need for an imported stylesheet
  *
  * \param pw      Client data
@@ -1244,9 +1197,9 @@ pub fn css_error_to_string(css_err : css_error ) -> ~str {
  *       registration API.
  */
 
-//fn css_import_notification_fn() -> @fn (pw:~[u8], parent: &css_stylesheet, url:~lwc_string, media:u64) -> css_error{}
+//fn css_import_notification_fn() -> @fn (pw:~[u8], parent: &css_stylesheet, url:~lwc_string, media:u64) -> css_result{}
 
-/**
+/*
  * Callback use to resolve system colour names to RGB values
  *
  * \param pw     Client data
@@ -1255,7 +1208,7 @@ pub fn css_error_to_string(css_err : css_error ) -> ~str {
  * \return CSS_OK       on success,
  *         CSS_INVALID  if the name is unknown.
  */
-//fn css_color_resolution_fn() ->  @fn (pw:~[u8], name:~lwc_string, color:&css_color) -> css_error{}
+//fn css_color_resolution_fn() ->  @fn (pw:~[u8], name:~lwc_string, color:&css_color) -> css_result{}
 
 pub struct size_t{                  
 	size:css_fixed,           
@@ -1274,7 +1227,7 @@ pub struct css_system_font {
 	size:size_t,
 	line_height:line_height_t,
 	/* Note: must be a single family name only */
-	family: ~lwc_string
+	family: @lwc_string
 }
 
 /**
@@ -1286,7 +1239,7 @@ pub struct css_system_font {
  * \return CSS_OK       on success,
  *         CSS_INVALID  if the name is unknown.
  */
-//fn css_font_resolution_fn()-> @fn(pw:~[u8], name:~lwc_string, system_font:&css_system_font) -> css_error {}
+//fn css_font_resolution_fn()-> @fn(pw:~[u8], name:~lwc_string, system_font:&css_system_font) -> css_result {}
 
 pub enum css_stylesheet_params_version {
 	CSS_STYLESHEET_PARAMS_VERSION_1 = 1
@@ -1320,94 +1273,29 @@ pub enum css_stylesheet_params_version {
 		mut inline_style:bool,
 
 	/** URL resolution function */
-		mut resolve : @fn (pw:~[u8],base:~str, rel:lwc_string, abs: ~str) -> css_error,
+		mut resolve : @fn (pw:~[u8],base:~str, rel:@lwc_string, abs: ~str) -> css_result,
 
 	/** Client private data for resolve */
 		mut resolve_pw:~[u8],
 
 	/** Import notification function */
-	//	mut import: @fn (pw:~[u8], parent:&css_stylesheet, url:~lwc_string, media:u64) -> css_error,
+	//	mut import: @fn (pw:~[u8], parent:&css_stylesheet, url:~lwc_string, media:u64) -> css_result,
 
 	/** Client private data for import */
 		mut import_pw:~[u8],
 
 	/** Colour resolution function */
-		mut color: @fn (pw:~[u8], name:~lwc_string, color:&css_color) -> css_error,
+		mut color: @fn (pw:~[u8], name:@lwc_string, color:&css_color) -> css_result,
 
 	/** Client private data for color */
 		mut color_pw:~[u8],
 
 	/** Font resolution function */
-		mut font: @fn(pw:~[u8], name:~lwc_string, system_font:&css_system_font) -> css_error ,
+		mut font: @fn(pw:~[u8], name:@lwc_string, system_font:&css_system_font) -> css_result ,
 
 	/** Client private data for font */
 		mut font_pw: ~[u8]
 	}
-/*
-	fn css_stylesheet_create(params:&css_stylesheet_params, alloc_pw:~[u8],	stylesheet:~css_stylesheet) -> css_error {
-
-
-	}
-
-	fn css_stylesheet_destroy(sheet:&css_stylesheet) -> css_error {
-
-	}
-
-	fn css_stylesheet_append_data(sheet:&css_stylesheet, data:~[u8], len:uint) -> css_error{
-	
-	}
-
-	fn css_stylesheet_data_done(sheet:&css_stylesheet) -> css_error {
-
-	}
-
-	fn css_stylesheet_next_pending_import(css_stylesheet *parent, lwc_string **url, uint64_t *media) -> css_error{
-
-	}
-
-	fn css_stylesheet_register_import(css_stylesheet *parent, css_stylesheet *child) ->css_error {
-
-	}
-
-	fn css_stylesheet_get_language_level(css_stylesheet *sheet, css_language_level *level) -> css_error{
-
-
-	}
-
-	fn css_stylesheet_get_url(css_stylesheet *sheet, const char **url) -> css_error {
-
-	}
-
-	fn css_stylesheet_get_title(css_stylesheet *sheet, const char **title) -> css_error {
-
-	}
-
-	fn css_stylesheet_quirks_allowed(css_stylesheet *sheet, bool *allowed) -> css_error {
-
-	}
-
-	fn css_stylesheet_used_quirks(css_stylesheet *sheet, bool *quirks) -> css_error{
-
-	}
-
-	fn css_stylesheet_get_disabled(css_stylesheet *sheet, bool *disabled) -> css_error{
-
-	}
-
-	fn css_stylesheet_set_disabled(css_stylesheet *sheet, bool disabled) -> css_error{
-
-	}
-
-	fn css_stylesheet_size(css_stylesheet *sheet, size_t *size) -> css_error{
-
-	}
-*/
-
-
-
-/* ///////////////////////////////////////////////////////////////////////////////////////////
- * ////////////////////////// opcode.h ///////////////////////////////////////////////////////
-   //////////////////////////////////////////////////////////////////////////////////////////*/
 
 
 pub enum op_azimuth {
@@ -2319,546 +2207,1091 @@ type  colour =  u32;
 pub enum shape {
 	SHAPE_RECT = 0
 } 
-pub fn isDigit( c:char)-> bool
+
+enum language_state
 {
-	return '0' <= c && c <= '9';
-}
-pub fn isHex(c:char)->bool 
-{
-	return isDigit(c) || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F');
-}
-pub fn charToHex( mut c: char)-> u32
-{
-	c -= '0';
 
-	if (c as u8> 9)
-		{c -= 'A' - '9' - 1 as char;}
-
-	if (c as u8 > 15)
-		{c -= 'a' - 'A';}
-
-	return c as u32;
-}
-
-//pub type css_fixed = 32;
-
-/*pub fn lwc_string_length(string:~lwc_string)-> size_t
-{
-        assert(string);
-        
-        return string.len;
-}
-
-
-pub fn lwc_string_data(string:~lwc_string)-> ~str
-{
-        assert(string);
-        
-        return CSTR_OF(string);
-}*/
-pub fn css__number_from_lwc_string(string:@lwc_string,
-		int_only:bool , consumed:@mut int)-> css_fixed
-{
+		CHARSET_PERMITTED,
+		IMPORT_PERMITTED,
+		NAMESPACE_PERMITTED,
+		HAD_RULE
 	
-		if(lwc::lwc_string_length(string)== 0)
-		{
-			return 0;
-		} 
-    return  css__number_from_string(lwc::lwc_string_data(string),int_only,consumed);
-	/*return css__number_from_string(
-			(uint8_t *)lwc_string_data(string),
-			lwc_string_length(string),
-			int_only,
-			consumed);*/
 }
 
-pub fn css__number_from_string(data:@str/*, len:size_t*/ ,
-		int_only:bool , consumed:@mut int )-> css_fixed
-{
-    let mut sign:int = 1;
-    let mut len = data.len();
-    let mut iter = 0;
-	let mut intpart:i32 = 0;
-	let mut fracpart:i32 = 0;
-	let mut pwr:i32 = 1;
+struct css_namespace {
+	prefix:@lwc_string,	/**< Namespace prefix */
+	uri:@lwc_string		/*< Namespace URI */
+}
+ struct css_language {
+	sheet:@css_stylesheet ,		/**< The stylesheet to parse for */
 
-    if len == 0
-    {
-    	return 0;
-    }
+//#define STACK_CHUNK 32
+    STACK_CHUNK:int,
+	context:@DVec<context_entry>,      //parseutils_stack	/**< Context stack */
 
-	if (data[iter] == '-' as u8) {
-		sign = -1;
-		len -= 1;
-		iter += 1;
-	} else if (data[iter] == '+' as u8) {
-		len -= 1;
-		iter += 1;
+	 state:language_state,			/**< State flag, for at-rule handling */
+
+	/** Interned strings */
+	strings:@ mut[@lwc_string ],
+
+	default_namespace:@lwc_string ,	/**< Default namespace URI */
+	namespaces:@css_namespace,	/**< Array of namespace mappings */
+	num_namespaces:u32	/*< Number of namespace mappings */
+
+	// css_allocator_fn alloc;		*< Memory (de)allocation function 
+	// void *pw;			/**< Client's private data */
+}
+/*pub type  css_parser_event_handler =  ~extern fn( event_type:css_parser_event, 
+		 tokens:~[u8], pw:~[u8]) -> css_result;*/
+struct css_parser_event_handler_{
+		 handler:css_parser_event_handler,
+		pw:@css_language
+	} 
+pub struct  css_parser_optparams {
+	quirks:bool,
+	event_handler: css_parser_event_handler_
+	
+} 
+
+struct context_entry {
+	event_type:css_parser_event,		/**< Type of entry */
+	data:~[u8]		/*< Data for context */
+} 
+
+pub struct lcss {
+	mut lwc_instance:@lwc,
+	mut propstrings_call_count:uint,
+	mut propstrings:@[@str]
+}
+
+
+pub fn lcss()->@lcss {
+	@lcss {
+		lwc_instance:lwc(),
+		propstrings_call_count:0,
+		propstrings_list:[@"*", @"charset",@"import",@"media", @ "namespace", @ "font-face", @"page", @"aural",@ "braille", @ "embossed",@"handheld", @"print",
+		@"projection", @ "screen", @ "speech", @ "tty", @ "tv", @ "all",@"first-child", @ "link", @ "visited", @ "hover", @ "active", @ "focus",
+		@ "lang",@ "first",@ "root", @ "nth-child", @ "nth-last-child", @ "nth-of-type",@"nth-last-of-type", @ "last-child",@ "first-of-type",
+		@ "last-of-type", @ "only-child", @ "only-of-type",@ "empty", @"target",@ "enabled", @ "disabled", @ "checked", @"not", @ "first-line", 
+		@ "first-letter", @ "before",@ "after",@ "azimuth",@ "background", @ "background-attachment", @ "background-color", @ "background-image", 
+		@"background-position",@"background-repeat", @"border",@"border-bottom", @ "border-bottom-color", @ "border-bottom-style", @ "border-bottom-width",
+		@"border-collapse",@ "border-color",@ "border-left", @ "border-left-color", @ "border-left-style", @ "border-left-width",@ "border-right",
+		@ "border-right-color", @ "border-right-style",@ "border-right-width",@ "border-spacing",@ "border-style", @ "border-top",@"border-top-color",
+		@ "border-top-style",@ "border-top-width",@ "border-width", @ "bottom", @ "break-after", @ "break-before", @ "break-inside",@ "caption-side",
+		@ "clear",@ "clip",@ "color",@ "columns",@ "column-count",@ "column-fill",@ "column-gap",@ "column-rule", @"column-rule-color",
+		@ "column-rule-style",@ "column-rule-width",@ "column-span",@"column-width",@ "content", @ "counter-increment", @ "counter-reset",@"cue",
+		@ "cue-after", @ "cue-before",@"cursor", @ "direction",@ "display",@"elevation", @ "empty-cells",@ "float",@ "font", @ "font-family",@"font-size",
+		@"font-style", @ "font-variant",@"font-weight", @ "height", @"left", @"letter-spacing", @ "line-height",@ "list-style", @ "list-style-image",
+		@"list-style-position",@"list-style-type",@ "margin", @ "margin-bottom",@"margin-left",@ "margin-right", @ "margin-top", @ "max-height",
+		@ "max-width", @ "min-height", @ "min-width",@"opacity", @ "orphans",@ "outline", @ "outline-color", @"outline-style",@ "outline-width", @ "overflow",
+		@ "padding", @ "padding-bottom",@ "padding-left",@ "padding-right",@ "padding-top",@ "page-break-after", @ "page-break-before",@ "page-break-inside",
+		@ "pause",@ "pause-after",@ "pause-before", @ "pitch-range",@"pitch",@"play-during",@ "position",@ "quotes", @ "richness",@"right", @"speak-header",
+		@ "speak-numeral",@ "speak-punctuation",@"speak", @"speech-rate",@"stress",@ "table-layout", @ "text-align",@ "text-decoration",@ "text-indent",
+		@ "text-transform",@"top", @ "unicode-bidi", @ "vertical-align",@ "visibility",@"voice-family", @"volume",@"white-space",@ "widows", @ "width",
+		@ "word-spacing",@ "z-index",@ "inherit",@ "important",@"none",@"both", @ "fixed",@"scroll",@ "transparent", @ "no-repeat",@ "repeat-x",@"repeat-y",
+		@ "repeat",@ "hidden",@"dotted", @ "dashed", @ "solid",@ "double",@ "groove", @ "ridge",@"inset",@"outset",@ "thin", @ "medium",@"thick", @"collapse",
+		@ "separate",@ "auto",@ "ltr",@ "rtl", @"inline", @ "block",@ "list-item",@ "run-in",@ "inline-block", @ "table",@ "inline-table",@ "table-row-group",
+		@ "table-header-group",@ "table-footer-group",@ "table-row", @ "table-column-group", @ "table-column",@ "table-cell",@ "table-caption",@ "below",
+		@ "level",@ "above",@ "higher",@ "lower",@ "show",@ "hide",@ "xx-small",@ "x-small",@ "small",@ "large",@ "x-large",@ "xx-large",@ "larger",
+		@ "smaller", @ "normal",@ "italic",@ "oblique",@ "small-caps",@ "bold",@"bolder", @ "lighter",@ "inside",@ "outside", @ "disc",
+		@ "circle",@"square",@ "decimal",@"decimal-leading-zero", @ "lower-roman", @ "upper-roman", @ "lower-greek",@ "lower-latin",@ "upper-latin",
+		@ "armenian",@ "georgian", @ "lower-alpha",@ "upper-alpha",@ "invert",@ "visible",@ "always",@ "avoid",@ "x-low",@"low", @ "high", @ "x-high",
+		@"static",@"relative", @ "absolute",@ "once",@ "digits",@ "continuous", @ "code", @ "spell-out",@ "x-slow",@ "slow",@ "fast",@ "x-fast",@ "faster",
+		@ "slower",@ "center",@ "justify",@ "capitalize",@ "uppercase",@ "lowercase",@ "embed",@ "bidi-override",@ "baseline",@ "sub",@ "super", 
+		@ "text-top",@ "middle",@ "text-bottom",@ "silent",@ "x-soft",@ "soft",@ "loud", @ "x-loud", @"pre",@ "nowrap",@"pre-wrap",@"pre-line",
+		@ "leftwards",@ "rightwards",@ "left-side", @ "far-left", @ "center-left",@ "center-right",@ "far-right",@ "right-side",@ "behind",@ "rect",@"open-quote",
+		@ "close-quote",@ "no-open-quote",@ "no-close-quote",@ "attr",@ "counter",@ "counters",@ "crosshair",@ "default",@ "pointer",@ "move",@ "e-resize",
+		@ "ne-resize",@ "nw-resize",@ "n-resize", @ "se-resize",@ "sw-resize",@ "s-resize",@ "w-resize",@ "text",@ "wait",@ "help",@ "progress",@ "serif",
+		@ "sans-serif",@ "cursive",@ "fantasy",@ "monospace",@ "male",@ "female",@ "child",@ "mix",@ "underline",@ "overline",@ "line-through",@ "blink",
+		@ "rgb", @ "rgba",@ "hsl",@"hsla",@ "-libcss-left",@ "-libcss-center",@ "-libcss-right",@ "currentColor", @"odd", @ "even",@ "src",@ "local",
+		@ "initial",@ "format",@ "woff",@ "truetype",@ "opentype", @"embedded-opentype", @"svg",@ "column",@ "avoid-page", @ "avoid-column",@ "balance",
+		@"aliceblue",@ "antiquewhite",@ "aqua",@"aquamarine",@ "azure",@ "beige",@ "bisque",@"black",@"blanchedalmond",@"blue",@ "blueviolet",@"brown",
+		@ "burlywood",@ "cadetblue",@ "chartreuse",@ "chocolate", @ "coral",@ "cornflowerblue", @ "cornsilk", @ "crimson", @ "cyan",@ "darkblue",@ "darkcyan",
+		@ "darkgoldenrod",@ "darkgray",@ "darkgreen",@ "darkgrey",@"darkkhaki", @ "darkmagenta",@ "darkolivegreen",@ "darkorange",@ "darkorchid",@ "darkred",
+		@ "darksalmon",@ "darkseagreen",@ "darkslateblue",@ "darkslategray",@ "darkslategrey",@ "darkturquoise",@ "darkviolet",@ "deeppink", @ "deepskyblue",
+		@ "dimgray",@ "dimgrey",@ "dodgerblue",@ "feldspar",@ "firebrick",@ "floralwhite", @ "forestgreen",@ "fuchsia", @ "gainsboro",@ "ghostwhite",
+	    @ "gold",@ "goldenrod",@ "gray",@ "green",@ "greenyellow",@ "grey",@ "honeydew",@ "hotpink",@ "indianred",@ "indigo",@ "ivory",@ "khaki",@ "lavender",
+	    @ "lavenderblush",@ "lawngreen",@ "lemonchiffon",@ "lightblue",@ "lightcoral",@ "lightcyan",@ "lightgoldenrodyellow",@ "lightgray",@ "lightgreen",
+	    @ "lightgrey",@ "lightpink",@ "lightsalmon",@ "lightseagreen",@ "lightskyblue", @ "lightslateblue", @ "lightslategray",@ "lightslategrey",
+	    @ "lightsteelblue", @ "lightyellow",@ "lime",@ "limegreen",@ "linen", @ "magenta",@"maroon",@ "mediumaquamarine",@ "mediumblue", @ "mediumorchid",
+	    @ "mediumpurple", @ "mediumseagreen",@ "mediumslateblue",@ "mediumspringgreen",@ "mediumturquoise",@"mediumvioletred", @ "midnightblue",@ "mintcream", 
+	    @ "mistyrose",@ "moccasin",@ "navajowhite",@ "navy", @ "oldlace", @ "olive",@ "olivedrab",@ "orange",@ "orangered",@"orchid",@"palegoldenrod",
+	    @ "palegreen",@ "paleturquoise",@ "palevioletred", @ "papayawhip",@ "peachpuff",@ "peru",@ "pink",@ "plum",@ "powderblue", @ "purple",@ "red",
+	    @ "rosybrown",@ "royalblue", @ "saddlebrown",@ "salmon",@ "sandybrown",@ "seagreen",@ "seashell",@ "sienna", @ "silver", @ "skyblue",@ "slateblue",
+	    @ "slategray", @"slategrey",@ "snow",@ "springgreen",@ "steelblue", @ "tan", @ "teal",@ "thistle",@ "tomato",@ "turquoise",@"violet",@ "violetred",
+	    @ "wheat",@ "white", @ "whitesmoke",@"yellow",@ "yellowgreen"],
+	    propstrings:@[]
+	}
+}
+
+
+
+impl lcss {
+
+	static pub fn isDigit( c:char)-> bool
+	{
+		return '0' <= c && c <= '9';
 	}
 
-	if (len == 0) {
-		*consumed = 0;
-		return 0;
-	} else {
-		if (data[iter] == '.' as u8) {
-			if (len == 1 || data[iter+1] < '0' as u8|| '9' as u8 < data[iter+1]) {
-				*consumed = 0 ;
+	static pub fn isHex(c:char)->bool 
+	{
+		return lcss::isDigit(c) || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F');
+	}
+
+	static pub fn charToHex( mut c: char)-> u32
+	{
+		c -= '0';
+
+		if (c as u8> 9)
+			{c -= 'A' - '9' - 1 as char;}
+
+		if (c as u8 > 15)
+			{c -= 'a' - 'A';}
+
+		return c as u32;
+	}
+
+	//pub type css_fixed = 32;
+
+	/*pub fn lwc_string_length(string:~lwc_string)-> size_t
+	{
+	        assert(string);
+	        
+	        return string.len;
+	}
+
+
+	pub fn lwc_string_data(string:~lwc_string)-> ~str
+	{
+	        assert(string);
+	        
+	        return CSTR_OF(string);
+	}*/
+	static pub fn css__number_from_lwc_string(string:@lwc_string,
+			int_only:bool , consumed:@mut int)-> css_fixed
+	{
+		
+			if(lwc::lwc_string_length(string)== 0)
+			{
 				return 0;
-			}
-		} else if (data[iter] < '0' as u8 || '9' as u8 < data[iter]) {
+			} 
+	    return  lcss::css__number_from_string(lwc::lwc_string_data(string),int_only,consumed);
+		/*return css__number_from_string(
+				(uint8_t *)lwc_string_data(string),
+				lwc_string_length(string),
+				int_only,
+				consumed);*/
+	}
+
+	static pub fn css__number_from_string(data:@str/*, len:size_t*/ ,
+			int_only:bool , consumed:@mut int )-> css_fixed
+	{
+	    let mut sign:int = 1;
+	    let mut len = data.len();
+	    let mut iter = 0;
+		let mut intpart:i32 = 0;
+		let mut fracpart:i32 = 0;
+		let mut pwr:i32 = 1;
+
+	    if len == 0
+	    {
+	    	return 0;
+	    }
+
+		if (data[iter] == '-' as u8) {
+			sign = -1;
+			len -= 1;
+			iter += 1;
+		} else if (data[iter] == '+' as u8) {
+			len -= 1;
+			iter += 1;
+		}
+
+		if (len == 0) {
 			*consumed = 0;
 			return 0;
+		} else {
+			if (data[iter] == '.' as u8) {
+				if (len == 1 || data[iter+1] < '0' as u8|| '9' as u8 < data[iter+1]) {
+					*consumed = 0 ;
+					return 0;
+				}
+			} else if (data[iter] < '0' as u8 || '9' as u8 < data[iter]) {
+				*consumed = 0;
+				return 0;
+			}
 		}
-	}
 
 
-    /* Now extract intpart, assuming base 10 */
-	while (len > 0) {
-		/* Stop on first non-digit */
-		if (data[iter] < '0' as u8 || '9' as u8 < data[iter])
-			{break;}
-
-		/* Prevent overflow of 'intpart'; proper clamping below */
-		if (intpart < (1 << 22)) {
-			intpart *= 10;
-			intpart += (data[iter] - '0' as u8) as i32;
-		}
-		iter += 1;
-		len -=1;
-	}
-
-
-    /* And fracpart, again, assuming base 10 */
-	if (int_only == false && len > 1 && data[iter] == '.' as u8 && 
-			('0' as u8 <= data[iter + 1] && data[iter + 1] <= '9' as u8)) {
-		iter += 1;
-		len -= 1;
-
+	    /* Now extract intpart, assuming base 10 */
 		while (len > 0) {
+			/* Stop on first non-digit */
 			if (data[iter] < '0' as u8 || '9' as u8 < data[iter])
 				{break;}
 
-			if (pwr < 1000000) {
-				pwr *= 10;
-				fracpart *= 10;
-				fracpart += (data[iter] - '0' as u8) as i32;
+			/* Prevent overflow of 'intpart'; proper clamping below */
+			if (intpart < (1 << 22)) {
+				intpart *= 10;
+				intpart += (data[iter] - '0' as u8) as i32;
 			}
 			iter += 1;
+			len -=1;
+		}
+
+
+	    /* And fracpart, again, assuming base 10 */
+		if (int_only == false && len > 1 && data[iter] == '.' as u8 && 
+				('0' as u8 <= data[iter + 1] && data[iter + 1] <= '9' as u8)) {
+			iter += 1;
 			len -= 1;
-		}//
-		fracpart = ((1 << 10) * fracpart + pwr/2) / pwr;
-		if (fracpart >= (1 << 10)) {
-			intpart += 1;
-			fracpart &= (1 << 10) - 1;
+
+			while (len > 0) {
+				if (data[iter] < '0' as u8 || '9' as u8 < data[iter])
+					{break;}
+
+				if (pwr < 1000000) {
+					pwr *= 10;
+					fracpart *= 10;
+					fracpart += (data[iter] - '0' as u8) as i32;
+				}
+				iter += 1;
+				len -= 1;
+			}//
+			fracpart = ((1 << 10) * fracpart + pwr/2) / pwr;
+			if (fracpart >= (1 << 10)) {
+				intpart += 1;
+				fracpart &= (1 << 10) - 1;
+			}
 		}
-	}
 
-	*consumed = iter;
+		*consumed = iter;
 
 
-	if (sign > 0) {
-		/* If the result is larger than we can represent,
-		 * then clamp to the maximum value we can store. */
-		if (intpart >= (1 << 21)) {
-			intpart = (1 << 21) - 1;
-			fracpart = (1 << 10) - 1;
-		}
-	}
-	else {
-		/* If the negated result is smaller than we can represent
-		 * then clamp to the minimum value we can store. */
-		if (intpart >= (1 << 21)) {
-			intpart = -(1 << 21);
-			fracpart = 0;
+		if (sign > 0) {
+			/* If the result is larger than we can represent,
+			 * then clamp to the maximum value we can store. */
+			if (intpart >= (1 << 21)) {
+				intpart = (1 << 21) - 1;
+				fracpart = (1 << 10) - 1;
+			}
 		}
 		else {
-			intpart = -intpart;
-			if (fracpart != 0) {
-				fracpart = (1 << 10) - fracpart;
-				intpart -= 1;
+			/* If the negated result is smaller than we can represent
+			 * then clamp to the minimum value we can store. */
+			if (intpart >= (1 << 21)) {
+				intpart = -(1 << 21);
+				fracpart = 0;
+			}
+			else {
+				intpart = -intpart;
+				if (fracpart != 0) {
+					fracpart = (1 << 10) - fracpart;
+					intpart -= 1;
+				}
 			}
 		}
+
+		return (intpart << 10) | fracpart;
 	}
 
-	return (intpart << 10) | fracpart;
-}
-pub fn buildOPV(opcode : css_properties_e , flags : u8 , value : u16 ) -> css_code_t {
+	// pub fn css__propstrings_unref()
+	// {
+	// 	css__propstrings.count -=1;
 
-	(( (opcode as int)  & 0x3ff) | ((flags as int)<< 10) | (((value as int)& 0x3fff)  << 18) ) as u32
-}
+	// 	if (css__propstrings.count == 0) {
+	// 		let mut  i=0;
 
-pub fn getOpcode(OPV : css_code_t ) -> css_properties_e {
+	// 		while ( i < vec2.len())
+	// 		{
+	// 			lwc_string_unref(css__propstrings.strings[i]);
+	// 			i += 1;
+	// 		}
+				
+	// 	}
+	// }
 
-	 //((OPV & 0x3ff) as int) as opcode_t
-	 let op_code : int = (OPV & 0x3ff) as int ;
-	 unsafe { cast::transmute(&op_code) }
-}
-
-pub fn getFlags(OPV : css_code_t ) -> u8 {
-
-	((OPV >> 10) & 0xff) as u8
-}
-
-pub fn getValue(OPV : css_code_t ) -> u16 {
-
-	 (OPV >> 18) as u16
-}
-
-pub fn isImportant(OPV : css_code_t ) -> bool {
-
-	if (getFlags(OPV) & 0x1)==0 {
-	 	false
-	 }
-	 else {
-	 	true
-	 }
-}
-
-pub fn isInherit(OPV : css_code_t ) -> bool {
-
-	if (getFlags(OPV) & 0x2)==0 {
-		false 
-	}
-	else {
-		true
-	}
-}
-
-
-pub fn memcmp( str1 : ~[u8] , str2 : ~[u8] , len : uint ) -> int {
-	let mut i : uint = 0 ;
-	while ( i<len ) {
-		if str1[i]!=str2[i] {
-			return ( (str1[i]-str2[i]) as int) ;
+	pub fn css__propstrings_get(&self, propstrings:@mut[@lwc_string])->css_result
+	{
+		if (self.propstrings_call_count > 0) {
+			self.propstrings_call_count += 1;
+		} 
+		else {
+			let mut i =0;
+			while(i < self.propstrings_list.len())
+			{
+				propstrings.push(self.lwc_instance.lwc_intern_string(self.propstrings_list[i]));
+				i += 1;
+			}
+			self.propstrings_call_count += 1;
 		}
-		i = i+1 ; 
-	}
-	0
-}
-
-
-pub fn try_utf32_charset(data : ~[u8] , parser : @lpu) -> parserutils::parserutils_result {
-/*
-	let mut charset ; u16 = 0;
-
-	const CHARSET_BE : ~[u8] = ~"\0\0\0@\0\0\0c\0\0\0h\0\0\0a\0\0\0r\0\0\0s\0\0\0e\0\0\0t\0\0\0 \0\0\0\"" ;
-	const CHARSET_LE : ~[u8] = ~"@\0\0\0c\0\0\0h\0\0\0a\0\0\0r\0\0\0s\0\0\0e\0\0\0t\0\0\0 \0\0\0\"\0\0\0" ;
-
-	if data.len()<=CHARSET_LE.len() {
-		return PARSERUTILS_BADPARAM;
-	}
-
-	// Look for @charset, assuming UTF-32 source data 
-	if ( memcmp(data, CHARSET_LE, CHARSET_LE.len() ) == 0) {
-
-		let start : ~u8 = data + CHARSET_LE.len() ;
-		let mut end : ~u8 = start ;
-		let mut buf : ~[u8] ;
-		vec::reserve_at_least(&mut buf,8); 
-		let mut bufptr : u64 = 0 ;
 		
-		// Look for "; at end of charset declaration 
-		while ( end<(data+len) ) {
-			let c : u32 = end[0] | (end[1] << 8) | 
-							(end[2] << 16) | (end[3] << 24);
+		CSS_PROPSTRINGS_OK(propstrings)
+	}
+	// pub fn css_result_from_lwc_error( err:lwc_error)->css_result
+	// {
+	//         match (err) {
+	//          lwc_error_ok=>
+	//                 {return CSS_OK;},
+	//          lwc_error_oom=>
+	//                 {return CSS_NOMEM;},
+	//          lwc_error_range=>
+	//                 {return CSS_BADPARM;}/*,
+	//         _=>{}*/
+	                
 
-			// Bail if non-ASCII 
-			if (c>0x007f) {
-				break;
+	//         }
+	//         return CSS_INVALID;
+	// }
+	/**
+	 * Create a CSS language parser
+	 *
+	 * \param sheet	    The stylesheet object to parse for
+	 * \param parser    The core parser object to use
+	 * \param alloc	    Memory (de)allocation function
+	 * \param pw	    Pointer to client-specific private data
+	 * \param language  Pointer to location to receive parser object
+	 * \return CSS_OK on success,
+	 *	   CSS_BADPARM on bad parameters,
+	 *	   CSS_NOMEM on memory exhaustion
+	 */
+	pub fn  css__language_create(&self, sheet:@css_stylesheet,  parser:@css_parser) -> css_result
+	{
+		let css_language_instance:@css_language;
+		
+		let presult:parserutils_result;
+		let err:css_result;
+		let stack:@DVec<context_entry> = @dvec::DVec();
+
+		// if (sheet == NULL || parser == NULL || alloc == NULL || 
+		// 		language == NULL)
+		// 	return CSS_BADPARM;
+
+		let empty_lwc_string = self.lwc_instance.lwc_intern_string(@"");
+
+		css_language_instance = @css_language {
+				sheet:sheet ,		
+	    		STACK_CHUNK:32,
+				context:stack, 
+				state:CHARSET_PERMITTED,	
+				strings:sheet.propstrings,
+				
+				default_namespace:empty_lwc_string,	
+				
+				namespaces:@css_namespace
+				{
+					prefix:empty_lwc_string,	
+					uri:empty_lwc_string	
+				},	
+				num_namespaces:0	
+		
+		};
+
+		let params = @css_parser_optparams {
+			quirks:false,
+			event_handler: css_parser_event_handler_
+			{
+				handler:~self.language_handle_event,
+				pw:css_language_instance
 			}
+		}; //see later
+		// if (c == NULL)
+		// 	return CSS_NOMEM;
 
-			// Reached the end? 
-			if ( (c == '"') && (end<(data + len - 8)) ) {
-				let  d : u32 = end[4] | (end[5] << 8) |
-				    (end[6] << 16) | (end[7] << 24);
+		// perror = parserutils_stack_create(sizeof(context_entry), 
+		// 		STACK_CHUNK, (parserutils_alloc) alloc, pw, 
+		// 		&c->context);
+		// if (perror != PARSERUTILS_OK) {
+		// 	alloc(c, 0, pw);
+		// 	return css_result_from_parserutils_error(perror);
+		// }
 
-				if (d == ';') {
-					break;
-				}
+		 /*params.event_handler.handler = ~language_handle_event;
+		 params.event_handler.pw = c;*/
+		let err = css__parser_setopt(parser, CSS_PARSER_EVENT_HANDLER, params);
+		// if (error != CSS_OK) {
+		// 	parserutils_stack_destroy(c->context);
+		// 	alloc(c, 0, pw);
+		// 	return error;
+		// }
+
+		// c->sheet = sheet;
+		// c->state = CHARSET_PERMITTED;
+		// c->default_namespace = NULL;
+		// c->namespaces = NULL;
+		// c->num_namespaces = 0;
+		// c->strings = sheet->propstrings;
+		// c->alloc = alloc;
+		// c->pw = pw;
+
+		return CSS_LANGUAGE_CREATED(css_language_instance);
+	}
+
+	 pub fn css__parser_setopt(&self, parser:@css_parser,  opt_type:css_parser_opttype,
+			params:@css_parser_optparams)-> css_result
+	{
+		// if (parser == NULL || params == NULL)
+		// 	return CSS_BADPARM;
+
+		match(opt_type) 
+		{
+	     	CSS_PARSER_QUIRKS=>
+	     		{
+					parser.quirks = params.quirks;
+	     		},
+	     	CSS_PARSER_EVENT_HANDLER=>
+	     		{
+	     			parser.event = copy params.event_handler.handler;
+		 			parser.event_pw = copy params.event_handler.pw;
+	     		}
+		}
+		
+
+		CSS_GENERAL_OK
+	}
+
+
+	pub fn  language_handle_event( event_type:css_parser_event, 
+			tokens:~[~str], css_language_instance:@css_language)-> css_result
+	{
+		match (event_type) {
+			
+			CSS_PARSER_START_STYLESHEET=>{
+			 	handleStartStylesheet(css_language_instance, tokens)
 			}
-
-			// Append to buf, if there's space 
-			if ((u64) (bufptr - 0) < buf.len()) {
-				// Uppercase 
-				if ('a' <= c && c <= 'z') {
-					buf[bufptr] = c & ~0x20;
-					bufptr = bufptr + 1 ;
-				}
-				else {
-					buf[bufptr] = c ;
-					bufptr = bufptr + 1 ;
-				}
+			
+			CSS_PARSER_END_STYLESHEET=>{
+			 	//return handleEndStylesheet(language, tokens);
 			}
+			
+			CSS_PARSER_START_RULESET=>{
+			 	//return handleStartRuleset(language, tokens);
+			}
+			
+			CSS_PARSER_END_RULESET=>{
+			 	//return handleEndRuleset(language, tokens);
+			}
+			
+			CSS_PARSER_START_ATRULE=>{
+				//return handleStartAtRule(language, tokens);
+			}
+			
+			CSS_PARSER_END_ATRULE=>{
+				//return handleEndAtRule(language, tokens);
+			}
+			
+			CSS_PARSER_START_BLOCK=>{
+				//return handleStartBlock(language, tokens);
+			}
+			
+			CSS_PARSER_END_BLOCK=>{
+				//return handleEndBlock(language, tokens);
+			}
+			
+			CSS_PARSER_BLOCK_CONTENT=>{
+				//return handleBlockContent(language, tokens);
+			}
+			
+			CSS_PARSER_DECLARATION=>{
+				//return handleDeclaration(language, tokens);
+			}
+		}
+	}
 
-			end = end+4 ;
+	pub fn  handleStartStylesheet(c:@css_language, vector:~[~str]) -> css_result
+	{
+		// let pResult:parserutils_result;
+		// UNUSED(vector);
+		let entry:context_entry = context_entry {event_type: CSS_PARSER_START_STYLESHEET, data:~[] };
+	    c.context.push(entry);
+		CSS_GENERAL_OK
+	}
+
+	pub fn handleEndStylesheet(c:@css_language, vector:~[~str])->css_result
+	{
+
+
+	    if(c.context.len()==0)
+	    {
+	    	return CSS_INVALID
+	    }
+		match(c.context.last().event_type)
+		{
+			CSS_PARSER_START_STYLESHEET=>{},
+			_=>return CSS_INVALID
 		}
 
-		if (end == data + len - 4) {
-			// Ran out of input //
+		c.context.pop();
+		// parserutils_error perror;
+		// context_entry *entry;
+
+		// UNUSED(vector);
+
+		// assert(c != NULL);
+
+		// entry = parserutils_stack_get_current(c->context);
+		// if (entry == NULL || entry->type != CSS_PARSER_START_STYLESHEET)
+		// 	return CSS_INVALID;
+
+		// perror = parserutils_stack_pop(c->context, NULL);
+		// if (perror != PARSERUTILS_OK) {
+		// 	return css_result_from_parserutils_error(perror);
+		// }
+
+		CSS_GENERAL_OK
+	}
+
+	pub fn handleStartRuleset(c:@css_language , vector:~[u8])->css_result 
+	{
+		// parserutils_error perror;
+		// css_result error;
+		// context_entry entry = { CSS_PARSER_START_RULESET, NULL };
+		// let entry:context_entry = context_entry {event_type: CSS_PARSER_START_RULESET, data:~[] };
+		// context_entry *cur;
+		// css_rule *parent_rule = NULL;
+		// css_rule *rule = NULL;
+
+		// assert(c != NULL);
+
+		// /* Retrieve parent rule from stack, if any */
+		// cur = parserutils_stack_get_current(c->context);
+		// if (cur != NULL && cur->type != CSS_PARSER_START_STYLESHEET)
+		// 	parent_rule = cur->data;
+
+		// error = css__stylesheet_rule_create(c->sheet, CSS_RULE_SELECTOR, &rule);
+		// if (error != CSS_OK)
+		// 	return error;
+
+		// if (vector != NULL) {
+		// 	/* Parse selectors, if there are any */
+		// 	error = parseSelectorList(c, vector, rule);
+		// 	if (error != CSS_OK) {
+		// 		css__stylesheet_rule_destroy(c->sheet, rule);
+		// 		return error;
+		// 	}
+		// }
+
+		// entry.data = rule;
+
+		// perror = parserutils_stack_push(c->context, (void *) &entry);
+		// if (perror != PARSERUTILS_OK) {
+		// 	css__stylesheet_rule_destroy(c->sheet, rule);
+		// 	return css_result_from_parserutils_error(perror);
+		// }
+
+		// error = css__stylesheet_add_rule(c->sheet, rule, parent_rule);
+		// if (error != CSS_OK) {
+		// 	parserutils_stack_pop(c->context, NULL);
+		// 	css__stylesheet_rule_destroy(c->sheet, rule);
+		// 	return error;
+		// }
+
+		// /* Flag that we've had a valid rule, so @import/@namespace/@charset 
+		//  * have no effect. */
+		// c->state = HAD_RULE;
+
+		// /* Rule is now owned by the sheet, so no need to destroy it */
+
+		 CSS_GENERAL_OK
+	}
+
+	/**
+	 * Destroy a CSS language parser
+	 *
+	 * \param language  The parser to destroy
+	 * \return CSS_OK on success, appropriate error otherwise
+	 */
+	/*css_result css__language_destroy(css_language *language)
+	{
+		uint32_t i;
+		
+		if (language == NULL)
+			return CSS_BADPARM;
+
+		if (language->default_namespace != NULL)
+			lwc_string_unref(language->default_namespace);
+
+		if (language->namespaces != NULL) {
+			for (i = 0; i < language->num_namespaces; i++) {
+				lwc_string_unref(language->namespaces[i].prefix);
+				lwc_string_unref(language->namespaces[i].uri);
+			}
+
+			language->alloc(language->namespaces, 0, language->pw);
+		}
+
+		parserutils_stack_destroy(language->context);
+		
+		language->alloc(language, 0, language->pw);
+
+		return CSS_OK;
+	}*/
+
+	/**
+	 * Handler for core parser events
+	 *
+	 * \param type	  The event type
+	 * \param tokens  Vector of tokens read since last event, or NULL
+	 * \param pw	  Pointer to handler context
+	 * \return CSS_OK on success, CSS_INVALID to indicate parse error, 
+	 *	   appropriate error otherwise.
+	 */
+
+
+	/*pub fn css__propstrings_get(lwc_string ***strings)->css_result
+	{
+
+	let 
+		if (css__propstrings.count > 0) {
+			css__propstrings.count++;
+		} else {
+			let mut i:int =0;
+			let mut lerror:lwc_error;
+
+			// Intern all known strings 
+			while ( i < LAST_KNOWN) {
+				lerror = lwc_intern_string(stringmap[i].data,
+						stringmap[i].len,
+						&css__propstrings.strings[i]);
+
+				match(lerror)
+				{
+					lwc_error_ok => {},
+					_=>return CSS_NOMEM 
+				}
+				
+				i += 1;
+			}
+			css__propstrings.count++;
+		}
+
+		*strings = css__propstrings.strings;
+
+		return CSS_OK;
+	}*/
+
+	static pub fn buildOPV(opcode : css_properties_e , flags : u8 , value : u16 ) -> css_code_t {
+
+		(( (opcode as int)  & 0x3ff) | ((flags as int)<< 10) | (((value as int)& 0x3fff)  << 18) ) as u32
+	}
+
+	static pub fn getOpcode(OPV : css_code_t ) -> css_properties_e {
+
+		 //((OPV & 0x3ff) as int) as opcode_t
+		 let op_code : int = (OPV & 0x3ff) as int ;
+		 unsafe { cast::transmute(&op_code) }
+	}
+
+	static pub fn getFlags(OPV : css_code_t ) -> u8 {
+
+		((OPV >> 10) & 0xff) as u8
+	}
+
+	static pub fn getValue(OPV : css_code_t ) -> u16 {
+
+		 (OPV >> 18) as u16
+	}
+
+	static pub fn isImportant(OPV : css_code_t ) -> bool {
+
+		if (lcss::getFlags(OPV) & 0x1)==0 {
+		 	false
+		 }
+		 else {
+		 	true
+		 }
+	}
+
+	static pub fn isInherit(OPV : css_code_t ) -> bool {
+
+		if (lcss::getFlags(OPV) & 0x2)==0 {
+			false 
+		}
+		else {
+			true
+		}
+	}
+
+
+	static pub fn memcmp( str1 : ~[u8] , str2 : ~[u8] , len : uint ) -> int {
+		let mut i : uint = 0 ;
+		while ( i<len ) {
+			if str1[i]!=str2[i] {
+				return ( (str1[i]-str2[i]) as int) ;
+			}
+			i = i+1 ; 
+		}
+		0
+	}
+
+
+	static pub fn try_utf32_charset(data : ~[u8] , parser : @lpu) -> parserutils::parserutils_result {
+	/*
+		let mut charset ; u16 = 0;
+
+		const CHARSET_BE : ~[u8] = ~"\0\0\0@\0\0\0c\0\0\0h\0\0\0a\0\0\0r\0\0\0s\0\0\0e\0\0\0t\0\0\0 \0\0\0\"" ;
+		const CHARSET_LE : ~[u8] = ~"@\0\0\0c\0\0\0h\0\0\0a\0\0\0r\0\0\0s\0\0\0e\0\0\0t\0\0\0 \0\0\0\"\0\0\0" ;
+
+		if data.len()<=CHARSET_LE.len() {
 			return PARSERUTILS_BADPARAM;
 		}
 
-		// Ensure we have something that looks like UTF-32(LE)? 
-		if ((ptr - buf == SLEN("UTF-32LE") && 
-				memcmp(buf, "UTF-32LE", ptr - buf) == 0) ||
-				(ptr - buf == SLEN("UTF-32") &&
-				memcmp(buf, "UTF-32", ptr - buf) == 0)) {
-			// Convert to MIB enum 
-			charset = parserutils_charset_mibenum_from_name(
-					"UTF-32LE", SLEN("UTF-32LE"));
-		}
-	} else if (memcmp(data, CHARSET_BE, SLEN(CHARSET_BE)) == 0) {
-		const uint8_t *start = data + SLEN(CHARSET_BE);
-		const uint8_t *end;
-		char buf[8];
-		char *ptr = buf;
+		// Look for @charset, assuming UTF-32 source data 
+		if ( memcmp(data, CHARSET_LE, CHARSET_LE.len() ) == 0) {
 
-		
-		for (end = start; end < data + len - 4; end += 4) {
-			uint32_t c = end[3] | (end[2] << 8) | 
-				     (end[1] << 16) | (end[0] << 24);
-
+			let start : ~u8 = data + CHARSET_LE.len() ;
+			let mut end : ~u8 = start ;
+			let mut buf : ~[u8] ;
+			vec::reserve_at_least(&mut buf,8); 
+			let mut bufptr : u64 = 0 ;
 			
-			if (c > 0x007f)
-				break;
+			// Look for "; at end of charset declaration 
+			while ( end<(data+len) ) {
+				let c : u32 = end[0] | (end[1] << 8) | 
+								(end[2] << 16) | (end[3] << 24);
 
-			
-			if (c == '"' && end < data + len - 8) {
-				uint32_t d = end[7] | (end[6] << 8) |
-				    (end[5] << 16) | (end[4] << 24);
-
-				if (d == ';')
+				// Bail if non-ASCII 
+				if (c>0x007f) {
 					break;
+				}
+
+				// Reached the end? 
+				if ( (c == '"') && (end<(data + len - 8)) ) {
+					let  d : u32 = end[4] | (end[5] << 8) |
+					    (end[6] << 16) | (end[7] << 24);
+
+					if (d == ';') {
+						break;
+					}
+				}
+
+				// Append to buf, if there's space 
+				if ((u64) (bufptr - 0) < buf.len()) {
+					// Uppercase 
+					if ('a' <= c && c <= 'z') {
+						buf[bufptr] = c & ~0x20;
+						bufptr = bufptr + 1 ;
+					}
+					else {
+						buf[bufptr] = c ;
+						bufptr = bufptr + 1 ;
+					}
+				}
+
+				end = end+4 ;
 			}
 
+			if (end == data + len - 4) {
+				// Ran out of input //
+				return PARSERUTILS_BADPARAM;
+			}
+
+			// Ensure we have something that looks like UTF-32(LE)? 
+			if ((ptr - buf == SLEN("UTF-32LE") && 
+					memcmp(buf, "UTF-32LE", ptr - buf) == 0) ||
+					(ptr - buf == SLEN("UTF-32") &&
+					memcmp(buf, "UTF-32", ptr - buf) == 0)) {
+				// Convert to MIB enum 
+				charset = parserutils_charset_mibenum_from_name(
+						"UTF-32LE", SLEN("UTF-32LE"));
+			}
+		} else if (memcmp(data, CHARSET_BE, SLEN(CHARSET_BE)) == 0) {
+			const uint8_t *start = data + SLEN(CHARSET_BE);
+			const uint8_t *end;
+			char buf[8];
+			char *ptr = buf;
+
 			
-			if ((size_t) (ptr - buf) < sizeof(buf)) {
+			for (end = start; end < data + len - 4; end += 4) {
+				uint32_t c = end[3] | (end[2] << 8) | 
+					     (end[1] << 16) | (end[0] << 24);
+
 				
-				if ('a' <= c && c <= 'z')
-					*ptr++ = c & ~0x20;
-				else
-					*ptr++ = c;
-			}
-		}
+				if (c > 0x007f)
+					break;
 
-		if (end == data + len - 4) {
+				
+				if (c == '"' && end < data + len - 8) {
+					uint32_t d = end[7] | (end[6] << 8) |
+					    (end[5] << 16) | (end[4] << 24);
+
+					if (d == ';')
+						break;
+				}
+
+				
+				if ((size_t) (ptr - buf) < sizeof(buf)) {
+					
+					if ('a' <= c && c <= 'z')
+						*ptr++ = c & ~0x20;
+					else
+						*ptr++ = c;
+				}
+			}
+
+			if (end == data + len - 4) {
+				
+				return PARSERUTILS_NEEDDATA;
+			}
+
 			
-			return PARSERUTILS_NEEDDATA;
-		}
-
-		
-		if ((ptr - buf == SLEN("UTF-32BE") && 
-				memcmp(buf, "UTF-32BE", ptr - buf) == 0) ||
-				(ptr - buf == SLEN("UTF-32") &&
-				memcmp(buf, "UTF-32", ptr - buf) == 0)) {
-			
-			charset = parserutils_charset_mibenum_from_name(
-					"UTF-32BE", SLEN("UTF-32BE"));
-		}
-	}
-
-	*result = charset;
-*/
-	return parserutils::PARSERUTILS_BADPARAM;
-}
-
-
-pub fn try_utf16_charset(data : ~[u8]  , parser : @lpu) -> parserutils::parserutils_result {
-/*
-	let CHARSET_BE : ~[u8] = ~"823612" ; // ~"\0@\0c\0h\0a\0r\0s\0e\0t\0 \0\"" ;
-	let CHARSET_LE : ~[u8] = ~"31273129" ; // ~"@\0c\0h\0a\0r\0s\0e\0t\0 \0\"\0" ;
-
-	if (data.len() <= CHARSET_LE.len() || (data.len()&0x01)==1 ) { 
-		// checking if the length is less than the signature of strings 
-		// checking if the length variable is odd , odd lengths are invalid utf16 strings
-		return PARSERUTILS_BADPARAM;
-	}
-
-	//asumming our system to be little endian 
-	let mut bedata : ~[u16] ;    // assuming current string is big endian 
-	let mut ledata : ~[u16] ;    // assuming current string is little endian 
-	let i : u64 = 0 ;
-
-	while ( i<data.len() ) {
-		let mut le_elem : u16 = data[i]<<8 + data[i+1] ;
-		let mut be_elem : u16 = data[i+1]<<8 + data[i] ;
-
-		bedata.push(be_elem);
-		ledata.push(le_elem);
-
-		i = i+2 ;
-	}
-
-	// Look for @charset, assuming UTF-16 source data 
-	if ( memcmp(data, CHARSET_LE, CHARSET_LE.len() ) == 0) {
-	
-		if str::is_utf16(&ledata) {
-			let encoding = parserutils_charset_mibenum_from_name(~"UTF-16LE") ;
-			if encoding.is_none() {
-				return PARSERUTILS_BADENCODING;
+			if ((ptr - buf == SLEN("UTF-32BE") && 
+					memcmp(buf, "UTF-32BE", ptr - buf) == 0) ||
+					(ptr - buf == SLEN("UTF-32") &&
+					memcmp(buf, "UTF-32", ptr - buf) == 0)) {
+				
+				charset = parserutils_charset_mibenum_from_name(
+						"UTF-32BE", SLEN("UTF-32BE"));
 			}
-			result = encoding.get() ;
-			return PARSERUTILS_SUCCESS ;
 		}
-	} else if (memcmp(data, CHARSET_BE, SLEN(CHARSET_BE)) == 0) {
 
-		if str::is_utf16(&bedata) {
-			let encoding = parserutils_charset_mibenum_from_name(~"UTF-16BE") ;
-			if encoding.is_none() {
-				return PARSERUTILS_BADENCODING;
-			}
-			result = encoding.get() ;
-			return PARSERUTILS_SUCCESS ;
-		}
-	}
-
-	result = 0 ; */
-	return parserutils::PARSERUTILS_BADPARAM;
-}
-
-
-pub fn  try_ascii_compatible_charset( data : ~[u8], parser : @lpu) -> parserutils::parserutils_result {
-
-	let mut charset : u16 = 0;
-	//let CHARSET : ~[u8] = ~"@charset \"" ; 
-	let CHARSET : ~[u8] = ~[ '@' as u8, 'c' as u8, 'h' as u8, 'a' as u8 , 'r' as u8, 's' as u8, 'e' as u8, 't' as u8, ' ' as u8 , '\"'  as u8] ;
-
-	if (data.len() <= CHARSET.len() ) {
+		*result = charset;
+	*/
 		return parserutils::PARSERUTILS_BADPARAM;
 	}
 
-	// Look for @charset, assuming ASCII-compatible source data 
-	if ( memcmp(copy data, copy CHARSET, CHARSET.len() ) == 0) {
 
-		let mut i = CHARSET.len() ;
-		while ( i<data.len() ) {
-			if data[i]==('"' as u8) && i<(data.len()-1) && data[i+1]==(';' as u8) {
-				break ;
-			}
-			i = i+1 ;
+	static pub fn try_utf16_charset(data : ~[u8]  , parser : @lpu) -> parserutils::parserutils_result {
+	/*
+		let CHARSET_BE : ~[u8] = ~"823612" ; // ~"\0@\0c\0h\0a\0r\0s\0e\0t\0 \0\"" ;
+		let CHARSET_LE : ~[u8] = ~"31273129" ; // ~"@\0c\0h\0a\0r\0s\0e\0t\0 \0\"\0" ;
+
+		if (data.len() <= CHARSET_LE.len() || (data.len()&0x01)==1 ) { 
+			// checking if the length is less than the signature of strings 
+			// checking if the length variable is odd , odd lengths are invalid utf16 strings
+			return PARSERUTILS_BADPARAM;
 		}
 
-		if i==data.len() {
+		//asumming our system to be little endian 
+		let mut bedata : ~[u16] ;    // assuming current string is big endian 
+		let mut ledata : ~[u16] ;    // assuming current string is little endian 
+		let i : u64 = 0 ;
+
+		while ( i<data.len() ) {
+			let mut le_elem : u16 = data[i]<<8 + data[i+1] ;
+			let mut be_elem : u16 = data[i+1]<<8 + data[i] ;
+
+			bedata.push(be_elem);
+			ledata.push(le_elem);
+
+			i = i+2 ;
+		}
+
+		// Look for @charset, assuming UTF-16 source data 
+		if ( memcmp(data, CHARSET_LE, CHARSET_LE.len() ) == 0) {
+		
+			if str::is_utf16(&ledata) {
+				let encoding = parserutils_charset_mibenum_from_name(~"UTF-16LE") ;
+				if encoding.is_none() {
+					return PARSERUTILS_BADENCODING;
+				}
+				result = encoding.get() ;
+				return PARSERUTILS_SUCCESS ;
+			}
+		} else if (memcmp(data, CHARSET_BE, SLEN(CHARSET_BE)) == 0) {
+
+			if str::is_utf16(&bedata) {
+				let encoding = parserutils_charset_mibenum_from_name(~"UTF-16BE") ;
+				if encoding.is_none() {
+					return PARSERUTILS_BADENCODING;
+				}
+				result = encoding.get() ;
+				return PARSERUTILS_SUCCESS ;
+			}
+		}
+
+		result = 0 ; */
+		return parserutils::PARSERUTILS_BADPARAM;
+	}
+
+
+	static pub fn  try_ascii_compatible_charset( data : ~[u8], parser : @lpu) -> parserutils::parserutils_result {
+
+		let mut charset : u16 = 0;
+		//let CHARSET : ~[u8] = ~"@charset \"" ; 
+		let CHARSET : ~[u8] = ~[ '@' as u8, 'c' as u8, 'h' as u8, 'a' as u8 , 'r' as u8, 's' as u8, 'e' as u8, 't' as u8, ' ' as u8 , '\"'  as u8] ;
+
+		if (data.len() <= CHARSET.len() ) {
+			return parserutils::PARSERUTILS_BADPARAM;
+		}
+
+		// Look for @charset, assuming ASCII-compatible source data 
+		if ( lcss::memcmp(copy data, copy CHARSET, CHARSET.len() ) == 0) {
+
+			let mut i = CHARSET.len() ;
+			while ( i<data.len() ) {
+				if data[i]==('"' as u8) && i<(data.len()-1) && data[i+1]==(';' as u8) {
+					break ;
+				}
+				i = i+1 ;
+			}
+
+			if i==data.len() {
+				return parserutils::PARSERUTILS_BADPARAM ;
+			}
+			
+
+			// Convert to MIB enum 
+			unsafe {
+				charset = parser.parserutils_charset_mibenum_from_name(
+						from_buf_len(to_const_ptr(copy data.slice(CHARSET.len(), data.len()-1)) , data.len()-1 ) );
+			}
+
+			// Any non-ASCII compatible charset must be ignored, as
+			// we've just used an ASCII parser to read it. 
+			if (charset == parser.parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == parser.parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
+
+				charset == parser.parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == parser.parserutils_charset_mibenum_from_name(~"UTF-16") ||
+
+				charset == parser.parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == parser.parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
+			{
+
+				charset = 0;
+			}
+		}
+		PARSERUTILS_CHARSET_TRY_OK(@4)
+	}
+
+
+	static pub fn css_charset_read_bom_or_charset(data : ~[u8], parser : @lpu, mibenum : ~u16 ) -> parserutils::parserutils_result {
+
+		let mut err : parserutils::parserutils_result ;
+		let mut charset : u16  = 0;
+		let mut parser : @lpu = lpu();
+
+
+		if (data.len()<4) {
+			return parserutils::PARSERUTILS_BADPARAM;
+		}
+
+
+		// Look for BOM 
+		if (data[0] == 0x00 && data[1] == 0x00 && 
+				data[2] == 0xFE && data[3] == 0xFF) {
+			charset = parser.parserutils_charset_mibenum_from_name(~"UTF-32BE");
+		} else if (data[0] == 0xFF && data[1] == 0xFE &&
+				data[2] == 0x00 && data[3] == 0x00) {
+			charset = parser.parserutils_charset_mibenum_from_name(~"UTF-32LE");
+		} else if (data[0] == 0xFE && data[1] == 0xFF) {
+			charset = parser.parserutils_charset_mibenum_from_name(~"UTF-16BE");
+		} else if (data[0] == 0xFF && data[1] == 0xFE) {
+			charset = parser.parserutils_charset_mibenum_from_name(~"UTF-16LE");
+		} else if (data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF) {
+			charset = parser.parserutils_charset_mibenum_from_name(~"UTF-8");
+		}
+
+		if (charset!=0) {
+			return parserutils::PARSERUTILS_CHARSET_TRY_OK(@charset);
+		}
+		
+		err = lcss::try_utf32_charset(data,parser);
+		match(err) {
+			PARSERUTILS_CHARSET_TRY_OK(x) => return err ,
+			_ => {}	
+		}
+
+		err = lcss::try_utf16_charset(data,parser);
+		match(err) {
+			PARSERUTILS_CHARSET_TRY_OK(x) => return err ,
+			_ => {}	
+		}
+		
+		lcss::try_ascii_compatible_charset(data,parser)
+	}
+
+
+	static pub fn css__charset_extract( data : ~[u8] ,
+			mibenum : ~u16 , source : ~u32) -> parserutils::parserutils_result {
+
+		let mut err : parserutils::parserutils_result;
+		let mut charset : @u16 = @0;
+		let mut src : @u32 = @0 ;
+		let mut parser : @lpu = lpu();
+
+		if (data.len()==(0 as uint))  || mibenum==~(0 as u16) || source==~(0 as u32) {
 			return parserutils::PARSERUTILS_BADPARAM ;
 		}
-		
 
-		// Convert to MIB enum 
-		unsafe {
-			charset = parser.parserutils_charset_mibenum_from_name(
-					from_buf_len(to_const_ptr(copy data.slice(CHARSET.len(), data.len()-1)) , data.len()-1 ) );
+		// If the charset was dictated by the client, we've nothing to detect 
+		if source==~4 /*CSS_CHARSET_DICTATED*/ {
+			charset=@*mibenum ;
+			return parserutils::PARSERUTILS_CHARSET_EXT_OK((charset,@4));
 		}
 
-		// Any non-ASCII compatible charset must be ignored, as
-		// we've just used an ASCII parser to read it. 
-		if (charset == parser.parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == parser.parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
+		// Look for a BOM and/or @charset 
+		err = lcss::css_charset_read_bom_or_charset(data,parser, copy ~*charset);
+		match(err) {
+			PARSERUTILS_CHARSET_TRY_OK(x) => {} ,
+			_ => return parserutils::PARSERUTILS_BADPARAM	
+		}
 
-			charset == parser.parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == parser.parserutils_charset_mibenum_from_name(~"UTF-16") ||
+		if charset!=@0 {
+			//mibenum = charset;
+			src = @3 ; // CSS_CHARSET_DOCUMENT;
+			return parserutils::PARSERUTILS_CHARSET_EXT_OK((charset,src));
+		}
 
-			charset == parser.parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == parser.parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
+		// If we've already got a charset from the linking mechanism or 
+		//  referring document, then we've nothing further to do 
+		if source!=~0 /* CSS_CHARSET_DEFAULT */ {
+			src=@*source;
+			return parserutils::PARSERUTILS_CHARSET_EXT_OK((charset,src));
+		}
+
+		// We've not yet found a charset, so use the default fallback 
+		charset = @parser.parserutils_charset_mibenum_from_name(~"UTF-8");
+
+		if charset==@0 
 		{
-
-			charset = 0;
+			return parserutils::PARSERUTILS_BADENCODING ;
 		}
-	}
-	PARSERUTILS_CHARSET_TRY_OK(@4)
-}
 
+		//mibenum = charset ;
+		src = @0 ; // CSS_CHARSET_DEFAULT;
 
-pub fn css_charset_read_bom_or_charset(data : ~[u8], parser : @lpu, mibenum : ~u16 ) -> parserutils::parserutils_result {
-
-	let mut err : parserutils::parserutils_result ;
-	let mut charset : u16  = 0;
-	let mut parser : @lpu = lpu();
-
-
-	if (data.len()<4) {
-		return parserutils::PARSERUTILS_BADPARAM;
-	}
-
-
-	// Look for BOM 
-	if (data[0] == 0x00 && data[1] == 0x00 && 
-			data[2] == 0xFE && data[3] == 0xFF) {
-		charset = parser.parserutils_charset_mibenum_from_name(~"UTF-32BE");
-	} else if (data[0] == 0xFF && data[1] == 0xFE &&
-			data[2] == 0x00 && data[3] == 0x00) {
-		charset = parser.parserutils_charset_mibenum_from_name(~"UTF-32LE");
-	} else if (data[0] == 0xFE && data[1] == 0xFF) {
-		charset = parser.parserutils_charset_mibenum_from_name(~"UTF-16BE");
-	} else if (data[0] == 0xFF && data[1] == 0xFE) {
-		charset = parser.parserutils_charset_mibenum_from_name(~"UTF-16LE");
-	} else if (data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF) {
-		charset = parser.parserutils_charset_mibenum_from_name(~"UTF-8");
-	}
-
-	if (charset!=0) {
-		return parserutils::PARSERUTILS_CHARSET_TRY_OK(@charset);
-	}
-	
-	err = try_utf32_charset(copy data,parser);
-	match(err) {
-		PARSERUTILS_CHARSET_TRY_OK(x) => return err ,
-		_ => {}	
-	}
-
-	err = try_utf16_charset(copy data,parser);
-	match(err) {
-		PARSERUTILS_CHARSET_TRY_OK(x) => return err ,
-		_ => {}	
-	}
-	
-	return try_ascii_compatible_charset(data,parser);
-}
-
-
-pub fn css__charset_extract( data : ~[u8] ,
-		mibenum : ~u16 , source : ~u32) -> parserutils::parserutils_result {
-
-	let mut err : parserutils::parserutils_result;
-	let mut charset : @u16 = @0;
-	let mut src : @u32 = @0 ;
-	let mut parser : @lpu = lpu();
-
-	if (data.len()==(0 as uint))  || mibenum==~(0 as u16) || source==~(0 as u32) {
-		return parserutils::PARSERUTILS_BADPARAM ;
-	}
-
-	// If the charset was dictated by the client, we've nothing to detect 
-	if source==~4 /*CSS_CHARSET_DICTATED*/ {
-		charset=@*mibenum ;
-		return parserutils::PARSERUTILS_CHARSET_EXT_OK((charset,@4));
-	}
-
-	// Look for a BOM and/or @charset 
-	err = css_charset_read_bom_or_charset(data,parser, copy ~*charset);
-	match(err) {
-		PARSERUTILS_CHARSET_TRY_OK(x) => {} ,
-		_ => return parserutils::PARSERUTILS_BADPARAM	
-	}
-
-	if charset!=@0 {
-		//mibenum = charset;
-		src = @3 ; // CSS_CHARSET_DOCUMENT;
 		return parserutils::PARSERUTILS_CHARSET_EXT_OK((charset,src));
 	}
 
-	// If we've already got a charset from the linking mechanism or 
-	//  referring document, then we've nothing further to do 
-	if source!=~0 /* CSS_CHARSET_DEFAULT */ {
-		src=@*source;
-		return parserutils::PARSERUTILS_CHARSET_EXT_OK((charset,src));
+	static pub fn css_result_to_string(css_err : css_result ) -> ~str {
+		let mut result : ~str ;
+
+
+		match css_err {
+		 CSS_OK =>
+			result = ~"No error",
+
+		 CSS_NOMEM =>
+			result = ~"Insufficient memory",
+
+		 CSS_BADPARM => 
+			result = ~"Bad parameter",
+
+		 CSS_INVALID =>
+			result = ~"Invalid input",
+
+		 CSS_FILENOTFOUND =>
+			result = ~"File not found",
+
+		 CSS_NEEDDATA =>
+			result = ~"Insufficient data",
+
+		 CSS_BADCHARSET => 
+			result = ~"BOM and charset mismatch",
+
+		 CSS_EOF => 
+			result = ~"EOF encountered",
+		
+		 CSS_IMPORTS_PENDING =>
+			result = ~"Imports pending",
+			
+		CSS_PROPERTY_NOT_SET =>
+			result = ~"Property not set",
+			/*CSS_LWC_INTERN_STRING_OK(temp)
+			result= ~"intern string returned"*/
+			
+		}
+
+		result
 	}
 
-	// We've not yet found a charset, so use the default fallback 
-	charset = @parser.parserutils_charset_mibenum_from_name(~"UTF-8");
 
-	if charset==@0 {
-		return parserutils::PARSERUTILS_BADENCODING ;
-	}
-
-	//mibenum = charset ;
-	src = @0 ; // CSS_CHARSET_DEFAULT;
-
-	return parserutils::PARSERUTILS_CHARSET_EXT_OK((charset,src));
 }

@@ -9,8 +9,9 @@ use std::oldmap;
 use core::vec::*;
 use libc::size_t;
 
-pub type  parserutils_charset_detect_func =  ~extern fn(
-		data: ~[u8], mibenum:~u16, source:~u32) -> parserutils_result;
+pub type parserutils_charset_detect_func =  
+	~extern fn(data: ~[u8], mibenum:~u16, source:~u32) -> parserutils_result;
+
 pub struct parserutils_inputstream 
 {
 	utf8: ~[u8],	/*< Buffer containing UTF-8 data */
