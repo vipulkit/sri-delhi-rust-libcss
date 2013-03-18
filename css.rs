@@ -460,8 +460,8 @@ struct DATA{
 	col:u32,
 	line:u32,
 }
-pub type css_parser_event_handler =  ~extern fn( event_type:css_parser_event, 
-		tokens:~[u8] , pw:@css_language) -> css_result;
+pub type css_parser_event_handler =  ~extern fn(css_intance:@lcss, event_type:css_parser_event, 
+		tokens:~[~str] , pw:@css_language) -> css_result;
 
 enum css_parser_node
 {
@@ -2258,6 +2258,55 @@ struct context_entry {
 	data:~[u8]		/*< Data for context */
 } 
 
+
+	pub fn  language_handle_event(css_intance:@lcss, event_type:css_parser_event, 
+			tokens:~[~str], css_language_instance:@css_language)-> css_result
+	{
+		match (event_type) {
+			
+			CSS_PARSER_START_STYLESHEET => {
+			 	css_intance.handleStartStylesheet(css_language_instance, tokens)
+			}
+			
+			CSS_PARSER_END_STYLESHEET=>{
+			 	css_intance.handleEndStylesheet(css_language_instance, tokens)
+			}
+			
+			CSS_PARSER_START_RULESET=>{
+			 	css_intance.handleStartRuleset(css_language_instance, tokens)
+			}
+			
+			CSS_PARSER_END_RULESET=>{
+			 	css_intance.handleEndRuleset(css_language_instance, tokens)
+			}
+			
+			CSS_PARSER_START_ATRULE=>{
+				css_intance.handleStartAtRule(css_language_instance, tokens)
+			}
+			
+			CSS_PARSER_END_ATRULE=>{
+				css_intance.handleEndAtRule(css_language_instance, tokens)
+			}
+			
+			CSS_PARSER_START_BLOCK=>{
+				css_intance.handleStartBlock(css_language_instance, tokens)
+			}
+			
+			CSS_PARSER_END_BLOCK=>{
+				css_intance.handleEndBlock(css_language_instance, tokens)
+			}
+			
+			CSS_PARSER_BLOCK_CONTENT=>{
+				css_intance.handleBlockContent(css_language_instance, tokens)
+			}
+			
+			CSS_PARSER_DECLARATION=>{
+				css_intance.handleDeclaration(css_language_instance, tokens)
+			}
+		}
+	}
+
+
 pub struct lcss {
 	mut lwc_instance:@lwc,
 	mut lpu_instance:@lpu,
@@ -2589,14 +2638,14 @@ impl lcss {
 		
 		};
 
-		// let params = @css_parser_optparams {
-		// 	quirks:false,
-		// 	event_handler: css_parser_event_handler_
-		// 	{
-		// 		handler:&(self.language_handle_event),
-		// 		pw:css_language_instance
-		// 	}
-		// }; //see later
+		let params = @css_parser_optparams {
+			quirks:false,
+			event_handler: css_parser_event_handler_
+			{
+				handler:~(language_handle_event),
+				pw:css_language_instance
+			}
+		}; //see later
 		
 		
 		//let err = css__parser_setopt(parser, CSS_PARSER_EVENT_HANDLER, params);
@@ -2638,52 +2687,52 @@ impl lcss {
 	}
 
 
-	pub fn  language_handle_event(&self, event_type:css_parser_event, 
-			tokens:~[~str], css_language_instance:@css_language)-> css_result
-	{
-		match (event_type) {
+	// pub fn  language_handle_event(&self, event_type:css_parser_event, 
+	// 		tokens:~[~str], css_language_instance:@css_language)-> css_result
+	// {
+	// 	match (event_type) {
 			
-			CSS_PARSER_START_STYLESHEET => {
-			 	self.handleStartStylesheet(css_language_instance, tokens)
-			}
+	// 		CSS_PARSER_START_STYLESHEET => {
+	// 		 	self.handleStartStylesheet(css_language_instance, tokens)
+	// 		}
 			
-			CSS_PARSER_END_STYLESHEET=>{
-			 	self.handleEndStylesheet(css_language_instance, tokens)
-			}
+	// 		CSS_PARSER_END_STYLESHEET=>{
+	// 		 	self.handleEndStylesheet(css_language_instance, tokens)
+	// 		}
 			
-			CSS_PARSER_START_RULESET=>{
-			 	self.handleStartRuleset(css_language_instance, tokens)
-			}
+	// 		CSS_PARSER_START_RULESET=>{
+	// 		 	self.handleStartRuleset(css_language_instance, tokens)
+	// 		}
 			
-			CSS_PARSER_END_RULESET=>{
-			 	self.handleEndRuleset(css_language_instance, tokens)
-			}
+	// 		CSS_PARSER_END_RULESET=>{
+	// 		 	self.handleEndRuleset(css_language_instance, tokens)
+	// 		}
 			
-			CSS_PARSER_START_ATRULE=>{
-				self.handleStartAtRule(css_language_instance, tokens)
-			}
+	// 		CSS_PARSER_START_ATRULE=>{
+	// 			self.handleStartAtRule(css_language_instance, tokens)
+	// 		}
 			
-			CSS_PARSER_END_ATRULE=>{
-				self.handleEndAtRule(css_language_instance, tokens)
-			}
+	// 		CSS_PARSER_END_ATRULE=>{
+	// 			self.handleEndAtRule(css_language_instance, tokens)
+	// 		}
 			
-			CSS_PARSER_START_BLOCK=>{
-				self.handleStartBlock(css_language_instance, tokens)
-			}
+	// 		CSS_PARSER_START_BLOCK=>{
+	// 			self.handleStartBlock(css_language_instance, tokens)
+	// 		}
 			
-			CSS_PARSER_END_BLOCK=>{
-				self.handleEndBlock(css_language_instance, tokens)
-			}
+	// 		CSS_PARSER_END_BLOCK=>{
+	// 			self.handleEndBlock(css_language_instance, tokens)
+	// 		}
 			
-			CSS_PARSER_BLOCK_CONTENT=>{
-				self.handleBlockContent(css_language_instance, tokens)
-			}
+	// 		CSS_PARSER_BLOCK_CONTENT=>{
+	// 			self.handleBlockContent(css_language_instance, tokens)
+	// 		}
 			
-			CSS_PARSER_DECLARATION=>{
-				self.handleDeclaration(css_language_instance, tokens)
-			}
-		}
-	}
+	// 		CSS_PARSER_DECLARATION=>{
+	// 			self.handleDeclaration(css_language_instance, tokens)
+	// 		}
+	// 	}
+	// }
 
 	pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_result
 	{
@@ -3507,45 +3556,44 @@ pub fn handleDeclaration(&self, c:@css_language , vector:~[~str])->css_result
 	}
 	
 	static pub fn css_result_to_string(css_err : css_result ) -> ~str {
-		let mut result : ~str ;
-
 
 		match css_err {
-		 CSS_OK =>
-			result = ~"No error",
+		//  CSS_OK => 
+		// 	{return ~"No error";},
 
-		 CSS_NOMEM =>
-			result = ~"Insufficient memory",
+		//  CSS_NOMEM =>
+		// 	~"Insufficient memory",
 
-		 CSS_BADPARM => 
-			result = ~"Bad parameter",
+		//  CSS_BADPARM => 
+		// 	~"Bad parameter",
 
-		 CSS_INVALID =>
-			result = ~"Invalid input",
+		//  CSS_INVALID =>
+		// 	~"Invalid input",
 
-		 CSS_FILENOTFOUND =>
-			result = ~"File not found",
+		//  CSS_FILENOTFOUND =>
+		// 	~"File not found",
 
-		 CSS_NEEDDATA =>
-			result = ~"Insufficient data",
+		//  CSS_NEEDDATA =>
+		// 	~"Insufficient data",
 
-		 CSS_BADCHARSET => 
-			result = ~"BOM and charset mismatch",
+		//  CSS_BADCHARSET => 
+		// 	~"BOM and charset mismatch",
 
-		 CSS_EOF => 
-			result = ~"EOF encountered",
+		//  CSS_EOF => 
+		// 	~"EOF encountered",
 		
-		 CSS_IMPORTS_PENDING =>
-			result = ~"Imports pending",
+		//  CSS_IMPORTS_PENDING =>
+		// 	~"Imports pending",
 			
-		CSS_PROPERTY_NOT_SET =>
-			result = ~"Property not set",
+		// CSS_PROPERTY_NOT_SET =>
+		// 	~"Property not set",
+		_=>
+		~"None"
 			/*CSS_LWC_INTERN_STRING_OK(temp)
 			result= ~"intern string returned"*/
 			
 		}
 
-		result
 	}
 
 
