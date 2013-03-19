@@ -2289,7 +2289,7 @@ pub struct  css_parser_optparams {
 
 struct context_entry {
 	event_type:css_parser_event,		/**< Type of entry */
-	data:~[u8]		/*< Data for context */
+	data:@css_rule		/*< Data for context */
 } 
 
 
@@ -2427,7 +2427,20 @@ pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_resu
 	{
 		// let pResult:parserutils_result;
 		// UNUSED(vector);
-		let entry:context_entry = context_entry {event_type: CSS_PARSER_START_STYLESHEET, data:~[] };
+		let entry:context_entry = context_entry 
+		{
+			event_type: CSS_PARSER_START_STYLESHEET, 
+			data:@css_rule 
+				{
+					parent:@rule(0),		
+				    next:@mut NoRuleNode ,				
+		            prev:@mut NoRuleNode ,				
+		            rule_type  :  0,		
+			        index : 0,		
+			        items : 0,		
+			        ptype : 0	
+				},	
+    	 };
 	    c.context.push(entry);
 		CSS_GENERAL_OK
 	}
@@ -2471,24 +2484,37 @@ pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_resu
 		/*parserutils_error pResult;
 		css_result cResult;
 		context_entry entry = { CSS_PARSER_START_RULESET, NULL };*/
-		// let entry:context_entry = context_entry {event_type: CSS_PARSER_START_RULESET, data:~[] };
-		// let cur:@context_entry ;
-		// let mut parent_rule :@css_rule ;
-		// let mut rule :@css_rule ;
+		let entry:context_entry = context_entry 
+		{
+			event_type: CSS_PARSER_START_STYLESHEET, 
+			data:@css_rule 
+				{
+					parent:@rule(0),		
+				    next:@mut NoRuleNode ,				
+		            prev:@mut NoRuleNode ,				
+		            rule_type  :  0,		
+			        index : 0,		
+			        items : 0,		
+			        ptype : 0	
+				},	
+    	 };
+		let cur:@context_entry ;
+		let mut parent_rule :@css_rule ;
+		let mut curRule :@css_rule ;
 		
 
 		// assert(c != NULL);
 
 		/* Retrieve parent rule from stack, if any */
-		// if c.context.len() !=0
-		// {
-		// 	cur= c.context.last();
-		// 	match(cur.event_type  )
-		// 	{
-		// 		CSS_PARSER_START_STYLESHEET =>{},
-		// 		_=>{parent_rule = cur.data;}
-		// 	}
-		// }
+		if c.context.len() !=0
+		{
+			cur=@ c.context.last();
+			match(cur.event_type  )
+			{
+				CSS_PARSER_START_STYLESHEET =>{},
+				_=>{parent_rule = cur.data;}
+			}
+		}
 		
 		/*cur = parserutils_stack_get_current(c->context);
 		if (cur != NULL && cur->type != CSS_PARSER_START_STYLESHEET)
@@ -2526,7 +2552,7 @@ pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_resu
 		//  * have no effect. */
 		// c->state = HAD_RULE;
 
-		// /* Rule is now owned by the sheet, so no need to destroy it */
+		/* Rule is now owned by the sheet, so no need to destroy it */
 
 		  CSS_GENERAL_OK
 	}
@@ -2901,52 +2927,7 @@ impl lcss {
 	}
 
 
-	// pub fn  language_handle_event(&self, event_type:css_parser_event, 
-	// 		tokens:~[~str], css_language_instance:@css_language)-> css_result
-	// {
-	// 	match (event_type) {
-			
-	// 		CSS_PARSER_START_STYLESHEET => {
-	// 		 	self.handleStartStylesheet(css_language_instance, tokens)
-	// 		}
-			
-	// 		CSS_PARSER_END_STYLESHEET=>{
-	// 		 	self.handleEndStylesheet(css_language_instance, tokens)
-	// 		}
-			
-	// 		CSS_PARSER_START_RULESET=>{
-	// 		 	self.handleStartRuleset(css_language_instance, tokens)
-	// 		}
-			
-	// 		CSS_PARSER_END_RULESET=>{
-	// 		 	self.handleEndRuleset(css_language_instance, tokens)
-	// 		}
-			
-	// 		CSS_PARSER_START_ATRULE=>{
-	// 			self.handleStartAtRule(css_language_instance, tokens)
-	// 		}
-			
-	// 		CSS_PARSER_END_ATRULE=>{
-	// 			self.handleEndAtRule(css_language_instance, tokens)
-	// 		}
-			
-	// 		CSS_PARSER_START_BLOCK=>{
-	// 			self.handleStartBlock(css_language_instance, tokens)
-	// 		}
-			
-	// 		CSS_PARSER_END_BLOCK=>{
-	// 			self.handleEndBlock(css_language_instance, tokens)
-	// 		}
-			
-	// 		CSS_PARSER_BLOCK_CONTENT=>{
-	// 			self.handleBlockContent(css_language_instance, tokens)
-	// 		}
-			
-	// 		CSS_PARSER_DECLARATION=>{
-	// 			self.handleDeclaration(css_language_instance, tokens)
-	// 		}
-	// 	}
-	// }
+	
 
 	
 
