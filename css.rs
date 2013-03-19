@@ -254,7 +254,7 @@ pub struct css_rule {
 	next:@mut css_rule_node ,				/**< next in list */
 	prev:@mut css_rule_node ,				/**< previous in list */
 
-	rule_type  :  uint,		/**< css_rule_type */
+	rule_type  :  css_rule_type,		/**< css_rule_type */
 		     index : uint,		/**< index in sheet */
 		     items : uint,		/**< # items in rule */
 		     ptype : uint		/*< css_rule_parent_type */
@@ -1198,7 +1198,7 @@ pub enum css_result {
 		CSS_RULE_FONT_FACE_CREATED(@css_rule_font_face),
 		CSS_RULE_PAGE_CREATED(@css_rule_page),
 		CSS_GENERAL_OK,
-		CSS_LANGUAGE_CREATED(@css_language),
+		CSS_LANGUAGE_CREATED(@mut css_language),
 		CSS_PROPSTRINGS_OK(~[@lwc_string]),
 		CSS_NOMEM,
 		CSS_BADPARM,
@@ -2297,7 +2297,7 @@ struct context_entry {
 
 pub struct css_language {
 	sheet:@css_stylesheet ,		/**< The stylesheet to parse for */
-
+	mut lwc_instance:@lwc,
 //#define STACK_CHUNK 32
     STACK_CHUNK:int,
 	context:@DVec<context_entry>,      //parseutils_stack	/**< Context stack */
@@ -2314,7 +2314,103 @@ pub struct css_language {
 	// css_allocator_fn alloc;		*< Memory (de)allocation function 
 	// void *pw;			/**< Client's private data */
 }
+pub fn lcss_language(instance:@lwc)->@css_language {
+	let empty_lwc_string = instance.lwc_intern_string(@"");
+	let stack:@DVec<context_entry> = @dvec::DVec();
+	let sheet=@css_stylesheet
+		            {
+		            	rule_count:0,			/*< Number of rules in sheet */
+						rule_list:@css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : CSS_RULE_UNKNOWN,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},			/*< List of rules in sheet */
+						last_rule:@css_rule 
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : CSS_RULE_UNKNOWN,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},			/*< Last rule in list */
 
+						disabled:false,				/*< Whether this sheet is 
+							                          * disabled */
+
+						url:~"",				/*< URL of this sheet */
+						title:~"",			/*< Title of this sheet */
+
+						level:CSS_LEVEL_1  ,		/*< Language level of sheet */
+						parser:@mut NoParserNode ,			/*< Core parser for sheet */
+						parser_frontend:~[],			/*< Frontend parser */
+						propstrings:@ mut[],		/*< Property strings, for parser */
+
+						quirks_allowed:false,			/*< Quirks permitted */
+						quirks_used:false,			/*< Quirks actually used */
+
+						inline_style:false,			/*< Is an inline style */
+
+						size:0 ,				/*< Size, in bytes */
+
+		 				import:~CINF,	/*< Import notification function */
+						import_pw:~[],			/*< Private word */
+
+		 				resolve:~CURF,		/*< URL resolution function */
+						resolve_pw:~[],			/*< Private word */
+
+		 				color:~CCRF,		/*< Colour resolution function */
+						color_pw:~[],				/*< Private word */
+
+		/* System font resolution function */
+		 				font:~CFRF,		
+						font_pw:~[],				/*< Private word */
+
+
+		// alloc:css_allocator_fn,			/*< Allocation function */
+		//pw:~[u8],				/*< Private word */
+	  
+						cached_style:@css_style
+		 				{
+		 					bytecode:~[] ,
+							used : 0,
+							allocated: 0
+		 				},		/*< Cache for style parsing */
+	  
+						string_vector:@[],            /*< Bytecode string vector */
+						string_vector_l:0,              /*< The string vector allocated
+						 * length in entries */
+						string_vector_c:0 
+		            } ;
+	//@css_language {
+					
+
+				let	css_language_instance = @css_language {
+							sheet:sheet,
+							lwc_instance:instance,		
+				    		STACK_CHUNK:32,
+							context:stack, 
+							state:CHARSET_PERMITTED,	
+							strings:sheet.propstrings,
+							
+							default_namespace:empty_lwc_string,	
+							
+							namespaces:@css_namespace
+							{
+								prefix:empty_lwc_string,	
+								uri:empty_lwc_string	
+							},	
+							num_namespaces:0	
+		
+		            };
+	return css_language_instance;
+}
  impl css_language
  {
 
@@ -2366,21 +2462,22 @@ pub fn  language_handle_event(&self, event_type:css_parser_event,
 	}
 
 
-pub fn  css__language_create(&self, sheet:@css_stylesheet,  lwc_instance:@lwc) -> css_result
+pub fn  css__language_create(@mut self, sheet:@css_stylesheet) -> css_result
 	{
-		let css_language_instance:@css_language;
+		//let css_language_instance:@css_language;
 		
-		let presult:parserutils_result;
-		let err:css_result;
-		let stack:@DVec<context_entry> = @dvec::DVec();
+		//let presult:parserutils_result;
+		//let err:css_result;
+		//let stack:@DVec<context_entry> = @dvec::DVec();
 
 		// if (sheet == NULL || parser == NULL || alloc == NULL || 
 		// 		language == NULL)
 		// 	return CSS_BADPARM;
 
-		let empty_lwc_string = lwc_instance.lwc_intern_string(@"");
+		//let empty_lwc_string = lwc_instance.lwc_intern_string(@"");
+		self.sheet=sheet;
 
-		css_language_instance = @css_language {
+		/*css_language_instance = @css_language {
 				sheet:sheet ,		
 	    		STACK_CHUNK:32,
 				context:stack, 
@@ -2396,7 +2493,7 @@ pub fn  css__language_create(&self, sheet:@css_stylesheet,  lwc_instance:@lwc) -
 				},	
 				num_namespaces:0	
 		
-		};
+		};*/
 
 		/*let params = @css_parser_optparams {
 			quirks:false,
@@ -2420,7 +2517,7 @@ pub fn  css__language_create(&self, sheet:@css_stylesheet,  lwc_instance:@lwc) -
 		// c->alloc = alloc;
 		// c->pw = pw;
 
-		return CSS_LANGUAGE_CREATED(css_language_instance);
+		return CSS_LANGUAGE_CREATED(self);
 	}
 
 pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_result
@@ -2435,7 +2532,7 @@ pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_resu
 					parent:@rule(0),		
 				    next:@mut NoRuleNode ,				
 		            prev:@mut NoRuleNode ,				
-		            rule_type  :  0,		
+		            rule_type  : CSS_RULE_UNKNOWN,		
 			        index : 0,		
 			        items : 0,		
 			        ptype : 0	
@@ -2484,6 +2581,7 @@ pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_resu
 		/*parserutils_error pResult;
 		css_result cResult;
 		context_entry entry = { CSS_PARSER_START_RULESET, NULL };*/
+		let mut cResult:css_result;
 		let entry:context_entry = context_entry 
 		{
 			event_type: CSS_PARSER_START_STYLESHEET, 
@@ -2492,7 +2590,7 @@ pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_resu
 					parent:@rule(0),		
 				    next:@mut NoRuleNode ,				
 		            prev:@mut NoRuleNode ,				
-		            rule_type  :  0,		
+		            rule_type  : CSS_RULE_UNKNOWN,		
 			        index : 0,		
 			        items : 0,		
 			        ptype : 0	
@@ -2500,7 +2598,7 @@ pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_resu
     	 };
 		let cur:@context_entry ;
 		let mut parent_rule :@css_rule ;
-		let mut curRule :@css_rule ;
+		let mut curRule :@css_rule_selector ;
 		
 
 		// assert(c != NULL);
@@ -2519,10 +2617,17 @@ pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_resu
 		/*cur = parserutils_stack_get_current(c->context);
 		if (cur != NULL && cur->type != CSS_PARSER_START_STYLESHEET)
 			parent_rule = cur->data;*/
-  //       match(css__stylesheet_rule_create(c->sheet, CSS_RULE_SELECTOR, &rule))
-		// error = css__stylesheet_rule_create(c->sheet, CSS_RULE_SELECTOR, &rule);
-		// if (error != CSS_OK)
-		// 	return error;
+        match(self.css__stylesheet_rule_create(c.sheet, CSS_RULE_SELECTOR))
+        {
+
+		CSS_RULE_SELECTOR_CREATED( css_rule_selector)=>{curRule=css_rule_selector},
+		_=>{return CSS_INVALID;}
+		
+        }
+		if vector.len() != 0
+		{
+			//cResult = self.parseSelectorList(c, vector, curRule);
+		}
 
 		// if (vector != NULL) {
 		// 	/* Parse selectors, if there are any */
@@ -2592,7 +2697,274 @@ pub fn handleDeclaration(&self, c:@css_language , vector:~[~str])->css_result
 	CSS_GENERAL_OK	
 }
 
+pub fn  css__stylesheet_rule_create(&self,sheet:@css_stylesheet ,  rule_type:css_rule_type/*,
+		css_rule **rule*/)->css_result
+{
+		match(rule_type)
+		{
+			CSS_RULE_UNKNOWN=>{
+				let css_rule_instance= @css_rule
+				      {
+				      	parent:@rule(0),		
+				        next:@mut NoRuleNode ,				
+		                prev:@mut NoRuleNode ,				
+		                rule_type  :  rule_type,		
+			            index : 0,		
+			            items : 0,		
+			            ptype : 0
+			        };
+			        return  CSS_RULE_CREATED(css_rule_instance)
+			},
+			CSS_RULE_SELECTOR=>{
+				let css_rule_instance= @css_rule_selector
+					{
+						base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : rule_type,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},
 
+		 				selectors:@[],
+		 				style:css_style
+		 				{
+		 					bytecode:~[] ,
+							used : 0,
+							allocated: 0
+		 				},
+					};
+					 return  CSS_RULE_SELECTOR_CREATED(css_rule_instance)
+		    },
+			
+		    CSS_RULE_CHARSET=>{
+		    	let css_rule_instance= @css_rule_charset
+		    	{
+		    		base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : rule_type,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},
+
+		            encoding: self.lwc_instance.lwc_intern_string(@"")
+		    	};
+		    	return  CSS_RULE_CHARSET_CREATED(css_rule_instance)
+		    },
+			CSS_RULE_IMPORT=>{
+				let css_rule_instance= @css_rule_import
+				{
+					base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  :  rule_type,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},
+					url:self.lwc_instance.lwc_intern_string(@""),
+		            media:0,
+
+		            sheet:@css_stylesheet
+		            {
+		            	rule_count:0,			/*< Number of rules in sheet */
+						rule_list:@css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : CSS_RULE_UNKNOWN,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},			/*< List of rules in sheet */
+						last_rule:@css_rule 
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : CSS_RULE_UNKNOWN,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},			/*< Last rule in list */
+
+						disabled:false,				/*< Whether this sheet is 
+							                          * disabled */
+
+						url:~"",				/*< URL of this sheet */
+						title:~"",			/*< Title of this sheet */
+
+						level:CSS_LEVEL_1  ,		/*< Language level of sheet */
+						parser:@mut NoParserNode ,			/*< Core parser for sheet */
+						parser_frontend:~[],			/*< Frontend parser */
+						propstrings:@ mut[],		/*< Property strings, for parser */
+
+						quirks_allowed:false,			/*< Quirks permitted */
+						quirks_used:false,			/*< Quirks actually used */
+
+						inline_style:false,			/*< Is an inline style */
+
+						size:0 ,				/*< Size, in bytes */
+
+		 				import:~CINF,	/*< Import notification function */
+						import_pw:~[],			/*< Private word */
+
+		 				resolve:~CURF,		/*< URL resolution function */
+						resolve_pw:~[],			/*< Private word */
+
+		 				color:~CCRF,		/*< Colour resolution function */
+						color_pw:~[],				/*< Private word */
+
+		/* System font resolution function */
+		 				font:~CFRF,		
+						font_pw:~[],				/*< Private word */
+
+
+		// alloc:css_allocator_fn,			/*< Allocation function */
+		//pw:~[u8],				/*< Private word */
+	  
+						cached_style:@css_style
+		 				{
+		 					bytecode:~[] ,
+							used : 0,
+							allocated: 0
+		 				},		/*< Cache for style parsing */
+	  
+						string_vector:@[],            /*< Bytecode string vector */
+						string_vector_l:0,              /*< The string vector allocated
+						 * length in entries */
+						string_vector_c:0 
+		            }
+				};
+				return  CSS_RULE_IMPORT_CREATED(css_rule_instance)
+			},
+			CSS_RULE_MEDIA=>{
+				let css_rule_instance= @css_rule_media
+				{
+					base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : rule_type,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},
+
+					media:0,
+
+					first_child:@mut NoRuleNode,
+					last_child:@mut NoRuleNode
+				};
+				return  CSS_RULE_MEDIA_CREATED(css_rule_instance)
+			},
+			
+		    CSS_RULE_FONT_FACE=>{
+		    	let css_rule_instance= @css_rule_font_face
+		    	{
+		    		base :css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : rule_type,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},
+					font_face:@css_font_face 
+						{
+							font_family:self.lwc_instance.lwc_intern_string(@""),
+							srcs:@css_font_face_src
+							{
+								location:self.lwc_instance.lwc_intern_string(@""),	
+								bits:~[]
+							},
+							n_srcs:0,
+		
+								
+							bits:~[]
+						}
+		    	};
+		    	return  CSS_RULE_FONT_FACE_CREATED(css_rule_instance)
+		    }
+			CSS_RULE_PAGE=>{
+		    	let css_rule_instance= @css_rule_page
+		    	{
+		    	base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : rule_type,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},
+
+				selector:@css_selector 
+						{
+							combinator:@[],		/*< Combining selector */
+
+							rule:@css_rule 
+							{
+								parent:@rule(0),		
+				        		next:@mut NoRuleNode ,				
+		                		prev:@mut NoRuleNode ,				
+		                		rule_type  : CSS_RULE_UNKNOWN,		
+			            		index : 0,		
+			            		items : 0,		
+			            		ptype : 0	
+							},				/*< Owning rule */
+							
+							specificity:CSS_SPECIFICITY_A,			/*< Specificity of selector */
+
+							data:css_selector_detail
+							{
+								qname:css_qname
+								{
+									ns : self.lwc_instance.lwc_intern_string(@"") ,
+									name : self.lwc_instance.lwc_intern_string(@"") 
+								},			
+								value:css_selector_detail_value
+								{
+									string:&"",		
+									a:0,
+									b:0
+								},	
+
+								type_of     :0 ,    		    /*< Type of selector */
+								comb        :0 ,    		    /*< Type of combinator */
+								next        :0 ,     		    /*< Another selector detail 
+													             * follows */
+								value_type  :0,		        /*< Type of value field */
+								negate      :0    		    /*< Detail match is inverted */
+							}
+						}	,
+				style:@css_style
+						{
+		 					bytecode:~[] ,
+							used : 0,
+							allocated: 0
+		 				},	
+		    };
+		    
+		    return  CSS_RULE_PAGE_CREATED(css_rule_instance)
+		},
+		}
+	CSS_GENERAL_OK
+}
 
  }
 
@@ -2605,6 +2977,7 @@ pub fn handleDeclaration(&self, c:@css_language , vector:~[~str])->css_result
 pub struct lcss {
 	mut lwc_instance:@lwc,
 	mut lpu_instance:@lpu,
+	mut lcss_language:@css_language,
 	mut propstrings_call_count:uint,
 	mut propstrings_list:@[@str],
 	mut propstrings:~[@lwc_string]
@@ -2612,9 +2985,11 @@ pub struct lcss {
 
 
 pub fn lcss()->@lcss {
+	let lwc_inst = lwc();
 	@lcss {
-		lwc_instance:lwc(),
+		lwc_instance:lwc_inst,
 		lpu_instance:lpu(),
+		lcss_language:lcss_language(lwc_inst),
 		propstrings_call_count:0,
 		propstrings_list:@[@"*", @"charset",@"import",@"media", @ "namespace", @ "font-face", @"page", @"aural",@ "braille", @ "embossed",@"handheld", @"print",
 		@"projection", @ "screen", @ "speech", @ "tty", @ "tv", @ "all",@"first-child", @ "link", @ "visited", @ "hover", @ "active", @ "focus",
@@ -2931,273 +3306,7 @@ impl lcss {
 
 	
 
-pub fn  css__stylesheet_rule_create(&self,sheet:@css_stylesheet ,  rule_type:css_rule_type/*,
-		css_rule **rule*/)->css_result
-{
-		match(rule_type)
-		{
-			CSS_RULE_UNKNOWN=>{
-				let css_rule_instance= @css_rule
-				      {
-				      	parent:@rule(0),		
-				        next:@mut NoRuleNode ,				
-		                prev:@mut NoRuleNode ,				
-		                rule_type  :  0,		
-			            index : 0,		
-			            items : 0,		
-			            ptype : 0
-			        };
-			        return  CSS_RULE_CREATED(css_rule_instance)
-			},
-			CSS_RULE_SELECTOR=>{
-				let css_rule_instance= @css_rule_selector
-					{
-						base:css_rule
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  :  0,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},
 
-		 				selectors:@[],
-		 				style:css_style
-		 				{
-		 					bytecode:~[] ,
-							used : 0,
-							allocated: 0
-		 				},
-					};
-					 return  CSS_RULE_SELECTOR_CREATED(css_rule_instance)
-		    },
-			
-		    CSS_RULE_CHARSET=>{
-		    	let css_rule_instance= @css_rule_charset
-		    	{
-		    		base:css_rule
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  :  0,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},
-
-		            encoding: self.lwc_instance.lwc_intern_string(@"")
-		    	};
-		    	return  CSS_RULE_CHARSET_CREATED(css_rule_instance)
-		    },
-			CSS_RULE_IMPORT=>{
-				let css_rule_instance= @css_rule_import
-				{
-					base:css_rule
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  :  0,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},
-					url:self.lwc_instance.lwc_intern_string(@""),
-		            media:0,
-
-		            sheet:@css_stylesheet
-		            {
-		            	rule_count:0,			/*< Number of rules in sheet */
-						rule_list:@css_rule
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  :  0,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},			/*< List of rules in sheet */
-						last_rule:@css_rule 
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  :  0,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},			/*< Last rule in list */
-
-						disabled:false,				/*< Whether this sheet is 
-							                          * disabled */
-
-						url:~"",				/*< URL of this sheet */
-						title:~"",			/*< Title of this sheet */
-
-						level:CSS_LEVEL_1  ,		/*< Language level of sheet */
-						parser:@mut NoParserNode ,			/*< Core parser for sheet */
-						parser_frontend:~[],			/*< Frontend parser */
-						propstrings:@ mut[],		/*< Property strings, for parser */
-
-						quirks_allowed:false,			/*< Quirks permitted */
-						quirks_used:false,			/*< Quirks actually used */
-
-						inline_style:false,			/*< Is an inline style */
-
-						size:0 ,				/*< Size, in bytes */
-
-		 				import:~CINF,	/*< Import notification function */
-						import_pw:~[],			/*< Private word */
-
-		 				resolve:~CURF,		/*< URL resolution function */
-						resolve_pw:~[],			/*< Private word */
-
-		 				color:~CCRF,		/*< Colour resolution function */
-						color_pw:~[],				/*< Private word */
-
-		/* System font resolution function */
-		 				font:~CFRF,		
-						font_pw:~[],				/*< Private word */
-
-
-		// alloc:css_allocator_fn,			/*< Allocation function */
-		//pw:~[u8],				/*< Private word */
-	  
-						cached_style:@css_style
-		 				{
-		 					bytecode:~[] ,
-							used : 0,
-							allocated: 0
-		 				},		/*< Cache for style parsing */
-	  
-						string_vector:@[],            /*< Bytecode string vector */
-						string_vector_l:0,              /*< The string vector allocated
-						 * length in entries */
-						string_vector_c:0 
-		            }
-				};
-				return  CSS_RULE_IMPORT_CREATED(css_rule_instance)
-			},
-			CSS_RULE_MEDIA=>{
-				let css_rule_instance= @css_rule_media
-				{
-					base:css_rule
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  :  0,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},
-
-					media:0,
-
-					first_child:@mut NoRuleNode,
-					last_child:@mut NoRuleNode
-				};
-				return  CSS_RULE_MEDIA_CREATED(css_rule_instance)
-			},
-			
-		    CSS_RULE_FONT_FACE=>{
-		    	let css_rule_instance= @css_rule_font_face
-		    	{
-		    		base :css_rule
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  :  0,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},
-					font_face:@css_font_face 
-						{
-							font_family:self.lwc_instance.lwc_intern_string(@""),
-							srcs:@css_font_face_src
-							{
-								location:self.lwc_instance.lwc_intern_string(@""),	
-								bits:~[]
-							},
-							n_srcs:0,
-		
-								
-							bits:~[]
-						}
-		    	};
-		    	return  CSS_RULE_FONT_FACE_CREATED(css_rule_instance)
-		    }
-			CSS_RULE_PAGE=>{
-		    	let css_rule_instance= @css_rule_page
-		    	{
-		    	base:css_rule
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  :  0,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},
-
-				selector:@css_selector 
-						{
-							combinator:@[],		/*< Combining selector */
-
-							rule:@css_rule 
-							{
-								parent:@rule(0),		
-				        		next:@mut NoRuleNode ,				
-		                		prev:@mut NoRuleNode ,				
-		                		rule_type  :  0,		
-			            		index : 0,		
-			            		items : 0,		
-			            		ptype : 0	
-							},				/*< Owning rule */
-							
-							specificity:CSS_SPECIFICITY_A,			/*< Specificity of selector */
-
-							data:css_selector_detail
-							{
-								qname:css_qname
-								{
-									ns : self.lwc_instance.lwc_intern_string(@"") ,
-									name : self.lwc_instance.lwc_intern_string(@"") 
-								},			
-								value:css_selector_detail_value
-								{
-									string:&"",		
-									a:0,
-									b:0
-								},	
-
-								type_of     :0 ,    		    /*< Type of selector */
-								comb        :0 ,    		    /*< Type of combinator */
-								next        :0 ,     		    /*< Another selector detail 
-													             * follows */
-								value_type  :0,		        /*< Type of value field */
-								negate      :0    		    /*< Detail match is inverted */
-							}
-						}	,
-				style:@css_style
-						{
-		 					bytecode:~[] ,
-							used : 0,
-							allocated: 0
-		 				},	
-		    };
-		    return  CSS_RULE_PAGE_CREATED(css_rule_instance)
-		},
-		}
-	CSS_GENERAL_OK
-}
 
 
 	/**
