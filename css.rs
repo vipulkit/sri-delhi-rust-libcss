@@ -54,6 +54,11 @@ pub enum css_language_level {
 }
 
 const   CSS_LEVEL_DEFAULT :  css_language_level = CSS_LEVEL_21;	//< Default level >
+const CSS_SPECIFICITY_A:u32=0x01000000;
+const CSS_SPECIFICITY_B:u32=0x00010000;
+const CSS_SPECIFICITY_C:u32=0x00000100;
+const CSS_SPECIFICITY_D:u32=0x00000001;
+
 /**
  * Stylesheet media types
  */
@@ -200,10 +205,10 @@ struct css_selector {
 #define CSS_SPECIFICITY_B 0x00010000
 #define CSS_SPECIFICITY_C 0x00000100
 #define CSS_SPECIFICITY_D 0x00000001*/
-	CSS_SPECIFICITY_A:uint,
+	/*CSS_SPECIFICITY_A:uint,
 	CSS_SPECIFICITY_B:uint,
 	CSS_SPECIFICITY_C:uint,
-	CSS_SPECIFICITY_D:uint,
+	CSS_SPECIFICITY_D:uint,*/
 
 	specificity:u32,			/*< Specificity of selector */
 
@@ -225,6 +230,12 @@ pub enum css_rule_parent_type {
 	CSS_RULE_PARENT_STYLESHEET,
 	CSS_RULE_PARENT_RULE
 }
+/*trait css_rule_variant{
+
+}
+impl css_rule_variant for css_rule{
+
+}*/
 enum rule_stylesheet
 {
 	rule(int),  //update int toproper value
@@ -252,7 +263,7 @@ pub struct css_rule {
 pub struct css_rule_selector {
 	 base:css_rule,
 
-	 selectors:@@css_selector,
+	 selectors:@[css_selector],
 	 style:css_style 
 }
 pub struct css_rule_media {
@@ -260,8 +271,8 @@ pub struct css_rule_media {
 
 	media:u64,
 
-	first_child:@css_rule,
-	last_child:@css_rule
+	first_child:@mut  css_rule_node,
+	last_child:@mut  css_rule_node
 }
 pub struct css_rule_font_face {
 	base :css_rule,
@@ -280,7 +291,7 @@ pub struct css_font_face {
 	 *    76543210
 	 *  1 __wwwwss	font-weight | font-style
 	 */
-	bits:~[u8*1]
+	bits:~[u8]
 	
 	//css_allocator_fn alloc;
 	//void *pw;
@@ -294,7 +305,7 @@ pub struct css_font_face_src {
 	 *    76543210
 	 *  1 _fffffll	format | location type
 	 */
-	bits:~[u8*1]
+	bits:~[u8]
 }
 
 pub struct css_rule_page {
@@ -325,6 +336,40 @@ pub type  css_color_resolution_fn =  ~extern fn(pw:~[u8],
 		name:@lwc_string,  color:@css_color) -> css_result;
 pub type  css_font_resolution_fn =  ~extern fn(pw:~[u8],
 		name:@lwc_string,  system_font:@css_system_font) -> css_result;
+
+
+
+
+
+
+
+
+pub fn CINF(pw:~[u8], parent:@css_stylesheet,  url:@lwc_string, media:u64) -> css_result
+{
+	CSS_GENERAL_OK
+}
+pub  fn CURF(pw:~[u8],base:~str, rel:@lwc_string , abs:@lwc_string ) -> css_result
+{
+	CSS_GENERAL_OK
+}
+pub fn CCRF(pw:~[u8],name:@lwc_string,  color:@css_color) -> css_result
+{
+	CSS_GENERAL_OK
+}
+pub fn CFRF(pw:~[u8],name:@lwc_string,  system_font:@css_system_font) -> css_result
+{
+	CSS_GENERAL_OK
+}
+
+
+
+
+
+
+
+
+
+
 pub struct css_stylesheet {
 	//selectors:@css_selector_hash,	TODO REPLACE WITH BUILT IN HASH TABLE
 		/* < Hashtable of selectors */
@@ -349,7 +394,7 @@ pub struct css_stylesheet {
 
 	inline_style:bool,			/**< Is an inline style */
 
-	size:size_t,				/**< Size, in bytes */
+	size:uint,				/**< Size, in bytes */
 
 	 import:css_import_notification_fn,	/**< Import notification function */
 	import_pw:~[u8],			/**< Private word *////////look for type
@@ -1145,6 +1190,13 @@ pub struct css_parser
 //To Do Should move to errors ---- Start
 pub enum css_result {
 		//CSS_OK  ,
+		CSS_RULE_CREATED(@css_rule),
+		CSS_RULE_SELECTOR_CREATED( @css_rule_selector),
+		CSS_RULE_CHARSET_CREATED(@css_rule_charset),
+		CSS_RULE_IMPORT_CREATED(@css_rule_import),
+		CSS_RULE_MEDIA_CREATED(@css_rule_media),
+		CSS_RULE_FONT_FACE_CREATED(@css_rule_font_face),
+		CSS_RULE_PAGE_CREATED(@css_rule_page),
 		CSS_GENERAL_OK,
 		CSS_LANGUAGE_CREATED(@css_language),
 		CSS_PROPSTRINGS_OK(~[@lwc_string]),
@@ -2222,25 +2274,7 @@ struct css_namespace {
 	prefix:@lwc_string,	/**< Namespace prefix */
 	uri:@lwc_string		/*< Namespace URI */
 }
- struct css_language {
-	sheet:@css_stylesheet ,		/**< The stylesheet to parse for */
-
-//#define STACK_CHUNK 32
-    STACK_CHUNK:int,
-	context:@DVec<context_entry>,      //parseutils_stack	/**< Context stack */
-
-	 state:language_state,			/**< State flag, for at-rule handling */
-
-	/** Interned strings */
-	strings:@ mut[@lwc_string ],
-
-	default_namespace:@lwc_string ,	/**< Default namespace URI */
-	namespaces:@css_namespace,	/**< Array of namespace mappings */
-	num_namespaces:u32	/*< Number of namespace mappings */
-
-	// css_allocator_fn alloc;		*< Memory (de)allocation function 
-	// void *pw;			/**< Client's private data */
-}
+ 
 /*pub type  css_parser_event_handler =  ~extern fn( event_type:css_parser_event, 
 		 tokens:~[u8], pw:~[u8]) -> css_result;*/
 struct css_parser_event_handler_{
@@ -2259,52 +2293,287 @@ struct context_entry {
 } 
 
 
-	pub fn  language_handle_event(css_intance:@lcss, event_type:css_parser_event, 
+	
+
+pub struct css_language {
+	sheet:@css_stylesheet ,		/**< The stylesheet to parse for */
+
+//#define STACK_CHUNK 32
+    STACK_CHUNK:int,
+	context:@DVec<context_entry>,      //parseutils_stack	/**< Context stack */
+
+	 state:language_state,			/**< State flag, for at-rule handling */
+
+	/** Interned strings */
+	strings:@ mut[@lwc_string ],
+
+	default_namespace:@lwc_string ,	/**< Default namespace URI */
+	namespaces:@css_namespace,	/**< Array of namespace mappings */
+	num_namespaces:u32	/*< Number of namespace mappings */
+
+	// css_allocator_fn alloc;		*< Memory (de)allocation function 
+	// void *pw;			/**< Client's private data */
+}
+
+ impl css_language
+ {
+
+pub fn  language_handle_event(&self, event_type:css_parser_event, 
 			tokens:~[~str], css_language_instance:@css_language)-> css_result
 	{
 		match (event_type) {
 			
 			CSS_PARSER_START_STYLESHEET => {
-			 	css_intance.handleStartStylesheet(css_language_instance, tokens)
+			 	self.handleStartStylesheet(css_language_instance, tokens)
 			}
 			
 			CSS_PARSER_END_STYLESHEET=>{
-			 	css_intance.handleEndStylesheet(css_language_instance, tokens)
+			 	self.handleEndStylesheet(css_language_instance, tokens)
 			}
 			
 			CSS_PARSER_START_RULESET=>{
-			 	css_intance.handleStartRuleset(css_language_instance, tokens)
+			 	self.handleStartRuleset(css_language_instance, tokens)
 			}
 			
 			CSS_PARSER_END_RULESET=>{
-			 	css_intance.handleEndRuleset(css_language_instance, tokens)
+			 	self.handleEndRuleset(css_language_instance, tokens)
 			}
 			
 			CSS_PARSER_START_ATRULE=>{
-				css_intance.handleStartAtRule(css_language_instance, tokens)
+				self.handleStartAtRule(css_language_instance, tokens)
 			}
 			
 			CSS_PARSER_END_ATRULE=>{
-				css_intance.handleEndAtRule(css_language_instance, tokens)
+				self.handleEndAtRule(css_language_instance, tokens)
 			}
 			
 			CSS_PARSER_START_BLOCK=>{
-				css_intance.handleStartBlock(css_language_instance, tokens)
+				self.handleStartBlock(css_language_instance, tokens)
 			}
 			
 			CSS_PARSER_END_BLOCK=>{
-				css_intance.handleEndBlock(css_language_instance, tokens)
+				self.handleEndBlock(css_language_instance, tokens)
 			}
 			
 			CSS_PARSER_BLOCK_CONTENT=>{
-				css_intance.handleBlockContent(css_language_instance, tokens)
+				self.handleBlockContent(css_language_instance, tokens)
 			}
 			
 			CSS_PARSER_DECLARATION=>{
-				css_intance.handleDeclaration(css_language_instance, tokens)
+				self.handleDeclaration(css_language_instance, tokens)
 			}
 		}
 	}
+
+
+pub fn  css__language_create(&self, sheet:@css_stylesheet,  lwc_instance:@lwc) -> css_result
+	{
+		let css_language_instance:@css_language;
+		
+		let presult:parserutils_result;
+		let err:css_result;
+		let stack:@DVec<context_entry> = @dvec::DVec();
+
+		// if (sheet == NULL || parser == NULL || alloc == NULL || 
+		// 		language == NULL)
+		// 	return CSS_BADPARM;
+
+		let empty_lwc_string = lwc_instance.lwc_intern_string(@"");
+
+		css_language_instance = @css_language {
+				sheet:sheet ,		
+	    		STACK_CHUNK:32,
+				context:stack, 
+				state:CHARSET_PERMITTED,	
+				strings:sheet.propstrings,
+				
+				default_namespace:empty_lwc_string,	
+				
+				namespaces:@css_namespace
+				{
+					prefix:empty_lwc_string,	
+					uri:empty_lwc_string	
+				},	
+				num_namespaces:0	
+		
+		};
+
+		/*let params = @css_parser_optparams {
+			quirks:false,
+			event_handler: css_parser_event_handler_
+			{
+				handler:language_handle_event,
+				pw:css_language_instance
+			}
+		};*/ //see later
+		
+		
+		//let err = css__parser_setopt(parser, CSS_PARSER_EVENT_HANDLER, params);
+		
+
+		// c->sheet = sheet;
+		// c->state = CHARSET_PERMITTED;
+		// c->default_namespace = NULL;
+		// c->namespaces = NULL;
+		// c->num_namespaces = 0;
+		// c->strings = sheet->propstrings;
+		// c->alloc = alloc;
+		// c->pw = pw;
+
+		return CSS_LANGUAGE_CREATED(css_language_instance);
+	}
+
+pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_result
+	{
+		// let pResult:parserutils_result;
+		// UNUSED(vector);
+		let entry:context_entry = context_entry {event_type: CSS_PARSER_START_STYLESHEET, data:~[] };
+	    c.context.push(entry);
+		CSS_GENERAL_OK
+	}
+
+	pub fn handleEndStylesheet(&self, c:@css_language, vector:~[~str])->css_result
+	{
+
+
+	    if(c.context.len()==0)
+	    {
+	    	return CSS_INVALID
+	    }
+		match(c.context.last().event_type)
+		{
+			CSS_PARSER_START_STYLESHEET=>{},
+			_=>return CSS_INVALID
+		}
+
+		c.context.pop();
+		// parserutils_error perror;
+		// context_entry *entry;
+
+		// UNUSED(vector);
+
+		// assert(c != NULL);
+
+		// entry = parserutils_stack_get_current(c->context);
+		// if (entry == NULL || entry->type != CSS_PARSER_START_STYLESHEET)
+		// 	return CSS_INVALID;
+
+		// perror = parserutils_stack_pop(c->context, NULL);
+		// if (perror != PARSERUTILS_OK) {
+		// 	return css_result_from_parserutils_error(perror);
+		// }
+
+		CSS_GENERAL_OK
+	}
+
+	pub fn handleStartRuleset(&self, c:@css_language , vector:~[~str])->css_result 
+	{
+		/*parserutils_error pResult;
+		css_result cResult;
+		context_entry entry = { CSS_PARSER_START_RULESET, NULL };*/
+		// let entry:context_entry = context_entry {event_type: CSS_PARSER_START_RULESET, data:~[] };
+		// let cur:@context_entry ;
+		// let mut parent_rule :@css_rule ;
+		// let mut rule :@css_rule ;
+		
+
+		// assert(c != NULL);
+
+		/* Retrieve parent rule from stack, if any */
+		// if c.context.len() !=0
+		// {
+		// 	cur= c.context.last();
+		// 	match(cur.event_type  )
+		// 	{
+		// 		CSS_PARSER_START_STYLESHEET =>{},
+		// 		_=>{parent_rule = cur.data;}
+		// 	}
+		// }
+		
+		/*cur = parserutils_stack_get_current(c->context);
+		if (cur != NULL && cur->type != CSS_PARSER_START_STYLESHEET)
+			parent_rule = cur->data;*/
+  //       match(css__stylesheet_rule_create(c->sheet, CSS_RULE_SELECTOR, &rule))
+		// error = css__stylesheet_rule_create(c->sheet, CSS_RULE_SELECTOR, &rule);
+		// if (error != CSS_OK)
+		// 	return error;
+
+		// if (vector != NULL) {
+		// 	/* Parse selectors, if there are any */
+		// 	error = parseSelectorList(c, vector, rule);
+		// 	if (error != CSS_OK) {
+		// 		css__stylesheet_rule_destroy(c->sheet, rule);
+		// 		return error;
+		// 	}
+		// }
+
+		// entry.data = rule;
+
+		// perror = parserutils_stack_push(c->context, (void *) &entry);
+		// if (perror != PARSERUTILS_OK) {
+		// 	css__stylesheet_rule_destroy(c->sheet, rule);
+		// 	return css_result_from_parserutils_error(perror);
+		// }
+
+		// error = css__stylesheet_add_rule(c->sheet, rule, parent_rule);
+		// if (error != CSS_OK) {
+		// 	parserutils_stack_pop(c->context, NULL);
+		// 	css__stylesheet_rule_destroy(c->sheet, rule);
+		// 	return error;
+		// }
+
+		// /* Flag that we've had a valid rule, so @import/@namespace/@charset 
+		//  * have no effect. */
+		// c->state = HAD_RULE;
+
+		// /* Rule is now owned by the sheet, so no need to destroy it */
+
+		  CSS_GENERAL_OK
+	}
+
+pub fn handleEndRuleset(&self, c:@css_language , vector:~[~str])->css_result
+{
+	CSS_GENERAL_OK	
+}
+
+pub fn handleStartAtRule(&self, c:@css_language , vector:~[~str])->css_result
+{
+	CSS_GENERAL_OK	
+}
+
+pub fn handleEndAtRule(&self, c:@css_language , vector:~[~str])->css_result
+{
+	CSS_GENERAL_OK	
+}
+
+pub fn handleStartBlock(&self, c:@css_language , vector:~[~str])->css_result
+{
+	CSS_GENERAL_OK	
+}
+
+pub fn handleEndBlock(&self, c:@css_language , vector:~[~str])->css_result
+{
+	CSS_GENERAL_OK	
+}
+
+pub fn handleBlockContent(&self, c:@css_language , vector:~[~str])->css_result
+{
+	CSS_GENERAL_OK	
+}
+
+pub fn handleDeclaration(&self, c:@css_language , vector:~[~str])->css_result
+{
+	CSS_GENERAL_OK	
+}
+
+
+
+ }
+
+
+
+
+
 
 
 pub struct lcss {
@@ -2606,62 +2875,7 @@ impl lcss {
 	 *	   CSS_BADPARM on bad parameters,
 	 *	   CSS_NOMEM on memory exhaustion
 	 */
-	pub fn  css__language_create(&self, sheet:@css_stylesheet,  parser:@css_parser) -> css_result
-	{
-		let css_language_instance:@css_language;
-		
-		let presult:parserutils_result;
-		let err:css_result;
-		let stack:@DVec<context_entry> = @dvec::DVec();
-
-		// if (sheet == NULL || parser == NULL || alloc == NULL || 
-		// 		language == NULL)
-		// 	return CSS_BADPARM;
-
-		let empty_lwc_string = self.lwc_instance.lwc_intern_string(@"");
-
-		css_language_instance = @css_language {
-				sheet:sheet ,		
-	    		STACK_CHUNK:32,
-				context:stack, 
-				state:CHARSET_PERMITTED,	
-				strings:sheet.propstrings,
-				
-				default_namespace:empty_lwc_string,	
-				
-				namespaces:@css_namespace
-				{
-					prefix:empty_lwc_string,	
-					uri:empty_lwc_string	
-				},	
-				num_namespaces:0	
-		
-		};
-
-		let params = @css_parser_optparams {
-			quirks:false,
-			event_handler: css_parser_event_handler_
-			{
-				handler:~(language_handle_event),
-				pw:css_language_instance
-			}
-		}; //see later
-		
-		
-		//let err = css__parser_setopt(parser, CSS_PARSER_EVENT_HANDLER, params);
-		
-
-		// c->sheet = sheet;
-		// c->state = CHARSET_PERMITTED;
-		// c->default_namespace = NULL;
-		// c->namespaces = NULL;
-		// c->num_namespaces = 0;
-		// c->strings = sheet->propstrings;
-		// c->alloc = alloc;
-		// c->pw = pw;
-
-		return CSS_LANGUAGE_CREATED(css_language_instance);
-	}
+	
 
 	 pub fn css__parser_setopt(&self, parser:@css_parser,  opt_type:css_parser_opttype,
 			params:@css_parser_optparams)-> css_result
@@ -2734,137 +2948,277 @@ impl lcss {
 	// 	}
 	// }
 
-	pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_result
-	{
-		// let pResult:parserutils_result;
-		// UNUSED(vector);
-		let entry:context_entry = context_entry {event_type: CSS_PARSER_START_STYLESHEET, data:~[] };
-	    c.context.push(entry);
-		CSS_GENERAL_OK
-	}
+	
 
-	pub fn handleEndStylesheet(&self, c:@css_language, vector:~[~str])->css_result
-	{
-
-
-	    if(c.context.len()==0)
-	    {
-	    	return CSS_INVALID
-	    }
-		match(c.context.last().event_type)
+pub fn  css__stylesheet_rule_create(&self,sheet:@css_stylesheet ,  rule_type:css_rule_type/*,
+		css_rule **rule*/)->css_result
+{
+		match(rule_type)
 		{
-			CSS_PARSER_START_STYLESHEET=>{},
-			_=>return CSS_INVALID
+			CSS_RULE_UNKNOWN=>{
+				let css_rule_instance= @css_rule
+				      {
+				      	parent:@rule(0),		
+				        next:@mut NoRuleNode ,				
+		                prev:@mut NoRuleNode ,				
+		                rule_type  :  0,		
+			            index : 0,		
+			            items : 0,		
+			            ptype : 0
+			        };
+			        return  CSS_RULE_CREATED(css_rule_instance)
+			},
+			CSS_RULE_SELECTOR=>{
+				let css_rule_instance= @css_rule_selector
+					{
+						base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  :  0,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},
+
+		 				selectors:@[],
+		 				style:css_style
+		 				{
+		 					bytecode:~[] ,
+							used : 0,
+							allocated: 0
+		 				},
+					};
+					 return  CSS_RULE_SELECTOR_CREATED(css_rule_instance)
+		    },
+			
+		    CSS_RULE_CHARSET=>{
+		    	let css_rule_instance= @css_rule_charset
+		    	{
+		    		base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  :  0,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},
+
+		            encoding: self.lwc_instance.lwc_intern_string(@"")
+		    	};
+		    	return  CSS_RULE_CHARSET_CREATED(css_rule_instance)
+		    },
+			CSS_RULE_IMPORT=>{
+				let css_rule_instance= @css_rule_import
+				{
+					base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  :  0,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},
+					url:self.lwc_instance.lwc_intern_string(@""),
+		            media:0,
+
+		            sheet:@css_stylesheet
+		            {
+		            	rule_count:0,			/*< Number of rules in sheet */
+						rule_list:@css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  :  0,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},			/*< List of rules in sheet */
+						last_rule:@css_rule 
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  :  0,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},			/*< Last rule in list */
+
+						disabled:false,				/*< Whether this sheet is 
+							                          * disabled */
+
+						url:~"",				/*< URL of this sheet */
+						title:~"",			/*< Title of this sheet */
+
+						level:CSS_LEVEL_1  ,		/*< Language level of sheet */
+						parser:@mut NoParserNode ,			/*< Core parser for sheet */
+						parser_frontend:~[],			/*< Frontend parser */
+						propstrings:@ mut[],		/*< Property strings, for parser */
+
+						quirks_allowed:false,			/*< Quirks permitted */
+						quirks_used:false,			/*< Quirks actually used */
+
+						inline_style:false,			/*< Is an inline style */
+
+						size:0 ,				/*< Size, in bytes */
+
+		 				import:~CINF,	/*< Import notification function */
+						import_pw:~[],			/*< Private word */
+
+		 				resolve:~CURF,		/*< URL resolution function */
+						resolve_pw:~[],			/*< Private word */
+
+		 				color:~CCRF,		/*< Colour resolution function */
+						color_pw:~[],				/*< Private word */
+
+		/* System font resolution function */
+		 				font:~CFRF,		
+						font_pw:~[],				/*< Private word */
+
+
+		// alloc:css_allocator_fn,			/*< Allocation function */
+		//pw:~[u8],				/*< Private word */
+	  
+						cached_style:@css_style
+		 				{
+		 					bytecode:~[] ,
+							used : 0,
+							allocated: 0
+		 				},		/*< Cache for style parsing */
+	  
+						string_vector:@[],            /*< Bytecode string vector */
+						string_vector_l:0,              /*< The string vector allocated
+						 * length in entries */
+						string_vector_c:0 
+		            }
+				};
+				return  CSS_RULE_IMPORT_CREATED(css_rule_instance)
+			},
+			CSS_RULE_MEDIA=>{
+				let css_rule_instance= @css_rule_media
+				{
+					base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  :  0,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},
+
+					media:0,
+
+					first_child:@mut NoRuleNode,
+					last_child:@mut NoRuleNode
+				};
+				return  CSS_RULE_MEDIA_CREATED(css_rule_instance)
+			},
+			
+		    CSS_RULE_FONT_FACE=>{
+		    	let css_rule_instance= @css_rule_font_face
+		    	{
+		    		base :css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  :  0,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},
+					font_face:@css_font_face 
+						{
+							font_family:self.lwc_instance.lwc_intern_string(@""),
+							srcs:@css_font_face_src
+							{
+								location:self.lwc_instance.lwc_intern_string(@""),	
+								bits:~[]
+							},
+							n_srcs:0,
+		
+								
+							bits:~[]
+						}
+		    	};
+		    	return  CSS_RULE_FONT_FACE_CREATED(css_rule_instance)
+		    }
+			CSS_RULE_PAGE=>{
+		    	let css_rule_instance= @css_rule_page
+		    	{
+		    	base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  :  0,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},
+
+				selector:@css_selector 
+						{
+							combinator:@[],		/*< Combining selector */
+
+							rule:@css_rule 
+							{
+								parent:@rule(0),		
+				        		next:@mut NoRuleNode ,				
+		                		prev:@mut NoRuleNode ,				
+		                		rule_type  :  0,		
+			            		index : 0,		
+			            		items : 0,		
+			            		ptype : 0	
+							},				/*< Owning rule */
+							
+							specificity:CSS_SPECIFICITY_A,			/*< Specificity of selector */
+
+							data:css_selector_detail
+							{
+								qname:css_qname
+								{
+									ns : self.lwc_instance.lwc_intern_string(@"") ,
+									name : self.lwc_instance.lwc_intern_string(@"") 
+								},			
+								value:css_selector_detail_value
+								{
+									string:&"",		
+									a:0,
+									b:0
+								},	
+
+								type_of     :0 ,    		    /*< Type of selector */
+								comb        :0 ,    		    /*< Type of combinator */
+								next        :0 ,     		    /*< Another selector detail 
+													             * follows */
+								value_type  :0,		        /*< Type of value field */
+								negate      :0    		    /*< Detail match is inverted */
+							}
+						}	,
+				style:@css_style
+						{
+		 					bytecode:~[] ,
+							used : 0,
+							allocated: 0
+		 				},	
+		    };
+		    return  CSS_RULE_PAGE_CREATED(css_rule_instance)
+		},
 		}
-
-		c.context.pop();
-		// parserutils_error perror;
-		// context_entry *entry;
-
-		// UNUSED(vector);
-
-		// assert(c != NULL);
-
-		// entry = parserutils_stack_get_current(c->context);
-		// if (entry == NULL || entry->type != CSS_PARSER_START_STYLESHEET)
-		// 	return CSS_INVALID;
-
-		// perror = parserutils_stack_pop(c->context, NULL);
-		// if (perror != PARSERUTILS_OK) {
-		// 	return css_result_from_parserutils_error(perror);
-		// }
-
-		CSS_GENERAL_OK
-	}
-
-	pub fn handleStartRuleset(&self, c:@css_language , vector:~[~str])->css_result 
-	{
-		// parserutils_error perror;
-		// css_result error;
-		// context_entry entry = { CSS_PARSER_START_RULESET, NULL };
-		// let entry:context_entry = context_entry {event_type: CSS_PARSER_START_RULESET, data:~[] };
-		// context_entry *cur;
-		// css_rule *parent_rule = NULL;
-		// css_rule *rule = NULL;
-
-		// assert(c != NULL);
-
-		// /* Retrieve parent rule from stack, if any */
-		// cur = parserutils_stack_get_current(c->context);
-		// if (cur != NULL && cur->type != CSS_PARSER_START_STYLESHEET)
-		// 	parent_rule = cur->data;
-
-		// error = css__stylesheet_rule_create(c->sheet, CSS_RULE_SELECTOR, &rule);
-		// if (error != CSS_OK)
-		// 	return error;
-
-		// if (vector != NULL) {
-		// 	/* Parse selectors, if there are any */
-		// 	error = parseSelectorList(c, vector, rule);
-		// 	if (error != CSS_OK) {
-		// 		css__stylesheet_rule_destroy(c->sheet, rule);
-		// 		return error;
-		// 	}
-		// }
-
-		// entry.data = rule;
-
-		// perror = parserutils_stack_push(c->context, (void *) &entry);
-		// if (perror != PARSERUTILS_OK) {
-		// 	css__stylesheet_rule_destroy(c->sheet, rule);
-		// 	return css_result_from_parserutils_error(perror);
-		// }
-
-		// error = css__stylesheet_add_rule(c->sheet, rule, parent_rule);
-		// if (error != CSS_OK) {
-		// 	parserutils_stack_pop(c->context, NULL);
-		// 	css__stylesheet_rule_destroy(c->sheet, rule);
-		// 	return error;
-		// }
-
-		// /* Flag that we've had a valid rule, so @import/@namespace/@charset 
-		//  * have no effect. */
-		// c->state = HAD_RULE;
-
-		// /* Rule is now owned by the sheet, so no need to destroy it */
-
-		 CSS_GENERAL_OK
-	}
-
-pub fn handleEndRuleset(&self, c:@css_language , vector:~[~str])->css_result
-{
-	CSS_GENERAL_OK	
+	CSS_GENERAL_OK
 }
 
-pub fn handleStartAtRule(&self, c:@css_language , vector:~[~str])->css_result
-{
-	CSS_GENERAL_OK	
-}
 
-pub fn handleEndAtRule(&self, c:@css_language , vector:~[~str])->css_result
-{
-	CSS_GENERAL_OK	
-}
-
-pub fn handleStartBlock(&self, c:@css_language , vector:~[~str])->css_result
-{
-	CSS_GENERAL_OK	
-}
-
-pub fn handleEndBlock(&self, c:@css_language , vector:~[~str])->css_result
-{
-	CSS_GENERAL_OK	
-}
-
-pub fn handleBlockContent(&self, c:@css_language , vector:~[~str])->css_result
-{
-	CSS_GENERAL_OK	
-}
-
-pub fn handleDeclaration(&self, c:@css_language , vector:~[~str])->css_result
-{
-	CSS_GENERAL_OK	
-}
 	/**
 	 * Destroy a CSS language parser
 	 *
@@ -2897,49 +3251,10 @@ pub fn handleDeclaration(&self, c:@css_language , vector:~[~str])->css_result
 		return CSS_OK;
 	}*/
 
-	/**
-	 * Handler for core parser events
-	 *
-	 * \param type	  The event type
-	 * \param tokens  Vector of tokens read since last event, or NULL
-	 * \param pw	  Pointer to handler context
-	 * \return CSS_OK on success, CSS_INVALID to indicate parse error, 
-	 *	   appropriate error otherwise.
-	 */
+	
 
 
-	/*pub fn css__propstrings_get(lwc_string ***strings)->css_result
-	{
-
-	let 
-		if (css__propstrings.count > 0) {
-			css__propstrings.count++;
-		} else {
-			let mut i:int =0;
-			let mut lerror:lwc_error;
-
-			// Intern all known strings 
-			while ( i < LAST_KNOWN) {
-				lerror = lwc_intern_string(stringmap[i].data,
-						stringmap[i].len,
-						&css__propstrings.strings[i]);
-
-				match(lerror)
-				{
-					lwc_error_ok => {},
-					_=>return CSS_NOMEM 
-				}
-				
-				i += 1;
-			}
-			css__propstrings.count++;
-		}
-
-		*strings = css__propstrings.strings;
-
-		return CSS_OK;
-	}*/
-
+	
 	static pub fn buildOPV(opcode : css_properties_e , flags : u8 , value : u16 ) -> css_code_t {
 
 		(( (opcode as int)  & 0x3ff) | ((flags as int)<< 10) | (((value as int)& 0x3fff)  << 18) ) as u32
