@@ -510,38 +510,11 @@ pub type css_parser_event_handler =  ~extern fn(css_intance:@lcss, event_type:cs
 
 enum css_parser_node
 {
-	SomeParserNode(@mut css_parser),
+	SomeParserNode(@mut lcss_parser),
   	NoParserNode
 }
 
-pub struct css_parser
-{
-	stream:@parserutils_inputstream,	/**< The inputstream */
-	lexer:@css_lexer,		/**< The lexer to use */
 
-	mut quirks:bool,			/**< Whether to enable parsing quirks */
-
-//#define STACK_CHUNK 32
-    STACK_CHUNK: uint,
-	states:DVec<u8>,	/**< Stack of states */
-
-	tokens:~[u8],	/**< Vector of pending tokens */
-
-	pushback:@css_token,	/**< Push back buffer */
-
-	parseError:bool,		/**< A parse error has occurred */
-	open_items:DVec<u8>,	/**< Stack of open brackets */
-
-	match_char:u8,		/**< Close bracket type for parseAny */
-
-	last_was_ws:bool,		/**< Last token was whitespace */
-
-	mut event:css_parser_event_handler,	/**< Client's event handler */
-	mut event_pw:@css_language		/*< Client data for event handler */
-
-	//css_allocator_fn alloc;		/**< Memory (de)allocation function */
-	//void *pw;			/**< Client-specific private data */
-}
 
 
 /*struct css_selector_hash {
@@ -3278,34 +3251,6 @@ impl lcss {
 	 */
 	
 
-	 pub fn css__parser_setopt(&self, parser:@css_parser,  opt_type:css_parser_opttype,
-			params:@css_parser_optparams)-> css_result
-	{
-		// if (parser == NULL || params == NULL)
-		// 	return CSS_BADPARM;
-
-		match(opt_type) 
-		{
-	     	CSS_PARSER_QUIRKS=>
-	     		{
-					parser.quirks = params.quirks;
-	     		},
-	     	CSS_PARSER_EVENT_HANDLER=>
-	     		{
-	     			parser.event = copy params.event_handler.handler;
-		 			parser.event_pw = copy params.event_handler.pw;
-	     		}
-		}
-		
-
-		CSS_GENERAL_OK
-	}
-
-
-	
-
-	
-
 
 
 
@@ -4003,4 +3948,69 @@ impl lcss {
 
 
 
+}
+
+
+
+pub struct lcss_parser {
+	//stream:@parserutils_inputstream,	/**< The inputstream */
+	//lexer:@css_lexer,		/**< The lexer to use */
+
+	//mut quirks:bool	/**< Whether to enable parsing quirks */
+
+// #define STACK_CHUNK 32
+    //STACK_CHUNK: uint,
+	// states:DVec<u8>,	/**< Stack of states */
+
+	//tokens:~[u8],	/**< Vector of pending tokens */
+
+	//pushback:@css_token,	/**< Push back buffer */
+
+	//parseError:bool,		/**< A parse error has occurred */
+	//open_items:DVec<u8>,	/**< Stack of open brackets */
+
+	//match_char:u8,		/**< Close bracket type for parseAny */
+
+	//last_was_ws:bool,		/**< Last token was whitespace */
+
+	//mut event:css_parser_event_handler,	/**< Client's event handler */
+	//mut event_pw:@css_language		/*< Client data for event handler */
+
+	//css_allocator_fn alloc;		/**< Memory (de)allocation function */
+	//void *pw;			/**< Client-specific private data */
+	mut quirks:bool
+}
+
+
+pub fn lcss_parser()->@lcss_parser {
+	@lcss_parser{  quirks:false }
+}
+
+
+
+impl lcss_parser {
+	/*
+	pub fn css__parser_setopt(&self, parser:@css_parser,  opt_type:css_parser_opttype,
+			params:@css_parser_optparams)-> css_result
+	{
+		// if (parser == NULL || params == NULL)
+		// 	return CSS_BADPARM;
+
+		match(opt_type) 
+		{
+	     	CSS_PARSER_QUIRKS=>
+	     		{
+					parser.quirks = params.quirks;
+	     		},
+	     	CSS_PARSER_EVENT_HANDLER=>
+	     		{
+	     			parser.event = copy params.event_handler.handler;
+		 			parser.event_pw = copy params.event_handler.pw;
+	     		}
+		}
+		
+
+		CSS_GENERAL_OK
+	}
+	*/
 }
