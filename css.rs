@@ -421,18 +421,7 @@ pub struct css_stylesheet {
 	string_vector_c:u32               /*< The number of string 
 						 * vector entries used */ 
 }
-enum css_parser_event {
-	CSS_PARSER_START_STYLESHEET,
-	CSS_PARSER_END_STYLESHEET,
-	CSS_PARSER_START_RULESET,
-	CSS_PARSER_END_RULESET,
-	CSS_PARSER_START_ATRULE,
-	CSS_PARSER_END_ATRULE,
-	CSS_PARSER_START_BLOCK,
-	CSS_PARSER_END_BLOCK,
-	CSS_PARSER_BLOCK_CONTENT,
-	CSS_PARSER_DECLARATION
-}
+
 pub enum css_token_type { 
 	CSS_TOKEN_IDENT, CSS_TOKEN_ATKEYWORD, CSS_TOKEN_HASH,
 	CSS_TOKEN_FUNCTION, CSS_TOKEN_STRING, CSS_TOKEN_INVALID_STRING, 
@@ -505,8 +494,7 @@ struct DATA{
 	col:u32,
 	line:u32,
 }
-pub type css_parser_event_handler =  ~extern fn(css_intance:@lcss, event_type:css_parser_event, 
-		tokens:~[~str] , pw:@css_language) -> css_result;
+
 
 enum css_parser_node
 {
@@ -1185,10 +1173,7 @@ pub enum css_result {
 		//CSS_LWC_INTERN_STRING_OK([@lwc_string])
 		
 	}
-enum css_parser_opttype {
-	CSS_PARSER_QUIRKS,
-	CSS_PARSER_EVENT_HANDLER
-}
+
 
 
 
@@ -2248,17 +2233,7 @@ struct css_namespace {
 	uri:@lwc_string		/*< Namespace URI */
 }
  
-/*pub type  css_parser_event_handler =  ~extern fn( event_type:css_parser_event, 
-		 tokens:~[u8], pw:~[u8]) -> css_result;*/
-struct css_parser_event_handler_{
-		 handler:css_parser_event_handler,
-		pw:@css_language
-	} 
-pub struct  css_parser_optparams {
-	quirks:bool,
-	event_handler: css_parser_event_handler_
-	
-} 
+
 
 struct context_entry {
 	event_type:css_parser_event,		/**< Type of entry */
@@ -3951,7 +3926,102 @@ impl lcss {
 }
 
 
+// ===========================================================================================================
+// CSS-PARSER implementation/data-structs Starts here 
+// ===========================================================================================================
 
+
+/*
+ * Css parser events , sent during parsing
+ */
+pub enum css_parser_event {
+	CSS_PARSER_START_STYLESHEET,
+	CSS_PARSER_END_STYLESHEET,
+	CSS_PARSER_START_RULESET,
+	CSS_PARSER_END_RULESET,
+	CSS_PARSER_START_ATRULE,
+	CSS_PARSER_END_ATRULE,
+	CSS_PARSER_START_BLOCK,
+	CSS_PARSER_END_BLOCK,
+	CSS_PARSER_BLOCK_CONTENT,
+	CSS_PARSER_DECLARATION
+}
+
+/*
+ * Css parser opt types
+ */
+pub enum css_parser_opttype {
+	CSS_PARSER_QUIRKS,
+	CSS_PARSER_EVENT_HANDLER
+}
+
+/*
+ * Css parser event handler function pointer
+ */
+pub type css_parser_event_handler =  ~extern fn(css_intance:@lcss, event_type:css_parser_event, 
+		tokens:~[~str] , pw:@css_language) -> css_result;
+
+/*
+ * Css parser event handler structure
+ */
+pub struct css_parser_event_handler_{
+		 handler:css_parser_event_handler,
+		pw:@css_language
+}
+
+/*
+ * Css parser opt paramemeters
+ */
+pub struct  css_parser_optparams {
+	quirks:bool,
+	event_handler: css_parser_event_handler_
+	
+} 
+
+/**
+ * Major state numbers
+ */
+pub enum Parse_state_e {
+	sStart = 0,
+	sStylesheet = 1,
+	sStatement = 2,
+	sRuleset = 3,
+	sRulesetEnd = 4,
+	sAtRule = 5,
+	sAtRuleEnd = 6,
+	sBlock = 7,
+	sBlockContent = 8,
+	sSelector = 9,
+	sDeclaration = 10,
+	sDeclList = 11,
+	sDeclListEnd = 12,
+	sProperty = 13,
+	sValue0 = 14,
+	sValue1 = 15,
+	sValue = 16,
+	sAny0 = 17,
+	sAny1 = 18,
+	sAny = 19,
+	sMalformedDecl = 20,
+	sMalformedSelector = 21,
+	sMalformedAtRule = 22,
+	sInlineStyle = 23,
+	sISBody0 = 24,
+	sISBody = 25
+}
+
+/**
+ * Representation of a parser state
+ */
+pub struct parser_state
+{
+	state : u16 ,
+	substate : u16 
+}
+
+/*
+ * Css parser main strcuture
+ */
 pub struct lcss_parser {
 	//stream:@parserutils_inputstream,	/**< The inputstream */
 	//lexer:@css_lexer,		/**< The lexer to use */
@@ -3981,14 +4051,21 @@ pub struct lcss_parser {
 	mut quirks:bool
 }
 
-
+/*
+ * Css parser constructor
+ */
 pub fn lcss_parser()->@lcss_parser {
 	@lcss_parser{  quirks:false }
 }
 
 
-
+/*
+ * Css parser implementation
+ */
 impl lcss_parser {
+	pub fn css__parser_create(&self)  {
+
+	}
 	/*
 	pub fn css__parser_setopt(&self, parser:@css_parser,  opt_type:css_parser_opttype,
 			params:@css_parser_optparams)-> css_result
@@ -4014,3 +4091,8 @@ impl lcss_parser {
 	}
 	*/
 }
+
+
+// ===========================================================================================================
+// CSS-PARSER implementation/data-structs Starts here 
+// ===========================================================================================================
