@@ -4712,7 +4712,12 @@ fn consume_scientific_number(tokenizer: &Tokenizer, string: ~str)
     let value = Float(float::from_str(string).get());
     Ok(Number(value, string))
 }
-
+struct Tokenizer{
+	mut length:uint,
+	mut position:uint,
+	mut input:~[u8],
+	mut transform_function_whitespace:bool
+}
 impl Tokenizer {
     static fn from_vec(input: ~[u8], transform_function_whitespace: bool)
             -> ~Tokenizer {
