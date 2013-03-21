@@ -4712,12 +4712,14 @@ fn consume_scientific_number(tokenizer: &Tokenizer, string: ~str)
     let value = Float(float::from_str(string).get());
     Ok(Number(value, string))
 }
-struct Tokenizer{
+
+pub struct Tokenizer{
 	mut length:uint,
 	mut position:uint,
 	mut input:~[u8],
 	mut transform_function_whitespace:bool
 }
+
 impl Tokenizer {
     static fn from_vec(input: ~[u8], transform_function_whitespace: bool)
             -> ~Tokenizer {
@@ -4742,5 +4744,33 @@ impl Tokenizer {
     }
 }
 
-
 /* lexer ends */
+
+pub struct lcs_lexer{
+	a: int
+}
+
+impl lcs_lexer {
+	fn css__lexer_create(&self , input: @parserutils_inputstream) -> css_result {
+
+		// let lex: @css_lexer;
+
+		// lex.input = input;
+		// lex.bytesReadForToken = 0;
+		// lex.token.type = CSS_TOKEN_EOF;
+		// lex.token.data.data 
+		// lex->token.data.len = 0
+		// lex.escapeSeen = false;
+		// lex.unescapedTokenData
+		// lex.state = 
+		// lex.substate = 0;
+		// lex.emit_comments false;
+		// lex.currentCol = 1;
+		// lex.currentLine = 1;
+		CSS_GENERAL_OK
+	}
+}
+
+pub fn lcs_lexer()->@lcs_lexer {
+	@lcs_lexer{a: 0}
+}
