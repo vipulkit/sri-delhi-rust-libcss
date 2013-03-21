@@ -2330,123 +2330,6 @@ struct context_entry {
 
 
 	
-
-pub struct css_language {
-	sheet:@css_stylesheet ,		/**< The stylesheet to parse for */
-	mut lwc_instance:@lwc,
-//#define STACK_CHUNK 32
-    STACK_CHUNK:int,
-	context:@DVec<context_entry>,      //parseutils_stack	/**< Context stack */
-
-	 state:language_state,			/**< State flag, for at-rule handling */
-
-	/** Interned strings */
-	strings:@ mut[@lwc_string ],
-
-	default_namespace:@lwc_string ,	/**< Default namespace URI */
-	namespaces:@css_namespace,	/**< Array of namespace mappings */
-	num_namespaces:u32	/*< Number of namespace mappings */
-
-	// css_allocator_fn alloc;		*< Memory (de)allocation function 
-	// void *pw;			/**< Client's private data */
-}
-pub fn lcss_language(instance:@lwc)->@css_language {
-	let empty_lwc_string = instance.lwc_intern_string(@"");
-	let stack:@DVec<context_entry> = @dvec::DVec();
-	let sheet=@css_stylesheet
-		            {
-		            	rule_count:0,			/*< Number of rules in sheet */
-						rule_list:@css_rule
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  : CSS_RULE_UNKNOWN,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},			/*< List of rules in sheet */
-						last_rule:@css_rule 
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  : CSS_RULE_UNKNOWN,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},			/*< Last rule in list */
-
-						disabled:false,				/*< Whether this sheet is 
-							                          * disabled */
-
-						url:~"",				/*< URL of this sheet */
-						title:~"",			/*< Title of this sheet */
-
-						level:CSS_LEVEL_1  ,		/*< Language level of sheet */
-						parser:@mut NoParserNode ,			/*< Core parser for sheet */
-						parser_frontend:~[],			/*< Frontend parser */
-						propstrings:@ mut[],		/*< Property strings, for parser */
-
-						quirks_allowed:false,			/*< Quirks permitted */
-						quirks_used:false,			/*< Quirks actually used */
-
-						inline_style:false,			/*< Is an inline style */
-
-						size:0 ,				/*< Size, in bytes */
-
-		 				import:~CINF,	/*< Import notification function */
-						import_pw:~[],			/*< Private word */
-
-		 				resolve:~CURF,		/*< URL resolution function */
-						resolve_pw:~[],			/*< Private word */
-
-		 				color:~CCRF,		/*< Colour resolution function */
-						color_pw:~[],				/*< Private word */
-
-		/* System font resolution function */
-		 				font:~CFRF,		
-						font_pw:~[],				/*< Private word */
-
-
-		// alloc:css_allocator_fn,			/*< Allocation function */
-		//pw:~[u8],				/*< Private word */
-	  
-						cached_style:@css_style
-		 				{
-		 					bytecode:~[] ,
-							used : 0,
-							allocated: 0
-		 				},		/*< Cache for style parsing */
-	  
-						string_vector:@[],            /*< Bytecode string vector */
-						string_vector_l:0,              /*< The string vector allocated
-						 * length in entries */
-						string_vector_c:0 
-		            } ;
-	//@css_language {
-					
-
-				let	css_language_instance = @css_language {
-							sheet:sheet,
-							lwc_instance:instance,		
-				    		STACK_CHUNK:32,
-							context:stack, 
-							state:CHARSET_PERMITTED,	
-							strings:sheet.propstrings,
-							
-							default_namespace:empty_lwc_string,	
-							
-							namespaces:@css_namespace
-							{
-								prefix:empty_lwc_string,	
-								uri:empty_lwc_string	
-							},	
-							num_namespaces:0	
-		
-		            };
-	return css_language_instance;
-}
  impl css_language
  {
 
@@ -4802,13 +4685,16 @@ impl Tokenizer {
     }
 }
 
+// ===========================================================================================================
+// CSS-LEXER implementation/data-structs starts here 
+// ===========================================================================================================
 /* lexer ends */
 
-pub struct lcs_lexer{
+pub struct lcss_lexer{
 	a: int
 }
 
-impl lcs_lexer {
+impl lcss_lexer {
 	fn css__lexer_create(&self , input: @parserutils_inputstream) -> css_result {
 
 		// let lex: @css_lexer;
@@ -4829,6 +4715,161 @@ impl lcs_lexer {
 	}
 }
 
-pub fn lcs_lexer()->@lcs_lexer {
-	@lcs_lexer{a: 0}
+pub fn lcss_lexer()->@lcss_lexer {
+	@lcss_lexer{a: 0}
 }
+
+// ===========================================================================================================
+// CSS-LEXER implementation/data-structs ends here 
+// ===========================================================================================================
+
+
+// ===========================================================================================================
+// CSS-STYLESHEET implementation/data-structs start here 
+// ===========================================================================================================
+
+pub struct lcss_stylesheet{
+	a: int
+}
+
+pub fn lcss_stylesheet()->@lcss_stylesheet {
+	@lcss_stylesheet{a: 0}
+}
+
+impl lcss_stylesheet {
+}
+
+
+
+// ===========================================================================================================
+// CSS-STYLESHEET implementation/data-structs ends here 
+// ===========================================================================================================
+
+
+// ===========================================================================================================
+// CSS-LANGUAGE implementation/data-structs start here 
+// ===========================================================================================================
+
+
+pub struct css_language {
+	sheet:@css_stylesheet ,		/**< The stylesheet to parse for */
+	mut lwc_instance:@lwc,
+//#define STACK_CHUNK 32
+    STACK_CHUNK:int,
+	context:@DVec<context_entry>,      //parseutils_stack	/**< Context stack */
+
+	 state:language_state,			/**< State flag, for at-rule handling */
+
+	/** Interned strings */
+	strings:@ mut[@lwc_string ],
+
+	default_namespace:@lwc_string ,	/**< Default namespace URI */
+	namespaces:@css_namespace,	/**< Array of namespace mappings */
+	num_namespaces:u32	/*< Number of namespace mappings */
+
+	// css_allocator_fn alloc;		*< Memory (de)allocation function 
+	// void *pw;			/**< Client's private data */
+}
+pub fn lcss_language(instance:@lwc)->@css_language {
+	let empty_lwc_string = instance.lwc_intern_string(@"");
+	let stack:@DVec<context_entry> = @dvec::DVec();
+	let sheet=@css_stylesheet
+		            {
+		            	rule_count:0,			/*< Number of rules in sheet */
+						rule_list:@css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : CSS_RULE_UNKNOWN,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},			/*< List of rules in sheet */
+						last_rule:@css_rule 
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : CSS_RULE_UNKNOWN,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},			/*< Last rule in list */
+
+						disabled:false,				/*< Whether this sheet is 
+							                          * disabled */
+
+						url:~"",				/*< URL of this sheet */
+						title:~"",			/*< Title of this sheet */
+
+						level:CSS_LEVEL_1  ,		/*< Language level of sheet */
+						parser:@mut NoParserNode ,			/*< Core parser for sheet */
+						parser_frontend:~[],			/*< Frontend parser */
+						propstrings:@ mut[],		/*< Property strings, for parser */
+
+						quirks_allowed:false,			/*< Quirks permitted */
+						quirks_used:false,			/*< Quirks actually used */
+
+						inline_style:false,			/*< Is an inline style */
+
+						size:0 ,				/*< Size, in bytes */
+
+		 				import:~CINF,	/*< Import notification function */
+						import_pw:~[],			/*< Private word */
+
+		 				resolve:~CURF,		/*< URL resolution function */
+						resolve_pw:~[],			/*< Private word */
+
+		 				color:~CCRF,		/*< Colour resolution function */
+						color_pw:~[],				/*< Private word */
+
+		/* System font resolution function */
+		 				font:~CFRF,		
+						font_pw:~[],				/*< Private word */
+
+
+		// alloc:css_allocator_fn,			/*< Allocation function */
+		//pw:~[u8],				/*< Private word */
+	  
+						cached_style:@css_style
+		 				{
+		 					bytecode:~[] ,
+							used : 0,
+							allocated: 0
+		 				},		/*< Cache for style parsing */
+	  
+						string_vector:@[],            /*< Bytecode string vector */
+						string_vector_l:0,              /*< The string vector allocated
+						 * length in entries */
+						string_vector_c:0 
+		            } ;
+	//@css_language {
+					
+
+				let	css_language_instance = @css_language {
+							sheet:sheet,
+							lwc_instance:instance,		
+				    		STACK_CHUNK:32,
+							context:stack, 
+							state:CHARSET_PERMITTED,	
+							strings:sheet.propstrings,
+							
+							default_namespace:empty_lwc_string,	
+							
+							namespaces:@css_namespace
+							{
+								prefix:empty_lwc_string,	
+								uri:empty_lwc_string	
+							},	
+							num_namespaces:0	
+		
+		            };
+	return css_language_instance;
+}
+
+
+
+// ===========================================================================================================
+// CSS-LANGUAGE implementation/data-structs ends here 
+// ===========================================================================================================
