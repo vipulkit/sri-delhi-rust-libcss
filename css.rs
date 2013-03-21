@@ -175,7 +175,7 @@ pub enum css_selector_detail_value_type {
 
 
 pub struct css_selector_detail_value {
-	string:&str,		/*< Interned string, or NULL */
+	string:~str,		/*< Interned string, or NULL */
 	a:u32,
 	b:u32			/*< Data for x = an + b */
 } 
@@ -196,24 +196,7 @@ pub struct css_selector_detail {
 // 	SomeSelectorNode(@mut css_selector_node),
 //   	NoSelectorNode
 // }
-struct css_selector {
-	combinator:@[css_selector],		/*< Combining selector */
 
-	rule:@css_rule ,				/*< Owning rule */
-
-/*#define CSS_SPECIFICITY_A 0x01000000
-#define CSS_SPECIFICITY_B 0x00010000
-#define CSS_SPECIFICITY_C 0x00000100
-#define CSS_SPECIFICITY_D 0x00000001*/
-	/*CSS_SPECIFICITY_A:uint,
-	CSS_SPECIFICITY_B:uint,
-	CSS_SPECIFICITY_C:uint,
-	CSS_SPECIFICITY_D:uint,*/
-
-	specificity:u32,			/*< Specificity of selector */
-
-	 data:css_selector_detail		/*< Selector data */
-}
 
 
 pub enum css_rule_type {
@@ -235,6 +218,9 @@ pub enum css_rule_parent_type {
 }
 impl css_rule_variant for css_rule{
 
+}
+struct abc<T>{
+x:T
 }*/
 enum rule_stylesheet
 {
@@ -255,15 +241,20 @@ pub struct css_rule {
 	prev:@mut css_rule_node ,				/**< previous in list */
 
 	rule_type  :  css_rule_type,		/**< css_rule_type */
-		     index : uint,		/**< index in sheet */
-		     items : uint,		/**< # items in rule */
-		     ptype : uint		/*< css_rule_parent_type */
+	mut index : uint,		/**< index in sheet */
+	mut items : uint,		/**< # items in rule */
+	mut ptype : uint		/*< css_rule_parent_type */
 }
-
+struct css_selector {
+	mut combinator:~[@css_selector],		/*< Combining selector */
+	mut rule:@css_rule_selector ,				/*< Owning rule */
+	mut specificity:u32,			//< Specificity of selector 
+    mut data:@css_selector_detail		/*< Selector data */
+}
 pub struct css_rule_selector {
-	 base:css_rule,
+	 mut base:css_rule,
 
-	 selectors:@[css_selector],
+	 mut selectors:~[@css_selector],
 	 style:css_style 
 }
 pub struct css_rule_media {
@@ -2464,36 +2455,10 @@ pub fn  language_handle_event(&self, event_type:css_parser_event,
 
 pub fn  css__language_create(@mut self, sheet:@css_stylesheet) -> css_result
 	{
-		//let css_language_instance:@css_language;
 		
-		//let presult:parserutils_result;
-		//let err:css_result;
-		//let stack:@DVec<context_entry> = @dvec::DVec();
-
-		// if (sheet == NULL || parser == NULL || alloc == NULL || 
-		// 		language == NULL)
-		// 	return CSS_BADPARM;
-
-		//let empty_lwc_string = lwc_instance.lwc_intern_string(@"");
 		self.sheet=sheet;
 
-		/*css_language_instance = @css_language {
-				sheet:sheet ,		
-	    		STACK_CHUNK:32,
-				context:stack, 
-				state:CHARSET_PERMITTED,	
-				strings:sheet.propstrings,
-				
-				default_namespace:empty_lwc_string,	
-				
-				namespaces:@css_namespace
-				{
-					prefix:empty_lwc_string,	
-					uri:empty_lwc_string	
-				},	
-				num_namespaces:0	
 		
-		};*/
 
 		/*let params = @css_parser_optparams {
 			quirks:false,
@@ -2505,18 +2470,7 @@ pub fn  css__language_create(@mut self, sheet:@css_stylesheet) -> css_result
 		};*/ //see later
 		
 		
-		//let err = css__parser_setopt(parser, CSS_PARSER_EVENT_HANDLER, params);
 		
-
-		// c->sheet = sheet;
-		// c->state = CHARSET_PERMITTED;
-		// c->default_namespace = NULL;
-		// c->namespaces = NULL;
-		// c->num_namespaces = 0;
-		// c->strings = sheet->propstrings;
-		// c->alloc = alloc;
-		// c->pw = pw;
-
 		return CSS_LANGUAGE_CREATED(self);
 	}
 
@@ -2661,7 +2615,23 @@ pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_resu
 
 		  CSS_GENERAL_OK
 	}
+pub fn css__stylesheet_rule_add_selector(&self,/*sheet:  @css_stylesheet , */
+		  curRule:@css_rule_selector , selector: @css_selector )
+{
+	match(curRule.base.rule_type)
+	 {
+	 	CSS_RULE_SELECTOR=>{},
+	 	_=>{fail!();}
+	 }
 
+		
+	curRule.selectors.push(selector);//check later
+		
+   	
+	curRule.base.items += 1;
+	curRule.selectors[curRule.base.items].rule= curRule;//problem 2
+	 
+}
 pub fn handleEndRuleset(&self, c:@css_language , vector:~[~str])->css_result
 {
 	CSS_GENERAL_OK	
@@ -2729,7 +2699,7 @@ pub fn  css__stylesheet_rule_create(&self,sheet:@css_stylesheet ,  rule_type:css
 			            	ptype : 0	
 						},
 
-		 				selectors:@[],
+		 				selectors:~[],
 		 				style:css_style
 		 				{
 		 					bytecode:~[] ,
@@ -2915,22 +2885,34 @@ pub fn  css__stylesheet_rule_create(&self,sheet:@css_stylesheet ,  rule_type:css
 
 				selector:@css_selector 
 						{
-							combinator:@[],		/*< Combining selector */
+							combinator:~[],		/*< Combining selector */
 
-							rule:@css_rule 
-							{
-								parent:@rule(0),		
-				        		next:@mut NoRuleNode ,				
-		                		prev:@mut NoRuleNode ,				
-		                		rule_type  : CSS_RULE_UNKNOWN,		
-			            		index : 0,		
-			            		items : 0,		
-			            		ptype : 0	
-							},				/*< Owning rule */
+							rule:@css_rule_selector
+								{
+									base:css_rule
+										{
+										parent:@rule(0),		
+				        				next:@mut NoRuleNode ,				
+		                				prev:@mut NoRuleNode ,				
+		                				rule_type  : rule_type,		
+			            				index : 0,		
+			            				items : 0,		
+			            				ptype : 0	
+										},
+
+		 							selectors:~[],
+		 							style:css_style
+		 								{
+		 									bytecode:~[] ,
+											used : 0,
+											allocated: 0
+		 								},
+		 							},
 							
-							specificity:CSS_SPECIFICITY_A,			/*< Specificity of selector */
+							
+							specificity:CSS_SPECIFICITY_A,			
 
-							data:css_selector_detail
+							data:@css_selector_detail
 							{
 								qname:css_qname
 								{
@@ -2939,17 +2921,17 @@ pub fn  css__stylesheet_rule_create(&self,sheet:@css_stylesheet ,  rule_type:css
 								},			
 								value:css_selector_detail_value
 								{
-									string:&"",		
+									string:~"",		
 									a:0,
 									b:0
 								},	
 
-								type_of     :0 ,    		    /*< Type of selector */
-								comb        :0 ,    		    /*< Type of combinator */
-								next        :0 ,     		    /*< Another selector detail 
-													             * follows */
-								value_type  :0,		        /*< Type of value field */
-								negate      :0    		    /*< Detail match is inverted */
+								type_of     :0 ,    		   
+								comb        :0 ,    		    
+								next        :0 ,     		     
+													            
+								value_type  :0,		        
+								negate      :0    		    
 							}
 						}	,
 				style:@css_style
