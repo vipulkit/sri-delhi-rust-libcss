@@ -60,7 +60,35 @@ pub enum css_result {
 		//CSS_LWC_INTERN_STRING_OK([@lwc_string])
 		
 	}
-// TODO : css_error_to_string
+
+pub fn css_result_to_string(css_err : css_result ) -> ~str {
+
+	let mut result : ~str = ~"" ;
+	match css_err {
+
+		CSS_RULE_CREATED(x) => {result=~"Css rule created successfully"},
+		CSS_RULE_SELECTOR_CREATED(x) => {result=~"Css rule selector created successfully"},
+		CSS_RULE_CHARSET_CREATED(x) => {result=~"Css rule charset created successfully"},
+		CSS_RULE_IMPORT_CREATED(x) => {result=~"Css rule imported successfully"},
+		CSS_RULE_MEDIA_CREATED(x) => {result=~"Css rule media created successfully"},
+		CSS_RULE_FONT_FACE_CREATED(x) => {result=~"Css rule font-face created successfully"},
+		CSS_RULE_PAGE_CREATED(x) => {result=~"Css rule page created successfully"},
+		CSS_GENERAL_OK=> {result=~"Css Success "},
+		CSS_LANGUAGE_CREATED(x) => {result=~"Css language created successfully"},
+		CSS_PROPSTRINGS_OK(x) => {result=~"Css propstrings success "},
+		CSS_NOMEM=> {result=~"Css error : No-memory"},
+		CSS_BADPARM=> {result=~"Css error : bad-parameters "},
+		CSS_INVALID=> {result=~"Css error : Invalid operation "},
+		CSS_FILENOTFOUND=> {result=~"Css error : file not found"},
+		CSS_NEEDDATA=> {result=~"Css error : need more data"},
+		CSS_BADCHARSET=> {result=~"Css error : bad charset"},
+		CSS_EOF=> {result=~"Css error : end of file "},
+		CSS_IMPORTS_PENDING=> {result=~"Css imports pending "},
+		CSS_PROPERTY_NOT_SET=> {result=~"Css property not set "},
+		// _ => { result=~"Unknown error enumeration" },
+	}
+	result
+}
 
 // hint.h
 
@@ -3931,46 +3959,7 @@ impl lcss {
 		return parserutils::PARSERUTILS_CHARSET_EXT_OK((charset,src));
 	}
 	
-	static pub fn css_result_to_string(css_err : css_result ) -> ~str {
-
-		match css_err {
-		//  CSS_OK => 
-		// 	{return ~"No error";},
-
-		//  CSS_NOMEM =>
-		// 	~"Insufficient memory",
-
-		//  CSS_BADPARM => 
-		// 	~"Bad parameter",
-
-		//  CSS_INVALID =>
-		// 	~"Invalid input",
-
-		//  CSS_FILENOTFOUND =>
-		// 	~"File not found",
-
-		//  CSS_NEEDDATA =>
-		// 	~"Insufficient data",
-
-		//  CSS_BADCHARSET => 
-		// 	~"BOM and charset mismatch",
-
-		//  CSS_EOF => 
-		// 	~"EOF encountered",
-		
-		//  CSS_IMPORTS_PENDING =>
-		// 	~"Imports pending",
-			
-		// CSS_PROPERTY_NOT_SET =>
-		// 	~"Property not set",
-		_=>
-		~"None"
-			/*CSS_LWC_INTERN_STRING_OK(temp)
-			result= ~"intern string returned"*/
-			
-		}
-
-	}
+	
 
 
 
