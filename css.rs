@@ -15,6 +15,72 @@ use core::vec::raw::* ;
 use parserutils::* ;
 use core::dvec::DVec;
 
+
+// ===========================================================================================================
+// CSS Public APIs implementation/data-structs Starts here 
+// ===========================================================================================================
+
+/*
+ * All public APIs and data-structures as exposed by libcss ( please see external include folder of libcss)
+ * comes here , APIs and data-structs comes in this section need only to be public interfaces , 
+ * rest can be private to this module
+ * 
+ * Mirror of include folder of libcss
+ */
+
+// functypes.h 
+// TODO : css_allocator_fn 
+
+// libcss.h 
+// Done : nothing remaining 
+
+// errors.h 
+//To Do Should move to errors ---- Start
+pub enum css_result {
+		//CSS_OK  ,
+		CSS_RULE_CREATED(@css_rule),
+		CSS_RULE_SELECTOR_CREATED( @css_rule_selector),
+		CSS_RULE_CHARSET_CREATED(@css_rule_charset),
+		CSS_RULE_IMPORT_CREATED(@css_rule_import),
+		CSS_RULE_MEDIA_CREATED(@css_rule_media),
+		CSS_RULE_FONT_FACE_CREATED(@css_rule_font_face),
+		CSS_RULE_PAGE_CREATED(@css_rule_page),
+		CSS_GENERAL_OK,
+		CSS_LANGUAGE_CREATED(@mut css_language),
+		CSS_PROPSTRINGS_OK(~[@lwc_string]),
+		CSS_NOMEM,
+		CSS_BADPARM,
+		CSS_INVALID,
+		CSS_FILENOTFOUND,
+		CSS_NEEDDATA,
+		CSS_BADCHARSET,
+		CSS_EOF,
+		CSS_IMPORTS_PENDING,
+		CSS_PROPERTY_NOT_SET,
+		//CSS_LWC_INTERN_STRING_OK([@lwc_string])
+		
+	}
+// TODO : css_error_to_string
+
+// hint.h
+
+
+// font-face.h
+
+// fpmath.h
+// types.h
+// stylesheet.h
+
+
+// select.h
+// computed.h
+// properties.h
+
+// ===========================================================================================================
+// CSS Public APIs implementation/data-structs ends here 
+// ===========================================================================================================
+
+
 /*
  * This file is part of Rust-LibCSS.
  */
@@ -1139,31 +1205,6 @@ enum css_parser_node
 
 //Stop for properties
 
-//To Do Should move to errors ---- Start
-pub enum css_result {
-		//CSS_OK  ,
-		CSS_RULE_CREATED(@css_rule),
-		CSS_RULE_SELECTOR_CREATED( @css_rule_selector),
-		CSS_RULE_CHARSET_CREATED(@css_rule_charset),
-		CSS_RULE_IMPORT_CREATED(@css_rule_import),
-		CSS_RULE_MEDIA_CREATED(@css_rule_media),
-		CSS_RULE_FONT_FACE_CREATED(@css_rule_font_face),
-		CSS_RULE_PAGE_CREATED(@css_rule_page),
-		CSS_GENERAL_OK,
-		CSS_LANGUAGE_CREATED(@mut css_language),
-		CSS_PROPSTRINGS_OK(~[@lwc_string]),
-		CSS_NOMEM,
-		CSS_BADPARM,
-		CSS_INVALID,
-		CSS_FILENOTFOUND,
-		CSS_NEEDDATA,
-		CSS_BADCHARSET,
-		CSS_EOF,
-		CSS_IMPORTS_PENDING,
-		CSS_PROPERTY_NOT_SET,
-		//CSS_LWC_INTERN_STRING_OK([@lwc_string])
-		
-	}
 
 
 
@@ -4076,7 +4117,7 @@ impl lcss_parser {
 
 
 // ===========================================================================================================
-// CSS-PARSER implementation/data-structs Starts here 
+// CSS-PARSER implementation/data-structs ends here 
 // ===========================================================================================================
 
 
