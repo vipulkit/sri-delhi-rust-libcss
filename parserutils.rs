@@ -7,10 +7,12 @@ use core::io::Reader;
 use core::io::ReaderUtil;
 use std::oldmap;
 use core::vec::*;
+use core::str::raw::* ;
+use core::vec::raw::* ;
 use libc::size_t;
 
-pub type parserutils_charset_detect_func =  
-	~extern fn(data: ~[u8], mibenum:~u16, source:~u32) -> parserutils_result;
+//pub type parserutils_charset_detect_func =  
+//	~extern fn(data: ~[u8], mibenum:~u16, source:~u32) -> parserutils_result;
 
 pub struct parserutils_inputstream 
 {
@@ -35,7 +37,7 @@ pub struct parserutils_inputstream_private {
 
 	mut input: @parserutils_filter ,	/*< Charset conversion filter */
 
-	mut csdetect: parserutils_charset_detect_func  /*< Charset detection func.*/
+	//mut csdetect: parserutils_charset_detect_func  /*< Charset detection func.*/
 
 	//alloc: parserutils_alloc	/*< Memory (de)allocation function */
 	//mut pw : ~[u8]			/*< Client private data */
@@ -55,7 +57,7 @@ pub struct parserutils_filter {
 	mut int_enc: u16,               /**< The internal encoding */
 	mut settings : struct_settings ,
 	mut iconv_h : u64 ,
-	mut pw : ~[u8]
+	// mut pw : ~[u8]
 }
 
 pub enum parserutils_result
@@ -85,6 +87,16 @@ pub struct lpu {
 	mut alias_map: @oldmap::HashMap<~str,u16>
 }
 
+pub fn memcmp(str1 : &[u8] , str2 : &[u8] , len : uint ) -> int {
+	let mut i : uint = 0 ;
+	while ( i<len ) {
+		if str1[i] != str2[i] {
+			return ( (str1[i]-str2[i]) as int) ;
+		}
+		i = i+1 ; 
+	}
+	0
+}
 
 impl lpu {
 	fn read_aliases(&self)
@@ -217,7 +229,7 @@ io::println("abcdefgh++++++");
 		self.filter_set_encoding(input, ~"UTF-8")
 	}
 
-	pub fn parserutils__filter_create(&self, int_enc: ~str ,  pw : ~[u8]) -> parserutils_result {
+	pub fn parserutils__filter_create(&self, int_enc: ~str ) -> parserutils_result {
 		if int_enc.len() == 0 {
 			return PARSERUTILS_BADPARAM;
 		}
@@ -228,14 +240,14 @@ io::println("abcdefgh++++++");
 							encoding:0u16
 						},
 			iconv_h : riconv::riconv_initialize(),
-			pw : ~[]
+			//pw : ~[]
 		};
 		f.int_enc =self.parserutils_charset_mibenum_from_name(int_enc);
 		if f.int_enc==0 {
 			return PARSERUTILS_BADENCODING ;
 		}
 
-		f.pw = copy pw;
+		//f.pw = copy pw;
 
 		f.settings.encoding = 0;
 		self.filter_set_encoding(f, ~"UTF-8")
@@ -325,9 +337,568 @@ io::println("abcdefgh++++++");
 		}
 		PARSERUTILS_FILTER_PROCESS_CHUNK_OK( (iconv_result.len_processed, copy iconv_result.outbuf) )
 	}
+
+	pub fn try_utf32_charset(&self, data : ~[u8]) -> parserutils_result {
+
+		let mut charset: u16 = 0;
+		let CHARSET_BE : &[u8] = ['0' as u8, '0' as u8, '0' as u8, '@' as u8, '0' as u8, '0' as u8, '0' as u8, 'c' as u8, '0' as u8, '0' as u8, '0' as u8, 'h' as u8, '0' as u8, '0' as u8, '0' as u8, 'a' as u8, '0' as u8, '0' as u8, '0' as u8, 'r' as u8, '0' as u8, '0' as u8, '0' as u8, 's' as u8, '0' as u8, '0' as u8, '0' as u8, 'e' as u8, '0' as u8, '0' as u8, '0' as u8, 't' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '"' as u8] ; 
+		let CHARSET_LE : &[u8] = [ '@' as u8,'0' as u8,'0' as u8,'0' as u8,'c' as u8,'0' as u8,'0' as u8,'0' as u8,'h' as u8,'0' as u8,'0' as u8,'0' as u8,'a' as u8,'0' as u8,'0' as u8,'0' as u8,'r' as u8,'0' as u8,'0' as u8,'0' as u8,'s' as u8,'0' as u8,'0' as u8,'0' as u8,'e' as u8,'0' as u8,'0' as u8,'0' as u8,'t' as u8,'0' as u8,'0' as u8,' ' as u8,'0' as u8,'0' as u8,'0' as u8,'"' as u8,'0' as u8,'0' as u8,'0' as u8, ] ;
+
+		io::println("\n Sushanta1: Inside CHARSET_LE 32 bit");
+		io::println(fmt!("value of data.len() is %?", data.len()));
+		io::println(fmt!("value of CHARSET_LE.len() is %?", CHARSET_LE.len()));
+
+		// Here, when the data.len() is equals to CHARSET_LE.len() then it returns, then how would the next case would paas when again we re asking it to pass when length are equal ??
+		if data.len() <= CHARSET_LE.len()
+		{
+			return PARSERUTILS_BADPARAM;
+		}
+
+		// if (memcmp(copy data, copy CHARSET_LE, CHARSET_LE.len()) == 0) 
+		 //if (memcmp(data, CHARSET_LE, CHARSET_LE.len()) == 0) 
+
+		let retVal : int = memcmp(data, CHARSET_LE, CHARSET_LE.len());
+		io::println(fmt!("value of retVal is %?", retVal));
+		if (retVal == 0) 
+		{
+			io::println("\n Inside CHARSET_LE 32 bit");
+
+			io::println("\n 1 ");
+			let startIndex : uint = data.len() + CHARSET_LE.len();
+			let mut endIndex : uint = startIndex;
+
+			io::println("\n 2 ");
+			// values are only for initialization
+			let mut buffMemory : ~[u8] = ~[ '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8 ];
+			let mut buffMemoryIndex : u8 = 0;
+
+			io::println("\n 3 ");
+
+			//io::println(fmt!( ));	
+			while endIndex < (CHARSET_LE.len() -1)
+			{
+				io::println("\n Sushanta1: while loop");
+				let value1 : u8 = data[endIndex] | data[endIndex + 1] << 8 | data[endIndex + 2] << 16 | data[endIndex + 3] << 24 ;
+		
+				if value1 > 0x007f
+				{
+					break;
+				}	
+
+				if (value1 == '"' as u8) && (endIndex < data.len() + CHARSET_LE.len() - 8)		
+				{
+					let value2 = data[endIndex + 4] | data[endIndex + 5] << 8 | data[endIndex + 6] << 16 | data[endIndex + 7] << 24 ;
+
+					if value2 == ';' as u8	
+					{
+						break;
+					}
+				}			
+			
+				if buffMemoryIndex < buffMemory.len() as u8
+				{
+					if value1 >= 'a' as u8 && value1 <= 'z' as u8
+					{
+						buffMemory[buffMemoryIndex] = (value1 & !0x20) as u8;			
+					}
+					else
+					{
+						buffMemory[buffMemoryIndex];	
+					}
+					buffMemoryIndex += 1;	
+				}	
+				
+				endIndex += 4;	
+			} // while loop ends		
+			
+			// After while loop ends
+			if (endIndex == data.len() - 4)
+			{
+				return PARSERUTILS_NEEDDATA;
+			}
+
+
+			// Convert to MIB enum 
+			unsafe {
+				charset = self.parserutils_charset_mibenum_from_name(
+						from_buf_len(to_const_ptr(copy data.slice(CHARSET_LE.len(), data.len()-1)) , data.len()-1 ) );
+			}
+
+			// Any non-ASCII compatible charset must be ignored, as
+			// we've just used an ASCII parser to read it. 
+			if (charset == self.parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == self.parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
+
+				charset == self.parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == self.parserutils_charset_mibenum_from_name(~"UTF-16") ||
+
+				charset == self.parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == self.parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
+			{
+
+				charset = 0;
+			}
+		}
+		
+		 let retVal2 : int = memcmp(data, CHARSET_BE, CHARSET_LE.len());
+		 io::println(fmt!("value of retVal is %?", retVal2));
+		 if (retVal2 == 0) 
+		{
+			io::println("\n 11: If condition passed ");
+
+			let startIndex : uint = CHARSET_BE.len() - 1;
+			let mut endIndex : uint = startIndex;
+
+			// values are only for initialization
+			let mut buffMemory : ~[u8] = ~[ '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8 ];
+			let mut buffMemoryIndex : u8 = 0;
+			
+			// Is this condition right ?
+			while (endIndex < (data.len() - 4))
+			{
+				let value1 : u8 = data[endIndex + 3] | data[endIndex + 2] << 8 | data[endIndex + 1] << 16 | data[endIndex] << 24 ;
+				
+				if value1 > 0x007f
+				{
+					break;
+				}	
+
+				// Is this condition right ?
+				if (value1 == '"' as u8) && (endIndex < data.len() + CHARSET_BE.len() - 8)		
+				{
+					let value2 = data[endIndex + 7] | data[endIndex + 6] << 8 | data[endIndex + 5] << 16 | data[endIndex + 4] << 24 ;
+
+					if value2 == ';' as u8	
+					{
+						break;
+					}
+				}			
+			
+				if buffMemoryIndex < buffMemory.len() as u8
+				{
+					if value1 >= 'a' as u8 && value1 <= 'z' as u8
+					{
+						buffMemory[buffMemoryIndex] = (value1 & !0x20) as u8;			
+					}
+					else
+					{
+						buffMemory[buffMemoryIndex];	
+					}
+					buffMemoryIndex += 1;	
+				}	
+				
+				// termination conditioning for while loop	
+				endIndex += 4;	
+
+			} // while loop ends
+
+			if (endIndex == data.len() - 4)
+			{
+				return PARSERUTILS_NEEDDATA;
+			}
+
+			// Convert to MIB enum 
+			unsafe {
+				charset = self.parserutils_charset_mibenum_from_name(
+						from_buf_len(to_const_ptr(copy data.slice(CHARSET_BE.len(), data.len()-1)) , data.len()-1 ) );
+			}
+
+			// Any non-ASCII compatible charset must be ignored, as
+			// we've just used an ASCII parser to read it. 
+			if (charset == self.parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == self.parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
+			    charset == self.parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == self.parserutils_charset_mibenum_from_name(~"UTF-16") ||
+			    charset == self.parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == self.parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
+			{
+				charset = 0;
+			}
+		}
+		else
+		{
+			io::println("\n Sushanta1: Inside NOWHERE, means ERROR ");
+		}
+		
+		PARSERUTILS_CHARSET_TRY_OK(@4)
+	}
+
+	pub fn try_utf16_charset(&self, data : &[u8]) -> parserutils_result {
+	//pub fn try_utf16_charset(data : &[u8]) -> parserutils_result {
+		let mut charset: u16 = 0;
+		let CHARSET_BE : &[u8] = ['0' as u8, '@' as u8, '0' as u8, 'c' as u8, '0' as u8, 'h' as u8, '0' as u8, 'a' as u8, '0' as u8, 'r' as u8, '0' as u8, 's' as u8, '0' as u8, 'e' as u8, '0' as u8, 't' as u8, '0' as u8, ' ' as u8,'0' as u8, '"' as u8] ; 
+		
+		let CHARSET_LE : &[u8] = ['@' as u8, '0' as u8, 'c' as u8, '0' as u8, 'h' as u8, '0' as u8, 'a' as u8, '0' as u8, 'r' as u8, '0' as u8, 's' as u8, '0' as u8, 'e' as u8, '0' as u8, 't' as u8, '0' as u8, ' ' as u8, '0' as u8, '"' as u8, '0' as u8] ; 
+
+		io::println("\n Sushanta1: Inside CHARSET_LE 16 bit");
+		io::println(fmt!("value of data.len() is %?", data.len()));
+		io::println(fmt!("value of CHARSET_LE.len() is %?", CHARSET_LE.len()));
+		io::println(fmt!("value of CHARSET_BE.len() is %?", CHARSET_BE.len()));
+
+		io::println(fmt!("value of data is %?", data));
+		io::println(fmt!("value of CHARSET_LE is %?", CHARSET_LE));
+		io::println(fmt!("value of CHARSET_BE is %?", CHARSET_BE));
+		
+		if data.len() <= CHARSET_LE.len()
+		{
+			return PARSERUTILS_BADPARAM;
+		}
+
+		if (memcmp(data, CHARSET_LE, CHARSET_LE.len()) == 0) 
+		{
+			io::println("Sushanta1: Inside CHARSET_LE 16 bits ");
+
+			let startIndex : uint = CHARSET_LE.len() - 1 ;
+			let mut endIndex : uint = startIndex;
+
+			// values are only for initialization
+			let mut buffMemory : ~[u8] = ~[ '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8 ];
+			let mut buffMemoryIndex : u8 = 0;
+
+			while endIndex < (data.len()- 2)
+			{
+				io::println("Sushanta1: Inside while loop for CHARSET_LE 16 bits ");
+				let value1 : u16 = (data[endIndex] | data[endIndex + 1] << 8) as u16 ;
+
+				/*	
+				if value1 > 0x007f
+				{
+					break;
+				}	
+				*/
+
+				if (value1 == '"' as u16) && (endIndex < data.len() + CHARSET_LE.len() - 4)		
+				{
+					let value2 : u16 = (data[endIndex + 2] | data[endIndex + 3] << 8) as u16 ;
+
+					if value2 == ';' as u16	
+					{
+						break;
+					}
+				}			
+			
+				if buffMemoryIndex < buffMemory.len() as u8
+				{
+					if value1 >= 'a' as u16 && value1 <= 'z' as u16
+					{
+						buffMemory[buffMemoryIndex] = (value1 & !0x20) as u8;			
+					}
+					else
+					{
+						buffMemory[buffMemoryIndex];	
+					}
+					buffMemoryIndex += 1;	
+				}	
+				
+				// termination conditioning for while loop	
+				endIndex += 2;	
+			} // while loop ends		
+			
+			// After while loop ends
+			if (endIndex == data.len() + CHARSET_LE.len() - 2)
+			{
+				return PARSERUTILS_NEEDDATA;
+			}
+
+
+			// Convert to MIB enum 
+			unsafe {
+				charset = self.parserutils_charset_mibenum_from_name(
+						from_buf_len(to_const_ptr(copy data.slice(CHARSET_LE.len(), data.len()-1)) , data.len()-1 ) );
+			}
+
+			// Any non-ASCII compatible charset must be ignored, as
+			// we've just used an ASCII parser to read it. 
+			if (charset == self.parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == self.parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
+
+				charset == self.parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == self.parserutils_charset_mibenum_from_name(~"UTF-16") ||
+
+				charset == self.parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == self.parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
+			{
+
+				charset = 0;
+			}
+		 }	
+		else if (memcmp(data, CHARSET_BE, CHARSET_BE.len()) == 0) 
+		{
+			io::println("Sushanta1: Inside CHARSET_BE 16 bits ");
+
+			let startIndex : uint = (CHARSET_BE.len() - 1);
+			let mut endIndex : uint = startIndex;
+
+			io::println(fmt!("value of startIndex is %?", startIndex));
+			
+			// values are only for initialization
+			let mut buffMemory : ~[u8] = ~[ '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8 ];
+			let mut buffMemoryIndex : u8 = 0;
+
+			while endIndex < (data.len() - 2)
+			{
+				io::println("Sushanta1: Inside while loop for CHARSET_BE 16 bits ");
+
+				io::println(fmt!("value of data[endIndex] is %?", data[endIndex]));
+				io::println(fmt!("value of data[endIndex + 1] is %?", data[endIndex + 1]));
+				
+				io::println(fmt!("value of data[endIndex + 1]<<8 is %?", data[endIndex + 1]<<8));
+				io::println(fmt!("value of data[endIndex]<<8 is %?", data[endIndex]<<8));
+				io::println(fmt!("value of data[endIndex+1] | data[endIndex]<<8 is %?", data[endIndex] | data[endIndex]<<8));
+
+				// Since it is Big-endian, data at MSB would be at lower address space
+				/*
+				let value1 : u16 = (data[endIndex + 1] | data[endIndex] << 8) as u16 ;
+				io::println(fmt!("value of value1 is %?", value1));
+				*/		
+				
+				let mut value1 : u16 = data[endIndex] as u16;
+				io::println(fmt!("value of value1 is %?", value1));
+				value1 = value1 << 8;
+				io::println(fmt!("value of value1 is %?", value1));
+				value1 = value1 + data[endIndex+1] as u16;
+				io::println(fmt!("value of value1 is %?", value1));
+				io::println(fmt!("value of 0x007f is %?", 0x007f));
+
+				// value1 is getting bigger val then 0x007f
+				/*
+				if value1 > 0x007f
+				{
+					io::println("Sushanta1: value1 > 0x007f is satisfied, Going to break...");
+					break;
+				}	
+				*/
+
+				if (value1 == '"' as u16) && (endIndex < data.len() - 4)		
+				{
+					io::println(" CONDITION is passed...");
+					let value2 = (data[endIndex + 3] | data[endIndex + 2] << 8) as u16;
+
+					if value2 == ';' as u16
+					{
+						break;
+					}
+				}			
+			
+				if buffMemoryIndex < buffMemory.len() as u8
+				{
+					if value1 >= 'a' as u16 && value1 <= 'z' as u16
+					{
+						buffMemory[buffMemoryIndex] = (value1 & !0x20) as u8;			
+					}
+					else
+					{
+						buffMemory[buffMemoryIndex];	
+					}
+					buffMemoryIndex += 1;	
+				}	
+				
+				// termination conditioning for while loop	
+				endIndex += 2;	
+			} // while loop ends		
+			
+			if (endIndex == data.len()- 2)
+			{
+				return PARSERUTILS_NEEDDATA;
+			}
+
+			io::println(" Outside while loop ...");
+
+			// Convert to MIB enum 
+			unsafe {
+				io::println(" B4 condn in UNSAFE...");
+				charset = self.parserutils_charset_mibenum_from_name(
+						from_buf_len(to_const_ptr(copy data.slice(CHARSET_BE.len(), data.len()-1)) , data.len()-1 ) );
+				io::println(" After condn in UNSAFE...");
+			}
+
+			// Any non-ASCII compatible charset must be ignored, as
+			// we've just used an ASCII parser to read it. 
+			if (charset == self.parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == self.parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
+			    charset == self.parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == self.parserutils_charset_mibenum_from_name(~"UTF-16") ||
+			    charset == self.parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == self.parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
+			{
+				charset = 0;
+			}
+		}// else if terminates
+		else
+		{
+			io::println("\n Sushanta1: Inside NOWHERE 16 BITS means ERROR ");
+		}
+
+		PARSERUTILS_CHARSET_TRY_OK(@4)
+	}
+
+
+	// Sushanta: This is a sample implementation
+	pub fn  try_ascii_compatible_charset(&self, data : ~[u8]) -> parserutils_result {
+
+		let mut charset : u16 = 0;
+		let CHARSET : ~[u8] = ~[ '@' as u8, 'c' as u8, 'h' as u8, 'a' as u8 , 'r' as u8, 's' as u8, 'e' as u8, 't' as u8, ' ' as u8 , '\"'  as u8] ;
+
+		io::println("\n Sushanta1: Inside ASCII fun");
+		io::println(fmt!("value of data.len() is %?", data.len()));
+		io::println(fmt!("value of CHARSET.len() is %?", CHARSET.len()));
+		
+		io::println(fmt!("value of data is %?", data));
+		io::println(fmt!("value of CHARSET is %?", CHARSET));
+
+		if (data.len() <= CHARSET.len() ) {
+			return PARSERUTILS_NEEDDATA;
+		}
+
+		// Look for @charset, assuming ASCII-compatible source data 
+		//if ( memcmp(data, CHARSET, CHARSET.len() ) == 0) 
+		 let retVal : int = memcmp(data, CHARSET, CHARSET.len());
+		 io::println(fmt!("value of retVal is %?", retVal));
+		 if (retVal == 0) 
+		{
+			io::println("INSIDE ASCII if condition ");
+
+			let mut indexVal = CHARSET.len()-1;
+			io::println(fmt!("value of indexVal at CHARSETlen() is %?", indexVal));
+
+			// Looking for "; at the end of charset declaration
+			while (indexVal < data.len()) 
+			{
+				io::println(fmt!("value of indexVal is %?", indexVal));
+				io::println(fmt!("value of data[indexVal] is %?", data[indexVal]));
+
+				//if data[indexVal] == ('"' as u8) && data[indexVal+1] == (';' as u8) && indexVal < (data.len()-1)  
+				if data[indexVal] == ('"' as u8) && data[indexVal+1] == (';' as u8) && indexVal < (data.len())  
+				{
+					io::println(fmt!(" 3. Going to break with indexVal is %?", indexVal));
+					break ;
+				}
+				indexVal = indexVal + 1 ;
+			}
+
+			// if this condition is true then, the input CSS file doesn't have anything except <charset>  string
+			if indexVal == data.len() {
+				io::println("INSIDE PARSERUTILS_NEEDDATA error block");
+				return PARSERUTILS_NEEDDATA;
+			}
+			io::println("OUTSIDE PARSERUTILS_BADPARAM error block");
+
+			// Convert to MIB enum 
+			unsafe {
+				charset = self.parserutils_charset_mibenum_from_name(
+						from_buf_len(to_const_ptr(copy data.slice(CHARSET.len(), data.len()-1)) , data.len()-1 ) );
+			}
+
+			// Any non-ASCII compatible charset must be ignored, as
+			// we've just used an ASCII parser to read it. 
+			if (charset == self.parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == self.parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
+
+				charset == self.parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == self.parserutils_charset_mibenum_from_name(~"UTF-16") ||
+
+				charset == self.parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == self.parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
+			{
+
+				charset = 0;
+			}
+		}
+		else
+		{
+			io::println("INSIDE ASCII no where, means ERROR");
+		}
+		PARSERUTILS_CHARSET_TRY_OK(@4)
+	}
+
+
+	pub fn css_charset_read_bom_or_charset(&self, data : ~[u8], mibenum : ~u16 ) -> parserutils_result {
+
+		let mut err : parserutils_result ;
+		let mut charset : u16  = 0;
+		//let mut parser : @lpu = lpu();
+
+
+		if (data.len()<4) {
+			return PARSERUTILS_BADPARAM;
+		}
+
+
+		// Look for BOM 
+		if (data[0] == 0x00 && data[1] == 0x00 && 
+				data[2] == 0xFE && data[3] == 0xFF) {
+			charset = self.parserutils_charset_mibenum_from_name(~"UTF-32BE");
+		} else if (data[0] == 0xFF && data[1] == 0xFE &&
+				data[2] == 0x00 && data[3] == 0x00) {
+			charset = self.parserutils_charset_mibenum_from_name(~"UTF-32LE");
+		} else if (data[0] == 0xFE && data[1] == 0xFF) {
+			charset = self.parserutils_charset_mibenum_from_name(~"UTF-16BE");
+		} else if (data[0] == 0xFF && data[1] == 0xFE) {
+			charset = self.parserutils_charset_mibenum_from_name(~"UTF-16LE");
+		} else if (data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF) {
+			charset = self.parserutils_charset_mibenum_from_name(~"UTF-8");
+		}
+
+		if (charset!=0) {
+			return PARSERUTILS_CHARSET_TRY_OK(@charset);
+		}
+		
+		err = self.try_utf32_charset(copy data);
+		// Sushanta
+		//err = try_utf32_charset(data, parser);
+		match(err) {
+			PARSERUTILS_CHARSET_TRY_OK(x) => return err ,
+			_ => {}	
+		}
+
+		err = self.try_utf16_charset(copy data);
+		//err = try_utf16_charset(data,parser);
+		match(err) {
+			PARSERUTILS_CHARSET_TRY_OK(x) => return err ,
+			_ => {}	
+		}
+		
+		return self.try_ascii_compatible_charset(copy data/*,parser*/);
+	}
+
+
+	pub fn css__charset_extract(&self,  data : ~[u8] ,
+			mibenum : ~u16 , source : ~u32) -> parserutils_result {
+
+		let mut err : parserutils_result;
+		let mut charset : @u16 = @0;
+		let mut src : @u32 = @0 ;
+
+		if (data.len()==(0 as uint))  || mibenum==~(0 as u16) || source==~(0 as u32) {
+			return PARSERUTILS_BADPARAM ;
+		}
+
+		// If the charset was dictated by the client, we've nothing to detect 
+		if source==~4 /*CSS_CHARSET_DICTATED*/ {
+			charset=@*mibenum ;
+			return PARSERUTILS_CHARSET_EXT_OK((charset,@4));
+		}
+
+		// Look for a BOM and/or @charset 
+		err = self.css_charset_read_bom_or_charset(data, copy ~*charset);
+		match(err) {
+			PARSERUTILS_CHARSET_TRY_OK(x) => {} ,
+			_ => return PARSERUTILS_BADPARAM	
+		}
+
+		if charset!=@0 {
+			//mibenum = charset;
+			src = @3 ; // CSS_CHARSET_DOCUMENT;
+			return PARSERUTILS_CHARSET_EXT_OK((charset,src));
+		}
+
+		// If we've already got a charset from the linking mechanism or 
+		//  referring document, then we've nothing further to do 
+		if source!=~0 /* CSS_CHARSET_DEFAULT */ {
+			src=@*source;
+			return PARSERUTILS_CHARSET_EXT_OK((charset,src));
+		}
+
+		// We've not yet found a charset, so use the default fallback 
+		charset = @self.parserutils_charset_mibenum_from_name(~"UTF-8");
+
+		if charset==@0 {
+			return PARSERUTILS_BADENCODING ;
+		}
+
+		//mibenum = charset ;
+		src = @0 ; // CSS_CHARSET_DEFAULT;
+
+		return PARSERUTILS_CHARSET_EXT_OK((charset,src));
+	}
 		
 	pub fn parserutils_inputstream_create(&self,enc: ~str,
-		encsrc: u32,  csdetect: parserutils_charset_detect_func, pw : ~[u8] )-> parserutils_result
+		encsrc: u32 )-> parserutils_result
 	{
 		let s: @parserutils_inputstream_private;
 		let mut pRslt: parserutils_result;
@@ -337,7 +908,7 @@ io::println("abcdefgh++++++");
 		
 
 
-          pRslt = self.parserutils__filter_create(~"UTF-8",copy  pw );
+          pRslt = self.parserutils__filter_create(~"UTF-8");
          match(pRslt)
          {
          	PARSERUTILS_FILTER_CREATE_OK(parserutils_filter) => 
@@ -382,7 +953,7 @@ io::println("abcdefgh++++++");
 
 			input:inputTemp ,	
 
-			csdetect: csdetect  
+			//csdetect: csdetect  
 
 			
 			
@@ -679,11 +1250,9 @@ io::println("abcdefgh++++++");
 			/* If there is a charset detection routine, give it an 
 		 	* opportunity to override any charset specified when the
 		 	* inputstream was created */
-			
-			
-				
 
-				pRslt = (*stream.csdetect)(copy stream.raw, ~stream.mibenum, ~stream.encsrc);
+				//pRslt = (*stream.csdetect)(copy stream.raw, ~stream.mibenum, ~stream.encsrc);
+				pRslt = self.css__charset_extract(copy stream.raw ,~stream.mibenum , ~stream.encsrc) ;
 				match(pRslt)
 				{
 					PARSERUTILS_GENERAL_OK=>{

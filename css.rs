@@ -2024,9 +2024,9 @@ pub struct lcss {
 pub fn lcss()->@lcss {
 	let lwc_inst        = lwc();
 	let lexer_inst      = lcss_lexer();
-	let parser_inst     = lcss_parser(lexer_inst);
-	let stylesheet_inst = lcss_stylesheet(parser_inst,lwc_inst);
+	let stylesheet_inst = lcss_stylesheet(lwc_inst);
 	let language_inst   = lcss_language(stylesheet_inst);
+	let parser_inst     = lcss_parser(lexer_inst,language_inst);
 	@lcss {
 		lwc_instance:lwc_inst,
 		lpu_instance:lpu(),
@@ -2254,582 +2254,6 @@ impl lcss {
 		}
 	}
 
-	static pub fn memcmp(str1 : &[u8] , str2 : &[u8] , len : uint ) -> int {
-		let mut i : uint = 0 ;
-		while ( i<len ) {
-			if str1[i] != str2[i] {
-				return ( (str1[i]-str2[i]) as int) ;
-			}
-			i = i+1 ; 
-		}
-		0
-	}
-
-	// Sushanta
-	// Purpose of this function is to identify the encoding technique used in the CSS file and so that the data can be read
-
-	pub fn try_utf32_charset(&self, data : ~[u8]) -> parserutils::parserutils_result {
-
-		let mut charset: u16 = 0;
-		let CHARSET_BE : &[u8] = ['0' as u8, '0' as u8, '0' as u8, '@' as u8, '0' as u8, '0' as u8, '0' as u8, 'c' as u8, '0' as u8, '0' as u8, '0' as u8, 'h' as u8, '0' as u8, '0' as u8, '0' as u8, 'a' as u8, '0' as u8, '0' as u8, '0' as u8, 'r' as u8, '0' as u8, '0' as u8, '0' as u8, 's' as u8, '0' as u8, '0' as u8, '0' as u8, 'e' as u8, '0' as u8, '0' as u8, '0' as u8, 't' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '"' as u8] ; 
-		let CHARSET_LE : &[u8] = [ '@' as u8,'0' as u8,'0' as u8,'0' as u8,'c' as u8,'0' as u8,'0' as u8,'0' as u8,'h' as u8,'0' as u8,'0' as u8,'0' as u8,'a' as u8,'0' as u8,'0' as u8,'0' as u8,'r' as u8,'0' as u8,'0' as u8,'0' as u8,'s' as u8,'0' as u8,'0' as u8,'0' as u8,'e' as u8,'0' as u8,'0' as u8,'0' as u8,'t' as u8,'0' as u8,'0' as u8,' ' as u8,'0' as u8,'0' as u8,'0' as u8,'"' as u8,'0' as u8,'0' as u8,'0' as u8, ] ;
-
-		io::println("\n Sushanta1: Inside CHARSET_LE 32 bit");
-		io::println(fmt!("value of data.len() is %?", data.len()));
-		io::println(fmt!("value of CHARSET_LE.len() is %?", CHARSET_LE.len()));
-
-		// Here, when the data.len() is equals to CHARSET_LE.len() then it returns, then how would the next case would paas when again we re asking it to pass when length are equal ??
-		if data.len() <= CHARSET_LE.len()
-		{
-			return parserutils::PARSERUTILS_BADPARAM;
-		}
-
-		// if (memcmp(copy data, copy CHARSET_LE, CHARSET_LE.len()) == 0) 
-		 //if (memcmp(data, CHARSET_LE, CHARSET_LE.len()) == 0) 
-
-		let retVal : int = lcss::memcmp(data, CHARSET_LE, CHARSET_LE.len());
-		io::println(fmt!("value of retVal is %?", retVal));
-		if (retVal == 0) 
-		{
-			io::println("\n Inside CHARSET_LE 32 bit");
-
-			io::println("\n 1 ");
-			let startIndex : uint = data.len() + CHARSET_LE.len();
-			let mut endIndex : uint = startIndex;
-
-			io::println("\n 2 ");
-			// values are only for initialization
-			let mut buffMemory : ~[u8] = ~[ '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8 ];
-			let mut buffMemoryIndex : u8 = 0;
-
-			io::println("\n 3 ");
-
-			//io::println(fmt!( ));	
-			while endIndex < (CHARSET_LE.len() -1)
-			{
-				io::println("\n Sushanta1: while loop");
-				let value1 : u8 = data[endIndex] | data[endIndex + 1] << 8 | data[endIndex + 2] << 16 | data[endIndex + 3] << 24 ;
-		
-				if value1 > 0x007f
-				{
-					break;
-				}	
-
-				if (value1 == '"' as u8) && (endIndex < data.len() + CHARSET_LE.len() - 8)		
-				{
-					let value2 = data[endIndex + 4] | data[endIndex + 5] << 8 | data[endIndex + 6] << 16 | data[endIndex + 7] << 24 ;
-
-					if value2 == ';' as u8	
-					{
-						break;
-					}
-				}			
-			
-				if buffMemoryIndex < buffMemory.len() as u8
-				{
-					if value1 >= 'a' as u8 && value1 <= 'z' as u8
-					{
-						buffMemory[buffMemoryIndex] = (value1 & !0x20) as u8;			
-					}
-					else
-					{
-						buffMemory[buffMemoryIndex];	
-					}
-					buffMemoryIndex += 1;	
-				}	
-				
-				endIndex += 4;	
-			} // while loop ends		
-			
-			// After while loop ends
-			if (endIndex == data.len() - 4)
-			{
-				return parserutils::PARSERUTILS_NEEDDATA;
-			}
-
-
-			// Convert to MIB enum 
-			unsafe {
-				charset = self.lpu_instance.parserutils_charset_mibenum_from_name(
-						from_buf_len(to_const_ptr(copy data.slice(CHARSET_LE.len(), data.len()-1)) , data.len()-1 ) );
-			}
-
-			// Any non-ASCII compatible charset must be ignored, as
-			// we've just used an ASCII parser to read it. 
-			if (charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
-
-				charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16") ||
-
-				charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
-			{
-
-				charset = 0;
-			}
-		}
-		
-		 let retVal2 : int = lcss::memcmp(data, CHARSET_BE, CHARSET_LE.len());
-		 io::println(fmt!("value of retVal is %?", retVal2));
-		 if (retVal2 == 0) 
-		{
-			io::println("\n 11: If condition passed ");
-
-			let startIndex : uint = CHARSET_BE.len() - 1;
-			let mut endIndex : uint = startIndex;
-
-			// values are only for initialization
-			let mut buffMemory : ~[u8] = ~[ '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8 ];
-			let mut buffMemoryIndex : u8 = 0;
-			
-			// Is this condition right ?
-			while (endIndex < (data.len() - 4))
-			{
-				let value1 : u8 = data[endIndex + 3] | data[endIndex + 2] << 8 | data[endIndex + 1] << 16 | data[endIndex] << 24 ;
-				
-				if value1 > 0x007f
-				{
-					break;
-				}	
-
-				// Is this condition right ?
-				if (value1 == '"' as u8) && (endIndex < data.len() + CHARSET_BE.len() - 8)		
-				{
-					let value2 = data[endIndex + 7] | data[endIndex + 6] << 8 | data[endIndex + 5] << 16 | data[endIndex + 4] << 24 ;
-
-					if value2 == ';' as u8	
-					{
-						break;
-					}
-				}			
-			
-				if buffMemoryIndex < buffMemory.len() as u8
-				{
-					if value1 >= 'a' as u8 && value1 <= 'z' as u8
-					{
-						buffMemory[buffMemoryIndex] = (value1 & !0x20) as u8;			
-					}
-					else
-					{
-						buffMemory[buffMemoryIndex];	
-					}
-					buffMemoryIndex += 1;	
-				}	
-				
-				// termination conditioning for while loop	
-				endIndex += 4;	
-
-			} // while loop ends
-
-			if (endIndex == data.len() - 4)
-			{
-				return parserutils::PARSERUTILS_NEEDDATA;
-			}
-
-			// Convert to MIB enum 
-			unsafe {
-				charset = self.lpu_instance.parserutils_charset_mibenum_from_name(
-						from_buf_len(to_const_ptr(copy data.slice(CHARSET_BE.len(), data.len()-1)) , data.len()-1 ) );
-			}
-
-			// Any non-ASCII compatible charset must be ignored, as
-			// we've just used an ASCII parser to read it. 
-			if (charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
-			    charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16") ||
-			    charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
-			{
-				charset = 0;
-			}
-		}
-		else
-		{
-			io::println("\n Sushanta1: Inside NOWHERE, means ERROR ");
-		}
-		
-		PARSERUTILS_CHARSET_TRY_OK(@4)
-	}
-
-	pub fn try_utf16_charset(&self, data : &[u8]) -> parserutils::parserutils_result {
-	//pub fn try_utf16_charset(data : &[u8]) -> parserutils::parserutils_result {
-		let mut charset: u16 = 0;
-		let CHARSET_BE : &[u8] = ['0' as u8, '@' as u8, '0' as u8, 'c' as u8, '0' as u8, 'h' as u8, '0' as u8, 'a' as u8, '0' as u8, 'r' as u8, '0' as u8, 's' as u8, '0' as u8, 'e' as u8, '0' as u8, 't' as u8, '0' as u8, ' ' as u8,'0' as u8, '"' as u8] ; 
-		
-		let CHARSET_LE : &[u8] = ['@' as u8, '0' as u8, 'c' as u8, '0' as u8, 'h' as u8, '0' as u8, 'a' as u8, '0' as u8, 'r' as u8, '0' as u8, 's' as u8, '0' as u8, 'e' as u8, '0' as u8, 't' as u8, '0' as u8, ' ' as u8, '0' as u8, '"' as u8, '0' as u8] ; 
-
-		io::println("\n Sushanta1: Inside CHARSET_LE 16 bit");
-		io::println(fmt!("value of data.len() is %?", data.len()));
-		io::println(fmt!("value of CHARSET_LE.len() is %?", CHARSET_LE.len()));
-		io::println(fmt!("value of CHARSET_BE.len() is %?", CHARSET_BE.len()));
-
-		io::println(fmt!("value of data is %?", data));
-		io::println(fmt!("value of CHARSET_LE is %?", CHARSET_LE));
-		io::println(fmt!("value of CHARSET_BE is %?", CHARSET_BE));
-		
-		if data.len() <= CHARSET_LE.len()
-		{
-			return parserutils::PARSERUTILS_BADPARAM;
-		}
-
-		if (lcss::memcmp(data, CHARSET_LE, CHARSET_LE.len()) == 0) 
-		{
-			io::println("Sushanta1: Inside CHARSET_LE 16 bits ");
-
-			let startIndex : uint = CHARSET_LE.len() - 1 ;
-			let mut endIndex : uint = startIndex;
-
-			// values are only for initialization
-			let mut buffMemory : ~[u8] = ~[ '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8 ];
-			let mut buffMemoryIndex : u8 = 0;
-
-			while endIndex < (data.len()- 2)
-			{
-				io::println("Sushanta1: Inside while loop for CHARSET_LE 16 bits ");
-				let value1 : u16 = (data[endIndex] | data[endIndex + 1] << 8) as u16 ;
-
-				/*	
-				if value1 > 0x007f
-				{
-					break;
-				}	
-				*/
-
-				if (value1 == '"' as u16) && (endIndex < data.len() + CHARSET_LE.len() - 4)		
-				{
-					let value2 : u16 = (data[endIndex + 2] | data[endIndex + 3] << 8) as u16 ;
-
-					if value2 == ';' as u16	
-					{
-						break;
-					}
-				}			
-			
-				if buffMemoryIndex < buffMemory.len() as u8
-				{
-					if value1 >= 'a' as u16 && value1 <= 'z' as u16
-					{
-						buffMemory[buffMemoryIndex] = (value1 & !0x20) as u8;			
-					}
-					else
-					{
-						buffMemory[buffMemoryIndex];	
-					}
-					buffMemoryIndex += 1;	
-				}	
-				
-				// termination conditioning for while loop	
-				endIndex += 2;	
-			} // while loop ends		
-			
-			// After while loop ends
-			if (endIndex == data.len() + CHARSET_LE.len() - 2)
-			{
-				return parserutils::PARSERUTILS_NEEDDATA;
-			}
-
-
-			// Convert to MIB enum 
-			unsafe {
-				charset = self.lpu_instance.parserutils_charset_mibenum_from_name(
-						from_buf_len(to_const_ptr(copy data.slice(CHARSET_LE.len(), data.len()-1)) , data.len()-1 ) );
-			}
-
-			// Any non-ASCII compatible charset must be ignored, as
-			// we've just used an ASCII parser to read it. 
-			if (charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
-
-				charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16") ||
-
-				charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
-			{
-
-				charset = 0;
-			}
-		 }	
-		else if (lcss::memcmp(data, CHARSET_BE, CHARSET_BE.len()) == 0) 
-		{
-			io::println("Sushanta1: Inside CHARSET_BE 16 bits ");
-
-			let startIndex : uint = (CHARSET_BE.len() - 1);
-			let mut endIndex : uint = startIndex;
-
-			io::println(fmt!("value of startIndex is %?", startIndex));
-			
-			// values are only for initialization
-			let mut buffMemory : ~[u8] = ~[ '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8 ];
-			let mut buffMemoryIndex : u8 = 0;
-
-			while endIndex < (data.len() - 2)
-			{
-				io::println("Sushanta1: Inside while loop for CHARSET_BE 16 bits ");
-
-				io::println(fmt!("value of data[endIndex] is %?", data[endIndex]));
-				io::println(fmt!("value of data[endIndex + 1] is %?", data[endIndex + 1]));
-				
-				io::println(fmt!("value of data[endIndex + 1]<<8 is %?", data[endIndex + 1]<<8));
-				io::println(fmt!("value of data[endIndex]<<8 is %?", data[endIndex]<<8));
-				io::println(fmt!("value of data[endIndex+1] | data[endIndex]<<8 is %?", data[endIndex] | data[endIndex]<<8));
-
-				// Since it is Big-endian, data at MSB would be at lower address space
-				/*
-				let value1 : u16 = (data[endIndex + 1] | data[endIndex] << 8) as u16 ;
-				io::println(fmt!("value of value1 is %?", value1));
-				*/		
-				
-				let mut value1 : u16 = data[endIndex] as u16;
-				io::println(fmt!("value of value1 is %?", value1));
-				value1 = value1 << 8;
-				io::println(fmt!("value of value1 is %?", value1));
-				value1 = value1 + data[endIndex+1] as u16;
-				io::println(fmt!("value of value1 is %?", value1));
-				io::println(fmt!("value of 0x007f is %?", 0x007f));
-
-				// value1 is getting bigger val then 0x007f
-				/*
-				if value1 > 0x007f
-				{
-					io::println("Sushanta1: value1 > 0x007f is satisfied, Going to break...");
-					break;
-				}	
-				*/
-
-				if (value1 == '"' as u16) && (endIndex < data.len() - 4)		
-				{
-					io::println(" CONDITION is passed...");
-					let value2 = (data[endIndex + 3] | data[endIndex + 2] << 8) as u16;
-
-					if value2 == ';' as u16
-					{
-						break;
-					}
-				}			
-			
-				if buffMemoryIndex < buffMemory.len() as u8
-				{
-					if value1 >= 'a' as u16 && value1 <= 'z' as u16
-					{
-						buffMemory[buffMemoryIndex] = (value1 & !0x20) as u8;			
-					}
-					else
-					{
-						buffMemory[buffMemoryIndex];	
-					}
-					buffMemoryIndex += 1;	
-				}	
-				
-				// termination conditioning for while loop	
-				endIndex += 2;	
-			} // while loop ends		
-			
-			if (endIndex == data.len()- 2)
-			{
-				return parserutils::PARSERUTILS_NEEDDATA;
-			}
-
-			io::println(" Outside while loop ...");
-
-			// Convert to MIB enum 
-			unsafe {
-				io::println(" B4 condn in UNSAFE...");
-				charset = self.lpu_instance.parserutils_charset_mibenum_from_name(
-						from_buf_len(to_const_ptr(copy data.slice(CHARSET_BE.len(), data.len()-1)) , data.len()-1 ) );
-				io::println(" After condn in UNSAFE...");
-			}
-
-			// Any non-ASCII compatible charset must be ignored, as
-			// we've just used an ASCII parser to read it. 
-			if (charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
-			    charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16") ||
-			    charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
-			{
-				charset = 0;
-			}
-		}// else if terminates
-		else
-		{
-			io::println("\n Sushanta1: Inside NOWHERE 16 BITS means ERROR ");
-		}
-
-		PARSERUTILS_CHARSET_TRY_OK(@4)
-	}
-
-
-	// Sushanta: This is a sample implementation
-	pub fn  try_ascii_compatible_charset(&self, data : ~[u8]) -> parserutils::parserutils_result {
-
-		let mut charset : u16 = 0;
-		let CHARSET : ~[u8] = ~[ '@' as u8, 'c' as u8, 'h' as u8, 'a' as u8 , 'r' as u8, 's' as u8, 'e' as u8, 't' as u8, ' ' as u8 , '\"'  as u8] ;
-
-		io::println("\n Sushanta1: Inside ASCII fun");
-		io::println(fmt!("value of data.len() is %?", data.len()));
-		io::println(fmt!("value of CHARSET.len() is %?", CHARSET.len()));
-		
-		io::println(fmt!("value of data is %?", data));
-		io::println(fmt!("value of CHARSET is %?", CHARSET));
-
-		if (data.len() <= CHARSET.len() ) {
-			return parserutils::PARSERUTILS_NEEDDATA;
-		}
-
-		// Look for @charset, assuming ASCII-compatible source data 
-		//if ( memcmp(data, CHARSET, CHARSET.len() ) == 0) 
-		 let retVal : int = lcss::memcmp(data, CHARSET, CHARSET.len());
-		 io::println(fmt!("value of retVal is %?", retVal));
-		 if (retVal == 0) 
-		{
-			io::println("INSIDE ASCII if condition ");
-
-			let mut indexVal = CHARSET.len()-1;
-			io::println(fmt!("value of indexVal at CHARSETlen() is %?", indexVal));
-
-			// Looking for "; at the end of charset declaration
-			while (indexVal < data.len()) 
-			{
-				io::println(fmt!("value of indexVal is %?", indexVal));
-				io::println(fmt!("value of data[indexVal] is %?", data[indexVal]));
-
-				//if data[indexVal] == ('"' as u8) && data[indexVal+1] == (';' as u8) && indexVal < (data.len()-1)  
-				if data[indexVal] == ('"' as u8) && data[indexVal+1] == (';' as u8) && indexVal < (data.len())  
-				{
-					io::println(fmt!(" 3. Going to break with indexVal is %?", indexVal));
-					break ;
-				}
-				indexVal = indexVal + 1 ;
-			}
-
-			// if this condition is true then, the input CSS file doesn't have anything except <charset>  string
-			if indexVal == data.len() {
-				io::println("INSIDE parserutils::PARSERUTILS_NEEDDATA error block");
-				return parserutils::PARSERUTILS_NEEDDATA;
-			}
-			io::println("OUTSIDE parserutils::PARSERUTILS_BADPARAM error block");
-
-			// Convert to MIB enum 
-			unsafe {
-				charset = self.lpu_instance.parserutils_charset_mibenum_from_name(
-						from_buf_len(to_const_ptr(copy data.slice(CHARSET.len(), data.len()-1)) , data.len()-1 ) );
-			}
-
-			// Any non-ASCII compatible charset must be ignored, as
-			// we've just used an ASCII parser to read it. 
-			if (charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
-
-				charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16") ||
-
-				charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
-			{
-
-				charset = 0;
-			}
-		}
-		else
-		{
-			io::println("INSIDE ASCII no where, means ERROR");
-		}
-		PARSERUTILS_CHARSET_TRY_OK(@4)
-	}
-
-
-	pub fn css_charset_read_bom_or_charset(&self, data : ~[u8], mibenum : ~u16 ) -> parserutils::parserutils_result {
-
-		let mut err : parserutils::parserutils_result ;
-		let mut charset : u16  = 0;
-		let mut parser : @lpu = lpu();
-
-
-		if (data.len()<4) {
-			return parserutils::PARSERUTILS_BADPARAM;
-		}
-
-
-		// Look for BOM 
-		if (data[0] == 0x00 && data[1] == 0x00 && 
-				data[2] == 0xFE && data[3] == 0xFF) {
-			charset = parser.parserutils_charset_mibenum_from_name(~"UTF-32BE");
-		} else if (data[0] == 0xFF && data[1] == 0xFE &&
-				data[2] == 0x00 && data[3] == 0x00) {
-			charset = parser.parserutils_charset_mibenum_from_name(~"UTF-32LE");
-		} else if (data[0] == 0xFE && data[1] == 0xFF) {
-			charset = parser.parserutils_charset_mibenum_from_name(~"UTF-16BE");
-		} else if (data[0] == 0xFF && data[1] == 0xFE) {
-			charset = parser.parserutils_charset_mibenum_from_name(~"UTF-16LE");
-		} else if (data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF) {
-			charset = parser.parserutils_charset_mibenum_from_name(~"UTF-8");
-		}
-
-		if (charset!=0) {
-			return parserutils::PARSERUTILS_CHARSET_TRY_OK(@charset);
-		}
-		
-		err = self.try_utf32_charset(copy data);
-		// Sushanta
-		//err = try_utf32_charset(data, parser);
-		match(err) {
-			PARSERUTILS_CHARSET_TRY_OK(x) => return err ,
-			_ => {}	
-		}
-
-		err = self.try_utf16_charset(copy data);
-		//err = try_utf16_charset(data,parser);
-		match(err) {
-			PARSERUTILS_CHARSET_TRY_OK(x) => return err ,
-			_ => {}	
-		}
-		
-		return self.try_ascii_compatible_charset(copy data/*,parser*/);
-	}
-
-
-	pub fn css__charset_extract(&self,  data : ~[u8] ,
-			mibenum : ~u16 , source : ~u32) -> parserutils::parserutils_result {
-
-		let mut err : parserutils::parserutils_result;
-		let mut charset : @u16 = @0;
-		let mut src : @u32 = @0 ;
-
-		if (data.len()==(0 as uint))  || mibenum==~(0 as u16) || source==~(0 as u32) {
-			return parserutils::PARSERUTILS_BADPARAM ;
-		}
-
-		// If the charset was dictated by the client, we've nothing to detect 
-		if source==~4 /*CSS_CHARSET_DICTATED*/ {
-			charset=@*mibenum ;
-			return parserutils::PARSERUTILS_CHARSET_EXT_OK((charset,@4));
-		}
-
-		// Look for a BOM and/or @charset 
-		err = self.css_charset_read_bom_or_charset(data, copy ~*charset);
-		match(err) {
-			PARSERUTILS_CHARSET_TRY_OK(x) => {} ,
-			_ => return parserutils::PARSERUTILS_BADPARAM	
-		}
-
-		if charset!=@0 {
-			//mibenum = charset;
-			src = @3 ; // CSS_CHARSET_DOCUMENT;
-			return parserutils::PARSERUTILS_CHARSET_EXT_OK((charset,src));
-		}
-
-		// If we've already got a charset from the linking mechanism or 
-		//  referring document, then we've nothing further to do 
-		if source!=~0 /* CSS_CHARSET_DEFAULT */ {
-			src=@*source;
-			return parserutils::PARSERUTILS_CHARSET_EXT_OK((charset,src));
-		}
-
-		// We've not yet found a charset, so use the default fallback 
-		charset = @self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-8");
-
-		if charset==@0 {
-			return parserutils::PARSERUTILS_BADENCODING ;
-		}
-
-		//mibenum = charset ;
-		src = @0 ; // CSS_CHARSET_DEFAULT;
-
-		return parserutils::PARSERUTILS_CHARSET_EXT_OK((charset,src));
-	}
-	
-	
-
-
 
 }
 
@@ -2875,8 +2299,14 @@ pub enum css_parser_opttype {
 /*
  * Css parser event handler function pointer
  */
-pub type css_parser_event_handler =  ~extern fn(css_intance:@lcss, event_type:css_parser_event, 
+pub type css_parser_event_handler =  @extern fn(css_intance:@lcss, event_type:css_parser_event, 
 		tokens:~[~str] , pw:@css_language) -> css_result;
+
+// null function for initializing
+pub fn dummy_par_ev_hand(css_intance:@lcss, event_type:css_parser_event, 
+		tokens:~[~str] , pw:@css_language) -> css_result {
+	CSS_GENERAL_OK
+}
 
 /*
  * Css parser event handler structure
@@ -2940,40 +2370,42 @@ pub struct parser_state
  * Css parser main strcuture
  */
 pub struct lcss_parser {
-	//stream:@parserutils_inputstream,	/**< The inputstream */
-	//lexer:@css_lexer,		/**< The lexer to use */
 
-	//mut quirks:bool	/**< Whether to enable parsing quirks */
+	//stream:@parserutils_inputstream,	/* < The inputstream */
+	//lexer:@css_lexer,		/* < The lexer to use */
+
+	//mut quirks:bool	/* < Whether to enable parsing quirks */
 
 // #define STACK_CHUNK 32
     //STACK_CHUNK: uint,
-	// states:DVec<u8>,	/**< Stack of states */
+	// states:DVec<u8>,	/* < Stack of states */
 
-	//tokens:~[u8],	/**< Vector of pending tokens */
+	//tokens:~[u8],	/* < Vector of pending tokens */
 
-	//pushback:@css_token,	/**< Push back buffer */
+	//pushback:@css_token,	/* < Push back buffer */
 
-	//parseError:bool,		/**< A parse error has occurred */
-	//open_items:DVec<u8>,	/**< Stack of open brackets */
+	//parseError:bool,		/* < A parse error has occurred */
+	//open_items:DVec<u8>,	/* < Stack of open brackets */
 
-	//match_char:u8,		/**< Close bracket type for parseAny */
+	//match_char:u8,		/* < Close bracket type for parseAny */
 
-	//last_was_ws:bool,		/**< Last token was whitespace */
+	//last_was_ws:bool,		/* < Last token was whitespace */
 
-	//mut event:css_parser_event_handler,	/**< Client's event handler */
-	//mut event_pw:@css_language		/*< Client data for event handler */
-
-	//css_allocator_fn alloc;		/**< Memory (de)allocation function */
+	//css_allocator_fn alloc;		/* < Memory (de)allocation function */
 	//void *pw;			/**< Client-specific private data */
+	//mut event:@css_parser_event_handler,	/* < Client's event handler */
+	mut event_pw:@css_language,		/* < Client data for event handler */
 	mut quirks:bool,
-	lcss_lexer_instance:@lcss_lexer
+	lcss_lexer_instance:@lcss_lexer,
+	lparserutils_instance:@lpu
 }
 
 /*
  * Css parser constructor
  */
-pub fn lcss_parser(lcss_lexer_inst:@lcss_lexer)->@lcss_parser {
-	@lcss_parser{  quirks:false,lcss_lexer_instance:lcss_lexer_inst }
+pub fn lcss_parser(lcss_lexer_inst:@lcss_lexer,lcss_language_inst:@css_language)->@lcss_parser {
+	@lcss_parser{ event_pw:lcss_language_inst, 
+		quirks:false,lcss_lexer_instance:lcss_lexer_inst , lparserutils_instance:lpu() }
 }
 
 
@@ -2984,30 +2416,97 @@ impl lcss_parser {
 	pub fn css__parser_create(&self)  {
 
 	}
-	/*
-	pub fn css__parser_setopt(&self, parser:@css_parser,  opt_type:css_parser_opttype,
-			params:@css_parser_optparams)-> css_result
+	
+	
+	pub fn css__parser_create_internal(&self,charset:~str, 
+			cs_source:css_charset_source ,pw :~[u8], initial:parser_state ) -> css_result
 	{
-		// if (parser == NULL || params == NULL)
-		// 	return CSS_BADPARM;
+		let mut err : css_result ;
+		//css_parser *p;
+		let mut perr : parserutils::parserutils_result ;
 
-		match(opt_type) 
-		{
-	     	CSS_PARSER_QUIRKS=>
-	     		{
-					parser.quirks = params.quirks;
-	     		},
-	     	CSS_PARSER_EVENT_HANDLER=>
-	     		{
-	     			parser.event = copy params.event_handler.handler;
-		 			parser.event_pw = copy params.event_handler.pw;
-	     		}
+		//if (alloc == NULL || parser == NULL)
+		//	return CSS_BADPARM;
+
+		//p = alloc(NULL, sizeof(css_parser), pw);
+		//if (p == NULL)
+		//	return CSS_NOMEM;
+		/*
+		perror = self.lparserutils_instance.parserutils_inputstream_create(charset, cs_source as u32,
+				css__charset_extract, (parserutils_alloc) alloc, pw,
+				&p->stream);
+		perror = parserutils_inputstream_create(charset,ccs)
+		if (perror != PARSERUTILS_OK) {
+			alloc(p, 0, pw);
+			return css_error_from_parserutils_error(perror);
 		}
-		
 
+		error = css__lexer_create(p->stream, alloc, pw, &p->lexer);
+		if (error != CSS_OK) {
+			parserutils_inputstream_destroy(p->stream);
+			alloc(p, 0, pw);
+			return error;
+		}
+
+		perror = parserutils_stack_create(sizeof(parser_state), 
+				STACK_CHUNK, (parserutils_alloc) alloc, pw,
+				&p->states);
+		if (perror != PARSERUTILS_OK) {
+			css__lexer_destroy(p->lexer);
+			parserutils_inputstream_destroy(p->stream);
+			alloc(p, 0, pw);
+			return css_error_from_parserutils_error(perror);
+		}
+
+		perror = parserutils_vector_create(sizeof(css_token), 
+				STACK_CHUNK, (parserutils_alloc) alloc, pw,
+				&p->tokens);
+		if (perror != PARSERUTILS_OK) {
+			parserutils_stack_destroy(p->states);
+			css__lexer_destroy(p->lexer);
+			parserutils_inputstream_destroy(p->stream);
+			alloc(p, 0, pw);
+			return css_error_from_parserutils_error(perror);
+		}
+
+		perror = parserutils_stack_create(sizeof(char), 
+				STACK_CHUNK, (parserutils_alloc) alloc, pw,
+				&p->open_items);
+		if (perror != PARSERUTILS_OK) {
+			parserutils_vector_destroy(p->tokens);
+			parserutils_stack_destroy(p->states);
+			css__lexer_destroy(p->lexer);
+			parserutils_inputstream_destroy(p->stream);
+			alloc(p, 0, pw);
+			return css_error_from_parserutils_error(perror);
+		}
+
+		perror = parserutils_stack_push(p->states, (void *) &initial);
+		if (perror != PARSERUTILS_OK) {
+			parserutils_stack_destroy(p->open_items);
+			parserutils_vector_destroy(p->tokens);
+			parserutils_stack_destroy(p->states);
+			css__lexer_destroy(p->lexer);
+			parserutils_inputstream_destroy(p->stream);
+			alloc(p, 0, pw);
+			return css_error_from_parserutils_error(perror);
+		}
+
+		p->quirks = false;
+		p->pushback = NULL;
+		p->parseError = false;
+		p->match_char = 0;
+		p->event = NULL;
+		p->last_was_ws = false;
+		p->event_pw = NULL;
+		p->alloc = alloc;
+		p->pw = pw;
+
+		*parser = p;
+		*/
 		CSS_GENERAL_OK
 	}
-	*/
+
 }
 
 
@@ -4177,7 +3676,7 @@ pub struct css_stylesheet {
 }
 
 
-pub fn lcss_stylesheet(parser_inst:@lcss_parser,lwc_inst:@lwc)->@css_stylesheet {
+pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 	@css_stylesheet{
 		                lwc_instance:lwc_inst,
 		                //parser_instance: parser_inst,
