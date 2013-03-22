@@ -2354,9 +2354,9 @@ pub struct lcss {
 pub fn lcss()->@lcss {
 	let lwc_inst        = lwc();
 	let lexer_inst      = lcss_lexer();
-	let parser_inst     = lcss_parser(lexer_inst);
-	let stylesheet_inst = lcss_stylesheet(parser_inst,lwc_inst);
+	let stylesheet_inst = lcss_stylesheet(lwc_inst);
 	let language_inst   = lcss_language(stylesheet_inst);
+	let parser_inst     = lcss_parser(lexer_inst,language_inst);
 	@lcss {
 		lwc_instance:lwc_inst,
 		lpu_instance:lpu(),
@@ -2629,8 +2629,14 @@ pub enum css_parser_opttype {
 /*
  * Css parser event handler function pointer
  */
-pub type css_parser_event_handler =  ~extern fn(css_intance:@lcss, event_type:css_parser_event, 
+pub type css_parser_event_handler =  @extern fn(css_intance:@lcss, event_type:css_parser_event, 
 		tokens:~[~str] , pw:@css_language) -> css_result;
+
+// null function for initializing
+pub fn dummy_par_ev_hand(css_intance:@lcss, event_type:css_parser_event, 
+		tokens:~[~str] , pw:@css_language) -> css_result {
+	CSS_GENERAL_OK
+}
 
 /*
  * Css parser event handler structure
@@ -2694,31 +2700,31 @@ pub struct parser_state
  * Css parser main strcuture
  */
 pub struct lcss_parser {
-	//stream:@parserutils_inputstream,	/**< The inputstream */
-	//lexer:@css_lexer,		/**< The lexer to use */
 
-	//mut quirks:bool	/**< Whether to enable parsing quirks */
+	//stream:@parserutils_inputstream,	/* < The inputstream */
+	//lexer:@css_lexer,		/* < The lexer to use */
+
+	//mut quirks:bool	/* < Whether to enable parsing quirks */
 
 // #define STACK_CHUNK 32
     //STACK_CHUNK: uint,
-	// states:DVec<u8>,	/**< Stack of states */
+	// states:DVec<u8>,	/* < Stack of states */
 
-	//tokens:~[u8],	/**< Vector of pending tokens */
+	//tokens:~[u8],	/* < Vector of pending tokens */
 
-	//pushback:@css_token,	/**< Push back buffer */
+	//pushback:@css_token,	/* < Push back buffer */
 
-	//parseError:bool,		/**< A parse error has occurred */
-	//open_items:DVec<u8>,	/**< Stack of open brackets */
+	//parseError:bool,		/* < A parse error has occurred */
+	//open_items:DVec<u8>,	/* < Stack of open brackets */
 
-	//match_char:u8,		/**< Close bracket type for parseAny */
+	//match_char:u8,		/* < Close bracket type for parseAny */
 
-	//last_was_ws:bool,		/**< Last token was whitespace */
+	//last_was_ws:bool,		/* < Last token was whitespace */
 
-	//mut event:css_parser_event_handler,	/**< Client's event handler */
-	//mut event_pw:@css_language		/*< Client data for event handler */
-
-	//css_allocator_fn alloc;		/**< Memory (de)allocation function */
+	//css_allocator_fn alloc;		/* < Memory (de)allocation function */
 	//void *pw;			/**< Client-specific private data */
+	//mut event:@css_parser_event_handler,	/* < Client's event handler */
+	mut event_pw:@css_language,		/* < Client data for event handler */
 	mut quirks:bool,
 	lcss_lexer_instance:@lcss_lexer,
 	lparserutils_instance:@lpu
@@ -2727,8 +2733,9 @@ pub struct lcss_parser {
 /*
  * Css parser constructor
  */
-pub fn lcss_parser(lcss_lexer_inst:@lcss_lexer)->@lcss_parser {
-	@lcss_parser{  quirks:false,lcss_lexer_instance:lcss_lexer_inst , lparserutils_instance:lpu() }
+pub fn lcss_parser(lcss_lexer_inst:@lcss_lexer,lcss_language_inst:@css_language)->@lcss_parser {
+	@lcss_parser{ event_pw:lcss_language_inst, 
+		quirks:false,lcss_lexer_instance:lcss_lexer_inst , lparserutils_instance:lpu() }
 }
 
 
@@ -2739,13 +2746,14 @@ impl lcss_parser {
 	pub fn css__parser_create(&self)  {
 
 	}
-
+	
+	
 	pub fn css__parser_create_internal(&self,charset:~str, 
 			cs_source:css_charset_source ,pw :~[u8], initial:parser_state ) -> css_result
 	{
 		let mut err : css_result ;
 		//css_parser *p;
-		let mut perr : parserutils_result ;
+		let mut perr : parserutils::parserutils_result ;
 
 		//if (alloc == NULL || parser == NULL)
 		//	return CSS_BADPARM;
@@ -2828,30 +2836,7 @@ impl lcss_parser {
 		*/
 		CSS_GENERAL_OK
 	}
-	/*
-	pub fn css__parser_setopt(&self, parser:@css_parser,  opt_type:css_parser_opttype,
-			params:@css_parser_optparams)-> css_result
-	{
-		// if (parser == NULL || params == NULL)
-		// 	return CSS_BADPARM;
 
-		match(opt_type) 
-		{
-	     	CSS_PARSER_QUIRKS=>
-	     		{
-					parser.quirks = params.quirks;
-	     		},
-	     	CSS_PARSER_EVENT_HANDLER=>
-	     		{
-	     			parser.event = copy params.event_handler.handler;
-		 			parser.event_pw = copy params.event_handler.pw;
-	     		}
-		}
-		
-
-		CSS_GENERAL_OK
-	}
-	*/
 }
 
 
@@ -3768,7 +3753,7 @@ pub struct css_stylesheet {
 	//selectors:@css_selector_hash,	TODO REPLACE WITH BUILT IN HASH TABLE
 		/* < Hashtable of selectors */
 	lwc_instance:@lwc,
-    parser_instance:@lcss_parser,
+    //parser_instance:@lcss_parser,
 	rule_count:u32,			/**< Number of rules in sheet */
 	rule_list:@css_rule ,			/**< List of rules in sheet */
 	last_rule:@css_rule ,			/**< Last rule in list */
@@ -3820,10 +3805,10 @@ pub struct css_stylesheet {
 }
 
 
-pub fn lcss_stylesheet(parser_inst:@lcss_parser,lwc_inst:@lwc)->@css_stylesheet {
+pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 	@css_stylesheet{
 		                lwc_instance:lwc_inst,
-		                parser_instance: parser_inst,
+		                //parser_instance: parser_inst,
 		            	rule_count:0,			/*< Number of rules in sheet */
 						rule_list:@css_rule
 						{
