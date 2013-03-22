@@ -38,7 +38,7 @@ use core::dvec::DVec;
 //To Do Should move to errors ---- Start
 pub enum css_result {
 		//CSS_OK  ,
-		CSS_RULE_CREATED(@css_rule),
+		CSS_RULE_CREATED_OK(@css_high_level),
 		CSS_RULE_SELECTOR_CREATED( @css_rule_selector),
 		CSS_RULE_CHARSET_CREATED(@css_rule_charset),
 		CSS_RULE_IMPORT_CREATED(@css_rule_import),
@@ -66,7 +66,7 @@ pub fn css_result_to_string(css_err : css_result ) -> ~str {
 	let mut result : ~str = ~"" ;
 	match css_err {
 
-		CSS_RULE_CREATED(x) => {result=~"Css rule created successfully"},
+		CSS_RULE_CREATED_OK(x) => {result=~"Css rule created successfully"},
 		CSS_RULE_SELECTOR_CREATED(x) => {result=~"Css rule selector created successfully"},
 		CSS_RULE_CHARSET_CREATED(x) => {result=~"Css rule charset created successfully"},
 		CSS_RULE_IMPORT_CREATED(x) => {result=~"Css rule imported successfully"},
@@ -1169,25 +1169,25 @@ pub struct css_rule {
 	next:@mut css_rule_node ,				/**< next in list */
 	prev:@mut css_rule_node ,				/**< previous in list */
 
-	rule_type  :  css_rule_type,		/**< css_rule_type */
+	mut rule_type  :  css_rule_type,		/**< css_rule_type */
 	mut index : uint,		/**< index in sheet */
 	mut items : uint,		/**< # items in rule */
 	mut ptype : uint		/*< css_rule_parent_type */
 }
 struct css_selector {
 	mut combinator:~[@css_selector],		/*< Combining selector */
-	mut rule:@css_rule_selector ,				/*< Owning rule */
+	mut rule:@css_high_level_ptr ,				/*< Owning rule */
 	mut specificity:u32,			//< Specificity of selector 
     mut data:@css_selector_detail		/*< Selector data */
 }
 pub struct css_rule_selector {
-	 mut base:css_rule,
+	 //mut base:css_rule,
 
 	 mut selectors:~[@css_selector],
 	 style:css_style 
 }
 pub struct css_rule_media {
-	base:css_rule ,
+	//base:css_rule ,
 
 	media:u64,
 
@@ -1195,7 +1195,7 @@ pub struct css_rule_media {
 	last_child:@mut  css_rule_node
 }
 pub struct css_rule_font_face {
-	base :css_rule,
+	//base :css_rule,
 
 	font_face:@css_font_face 
 }
@@ -1229,14 +1229,14 @@ pub struct css_font_face_src {
 }
 
 pub struct css_rule_page {
-	base:css_rule ,
+	//base:css_rule ,
 
 	selector:@css_selector ,
 	style:@css_style 
 }
 
 pub struct css_rule_import {
-	base:css_rule ,
+	//base:css_rule ,
 
 	url:@lwc_string,
 	media:u64,
@@ -1244,7 +1244,7 @@ pub struct css_rule_import {
 	sheet:@css_stylesheet
 }
 pub struct css_rule_charset {
-	base:css_rule ,
+	//base:css_rule ,
 
 	encoding:@lwc_string	/* \todo use MIB enum? */
 }
@@ -4047,7 +4047,203 @@ pub fn lcss_lexer()->@lcss_lexer {
 // ===========================================================================================================
 // CSS-LEXER implementation/data-structs ends here 
 // ===========================================================================================================
+pub enum css_high_level_ptr
+{
+	high_level_pointer(@css_high_level),
+	no_high_level_pointer
+}
+pub struct css_high_level
+{
+	mut base:@css_rule,
+	//rule_type : css_rule_type,
+	mut selector  : @css_rule_selector,
+	mut charset   : @css_rule_charset,
+	mut import    : @css_rule_import,
+	mut media     : @css_rule_media,
+	mut font_face : @css_rule_font_face,
+	mut page      : @css_rule_page
 
+}
+pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
+{
+	@css_high_level
+	{
+		base:@css_rule
+		{
+			parent:@rule(0),		
+			next:@mut NoRuleNode ,				
+		    prev:@mut NoRuleNode ,				
+		    rule_type  : CSS_RULE_UNKNOWN,		
+			index : 0,		
+			items : 0,		
+			ptype : 0	
+		},
+		//rule_type : CSS_RULE_UNKNOWN,
+		selector  : @css_rule_selector{
+						/*base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : rule_type,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},*/
+
+		 				selectors:~[],
+		 				style:css_style
+		 				{
+		 					bytecode:~[] ,
+							used : 0,
+							allocated: 0
+		 				},
+					},
+		charset   : @css_rule_charset{
+		    		/*base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : rule_type,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},*/
+
+		            encoding: sheet.lwc_instance.lwc_intern_string(@"")
+		    	},
+		import    : @css_rule_import{
+					/*base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  :  rule_type,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},*/
+					url:sheet.lwc_instance.lwc_intern_string(@""),
+		            media:0,
+
+		            sheet:sheet
+				},
+		media     : @css_rule_media{
+					/*base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : rule_type,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},*/
+
+					media:0,
+
+					first_child:@mut NoRuleNode,
+					last_child:@mut NoRuleNode
+				},
+		font_face : @css_rule_font_face{
+		    		/*base :css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : rule_type,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},*/
+					font_face:@css_font_face 
+						{
+							font_family:sheet.lwc_instance.lwc_intern_string(@""),
+							srcs:@css_font_face_src
+							{
+								location:sheet.lwc_instance.lwc_intern_string(@""),	
+								bits:~[]
+							},
+							n_srcs:0,
+		
+								
+							bits:~[]
+						}
+		    	},
+		page      : @css_rule_page{
+		    	/*base:css_rule
+						{
+							parent:@rule(0),		
+				        	next:@mut NoRuleNode ,				
+		                	prev:@mut NoRuleNode ,				
+		                	rule_type  : rule_type,		
+			            	index : 0,		
+			            	items : 0,		
+			            	ptype : 0	
+						},*/
+
+				selector:@css_selector 
+						{
+							combinator:~[],		/*< Combining selector */
+
+							rule:@no_high_level_pointer,/*@css_rule_selector
+								{//check for errors due to commenting this out
+									/*base:css_rule
+										{
+										parent:@rule(0),		
+				        				next:@mut NoRuleNode ,				
+		                				prev:@mut NoRuleNode ,				
+		                				rule_type  : CSS_RULE_UNKNOWN,		
+			            				index : 0,		
+			            				items : 0,		
+			            				ptype : 0	
+										},
+
+		 							selectors:~[],
+		 							style:css_style
+		 								{
+		 									bytecode:~[] ,
+											used : 0,
+											allocated: 0
+		 								},
+		 							},*/
+							
+							
+							specificity:CSS_SPECIFICITY_A,			
+
+							data:@css_selector_detail
+							{
+								qname:css_qname
+								{
+									ns : sheet.lwc_instance.lwc_intern_string(@"") ,
+									name : sheet.lwc_instance.lwc_intern_string(@"") 
+								},			
+								value:css_selector_detail_value
+								{
+									string:~"",		
+									a:0,
+									b:0
+								},	
+
+								type_of     :0 ,    		   
+								comb        :0 ,    		    
+								next        :0 ,     		     
+													            
+								value_type  :0,		        
+								negate      :0    		    
+							}
+						}	,
+				style:@css_style
+						{
+		 					bytecode:~[] ,
+							used : 0,
+							allocated: 0
+		 				},	
+		    }
+
+	}
+}
 
 // ===========================================================================================================
 // CSS-STYLESHEET implementation/data-structs start here 
@@ -4277,7 +4473,7 @@ pub fn css__propstrings_unref()
 		
 
 pub fn css__stylesheet_rule_add_selector(&self,/*sheet:  @css_stylesheet , */
-		  curRule:@css_rule_selector , selector: @css_selector )
+		  curRule:@css_high_level , selector: @css_selector )
 {
 	match(curRule.base.rule_type)
 	 {
@@ -4286,222 +4482,22 @@ pub fn css__stylesheet_rule_add_selector(&self,/*sheet:  @css_stylesheet , */
 	 }
 
 		
-	curRule.selectors.push(selector);//check later
+	curRule.selector.selectors.push(selector);//check later
 		
    	
 	curRule.base.items += 1;
-	curRule.selectors[curRule.base.items].rule= curRule;//problem 2
+	curRule.selector.selectors[curRule.base.items].rule = @high_level_pointer(curRule);//problem 2
 	 
 }
+
+
 pub fn  css__stylesheet_rule_create(@self,sheet:@css_stylesheet ,  rule_type:css_rule_type/*,
 		css_rule **rule*/)->css_result
 {
-		match(rule_type)
-		{
-			CSS_RULE_UNKNOWN=>{
-				let css_rule_instance= @css_rule
-				      {
-				      	parent:@rule(0),		
-				        next:@mut NoRuleNode ,				
-		                prev:@mut NoRuleNode ,				
-		                rule_type  :  rule_type,		
-			            index : 0,		
-			            items : 0,		
-			            ptype : 0
-			        };
-			        return  CSS_RULE_CREATED(css_rule_instance)
-			},
-			CSS_RULE_SELECTOR=>{
-				let css_rule_instance= @css_rule_selector
-					{
-						base:css_rule
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  : rule_type,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},
-
-		 				selectors:~[],
-		 				style:css_style
-		 				{
-		 					bytecode:~[] ,
-							used : 0,
-							allocated: 0
-		 				},
-					};
-					 return  CSS_RULE_SELECTOR_CREATED(css_rule_instance)
-		    },
-			
-		    CSS_RULE_CHARSET=>{
-		    	let css_rule_instance= @css_rule_charset
-		    	{
-		    		base:css_rule
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  : rule_type,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},
-
-		            encoding: self.lwc_instance.lwc_intern_string(@"")
-		    	};
-		    	return  CSS_RULE_CHARSET_CREATED(css_rule_instance)
-		    },
-			CSS_RULE_IMPORT=>{
-				let css_rule_instance= @css_rule_import
-				{
-					base:css_rule
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  :  rule_type,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},
-					url:self.lwc_instance.lwc_intern_string(@""),
-		            media:0,
-
-		            sheet:self
-				};
-				return  CSS_RULE_IMPORT_CREATED(css_rule_instance)
-			},
-			CSS_RULE_MEDIA=>{
-				let css_rule_instance= @css_rule_media
-				{
-					base:css_rule
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  : rule_type,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},
-
-					media:0,
-
-					first_child:@mut NoRuleNode,
-					last_child:@mut NoRuleNode
-				};
-				return  CSS_RULE_MEDIA_CREATED(css_rule_instance)
-			},
-			
-		    CSS_RULE_FONT_FACE=>{
-		    	let css_rule_instance= @css_rule_font_face
-		    	{
-		    		base :css_rule
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  : rule_type,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},
-					font_face:@css_font_face 
-						{
-							font_family:self.lwc_instance.lwc_intern_string(@""),
-							srcs:@css_font_face_src
-							{
-								location:self.lwc_instance.lwc_intern_string(@""),	
-								bits:~[]
-							},
-							n_srcs:0,
-		
-								
-							bits:~[]
-						}
-		    	};
-		    	return  CSS_RULE_FONT_FACE_CREATED(css_rule_instance)
-		    }
-			CSS_RULE_PAGE=>{
-		    	let css_rule_instance= @css_rule_page
-		    	{
-		    	base:css_rule
-						{
-							parent:@rule(0),		
-				        	next:@mut NoRuleNode ,				
-		                	prev:@mut NoRuleNode ,				
-		                	rule_type  : rule_type,		
-			            	index : 0,		
-			            	items : 0,		
-			            	ptype : 0	
-						},
-
-				selector:@css_selector 
-						{
-							combinator:~[],		/*< Combining selector */
-
-							rule:@css_rule_selector
-								{
-									base:css_rule
-										{
-										parent:@rule(0),		
-				        				next:@mut NoRuleNode ,				
-		                				prev:@mut NoRuleNode ,				
-		                				rule_type  : rule_type,		
-			            				index : 0,		
-			            				items : 0,		
-			            				ptype : 0	
-										},
-
-		 							selectors:~[],
-		 							style:css_style
-		 								{
-		 									bytecode:~[] ,
-											used : 0,
-											allocated: 0
-		 								},
-		 							},
-							
-							
-							specificity:CSS_SPECIFICITY_A,			
-
-							data:@css_selector_detail
-							{
-								qname:css_qname
-								{
-									ns : self.lwc_instance.lwc_intern_string(@"") ,
-									name : self.lwc_instance.lwc_intern_string(@"") 
-								},			
-								value:css_selector_detail_value
-								{
-									string:~"",		
-									a:0,
-									b:0
-								},	
-
-								type_of     :0 ,    		   
-								comb        :0 ,    		    
-								next        :0 ,     		     
-													            
-								value_type  :0,		        
-								negate      :0    		    
-							}
-						}	,
-				style:@css_style
-						{
-		 					bytecode:~[] ,
-							used : 0,
-							allocated: 0
-		 				},	
-		    };
-		    
-		    return  CSS_RULE_PAGE_CREATED(css_rule_instance)
-		},
-		}
-	CSS_GENERAL_OK
+	let mut high_level_css_struct:@css_high_level =  lcss_high_level(self);
+	high_level_css_struct.base.rule_type = rule_type;
+	CSS_RULE_CREATED_OK(high_level_css_struct)	
+	//CSS_GENERAL_OK
 }
 
 
