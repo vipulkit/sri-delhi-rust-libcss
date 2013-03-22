@@ -3709,7 +3709,7 @@ pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 						title:~"",			/*< Title of this sheet */
 
 						level:CSS_LEVEL_1  ,		/*< Language level of sheet */
-						parser:@mut SomeParserNode( parser_inst) ,			/*< Core parser for sheet */
+						parser:@mut NoParserNode ,			/*< Core parser for sheet */
 						parser_frontend:~[],			/*< Frontend parser */
 						//propstrings:@ mut[],		/*< Property strings, for parser */
 
@@ -3910,7 +3910,7 @@ pub fn css__stylesheet_string_get(sheet:@css_stylesheet, mut string_number:u32/*
 		css_allocator_fn alloc, void *alloc_pw, 
 		css_stylesheet **stylesheet*/)->css_result
 {
-	let sheet = lcss_stylesheet(lcss_parser(lcss_lexer()),lwc());
+	let sheet = lcss_stylesheet(lwc());
 	let Result=self.css__propstrings_get();
 	match(copy Result)
 	{
