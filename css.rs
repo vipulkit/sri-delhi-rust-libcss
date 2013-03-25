@@ -38,10 +38,12 @@ use core::dvec::DVec;
 //To Do Should move to errors ---- Start
 pub enum css_result {
 		//CSS_OK  ,
+		CSS_LANGUAGE_CREATED_OK(@mut css_language),
 		CSS_STYLESHEET_CREATE_OK(@css_stylesheet),
 		CSS_STRING_GET(@lwc_string),
 		CSS_STRING_ADD_OK(@mut u32),
 		CSS_RULE_CREATED_OK(@css_high_level),
+
 		/*CSS_RULE_SELECTOR_CREATED( @css_rule_selector),
 		CSS_RULE_CHARSET_CREATED(@css_rule_charset),
 		CSS_RULE_IMPORT_CREATED(@css_rule_import),
@@ -68,6 +70,7 @@ pub fn css_result_to_string(css_err : css_result ) -> ~str {
 
 	let mut result : ~str = ~"" ;
 	match css_err {
+		CSS_LANGUAGE_CREATED_OK(x)=> {result=~"language instance created successfully"},
 		CSS_STYLESHEET_CREATE_OK(sheet)=>{result=~"stylesheet successfully created"},
 		CSS_STRING_GET(x)=>{result = ~"get the string from vector part of stylesheet"},
 		CSS_RULE_CREATED_OK(x) => {result=~"Css rule created successfully"},
@@ -2299,8 +2302,6 @@ pub enum css_parser_opttype {
 /*
  * Css parser event handler function pointer
  */
-pub type css_parser_event_handler =  @extern fn(css_intance:@lcss, event_type:css_parser_event, 
-		tokens:~[~str] , pw:@css_language) -> css_result;
 
 // null function for initializing
 pub fn dummy_par_ev_hand(css_intance:@lcss, event_type:css_parser_event, 
@@ -2308,23 +2309,45 @@ pub fn dummy_par_ev_hand(css_intance:@lcss, event_type:css_parser_event,
 	CSS_GENERAL_OK
 }
 
+
+fn Stylesheet_event_handler(css_intance:@lcss, event_type:css_parser_event, 
+		tokens:~[~str] , pw:@css_language)-> css_result
+{
+	CSS_GENERAL_OK
+}
+
+pub type css_parser_event_handler =  @extern fn(css_intance:@lcss, event_type:css_parser_event, 
+		tokens:~[~str] , pw:@css_language) -> css_result;
+
 /*
  * Css parser event handler structure
  */
-pub struct css_parser_event_handler_{
-		 handler:css_parser_event_handler,
-		pw:@css_language
+pub struct css_parser_event_handler_struct{
+		mut  handler:css_parser_event_handler,
+		mut pw:@css_language
 }
 
 /*
  * Css parser opt paramemeters
  */
 pub struct  css_parser_optparams {
-	quirks:bool,
-	event_handler: css_parser_event_handler_
+	mut quirks:bool,
+	mut event_handler: css_parser_event_handler_struct
 	
 } 
-
+pub fn css_parser_optparams_instance()->@css_parser_optparams
+{   let sheet = lcss_stylesheet(lwc());
+	let lang=lcss_language(sheet);
+	@css_parser_optparams
+	{
+		quirks:false,
+		event_handler: css_parser_event_handler_struct
+		{
+			handler:@Stylesheet_event_handler,
+			pw:lang
+		}	
+	}
+}
 /**
  * Major state numbers
  */
@@ -2403,6 +2426,15 @@ pub struct lcss_parser {
 /*
  * Css parser constructor
  */
+
+ pub fn css__parser_create(charset:~str,cs_source:css_charset_source ,lcss_language_inst:@css_language)->@lcss_parser {
+	@lcss_parser{ event_pw:lcss_language_inst, 
+		quirks:false,lcss_lexer_instance:lcss_lexer() , lparserutils_instance:lpu() }
+}
+pub fn css__parser_create_for_inline_style(charset:~str,cs_source:css_charset_source ,lcss_language_inst:@css_language)->@lcss_parser {
+	@lcss_parser{ event_pw:lcss_language_inst, 
+		quirks:false,lcss_lexer_instance:lcss_lexer() , lparserutils_instance:lpu() }
+}
 pub fn lcss_parser(lcss_lexer_inst:@lcss_lexer,lcss_language_inst:@css_language)->@lcss_parser {
 	@lcss_parser{ event_pw:lcss_language_inst, 
 		quirks:false,lcss_lexer_instance:lcss_lexer_inst , lparserutils_instance:lpu() }
@@ -2506,7 +2538,26 @@ impl lcss_parser {
 		*/
 		CSS_GENERAL_OK
 	}
+pub fn css__parser_setopt(/*css_parser *parser,*/&self,  opt_type:css_parser_opttype,
+		params:@css_parser_optparams )-> css_result
+{
+	/*if (parser == NULL || params == NULL)
+		return CSS_BADPARM;
+*/
+	match (opt_type) {
+	 CSS_PARSER_QUIRKS=>{
+			//self.quirks = params.quirks;
+		},	
+		
+	 CSS_PARSER_EVENT_HANDLER=>	{
+			//self.event = params.event_handler.handler;
+			//self.event_pw = params.event_handler.pw;
+		}
+		
+	}
 
+	return CSS_GENERAL_OK;
+}
 }
 
 
@@ -3414,6 +3465,31 @@ pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
 	}
 }
 
+
+// ===========================================================================================================
+// CSS-SELECTOR implementation/data-structs start here 
+// ===========================================================================================================
+
+struct css_selector {
+	mut combinator:~[@css_selector],		/*< Combining selector */
+	mut rule:@css_high_level_ptr ,				/*< Owning rule */
+	mut specificity:u32,			//< Specificity of selector 
+    mut data:@css_selector_detail		/*< Selector data */
+}
+
+pub fn css__selector_hash_create()-> css_result
+{
+	CSS_GENERAL_OK
+}
+
+
+// ===========================================================================================================
+// CSS-SELECTOR implementation/data-structs ends here 
+// ===========================================================================================================
+
+
+
+
 // ===========================================================================================================
 // CSS-STYLESHEET implementation/data-structs start here 
 // ===========================================================================================================
@@ -3455,12 +3531,7 @@ pub struct css_rule {
 	mut items : uint,		/**< # items in rule */
 	mut ptype : uint		/*< css_rule_parent_type */
 }
-struct css_selector {
-	mut combinator:~[@css_selector],		/*< Combining selector */
-	mut rule:@css_high_level_ptr ,				/*< Owning rule */
-	mut specificity:u32,			//< Specificity of selector 
-    mut data:@css_selector_detail		/*< Selector data */
-}
+
 pub struct css_rule_selector {
 	 //mut base:css_rule,
 
@@ -3529,13 +3600,13 @@ pub struct css_rule_charset {
 
 	encoding:@lwc_string	/* \todo use MIB enum? */
 }
-pub type  css_import_notification_fn =  ~extern fn(pw:~[u8],
+pub type  css_import_notification_fn =  @extern fn(pw:~[u8],
 		 parent:@css_stylesheet,  url:@lwc_string, media:u64) -> css_result;
-pub type  css_url_resolution_fn =  ~extern fn(pw:~[u8],
+pub type  css_url_resolution_fn =  @extern fn(pw:~[u8],
 		base:~str, rel:@lwc_string , abs:@lwc_string ) -> css_result;
-pub type  css_color_resolution_fn =  ~extern fn(pw:~[u8],
+pub type  css_color_resolution_fn =  @extern fn(pw:~[u8],
 		name:@lwc_string,  color:@css_color) -> css_result;
-pub type  css_font_resolution_fn =  ~extern fn(pw:~[u8],
+pub type  css_font_resolution_fn =  @extern fn(pw:~[u8],
 		name:@lwc_string,  system_font:@css_system_font) -> css_result;
 
 
@@ -3575,19 +3646,19 @@ pub fn CFRF(pw:~[u8],name:@lwc_string,  system_font:@css_system_font) -> css_res
  */
 struct css_stylesheet_params {
 	/** ABI version of this structure */
-		params_version:u32 ,
+		mut params_version:u32 ,
 
 	/** The language level of the stylesheet */
-		level:css_language_level,
+		mut level:css_language_level,
 
 	/** The charset of the stylesheet data, or NULL to detect */
-		charset:~str,
+		mut charset:~str,
 
 	/** URL of stylesheet */
-		url:~str,
+		mut url:~str,
 
 	/** Title of stylesheet */
-		title:~str,
+		mut title:~str,
 
 	/** Permit quirky parsing of stylesheet */
 		mut allow_quirks:bool,
@@ -3596,25 +3667,25 @@ struct css_stylesheet_params {
 		mut inline_style:bool,
 
 	/** URL resolution function */
-		mut resolve : @fn (pw:~[u8],base:~str, rel:@lwc_string, abs: ~str) -> css_result,
+		mut resolve : @extern fn (pw:~[u8],base:~str, rel:@lwc_string, abs: @lwc_string) -> css_result,
 
 	/** Client private data for resolve */
 		mut resolve_pw:~[u8],
 
 	/** Import notification function */
-	//	mut import: @fn (pw:~[u8], parent:&css_stylesheet, url:~lwc_string, media:u64) -> css_result,
+		mut import: @extern fn (pw:~[u8], parent:@css_stylesheet, url:@lwc_string, media:u64) -> css_result,
 
 	/** Client private data for import */
 		mut import_pw:~[u8],
 
 	/** Colour resolution function */
-		mut color: @fn (pw:~[u8], name:@lwc_string, color:&css_color) -> css_result,
+		mut color: @extern fn (pw:~[u8], name:@lwc_string, color:@css_color) -> css_result,
 
 	/** Client private data for color */
 		mut color_pw:~[u8],
 
 	/** Font resolution function */
-		mut font: @fn(pw:~[u8], name:@lwc_string, system_font:&css_system_font) -> css_result ,
+		mut font: @extern fn(pw:~[u8], name:@lwc_string, system_font:@css_system_font) -> css_result ,
 
 	/** Client private data for font */
 		mut font_pw: ~[u8]
@@ -3623,48 +3694,48 @@ struct css_stylesheet_params {
 pub struct css_stylesheet {
 	//selectors:@css_selector_hash,	TODO REPLACE WITH BUILT IN HASH TABLE
 		/* < Hashtable of selectors */
-	lwc_instance:@lwc,
+	mut lwc_instance:@lwc,
     //parser_instance:@lcss_parser,
-	rule_count:u32,			/**< Number of rules in sheet */
-	rule_list:@css_rule ,			/**< List of rules in sheet */
-	last_rule:@css_rule ,			/**< Last rule in list */
+	mut rule_count:u32,			/**< Number of rules in sheet */
+	mut rule_list:@css_rule ,			/**< List of rules in sheet */
+	mut last_rule:@css_rule ,			/**< Last rule in list */
 
-	disabled:bool,				/**< Whether this sheet is 
+	mut disabled:bool,				/**< Whether this sheet is 
 						 * disabled */
 
-	url:~str,				/**< URL of this sheet */
-	title:~str,			/**< Title of this sheet */
+	mut url:~str,				/**< URL of this sheet */
+	mut title:~str,			/**< Title of this sheet */
 
-	level:css_language_level ,		/**< Language level of sheet */
-	parser:@mut css_parser_node ,			/**< Core parser for sheet */
-	parser_frontend:~[u8],			/**< Frontend parser */////////look for type
+	mut level:css_language_level ,		/**< Language level of sheet */
+	mut parser:@mut css_parser_node ,			/**< Core parser for sheet */
+	mut parser_frontend:@mut css_language_node,			/**< Frontend parser */////////look for type
 	//propstrings:@ mut[@lwc_string ],		/**< Property strings, for parser */
 
-	quirks_allowed:bool,			/**< Quirks permitted */
-	quirks_used:bool,			/**< Quirks actually used */
+	mut quirks_allowed:bool,			/**< Quirks permitted */
+	mut quirks_used:bool,			/**< Quirks actually used */
 
 	mut inline_style:bool,			/**< Is an inline style */
 
-	size:uint,				/**< Size, in bytes */
+	mut size:uint,				/**< Size, in bytes */
 
-	 import:css_import_notification_fn,	/**< Import notification function */
-	import_pw:~[u8],			/**< Private word *////////look for type
+	mut  import:css_import_notification_fn,	/**< Import notification function */
+	mut import_pw:~[u8],			/**< Private word *////////look for type
 
-	 resolve:css_url_resolution_fn,		/**< URL resolution function */
-	resolve_pw:~[u8],			/**< Private word *////////look for type
+	mut  resolve:css_url_resolution_fn,		/**< URL resolution function */
+	mut resolve_pw:~[u8],			/**< Private word *////////look for type
 
-	 color:css_color_resolution_fn,		/**< Colour resolution function */
-	color_pw:~[u8],				/**< Private word *////////look for type
+	mut  color:css_color_resolution_fn,		/**< Colour resolution function */
+	mut color_pw:~[u8],				/**< Private word *////////look for type
 
 	/** System font resolution function */
-	 font:css_font_resolution_fn,		
-	font_pw:~[u8],				/**< Private word *////////look for type
+	mut  font:css_font_resolution_fn,		
+	mut font_pw:~[u8],				/**< Private word *////////look for type
 
 
 	// alloc:css_allocator_fn,			/**< Allocation function */
 	//pw:~[u8],				/**< Private word */
   
-	cached_style:@css_style ,		/**< Cache for style parsing */
+	mut cached_style:@css_style ,		/**< Cache for style parsing */
   
 	mut string_vector:~[@lwc_string],            /**< Bytecode string vector */
 	//string_vector_l:u32,              /**< The string vector allocated
@@ -3710,7 +3781,7 @@ pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 
 						level:CSS_LEVEL_1  ,		/*< Language level of sheet */
 						parser:@mut NoParserNode ,			/*< Core parser for sheet */
-						parser_frontend:~[],			/*< Frontend parser */
+						parser_frontend:@mut NoLanguageNode,			/*< Frontend parser */
 						//propstrings:@ mut[],		/*< Property strings, for parser */
 
 						quirks_allowed:false,			/*< Quirks permitted */
@@ -3720,17 +3791,17 @@ pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 
 						size:0 ,				/*< Size, in bytes */
 
-		 				import:~CINF,	/*< Import notification function */
+		 				import:@CINF,	/*< Import notification function */
 						import_pw:~[],			/*< Private word */
 
-		 				resolve:~CURF,		/*< URL resolution function */
+		 				resolve:@CURF,		/*< URL resolution function */
 						resolve_pw:~[],			/*< Private word */
 
-		 				color:~CCRF,		/*< Colour resolution function */
+		 				color:@CCRF,		/*< Colour resolution function */
 						color_pw:~[],				/*< Private word */
 
 		/* System font resolution function */
-		 				font:~CFRF,		
+		 				font:@CFRF,		
 						font_pw:~[],				/*< Private word */
 
 
@@ -3911,9 +3982,8 @@ pub fn css__stylesheet_string_get(sheet:@css_stylesheet, mut string_number:u32/*
 		css_stylesheet **stylesheet*/)->css_result
 {
 	let sheet = lcss_stylesheet(lwc());
-	let Result=self.css__propstrings_get();
-	match(copy Result)
-	{
+	let mut Result=self.css__propstrings_get();
+	match(copy Result) {
 		CSS_PROPSTRINGS_OK(x) => sheet.propstrings = x,
 		_=>{ return Result}
 	}
@@ -3926,19 +3996,65 @@ pub fn css__stylesheet_string_get(sheet:@css_stylesheet, mut string_number:u32/*
 	else{
 		charsetDetect =  CSS_CHARSET_DICTATED;
 	}
+    //sheet.parser =  @mut SomeParserNode(css__parser_create(copy params.charset,charsetDetect,lcss_language(sheet)));
+	if (params.inline_style) {
+		
+		sheet.parser =  @mut SomeParserNode(css__parser_create_for_inline_style(copy params.charset,charsetDetect,lcss_language(sheet)));
+	} else {
+		sheet.parser =  @mut SomeParserNode(css__parser_create(copy params.charset,charsetDetect,lcss_language(sheet)));
+	}
+	sheet.quirks_allowed = params.allow_quirks;
+	let mut optparams:@css_parser_optparams = css_parser_optparams_instance() ;
+	
+	if (params.allow_quirks) {
+		optparams.quirks = true;
+		match(sheet.parser)
+		{
+			@SomeParserNode(x)=>Result = x.css__parser_setopt( CSS_PARSER_QUIRKS,optparams),
+			_=>{}
+		}
+		match (copy Result)
+		{
+			CSS_GENERAL_OK=>{}
+			_=>{
+				self.css__propstrings_unref();
+				return Result;
+			}
+		}
+	}
+	sheet.level = params.level;
+    Result = css__language_create(sheet, sheet.parser/*alloc, alloc_pw,*//*&sheet->parser_frontend*/);
+	match(copy Result)
+	{
+		CSS_LANGUAGE_CREATED_OK(lan)=> sheet.parser_frontend = @mut SomeLanguageNode(lan),
+		_=>{}
+	}
+    //TODO uncomment when selector hashtable is implemented
+	/*Result =  css__selector_hash_create();
+	match(copy Result)
+	{
+		CSS_SELECTOR_CREATE_OK(sel)=> sheet.selector=sel,
+		_=>{}
+	}
+*/
 
-	// if (params.inline_style) {
-	// 	Result = css__parser_create_for_inline_style(params.charset, 
-	// 		p,alloc, alloc_pw/*, &sheet->parser*/);
-	// } else {
-	// 	Result = css__parser_create(params->charset,p,
-	// 		alloc, alloc_pw/*, &sheet->parser*/);
-	// }
-	// match (Result)
-	// {
-	// 	CSS_PARSER_CREATED_OK(x) => sheet.parser = x,
-	// 	_=> return Result 
-	// }
+    sheet. url = copy params.url;
+    sheet. title = copy params.title;
+
+	sheet.resolve =copy params.resolve;
+	sheet.resolve_pw =copy params.resolve_pw;
+
+	sheet.import = copy params.import;
+	sheet.import_pw = copy params.import_pw;
+
+	sheet.color = copy params.color;
+	sheet.color_pw = copy params.color_pw;
+
+	sheet.font = copy params.font;
+	sheet.font_pw = copy params.font_pw;
+
+	/*sheet.alloc = alloc;
+	sheet.pw = alloc_pw;*/
 
 	CSS_STYLESHEET_CREATE_OK(sheet)
 }
@@ -3955,7 +4071,11 @@ pub fn css__stylesheet_string_get(sheet:@css_stylesheet, mut string_number:u32/*
 // ===========================================================================================================
 // CSS-LANGUAGE implementation/data-structs start here 
 // ===========================================================================================================
-
+pub enum css_language_node
+{
+	SomeLanguageNode(@mut css_language),
+  	NoLanguageNode
+}
 
 pub struct css_language {
 	sheet:@css_stylesheet ,		/**< The stylesheet to parse for */
@@ -4003,6 +4123,54 @@ pub fn lcss_language(sheet:@css_stylesheet)->@css_language {
 		            };
 	return css_language_instance;
 }
+pub fn  css__language_create( sheet:@css_stylesheet,parserNode:@mut css_parser_node) -> css_result
+	{
+		let lwc_inst=lwc();
+	let empty_lwc_string = lwc_inst.lwc_intern_string(@"");
+	let stack:@DVec<context_entry> = @dvec::DVec();
+	
+	//@css_language {
+					
+
+				let	css_language_instance = @mut css_language {
+							sheet:sheet,
+							lwc_instance:lwc_inst,		
+				    		STACK_CHUNK:32,
+							context:stack, 
+							state:CHARSET_PERMITTED,	
+							strings:copy sheet.propstrings,
+							
+							default_namespace:empty_lwc_string,	
+							
+							namespaces:@css_namespace
+							{
+								prefix:empty_lwc_string,	
+								uri:empty_lwc_string	
+							},	
+							num_namespaces:0	
+		
+		            };
+	
+		
+		css_language_instance.sheet=sheet;
+
+		
+
+		/*let params = @css_parser_optparams {
+			quirks:false,
+			event_handler: css_parser_event_handler_
+			{
+				handler:language_handle_event,
+				pw:css_language_instance
+			}
+		};*/ //see later
+		
+		
+		
+		return CSS_LANGUAGE_CREATED_OK(css_language_instance);
+	}
+
+
 impl css_language
  {
 
