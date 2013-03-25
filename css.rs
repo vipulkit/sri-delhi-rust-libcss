@@ -4258,3 +4258,1100 @@ pub fn handleDeclaration(&self, c:@css_language , vector:~[~str])->css_result
 // ===========================================================================================================
 // CSS-LANGUAGE implementation/data-structs ends here 
 // ===========================================================================================================
+
+
+
+// ===========================================================================================================
+// Important.h and important.c implementation/data-structs starts here 
+// ===========================================================================================================
+
+
+
+pub struct important 
+{
+	mut lpu_instance : @lpu,
+	    mut lwc_instance : @lwc,
+}
+
+pub fn important()->@important
+{
+	@important
+	{
+lpu_instance : lpu(),
+	     lwc_instance : lwc()
+	}
+}
+
+impl important
+{
+
+
+	pub fn css_parse_important(&self, cssLang : @css_language, tokenVector : ~[~css_token], result : ~u8) -> css_result
+	{
+		//let mut token : ~css_token = ~{token_type:CSS_TOKEN_EOF, data:{data:~[] ,len:0}, idata:self.lwc_instance.lwc_intern_string(@""), col:0, line:0} ;
+
+		// I think there is no need of this function, since we can ceck empty space here only...
+		//consumeWhiteSpace(vector, cntx); 
+
+		if tokenVector.is_empty() == true
+		{
+			return CSS_INVALID;
+		}
+
+		for tokenVector.each |&iter|
+		{
+			match(iter.token_type)
+			{
+				CSS_TOKEN_S  =>  {
+					// do nothing
+				},
+					     _	=>  {
+						     //token = iter; 
+						     match(iter.token_type)
+						     {
+							     CSS_TOKEN_IDENT		=>	{
+								     return CSS_INVALID;
+							     },
+							     _			=>	()
+						     }
+					     }
+
+				//  commenting to avoid compilation error
+				//  Need to fix it ASAP.
+
+				/*
+				   if lwc::lwc_instance.lwc_string_caseless_isequal(token.idata, cssLang.strings[IMPORTANT]) == true 
+				   {
+				   result |= FLAG_IMPORTANT;
+				   }	
+				   else
+				   {
+				   return CSS_INVALID;
+				   }
+				 */
+			}
+		}	
+
+		return CSS_GENERAL_OK;
+	}
+
+	// Commenting to avoid compilation error
+	pub fn css_make_style_important (&self, style : &css_style)
+	{
+
+		/*
+		   let styleBytecode : ~[u32] = style.bytecode;
+		   let styleLen : u32 = style.used; 
+		   let styleOffset : u32 = 0;
+
+		   while (styleOffset < styleLen)
+		   {
+		   let prop :  css_properties_e;
+		   let flags : u8;
+		   let value : u32;	
+		   let propVal : u32 = styleBytecode[styleOffset]; 		
+
+		// extracting propVal components, setting IMPORTANT FLAG
+		prop = propVal & 0x3ff;
+		flags = ((propVal >> 10) & 0xff) | FLAG_IMPORTANT;
+		value = propVal >> 18;	
+
+		// writing propVal back to bytecodes
+		styleBytecode[styleOffset] = prop & 0x3ff | flags << 10 | ((value & 0x3fff) << 18);
+
+		styleOffset += 1;	
+
+		// Advance past any porp-specific data		
+		if ((((propVal >> 10) & 0xff) & 0x2) == false)
+		{
+		match(styleBytecode)
+		{
+		CSS_PROP_AZIMUTH => {
+		if ((value & ~AZIMUTH_BEHIND) == AZIMUTH_ANGLE)
+		{
+		styleOffset += 2; // length + units 
+		}
+		},
+		CSS_PROP_BORDER_TOP_COLOR  |  CSS_PROP_BORDER_RIGHT_COLOR  | CSS_PROP_BORDER_BOTTOM_COLOR  |  CSS_PROP_BORDER_LEFT_COLOR  |  CSS_PROP_BACKGROUND_COLOR | CSS_PROP_COLUMN_RULE_COLOR  =>
+		{
+		//	assert(BACKGROUND_COLOR_SET == 	BORDER_COLOR_SET);
+		//	assert(BACKGROUND_COLOR_SET == 	COLUMN_RULE_COLOR_SET);
+
+		if (value == BACKGROUND_COLOR_SET)
+		{
+		styleOffset += 1; // colour 
+		}
+		},
+
+		CSS_PROP_BACKGROUND_IMAGE |  CSS_PROP_CUE_AFTER  | CSS_PROP_CUE_BEFORE  | CSS_PROP_LIST_STYLE_IMAGE  => 
+		{
+		//	assert(BACKGROUND_IMAGE_URI == CUE_AFTER_URI);
+		//      assert(BACKGROUND_IMAGE_URI == CUE_BEFORE_URI);
+		//	assert(BACKGROUND_IMAGE_URI == LIST_STYLE_IMAGE_URI);
+
+		if (value == BACKGROUND_IMAGE_URI) 
+		{
+		styleOffset += 1; // string table entry 
+		}
+		},
+
+		CSS_PROP_BACKGROUND_POSITION  =>
+		{ 
+		if ((value & 0xf0) == BACKGROUND_POSITION_HORZ_SET)
+		{
+		styleOffset += 2; // length + units 
+		}
+
+		if ((value & 0x0f) == BACKGROUND_POSITION_VERT_SET)
+		{
+		styleOffset += 2; // length + units 
+		}
+		},
+
+		CSS_PROP_BORDER_SPACING  => 
+		{
+		if (value == BORDER_SPACING_SET)
+		{
+			styleOffset += 4; // two length + units 
+		}
+	},
+
+		CSS_PROP_BORDER_TOP_WIDTH  | CSS_PROP_BORDER_RIGHT_WIDTH |	 CSS_PROP_BORDER_BOTTOM_WIDTH  |  CSS_PROP_BORDER_LEFT_WIDTH  |	 CSS_PROP_OUTLINE_WIDTH  | CSS_PROP_COLUMN_RULE_WIDTH  => 
+		{
+			//	assert(BORDER_WIDTH_SET == OUTLINE_WIDTH_SET);
+			//	assert(BORDER_WIDTH_SET == COLUMN_RULE_WIDTH_SET);
+
+			if (value == BORDER_WIDTH_SET)
+			{
+				styleOffset += 2; // length + units 
+			}
+		},
+
+		CSS_PROP_MARGIN_TOP  |  CSS_PROP_MARGIN_RIGHT | CSS_PROP_MARGIN_BOTTOM  | CSS_PROP_MARGIN_LEFT  | CSS_PROP_BOTTOM  | CSS_PROP_LEFT  | CSS_PROP_RIGHT  | CSS_PROP_TOP  | CSS_PROP_HEIGHT |  CSS_PROP_WIDTH  |  CSS_PROP_COLUMN_WIDTH  | CSS_PROP_COLUMN_GAP  => 
+		{
+			//	assert(BOTTOM_SET == LEFT_SET);
+			//	assert(BOTTOM_SET == RIGHT_SET);
+			//	assert(BOTTOM_SET == TOP_SET);
+			//	assert(BOTTOM_SET == HEIGHT_SET);
+			//	assert(BOTTOM_SET == MARGIN_SET);
+			//	assert(BOTTOM_SET == WIDTH_SET);
+			// 	assert(BOTTOM_SET == COLUMN_WIDTH_SET);
+			// 	assert(BOTTOM_SET == COLUMN_GAP_SET);
+
+			if (value == BOTTOM_SET) 
+			{
+				styleOffset += 2; // length + units 
+			}
+		},
+
+		CSS_PROP_CLIP  => 
+		{
+			if ((value & CLIP_SHAPE_MASK) == CLIP_SHAPE_RECT) {
+				if ((value & CLIP_RECT_TOP_AUTO) == 0)
+				{
+					styleOffset += 2; // length + units 
+				}
+				if ((value & CLIP_RECT_RIGHT_AUTO) == 0)
+				{
+					styleOffset += 2; // length + units 
+				}
+				if ((value & CLIP_RECT_BOTTOM_AUTO) == 0){
+					styleOffset += 2; // length + units 
+				}
+				if ((value & CLIP_RECT_LEFT_AUTO) == 0){
+					styleOffset += 2; // length + units 
+				}
+			}
+		},
+
+		CSS_PROP_COLOR  => 
+		{
+			if (value == COLOR_SET){				
+				styleOffset += 1; // colour
+			}
+		},
+
+		CSS_PROP_COLUMN_COUNT  => 
+		{
+			if (value == COLUMN_COUNT_SET){
+				styleOffset += 1; // colour 
+			}
+		},
+
+		CSS_PROP_CONTENT  => 
+		{
+			while (value != CONTENT_NORMAL && value != CONTENT_NONE) 
+			{
+				match (value & 0xff) 
+				{
+					CONTENT_COUNTER  |  CONTENT_URI  | CONTENT_ATTR  | CONTENT_STRING  => 
+					{
+						styleOffset += 1; // string table entry 
+					}
+					CONTENT_COUNTERS  => 
+					{
+						styleOffset+=2; // two string entries 
+					}
+					CONTENT_OPEN_QUOTE  | 	 CONTENT_CLOSE_QUOTE |	 CONTENT_NO_OPEN_QUOTE  | CONTENT_NO_CLOSE_QUOTE  => 
+					{
+						break;
+					}
+				}
+
+				value = styleBytecode[styleOffset];
+				styleOffset += 1;
+			}
+		},
+
+		CSS_PROP_COUNTER_INCREMENT  | CSS_PROP_COUNTER_RESET  => 
+		{
+			// assert(COUNTER_INCREMENT_NONE == COUNTER_RESET_NONE);
+
+			while (value != COUNTER_INCREMENT_NONE) {
+				styleOffset += 2; // string + integer 
+
+				value = styleBytecode[styleOffset];
+				styleOffset += 1;
+			}
+		},
+
+		CSS_PROP_CURSOR  =>
+		{ 
+			while (value == CURSOR_URI) {
+				styleOffset += 1; // string table entry 
+
+				value = styleBytecode[styleOffset];
+				styleOffset += 1;
+			}
+		},	
+
+		CSS_PROP_ELEVATION  => 
+		{
+			if (value == ELEVATION_ANGLE){			
+				styleOffset += 2; // length + units 
+			}
+		},
+
+		CSS_PROP_FONT_FAMILY  => 
+		{
+			while (value != FONT_FAMILY_END) 
+			{
+				match (value) 
+				{
+					FONT_FAMILY_STRING  | FONT_FAMILY_IDENT_LIST  => 
+					{		
+						styleOffset += 1; // string table entry
+						break;
+					},
+				}
+
+				value = styleBytecode[styleOffset];
+				styleOffset += 1;
+			}
+		},
+
+		CSS_PROP_FONT_SIZE  => 
+		{
+			if (value == FONT_SIZE_DIMENSION) {
+				styleOffset += 2; // length + units 
+			}
+		},
+
+		CSS_PROP_LETTER_SPACING  |  CSS_PROP_WORD_SPACING  => 
+		{
+			//	assert(LETTER_SPACING_SET == WORD_SPACING_SET);
+
+			if (value == LETTER_SPACING_SET){
+				styleOffset += 2; // length + units 
+			}
+		},
+
+		CSS_PROP_LINE_HEIGHT  => 
+		{
+			match (value) 
+			{
+				LINE_HEIGHT_NUMBER  => styleOffset += 1, 
+				LINE_HEIGHT_DIMENSION  => styleOffset += 2
+			}
+		},
+
+		CSS_PROP_MAX_HEIGHT  |  CSS_PROP_MAX_WIDTH  => 
+		{
+			// assert(MAX_HEIGHT_SET == MAX_WIDTH_SET);
+
+			if (value == MAX_HEIGHT_SET){
+				styleOffset += 2; // length + units 
+			}
+		},
+
+		CSS_PROP_PADDING_TOP |   CSS_PROP_PADDING_RIGHT  |  CSS_PROP_PADDING_BOTTOM  |	 CSS_PROP_PADDING_LEFT  | CSS_PROP_MIN_HEIGHT |	 CSS_PROP_MIN_WIDTH |	 CSS_PROP_PAUSE_AFTER | CSS_PROP_PAUSE_BEFORE  |
+			CSS_PROP_TEXT_INDENT  => 
+			{	
+				//assert(MIN_HEIGHT_SET == MIN_WIDTH_SET);
+				//assert(MIN_HEIGHT_SET == PADDING_SET);
+				//assert(MIN_HEIGHT_SET == PAUSE_AFTER_SET);
+				//assert(MIN_HEIGHT_SET == PAUSE_BEFORE_SET);
+				//assert(MIN_HEIGHT_SET == TEXT_INDENT_SET);
+
+				if (value == MIN_HEIGHT_SET){
+					styleOffset += 2; // length + units 
+				}
+			},
+
+		CSS_PROP_OPACITY  => 
+		{
+			if (value == OPACITY_SET) { 
+				styleOffset += 1; // value 
+			}
+		},
+
+		CSS_PROP_ORPHANS  |  CSS_PROP_PITCH_RANGE  | CSS_PROP_RICHNESS  | CSS_PROP_STRESS  |	 CSS_PROP_WIDOWS  =>
+		{
+			// assert(ORPHANS_SET == PITCH_RANGE_SET);
+			// assert(ORPHANS_SET == RICHNESS_SET);
+			// assert(ORPHANS_SET == STRESS_SET);
+			// assert(ORPHANS_SET == WIDOWS_SET);
+
+			if (value == ORPHANS_SET){
+				styleOffset  += 1; // value 
+			}
+		},
+
+		CSS_PROP_OUTLINE_COLOR  => 
+		{
+			if (value == OUTLINE_COLOR_SET){
+				styleOffset += 1; // color 
+			}
+		},
+
+		CSS_PROP_PITCH  => 
+		{
+			if (value == PITCH_FREQUENCY){
+				styleOffset += 2; // length + units 
+			}
+		},
+
+		CSS_PROP_PLAY_DURING  => 
+		{
+			if (value == PLAY_DURING_URI)	{
+				styleOffset += 1; // string table entry 
+			}
+		},
+
+		CSS_PROP_QUOTES  =>
+		{ 
+			while (value != QUOTES_NONE) {
+				styleOffset += 2; // two string table entries 
+
+				value = styleBytecode[styleOffset];
+				styleOffset += 1;
+			}
+		},
+
+		CSS_PROP_SPEECH_RATE  => 
+		{
+			if (value == SPEECH_RATE_SET) {
+				styleOffset += 1; // rate 
+			}
+		},
+
+		CSS_PROP_VERTICAL_ALIGN  => 
+		{
+			if (value == VERTICAL_ALIGN_SET){
+				styleOffset += 2; // length + units 
+			}
+		},
+
+		CSS_PROP_VOICE_FAMILY  => 
+		{
+			while (value != VOICE_FAMILY_END) {
+				match (value) 
+				{
+					VOICE_FAMILY_STRING  |	 VOICE_FAMILY_IDENT_LIST  => 
+					{
+						styleOffset += 1; // string table entry 
+						break; // coming out of while loop
+					}
+				}
+
+				value = styleBytecode[styleOffset];
+				styleOffset += 1;
+			}
+		},
+
+		CSS_PROP_VOLUME  => 
+		{
+			match (value) 
+			{
+				VOLUME_NUMBER  => styleOffset += 1, // value 
+				VOLUME_DIMENSION  => styleOffset += 2 // value + units 
+			}
+		},
+		CSS_PROP_Z_INDEX  => 
+		{
+			if (value == Z_INDEX_SET)
+			{
+				styleOffset += 1; // z index 
+			}
+		},
+	}
+	}	
+
+	}	
+	*/
+
+	}
+
+} // impl important ends
+
+
+
+
+// ===========================================================================================================
+// Important.h and important.c implementation/data-structs ends here 
+// ===========================================================================================================
+
+
+
+// ===========================================================================================================
+// Font_Face.h and Font_Face.c implementation/data-structs starts here 
+// ===========================================================================================================
+
+
+// Sushanta :
+// Ref: Propstrings.h
+pub enum UniversalEnum
+{
+
+	/* Universal selector */
+	UNIVERSAL,
+
+	/* At-rules */
+
+	// Sushanta: 
+	// CHARSET is removed , 'coz it was clashing with charset valriable used below in the code.
+	//CHARSET, LIBCSS_IMPORT, MEDIA, NAMESPACE, FONT_FACE, PAGE,
+	LIBCSS_IMPORT, MEDIA, NAMESPACE, FONT_FACE, PAGE,
+
+	/* Media types */
+	AURAL, BRAILLE, EMBOSSED, HANDHELD, PRINT, PROJECTION, 
+	SCREEN, SPEECH, TTY, TV, ALL,
+
+	/* Pseudo classes */
+	FIRST_CHILD, LINK, VISITED, HOVER, ACTIVE, FOCUS, LANG, 
+	/* LEFT, RIGHT, -- already in properties */ FIRST,
+	ROOT, NTH_CHILD, NTH_LAST_CHILD, NTH_OF_TYPE, NTH_LAST_OF_TYPE,
+	LAST_CHILD, FIRST_OF_TYPE, LAST_OF_TYPE, ONLY_CHILD,
+	ONLY_OF_TYPE, EMPTY, TARGET, ENABLED, DISABLED, CHECKED, NOT, 
+
+	/* Pseudo elements */
+	FIRST_LINE, FIRST_LETTER, BEFORE, AFTER,
+
+	/* Properties */
+	FIRST_PROP,
+
+
+	// Below mentione line is commented temporarily to avoid compilation error
+	//AZIMUTH = FIRST_PROP, 
+	BACKGROUND, BACKGROUND_ATTACHMENT, 
+	BACKGROUND_COLOR, BACKGROUND_IMAGE, BACKGROUND_POSITION, 
+	BACKGROUND_REPEAT, BORDER, BORDER_BOTTOM, BORDER_BOTTOM_COLOR, 
+	BORDER_BOTTOM_STYLE, BORDER_BOTTOM_WIDTH, BORDER_COLLAPSE, 
+	BORDER_COLOR, BORDER_LEFT, BORDER_LEFT_COLOR, BORDER_LEFT_STYLE, 
+	BORDER_LEFT_WIDTH, BORDER_RIGHT, BORDER_RIGHT_COLOR, 
+	BORDER_RIGHT_STYLE, BORDER_RIGHT_WIDTH, BORDER_SPACING, 
+	BORDER_STYLE, BORDER_TOP, BORDER_TOP_COLOR, BORDER_TOP_STYLE, 
+	BORDER_TOP_WIDTH, BORDER_WIDTH, BOTTOM, BREAK_AFTER, BREAK_BEFORE,
+	BREAK_INSIDE, CAPTION_SIDE, CLEAR, CLIP, COLOR, COLUMNS, COLUMN_COUNT,
+	COLUMN_FILL, COLUMN_GAP, COLUMN_RULE, COLUMN_RULE_COLOR,
+	COLUMN_RULE_STYLE, COLUMN_RULE_WIDTH, COLUMN_SPAN, COLUMN_WIDTH,
+	CONTENT, COUNTER_INCREMENT, COUNTER_RESET, CUE, CUE_AFTER, CUE_BEFORE,
+	CURSOR, DIRECTION, DISPLAY, ELEVATION, EMPTY_CELLS, LIBCSS_FLOAT, FONT,
+	FONT_FAMILY, FONT_SIZE, FONT_STYLE, FONT_VARIANT, FONT_WEIGHT, HEIGHT,
+	LEFT, LETTER_SPACING, LINE_HEIGHT, LIST_STYLE, LIST_STYLE_IMAGE,
+	LIST_STYLE_POSITION, LIST_STYLE_TYPE, MARGIN, MARGIN_BOTTOM,
+	MARGIN_LEFT, MARGIN_RIGHT, MARGIN_TOP, MAX_HEIGHT, MAX_WIDTH,
+	MIN_HEIGHT, MIN_WIDTH, OPACITY, ORPHANS, OUTLINE, OUTLINE_COLOR,
+	OUTLINE_STYLE, OUTLINE_WIDTH, OVERFLOW, PADDING, PADDING_BOTTOM,
+	PADDING_LEFT, PADDING_RIGHT, PADDING_TOP, PAGE_BREAK_AFTER,
+	PAGE_BREAK_BEFORE, PAGE_BREAK_INSIDE, PAUSE, PAUSE_AFTER, PAUSE_BEFORE,
+	PITCH_RANGE, PITCH, PLAY_DURING, POSITION, QUOTES, RICHNESS, RIGHT,
+	SPEAK_HEADER, SPEAK_NUMERAL, SPEAK_PUNCTUATION, SPEAK, SPEECH_RATE,
+	STRESS, TABLE_LAYOUT, TEXT_ALIGN, TEXT_DECORATION, TEXT_INDENT,
+	TEXT_TRANSFORM, TOP, UNICODE_BIDI, VERTICAL_ALIGN, VISIBILITY,
+	VOICE_FAMILY, VOLUME, WHITE_SPACE, WIDOWS, WIDTH, WORD_SPACING, Z_INDEX,
+
+	// Below mentione line is commented temporarily to avoid compilation error
+	//LAST_PROP = Z_INDEX,
+
+	/* Other keywords */
+	INHERIT, IMPORTANT, NONE, BOTH, FIXED, SCROLL, TRANSPARENT,
+	NO_REPEAT, REPEAT_X, REPEAT_Y, REPEAT, HIDDEN, DOTTED, DASHED,
+	SOLID, LIBCSS_DOUBLE, GROOVE, RIDGE, INSET, OUTSET, THIN, MEDIUM, THICK,
+	COLLAPSE, SEPARATE, AUTO, LTR, RTL, INLINE, BLOCK, LIST_ITEM, RUN_IN,
+	INLINE_BLOCK, TABLE, INLINE_TABLE, TABLE_ROW_GROUP, TABLE_HEADER_GROUP,
+	TABLE_FOOTER_GROUP, TABLE_ROW, TABLE_COLUMN_GROUP, TABLE_COLUMN,
+	TABLE_CELL, TABLE_CAPTION, BELOW, LEVEL, ABOVE, HIGHER, LOWER,
+	SHOW, HIDE, XX_SMALL, X_SMALL, SMALL, LARGE, X_LARGE, XX_LARGE,
+	LARGER, SMALLER, NORMAL, ITALIC, OBLIQUE, SMALL_CAPS, BOLD, BOLDER,
+	LIGHTER, INSIDE, OUTSIDE, DISC, CIRCLE, SQUARE, DECIMAL, 
+	DECIMAL_LEADING_ZERO, LOWER_ROMAN, UPPER_ROMAN, LOWER_GREEK,
+	LOWER_LATIN, UPPER_LATIN, ARMENIAN, GEORGIAN, LOWER_ALPHA, UPPER_ALPHA,
+	INVERT, VISIBLE, ALWAYS, AVOID, X_LOW, LOW, HIGH, X_HIGH, LIBCSS_STATIC,
+	RELATIVE, ABSOLUTE, ONCE, DIGITS, CONTINUOUS, CODE, SPELL_OUT, X_SLOW,
+	SLOW, FAST, X_FAST, FASTER, SLOWER, CENTER, JUSTIFY, CAPITALIZE,
+	UPPERCASE, LOWERCASE, EMBED, BIDI_OVERRIDE, BASELINE, SUB, SUPER,
+	TEXT_TOP, MIDDLE, TEXT_BOTTOM, SILENT, X_SOFT, SOFT, LOUD, X_LOUD,
+	PRE, NOWRAP, PRE_WRAP, PRE_LINE, LEFTWARDS, RIGHTWARDS, LEFT_SIDE,
+	FAR_LEFT, CENTER_LEFT, CENTER_RIGHT, FAR_RIGHT, RIGHT_SIDE, BEHIND, 
+	RECT, OPEN_QUOTE, CLOSE_QUOTE, NO_OPEN_QUOTE, NO_CLOSE_QUOTE, ATTR, 
+	COUNTER, COUNTERS, CROSSHAIR, DEFAULT, POINTER, MOVE, E_RESIZE, 
+	NE_RESIZE, NW_RESIZE, N_RESIZE, SE_RESIZE, SW_RESIZE, S_RESIZE, 
+	W_RESIZE, LIBCSS_TEXT, WAIT, HELP, PROGRESS, SERIF, SANS_SERIF, CURSIVE,
+	FANTASY, MONOSPACE, MALE, FEMALE, CHILD, MIX, UNDERLINE, OVERLINE, 
+	LINE_THROUGH, BLINK, RGB, RGBA, HSL, HSLA, LIBCSS_LEFT, LIBCSS_CENTER,
+	LIBCSS_RIGHT, CURRENTCOLOR, ODD, EVEN, SRC, LOCAL, INITIAL,
+	FORMAT, WOFF, TRUETYPE, OPENTYPE, EMBEDDED_OPENTYPE, SVG, COLUMN,
+	AVOID_PAGE, AVOID_COLUMN, BALANCE,
+
+	/* Named colours */
+	FIRST_COLOUR,
+
+	// Below mentione line is commented temporarily to avoid compilation error
+	// ALICEBLUE = FIRST_COLOUR, 
+	ANTIQUEWHITE, AQUA, AQUAMARINE, AZURE,
+	BEIGE, BISQUE, BLACK, BLANCHEDALMOND, BLUE, BLUEVIOLET, BROWN,
+	BURLYWOOD, CADETBLUE, CHARTREUSE, CHOCOLATE, CORAL, CORNFLOWERBLUE,
+	CORNSILK, CRIMSON, CYAN, DARKBLUE, DARKCYAN, DARKGOLDENROD, DARKGRAY,
+	DARKGREEN, DARKGREY, DARKKHAKI, DARKMAGENTA, DARKOLIVEGREEN, DARKORANGE,
+	DARKORCHID, DARKRED, DARKSALMON, DARKSEAGREEN, DARKSLATEBLUE,
+	DARKSLATEGRAY, DARKSLATEGREY, DARKTURQUOISE, DARKVIOLET, DEEPPINK,
+	DEEPSKYBLUE, DIMGRAY, DIMGREY, DODGERBLUE, FELDSPAR, FIREBRICK,
+	FLORALWHITE, FORESTGREEN, FUCHSIA, GAINSBORO, GHOSTWHITE, GOLD, 
+	GOLDENROD, GRAY, GREEN, GREENYELLOW, GREY, HONEYDEW, HOTPINK,
+	INDIANRED, INDIGO, IVORY, KHAKI, LAVENDER, LAVENDERBLUSH, LAWNGREEN,
+	LEMONCHIFFON, LIGHTBLUE, LIGHTCORAL, LIGHTCYAN, LIGHTGOLDENRODYELLOW,
+	LIGHTGRAY, LIGHTGREEN, LIGHTGREY, LIGHTPINK, LIGHTSALMON, LIGHTSEAGREEN,
+	LIGHTSKYBLUE, LIGHTSLATEBLUE, LIGHTSLATEGRAY, LIGHTSLATEGREY, 
+	LIGHTSTEELBLUE, LIGHTYELLOW, LIME, LIMEGREEN, LINEN, MAGENTA, MAROON,
+	MEDIUMAQUAMARINE, MEDIUMBLUE, MEDIUMORCHID, MEDIUMPURPLE, 
+	MEDIUMSEAGREEN, MEDIUMSLATEBLUE, MEDIUMSPRINGGREEN, MEDIUMTURQUOISE,
+	MEDIUMVIOLETRED, MIDNIGHTBLUE, MINTCREAM, MISTYROSE, MOCCASIN,
+	NAVAJOWHITE, NAVY, OLDLACE, OLIVE, OLIVEDRAB, ORANGE, ORANGERED,
+	ORCHID, PALEGOLDENROD, PALEGREEN, PALETURQUOISE, PALEVIOLETRED,
+	PAPAYAWHIP, PEACHPUFF, PERU, PINK, PLUM, POWDERBLUE, PURPLE, RED,
+	ROSYBROWN, ROYALBLUE, SADDLEBROWN, SALMON, SANDYBROWN, SEAGREEN,
+	SEASHELL, SIENNA, SILVER, SKYBLUE, SLATEBLUE, SLATEGRAY, SLATEGREY,
+	SNOW, SPRINGGREEN, STEELBLUE, TAN, TEAL, THISTLE, TOMATO, TURQUOISE, 
+	VIOLET, VIOLETRED, WHEAT, WHITE, WHITESMOKE, YELLOW, YELLOWGREEN,
+
+	// Below mentione line is commented to avoid temporarily compilation error
+	// LAST_COLOUR = YELLOWGREEN,
+
+	LAST_KNOWN
+}
+
+
+pub enum css_font_face_format {
+	CSS_FONT_FACE_FORMAT_UNSPECIFIED	= 	0x00,
+	CSS_FONT_FACE_FORMAT_WOFF		= 	0x01,
+	CSS_FONT_FACE_FORMAT_OPENTYPE		= 	0x02,
+	CSS_FONT_FACE_FORMAT_EMBEDDEDOPENTYPE	= 	0x04,
+	CSS_FONT_FACE_FORMAT_SVG		= 	0x08,
+	CSS_FONT_FACE_FORMAT_UNKNOWN		= 	0x10
+}
+
+
+pub struct css_rule_face {
+	base :css_rule,
+	mut font_face:@css_font_face 
+}
+
+pub enum css_font_face_location_type{
+		CSS_FONT_FACE_LOCATION_TYPE_UNSPECIFIED 	= 	0,
+		CSS_FONT_FACE_LOCATION_TYPE_LOCAL 		= 	1,
+		CSS_FONT_FACE_LOCATION_TYPE_URI 		= 	2
+			
+	}
+	
+
+pub struct font_face
+{
+	mut lpu_instance : @lpu,
+	    mut lwc_instance : @lwc,
+
+	    // Q: Should I include below mentioned functionas also in the structure ?
+	    //	cssLang : @css_language,		
+	    //	rule : @css_rule_face,
+	    //	font_face_location_type : @css_font_face_location_type,
+}
+
+pub fn font_face()->@font_face
+{
+	@font_face
+	{
+lpu_instance : lpu(),
+	     lwc_instance : lwc()				
+	}
+}
+
+impl font_face
+{
+
+	pub fn tokenIsChar(&self, token : @css_token, charData : u8) -> bool
+	{
+		let mut result : bool = false;
+
+		//if token.token_type == 0x09 && lwc::lwc_string_length(token.idata) == 1
+		match (token.token_type)	
+		{
+			CSS_TOKEN_CHAR	=>		
+			{
+				let mut tempCharData : u8 = lwc::lwc_string_data(token.idata)[0]; 
+
+				// ensuring lowerCase comparison
+				if tempCharData >= 'A' as u8 && tempCharData <= 'Z' as u8
+				{
+					tempCharData += ('a' - 'A') as u8;	
+				}
+				if tempCharData == charData
+				{
+					result = true;	
+				}
+				else
+				{
+					result = false;	
+				}
+			},
+				_	=>	()
+		}
+		return result; 
+	}
+
+	// consumes all whiteSpace tokens
+	pub fn consumeWhiteSpace(&self, tokenVector : ~[~css_token])
+	{	
+		for tokenVector.each |&iter|
+		{
+			match (iter.token_type) 
+			{
+				CSS_TOKEN_S	=>	break,
+						_		=>	{}
+			}	
+		}	
+	}	
+
+
+	//pub fn css_parse_font_descriptor(&self , cssLang : @css_language, descriptor : ~css_token, vector : ~parseutils_vector, cntx : ~int, rule_face : &css_rule_face) -> css_result
+	pub fn css_parse_font_descriptor(&self, cssLang : @css_language, descriptor : ~css_token, tokenVector : ~[~css_token], mut rule_face : &css_rule_face) -> css_result
+	{
+		let mut font_face  = rule_face.font_face ;
+
+		// initializing temporarily
+		let errorVal : css_result = CSS_GENERAL_OK;
+
+		// css_font_face_create Need to be implemented	
+
+		// Commenting temporarily to avoicd compilation error
+		//errorVal = self.css_font_face_create(cssLang.sheet.alloc, cssLang.sheet.pw, &font_face);  /* &font_face is this right ?*/ 
+
+		match errorVal
+		{
+			CSS_GENERAL_OK	=> 	{
+				rule_face.font_face = font_face;	
+			},
+					_		=>	{
+						return errorVal
+					}
+		}
+
+		if lwc::lwc_string_caseless_isequal(descriptor.idata, cssLang.strings[FONT_FAMILY as int]) == true 
+		{
+			return self.font_face_parse_font_family(cssLang, tokenVector, font_face);		
+		}
+		else if lwc::lwc_string_caseless_isequal(descriptor.idata, cssLang.strings[SRC as int]) ==  true 
+		{
+			return self.font_face_parse_src(cssLang, tokenVector, font_face);		
+		}
+		else if lwc::lwc_string_caseless_isequal(descriptor.idata, cssLang.strings[FONT_STYLE as int]) == true 
+		{
+			return self.font_face_parse_font_style(cssLang, tokenVector, font_face);		
+		}
+		else if lwc::lwc_string_caseless_isequal(descriptor.idata, cssLang.strings[FONT_WEIGHT as int]) ==  true
+		{
+			return self.font_face_parse_font_weight(cssLang, tokenVector, font_face);		
+		}
+
+		return CSS_GENERAL_OK;	
+	}
+
+	pub fn font_rule_font_family_reserved (&self, cssLang : @css_language, identifier : ~css_token) -> bool
+	{
+
+		return(		lwc::lwc_string_caseless_isequal(identifier.idata, cssLang.strings[SERIF as int]) == true || 
+				lwc::lwc_string_caseless_isequal(identifier.idata, cssLang.strings[SANS_SERIF as int]) ==  true || 
+				lwc::lwc_string_caseless_isequal(identifier.idata, cssLang.strings[CURSIVE as int]) ==  true || 
+				lwc::lwc_string_caseless_isequal(identifier.idata, cssLang.strings[FANTASY as int]) ==  true || 
+				lwc::lwc_string_caseless_isequal(identifier.idata, cssLang.strings[MONOSPACE as int]) ==  true || 
+				lwc::lwc_string_caseless_isequal(identifier.idata, cssLang.strings[INHERIT as int]) ==  true || 
+				lwc::lwc_string_caseless_isequal(identifier.idata, cssLang.strings[INITIAL as int]) ==  true || 
+				lwc::lwc_string_caseless_isequal(identifier.idata, cssLang.strings[DEFAULT as int]) ==  true
+		      ) ;
+	}
+
+	// pub fn font_face_parse_font_family (&self, cssLang : @css_language, vector : ~parseutils_vector, cntx : ~int,  font_face : ~css_font_face) -> css_result
+	pub fn font_face_parse_font_family (&self, cssLang : @css_language, tokenVector : ~[~css_token], font_face : @css_font_face) -> css_result
+	{
+		// Corresponding C code shows, that a function itself is being passed as an argument 
+		// Need to chk how come it is possible ?
+		/*
+		   let stringData : ~lwc_instance.lwc_string ;
+		   let error : css_result =  	
+		 */
+
+		return CSS_GENERAL_OK;
+	}
+
+	// pub fn font_face_src_parse_format (&self, cssLang : @css_language, vector : ~parseutils_vector, cntx : ~int,  font_face_format : ~css_font_face) -> css_result
+	pub fn font_face_src_parse_format (&self, cssLang : @css_language, tokenVector : ~[~css_token], mut font_face_format : css_font_face_format) -> css_result
+	{
+		font_face_format = CSS_FONT_FACE_FORMAT_UNSPECIFIED;	
+
+		self.consumeWhiteSpace(copy tokenVector);
+		//let token : ~css_token = self.lpu_instance.parseutils_vector_iterate(tokenVector); 
+
+		for tokenVector.each |&token|
+		{
+			match (token.token_type)
+			{
+				CSS_TOKEN_STRING	=>	{
+					if  lwc::lwc_string_isequal(token.idata, cssLang.strings[WOFF as int]) == true 
+					{
+						// Sushanta: How to implement bitwise operator in RUST?
+						// font_face_format |= CSS_FONT_FACE_FORMAT_WOFF ; 	
+					}
+					else if   lwc::lwc_string_isequal(token.idata, cssLang.strings[TRUETYPE as int]) ==  true  ||
+						lwc::lwc_string_isequal(token.idata, cssLang.strings[OPENTYPE as int]) == true 
+						{
+							// font_face_format |= CSS_FONT_FACE_FORMAT_OPENTYPE ; 	
+						}
+					else if   lwc::lwc_string_isequal(token.idata, cssLang.strings[EMBEDDED_OPENTYPE as int]) == true 
+					{
+							//font_face_format |= CSS_FONT_FACE_FORMAT_EMBEDDEDOPENTYPE ; 	
+					}
+					else if   lwc::lwc_string_isequal(token.idata, cssLang.strings[SVG as int]) == true 
+					{
+					//	font_face_format |= CSS_FONT_FACE_FORMAT_SVG; 	
+					}
+					else
+					{	
+						//font_face_format |= CSS_FONT_FACE_FORMAT_UNKNOWN; 	
+					}	
+
+					// Sushanta: Do we need this ?
+					// self.consumeWhiteSpace(tokenVector);
+
+				},
+							_			=>	return CSS_INVALID	
+			}
+
+		}
+
+		// temporary comment
+		/*
+		if (self.tokenIsChar(token, ')') == false)
+		{
+			return CSS_INVALID;	
+		}
+		*/
+		
+		return CSS_GENERAL_OK;
+	}
+
+	// pub fn font_face_src_parse_spec_or_name (&self, cssLang : @css_language, vector : ~parseutils_vector, cntx : ~int, location : ~lwc_string, font_face_location_type : ~css_font_face_location_type, font_face_format : ~css_font_face) -> css_result
+	pub fn font_face_src_parse_spec_or_name (&self, cssLang : @css_language, tokenVector : ~[~css_token], location : ~lwc_string, mut font_face_location_type : css_font_face_location_type, font_face_format : css_font_face_format) -> css_result
+	{
+		let mut errorVal : css_result = CSS_GENERAL_OK;
+		self.consumeWhiteSpace(copy tokenVector);		
+		//let token : ~css_token = self.lpu_instance.parseutils_vector_iterate(tokenVector); 
+
+		for tokenVector.each |&token|
+		{
+			//if token.type == CSS_TOKEN_URI
+			match(token.token_type) 
+			{
+				CSS_TOKEN_URI	=> {
+					// Sushanta: temporary comment
+					/*
+					errorVal = cssLang.sheet.resolve(cssLang.sheet.resolve_pw, cssLang.sheet.url, token.idata, location);
+					if errorVal != CSS_GENERAL_OK
+					{
+						return errorVal;
+					}
+					*/
+	
+					font_face_location_type = CSS_FONT_FACE_LOCATION_TYPE_URI; 
+					//self.consumeWhiteSpace(tokenVector);		
+
+					// Sushanta: 	
+					//token =  self.lpu_instance.parserutils_vector_peek(tokenVector);
+
+					match(token.token_type)
+					{
+						CSS_TOKEN_FUNCTION 	=> {
+							if  (lwc::lwc_string_caseless_isequal(token.idata, cssLang.strings[FORMAT as int]) == true) 
+							{
+								//self.lpu_instance.parserutils_vector_iterate(tokenVector);	
+								 //  Sushanta: Do we need this
+								/*
+								errorVal = self.font_face_src_parse_format(cssLang, tokenVector, font_face_format);
+
+								match(errorVal)
+								{
+									CSS_GENERAL_OK  =>	return errorVal,
+											_	=>	()
+								}
+								*/													
+							}	
+
+						},
+									_			=>	()
+
+					}				
+
+					},
+						CSS_TOKEN_FUNCTION 	=>	{
+							if (lwc::lwc_string_caseless_isequal(token.idata, cssLang.strings[LOCAL as int]) == true)
+							{
+								// Sushanta: Do we need this fun
+								//self.consumeWhiteSpace(tokenVector);	
+								// below mentioned fun is defined in Parse/Properties/Utils.c
+								// think abt 4th parameter namely NULL
+
+								// Below mentioned function calls function pointer, Commenting temporarily
+								// Commenting to avoid compilation error
+								/*
+								errorVal = css_ident_list_or_string_to_string(cssLang, tokenVector, NULL, location);
+
+								if errorVal != CSS_GENERAL_OK 
+								{
+									return errorVal;	
+								}
+								*/
+
+								// Sushanta: Do we need this fun
+								//self.consumeWhiteSpace(tokenVector);
+								
+								// see precisely at which condition CSS_INVALID should be called
+								/*
+								token =  self.lpu_instance.parserutils_vector_iterate(tokenVector);	
+
+								if self.tokenIsChar(token, ')') == false
+								{
+									return CSS_INVALID;	
+								}
+								*/
+
+								font_face_location_type = CSS_FONT_FACE_LOCATION_TYPE_LOCAL; 
+							}
+						},
+						_	=>	{
+							return CSS_INVALID;	
+						}
+			} // match block ends
+		}
+
+		return CSS_GENERAL_OK;
+	}
+
+	// In this function, LABELs are used
+	// pub fn font_face_parse_src (&self, cssLang : @css_language, vector : ~parseutils_vector, cntx : ~int,  font_face : ~css_font_face) -> css_result
+	pub fn font_face_parse_src (&self, cssLang : @css_language, tokenVector : ~[~css_token], font_face : @css_font_face) -> css_result
+	{
+		//let orig_cntx : int = *cntx;
+		let errorVal : css_result = CSS_GENERAL_OK;	
+		let n_srcs : u32 = 0;	
+		let srcs : ~css_font_face_src;
+		let new_srcs : ~css_font_face_src;
+
+		self.consumeWhiteSpace(copy tokenVector);
+		//token = self.lpu_instance.parserutils_vector_iterate(tokenVector);
+
+		//while self.tokenIsChar(token, ',')
+			
+		for tokenVector.each |&token|
+		{
+			let font_face_location : ~lwc_string ;
+			let font_face_location_type : css_font_face_location_type = CSS_FONT_FACE_LOCATION_TYPE_UNSPECIFIED;
+			let font_face_format : css_font_face_format = CSS_FONT_FACE_FORMAT_UNSPECIFIED; 	
+
+			// Sushanta: Temporary comment
+			//errorVal =  self.font_face_src_parse_spec_or_name(cssLang, tokenVector, font_face_location, font_face_location_type, font_face_format);  
+			//if errorVal != CSS_GENERAL_OK
+			match(errorVal)
+			{
+				CSS_GENERAL_OK 	=>
+				{
+					// *cntx = orig_cntx;
+					// Q: what to do here ?
+					// if srcs != NULL 			
+				},
+					_		=>	()
+			}
+
+			// But how / where new_srcs is initialized ?
+
+			// Sushanta: commenting temporarily
+			/*
+			srcs = new_srcs;
+			srcs[n_srcs].location = font_face_location; 		
+
+			srcs[n_srcs].bits[0] = font_face_format << 2 | font_face_location_type;
+			n_srcs += 1;		
+			*/
+			// Do we need this	
+			//self.consumeWhiteSpace(tokenVector);
+		}
+
+		// Q: below mentioned function is defined in src/selects/Font_face.c
+
+		// Sushanta: commenting temporarily
+		//errorVal =  self.css_font_face_set_srcs(font_face, srcs, n_srcs); 
+
+		return errorVal;
+	}
+
+	//pub fn font_face_parse_font_style (&self, cssLang : @css_language, vector : ~parseutils_vector, cntx : ~int,  font_face : ~css_font_face) -> css_result
+	pub fn font_face_parse_font_style (&self, cssLang : @css_language, tokenVector : ~[~css_token], font_face : @css_font_face) -> css_result
+	{
+		let mut errorVal : css_result = CSS_GENERAL_OK; 
+		let mut style : css_font_style_e = CSS_FONT_STYLE_INHERIT; 
+
+		for tokenVector.each |&token|
+		{
+			match(token.token_type)
+			{
+				CSS_TOKEN_IDENT		=>	return CSS_INVALID,
+				_			=>	{
+								if lwc::lwc_string_caseless_isequal(token.idata, cssLang.strings[NORMAL as int]) == true 
+								{
+									style = CSS_FONT_STYLE_NORMAL;	
+								}
+								else if lwc::lwc_string_caseless_isequal(token.idata, cssLang.strings[ITALIC as int]) == true
+								{
+									style = CSS_FONT_STYLE_ITALIC;	
+								}
+								else if lwc::lwc_string_caseless_isequal(token.idata, cssLang.strings[OBLIQUE as int]) == true
+								{
+									style = CSS_FONT_STYLE_OBLIQUE;	
+								}
+								else
+								{
+									errorVal = CSS_INVALID;
+								}
+							}
+
+			}	
+
+		}
+
+		// commenting temporarily
+		/*
+		   if errorVal == CSS_GENERAL_OK
+		   {
+		   font_face.bits[0] = (font_face.bits[0] & 0xfc) | style;
+		   }
+		   else
+		   {
+		//*cntx = orig_cntx;	
+		();
+		}	
+		 */
+
+		return 	errorVal;
+	}
+
+	// pub fn font_face_parse_font_weight (cssLang : @css_language, vector : ~lpu_instance. parseutils_vector, cntx : ~int,  font_face : ~css_font_face) -> css_result
+	pub fn font_face_parse_font_weight (&self, cssLang : @css_language, tokenVector : ~[~css_token],  font_face : @css_font_face) -> css_result
+	{
+		let mut errorVal : css_result = CSS_GENERAL_OK; 
+		let mut weight : css_font_weight_e = CSS_FONT_WEIGHT_INHERIT ; 
+		// let token : ~css_token = self.lpu_instance.parseutils_vector_iterate(tokenVector);
+
+		for tokenVector.each |&token|
+		{
+			match token.token_type
+			{
+				CSS_TOKEN_NUMBER	=>{
+					let consumed : uint = 0;
+
+					//  is it right to write @consumed, or should I write &consumed
+					// I think "&consumed" is for READONLY values
+
+					// below mentioned function namely "css_number_from_lwc_string" is writtten in utils.c
+					// sushanta: commenting temporarily 
+					/*
+					let number : u32 = self.css_number_from_lwc_string(token.idata, true, @consumed);
+				
+					// invalid if there are trailing characters  
+					if consumed != lwc::lwc_string_length(token.idata)
+					{
+						return CSS_INVALID;	
+					}
+					*/
+					//sushanta: temporary initialization
+					let number : u32 = 0x00;
+
+					match(number >>10)
+					{
+						100	=>	weight = CSS_FONT_WEIGHT_100,		
+							200	=>	weight = CSS_FONT_WEIGHT_200,		
+							300	=>	weight = CSS_FONT_WEIGHT_300,		
+							400	=>	weight = CSS_FONT_WEIGHT_400,		
+							500	=>	weight = CSS_FONT_WEIGHT_500,		
+							600	=>	weight = CSS_FONT_WEIGHT_600,		
+							700	=>	weight = CSS_FONT_WEIGHT_700,		
+							800	=>	weight = CSS_FONT_WEIGHT_800,		
+							900	=>	weight = CSS_FONT_WEIGHT_900,		
+							_	=>	return CSS_INVALID
+
+
+					}		
+				},
+							CSS_TOKEN_IDENT		=>{
+								if lwc::lwc_string_caseless_isequal(token.idata, cssLang.strings[NORMAL as int]) == true
+								{
+									weight = CSS_FONT_WEIGHT_NORMAL;	
+								}
+								else if lwc::lwc_string_caseless_isequal(token.idata, cssLang.strings[BOLD as int]) == true
+								{
+									weight = CSS_FONT_WEIGHT_BOLD;	
+								}
+								else
+								{
+									errorVal = CSS_INVALID;
+								}	
+
+								match (errorVal)
+								{
+									CSS_GENERAL_OK  =>	{
+										// font_face.bits[0] = (font_face.bits[0] & 0xc3) | (weight << 2);	
+									}
+									_		=>	{	
+										();
+									}
+								}
+							},
+				_		=>	()	
+
+			} // match token.token_type ends 
+		} // for loop ends
+		return errorVal;
+	}	// end of font_face_pasre_font_wweight	
+					
+}
+
+
+// ===========================================================================================================
+// Font_Face.h and Font_Face.c implementation/data-structs starts here 
+// ===========================================================================================================
