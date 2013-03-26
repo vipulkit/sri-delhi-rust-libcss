@@ -43,7 +43,14 @@ pub enum css_result {
 		CSS_STRING_GET(@lwc_string),
 		CSS_STRING_ADD_OK(@mut u32),
 		CSS_RULE_CREATED_OK(@css_high_level),
-
+		CSS_IMPORTS_PENDING_OK(@lwc_string,u64),
+		CSS_GET_LANGUAGE_LEVEL(css_language_level),
+		CSS_GET_URL(~str),
+		CSS_GET_TITLE(~str),
+		CSS_IS_QUIRK_ALLOWED(bool),
+		CSS_IS_QUIRK_USED(bool),
+		CSS_GET_SHEET_DISABLED(bool),
+		CSS_STYLECREATED_OK(@css_style_Node),
 		/*CSS_RULE_SELECTOR_CREATED( @css_rule_selector),
 		CSS_RULE_CHARSET_CREATED(@css_rule_charset),
 		CSS_RULE_IMPORT_CREATED(@css_rule_import),
@@ -70,11 +77,19 @@ pub fn css_result_to_string(css_err : css_result ) -> ~str {
 
 	let mut result : ~str = ~"" ;
 	match css_err {
+		CSS_IMPORTS_PENDING_OK(x,y)=>{result=~"import pending list created"}
 		CSS_LANGUAGE_CREATED_OK(x)=> {result=~"language instance created successfully"},
 		CSS_STYLESHEET_CREATE_OK(sheet)=>{result=~"stylesheet successfully created"},
 		CSS_STRING_GET(x)=>{result = ~"get the string from vector part of stylesheet"},
 		CSS_RULE_CREATED_OK(x) => {result=~"Css rule created successfully"},
 		CSS_STRING_ADD_OK(x)  => {result = ~"string added to stylesheet successfully"}, 
+		CSS_GET_LANGUAGE_LEVEL(x)=>{result= ~"get language level"},
+		CSS_GET_URL(x)=>{result=~"get url"},
+		CSS_GET_TITLE(x)=>{result=~"get title"},
+		CSS_IS_QUIRK_ALLOWED(x)=>{result = ~"is Quirks allowed?"},
+		CSS_IS_QUIRK_USED(x)=>{result= ~"IS_QUIRK_USED?"},
+		CSS_GET_SHEET_DISABLED(x)=>{result=~"_GET_if-SHEET_DISABLED"},
+		CSS_STYLECREATED_OK(x)=>{result=~"Style created successfully"}
 		/*CSS_RULE_SELECTOR_CREATED(x) => {result=~"Css rule selector created successfully"},
 		CSS_RULE_CHARSET_CREATED(x) => {result=~"Css rule charset created successfully"},
 		CSS_RULE_IMPORT_CREATED(x) => {result=~"Css rule imported successfully"},
@@ -1019,13 +1034,16 @@ const CSS_SPECIFICITY_D:u32=0x00000001;
 
 
 //pub type css_code_t  =  ~[u32];
-
+enum css_style_Node{
+	SomeStyleNode(@css_style),
+	NoStyleNode
+}
 pub struct css_style{
 
-	bytecode:~[css_code_t] ,
-	used : u32,
-	allocated: u32/*,
-	sheet:@css_stylesheet*/
+	mut bytecode:~[css_code_t] ,
+	//mut used : u32,
+	//mut allocated: u32,
+	mut sheet:@StyleSheetNode
 
 
 }
@@ -2445,10 +2463,15 @@ pub fn lcss_parser(lcss_lexer_inst:@lcss_lexer,lcss_language_inst:@css_language)
  * Css parser implementation
  */
 impl lcss_parser {
+	pub fn css__parser_completed(&self)->css_result {
+	CSS_GENERAL_OK
+	}
 	pub fn css__parser_create(&self)  {
 
 	}
-	
+	pub fn css__parser_parse_chunk(&self, data:~[u8]) -> css_result{
+     CSS_GENERAL_OK
+	}
 	
 	pub fn css__parser_create_internal(&self,charset:~str, 
 			cs_source:css_charset_source ,pw :~[u8], initial:parser_state ) -> css_result
@@ -3269,7 +3292,7 @@ pub fn lcss_lexer()->@lcss_lexer {
 // ===========================================================================================================
 pub enum css_high_level_ptr
 {
-	high_level_pointer(@css_high_level),
+	high_level_pointer(@mut css_high_level),
 	no_high_level_pointer
 }
 pub struct css_high_level
@@ -3281,11 +3304,14 @@ pub struct css_high_level
 	mut import    : @css_rule_import,
 	mut media     : @css_rule_media,
 	mut font_face : @css_rule_font_face,
-	mut page      : @css_rule_page
+	mut page      : @css_rule_page,
+	mut prev      : @mut css_high_level_ptr,
+	mut next      : @mut css_high_level_ptr
 
 }
-pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
+pub fn lcss_high_level(/*sheet:@css_stylesheet*/)-> @css_high_level
 {
+	let lwc_instance= lwc();
 	@css_high_level
 	{
 		base:@css_rule
@@ -3315,8 +3341,9 @@ pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
 		 				style:css_style
 		 				{
 		 					bytecode:~[] ,
-							used : 0,
-							allocated: 0
+							//used : 0,
+							//allocated: 0,
+							sheet:@NoStyleSheetNode
 		 				},
 					},
 		charset   : @css_rule_charset{
@@ -3331,7 +3358,7 @@ pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
 			            	ptype : 0	
 						},*/
 
-		            encoding: sheet.lwc_instance.lwc_intern_string(@"")
+		            encoding: lwc_instance.lwc_intern_string(@"")
 		    	},
 		import    : @css_rule_import{
 					/*base:css_rule
@@ -3344,10 +3371,10 @@ pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
 			            	items : 0,		
 			            	ptype : 0	
 						},*/
-					url:sheet.lwc_instance.lwc_intern_string(@""),
+					url:lwc_instance.lwc_intern_string(@""),
 		            media:0,
 
-		            sheet:sheet
+		            sheet:@mut NoStyleSheetNode
 				},
 		media     : @css_rule_media{
 					/*base:css_rule
@@ -3379,10 +3406,10 @@ pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
 						},*/
 					font_face:@css_font_face 
 						{
-							font_family:sheet.lwc_instance.lwc_intern_string(@""),
+							font_family:lwc_instance.lwc_intern_string(@""),
 							srcs:@css_font_face_src
 							{
-								location:sheet.lwc_instance.lwc_intern_string(@""),	
+								location:lwc_instance.lwc_intern_string(@""),	
 								bits:~[]
 							},
 							n_srcs:0,
@@ -3436,8 +3463,8 @@ pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
 							{
 								qname:css_qname
 								{
-									ns : sheet.lwc_instance.lwc_intern_string(@"") ,
-									name : sheet.lwc_instance.lwc_intern_string(@"") 
+									ns : lwc_instance.lwc_intern_string(@"") ,
+									name : lwc_instance.lwc_intern_string(@"") 
 								},			
 								value:css_selector_detail_value
 								{
@@ -3457,12 +3484,16 @@ pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
 				style:@css_style
 						{
 		 					bytecode:~[] ,
-							used : 0,
-							allocated: 0
+							//used : 0,
+							//allocated: 0,
+							sheet:@NoStyleSheetNode
 		 				},	
-		    }
+		    },
+		   prev: @mut no_high_level_pointer,
+		   next:@mut no_high_level_pointer 
 
 	}
+
 }
 
 
@@ -3590,10 +3621,10 @@ pub struct css_rule_page {
 pub struct css_rule_import {
 	//base:css_rule ,
 
-	url:@lwc_string,
-	media:u64,
+	mut url:@lwc_string,
+	mut media:u64,
 
-	sheet:@css_stylesheet
+	mut sheet:@mut StyleSheetNode
 }
 pub struct css_rule_charset {
 	//base:css_rule ,
@@ -3690,6 +3721,11 @@ struct css_stylesheet_params {
 	/** Client private data for font */
 		mut font_pw: ~[u8]
 }
+pub enum StyleSheetNode
+{
+	SomeStyleSheetNode(@mut css_stylesheet),
+	NoStyleSheetNode
+}
 
 pub struct css_stylesheet {
 	//selectors:@css_selector_hash,	TODO REPLACE WITH BUILT IN HASH TABLE
@@ -3697,8 +3733,8 @@ pub struct css_stylesheet {
 	mut lwc_instance:@lwc,
     //parser_instance:@lcss_parser,
 	mut rule_count:u32,			/**< Number of rules in sheet */
-	mut rule_list:@css_rule ,			/**< List of rules in sheet */
-	mut last_rule:@css_rule ,			/**< Last rule in list */
+	mut rule_list:@mut css_high_level_ptr ,			/**< List of rules in sheet */
+	mut last_rule:@mut css_high_level_ptr,			/**< Last rule in list */
 
 	mut disabled:bool,				/**< Whether this sheet is 
 						 * disabled */
@@ -3735,7 +3771,7 @@ pub struct css_stylesheet {
 	// alloc:css_allocator_fn,			/**< Allocation function */
 	//pw:~[u8],				/**< Private word */
   
-	mut cached_style:@css_style ,		/**< Cache for style parsing */
+	mut cached_style:@ css_style_Node ,		/**< Cache for style parsing */
   
 	mut string_vector:~[@lwc_string],            /**< Bytecode string vector */
 	//string_vector_l:u32,              /**< The string vector allocated
@@ -3746,13 +3782,13 @@ pub struct css_stylesheet {
 	mut propstrings:~[@lwc_string]					 
 }
 
-
+const CSS_STYLE_DEFAULT_SIZE:u32 =16;
 pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 	@css_stylesheet{
 		                lwc_instance:lwc_inst,
 		                //parser_instance: parser_inst,
 		            	rule_count:0,			/*< Number of rules in sheet */
-						rule_list:@css_rule
+						rule_list:@mut no_high_level_pointer/*css_rule
 						{
 							parent:@rule(0),		
 				        	next:@mut NoRuleNode ,				
@@ -3761,8 +3797,8 @@ pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 			            	index : 0,		
 			            	items : 0,		
 			            	ptype : 0	
-						},			/*< List of rules in sheet */
-						last_rule:@css_rule 
+						}*/,			/*< List of rules in sheet */
+						last_rule:@mut no_high_level_pointer/*css_rule 
 						{
 							parent:@rule(0),		
 				        	next:@mut NoRuleNode ,				
@@ -3771,7 +3807,7 @@ pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 			            	index : 0,		
 			            	items : 0,		
 			            	ptype : 0	
-						},			/*< Last rule in list */
+						}*/,			/*< Last rule in list */
 
 						disabled:false,				/*< Whether this sheet is 
 							                          * disabled */
@@ -3808,12 +3844,7 @@ pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 		// alloc:css_allocator_fn,			/*< Allocation function */
 		//pw:~[u8],				/*< Private word */
 	  
-						cached_style:@css_style
-		 				{
-		 					bytecode:~[] ,
-							used : 0,
-							allocated: 0
-		 				},		/*< Cache for style parsing */
+						cached_style:@NoStyleNode,	/*< Cache for style parsing */
 	  
 						string_vector:~[],            /*< Bytecode string vector */
 						//string_vector_l:0,              /*< The string vector allocated
@@ -3878,7 +3909,7 @@ pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 impl css_stylesheet {
 
 
-pub fn css__propstrings_unref()
+pub fn css__propstrings_unref(&self)
 	{
 		self.propstrings_call_count  -=1;
 
@@ -3914,7 +3945,7 @@ pub fn css__propstrings_unref()
 		
 
 pub fn css__stylesheet_rule_add_selector(&self,/*sheet:  @css_stylesheet , */
-		  curRule:@css_high_level , selector: @css_selector )
+		 mut curRule:@mut css_high_level , selector: @css_selector )
 {
 	match(curRule.base.rule_type)
 	 {
@@ -3935,7 +3966,7 @@ pub fn css__stylesheet_rule_add_selector(&self,/*sheet:  @css_stylesheet , */
 pub fn  css__stylesheet_rule_create(@self,sheet:@css_stylesheet ,  rule_type:css_rule_type/*,
 		css_rule **rule*/)->css_result
 {
-	let mut high_level_css_struct:@css_high_level =  lcss_high_level(self);
+	let mut high_level_css_struct:@css_high_level =  lcss_high_level(/*self*/);
 	high_level_css_struct.base.rule_type = rule_type;
 	CSS_RULE_CREATED_OK(high_level_css_struct)	
 	//CSS_GENERAL_OK
@@ -3967,14 +3998,14 @@ pub fn css__stylesheet_string_add(&self,sheet:css_stylesheet , string:@lwc_strin
 	
 }
 
-pub fn css__stylesheet_string_get(sheet:@css_stylesheet, mut string_number:u32/*, lwc_string **string*/)->css_result
+pub fn css__stylesheet_string_get(/*sheet:@css_stylesheet,*/ &self,mut string_number:u32/*, lwc_string **string*/)->css_result
 {
 	string_number -= 1;
-    if string_number > sheet.string_vector.len() as u32
+    if string_number > self.string_vector.len() as u32
     {
     	return CSS_BADPARM;
     }
-    CSS_STRING_GET(sheet.string_vector[string_number])
+    CSS_STRING_GET(self.string_vector[string_number])
 }
 
  pub fn css_stylesheet_create(&self,params:@css_stylesheet_params /*,
@@ -4058,6 +4089,235 @@ pub fn css__stylesheet_string_get(sheet:@css_stylesheet, mut string_number:u32/*
 
 	CSS_STYLESHEET_CREATE_OK(sheet)
 }
+
+pub fn css_stylesheet_append_data( &self,
+		data:~[u8])-> css_result
+{
+	/*if (sheet == NULL || data == NULL)
+		return CSS_BADPARM;
+
+	if (sheet->parser == NULL)
+		return CSS_INVALID;*/
+		match(self.parser)
+		{
+			@SomeParserNode(x)=>return x.css__parser_parse_chunk( data),
+			_=> return CSS_INVALID
+		}
+
+	
+}
+pub fn css_stylesheet_data_done(&self/*css_stylesheet *sheet*/)-> css_result
+{
+	let mut Result:css_result;
+	match(self.parser)
+	{
+		@SomeParserNode(x)=> Result = x.css__parser_completed(),
+		_=>return CSS_INVALID
+	}
+
+	self.parser_frontend = @mut NoLanguageNode;
+	self.parser = @mut NoParserNode;
+
+    let mut iter:@mut css_high_level_ptr = self.rule_list;
+    loop 
+    	{
+    		match(iter)
+    		{
+    			@high_level_pointer(x)=> {
+    				iter=x.next;
+    				match(x.base.rule_type)
+    				{
+    					CSS_RULE_UNKNOWN=>{},
+    					CSS_RULE_CHARSET=>{},
+    					CSS_RULE_IMPORT=>{
+    						let mut importOfHighLevel@css_rule_import=x.import;
+    						match(x.import.sheet)
+    						{
+    							@SomeStyleSheetNode(x)=>{},
+    							@NoStyleSheetNode=> return CSS_IMPORTS_PENDING
+    						}
+    						
+    					},
+    					_=>{break;}
+    				}
+    			},
+    			@no_high_level_pointer=> {break;}    
+    		}
+       	}
+    
+
+
+	CSS_GENERAL_OK
+}
+pub fn css_stylesheet_next_pending_import(&self/*,
+		url:@lwc_string , media:u64*/)->css_result
+{
+	let mut iter:@mut css_high_level_ptr = self.rule_list;
+	let mut url:@lwc_string;
+	let mut media:u64;
+    loop 
+    	{
+    		match(iter)
+    		{
+    			@high_level_pointer(x)=> {
+    				iter=x.next;
+    				match(x.base.rule_type)
+    				{
+    					CSS_RULE_UNKNOWN=>{},
+    					CSS_RULE_CHARSET=>{},
+    					CSS_RULE_IMPORT=>{
+    						let mut importOfHighLevel@css_rule_import=x.import;
+    						match(x.import.sheet)
+    						{
+    							@SomeStyleSheetNode(x)=>{},
+    							@NoStyleSheetNode=>  {
+    								url = x.import.url;
+    								media = x.import.media;
+    								return CSS_IMPORTS_PENDING_OK(url,media);
+    							}
+    						}
+    						
+    					},
+    					_=>{break;}
+    				}
+    			},
+    			@no_high_level_pointer=> {break;}    
+    		}
+       	}
+	
+
+	return CSS_INVALID;
+}
+
+pub fn css_stylesheet_register_import(&self,
+		import:@mut css_stylesheet)-> css_result
+{
+	let mut iter:@mut css_high_level_ptr = self.rule_list;
+	//let mut url:@lwc_string;
+	//let mut media:u64;
+    loop 
+    	{
+    		match(iter)
+    		{
+    			@high_level_pointer(x)=> {
+    				
+    				match(x.base.rule_type)
+    				{
+    					CSS_RULE_UNKNOWN=>{},
+    					CSS_RULE_CHARSET=>{},
+    					CSS_RULE_IMPORT=>{
+    						
+    						match(x.import.sheet)
+    						{
+    							@SomeStyleSheetNode(x)=>{},
+    							@NoStyleSheetNode=>  {
+    								x.import.sheet=@mut SomeStyleSheetNode(import);
+    								return CSS_GENERAL_OK;
+    							}
+    						}
+    						
+    					},
+    					_=>{break;}
+    				}
+    				iter=x.next;
+    			},
+    			@no_high_level_pointer=> {break;}    
+    		}
+       	}
+	
+
+	return CSS_INVALID;
+	
+}
+pub fn css_stylesheet_get_language_level(&self )-> css_result
+{
+	/*if (sheet == NULL || level == NULL)
+		return CSS_BADPARM;
+
+	*level = sheet->level;*/
+
+	return CSS_GET_LANGUAGE_LEVEL(self.level);
+}
+
+pub fn css_stylesheet_get_url(&self)-> css_result
+{
+	/*if (sheet == NULL || url == NULL)
+		return CSS_BADPARM;
+
+	*url = sheet->url;*/
+
+	return CSS_GET_URL( copy self.url);
+}
+pub fn css_stylesheet_get_title(&self)-> css_result
+{
+	return CSS_GET_TITLE(copy self.title);
+}
+
+pub fn css_stylesheet_quirks_allowed(&self)-> css_result
+{
+	return CSS_IS_QUIRK_ALLOWED(self.quirks_allowed);
+}
+
+pub fn css_stylesheet_used_quirks(&self)-> css_result
+{
+	return CSS_IS_QUIRK_USED(self.quirks_used);
+}
+
+pub fn css_stylesheet_get_disabled(&self)-> css_result
+{
+	return CSS_GET_SHEET_DISABLED(self.disabled);
+}
+pub fn css_stylesheet_set_disabled(&self,disabled:bool)-> css_result
+{
+	self.disabled = disabled;
+	return CSS_GENERAL_OK;
+}
+pub fn css_stylesheet_size(&self, size:uint)-> css_result
+{
+    CSS_GENERAL_OK//(size)
+	//not implemented
+}
+pub fn css__stylesheet_style_create(@mut self)-> css_result
+{
+	match(self.cached_style)
+	{
+		@SomeStyleNode(Style)=>{
+			self.cached_style= @NoStyleNode;
+			CSS_STYLECREATED_OK(@SomeStyleNode(Style));
+		},
+		@NoStyleNode=>{}
+	}
+	let mut Style=@css_style
+	{
+		bytecode:~[] ,
+		//used : 0,
+		//allocated: CSS_STYLE_DEFAULT_SIZE,
+		sheet:@SomeStyleSheetNode(self)
+
+	};
+	CSS_STYLECREATED_OK(@SomeStyleNode(Style))
+}
+
+static pub fn css__stylesheet_merge_style(target:@css_style ,  style:@css_style)-> css_result
+{
+	
+	target.bytecode = vec::append(copy target.bytecode, style.bytecode);
+	CSS_GENERAL_OK
+
+}
+pub fn css__stylesheet_style_append(style:@css_style,  css_code:css_code_t)-> css_result
+{
+  style.bytecode.push(css_code);
+  CSS_GENERAL_OK
+}
+//check this functn
+pub fn css__stylesheet_style_vappend(style:@css_style,  css_code:~[css_code_t])-> css_result
+{
+	style.bytecode = vec::append(copy style.bytecode, css_code);
+	CSS_GENERAL_OK
+}
+
+
 
 }
 
