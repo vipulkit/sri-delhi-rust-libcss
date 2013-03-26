@@ -2664,7 +2664,7 @@ impl lcss_lexer {
         }
     }
 
-    fn css__lexer_get_token(&self) -> (Token, Option<ParseError>) {
+    pub fn css__lexer_get_token(&self) -> (Token, Option<ParseError>) {
         if self.is_eof() { 
             (EOF, None) 
         }
@@ -3219,6 +3219,10 @@ impl lcss_lexer {
     pub fn error_token(&self ,t: Token, message: ~str) -> (Token, Option<ParseError>) {
         (t, Some(ParseError{message: message}))
     }
+
+    pub fn css__lexer_create(input: @parserutils_inputstream) -> css_result {
+    	CSS_GENERAL_OK
+    }
 }
 
 pub fn lcss_lexer()->@lcss_lexer {
@@ -3227,9 +3231,6 @@ pub fn lcss_lexer()->@lcss_lexer {
     length: 0, 
     position: 0 }
 }
-
-
-
 
 
 // ===========================================================================================================
