@@ -38,10 +38,19 @@ use core::dvec::DVec;
 //To Do Should move to errors ---- Start
 pub enum css_result {
 		//CSS_OK  ,
+		CSS_LANGUAGE_CREATED_OK(@mut css_language),
 		CSS_STYLESHEET_CREATE_OK(@css_stylesheet),
 		CSS_STRING_GET(@lwc_string),
 		CSS_STRING_ADD_OK(@mut u32),
 		CSS_RULE_CREATED_OK(@css_high_level),
+		CSS_IMPORTS_PENDING_OK(@lwc_string,u64),
+		CSS_GET_LANGUAGE_LEVEL(css_language_level),
+		CSS_GET_URL(~str),
+		CSS_GET_TITLE(~str),
+		CSS_IS_QUIRK_ALLOWED(bool),
+		CSS_IS_QUIRK_USED(bool),
+		CSS_GET_SHEET_DISABLED(bool),
+		CSS_STYLECREATED_OK(@css_style_Node),
 		/*CSS_RULE_SELECTOR_CREATED( @css_rule_selector),
 		CSS_RULE_CHARSET_CREATED(@css_rule_charset),
 		CSS_RULE_IMPORT_CREATED(@css_rule_import),
@@ -68,10 +77,19 @@ pub fn css_result_to_string(css_err : css_result ) -> ~str {
 
 	let mut result : ~str = ~"" ;
 	match css_err {
+		CSS_IMPORTS_PENDING_OK(x,y)=>{result=~"import pending list created"}
+		CSS_LANGUAGE_CREATED_OK(x)=> {result=~"language instance created successfully"},
 		CSS_STYLESHEET_CREATE_OK(sheet)=>{result=~"stylesheet successfully created"},
 		CSS_STRING_GET(x)=>{result = ~"get the string from vector part of stylesheet"},
 		CSS_RULE_CREATED_OK(x) => {result=~"Css rule created successfully"},
 		CSS_STRING_ADD_OK(x)  => {result = ~"string added to stylesheet successfully"}, 
+		CSS_GET_LANGUAGE_LEVEL(x)=>{result= ~"get language level"},
+		CSS_GET_URL(x)=>{result=~"get url"},
+		CSS_GET_TITLE(x)=>{result=~"get title"},
+		CSS_IS_QUIRK_ALLOWED(x)=>{result = ~"is Quirks allowed?"},
+		CSS_IS_QUIRK_USED(x)=>{result= ~"IS_QUIRK_USED?"},
+		CSS_GET_SHEET_DISABLED(x)=>{result=~"_GET_if-SHEET_DISABLED"},
+		CSS_STYLECREATED_OK(x)=>{result=~"Style created successfully"}
 		/*CSS_RULE_SELECTOR_CREATED(x) => {result=~"Css rule selector created successfully"},
 		CSS_RULE_CHARSET_CREATED(x) => {result=~"Css rule charset created successfully"},
 		CSS_RULE_IMPORT_CREATED(x) => {result=~"Css rule imported successfully"},
@@ -1016,13 +1034,16 @@ const CSS_SPECIFICITY_D:u32=0x00000001;
 
 
 //pub type css_code_t  =  ~[u32];
-
+enum css_style_Node{
+	SomeStyleNode(@css_style),
+	NoStyleNode
+}
 pub struct css_style{
 
-	bytecode:~[css_code_t] ,
-	used : u32,
-	allocated: u32/*,
-	sheet:@css_stylesheet*/
+	mut bytecode:~[css_code_t] ,
+	//mut used : u32,
+	//mut allocated: u32,
+	mut sheet:@StyleSheetNode
 
 
 }
@@ -2299,8 +2320,6 @@ pub enum css_parser_opttype {
 /*
  * Css parser event handler function pointer
  */
-pub type css_parser_event_handler =  @extern fn(css_intance:@lcss, event_type:css_parser_event, 
-		tokens:~[~str] , pw:@css_language) -> css_result;
 
 // null function for initializing
 pub fn dummy_par_ev_hand(css_intance:@lcss, event_type:css_parser_event, 
@@ -2308,23 +2327,45 @@ pub fn dummy_par_ev_hand(css_intance:@lcss, event_type:css_parser_event,
 	CSS_GENERAL_OK
 }
 
+
+fn Stylesheet_event_handler(css_intance:@lcss, event_type:css_parser_event, 
+		tokens:~[~str] , pw:@css_language)-> css_result
+{
+	CSS_GENERAL_OK
+}
+
+pub type css_parser_event_handler =  @extern fn(css_intance:@lcss, event_type:css_parser_event, 
+		tokens:~[~str] , pw:@css_language) -> css_result;
+
 /*
  * Css parser event handler structure
  */
-pub struct css_parser_event_handler_{
-		 handler:css_parser_event_handler,
-		pw:@css_language
+pub struct css_parser_event_handler_struct{
+		mut  handler:css_parser_event_handler,
+		mut pw:@css_language
 }
 
 /*
  * Css parser opt paramemeters
  */
 pub struct  css_parser_optparams {
-	quirks:bool,
-	event_handler: css_parser_event_handler_
+	mut quirks:bool,
+	mut event_handler: css_parser_event_handler_struct
 	
 } 
-
+pub fn css_parser_optparams_instance()->@css_parser_optparams
+{   let sheet = lcss_stylesheet(lwc());
+	let lang=lcss_language(sheet);
+	@css_parser_optparams
+	{
+		quirks:false,
+		event_handler: css_parser_event_handler_struct
+		{
+			handler:@Stylesheet_event_handler,
+			pw:lang
+		}	
+	}
+}
 /**
  * Major state numbers
  */
@@ -2403,6 +2444,15 @@ pub struct lcss_parser {
 /*
  * Css parser constructor
  */
+
+ pub fn css__parser_create(charset:~str,cs_source:css_charset_source ,lcss_language_inst:@css_language)->@lcss_parser {
+	@lcss_parser{ event_pw:lcss_language_inst, 
+		quirks:false,lcss_lexer_instance:lcss_lexer() , lparserutils_instance:lpu() }
+}
+pub fn css__parser_create_for_inline_style(charset:~str,cs_source:css_charset_source ,lcss_language_inst:@css_language)->@lcss_parser {
+	@lcss_parser{ event_pw:lcss_language_inst, 
+		quirks:false,lcss_lexer_instance:lcss_lexer() , lparserutils_instance:lpu() }
+}
 pub fn lcss_parser(lcss_lexer_inst:@lcss_lexer,lcss_language_inst:@css_language)->@lcss_parser {
 	@lcss_parser{ event_pw:lcss_language_inst, 
 		quirks:false,lcss_lexer_instance:lcss_lexer_inst , lparserutils_instance:lpu() }
@@ -2413,10 +2463,15 @@ pub fn lcss_parser(lcss_lexer_inst:@lcss_lexer,lcss_language_inst:@css_language)
  * Css parser implementation
  */
 impl lcss_parser {
+	pub fn css__parser_completed(&self)->css_result {
+	CSS_GENERAL_OK
+	}
 	pub fn css__parser_create(&self)  {
 
 	}
-	
+	pub fn css__parser_parse_chunk(&self, data:~[u8]) -> css_result{
+     CSS_GENERAL_OK
+	}
 	
 	pub fn css__parser_create_internal(&self,charset:~str, 
 			cs_source:css_charset_source ,pw :~[u8], initial:parser_state ) -> css_result
@@ -2506,7 +2561,26 @@ impl lcss_parser {
 		*/
 		CSS_GENERAL_OK
 	}
+pub fn css__parser_setopt(/*css_parser *parser,*/&self,  opt_type:css_parser_opttype,
+		params:@css_parser_optparams )-> css_result
+{
+	/*if (parser == NULL || params == NULL)
+		return CSS_BADPARM;
+*/
+	match (opt_type) {
+	 CSS_PARSER_QUIRKS=>{
+			//self.quirks = params.quirks;
+		},	
+		
+	 CSS_PARSER_EVENT_HANDLER=>	{
+			//self.event = params.event_handler.handler;
+			//self.event_pw = params.event_handler.pw;
+		}
+		
+	}
 
+	return CSS_GENERAL_OK;
+}
 }
 
 
@@ -2516,11 +2590,25 @@ impl lcss_parser {
 
 
 
+// ===========================================================================================================
+// CSS-LEXER implementation/data-structs starts here 
+// ===========================================================================================================
+extern mod std;
 
+const ASCII_LOWER_OFFSET: char = 'a' - 'A';
 
+pub pure fn ascii_lower(string: &str) -> ~str {
+    do str::map(string) |c| {
+        match c {
+            'A'..'Z' => c + ASCII_LOWER_OFFSET,
+            _ => c,
+        }
+    }
+}
 
-
-/* implementation of lexer */
+pub struct ParseError {
+    message: ~str,
+}
 
 pub enum NumericValue {
     Integer(int),
@@ -2556,8 +2644,15 @@ pub enum Token {
     EOF,
 }
 
-const ASCII_LOWER_OFFSET: char = 'a' - 'A';
 const MAX_UNICODE: char = '\U0010FFFF';
+
+pure fn preprocess(input: &str) -> ~str {
+    // TODO: Is this faster if done in one pass?
+    str::replace(str::replace(str::replace(input,
+    "\r\n", "\n"),
+    "\r", "\n"),
+    "\x00", "\uFFFD")
+}
 
 macro_rules! push_char(
     ($string:ident, $c:expr) => (
@@ -2571,597 +2666,20 @@ macro_rules! is_match(
     );
 )
 
-pub struct ParseError {
-    message: ~str,
+pub struct lcss_lexer {
+    priv transform_function_whitespace: bool,
+    priv input: ~[u8],
+    priv length: uint, // Counted in bytes, not characters
+    priv mut position: uint, // Counted in bytes, not characters
 }
 
-#[inline(always)]
-fn error_token(t: Token, message: ~str) -> (Token, Option<ParseError>) {
-    (t, Some(ParseError{message: message}))
-}
-
-#[inline(always)]
-fn consume_char(tokenizer: &Tokenizer) -> char {
-    let range = str::char_range_at(str::from_bytes(tokenizer.input), tokenizer.position);
-    tokenizer.position = range.next;
-    range.ch
-}
-
-#[inline(always)]
-fn match_here(tokenizer: &Tokenizer, needle: ~str) -> bool {
-    let mut i = tokenizer.position;
-    if i + needle.len() > tokenizer.length { return false }
-    let haystack: &str = str::from_bytes(tokenizer.input);
-    for needle.each |c| { if haystack[i] != c { return false; } i += 1u; }
-    return true;
-}
-
-#[inline(always)]
-fn current_char(tokenizer: &Tokenizer) -> char {
-    str::char_at(str::from_bytes(tokenizer.input) , tokenizer.position)
-}
-
-#[inline(always)]
-fn next_is_namestart_or_escape(tokenizer: &Tokenizer) -> bool {
-    tokenizer.position += 1;
-    let result = !is_eof(tokenizer) && is_namestart_or_escape(tokenizer);
-    tokenizer.position -= 1;
-    result
-}
-
-#[inline(always)]
-fn next_n_chars(tokenizer: &Tokenizer, n: uint) -> ~[char] {
-    let mut chars: ~[char] = ~[];
-    let mut position = tokenizer.position;
-    for n.times {
-        if position >= tokenizer.length { break }
-        let range = str::char_range_at(str::from_bytes(tokenizer.input), position);
-        position = range.next;
-        chars.push(range.ch);
-    }
-    chars
-}
-
-#[inline(always)]
-fn is_invalid_escape(tokenizer: &Tokenizer) -> bool {
-    match next_n_chars(tokenizer, 2) {
-        ['\\', '\n'] | ['\\', '\x0C'] | ['\\'] => true,
-        _ => false,
-    }
-}
-
-#[inline(always)]
-fn is_namestart_or_escape(tokenizer: &Tokenizer) -> bool {
-    match current_char(tokenizer) {
-        'a'..'z' | 'A'..'Z' | '_' => true,
-        '\\' => !is_invalid_escape(tokenizer),
-        c => c >= '\x80', // Non-ASCII
-    }
-}
-
-
-
-pub pure fn ascii_lower(string: &str) -> ~str {
-    do str::map(string) |c| {
-        match c {
-            'A'..'Z' => c + ASCII_LOWER_OFFSET,
-            _ => c,
-        }
-    }
-}
-
-pure fn preprocess(input: &str) -> ~str {
-    // TODO: Is this faster if done in one pass?
-    str::replace(str::replace(str::replace(input,
-    "\r\n", "\n"),
-    "\r", "\n"),
-    "\x00", "\uFFFD")
-}
-
-fn handle_transform_function_whitespace(tokenizer: &Tokenizer, string: ~str)
-        -> (Token, Option<ParseError>) {
-    while !is_eof(tokenizer) {
-        match current_char(tokenizer) {
-            '\t' | '\n' | '\x0C' | ' ' => tokenizer.position += 1,
-            '(' => { tokenizer.position += 1; return (Function(string), None) }
-            _ => break,
-        }
-    }
-    // Go back for one whitespace character.
-    tokenizer.position -= 1;
-    (Ident(string), None)
-}
-
-fn is_eof(tokenizer: &Tokenizer) -> bool {
-    tokenizer.position >= tokenizer.length
-}
-
-fn consume_token(tokenizer: &Tokenizer) -> (Token, Option<ParseError>) {
-    // Comments are special because they do not even emit a token,
-    // unless they reach EOF which is an error.
-    match consume_comments(tokenizer) {
-        Some(result) => return result,
-        None => ()
-    }
-    if is_eof(tokenizer) { return (EOF, None) }
-    let c = current_char(tokenizer);
-    match c {
-        '-' => {
-            if match_here(tokenizer, ~"-->") {
-                tokenizer.position += 3;
-                (CDC, None)
-            }
-            else if next_is_namestart_or_escape(tokenizer) {
-                consume_ident(tokenizer)
-            } else {
-                consume_numeric(tokenizer)
-            }
-        },
-        '<' => {
-            if match_here(tokenizer, ~"<!--") {
-                tokenizer.position += 4;
-                (CDO, None)
-            } else {
-                tokenizer.position += 1;
-                (Delim('<'), None)
-            }
-        },
-        '0'..'9' | '.' | '+' => consume_numeric(tokenizer),
-        'u' | 'U' => consume_unicode_range(tokenizer),
-        'a'..'z' | 'A'..'Z' | '_' | '\\' => consume_ident(tokenizer),
-        _ if c >= '\x80' => consume_ident(tokenizer), // Non-ASCII
-        _ => {
-            match consume_char(tokenizer) {
-                '\t' | '\n' | '\x0C' | ' ' => {
-                    while !is_eof(tokenizer) {
-                        match current_char(tokenizer) {
-                            '\t' | '\n' | '\x0C' | ' '
-                                => tokenizer.position += 1,
-                            _ => break,
-                        }
-                    }
-                    (WhiteSpace, None)
-                },
-                '"' => consume_quoted_string(tokenizer, false),
-                '#' => consume_hash(tokenizer),
-                '\'' => consume_quoted_string(tokenizer, true),
-                '(' => (OpenParenthesis, None),
-                ')' => (CloseParenthesis, None),
-                ':' => (Colon, None),
-                ';' => (Semicolon, None),
-                '@' => consume_at_keyword(tokenizer),
-                '[' => (OpenSquareBraket, None),
-                ']' => (CloseSquareBraket, None),
-                '{' => (OpenCurlyBraket, None),
-                '}' => (CloseCurlyBraket, None),
-                _ => (Delim(c), None)
-            }
-        }
-    }
-}
-
-fn consume_quoted_string(tokenizer: &Tokenizer, single_quote: bool)
-        -> (Token, Option<ParseError>) {
-    let mut string: ~str = ~"";
-    while !is_eof(tokenizer) {
-        match consume_char(tokenizer) {
-            '"' if !single_quote => return (String(string), None),
-            '\'' if single_quote => return (String(string), None),
-            '\n' | '\x0C' => {
-                return error_token(BadString, ~"Newline in quoted string");
-            },
-            '\\' => {
-                match next_n_chars(tokenizer, 1) {
-                    // Quoted newline
-                    ['\n'] | ['\x0C'] => tokenizer.position += 1,
-                    [] =>
-                        return error_token(BadString, ~"EOF in quoted string"),
-                    _ => push_char!(string, consume_escape(tokenizer))
-                }
-            }
-            c => push_char!(string, c),
-        }
-    }
-    error_token(String(string), ~"EOF in quoted string")
-}
-
-fn consume_hash(tokenizer: &Tokenizer) -> (Token, Option<ParseError>) {
-    let string = consume_ident_string_rest(tokenizer);
-    (if string == ~"" { Delim('#') } else { Hash(string) }, None)
-}
-
-fn consume_comments(tokenizer: &Tokenizer)
-        -> Option<(Token, Option<ParseError>)> {
-    let vec_to_string: ~str = str::from_bytes(tokenizer.input);
-    while match_here(tokenizer, ~"/*") {
-        tokenizer.position += 2; // consume /*
-        match str::find_str_from(vec_to_string, "*/", tokenizer.position) {
-            Some(end_position) => tokenizer.position = end_position + 2,
-            None => {
-                tokenizer.position = tokenizer.length;
-                return Some(error_token(EOF, ~"Unclosed comment"))
-            }
-        }
-    }
-    None
-}
-
-fn consume_at_keyword(tokenizer: &Tokenizer) -> (Token, Option<ParseError>) {
-    (match consume_ident_string(tokenizer) {
-        Some(string) => AtKeyword(string),
-        None => Delim('@')
-    }, None)
-}
-
-fn consume_ident(tokenizer: &Tokenizer) -> (Token, Option<ParseError>) {
-    match consume_ident_string(tokenizer) {
-        Some(string) => {
-            if is_eof(tokenizer) { return (Ident(string), None) }
-            match current_char(tokenizer) {
-                '\t' | '\n' | '\x0C' | ' '
-                        if tokenizer.transform_function_whitespace => {
-                    tokenizer.position += 1;
-                    handle_transform_function_whitespace(tokenizer, string)
-                }
-                '(' => {
-                    tokenizer.position += 1;
-                    if ascii_lower(string) == ~"url" { consume_url(tokenizer) }
-                    else { (Function(string), None) }
-                },
-                _ => (Ident(string), None)
-            }
-        },
-        None => match current_char(tokenizer) {
-            '-' => {
-                tokenizer.position += 1;
-                (Delim('-'), None)
-            },
-            '\\' => {
-                tokenizer.position += 1;
-                error_token(Delim('\\'), ~"Invalid escape")
-            },
-            _ => fail!(), // Should not have called consume_ident() here.
-        }
-    }
-}
-
-fn consume_ident_string(tokenizer: &Tokenizer) -> Option<~str> {
-    match current_char(tokenizer) {
-        '-' => if !next_is_namestart_or_escape(tokenizer) { None }
-               else { Some(consume_ident_string_rest(tokenizer)) },
-        '\\' if is_invalid_escape(tokenizer) => return None,
-        _ if !is_namestart_or_escape(tokenizer) => return None,
-        _ => Some(consume_ident_string_rest(tokenizer))
-    }
-}
-
-fn consume_ident_string_rest(tokenizer: &Tokenizer) -> ~str {
-    let mut string = ~"";
-    while !is_eof(tokenizer) {
-        let c = current_char(tokenizer);
-        let next_char = match c {
-            'a'..'z' | 'A'..'Z' | '0'..'9' | '_' | '-' => {
-                tokenizer.position += 1; c },
-            _ if c >= '\x80' => consume_char(tokenizer), // Non-ASCII
-            '\\' => {
-                if is_invalid_escape(tokenizer) { break }
-                tokenizer.position += 1;
-                consume_escape(tokenizer)
-            },
-            _ => break
-        };
-        push_char!(string, next_char)
-    }
-    string
-}
-
-fn char_from_hex(hex: &[char]) -> char {
-    uint::from_str_radix(str::from_chars(hex), 16).get() as char
-}
-
-fn consume_escape(tokenizer: &Tokenizer) -> char {
-    let c = consume_char(tokenizer);
-    match c {
-        '0'..'9' | 'A'..'F' | 'a'..'f' => {
-            let mut hex = ~[c];
-            while hex.len() < 6 && !is_eof(tokenizer) {
-                let c = current_char(tokenizer);
-                match c {
-                    '0'..'9' | 'A'..'F' | 'a'..'f' => {
-                        hex.push(c); tokenizer.position += 1 },
-                    _ => break
-                }
-            }
-            if !is_eof(tokenizer) {
-                match current_char(tokenizer) {
-                    '\t' | '\n' | '\x0C' | ' ' => tokenizer.position += 1,
-                    _ => ()
-                }
-            }
-            let c = char_from_hex(hex);
-            if '\x00' < c && c <= MAX_UNICODE { c }
-            else { '\uFFFD' } // Replacement character
-        },
-        c => c
-    }
-}
-
-fn consume_url(tokenizer: &Tokenizer) -> (Token, Option<ParseError>) {
-    while !is_eof(tokenizer) {
-        match current_char(tokenizer) {
-            '\t' | '\n' | '\x0C' | ' ' => tokenizer.position += 1,
-            '"' => return consume_quoted_url(tokenizer, false),
-            '\'' => return consume_quoted_url(tokenizer, true),
-            ')' => { tokenizer.position += 1; return (URL(~""), None) },
-            _ => return consume_unquoted_url(tokenizer),
-        }
-    }
-    error_token(BadURL, ~"EOF in URL")
-}
-
-fn consume_quoted_url(tokenizer: &Tokenizer, single_quote: bool)
-        -> (Token, Option<ParseError>) {
-    tokenizer.position += 1; // The initial quote
-    let (token, err) = consume_quoted_string(tokenizer, single_quote);
-    match err {
-        Some(_) => {
-            let (token, _) = consume_bad_url(tokenizer);
-            (token, err)
-        },
-        None => match token {
-            String(string) => consume_url_end(tokenizer, string),
-            // consume_quoted_string() never returns a non-String token
-            // without error:
-            _ => fail!(),
-        }
-    }
-}
-
-fn consume_unquoted_url(tokenizer: &Tokenizer) -> (Token, Option<ParseError>) {
-    let mut string = ~"";
-    while !is_eof(tokenizer) {
-        let next_char = match consume_char(tokenizer) {
-            '\t' | '\n' | '\x0C' | ' '
-                => return consume_url_end(tokenizer, string),
-            ')' => return (URL(string), None),
-            '\x00'..'\x08' | '\x0E'..'\x1F' | '\x7F'..'\x9F' // non-printable
-                | '"' | '\'' | '(' => return consume_bad_url(tokenizer),
-            '\\' => match next_n_chars(tokenizer, 1) {
-                ['\n'] | ['\x0C'] | [] => return consume_bad_url(tokenizer),
-                _ => consume_escape(tokenizer)
-            },
-            c => c
-        };
-        push_char!(string, next_char)
-    }
-    error_token(BadURL, ~"EOF in URL")
-}
-
-fn consume_url_end(tokenizer: &Tokenizer, string: ~str)
-        -> (Token, Option<ParseError>) {
-    while !is_eof(tokenizer) {
-        match consume_char(tokenizer) {
-            '\t' | '\n' | '\x0C' | ' ' => (),
-            ')' => return (URL(string), None),
-            _ => return consume_bad_url(tokenizer)
-        }
-    }
-    error_token(BadURL, ~"EOF in URL")
-}
-
-fn consume_bad_url(tokenizer: &Tokenizer) -> (Token, Option<ParseError>) {
-    // Consume up to the closing )
-    while !is_eof(tokenizer) {
-        match consume_char(tokenizer) {
-            ')' => break,
-            '\\' => tokenizer.position += 1, // Skip an escaped ) or \
-            _ => ()
-        }
-    }
-    error_token(BadURL, ~"Invalid URL syntax")
-}
-
-fn consume_unicode_range(tokenizer: &Tokenizer)
-        -> (Token, Option<ParseError>) {
-    let next_3 = next_n_chars(tokenizer, 3);
-    // We got here with U or u
-    assert next_3[0] == 'u' || next_3[0] == 'U';
-    // Check if this is indeed an unicode range. Fallback on ident.
-    if next_3.len() == 3 && next_3[1] == '+' {
-        match next_3[2] {
-            '0'..'9' | 'a'..'f' | 'A'..'F' => tokenizer.position += 2,
-            _ => { return consume_ident(tokenizer) }
-        }
-    } else { return consume_ident(tokenizer) }
-
-    let mut hex = ~[];
-    while hex.len() < 6 && !is_eof(tokenizer) {
-        let c = current_char(tokenizer);
-        match c {
-            '0'..'9' | 'A'..'F' | 'a'..'f' => {
-                hex.push(c); tokenizer.position += 1 },
-            _ => break
-        }
-    }
-    assert hex.len() > 0;
-    let max_question_marks = 6u - hex.len();
-    let mut question_marks = 0u;
-    while question_marks < max_question_marks && !is_eof(tokenizer)
-            && current_char(tokenizer) == '?' {
-        question_marks += 1;
-        tokenizer.position += 1
-    }
-    let start: char, end: char;
-    if question_marks > 0 {
-        start = char_from_hex(hex + vec::from_elem(question_marks, '0'));
-        end = char_from_hex(hex + vec::from_elem(question_marks, 'F'));
-    } else {
-        start = char_from_hex(hex);
-        hex = ~[];
-        if !is_eof(tokenizer) && current_char(tokenizer) == '-' {
-            tokenizer.position += 1;
-            while hex.len() < 6 && !is_eof(tokenizer) {
-                let c = current_char(tokenizer);
-                match c {
-                    '0'..'9' | 'A'..'F' | 'a'..'f' => {
-                        hex.push(c); tokenizer.position += 1 },
-                    _ => break
-                }
-            }
-        }
-        end = if hex.len() > 0 { char_from_hex(hex) } else { start }
-    }
-    (if start > MAX_UNICODE || end < start {
-        EmptyUnicodeRange
-    } else {
-        let end = if end <= MAX_UNICODE { end } else { MAX_UNICODE };
-        UnicodeRange(start, end)
-    }, None)
-}
-
-fn consume_numeric(tokenizer: &Tokenizer) -> (Token, Option<ParseError>) {
-    let c = consume_char(tokenizer);
-    match c {
-        '-' | '+' => consume_numeric_sign(tokenizer, c),
-        '.' => {
-            if is_eof(tokenizer) { return (Delim('.'), None) }
-            match current_char(tokenizer) {
-                '0'..'9' => consume_numeric_fraction(tokenizer, ~"."),
-                _ => (Delim('.'), None),
-            }
-        },
-        '0'..'9' => consume_numeric_rest(tokenizer, c),
-        _ => fail!(), 
-    }
-}
-
-
-fn consume_numeric_sign(tokenizer: &Tokenizer, sign: char)
-        -> (Token, Option<ParseError>) {
-    if is_eof(tokenizer) { return (Delim(sign), None) }
-    match current_char(tokenizer) {
-        '.' => {
-            tokenizer.position += 1;
-            if !is_eof(tokenizer)
-                    && is_match!(current_char(tokenizer), '0'..'9') {
-                consume_numeric_fraction(
-                    tokenizer, str::from_char(sign) + ~".")
-            } else {
-                tokenizer.position -= 1;
-                (Delim(sign), None)
-            }
-        },
-        '0'..'9' => consume_numeric_rest(tokenizer, sign),
-        _ => (Delim(sign), None)
-    }
-}
-
-fn consume_numeric_rest(tokenizer: &Tokenizer, initial_char: char)
-        -> (Token, Option<ParseError>) {
-    let mut string = str::from_char(initial_char);
-    while !is_eof(tokenizer) {
-        let c = current_char(tokenizer);
-        match c {
-            '0'..'9' => { push_char!(string, c); tokenizer.position += 1 },
-            '.' => {
-                tokenizer.position += 1;
-                if !is_eof(tokenizer)
-                        && is_match!(current_char(tokenizer), '0'..'9') {
-                    push_char!(string, '.');
-                    return consume_numeric_fraction(tokenizer, string);
-                } else {
-                    tokenizer.position -= 1; break
-                }
-            },
-            _ => match consume_scientific_number(tokenizer, string) {
-                Ok(token) => return (token, None),
-                Err(s) => { string = s; break }
-            }
-        }
-    }
-    let value = Integer(int::from_str(
-        // Remove any + sign as int::from_str() does not parse them.
-        if string[0] != '+' as u8 { copy string }
-        else { str::slice(string, 1, string.len()) }
-    ).get()); // XXX handle overflow
-    consume_numeric_end(tokenizer, string, value)
-}
-
-fn consume_numeric_fraction(tokenizer: &Tokenizer, string: ~str)
-        -> (Token, Option<ParseError>) {
-    let mut string: ~str = string;
-    while !is_eof(tokenizer) {
-        match current_char(tokenizer) {
-            '0'..'9' => push_char!(string, consume_char(tokenizer)),
-            _ => match consume_scientific_number(tokenizer, string) {
-                Ok(token) => return (token, None),
-                Err(s) => { string = s; break }
-            }
-        }
-    }
-    let value = Float(float::from_str(string).get()); // XXX handle overflow
-    consume_numeric_end(tokenizer, string, value)
-}
-
-fn consume_numeric_end(tokenizer: &Tokenizer, string: ~str,
-                       value: NumericValue) -> (Token, Option<ParseError>) {
-    if is_eof(tokenizer) { return (Number(value, string), None) }
-    (match current_char(tokenizer) {
-        '%' => { tokenizer.position += 1; Percentage(value, string) },
-        _ => {
-            match consume_ident_string(tokenizer) {
-                Some(unit) => Dimension(value, string, unit),
-                None => Number(value, string),
-            }
-        },
-    }, None)
-}
-
-fn consume_scientific_number(tokenizer: &Tokenizer, string: ~str)
-        -> Result<Token, ~str> {
-    let next_3 = next_n_chars(tokenizer, 3);
-    let mut string: ~str = string;
-    if (next_3.len() >= 2
-        && (next_3[0] == 'e' || next_3[0] == 'E')
-        && (is_match!(next_3[1], '0'..'9'))
-    ) {
-        push_char!(string, next_3[0]);
-        push_char!(string, next_3[1]);
-        tokenizer.position += 2;
-    } else if (
-        next_3.len() == 3
-        && (next_3[0] == 'e' || next_3[0] == 'E')
-        && (next_3[1] == '+' || next_3[1] == '-')
-        && is_match!(next_3[2], '0'..'9')
-    ) {
-        push_char!(string, next_3[0]);
-        push_char!(string, next_3[1]);
-        push_char!(string, next_3[2]);
-        tokenizer.position += 3;
-    } else {
-        return Err(string)
-    }
-    while !is_eof(tokenizer) && is_match!(current_char(tokenizer), '0'..'9') {
-        push_char!(string, consume_char(tokenizer))
-    }
-    let value = Float(float::from_str(string).get());
-    Ok(Number(value, string))
-}
-
-pub struct Tokenizer{
-	mut length:uint,
-	mut position:uint,
-	mut input:~[u8],
-	mut transform_function_whitespace:bool
-}
-
-impl Tokenizer {
+impl lcss_lexer {
     static fn from_vec(input: ~[u8], transform_function_whitespace: bool)
-            -> ~Tokenizer {
+            -> ~lcss_lexer {
                 let string_from_input = str::from_bytes(input);
                 let string_from_input = preprocess(string_from_input);
                 let input = str::to_bytes(string_from_input);
-        ~Tokenizer {
+        ~lcss_lexer {
             length: input.len(),
             input: input,
             position: 0,
@@ -3169,56 +2687,581 @@ impl Tokenizer {
         }
     }
 
-    fn css__lexer_get_token(&self) -> (Token, Option<ParseError>) {
-        if is_eof(self) { 
+    pub fn css__lexer_get_token(&self) -> (Token, Option<ParseError>) {
+        if self.is_eof() { 
             (EOF, None) 
         }
         else { 
-            consume_token(self)
+            self.consume_token()
         }
+    }
+
+    fn handle_transform_function_whitespace(&self, string: ~str)
+            -> (Token, Option<ParseError>) {
+        while !self.is_eof() {
+            match self.current_char() {
+                '\t' | '\n' | '\x0C' | ' ' => self.position += 1,
+                '(' => { self.position += 1; return (Function(string), None) }
+                _ => break,
+            }
+        }
+        // Go back for one whitespace character.
+        self.position -= 1;
+        (Ident(string), None)
+    }
+
+    fn is_eof(&self) -> bool {
+        self.position >= self.length
+    }
+
+    pub fn consume_token(&self) -> (Token, Option<ParseError>) {
+        // Comments are special because they do not even emit a token,
+        // unless they reach EOF which is an error.
+        match self.consume_comments() {
+            Some(result) => return result,
+            None => ()
+        }
+        if self.is_eof() { return (EOF, None) }
+        let c = self.current_char();
+        match c {
+            '-' => {
+                if self.match_here(~"-->") {
+                    self.position += 3;
+                    (CDC, None)
+                }
+                else if self.next_is_namestart_or_escape() {
+                    self.consume_ident()
+                } else {
+                    self.consume_numeric()
+                }
+            },
+            '<' => {
+                if self.match_here(~"<!--") {
+                    self.position += 4;
+                    (CDO, None)
+                } else {
+                    self.position += 1;
+                    (Delim('<'), None)
+                }
+            },
+            '0'..'9' | '.' | '+' => self.consume_numeric(),
+            'u' | 'U' => self.consume_unicode_range(),
+            'a'..'z' | 'A'..'Z' | '_' | '\\' => self.consume_ident(),
+            _ if c >= '\x80' => self.consume_ident(), // Non-ASCII
+            _ => {
+                match self.consume_char() {
+                    '\t' | '\n' | '\x0C' | ' ' => {
+                        while !self.is_eof() {
+                            match self.current_char() {
+                                '\t' | '\n' | '\x0C' | ' '
+                                    => self.position += 1,
+                                _ => break,
+                            }
+                        }
+                        (WhiteSpace, None)
+                    },
+                    '"' => self.consume_quoted_string(false),
+                    '#' => self.consume_hash(),
+                    '\'' => self.consume_quoted_string(true),
+                    '(' => (OpenParenthesis, None),
+                    ')' => (CloseParenthesis, None),
+                    ':' => (Colon, None),
+                    ';' => (Semicolon, None),
+                    '@' => self.consume_at_keyword(),
+                    '[' => (OpenSquareBraket, None),
+                    ']' => (CloseSquareBraket, None),
+                    '{' => (OpenCurlyBraket, None),
+                    '}' => (CloseCurlyBraket, None),
+                    _ => (Delim(c), None)
+                }
+            }
+        }
+    }
+
+    fn consume_quoted_string(&self, single_quote: bool)
+            -> (Token, Option<ParseError>) {
+        let mut string: ~str = ~"";
+        while !self.is_eof() {
+            match self.consume_char() {
+                '"' if !single_quote => return (String(string), None),
+                '\'' if single_quote => return (String(string), None),
+                '\n' | '\x0C' => {
+                    return self.error_token(BadString, ~"Newline in quoted string");
+                },
+                '\\' => {
+                    match self.next_n_chars(1) {
+                        // Quoted newline
+                        ['\n'] | ['\x0C'] => self.position += 1,
+                        [] =>
+                            return self.error_token(BadString, ~"EOF in quoted string"),
+                        _ => push_char!(string, self.consume_escape())
+                    }
+                }
+                c => push_char!(string, c),
+            }
+        }
+        self.error_token(String(string), ~"EOF in quoted string")
+    }
+
+    fn consume_hash(&self) -> (Token, Option<ParseError>) {
+        let string = self.consume_ident_string_rest();
+        (if string == ~"" { Delim('#') } else { Hash(string) }, None)
+    }
+
+    fn consume_char(&self) -> char {
+        let range = str::char_range_at(str::from_bytes(self.input), self.position);
+        self.position = range.next;
+        range.ch
+    }
+
+    fn match_here(&self, needle: ~str) -> bool {
+        let mut i = self.position;
+        if i + needle.len() > self.length { return false }
+        let haystack: &str = str::from_bytes(self.input);
+        for needle.each |c| { if haystack[i] != c { return false; } i += 1u; }
+        return true;
+    }
+
+    fn consume_comments(&self)
+            -> Option<(Token, Option<ParseError>)> {
+        let vec_to_string: ~str = str::from_bytes(self.input);
+        while self.match_here(~"/*") {
+            self.position += 2; // consume /*
+            match str::find_str_from(vec_to_string, "*/", self.position) {
+                Some(end_position) => self.position = end_position + 2,
+                None => {
+                    self.position = self.length;
+                    return Some(self.error_token(EOF, ~"Unclosed comment"))
+                }
+            }
+        }
+        None
+    }
+
+    fn consume_at_keyword(&self) -> (Token, Option<ParseError>) {
+        (match self.consume_ident_string() {
+            Some(string) => AtKeyword(string),
+            None => Delim('@')
+        }, None)
+    }
+
+    fn current_char(&self) -> char {
+        str::char_at(str::from_bytes(self.input) , self.position)
+    }
+
+    fn next_is_namestart_or_escape(&self) -> bool {
+        self.position += 1;
+        let result = !self.is_eof() && self.is_namestart_or_escape();
+        self.position -= 1;
+        result
+    }
+
+    fn next_n_chars(&self, n: uint) -> ~[char] {
+        let mut chars: ~[char] = ~[];
+        let mut position = self.position;
+        for n.times {
+            if position >= self.length { break }
+            let range = str::char_range_at(str::from_bytes(self.input), position);
+            position = range.next;
+            chars.push(range.ch);
+        }
+        chars
+    }
+
+    fn is_invalid_escape(&self) -> bool {
+        match self.next_n_chars(2) {
+            ['\\', '\n'] | ['\\', '\x0C'] | ['\\'] => true,
+            _ => false,
+        }
+    }
+
+    fn is_namestart_or_escape(&self) -> bool {
+        match self.current_char() {
+            'a'..'z' | 'A'..'Z' | '_' => true,
+            '\\' => !self.is_invalid_escape(),
+            c => c >= '\x80', // Non-ASCII
+        }
+    }
+
+
+    fn consume_ident(&self) -> (Token, Option<ParseError>) {
+        match self.consume_ident_string() {
+            Some(string) => {
+                if self.is_eof() { return (Ident(string), None) }
+                match self.current_char() {
+                    '\t' | '\n' | '\x0C' | ' '
+                            if self.transform_function_whitespace => {
+                        self.position += 1;
+                        self.handle_transform_function_whitespace(string)
+                    }
+                    '(' => {
+                        self.position += 1;
+                        if ascii_lower(string) == ~"url" { self.consume_url() }
+                        else { (Function(string), None) }
+                    },
+                    _ => (Ident(string), None)
+                }
+            },
+            None => match self.current_char() {
+                '-' => {
+                    self.position += 1;
+                    (Delim('-'), None)
+                },
+                '\\' => {
+                    self.position += 1;
+                    self.error_token(Delim('\\'), ~"Invalid escape")
+                },
+                _ => fail!(), // Should not have called consume_ident() here.
+            }
+        }
+    }
+
+    fn consume_ident_string(&self) -> Option<~str> {
+        match self.current_char() {
+            '-' => if !self.next_is_namestart_or_escape() { None }
+                   else { Some(self.consume_ident_string_rest()) },
+            '\\' if self.is_invalid_escape() => return None,
+            _ if !self.is_namestart_or_escape() => return None,
+            _ => Some(self.consume_ident_string_rest())
+        }
+    }
+
+    fn consume_ident_string_rest(&self) -> ~str {
+        let mut string = ~"";
+        while !self.is_eof() {
+            let c = self.current_char();
+            let next_char = match c {
+                'a'..'z' | 'A'..'Z' | '0'..'9' | '_' | '-' => {
+                    self.position += 1; c },
+                _ if c >= '\x80' => self.consume_char(), // Non-ASCII
+                '\\' => {
+                    if self.is_invalid_escape() { break }
+                    self.position += 1;
+                    self.consume_escape()
+                },
+                _ => break
+            };
+            push_char!(string, next_char)
+        }
+        string
+    }
+
+    fn char_from_hex(&self ,hex: &[char]) -> char {
+        uint::from_str_radix(str::from_chars(hex), 16).get() as char
+    }
+
+    fn consume_escape(&self) -> char {
+        let c = self.consume_char();
+        match c {
+            '0'..'9' | 'A'..'F' | 'a'..'f' => {
+                let mut hex = ~[c];
+                while hex.len() < 6 && !self.is_eof() {
+                    let c = self.current_char();
+                    match c {
+                        '0'..'9' | 'A'..'F' | 'a'..'f' => {
+                            hex.push(c); self.position += 1 },
+                        _ => break
+                    }
+                }
+                if !self.is_eof() {
+                    match self.current_char() {
+                        '\t' | '\n' | '\x0C' | ' ' => self.position += 1,
+                        _ => ()
+                    }
+                }
+                let c = self.char_from_hex(hex);
+                if '\x00' < c && c <= MAX_UNICODE { c }
+                else { '\uFFFD' } // Replacement character
+            },
+            c => c
+        }
+    }
+
+    fn consume_url(&self) -> (Token, Option<ParseError>) {
+        while !self.is_eof() {
+            match self.current_char() {
+                '\t' | '\n' | '\x0C' | ' ' => self.position += 1,
+                '"' => return self.consume_quoted_url(false),
+                '\'' => return self.consume_quoted_url(true),
+                ')' => { self.position += 1; return (URL(~""), None) },
+                _ => return self.consume_unquoted_url(),
+            }
+        }
+        self.error_token(BadURL, ~"EOF in URL")
+    }
+
+    fn consume_quoted_url(&self, single_quote: bool)
+            -> (Token, Option<ParseError>) {
+        self.position += 1; // The initial quote
+        let (token, err) = self.consume_quoted_string(single_quote);
+        match err {
+            Some(_) => {
+                let (token, _) = self.consume_bad_url();
+                (token, err)
+            },
+            None => match token {
+                String(string) => self.consume_url_end(string),
+                // consume_quoted_string() never returns a non-String token
+                // without error:
+                _ => fail!(),
+            }
+        }
+    }
+
+    fn consume_unquoted_url(&self) -> (Token, Option<ParseError>) {
+        let mut string = ~"";
+        while !self.is_eof() {
+            let next_char = match self.consume_char() {
+                '\t' | '\n' | '\x0C' | ' '
+                    => return self.consume_url_end(string),
+                ')' => return (URL(string), None),
+                '\x00'..'\x08' | '\x0E'..'\x1F' | '\x7F'..'\x9F' // non-printable
+                    | '"' | '\'' | '(' => return self.consume_bad_url(),
+                '\\' => match self.next_n_chars(1) {
+                    ['\n'] | ['\x0C'] | [] => return self.consume_bad_url(),
+                    _ => self.consume_escape()
+                },
+                c => c
+            };
+            push_char!(string, next_char)
+        }
+        self.error_token(BadURL, ~"EOF in URL")
+    }
+
+    fn consume_url_end(&self, string: ~str)
+            -> (Token, Option<ParseError>) {
+        while !self.is_eof() {
+            match self.consume_char() {
+                '\t' | '\n' | '\x0C' | ' ' => (),
+                ')' => return (URL(string), None),
+                _ => return self.consume_bad_url()
+            }
+        }
+        self.error_token(BadURL, ~"EOF in URL")
+    }
+
+    fn consume_bad_url(&self) -> (Token, Option<ParseError>) {
+        // Consume up to the closing )
+        while !self.is_eof() {
+            match self.consume_char() {
+                ')' => break,
+                '\\' => self.position += 1, // Skip an escaped ) or \
+                _ => ()
+            }
+        }
+        self.error_token(BadURL, ~"Invalid URL syntax")
+    }
+
+    fn consume_unicode_range(&self)
+            -> (Token, Option<ParseError>) {
+        let next_3 = self.next_n_chars(3);
+        // We got here with U or u
+        assert next_3[0] == 'u' || next_3[0] == 'U';
+        // Check if this is indeed an unicode range. Fallback on ident.
+        if next_3.len() == 3 && next_3[1] == '+' {
+            match next_3[2] {
+                '0'..'9' | 'a'..'f' | 'A'..'F' => self.position += 2,
+                _ => { return self.consume_ident() }
+            }
+        } else { return self.consume_ident() }
+
+        let mut hex = ~[];
+        while hex.len() < 6 && !self.is_eof() {
+            let c = self.current_char();
+            match c {
+                '0'..'9' | 'A'..'F' | 'a'..'f' => {
+                    hex.push(c); self.position += 1 },
+                _ => break
+            }
+        }
+        assert hex.len() > 0;
+        let max_question_marks = 6u - hex.len();
+        let mut question_marks = 0u;
+        while question_marks < max_question_marks && !self.is_eof()
+                && self.current_char() == '?' {
+            question_marks += 1;
+            self.position += 1
+        }
+        let start: char, end: char;
+        if question_marks > 0 {
+            start = self.char_from_hex(hex + vec::from_elem(question_marks, '0'));
+            end = self.char_from_hex(hex + vec::from_elem(question_marks, 'F'));
+        } else {
+            start = self.char_from_hex(hex);
+            hex = ~[];
+            if !self.is_eof() && self.current_char() == '-' {
+                self.position += 1;
+                while hex.len() < 6 && !self.is_eof() {
+                    let c = self.current_char();
+                    match c {
+                        '0'..'9' | 'A'..'F' | 'a'..'f' => {
+                            hex.push(c); self.position += 1 },
+                        _ => break
+                    }
+                }
+            }
+            end = if hex.len() > 0 { self.char_from_hex(hex) } else { start }
+        }
+        (if start > MAX_UNICODE || end < start {
+            EmptyUnicodeRange
+        } else {
+            let end = if end <= MAX_UNICODE { end } else { MAX_UNICODE };
+            UnicodeRange(start, end)
+        }, None)
+    }
+
+    fn consume_numeric(&self) -> (Token, Option<ParseError>) {
+        let c = self.consume_char();
+        match c {
+            '-' | '+' => self.consume_numeric_sign(c),
+            '.' => {
+                if self.is_eof() { return (Delim('.'), None) }
+                match self.current_char() {
+                    '0'..'9' => self.consume_numeric_fraction(~"."),
+                    _ => (Delim('.'), None),
+                }
+            },
+            '0'..'9' => self.consume_numeric_rest(c),
+            _ => fail!(), 
+        }
+    }
+
+    fn consume_numeric_sign(&self, sign: char)
+            -> (Token, Option<ParseError>) {
+        if self.is_eof() { return (Delim(sign), None) }
+        match self.current_char() {
+            '.' => {
+                self.position += 1;
+                if !self.is_eof()
+                        && is_match!(self.current_char(), '0'..'9') {
+                    self.consume_numeric_fraction(str::from_char(sign) + ~".")
+                } else {
+                    self.position -= 1;
+                    (Delim(sign), None)
+                }
+            },
+            '0'..'9' => self.consume_numeric_rest(sign),
+            _ => (Delim(sign), None)
+        }
+    }
+
+    fn consume_numeric_rest(&self, initial_char: char)
+            -> (Token, Option<ParseError>) {
+        let mut string = str::from_char(initial_char);
+        while !self.is_eof() {
+            let c = self.current_char();
+            match c {
+                '0'..'9' => { push_char!(string, c); self.position += 1 },
+                '.' => {
+                    self.position += 1;
+                    if !self.is_eof()
+                            && is_match!(self.current_char(), '0'..'9') {
+                        push_char!(string, '.');
+                        return self.consume_numeric_fraction(string);
+                    } else {
+                        self.position -= 1; break
+                    }
+                },
+                _ => match self.consume_scientific_number(string) {
+                    Ok(token) => return (token, None),
+                    Err(s) => { string = s; break }
+                }
+            }
+        }
+        let value = Integer(int::from_str(
+            // Remove any + sign as int::from_str() does not parse them.
+            if string[0] != '+' as u8 { copy string }
+            else { str::slice(string, 1, string.len()) }
+        ).get()); // XXX handle overflow
+        self.consume_numeric_end(string, value)
+    }
+
+    fn consume_numeric_fraction(&self, string: ~str)
+            -> (Token, Option<ParseError>) {
+        let mut string: ~str = string;
+        while !self.is_eof() {
+            match self.current_char() {
+                '0'..'9' => push_char!(string, self.consume_char()),
+                _ => match self.consume_scientific_number(string) {
+                    Ok(token) => return (token, None),
+                    Err(s) => { string = s; break }
+                }
+            }
+        }
+        let value = Float(float::from_str(string).get()); // XXX handle overflow
+        self.consume_numeric_end(string, value)
+    }
+
+
+    fn consume_numeric_end(&self, string: ~str,
+                           value: NumericValue) -> (Token, Option<ParseError>) {
+        if self.is_eof() { return (Number(value, string), None) }
+        (match self.current_char() {
+            '%' => { self.position += 1; Percentage(value, string) },
+            _ => {
+                match self.consume_ident_string() {
+                    Some(unit) => Dimension(value, string, unit),
+                    None => Number(value, string),
+                }
+            },
+        }, None)
+    }
+
+
+    fn consume_scientific_number(&self, string: ~str)
+            -> Result<Token, ~str> {
+        let next_3 = self.next_n_chars(3);
+        let mut string: ~str = string;
+        if (next_3.len() >= 2
+            && (next_3[0] == 'e' || next_3[0] == 'E')
+            && (is_match!(next_3[1], '0'..'9'))
+        ) {
+            push_char!(string, next_3[0]);
+            push_char!(string, next_3[1]);
+            self.position += 2;
+        } else if (
+            next_3.len() == 3
+            && (next_3[0] == 'e' || next_3[0] == 'E')
+            && (next_3[1] == '+' || next_3[1] == '-')
+            && is_match!(next_3[2], '0'..'9')
+        ) {
+            push_char!(string, next_3[0]);
+            push_char!(string, next_3[1]);
+            push_char!(string, next_3[2]);
+            self.position += 3;
+        } else {
+            return Err(string)
+        }
+        while !self.is_eof() && is_match!(self.current_char(), '0'..'9') {
+            push_char!(string,self.consume_char())
+        }
+        let value = Float(float::from_str(string).get());
+        Ok(Number(value, string))
+    }
+
+    pub fn error_token(&self ,t: Token, message: ~str) -> (Token, Option<ParseError>) {
+        (t, Some(ParseError{message: message}))
+    }
+
+    pub fn css__lexer_create(input: @parserutils_inputstream) -> css_result {
+    	CSS_GENERAL_OK
     }
 }
 
-// ===========================================================================================================
-// CSS-LEXER implementation/data-structs starts here 
-// ===========================================================================================================
-/* lexer ends */
-
-pub struct lcss_lexer{
-	a: int
-}
-
-impl lcss_lexer {
-	fn css__lexer_create(&self , input: @parserutils_inputstream) -> css_result {
-
-		// let lex: @css_lexer;
-
-		// lex.input = input;
-		// lex.bytesReadForToken = 0;
-		// lex.token.type = CSS_TOKEN_EOF;
-		// lex.token.data.data 
-		// lex->token.data.len = 0
-		// lex.escapeSeen = false;
-		// lex.unescapedTokenData
-		// lex.state = 
-		// lex.substate = 0;
-		// lex.emit_comments false;
-		// lex.currentCol = 1;
-		// lex.currentLine = 1;
-		CSS_GENERAL_OK
-	}
-}
-
 pub fn lcss_lexer()->@lcss_lexer {
-	@lcss_lexer{a: 0}
+	@lcss_lexer{ transform_function_whitespace: false,
+    input: ~[],
+    length: 0, 
+    position: 0 }
 }
+
 
 // ===========================================================================================================
 // CSS-LEXER implementation/data-structs ends here 
 // ===========================================================================================================
 pub enum css_high_level_ptr
 {
-	high_level_pointer(@css_high_level),
+	high_level_pointer(@mut css_high_level),
 	no_high_level_pointer
 }
 pub struct css_high_level
@@ -3230,11 +3273,14 @@ pub struct css_high_level
 	mut import    : @css_rule_import,
 	mut media     : @css_rule_media,
 	mut font_face : @css_rule_font_face,
-	mut page      : @css_rule_page
+	mut page      : @css_rule_page,
+	mut prev      : @mut css_high_level_ptr,
+	mut next      : @mut css_high_level_ptr
 
 }
-pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
+pub fn lcss_high_level(/*sheet:@css_stylesheet*/)-> @css_high_level
 {
+	let lwc_instance= lwc();
 	@css_high_level
 	{
 		base:@css_rule
@@ -3264,8 +3310,9 @@ pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
 		 				style:css_style
 		 				{
 		 					bytecode:~[] ,
-							used : 0,
-							allocated: 0
+							//used : 0,
+							//allocated: 0,
+							sheet:@NoStyleSheetNode
 		 				},
 					},
 		charset   : @css_rule_charset{
@@ -3280,7 +3327,7 @@ pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
 			            	ptype : 0	
 						},*/
 
-		            encoding: sheet.lwc_instance.lwc_intern_string(@"")
+		            encoding: lwc_instance.lwc_intern_string(@"")
 		    	},
 		import    : @css_rule_import{
 					/*base:css_rule
@@ -3293,10 +3340,10 @@ pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
 			            	items : 0,		
 			            	ptype : 0	
 						},*/
-					url:sheet.lwc_instance.lwc_intern_string(@""),
+					url:lwc_instance.lwc_intern_string(@""),
 		            media:0,
 
-		            sheet:sheet
+		            sheet:@mut NoStyleSheetNode
 				},
 		media     : @css_rule_media{
 					/*base:css_rule
@@ -3328,10 +3375,10 @@ pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
 						},*/
 					font_face:@css_font_face 
 						{
-							font_family:sheet.lwc_instance.lwc_intern_string(@""),
+							font_family:lwc_instance.lwc_intern_string(@""),
 							srcs:@css_font_face_src
 							{
-								location:sheet.lwc_instance.lwc_intern_string(@""),	
+								location:lwc_instance.lwc_intern_string(@""),	
 								bits:~[]
 							},
 							n_srcs:0,
@@ -3385,8 +3432,8 @@ pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
 							{
 								qname:css_qname
 								{
-									ns : sheet.lwc_instance.lwc_intern_string(@"") ,
-									name : sheet.lwc_instance.lwc_intern_string(@"") 
+									ns : lwc_instance.lwc_intern_string(@"") ,
+									name : lwc_instance.lwc_intern_string(@"") 
 								},			
 								value:css_selector_detail_value
 								{
@@ -3406,13 +3453,42 @@ pub fn lcss_high_level(sheet:@css_stylesheet)-> @css_high_level
 				style:@css_style
 						{
 		 					bytecode:~[] ,
-							used : 0,
-							allocated: 0
+							//used : 0,
+							//allocated: 0,
+							sheet:@NoStyleSheetNode
 		 				},	
-		    }
+		    },
+		   prev: @mut no_high_level_pointer,
+		   next:@mut no_high_level_pointer 
 
 	}
+
 }
+
+
+// ===========================================================================================================
+// CSS-SELECTOR implementation/data-structs start here 
+// ===========================================================================================================
+
+struct css_selector {
+	mut combinator:~[@css_selector],		/*< Combining selector */
+	mut rule:@css_high_level_ptr ,				/*< Owning rule */
+	mut specificity:u32,			//< Specificity of selector 
+    mut data:@css_selector_detail		/*< Selector data */
+}
+
+pub fn css__selector_hash_create()-> css_result
+{
+	CSS_GENERAL_OK
+}
+
+
+// ===========================================================================================================
+// CSS-SELECTOR implementation/data-structs ends here 
+// ===========================================================================================================
+
+
+
 
 // ===========================================================================================================
 // CSS-STYLESHEET implementation/data-structs start here 
@@ -3455,12 +3531,7 @@ pub struct css_rule {
 	mut items : uint,		/**< # items in rule */
 	mut ptype : uint		/*< css_rule_parent_type */
 }
-struct css_selector {
-	mut combinator:~[@css_selector],		/*< Combining selector */
-	mut rule:@css_high_level_ptr ,				/*< Owning rule */
-	mut specificity:u32,			//< Specificity of selector 
-    mut data:@css_selector_detail		/*< Selector data */
-}
+
 pub struct css_rule_selector {
 	 //mut base:css_rule,
 
@@ -3519,23 +3590,23 @@ pub struct css_rule_page {
 pub struct css_rule_import {
 	//base:css_rule ,
 
-	url:@lwc_string,
-	media:u64,
+	mut url:@lwc_string,
+	mut media:u64,
 
-	sheet:@css_stylesheet
+	mut sheet:@mut StyleSheetNode
 }
 pub struct css_rule_charset {
 	//base:css_rule ,
 
 	encoding:@lwc_string	/* \todo use MIB enum? */
 }
-pub type  css_import_notification_fn =  ~extern fn(pw:~[u8],
+pub type  css_import_notification_fn =  @extern fn(pw:~[u8],
 		 parent:@css_stylesheet,  url:@lwc_string, media:u64) -> css_result;
-pub type  css_url_resolution_fn =  ~extern fn(pw:~[u8],
+pub type  css_url_resolution_fn =  @extern fn(pw:~[u8],
 		base:~str, rel:@lwc_string , abs:@lwc_string ) -> css_result;
-pub type  css_color_resolution_fn =  ~extern fn(pw:~[u8],
+pub type  css_color_resolution_fn =  @extern fn(pw:~[u8],
 		name:@lwc_string,  color:@css_color) -> css_result;
-pub type  css_font_resolution_fn =  ~extern fn(pw:~[u8],
+pub type  css_font_resolution_fn =  @extern fn(pw:~[u8],
 		name:@lwc_string,  system_font:@css_system_font) -> css_result;
 
 
@@ -3575,19 +3646,19 @@ pub fn CFRF(pw:~[u8],name:@lwc_string,  system_font:@css_system_font) -> css_res
  */
 struct css_stylesheet_params {
 	/** ABI version of this structure */
-		params_version:u32 ,
+		mut params_version:u32 ,
 
 	/** The language level of the stylesheet */
-		level:css_language_level,
+		mut level:css_language_level,
 
 	/** The charset of the stylesheet data, or NULL to detect */
-		charset:~str,
+		mut charset:~str,
 
 	/** URL of stylesheet */
-		url:~str,
+		mut url:~str,
 
 	/** Title of stylesheet */
-		title:~str,
+		mut title:~str,
 
 	/** Permit quirky parsing of stylesheet */
 		mut allow_quirks:bool,
@@ -3596,75 +3667,80 @@ struct css_stylesheet_params {
 		mut inline_style:bool,
 
 	/** URL resolution function */
-		mut resolve : @fn (pw:~[u8],base:~str, rel:@lwc_string, abs: ~str) -> css_result,
+		mut resolve : @extern fn (pw:~[u8],base:~str, rel:@lwc_string, abs: @lwc_string) -> css_result,
 
 	/** Client private data for resolve */
 		mut resolve_pw:~[u8],
 
 	/** Import notification function */
-	//	mut import: @fn (pw:~[u8], parent:&css_stylesheet, url:~lwc_string, media:u64) -> css_result,
+		mut import: @extern fn (pw:~[u8], parent:@css_stylesheet, url:@lwc_string, media:u64) -> css_result,
 
 	/** Client private data for import */
 		mut import_pw:~[u8],
 
 	/** Colour resolution function */
-		mut color: @fn (pw:~[u8], name:@lwc_string, color:&css_color) -> css_result,
+		mut color: @extern fn (pw:~[u8], name:@lwc_string, color:@css_color) -> css_result,
 
 	/** Client private data for color */
 		mut color_pw:~[u8],
 
 	/** Font resolution function */
-		mut font: @fn(pw:~[u8], name:@lwc_string, system_font:&css_system_font) -> css_result ,
+		mut font: @extern fn(pw:~[u8], name:@lwc_string, system_font:@css_system_font) -> css_result ,
 
 	/** Client private data for font */
 		mut font_pw: ~[u8]
+}
+pub enum StyleSheetNode
+{
+	SomeStyleSheetNode(@mut css_stylesheet),
+	NoStyleSheetNode
 }
 
 pub struct css_stylesheet {
 	//selectors:@css_selector_hash,	TODO REPLACE WITH BUILT IN HASH TABLE
 		/* < Hashtable of selectors */
-	lwc_instance:@lwc,
+	mut lwc_instance:@lwc,
     //parser_instance:@lcss_parser,
-	rule_count:u32,			/**< Number of rules in sheet */
-	rule_list:@css_rule ,			/**< List of rules in sheet */
-	last_rule:@css_rule ,			/**< Last rule in list */
+	mut rule_count:u32,			/**< Number of rules in sheet */
+	mut rule_list:@mut css_high_level_ptr ,			/**< List of rules in sheet */
+	mut last_rule:@mut css_high_level_ptr,			/**< Last rule in list */
 
-	disabled:bool,				/**< Whether this sheet is 
+	mut disabled:bool,				/**< Whether this sheet is 
 						 * disabled */
 
-	url:~str,				/**< URL of this sheet */
-	title:~str,			/**< Title of this sheet */
+	mut url:~str,				/**< URL of this sheet */
+	mut title:~str,			/**< Title of this sheet */
 
-	level:css_language_level ,		/**< Language level of sheet */
-	parser:@mut css_parser_node ,			/**< Core parser for sheet */
-	parser_frontend:~[u8],			/**< Frontend parser */////////look for type
+	mut level:css_language_level ,		/**< Language level of sheet */
+	mut parser:@mut css_parser_node ,			/**< Core parser for sheet */
+	mut parser_frontend:@mut css_language_node,			/**< Frontend parser */////////look for type
 	//propstrings:@ mut[@lwc_string ],		/**< Property strings, for parser */
 
-	quirks_allowed:bool,			/**< Quirks permitted */
-	quirks_used:bool,			/**< Quirks actually used */
+	mut quirks_allowed:bool,			/**< Quirks permitted */
+	mut quirks_used:bool,			/**< Quirks actually used */
 
 	mut inline_style:bool,			/**< Is an inline style */
 
-	size:uint,				/**< Size, in bytes */
+	mut size:uint,				/**< Size, in bytes */
 
-	 import:css_import_notification_fn,	/**< Import notification function */
-	import_pw:~[u8],			/**< Private word *////////look for type
+	mut  import:css_import_notification_fn,	/**< Import notification function */
+	mut import_pw:~[u8],			/**< Private word *////////look for type
 
-	 resolve:css_url_resolution_fn,		/**< URL resolution function */
-	resolve_pw:~[u8],			/**< Private word *////////look for type
+	mut  resolve:css_url_resolution_fn,		/**< URL resolution function */
+	mut resolve_pw:~[u8],			/**< Private word *////////look for type
 
-	 color:css_color_resolution_fn,		/**< Colour resolution function */
-	color_pw:~[u8],				/**< Private word *////////look for type
+	mut  color:css_color_resolution_fn,		/**< Colour resolution function */
+	mut color_pw:~[u8],				/**< Private word *////////look for type
 
 	/** System font resolution function */
-	 font:css_font_resolution_fn,		
-	font_pw:~[u8],				/**< Private word *////////look for type
+	mut  font:css_font_resolution_fn,		
+	mut font_pw:~[u8],				/**< Private word *////////look for type
 
 
 	// alloc:css_allocator_fn,			/**< Allocation function */
 	//pw:~[u8],				/**< Private word */
   
-	cached_style:@css_style ,		/**< Cache for style parsing */
+	mut cached_style:@ css_style_Node ,		/**< Cache for style parsing */
   
 	mut string_vector:~[@lwc_string],            /**< Bytecode string vector */
 	//string_vector_l:u32,              /**< The string vector allocated
@@ -3675,13 +3751,13 @@ pub struct css_stylesheet {
 	mut propstrings:~[@lwc_string]					 
 }
 
-
+const CSS_STYLE_DEFAULT_SIZE:u32 =16;
 pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 	@css_stylesheet{
 		                lwc_instance:lwc_inst,
 		                //parser_instance: parser_inst,
 		            	rule_count:0,			/*< Number of rules in sheet */
-						rule_list:@css_rule
+						rule_list:@mut no_high_level_pointer/*css_rule
 						{
 							parent:@rule(0),		
 				        	next:@mut NoRuleNode ,				
@@ -3690,8 +3766,8 @@ pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 			            	index : 0,		
 			            	items : 0,		
 			            	ptype : 0	
-						},			/*< List of rules in sheet */
-						last_rule:@css_rule 
+						}*/,			/*< List of rules in sheet */
+						last_rule:@mut no_high_level_pointer/*css_rule 
 						{
 							parent:@rule(0),		
 				        	next:@mut NoRuleNode ,				
@@ -3700,7 +3776,7 @@ pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 			            	index : 0,		
 			            	items : 0,		
 			            	ptype : 0	
-						},			/*< Last rule in list */
+						}*/,			/*< Last rule in list */
 
 						disabled:false,				/*< Whether this sheet is 
 							                          * disabled */
@@ -3710,7 +3786,7 @@ pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 
 						level:CSS_LEVEL_1  ,		/*< Language level of sheet */
 						parser:@mut NoParserNode ,			/*< Core parser for sheet */
-						parser_frontend:~[],			/*< Frontend parser */
+						parser_frontend:@mut NoLanguageNode,			/*< Frontend parser */
 						//propstrings:@ mut[],		/*< Property strings, for parser */
 
 						quirks_allowed:false,			/*< Quirks permitted */
@@ -3720,29 +3796,24 @@ pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 
 						size:0 ,				/*< Size, in bytes */
 
-		 				import:~CINF,	/*< Import notification function */
+		 				import:@CINF,	/*< Import notification function */
 						import_pw:~[],			/*< Private word */
 
-		 				resolve:~CURF,		/*< URL resolution function */
+		 				resolve:@CURF,		/*< URL resolution function */
 						resolve_pw:~[],			/*< Private word */
 
-		 				color:~CCRF,		/*< Colour resolution function */
+		 				color:@CCRF,		/*< Colour resolution function */
 						color_pw:~[],				/*< Private word */
 
 		/* System font resolution function */
-		 				font:~CFRF,		
+		 				font:@CFRF,		
 						font_pw:~[],				/*< Private word */
 
 
 		// alloc:css_allocator_fn,			/*< Allocation function */
 		//pw:~[u8],				/*< Private word */
 	  
-						cached_style:@css_style
-		 				{
-		 					bytecode:~[] ,
-							used : 0,
-							allocated: 0
-		 				},		/*< Cache for style parsing */
+						cached_style:@NoStyleNode,	/*< Cache for style parsing */
 	  
 						string_vector:~[],            /*< Bytecode string vector */
 						//string_vector_l:0,              /*< The string vector allocated
@@ -3807,7 +3878,7 @@ pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 impl css_stylesheet {
 
 
-pub fn css__propstrings_unref()
+pub fn css__propstrings_unref(&self)
 	{
 		self.propstrings_call_count  -=1;
 
@@ -3843,7 +3914,7 @@ pub fn css__propstrings_unref()
 		
 
 pub fn css__stylesheet_rule_add_selector(&self,/*sheet:  @css_stylesheet , */
-		  curRule:@css_high_level , selector: @css_selector )
+		 mut curRule:@mut css_high_level , selector: @css_selector )
 {
 	match(curRule.base.rule_type)
 	 {
@@ -3864,7 +3935,7 @@ pub fn css__stylesheet_rule_add_selector(&self,/*sheet:  @css_stylesheet , */
 pub fn  css__stylesheet_rule_create(@self,sheet:@css_stylesheet ,  rule_type:css_rule_type/*,
 		css_rule **rule*/)->css_result
 {
-	let mut high_level_css_struct:@css_high_level =  lcss_high_level(self);
+	let mut high_level_css_struct:@css_high_level =  lcss_high_level(/*self*/);
 	high_level_css_struct.base.rule_type = rule_type;
 	CSS_RULE_CREATED_OK(high_level_css_struct)	
 	//CSS_GENERAL_OK
@@ -3896,14 +3967,14 @@ pub fn css__stylesheet_string_add(&self,sheet:css_stylesheet , string:@lwc_strin
 	
 }
 
-pub fn css__stylesheet_string_get(sheet:@css_stylesheet, mut string_number:u32/*, lwc_string **string*/)->css_result
+pub fn css__stylesheet_string_get(/*sheet:@css_stylesheet,*/ &self,mut string_number:u32/*, lwc_string **string*/)->css_result
 {
 	string_number -= 1;
-    if string_number > sheet.string_vector.len() as u32
+    if string_number > self.string_vector.len() as u32
     {
     	return CSS_BADPARM;
     }
-    CSS_STRING_GET(sheet.string_vector[string_number])
+    CSS_STRING_GET(self.string_vector[string_number])
 }
 
  pub fn css_stylesheet_create(&self,params:@css_stylesheet_params /*,
@@ -3911,9 +3982,8 @@ pub fn css__stylesheet_string_get(sheet:@css_stylesheet, mut string_number:u32/*
 		css_stylesheet **stylesheet*/)->css_result
 {
 	let sheet = lcss_stylesheet(lwc());
-	let Result=self.css__propstrings_get();
-	match(copy Result)
-	{
+	let mut Result=self.css__propstrings_get();
+	match(copy Result) {
 		CSS_PROPSTRINGS_OK(x) => sheet.propstrings = x,
 		_=>{ return Result}
 	}
@@ -3926,22 +3996,297 @@ pub fn css__stylesheet_string_get(sheet:@css_stylesheet, mut string_number:u32/*
 	else{
 		charsetDetect =  CSS_CHARSET_DICTATED;
 	}
+    //sheet.parser =  @mut SomeParserNode(css__parser_create(copy params.charset,charsetDetect,lcss_language(sheet)));
+	if (params.inline_style) {
+		
+		sheet.parser =  @mut SomeParserNode(css__parser_create_for_inline_style(copy params.charset,charsetDetect,lcss_language(sheet)));
+	} else {
+		sheet.parser =  @mut SomeParserNode(css__parser_create(copy params.charset,charsetDetect,lcss_language(sheet)));
+	}
+	sheet.quirks_allowed = params.allow_quirks;
+	let mut optparams:@css_parser_optparams = css_parser_optparams_instance() ;
+	
+	if (params.allow_quirks) {
+		optparams.quirks = true;
+		match(sheet.parser)
+		{
+			@SomeParserNode(x)=>Result = x.css__parser_setopt( CSS_PARSER_QUIRKS,optparams),
+			_=>{}
+		}
+		match (copy Result)
+		{
+			CSS_GENERAL_OK=>{}
+			_=>{
+				self.css__propstrings_unref();
+				return Result;
+			}
+		}
+	}
+	sheet.level = params.level;
+    Result = css__language_create(sheet, sheet.parser/*alloc, alloc_pw,*//*&sheet->parser_frontend*/);
+	match(copy Result)
+	{
+		CSS_LANGUAGE_CREATED_OK(lan)=> sheet.parser_frontend = @mut SomeLanguageNode(lan),
+		_=>{}
+	}
+    //TODO uncomment when selector hashtable is implemented
+	/*Result =  css__selector_hash_create();
+	match(copy Result)
+	{
+		CSS_SELECTOR_CREATE_OK(sel)=> sheet.selector=sel,
+		_=>{}
+	}
+*/
 
-	// if (params.inline_style) {
-	// 	Result = css__parser_create_for_inline_style(params.charset, 
-	// 		p,alloc, alloc_pw/*, &sheet->parser*/);
-	// } else {
-	// 	Result = css__parser_create(params->charset,p,
-	// 		alloc, alloc_pw/*, &sheet->parser*/);
-	// }
-	// match (Result)
-	// {
-	// 	CSS_PARSER_CREATED_OK(x) => sheet.parser = x,
-	// 	_=> return Result 
-	// }
+    sheet. url = copy params.url;
+    sheet. title = copy params.title;
+
+	sheet.resolve =copy params.resolve;
+	sheet.resolve_pw =copy params.resolve_pw;
+
+	sheet.import = copy params.import;
+	sheet.import_pw = copy params.import_pw;
+
+	sheet.color = copy params.color;
+	sheet.color_pw = copy params.color_pw;
+
+	sheet.font = copy params.font;
+	sheet.font_pw = copy params.font_pw;
+
+	/*sheet.alloc = alloc;
+	sheet.pw = alloc_pw;*/
 
 	CSS_STYLESHEET_CREATE_OK(sheet)
 }
+
+pub fn css_stylesheet_append_data( &self,
+		data:~[u8])-> css_result
+{
+	/*if (sheet == NULL || data == NULL)
+		return CSS_BADPARM;
+
+	if (sheet->parser == NULL)
+		return CSS_INVALID;*/
+		match(self.parser)
+		{
+			@SomeParserNode(x)=>return x.css__parser_parse_chunk( data),
+			_=> return CSS_INVALID
+		}
+
+	
+}
+pub fn css_stylesheet_data_done(&self/*css_stylesheet *sheet*/)-> css_result
+{
+	let mut Result:css_result;
+	match(self.parser)
+	{
+		@SomeParserNode(x)=> Result = x.css__parser_completed(),
+		_=>return CSS_INVALID
+	}
+
+	self.parser_frontend = @mut NoLanguageNode;
+	self.parser = @mut NoParserNode;
+
+    let mut iter:@mut css_high_level_ptr = self.rule_list;
+    loop 
+    	{
+    		match(iter)
+    		{
+    			@high_level_pointer(x)=> {
+    				iter=x.next;
+    				match(x.base.rule_type)
+    				{
+    					CSS_RULE_UNKNOWN=>{},
+    					CSS_RULE_CHARSET=>{},
+    					CSS_RULE_IMPORT=>{
+    						let mut importOfHighLevel@css_rule_import=x.import;
+    						match(x.import.sheet)
+    						{
+    							@SomeStyleSheetNode(x)=>{},
+    							@NoStyleSheetNode=> return CSS_IMPORTS_PENDING
+    						}
+    						
+    					},
+    					_=>{break;}
+    				}
+    			},
+    			@no_high_level_pointer=> {break;}    
+    		}
+       	}
+    
+
+
+	CSS_GENERAL_OK
+}
+pub fn css_stylesheet_next_pending_import(&self/*,
+		url:@lwc_string , media:u64*/)->css_result
+{
+	let mut iter:@mut css_high_level_ptr = self.rule_list;
+	let mut url:@lwc_string;
+	let mut media:u64;
+    loop 
+    	{
+    		match(iter)
+    		{
+    			@high_level_pointer(x)=> {
+    				iter=x.next;
+    				match(x.base.rule_type)
+    				{
+    					CSS_RULE_UNKNOWN=>{},
+    					CSS_RULE_CHARSET=>{},
+    					CSS_RULE_IMPORT=>{
+    						let mut importOfHighLevel@css_rule_import=x.import;
+    						match(x.import.sheet)
+    						{
+    							@SomeStyleSheetNode(x)=>{},
+    							@NoStyleSheetNode=>  {
+    								url = x.import.url;
+    								media = x.import.media;
+    								return CSS_IMPORTS_PENDING_OK(url,media);
+    							}
+    						}
+    						
+    					},
+    					_=>{break;}
+    				}
+    			},
+    			@no_high_level_pointer=> {break;}    
+    		}
+       	}
+	
+
+	return CSS_INVALID;
+}
+
+pub fn css_stylesheet_register_import(&self,
+		import:@mut css_stylesheet)-> css_result
+{
+	let mut iter:@mut css_high_level_ptr = self.rule_list;
+	//let mut url:@lwc_string;
+	//let mut media:u64;
+    loop 
+    	{
+    		match(iter)
+    		{
+    			@high_level_pointer(x)=> {
+    				
+    				match(x.base.rule_type)
+    				{
+    					CSS_RULE_UNKNOWN=>{},
+    					CSS_RULE_CHARSET=>{},
+    					CSS_RULE_IMPORT=>{
+    						
+    						match(x.import.sheet)
+    						{
+    							@SomeStyleSheetNode(x)=>{},
+    							@NoStyleSheetNode=>  {
+    								x.import.sheet=@mut SomeStyleSheetNode(import);
+    								return CSS_GENERAL_OK;
+    							}
+    						}
+    						
+    					},
+    					_=>{break;}
+    				}
+    				iter=x.next;
+    			},
+    			@no_high_level_pointer=> {break;}    
+    		}
+       	}
+	
+
+	return CSS_INVALID;
+	
+}
+pub fn css_stylesheet_get_language_level(&self )-> css_result
+{
+	/*if (sheet == NULL || level == NULL)
+		return CSS_BADPARM;
+
+	*level = sheet->level;*/
+
+	return CSS_GET_LANGUAGE_LEVEL(self.level);
+}
+
+pub fn css_stylesheet_get_url(&self)-> css_result
+{
+	/*if (sheet == NULL || url == NULL)
+		return CSS_BADPARM;
+
+	*url = sheet->url;*/
+
+	return CSS_GET_URL( copy self.url);
+}
+pub fn css_stylesheet_get_title(&self)-> css_result
+{
+	return CSS_GET_TITLE(copy self.title);
+}
+
+pub fn css_stylesheet_quirks_allowed(&self)-> css_result
+{
+	return CSS_IS_QUIRK_ALLOWED(self.quirks_allowed);
+}
+
+pub fn css_stylesheet_used_quirks(&self)-> css_result
+{
+	return CSS_IS_QUIRK_USED(self.quirks_used);
+}
+
+pub fn css_stylesheet_get_disabled(&self)-> css_result
+{
+	return CSS_GET_SHEET_DISABLED(self.disabled);
+}
+pub fn css_stylesheet_set_disabled(&self,disabled:bool)-> css_result
+{
+	self.disabled = disabled;
+	return CSS_GENERAL_OK;
+}
+pub fn css_stylesheet_size(&self, size:uint)-> css_result
+{
+    CSS_GENERAL_OK//(size)
+	//not implemented
+}
+pub fn css__stylesheet_style_create(@mut self)-> css_result
+{
+	match(self.cached_style)
+	{
+		@SomeStyleNode(Style)=>{
+			self.cached_style= @NoStyleNode;
+			CSS_STYLECREATED_OK(@SomeStyleNode(Style));
+		},
+		@NoStyleNode=>{}
+	}
+	let mut Style=@css_style
+	{
+		bytecode:~[] ,
+		//used : 0,
+		//allocated: CSS_STYLE_DEFAULT_SIZE,
+		sheet:@SomeStyleSheetNode(self)
+
+	};
+	CSS_STYLECREATED_OK(@SomeStyleNode(Style))
+}
+
+static pub fn css__stylesheet_merge_style(target:@css_style ,  style:@css_style)-> css_result
+{
+	
+	target.bytecode = vec::append(copy target.bytecode, style.bytecode);
+	CSS_GENERAL_OK
+
+}
+pub fn css__stylesheet_style_append(style:@css_style,  css_code:css_code_t)-> css_result
+{
+  style.bytecode.push(css_code);
+  CSS_GENERAL_OK
+}
+//check this functn
+pub fn css__stylesheet_style_vappend(style:@css_style,  css_code:~[css_code_t])-> css_result
+{
+	style.bytecode = vec::append(copy style.bytecode, css_code);
+	CSS_GENERAL_OK
+}
+
+
 
 }
 
@@ -3955,7 +4300,11 @@ pub fn css__stylesheet_string_get(sheet:@css_stylesheet, mut string_number:u32/*
 // ===========================================================================================================
 // CSS-LANGUAGE implementation/data-structs start here 
 // ===========================================================================================================
-
+pub enum css_language_node
+{
+	SomeLanguageNode(@mut css_language),
+  	NoLanguageNode
+}
 
 pub struct css_language {
 	sheet:@css_stylesheet ,		/**< The stylesheet to parse for */
@@ -4003,6 +4352,54 @@ pub fn lcss_language(sheet:@css_stylesheet)->@css_language {
 		            };
 	return css_language_instance;
 }
+pub fn  css__language_create( sheet:@css_stylesheet,parserNode:@mut css_parser_node) -> css_result
+	{
+		let lwc_inst=lwc();
+	let empty_lwc_string = lwc_inst.lwc_intern_string(@"");
+	let stack:@DVec<context_entry> = @dvec::DVec();
+	
+	//@css_language {
+					
+
+				let	css_language_instance = @mut css_language {
+							sheet:sheet,
+							lwc_instance:lwc_inst,		
+				    		STACK_CHUNK:32,
+							context:stack, 
+							state:CHARSET_PERMITTED,	
+							strings:copy sheet.propstrings,
+							
+							default_namespace:empty_lwc_string,	
+							
+							namespaces:@css_namespace
+							{
+								prefix:empty_lwc_string,	
+								uri:empty_lwc_string	
+							},	
+							num_namespaces:0	
+		
+		            };
+	
+		
+		css_language_instance.sheet=sheet;
+
+		
+
+		/*let params = @css_parser_optparams {
+			quirks:false,
+			event_handler: css_parser_event_handler_
+			{
+				handler:language_handle_event,
+				pw:css_language_instance
+			}
+		};*/ //see later
+		
+		
+		
+		return CSS_LANGUAGE_CREATED_OK(css_language_instance);
+	}
+
+
 impl css_language
  {
 
@@ -4277,19 +4674,672 @@ pub fn important()->@important
 {
 	@important
 	{
-lpu_instance : lpu(),
+		 lpu_instance : lpu(),
 	     lwc_instance : lwc()
 	}
 }
 
+
 impl important
 {
+	pub fn convert_Int_2_Enum(&self, intVal : uint) -> css_properties_e
+	{
+		let mut enumVal : css_properties_e = CSS_PROP_AZIMUTH; // Initializing to remove compilation error
+
+		match(intVal)
+		{
+			0x000 =>   enumVal = 		CSS_PROP_AZIMUTH,		
+			      0x001  =>   enumVal = 	  CSS_PROP_BACKGROUND_ATTACHMENT		,
+			      0x002                    =>   enumVal =  CSS_PROP_BACKGROUND_COLOR		,
+			      0x003                    =>   enumVal =  CSS_PROP_BACKGROUND_IMAGE		 ,
+			      0x004          =>   enumVal =   CSS_PROP_BACKGROUND_POSITION,	
+			      0x005          =>   enumVal =   CSS_PROP_BACKGROUND_REPEAT	,
+			      0x006          =>   enumVal =   CSS_PROP_BORDER_COLLAPSE	,
+			      0x007          =>   enumVal =   CSS_PROP_BORDER_SPACING	,	
+			      0x008          =>   enumVal =   CSS_PROP_BORDER_TOP_COLOR,
+			      0x009          =>   enumVal =   CSS_PROP_BORDER_RIGHT_COLOR,	
+			      0x00a                    =>   enumVal = CSS_PROP_BORDER_BOTTOM_COLOR	,
+			      0x00b          =>   enumVal =   CSS_PROP_BORDER_LEFT_COLOR	,
+			      0x00c                    =>   enumVal = CSS_PROP_BORDER_TOP_STYLE	,
+			      0x00d                    =>   enumVal = CSS_PROP_BORDER_RIGHT_STYLE,	
+			      0x00e                    =>   enumVal = CSS_PROP_BORDER_BOTTOM_STYLE,	
+			      0x00f                    =>   enumVal = CSS_PROP_BORDER_LEFT_STYLE,	
+			      0x010                    =>   enumVal = CSS_PROP_BORDER_TOP_WIDTH	,
+			      0x011                    =>   enumVal =  CSS_PROP_BORDER_RIGHT_WIDTH	,
+			      0x012                    =>   enumVal =  CSS_PROP_BORDER_BOTTOM_WIDTH	,
+			      0x013                    =>   enumVal =  CSS_PROP_BORDER_LEFT_WIDTH	,
+			      0x014                    =>   enumVal =  CSS_PROP_BOTTOM			,
+			      0x015                    =>   enumVal =  CSS_PROP_CAPTION_SIDE	,	
+			      0x016          =>   enumVal = CSS_PROP_CLEAR	,
+			      0x017          =>   enumVal =  CSS_PROP_CLIP			,
+			      0x018          =>   enumVal =  CSS_PROP_COLOR			,
+			      0x019          =>   enumVal = CSS_PROP_CONTENT	,
+			      0x01a          =>   enumVal = CSS_PROP_COUNTER_INCREMENT	,
+			      0x01b          =>   enumVal = CSS_PROP_COUNTER_RESET		,
+			      0x01c          =>   enumVal = CSS_PROP_CUE_AFTER		,
+			      0x01d          =>   enumVal = CSS_PROP_CUE_BEFORE	,
+			      0x01e          =>   enumVal = CSS_PROP_CURSOR		,	
+			      0x01f          =>   enumVal = CSS_PROP_DIRECTION	,	
+			      0x020          =>   enumVal = CSS_PROP_DISPLAY		,
+			      0x021          =>   enumVal = CSS_PROP_ELEVATION	,	
+			      0x022          =>   enumVal = CSS_PROP_EMPTY_CELLS	,	
+			      0x023          =>   enumVal = CSS_PROP_FLOAT		,	
+			      0x024          =>   enumVal = CSS_PROP_FONT_FAMILY	,
+			      0x025          =>   enumVal =  CSS_PROP_FONT_SIZE		,
+			      0x026          =>   enumVal = CSS_PROP_FONT_STYLE	,	
+			      0x027          =>   enumVal = CSS_PROP_FONT_VARIANT	,	
+			      0x028          =>   enumVal = CSS_PROP_FONT_WEIGHT	,
+			      0x029          =>   enumVal = CSS_PROP_HEIGHT			,
+			      0x02a          =>   enumVal = CSS_PROP_LEFT			,
+			      0x02b          =>   enumVal =   CSS_PROP_LETTER_SPACING,		
+			      0x02c          =>   enumVal = CSS_PROP_LINE_HEIGHT	,	
+			      0x02d          =>   enumVal =   CSS_PROP_LIST_STYLE_IMAGE	,
+			      0x02e          =>   enumVal =   CSS_PROP_LIST_STYLE_POSITION,	
+			      0x02f          =>   enumVal = CSS_PROP_LIST_STYLE_TYPE	,
+			      0x030          =>   enumVal =   CSS_PROP_MARGIN_TOP		,
+			      0x031          =>   enumVal =   CSS_PROP_MARGIN_RIGHT	,
+			      0x032          =>   enumVal =   CSS_PROP_MARGIN_BOTTOM		,
+			      0x033          =>   enumVal =   CSS_PROP_MARGIN_LEFT		,
+			      0x034          =>   enumVal = CSS_PROP_MAX_HEIGHT		,
+			      0x035          =>   enumVal =   CSS_PROP_MAX_WIDTH		,
+			      0x036          =>   enumVal =   CSS_PROP_MIN_HEIGHT	,	
+			      0x037          =>   enumVal = CSS_PROP_MIN_WIDTH	,	
+			      0x038          =>   enumVal = CSS_PROP_ORPHANS			,
+			      0x039          =>   enumVal = CSS_PROP_OUTLINE_COLOR,		
+			      0x03a          =>   enumVal = CSS_PROP_OUTLINE_STYLE,		
+			      0x03b          =>   enumVal = CSS_PROP_OUTLINE_WIDTH	,
+			      0x03c          =>   enumVal = CSS_PROP_OVERFLOW			,
+			      0x03d          =>   enumVal = CSS_PROP_PADDING_TOP,
+			      0x03e          =>   enumVal = CSS_PROP_PADDING_RIGHT	,		
+			      0x03f          =>   enumVal = CSS_PROP_PADDING_BOTTOM	,	
+			      0x040          =>   enumVal =   CSS_PROP_PADDING_LEFT		,
+			      0x041          =>   enumVal = CSS_PROP_PAGE_BREAK_AFTER	,
+			      0x042          =>   enumVal = CSS_PROP_PAGE_BREAK_BEFORE,	
+			      0x043          =>   enumVal = CSS_PROP_PAGE_BREAK_INSIDE,	
+			      0x044          =>   enumVal =   CSS_PROP_PAUSE_AFTER		,
+			      0x045          =>   enumVal =   CSS_PROP_PAUSE_BEFORE		,
+			      0x046          =>   enumVal =   CSS_PROP_PITCH_RANGE		,
+			      0x047          =>   enumVal = CSS_PROP_PITCH			,
+			      0x048          =>   enumVal = CSS_PROP_PLAY_DURING		,
+			      0x049          =>   enumVal = CSS_PROP_POSITION		,
+			      0x04a          =>   enumVal = CSS_PROP_QUOTES		,	
+			      0x04b          =>   enumVal = CSS_PROP_RICHNESS		,
+			      0x04c          =>   enumVal =   CSS_PROP_RIGHT			,
+			      0x04d          =>   enumVal = CSS_PROP_SPEAK_HEADER	,	
+			      0x04e          =>   enumVal = CSS_PROP_SPEAK_NUMERAL	,		
+			      0x04f          =>   enumVal = CSS_PROP_SPEAK_PUNCTUATION	,
+			      0x050          =>   enumVal = CSS_PROP_SPEAK				,
+			      0x051          =>   enumVal = CSS_PROP_SPEECH_RATE		,
+			      0x052          =>   enumVal = CSS_PROP_STRESS			,
+			      0x053          =>   enumVal = CSS_PROP_TABLE_LAYOUT	,
+			      0x054          =>   enumVal = CSS_PROP_TEXT_ALIGN		,
+			      0x055          =>   enumVal = CSS_PROP_TEXT_DECORATION	,
+			      0x056          =>   enumVal = CSS_PROP_TEXT_INDENT		,
+			      0x057          =>   enumVal = CSS_PROP_TEXT_TRANSFORM	,	
+			      0x058          =>   enumVal = CSS_PROP_TOP			,
+			      0x059          =>   enumVal = CSS_PROP_UNICODE_BIDI	,	
+			      0x05a          =>   enumVal = CSS_PROP_VERTICAL_ALIGN ,		
+			      0x05b          =>   enumVal = CSS_PROP_VISIBILITY	,	
+			      0x05c          =>   enumVal =   CSS_PROP_VOICE_FAMILY	,
+			      0x05d          =>   enumVal =    CSS_PROP_VOLUME				,
+			      0x05e          =>   enumVal =   CSS_PROP_WHITE_SPACE		,
+			      0x05f          =>   enumVal =   CSS_PROP_WIDOWS			,
+			      0x060          =>   enumVal =   CSS_PROP_WIDTH			,
+			      0x061          =>   enumVal =   CSS_PROP_WORD_SPACING	,	
+			      0x062          =>   enumVal =   CSS_PROP_Z_INDEX		,
+			      0x063          =>   enumVal =   CSS_PROP_OPACITY		,
+			      0x064          =>   enumVal =   CSS_PROP_BREAK_AFTER		,	
+			      0x065          =>   enumVal =   CSS_PROP_BREAK_BEFORE	,	
+			      0x066          =>   enumVal =   CSS_PROP_BREAK_INSIDE	,	
+			      0x067          =>   enumVal =   CSS_PROP_COLUMN_COUNT	,	
+			      0x068          =>   enumVal =   CSS_PROP_COLUMN_FILL	,	
+			      0x069          =>   enumVal =   CSS_PROP_COLUMN_GAP,		
+			      0x06a          =>   enumVal =   CSS_PROP_COLUMN_RULE_COLOR,
+			      0x06b          =>   enumVal =    CSS_PROP_COLUMN_RULE_STYLE	,
+			      0x06c          =>   enumVal =   CSS_PROP_COLUMN_RULE_WIDTH	,
+			      0x06d          =>   enumVal =   CSS_PROP_COLUMN_SPAN		,
+			      0x06e			=>   enumVal = 	 CSS_PROP_COLUMN_WIDTH		,
+			      0x06f			=>   enumVal = 	CSS_N_PROPERTIES		,
+			      _		=>	() // Do nothing
+
+		}
+		return (enumVal);
+	}
+
+
+	pub fn convert_enum_op_azimuth_2_u32(&self, enumVal : op_azimuth) -> u32
+	{
+		let value : u32 ;
+
+		match(enumVal)
+		{
+			AZIMUTH_ANGLE			=>   value   =     0x0080,
+							AZIMUTH_LEFTWARDS		=>   value   =     0x0040,
+							AZIMUTH_RIGHTWARDS		=>   value   =     0x0041,
+							AZIMUTH_BEHIND			=>   value   =     (1<<5),
+							AZIMUTH_LEFT_SIDE		=>   value   =     0x0000,
+							AZIMUTH_FAR_LEFT		=>   value   =     0x0001,
+							AZIMUTH_LEFT			=>   value   =     0x0002,
+							AZIMUTH_CENTER_LEFT		=>   value   =     0x0003,
+							AZIMUTH_CENTER			=>   value   =     0x0004,
+							AZIMUTH_CENTER_RIGHT		=>   value   =     0x0005,
+							AZIMUTH_RIGHT			=>   value   =     0x0006,
+							AZIMUTH_FAR_RIGHT		=>   value   =     0x0007,
+							AZIMUTH_RIGHT_SIDE		=>   value   =     0x0008,
+							//						_				=>	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_backgroundColor_2_u32(&self, enumVal : op_background_color) -> u32
+	{
+		let value : u32 ;
+
+		match(enumVal)
+		{
+			BACKGROUND_COLOR_TRANSPARENT	=>   value   =     0x0000,
+							BACKGROUND_COLOR_CURRENT_COLOR	=>   value   =     0x0001,
+							BACKGROUND_COLOR_SET		=>   value   =     0x0080,
+							//	_			=>   ()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_backgroundImage_2_u32(&self, enumVal : op_background_image) -> u32
+	{
+		let value : u32 ;
+
+		match(enumVal)
+		{
+			BACKGROUND_IMAGE_URI		=>   value   =     0x0080,
+							BACKGROUND_IMAGE_NONE		=>   value   =     0x0000,
+							//	_				=>	()  // Do nothing
+		}
+		return (value);
+	}
+
+	pub fn convert_enum_op_backgroundPosition_2_u32(&self, enumVal : op_background_position) -> u32
+	{
+		let value : u32 ;
+
+		match(enumVal)
+		{
+			BACKGROUND_POSITION_HORZ_SET	=>   value   =     0x0080,
+							BACKGROUND_POSITION_HORZ_CENTER	=>   value   =     0x0000,
+							BACKGROUND_POSITION_HORZ_RIGHT	=>   value   =     0x0010,
+							BACKGROUND_POSITION_HORZ_LEFT	=>   value   =     0x0020,
+							BACKGROUND_POSITION_VERT_SET	=>   value   =     0x0008,
+							//BACKGROUND_POSITION_VERT_CENTER	=>   value   =     0x0000,
+							BACKGROUND_POSITION_VERT_BOTTOM	=>   value   =     0x0001,
+							BACKGROUND_POSITION_VERT_TOP	=>   value   =     0x0002,
+							//		_			=>	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_borderSpacing_2_u32(&self, enumVal : op_border_spacing) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{	
+			BORDER_SPACING_SET	=>	 value = 0x0080,
+						//	_			=>	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_borderWidth_2_u32(&self, enumVal : op_border_width) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{	
+			BORDER_WIDTH_SET		=>   value   =     0x0080,
+							BORDER_WIDTH_THIN		=>   value   =     0x0000,
+							BORDER_WIDTH_MEDIUM		=>   value   =     0x0001,
+							BORDER_WIDTH_THICK		=>   value   =     0x0002,
+							//	_				=>	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_bottom_2_u32(&self, enumVal : op_bottom) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{	
+			BOTTOM_SET			=>   value   =     0x0080,
+							BOTTOM_AUTO			=>   value   =    0x0000,
+							//	_				=>	()  // Do nothing
+		}
+		return (value);
+	}
+
+	pub fn convert_enum_op_clip_2_u32(&self, enumVal : op_clip) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{	
+			CLIP_SHAPE_MASK			=>   value   =     0x0087,
+							CLIP_SHAPE_RECT			=>   value   =     0x0080,
+							CLIP_RECT_TOP_AUTO		=>   value   =     0x0008,
+							CLIP_RECT_RIGHT_AUTO		=>   value   =     0x0010,
+							CLIP_RECT_BOTTOM_AUTO		=>   value   =     0x0020,
+							CLIP_RECT_LEFT_AUTO		=>   value   =     0x0040,
+							CLIP_AUTO			=>   value   =     0x0000,
+							//	_				=>	()  // Do nothing
+		}
+		return (value);
+	}
+
+	pub fn convert_enum_op_color_2_u32(&self, enumVal : op_color) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{	
+			COLOR_TRANSPARENT		=>   value   =     0x0000,
+							COLOR_CURRENT_COLOR		=>   value   =     0x0001,
+							COLOR_SET			=>   value   =     0x0080,
+							//	_				=>	()  // Do nothing
+		}
+		return (value);
+	}
+
+	pub fn convert_enum_op_columCount_2_u32(&self, enumVal : op_column_count) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{	
+			COLUMN_COUNT_AUTO		=>   value   =     0x0000,
+							COLUMN_COUNT_SET		=>   value   =     0x0080,
+							//		_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_content_2_u32(&self, enumVal : op_content) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{	
+			CONTENT_STRING			=>   value   =     0x0080,
+							CONTENT_URI			=>   value   =     0x0081,
+							CONTENT_COUNTER			=>   value   =     0x0082,
+							CONTENT_COUNTERS		=>   value   =     0x0083,
+							CONTENT_ATTR			=>   value   =     0x0084,
+							CONTENT_COUNTER_STYLE_SHIFT	=>   value   =     8,
+							//CONTENT_COUNTERS_STYLE_SHIFT	=>   value   =     8,
+							CONTENT_NORMAL			=>   value   =     0x0000,
+							CONTENT_NONE			=>   value   =     0x0001,
+							CONTENT_OPEN_QUOTE		=>   value   =     0x0002,
+							CONTENT_CLOSE_QUOTE		=>   value   =     0x0003,
+							CONTENT_NO_OPEN_QUOTE		=>   value   =     0x0004,
+							CONTENT_NO_CLOSE_QUOTE		=>   value   =     0x0005,
+							//	_				=>	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_counterIncrement_2_u32(&self, enumVal : op_counter_increment) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			COUNTER_INCREMENT_NONE		=>   value = 0x0000,
+							COUNTER_INCREMENT_NAMED		=>   value = 0x0080,
+							//		_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_cursor_2_u32(&self, enumVal : op_cursor) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			CURSOR_URI			=>   value   =     0x0080,
+
+							CURSOR_AUTO			=>   value   =     0x0000,
+							CURSOR_CROSSHAIR		=>   value   =     0x0001,
+							CURSOR_DEFAULT			=>   value   =     0x0002,
+							CURSOR_POINTER			=>   value   =     0x0003,
+							CURSOR_MOVE			=>   value   =     0x0004,
+							CURSOR_E_RESIZE			=>   value   =     0x0005,
+							CURSOR_NE_RESIZE		=>   value   =     0x0006,
+							CURSOR_NW_RESIZE		=>   value   =     0x0007,
+							CURSOR_N_RESIZE			=>   value   =     0x0008,
+							CURSOR_SE_RESIZE		=>   value   =     0x0009,
+							CURSOR_SW_RESIZE		=>   value   =     0x000a,
+							CURSOR_S_RESIZE			=>   value   =     0x000b,
+							CURSOR_W_RESIZE			=>   value   =     0x000c,
+							CURSOR_TEXT			=>   value   =     0x000d,
+							CURSOR_WAIT			=>   value   =     0x000e,
+							CURSOR_HELP			=>   value   =     0x000f,
+							CURSOR_PROGRESS			=>   value   =     0x0010,
+							//					_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_elevation_2_u32(&self, enumVal : op_elevation) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			ELEVATION_ANGLE			=>   value   =     0x0080,
+							ELEVATION_BELOW			=>   value   =     0x0000,
+							ELEVATION_LEVEL			=>   value   =     0x0001,
+							ELEVATION_ABOVE			=>   value   =     0x0002,
+							ELEVATION_HIGHER		=>   value   =     0x0003,
+							ELEVATION_LOWER			=>   value   =     0x0004,
+							//					_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+
+	pub fn convert_enum_op_fontfamily_2_u32(&self, enumVal : op_font_family) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			FONT_FAMILY_STRING		=>   value   =     0x0080,
+							FONT_FAMILY_IDENT_LIST		=>   value   =     0x0081,
+
+							FONT_FAMILY_END			=>   value   =     0x0000,
+
+							FONT_FAMILY_SERIF		=>   value   =     0x0001,
+							FONT_FAMILY_SANS_SERIF		=>   value   =     0x0002,
+							FONT_FAMILY_CURSIVE		=>   value   =     0x0003,
+							FONT_FAMILY_FANTASY		=>   value   =     0x0004,
+							FONT_FAMILY_MONOSPACE		=>   value   =     0x0005,
+							//					_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_fontSize_2_u32(&self, enumVal : op_font_size) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			FONT_SIZE_DIMENSION		=>   value   =     0x0080,
+							FONT_SIZE_XX_SMALL		=>   value   =     0x0000,
+							FONT_SIZE_X_SMALL		=>   value   =     0x0001,
+							FONT_SIZE_SMALL			=>   value   =     0x0002,
+							FONT_SIZE_MEDIUM		=>   value   =     0x0003,
+							FONT_SIZE_LARGE			=>   value   =     0x0004,
+							FONT_SIZE_X_LARGE		=>   value   =     0x0005,
+							FONT_SIZE_XX_LARGE		=>   value   =     0x0006,
+							FONT_SIZE_LARGER		=>   value   =     0x0007,
+							FONT_SIZE_SMALLER		=>   value   =     0x0008,
+							//	_				=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_letterSpacing_2_u32(&self, enumVal : op_letter_spacing) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			LETTER_SPACING_SET		=>   value   =     0x0080,
+							LETTER_SPACING_NORMAL		=>   value   =     0x0000,
+							//			_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_lineHeight_2_u32(&self, enumVal : op_line_height) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			LINE_HEIGHT_NUMBER		=>   value   =     0x0080,
+							LINE_HEIGHT_DIMENSION		=>   value   =     0x0081,
+							LINE_HEIGHT_NORMAL		=>   value   =     0x0000,
+							//	_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_maxHeight_2_u32(&self, enumVal : op_max_height) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			MAX_HEIGHT_SET			=>   value   =     0x0080,
+							MAX_HEIGHT_NONE			=>   value   =     0x0000,
+							//			_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_minHeight_2_u32(&self, enumVal : op_min_height) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			MIN_HEIGHT_SET			=>	value =  0x0080,
+							//			_			=>   	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_opacity_2_u32(&self, enumVal : op_opacity) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			OPACITY_SET			=>   value   =     0x0080,
+							//						_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+
+	pub fn convert_enum_op_orphans_2_u32(&self, enumVal : op_orphans) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			ORPHANS_SET			=>   value   =     0x0080,
+							//		_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_outlineColor_2_u32(&self, enumVal : op_outline_color) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			OUTLINE_COLOR_TRANSPARENT	=>   value   =     0x0000,
+							OUTLINE_COLOR_CURRENT_COLOR	=>   value   =     0x0001,
+							OUTLINE_COLOR_INVERT		=>   value   =     0x0002,
+							OUTLINE_COLOR_SET		=>   value   =     0x0080,
+							//						_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_pitch_2_u32(&self, enumVal : op_pitch) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			PITCH_FREQUENCY			=>   value   =     0x0080,
+
+							PITCH_X_LOW			=>   value   =     0x0000,
+							PITCH_LOW			=>   value   =     0x0001,
+							PITCH_MEDIUM			=>   value   =     0x0002,
+							PITCH_HIGH			=>   value   =     0x0003,
+							PITCH_X_HIGH			=>   value   =     0x0004,
+							//						_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_playDuring_2_u32(&self, enumVal : op_play_during) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			PLAY_DURING_TYPE_MASK		=>   value   =     0x009f,
+							PLAY_DURING_URI			=>   value   =     0x0080,
+							PLAY_DURING_MIX			=>   value   =     (1<<6),
+							PLAY_DURING_REPEAT		=>   value   =     (1<<5),
+							PLAY_DURING_AUTO		=>   value   =     0x0000,
+							PLAY_DURING_NONE		=>   value   =     0x0001,
+							//						_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_Zindex_2_u32(&self, enumVal : op_z_index) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			Z_INDEX_SET			=>   value   =     0x0080,
+							Z_INDEX_AUTO			=>   value   =     0x0000,
+							//		_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_volume_2_u32(&self, enumVal : op_volume) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			VOLUME_NUMBER			=>   value   =     0x0080,
+							VOLUME_DIMENSION		=>   value   =     0x0081,
+							VOLUME_SILENT			=>   value   =     0x0000,
+							VOLUME_X_SOFT			=>   value   =     0x0001,
+							VOLUME_SOFT			=>   value   =     0x0002,
+							VOLUME_MEDIUM			=>   value   =     0x0003,
+							VOLUME_LOUD			=>   value   =     0x0004,
+							VOLUME_X_LOUD			=>   value   =     0x0005,
+							//	_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+
+
+	pub fn convert_enum_op_voiceFamily_2_u32(&self, enumVal : op_voice_family) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			VOICE_FAMILY_STRING		=>   value   =         0x0080,
+							VOICE_FAMILY_IDENT_LIST		=> 	value =		0x0081,
+							VOICE_FAMILY_END		=>   value   =     0x0000,
+							VOICE_FAMILY_MALE		=>   value   =     0x0001,
+							VOICE_FAMILY_FEMALE		=>   value   =     0x0002,
+							VOICE_FAMILY_CHILD		=>   value   =     0x0003,
+							//	_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+	pub fn convert_enum_op_verticalAlign_2_u32(&self, enumVal : op_vertical_align) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			VERTICAL_ALIGN_SET		=>   value   =     0x0080,
+
+							VERTICAL_ALIGN_BASELINE		=>   value   =     0x0000,
+							VERTICAL_ALIGN_SUB		=>   value   =     0x0001,
+							VERTICAL_ALIGN_SUPER		=>   value   =     0x0002,
+							VERTICAL_ALIGN_TOP		=>   value   =     0x0003,
+							VERTICAL_ALIGN_TEXT_TOP		=>   value   =     0x0004,
+							VERTICAL_ALIGN_MIDDLE		=>   value   =     0x0005,
+							VERTICAL_ALIGN_BOTTOM		=>   value   =     0x0006,
+							VERTICAL_ALIGN_TEXT_BOTTOM	=>   value   =     0x0007,
+							//						_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_playDuring_2_u32(&self, enumVal : op_play_during) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			PLAY_DURING_TYPE_MASK		=>   value   =     0x009f,
+							PLAY_DURING_URI			=>   value   =     0x0080,
+							PLAY_DURING_MIX			=>   value   =     (1<<6),
+							PLAY_DURING_REPEAT		=>   value   =     (1<<5),
+
+							PLAY_DURING_AUTO		=>   value   =     0x0000,
+							PLAY_DURING_NONE		=>   value   =     0x0001,
+							//						_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_speechRate_2_u32(&self, enumVal : op_speech_rate) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			SPEECH_RATE_SET			=>   value   =     0x0080,
+
+							SPEECH_RATE_X_SLOW		=>   value   =     0x0000,
+							SPEECH_RATE_SLOW		=>   value   =     0x0001,
+							SPEECH_RATE_MEDIUM		=>   value   =     0x0002,
+							SPEECH_RATE_FAST		=>   value   =     0x0003,
+							SPEECH_RATE_X_FAST		=>   value   =     0x0004,
+							SPEECH_RATE_FASTER		=>   value   =     0x0005,
+							SPEECH_RATE_SLOWER		=>   value   =     0x0006,
+							//			_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
+
+
+	pub fn convert_enum_op_quotes_2_u32(&self, enumVal : op_quotes) -> u32
+	{
+		let value : u32 ;
+		match(enumVal)
+		{
+			QUOTES_STRING			=>   value   =     0x0080,
+							QUOTES_NONE			=>   value   =     0x0000,
+							//	_			=>  	()  // Do nothing
+		}
+		return (value);
+	}
 
 
 	pub fn css_parse_important(&self, cssLang : @css_language, tokenVector : ~[~css_token], result : ~u8) -> css_result
 	{
-		//let mut token : ~css_token = ~{token_type:CSS_TOKEN_EOF, data:{data:~[] ,len:0}, idata:self.lwc_instance.lwc_intern_string(@""), col:0, line:0} ;
-
 		// I think there is no need of this function, since we can ceck empty space here only...
 		//consumeWhiteSpace(vector, cntx); 
 
@@ -4298,407 +5348,424 @@ impl important
 			return CSS_INVALID;
 		}
 
-		for tokenVector.each |&iter|
+		for tokenVector.each |&token|
 		{
-			match(iter.token_type)
+			match(token.token_type)
 			{
-				CSS_TOKEN_S  =>  {
-					// do nothing
-				},
-					     _	=>  {
-						     //token = iter; 
-						     match(iter.token_type)
-						     {
-							     CSS_TOKEN_IDENT		=>	{
-								     return CSS_INVALID;
-							     },
-							     _			=>	()
-						     }
-					     }
+				//condition to replace consumeWhiteSpace(vector, cntx); 
+				CSS_TOKEN_S  		=>  (),	// do nothing
+							CSS_TOKEN_IDENT		=>    return CSS_INVALID,
+							_			=>   {
+								// Commenting temporarily to avoid compilation error
+								// Q: The problem is lwc_instance is not accessible / recognised from here.
 
-				//  commenting to avoid compilation error
-				//  Need to fix it ASAP.
-
-				/*
-				   if lwc::lwc_instance.lwc_string_caseless_isequal(token.idata, cssLang.strings[IMPORTANT]) == true 
-				   {
-				   result |= FLAG_IMPORTANT;
-				   }	
-				   else
-				   {
-				   return CSS_INVALID;
-				   }
-				 */
-			}
-		}	
+								/*
+								   if lwc::lwc_instance.lwc_string_caseless_isequal(token.idata, cssLang.strings[IMPORTANT]) == true 
+								   {
+								   result |= FLAG_IMPORTANT;
+								   }	
+								   else
+								   {
+								   return CSS_INVALID;
+								   }
+								 */
+							}
+			} // match block ends
+		} // for block ends
 
 		return CSS_GENERAL_OK;
 	}
 
-	// Commenting to avoid compilation error
 	pub fn css_make_style_important (&self, style : &css_style)
 	{
+		let mut styleBytecode : ~[u32] = copy style.bytecode;
+		//let mut styleLen : u32 = style.used; 
+		let mut styleOffset : u32 = 0;
 
-		/*
-		   let styleBytecode : ~[u32] = style.bytecode;
-		   let styleLen : u32 = style.used; 
-		   let styleOffset : u32 = 0;
-
-		   while (styleOffset < styleLen)
-		   {
-		   let prop :  css_properties_e;
-		   let flags : u8;
-		   let value : u32;	
-		   let propVal : u32 = styleBytecode[styleOffset]; 		
-
-		// extracting propVal components, setting IMPORTANT FLAG
-		prop = propVal & 0x3ff;
-		flags = ((propVal >> 10) & 0xff) | FLAG_IMPORTANT;
-		value = propVal >> 18;	
-
-		// writing propVal back to bytecodes
-		styleBytecode[styleOffset] = prop & 0x3ff | flags << 10 | ((value & 0x3fff) << 18);
-
-		styleOffset += 1;	
-
-		// Advance past any porp-specific data		
-		if ((((propVal >> 10) & 0xff) & 0x2) == false)
+		// while (styleOffset < styleLen)
+		while (styleOffset < styleBytecode.len() as u32)
 		{
-		match(styleBytecode)
-		{
-		CSS_PROP_AZIMUTH => {
-		if ((value & ~AZIMUTH_BEHIND) == AZIMUTH_ANGLE)
-		{
-		styleOffset += 2; // length + units 
-		}
-		},
-		CSS_PROP_BORDER_TOP_COLOR  |  CSS_PROP_BORDER_RIGHT_COLOR  | CSS_PROP_BORDER_BOTTOM_COLOR  |  CSS_PROP_BORDER_LEFT_COLOR  |  CSS_PROP_BACKGROUND_COLOR | CSS_PROP_COLUMN_RULE_COLOR  =>
-		{
-		//	assert(BACKGROUND_COLOR_SET == 	BORDER_COLOR_SET);
-		//	assert(BACKGROUND_COLOR_SET == 	COLUMN_RULE_COLOR_SET);
+			//let prop :  css_properties_e;
+			let mut flags : u32;
+			let mut value : u32;	
 
-		if (value == BACKGROUND_COLOR_SET)
-		{
-		styleOffset += 1; // colour 
-		}
-		},
+			// Q: What would below mentioned code return ? i.e
+			let mut propVal : u32 = styleBytecode[styleOffset]; 		
 
-		CSS_PROP_BACKGROUND_IMAGE |  CSS_PROP_CUE_AFTER  | CSS_PROP_CUE_BEFORE  | CSS_PROP_LIST_STYLE_IMAGE  => 
-		{
-		//	assert(BACKGROUND_IMAGE_URI == CUE_AFTER_URI);
-		//      assert(BACKGROUND_IMAGE_URI == CUE_BEFORE_URI);
-		//	assert(BACKGROUND_IMAGE_URI == LIST_STYLE_IMAGE_URI);
+			io::println(fmt!("value of propVal is %?", propVal));
+			// extracting propVal components, setting IMPORTANT FLAG
+			let mut prop  = (propVal as uint) & (0x3ff as uint);
+			flags = ((propVal >> 10) & 0xff) | (1<<0);       //  replacing  FLAG_IMPORTANT by 1<<0 ;
+			value = propVal >> 18;	
 
-		if (value == BACKGROUND_IMAGE_URI) 
-		{
-		styleOffset += 1; // string table entry 
-		}
-		},
+			// writing propVal back to bytecodes
+			styleBytecode[styleOffset] = ((prop & 0x3ff) as uint | (flags << 10) as uint | (((value as uint) & (0x3fff as uint)) << 18 as uint)) as u32;
 
-		CSS_PROP_BACKGROUND_POSITION  =>
-		{ 
-		if ((value & 0xf0) == BACKGROUND_POSITION_HORZ_SET)
-		{
-		styleOffset += 2; // length + units 
-		}
+			styleOffset += 1;	
 
-		if ((value & 0x0f) == BACKGROUND_POSITION_VERT_SET)
-		{
-		styleOffset += 2; // length + units 
-		}
-		},
-
-		CSS_PROP_BORDER_SPACING  => 
-		{
-		if (value == BORDER_SPACING_SET)
-		{
-			styleOffset += 4; // two length + units 
-		}
-	},
-
-		CSS_PROP_BORDER_TOP_WIDTH  | CSS_PROP_BORDER_RIGHT_WIDTH |	 CSS_PROP_BORDER_BOTTOM_WIDTH  |  CSS_PROP_BORDER_LEFT_WIDTH  |	 CSS_PROP_OUTLINE_WIDTH  | CSS_PROP_COLUMN_RULE_WIDTH  => 
-		{
-			//	assert(BORDER_WIDTH_SET == OUTLINE_WIDTH_SET);
-			//	assert(BORDER_WIDTH_SET == COLUMN_RULE_WIDTH_SET);
-
-			if (value == BORDER_WIDTH_SET)
+			// Advance past any porp-specific data		
+			if ((((propVal >> 10) & 0xff) & 0x2) == false as u32)
 			{
-				styleOffset += 2; // length + units 
-			}
-		},
-
-		CSS_PROP_MARGIN_TOP  |  CSS_PROP_MARGIN_RIGHT | CSS_PROP_MARGIN_BOTTOM  | CSS_PROP_MARGIN_LEFT  | CSS_PROP_BOTTOM  | CSS_PROP_LEFT  | CSS_PROP_RIGHT  | CSS_PROP_TOP  | CSS_PROP_HEIGHT |  CSS_PROP_WIDTH  |  CSS_PROP_COLUMN_WIDTH  | CSS_PROP_COLUMN_GAP  => 
-		{
-			//	assert(BOTTOM_SET == LEFT_SET);
-			//	assert(BOTTOM_SET == RIGHT_SET);
-			//	assert(BOTTOM_SET == TOP_SET);
-			//	assert(BOTTOM_SET == HEIGHT_SET);
-			//	assert(BOTTOM_SET == MARGIN_SET);
-			//	assert(BOTTOM_SET == WIDTH_SET);
-			// 	assert(BOTTOM_SET == COLUMN_WIDTH_SET);
-			// 	assert(BOTTOM_SET == COLUMN_GAP_SET);
-
-			if (value == BOTTOM_SET) 
-			{
-				styleOffset += 2; // length + units 
-			}
-		},
-
-		CSS_PROP_CLIP  => 
-		{
-			if ((value & CLIP_SHAPE_MASK) == CLIP_SHAPE_RECT) {
-				if ((value & CLIP_RECT_TOP_AUTO) == 0)
+				// convert_Int_2_Enum is used to convert int to corresponding enum value
+				let enumVal : css_properties_e = self.convert_Int_2_Enum(prop);
+				match(enumVal) 
 				{
-					styleOffset += 2; // length + units 
-				}
-				if ((value & CLIP_RECT_RIGHT_AUTO) == 0)
-				{
-					styleOffset += 2; // length + units 
-				}
-				if ((value & CLIP_RECT_BOTTOM_AUTO) == 0){
-					styleOffset += 2; // length + units 
-				}
-				if ((value & CLIP_RECT_LEFT_AUTO) == 0){
-					styleOffset += 2; // length + units 
-				}
-			}
-		},
+					CSS_PROP_AZIMUTH  => {
 
-		CSS_PROP_COLOR  => 
-		{
-			if (value == COLOR_SET){				
-				styleOffset += 1; // colour
-			}
-		},
-
-		CSS_PROP_COLUMN_COUNT  => 
-		{
-			if (value == COLUMN_COUNT_SET){
-				styleOffset += 1; // colour 
-			}
-		},
-
-		CSS_PROP_CONTENT  => 
-		{
-			while (value != CONTENT_NORMAL && value != CONTENT_NONE) 
-			{
-				match (value & 0xff) 
-				{
-					CONTENT_COUNTER  |  CONTENT_URI  | CONTENT_ATTR  | CONTENT_STRING  => 
-					{
-						styleOffset += 1; // string table entry 
-					}
-					CONTENT_COUNTERS  => 
-					{
-						styleOffset+=2; // two string entries 
-					}
-					CONTENT_OPEN_QUOTE  | 	 CONTENT_CLOSE_QUOTE |	 CONTENT_NO_OPEN_QUOTE  | CONTENT_NO_CLOSE_QUOTE  => 
-					{
-						break;
-					}
-				}
-
-				value = styleBytecode[styleOffset];
-				styleOffset += 1;
-			}
-		},
-
-		CSS_PROP_COUNTER_INCREMENT  | CSS_PROP_COUNTER_RESET  => 
-		{
-			// assert(COUNTER_INCREMENT_NONE == COUNTER_RESET_NONE);
-
-			while (value != COUNTER_INCREMENT_NONE) {
-				styleOffset += 2; // string + integer 
-
-				value = styleBytecode[styleOffset];
-				styleOffset += 1;
-			}
-		},
-
-		CSS_PROP_CURSOR  =>
-		{ 
-			while (value == CURSOR_URI) {
-				styleOffset += 1; // string table entry 
-
-				value = styleBytecode[styleOffset];
-				styleOffset += 1;
-			}
-		},	
-
-		CSS_PROP_ELEVATION  => 
-		{
-			if (value == ELEVATION_ANGLE){			
-				styleOffset += 2; // length + units 
-			}
-		},
-
-		CSS_PROP_FONT_FAMILY  => 
-		{
-			while (value != FONT_FAMILY_END) 
-			{
-				match (value) 
-				{
-					FONT_FAMILY_STRING  | FONT_FAMILY_IDENT_LIST  => 
-					{		
-						styleOffset += 1; // string table entry
-						break;
+						//if ((value & ~self.convert_Enum_2_u32(AZIMUTH_BEHIND)) == self.convert_Enum_2_u32(AZIMUTH_ANGLE))
+						if (value & !(self.convert_enum_op_azimuth_2_u32(AZIMUTH_BEHIND))) == self.convert_enum_op_azimuth_2_u32(AZIMUTH_ANGLE)
+						{
+							styleOffset += 2; // length + units 
+						}
 					},
+							  CSS_PROP_BORDER_TOP_COLOR  |  CSS_PROP_BORDER_RIGHT_COLOR  | CSS_PROP_BORDER_BOTTOM_COLOR  |  CSS_PROP_BORDER_LEFT_COLOR  |  CSS_PROP_BACKGROUND_COLOR | CSS_PROP_COLUMN_RULE_COLOR  =>
+							  {
+								  //	assert(BACKGROUND_COLOR_SET == 	BORDER_COLOR_SET);
+								  //	assert(BACKGROUND_COLOR_SET == 	COLUMN_RULE_COLOR_SET);
+
+								  if (value == self.convert_enum_op_backgroundColor_2_u32(BACKGROUND_COLOR_SET))
+								  {
+									  styleOffset += 1; // colour 
+								  }
+							  },
+
+							  CSS_PROP_BACKGROUND_IMAGE |  CSS_PROP_CUE_AFTER  | CSS_PROP_CUE_BEFORE  | CSS_PROP_LIST_STYLE_IMAGE  => 
+							  {
+								  //	assert(BACKGROUND_IMAGE_URI == CUE_AFTER_URI);
+								  //      assert(BACKGROUND_IMAGE_URI == CUE_BEFORE_URI);
+								  //	assert(BACKGROUND_IMAGE_URI == LIST_STYLE_IMAGE_URI);
+
+								  if (value == self.convert_enum_op_backgroundImage_2_u32(BACKGROUND_IMAGE_URI))
+								  {
+									  styleOffset += 1; // string table entry 
+								  }
+							  },
+
+							  CSS_PROP_BACKGROUND_POSITION  =>
+							  { 
+								  if ((value & 0xf0) == self.convert_enum_op_backgroundPosition_2_u32(BACKGROUND_POSITION_HORZ_SET))
+								  {
+									  styleOffset += 2; // length + units 
+								  }
+
+								  if ((value & 0x0f) == self.convert_enum_op_backgroundPosition_2_u32(BACKGROUND_POSITION_VERT_SET))
+								  {
+									  styleOffset += 2; // length + units 
+								  }
+							  },
+
+							  CSS_PROP_BORDER_SPACING  => 
+							  {
+								  if (value == self.convert_enum_op_borderSpacing_2_u32(BORDER_SPACING_SET))
+								  {
+									  styleOffset += 4; // two length + units 
+								  }
+							  },
+
+							  CSS_PROP_BORDER_TOP_WIDTH  | CSS_PROP_BORDER_RIGHT_WIDTH |  CSS_PROP_BORDER_BOTTOM_WIDTH  |  CSS_PROP_BORDER_LEFT_WIDTH  |	 CSS_PROP_OUTLINE_WIDTH  | CSS_PROP_COLUMN_RULE_WIDTH  => 
+							  {
+								  //	assert(BORDER_WIDTH_SET == OUTLINE_WIDTH_SET);
+								  //	assert(BORDER_WIDTH_SET == COLUMN_RULE_WIDTH_SET);
+
+								  if (value == self.convert_enum_op_borderWidth_2_u32(BORDER_WIDTH_SET))
+								  {
+									  styleOffset += 2; // length + units 
+								  }
+							  },
+
+							  CSS_PROP_MARGIN_TOP  |  CSS_PROP_MARGIN_RIGHT | CSS_PROP_MARGIN_BOTTOM  | CSS_PROP_MARGIN_LEFT  | CSS_PROP_BOTTOM  | CSS_PROP_LEFT  | CSS_PROP_RIGHT  | CSS_PROP_TOP  | CSS_PROP_HEIGHT |  CSS_PROP_WIDTH  |  CSS_PROP_COLUMN_WIDTH  | CSS_PROP_COLUMN_GAP  => 
+							  {
+								  //	assert(BOTTOM_SET == LEFT_SET);
+								  //	assert(BOTTOM_SET == RIGHT_SET);
+								  //	assert(BOTTOM_SET == TOP_SET);
+								  //	assert(BOTTOM_SET == HEIGHT_SET);
+								  //	assert(BOTTOM_SET == MARGIN_SET);
+								  //	assert(BOTTOM_SET == WIDTH_SET);
+								  // 	assert(BOTTOM_SET == COLUMN_WIDTH_SET);
+								  // 	assert(BOTTOM_SET == COLUMN_GAP_SET);
+
+								  if (value == self.convert_enum_op_bottom_2_u32(BOTTOM_SET))
+								  {
+									  styleOffset += 2; // length + units 
+								  }
+							  },
+
+							  CSS_PROP_CLIP  => 
+							  {
+								  if ((value & self.convert_enum_op_clip_2_u32(CLIP_SHAPE_MASK)) == self.convert_enum_op_clip_2_u32(CLIP_SHAPE_RECT))
+								  {
+									  if ((value & self.convert_enum_op_clip_2_u32(CLIP_RECT_TOP_AUTO)) == 0)
+									  {
+										  styleOffset += 2; // length + units 
+									  }
+									  if ((value & self.convert_enum_op_clip_2_u32(CLIP_RECT_RIGHT_AUTO)) == 0)
+									  {
+										  styleOffset += 2; // length + units 
+									  }
+									  if ((value & self.convert_enum_op_clip_2_u32(CLIP_RECT_BOTTOM_AUTO)) == 0)
+									  {
+										  styleOffset += 2; // length + units 
+									  }
+									  if ((value & self.convert_enum_op_clip_2_u32(CLIP_RECT_LEFT_AUTO)) == 0)
+									  {
+										  styleOffset += 2; // length + units 
+									  }
+								  }
+							  },
+
+							  CSS_PROP_COLOR  => 
+							  {
+								  if (value == self.convert_enum_op_color_2_u32(COLOR_SET))
+								  {				
+									  styleOffset += 1; // colour
+								  }
+							  },
+
+							  CSS_PROP_COLUMN_COUNT  => 
+							  {
+								  if (value == self.convert_enum_op_columCount_2_u32(COLUMN_COUNT_SET))
+								  {
+									  styleOffset += 1; // colour 
+								  }
+							  },
+
+							  CSS_PROP_CONTENT  => 
+							  {
+								  while (value != self.convert_enum_op_content_2_u32(CONTENT_NORMAL) && value != self.convert_enum_op_content_2_u32(CONTENT_NONE)) 
+								  {
+									  if (value & 0xff) ==  (self.convert_enum_op_content_2_u32(CONTENT_COUNTER))
+									  {
+										  styleOffset += 1; // string table entry 
+									  }
+									  else if (value & 0xff) ==  	 self.convert_enum_op_content_2_u32(CONTENT_URI) 
+									  {
+										  styleOffset += 1; // string table entry 
+									  }
+									  else if (value & 0xff) ==  	 self.convert_enum_op_content_2_u32(CONTENT_ATTR)   
+									  {
+										  styleOffset += 1; // string table entry 
+									  }
+									  else if (value & 0xff) ==  	 self.convert_enum_op_content_2_u32(CONTENT_STRING) 
+									  {
+										  styleOffset += 1; // string table entry 
+									  }
+									  else if (value & 0xff) ==  self.convert_enum_op_content_2_u32(CONTENT_COUNTERS)   
+									  {
+										  styleOffset+=2; // two string entries 
+									  }
+									  else 
+									  {
+										  if (((value & 0xff) == self.convert_enum_op_content_2_u32(CONTENT_OPEN_QUOTE)) ||
+												  ((value & 0xff) == self.convert_enum_op_content_2_u32(CONTENT_CLOSE_QUOTE)) ||
+												  ((value & 0xff) == self.convert_enum_op_content_2_u32(CONTENT_NO_OPEN_QUOTE)) ||
+												  ((value & 0xff) == self.convert_enum_op_content_2_u32(CONTENT_NO_CLOSE_QUOTE)) )
+										  {
+											  break;
+										  }
+									  } // else block ends
+								  }// while block ends
+
+								  value = styleBytecode[styleOffset];
+								  styleOffset += 1;
+							  },
+
+							  CSS_PROP_COUNTER_INCREMENT  | CSS_PROP_COUNTER_RESET  => 
+							  {
+								  // assert(COUNTER_INCREMENT_NONE == COUNTER_RESET_NONE);
+
+								  while (value !=  self.convert_enum_op_counterIncrement_2_u32(COUNTER_INCREMENT_NONE)) {
+									  styleOffset += 2; // string + integer 
+
+									  value = styleBytecode[styleOffset];
+									  styleOffset += 1;
+								  }
+							  },
+
+							  CSS_PROP_CURSOR  =>
+							  { 
+								  while (value == self.convert_enum_op_cursor_2_u32(CURSOR_URI)) {
+									  styleOffset += 1; // string table entry 
+
+									  value = styleBytecode[styleOffset];
+									  styleOffset += 1;
+								  }
+							  },	
+
+							  CSS_PROP_ELEVATION  => 
+							  {
+								  if (value == self.convert_enum_op_elevation_2_u32(ELEVATION_ANGLE)){			
+									  styleOffset += 2; // length + units 
+								  }
+							  },
+
+							  CSS_PROP_FONT_FAMILY  => 
+							  {
+								  while (value != self.convert_enum_op_fontfamily_2_u32(FONT_FAMILY_END)) 
+								  {
+									  if ( (value == self.convert_enum_op_fontfamily_2_u32(FONT_FAMILY_STRING)) ||
+											  (value == self.convert_enum_op_fontfamily_2_u32(FONT_FAMILY_IDENT_LIST)) )
+									  {
+										  styleOffset += 1; // string table entry
+										  break;
+									  }
+
+
+									  value = styleBytecode[styleOffset];
+									  styleOffset += 1;
+								  }
+							  },
+
+							  CSS_PROP_FONT_SIZE  => 
+							  {
+								  if (value == self.convert_enum_op_fontSize_2_u32(FONT_SIZE_DIMENSION)) {
+									  styleOffset += 2; // length + units 
+								  }
+							  },
+
+							  CSS_PROP_LETTER_SPACING  |  CSS_PROP_WORD_SPACING  => 
+							  {
+								  //	assert(LETTER_SPACING_SET == WORD_SPACING_SET);
+
+								  if (value == self.convert_enum_op_letterSpacing_2_u32(LETTER_SPACING_SET)){
+									  styleOffset += 2; // length + units 
+								  }
+							  },
+
+							  CSS_PROP_LINE_HEIGHT  => 
+							  {
+								  if value == self.convert_enum_op_lineHeight_2_u32(LINE_HEIGHT_NUMBER)
+								  {
+									  styleOffset += 1;
+								  }
+								  else if value == self.convert_enum_op_lineHeight_2_u32(LINE_HEIGHT_DIMENSION)
+								  {
+									  styleOffset += 2;
+								  }
+							  },
+
+							  CSS_PROP_MAX_HEIGHT  |  CSS_PROP_MAX_WIDTH  => 
+							  {
+								  // assert(MAX_HEIGHT_SET == MAX_WIDTH_SET);
+
+								  if (value == self.convert_enum_op_maxHeight_2_u32(MAX_HEIGHT_SET)){
+									  styleOffset += 2; // length + units 
+								  }
+							  },
+
+							  CSS_PROP_PADDING_TOP |   CSS_PROP_PADDING_RIGHT  |  CSS_PROP_PADDING_BOTTOM  |	 CSS_PROP_PADDING_LEFT  | CSS_PROP_MIN_HEIGHT |	 CSS_PROP_MIN_WIDTH |	 CSS_PROP_PAUSE_AFTER | CSS_PROP_PAUSE_BEFORE  |
+								  CSS_PROP_TEXT_INDENT  => 
+								  {	
+									  //assert(MIN_HEIGHT_SET == MIN_WIDTH_SET);
+									  //assert(MIN_HEIGHT_SET == PADDING_SET);
+									  //assert(MIN_HEIGHT_SET == PAUSE_AFTER_SET);
+									  //assert(MIN_HEIGHT_SET == PAUSE_BEFORE_SET);
+									  //assert(MIN_HEIGHT_SET == TEXT_INDENT_SET);
+
+									  if (value == self.convert_enum_op_minHeight_2_u32(MIN_HEIGHT_SET)){
+										  styleOffset += 2; // length + units 
+									  }
+								  },
+
+							  CSS_PROP_OPACITY  => 
+							  {
+								  if (value == self.convert_enum_op_opacity_2_u32(OPACITY_SET)) { 
+									  styleOffset += 1; // value 
+								  }
+							  },
+
+							  CSS_PROP_ORPHANS  |  CSS_PROP_PITCH_RANGE  | CSS_PROP_RICHNESS  | CSS_PROP_STRESS  |	 CSS_PROP_WIDOWS  =>
+							  {
+								  // assert(ORPHANS_SET == PITCH_RANGE_SET);
+								  // assert(ORPHANS_SET == RICHNESS_SET);
+								  // assert(ORPHANS_SET == STRESS_SET);
+								  // assert(ORPHANS_SET == WIDOWS_SET);
+
+								  if (value ==  self.convert_enum_op_orphans_2_u32(ORPHANS_SET)){
+									  styleOffset  += 1; // value 
+								  }
+							  },
+
+							  CSS_PROP_OUTLINE_COLOR  => 
+							  {
+								  if (value ==  self.convert_enum_op_outlineColor_2_u32(OUTLINE_COLOR_SET)){
+									  styleOffset += 1; // color 
+								  }
+							  },
+
+							  CSS_PROP_PITCH  => 
+							  {
+								  if (value == self.convert_enum_op_pitch_2_u32(PITCH_FREQUENCY)){
+									  styleOffset += 2; // length + units 
+								  }
+							  },
+
+							  CSS_PROP_PLAY_DURING  => 
+							  {
+								  if (value == self.convert_enum_op_playDuring_2_u32(PLAY_DURING_URI)){
+									  styleOffset += 1; // string table entry 
+								  }
+							  },
+
+							  CSS_PROP_QUOTES  =>
+							  { 
+								  while (value != self.convert_enum_op_quotes_2_u32(QUOTES_NONE)) {
+									  styleOffset += 2; // two string table entries 
+
+									  value = styleBytecode[styleOffset];
+									  styleOffset += 1;
+								  }
+							  },
+
+							  CSS_PROP_SPEECH_RATE  => 
+							  {
+								  if (value == self.convert_enum_op_speechRate_2_u32(SPEECH_RATE_SET)) {
+									  styleOffset += 1; // rate 
+								  }
+							  },
+
+							  CSS_PROP_VERTICAL_ALIGN  => 
+							  {
+								  if (value == self.convert_enum_op_verticalAlign_2_u32(VERTICAL_ALIGN_SET)){
+									  styleOffset += 2; // length + units 
+								  }
+							  },
+
+							  CSS_PROP_VOICE_FAMILY  => 
+							  {
+								  while (value != self.convert_enum_op_voiceFamily_2_u32(VOICE_FAMILY_END)) 
+								  {
+									  if (value == self.convert_enum_op_voiceFamily_2_u32(VOICE_FAMILY_STRING)) ||
+										  (value == self.convert_enum_op_voiceFamily_2_u32(VOICE_FAMILY_IDENT_LIST)) 
+										  {
+											  value = styleBytecode[styleOffset];
+											  styleOffset += 1;
+										  }
+								  }
+							  },
+
+							  CSS_PROP_VOLUME  => 
+							  {
+								  if value == self.convert_enum_op_volume_2_u32(VOLUME_NUMBER)
+								  {
+									  styleOffset += 1;  // value 
+								  }
+								  else if value == self.convert_enum_op_volume_2_u32(VOLUME_DIMENSION)
+								  {
+									  styleOffset += 2; // value + units 
+								  }		
+							  },
+							  CSS_PROP_Z_INDEX  => 
+							  {
+								  if (value ==  self.convert_enum_op_Zindex_2_u32(Z_INDEX_SET))
+								  {
+									  styleOffset += 1; // z index 
+								  }
+							  },
+							  _		=>	()  // Do nothing
 				}
+			}	
 
-				value = styleBytecode[styleOffset];
-				styleOffset += 1;
-			}
-		},
-
-		CSS_PROP_FONT_SIZE  => 
-		{
-			if (value == FONT_SIZE_DIMENSION) {
-				styleOffset += 2; // length + units 
-			}
-		},
-
-		CSS_PROP_LETTER_SPACING  |  CSS_PROP_WORD_SPACING  => 
-		{
-			//	assert(LETTER_SPACING_SET == WORD_SPACING_SET);
-
-			if (value == LETTER_SPACING_SET){
-				styleOffset += 2; // length + units 
-			}
-		},
-
-		CSS_PROP_LINE_HEIGHT  => 
-		{
-			match (value) 
-			{
-				LINE_HEIGHT_NUMBER  => styleOffset += 1, 
-				LINE_HEIGHT_DIMENSION  => styleOffset += 2
-			}
-		},
-
-		CSS_PROP_MAX_HEIGHT  |  CSS_PROP_MAX_WIDTH  => 
-		{
-			// assert(MAX_HEIGHT_SET == MAX_WIDTH_SET);
-
-			if (value == MAX_HEIGHT_SET){
-				styleOffset += 2; // length + units 
-			}
-		},
-
-		CSS_PROP_PADDING_TOP |   CSS_PROP_PADDING_RIGHT  |  CSS_PROP_PADDING_BOTTOM  |	 CSS_PROP_PADDING_LEFT  | CSS_PROP_MIN_HEIGHT |	 CSS_PROP_MIN_WIDTH |	 CSS_PROP_PAUSE_AFTER | CSS_PROP_PAUSE_BEFORE  |
-			CSS_PROP_TEXT_INDENT  => 
-			{	
-				//assert(MIN_HEIGHT_SET == MIN_WIDTH_SET);
-				//assert(MIN_HEIGHT_SET == PADDING_SET);
-				//assert(MIN_HEIGHT_SET == PAUSE_AFTER_SET);
-				//assert(MIN_HEIGHT_SET == PAUSE_BEFORE_SET);
-				//assert(MIN_HEIGHT_SET == TEXT_INDENT_SET);
-
-				if (value == MIN_HEIGHT_SET){
-					styleOffset += 2; // length + units 
-				}
-			},
-
-		CSS_PROP_OPACITY  => 
-		{
-			if (value == OPACITY_SET) { 
-				styleOffset += 1; // value 
-			}
-		},
-
-		CSS_PROP_ORPHANS  |  CSS_PROP_PITCH_RANGE  | CSS_PROP_RICHNESS  | CSS_PROP_STRESS  |	 CSS_PROP_WIDOWS  =>
-		{
-			// assert(ORPHANS_SET == PITCH_RANGE_SET);
-			// assert(ORPHANS_SET == RICHNESS_SET);
-			// assert(ORPHANS_SET == STRESS_SET);
-			// assert(ORPHANS_SET == WIDOWS_SET);
-
-			if (value == ORPHANS_SET){
-				styleOffset  += 1; // value 
-			}
-		},
-
-		CSS_PROP_OUTLINE_COLOR  => 
-		{
-			if (value == OUTLINE_COLOR_SET){
-				styleOffset += 1; // color 
-			}
-		},
-
-		CSS_PROP_PITCH  => 
-		{
-			if (value == PITCH_FREQUENCY){
-				styleOffset += 2; // length + units 
-			}
-		},
-
-		CSS_PROP_PLAY_DURING  => 
-		{
-			if (value == PLAY_DURING_URI)	{
-				styleOffset += 1; // string table entry 
-			}
-		},
-
-		CSS_PROP_QUOTES  =>
-		{ 
-			while (value != QUOTES_NONE) {
-				styleOffset += 2; // two string table entries 
-
-				value = styleBytecode[styleOffset];
-				styleOffset += 1;
-			}
-		},
-
-		CSS_PROP_SPEECH_RATE  => 
-		{
-			if (value == SPEECH_RATE_SET) {
-				styleOffset += 1; // rate 
-			}
-		},
-
-		CSS_PROP_VERTICAL_ALIGN  => 
-		{
-			if (value == VERTICAL_ALIGN_SET){
-				styleOffset += 2; // length + units 
-			}
-		},
-
-		CSS_PROP_VOICE_FAMILY  => 
-		{
-			while (value != VOICE_FAMILY_END) {
-				match (value) 
-				{
-					VOICE_FAMILY_STRING  |	 VOICE_FAMILY_IDENT_LIST  => 
-					{
-						styleOffset += 1; // string table entry 
-						break; // coming out of while loop
-					}
-				}
-
-				value = styleBytecode[styleOffset];
-				styleOffset += 1;
-			}
-		},
-
-		CSS_PROP_VOLUME  => 
-		{
-			match (value) 
-			{
-				VOLUME_NUMBER  => styleOffset += 1, // value 
-				VOLUME_DIMENSION  => styleOffset += 2 // value + units 
-			}
-		},
-		CSS_PROP_Z_INDEX  => 
-		{
-			if (value == Z_INDEX_SET)
-			{
-				styleOffset += 1; // z index 
-			}
-		},
-	}
-	}	
-
-	}	
-	*/
+		}	
 
 	}
 
@@ -5353,5 +6420,5 @@ impl font_face
 
 
 // ===========================================================================================================
-// Font_Face.h and Font_Face.c implementation/data-structs starts here 
+// Font_Face.h and Font_Face.c implementation/data-structs ends here 
 // ===========================================================================================================
