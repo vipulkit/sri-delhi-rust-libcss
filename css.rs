@@ -3114,7 +3114,7 @@ impl lcss_lexer {
         let c = self.consume_char();
         match c {
             '-' | '+' => self.consume_numeric_sign(c),
-            '.' => {
+           '.' => {
                 if self.is_eof() { return (Delim('.'), None) }
                 match self.current_char() {
                     '0'..'9' => self.consume_numeric_fraction(~"."),
@@ -3462,8 +3462,8 @@ pub fn lcss_high_level(/*sheet:@css_stylesheet*/)-> @css_high_level
 		   next:@mut no_high_level_pointer 
 
 	}
-
 }
+
 
 
 // ===========================================================================================================
@@ -3486,7 +3486,6 @@ pub fn css__selector_hash_create()-> css_result
 // ===========================================================================================================
 // CSS-SELECTOR implementation/data-structs ends here 
 // ===========================================================================================================
-
 
 
 
@@ -4274,6 +4273,7 @@ static pub fn css__stylesheet_merge_style(target:@css_style ,  style:@css_style)
 	CSS_GENERAL_OK
 
 }
+
 pub fn css__stylesheet_style_append(style:@css_style,  css_code:css_code_t)-> css_result
 {
   style.bytecode.push(css_code);
