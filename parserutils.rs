@@ -5,11 +5,12 @@ extern mod std;
 extern mod riconv;
 use core::io::Reader;
 use core::io::ReaderUtil;
-use std::oldmap;
+//use std::oldmap;
+use core::hashmap::linear::LinearMap;
 use core::vec::*;
 use core::str::raw::* ;
 use core::vec::raw::* ;
-use libc::size_t;
+//use core::libc::size_t;
 
 //pub type parserutils_charset_detect_func =  
 //	~extern fn(data: ~[u8], mibenum:~u16, source:~u32) -> parserutils_result;
@@ -18,24 +19,19 @@ pub struct parserutils_inputstream
 {
 	utf8: ~[u8],	/*< Buffer containing UTF-8 data */
 
-	cursor: u32,		/*< Byte offset of current position */
+	cursor: uint,		/*< Byte offset of current position */
 
-	had_eof: bool			/*< Whether EOF has been reached */
-} 
+	 had_eof: bool,			/*< Whether EOF has been reached */
 
+	raw: ~[u8],	/*< Buffer containing raw data */
 
-pub struct parserutils_inputstream_private {
-	mut public:  parserutils_inputstream,	/*< Public part. Must be first */
+	done_first_chunk: bool ,		/*< Whether the first chunk has been processed */
 
-	mut raw: ~[u8],	/*< Buffer containing raw data */
+	mibenum: u16,		/*< MIB enum for charset, or 0 */
+	
+	encsrc: u32,		/*< Charset source */
 
-	mut done_first_chunk: bool ,		/*< Whether the first chunk has 
-					  been processed */
-
-	mut mibenum: u16,		/*< MIB enum for charset, or 0 */
-	mut encsrc: u32,		/*< Charset source */
-
-	mut input: @parserutils_filter ,	/*< Charset conversion filter */
+	input: @parserutils_filter ,	/*< Charset conversion filter */
 
 	//mut csdetect: parserutils_charset_detect_func  /*< Charset detection func.*/
 
@@ -54,19 +50,20 @@ pub struct struct_settings{
 }    
 
 pub struct parserutils_filter {
-	mut int_enc: u16,               /**< The internal encoding */
-	mut settings : struct_settings ,
-	mut iconv_h : u64 ,
+	int_enc: u16,               /**< The internal encoding */
+	settings : struct_settings ,
+	iconv_h : u64 ,
 	// mut pw : ~[u8]
 }
 
 pub enum parserutils_result
 {
-	PARSERUTILS_FILTER_CREATE_OK(@parserutils_filter),
+	PARSERUTILS_FILTER_CREATE_OK(@mut parserutils_filter),
 	PARSERUTILS_FILTER_PROCESS_CHUNK_OK((u64,~[u8])),
-	PARSERUTILS_INPUTSTREAM_CREATE_OK(@parserutils_inputstream_private),
+	PARSERUTILS_INPUTSTREAM_CREATE_OK(@parserutils_inputstream),
 	PARSERUTILS_CHARSET_EXT_OK((@u16,@u32)),
 	PARSERUTILS_CHARSET_TRY_OK(@u16),
+	PARSERUTILS_INPUTSTREAM_STRIP_BOM_OK(~[u8]),
 	PARSERUTILS_GENERAL_OK,
     PARSERUTILS_BADPARAM,
     PARSERUTILS_NOMEM,
@@ -80,11 +77,12 @@ pub enum parserutils_result
 }
 
 pub struct lpu {
+	
     // these two data structures together can be used for mibenum->canonical name conversion
-	mut canonical_name_list: ~[~str],
-	mut mibenum_map: @oldmap::HashMap<u16,uint>,
+	canonical_name_list: ~[~str],
+	mibenum_map: ~LinearMap<u16,uint>,
 	// this data structure can be used for name (canonnical/alias) ->mibenum conversion
-	mut alias_map: @oldmap::HashMap<~str,u16>
+	alias_map: ~LinearMap<~str,u16>
 }
 
 pub fn memcmp(str1 : &[u8] , str2 : &[u8] , len : uint ) -> int {
@@ -99,9 +97,9 @@ pub fn memcmp(str1 : &[u8] , str2 : &[u8] , len : uint ) -> int {
 }
 
 impl lpu {
-	fn read_aliases(&self)
+	fn read_aliases(&mut self)
 	{
-		let aliases_file_reader: Reader = result::get(&io::file_reader(&Path(&"Aliases")));
+		let aliases_file_reader: @Reader = (&io::file_reader(&Path(&"Aliases"))).get();
 
 		let mut line_number=1;
 
@@ -109,7 +107,10 @@ impl lpu {
 		{
 			let line = aliases_file_reader.read_line();
 			if (!str::starts_with(line,"#") && line.len()>0) {
-				let alias_entry_columns = str::split_str_nonempty(line,"\t");
+				let mut alias_entry_columns : ~[~str] = ~[];
+				for str::each_split_str_nonempty(line,"\t") |column| {
+					alias_entry_columns.push(column.to_owned());
+				} 
 				
 				// first column is canonical name
 				let canonical_name = copy alias_entry_columns[0];
@@ -125,7 +126,11 @@ impl lpu {
 
 				// optionally, the third column has other aliases
 				if (alias_entry_columns.len() > 2) {
-					let aliases=str::split_str_nonempty(alias_entry_columns[2]," ");
+					//let aliases=str::split_str_nonempty(alias_entry_columns[2]," ");
+					let mut aliases : ~[~str] = ~[];
+					for str::each_split_str_nonempty(alias_entry_columns[2]," ") |alias| {
+						aliases.push(alias.to_owned());
+					} 
 					// insert <alias, mibenum> into alias_map
 					for aliases.each |&alias| {
 						self.alias_map.insert(alias, mibenum);
@@ -136,17 +141,17 @@ impl lpu {
 		}
 	}
 
-	pub fn parserutils__charset_alias_canonicalise(&self, alias: &~str) -> Option<parserutils_charset_aliases_canon> { 
+	pub fn parserutils__charset_alias_canonicalise(&mut self, alias: &~str) -> Option<parserutils_charset_aliases_canon> { 
         match self.alias_map.find(alias) {
         	None => None,
         	Some(temp_mib_enum) => {
-        		match self.mibenum_map.find(&temp_mib_enum) {
+        		match self.mibenum_map.find(temp_mib_enum) {
         			None => None,
         			Some(canonical_name_list_index) => {
-        				if (canonical_name_list_index < self.canonical_name_list.len()) {
-        					let temp_name = (self.canonical_name_list[canonical_name_list_index]).to_managed();
+        				if (canonical_name_list_index < &self.canonical_name_list.len()) {
+        					let temp_name = (self.canonical_name_list[*canonical_name_list_index]).to_managed();
         					Some( parserutils_charset_aliases_canon {
-								        mib_enum : temp_mib_enum,
+								        mib_enum : *temp_mib_enum,
 								        name : temp_name,
 								        name_len : temp_name.len() as u16
 			    					}
@@ -161,19 +166,19 @@ impl lpu {
         }
 	}
 
-	pub fn parserutils_charset_mibenum_from_name(&self, alias: ~str) -> u16 {
+	pub fn parserutils_charset_mibenum_from_name(&mut self, alias: ~str) -> u16 {
         match self.alias_map.find(&alias) {
         	None => 0 ,
-        	Some(mib_enum) => mib_enum
+        	Some(mib_enum) => *mib_enum
         }
 	}
 
-	pub fn parserutils_charset_mibenum_to_name(&self, mibenum: u16)-> Option<~str> {
+	pub fn parserutils_charset_mibenum_to_name(&mut self, mibenum: u16)-> Option<~str> {
 		match self.mibenum_map.find(&(mibenum)) {
 			None => None,
 			Some (canonical_name_list_index) => {
-				if canonical_name_list_index < self.canonical_name_list.len() {
-					Some(copy self.canonical_name_list[canonical_name_list_index])
+				if canonical_name_list_index < &self.canonical_name_list.len() {
+					Some(copy self.canonical_name_list[*canonical_name_list_index])
 				}
 				else {
 					None
@@ -182,7 +187,7 @@ impl lpu {
 		}
 	}
 
-	pub fn filter_set_encoding(&self, input : @parserutils_filter ,enc : ~str) -> parserutils_result {
+	pub fn filter_set_encoding(&mut self, input : @mut parserutils_filter ,enc : ~str) -> parserutils_result {
 
 		if enc.len()==0 {
 			return PARSERUTILS_BADPARAM;
@@ -195,7 +200,7 @@ impl lpu {
 
 		let mibenum = mibenum_search_result;
 
-		/* Exit early if we're already using this encoding */
+		// Exit early if we're already using this encoding 
 		if input.settings.encoding==mibenum {
 			return PARSERUTILS_FILTER_CREATE_OK(input);
 		}
@@ -216,25 +221,24 @@ impl lpu {
 
 		if (!riconv::riconv_initialized(input.iconv_h)) {
 
-			io::println("abcdefgh");
 			return PARSERUTILS_BADENCODING;
 		}
-io::println("abcdefgh++++++");
+
 		input.settings.encoding = mibenum;
 		PARSERUTILS_FILTER_CREATE_OK(input)
 	}
 
-	pub fn filter_set_defaults(&self, input : @parserutils_filter ) -> parserutils_result{
+	pub fn filter_set_defaults(&mut self, input : @mut parserutils_filter ) -> parserutils_result{
 		input.settings.encoding = 0;
 		self.filter_set_encoding(input, ~"UTF-8")
 	}
 
-	pub fn parserutils__filter_create(&self, int_enc: ~str ) -> parserutils_result {
+	pub fn parserutils__filter_create(&mut self, int_enc: ~str ) -> parserutils_result {
 		if int_enc.len() == 0 {
 			return PARSERUTILS_BADPARAM;
 		}
 
-		let mut f : @parserutils_filter = @parserutils_filter {
+		let mut f : @mut parserutils_filter = @mut parserutils_filter {
 			int_enc:0u16,
 			settings : 	struct_settings {
 							encoding:0u16
@@ -253,7 +257,7 @@ io::println("abcdefgh++++++");
 		self.filter_set_encoding(f, ~"UTF-8")
 	}
 	
-	pub fn parserutils_charset_utf8_char_byte_length(&self, s: ~[u8]) -> Option<u8> {
+	pub fn parserutils_charset_utf8_char_byte_length(&mut self, s: ~[u8]) -> Option<u8> {
 		let  numContinuations : ~[u8] = ~[
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -281,7 +285,7 @@ io::println("abcdefgh++++++");
 		}
 	}
 
-	pub fn parserutils__filter_destroy(&self, input : @parserutils_filter ) -> parserutils_result {
+	pub fn parserutils__filter_destroy(&mut self, input : @mut parserutils_filter ) -> parserutils_result {
 		if riconv::riconv_initialized(input.iconv_h)  {
 			riconv::safe_riconv_close(input.iconv_h);
 			input.iconv_h=riconv::riconv_initialize();
@@ -292,7 +296,7 @@ io::println("abcdefgh++++++");
 		}	
 	}
 
-	pub fn parserutils__filter_setopt(&self, input : @parserutils_filter , encoding : ~str) -> parserutils_result {
+	pub fn parserutils__filter_setopt(&mut self, input : @mut parserutils_filter , encoding : ~str) -> parserutils_result {
 		if encoding.len()==0 {
 			io::println("__filter_setopt_bad param");//sandeep
 			PARSERUTILS_BADPARAM
@@ -303,7 +307,7 @@ io::println("abcdefgh++++++");
 		}
 	}
 
-	pub fn parserutils__filter_reset(&self, input : @parserutils_filter ) -> parserutils_result {
+	pub fn parserutils__filter_reset(&mut self, input : @mut parserutils_filter ) -> parserutils_result {
 		if riconv::riconv_initialized(input.iconv_h) {
 			riconv::safe_riconv_close(input.iconv_h);
 			input.iconv_h=riconv::riconv_initialize();
@@ -314,7 +318,7 @@ io::println("abcdefgh++++++");
 		}	
 	}
 
-	pub fn parserutils__filter_process_chunk(&self, input : @parserutils_filter ,inbuf : ~[u8] ) -> parserutils_result {
+	pub fn parserutils__filter_process_chunk(&mut self, input : @mut parserutils_filter ,inbuf : ~[u8] ) -> parserutils_result {
 
 		io::println(fmt!("\n Input arguments to the process chunk is =%?= ",inbuf));
 		
@@ -338,7 +342,7 @@ io::println("abcdefgh++++++");
 		PARSERUTILS_FILTER_PROCESS_CHUNK_OK( (iconv_result.len_processed, copy iconv_result.outbuf) )
 	}
 
-	pub fn try_utf32_charset(&self, data : ~[u8]) -> parserutils_result {
+	pub fn try_utf32_charset(&mut self, data : ~[u8]) -> parserutils_result {
 
 		let mut charset: u16 = 0;
 		let CHARSET_BE : &[u8] = ['0' as u8, '0' as u8, '0' as u8, '@' as u8, '0' as u8, '0' as u8, '0' as u8, 'c' as u8, '0' as u8, '0' as u8, '0' as u8, 'h' as u8, '0' as u8, '0' as u8, '0' as u8, 'a' as u8, '0' as u8, '0' as u8, '0' as u8, 'r' as u8, '0' as u8, '0' as u8, '0' as u8, 's' as u8, '0' as u8, '0' as u8, '0' as u8, 'e' as u8, '0' as u8, '0' as u8, '0' as u8, 't' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '"' as u8] ; 
@@ -517,7 +521,7 @@ io::println("abcdefgh++++++");
 		PARSERUTILS_CHARSET_TRY_OK(@4)
 	}
 
-	pub fn try_utf16_charset(&self, data : &[u8]) -> parserutils_result {
+	pub fn try_utf16_charset(&mut self, data : &[u8]) -> parserutils_result {
 	//pub fn try_utf16_charset(data : &[u8]) -> parserutils_result {
 		let mut charset: u16 = 0;
 		let CHARSET_BE : &[u8] = ['0' as u8, '@' as u8, '0' as u8, 'c' as u8, '0' as u8, 'h' as u8, '0' as u8, 'a' as u8, '0' as u8, 'r' as u8, '0' as u8, 's' as u8, '0' as u8, 'e' as u8, '0' as u8, 't' as u8, '0' as u8, ' ' as u8,'0' as u8, '"' as u8] ; 
@@ -554,12 +558,12 @@ io::println("abcdefgh++++++");
 				io::println("Sushanta1: Inside while loop for CHARSET_LE 16 bits ");
 				let value1 : u16 = (data[endIndex] | data[endIndex + 1] << 8) as u16 ;
 
-				/*	
-				if value1 > 0x007f
-				{
-					break;
-				}	
-				*/
+					
+				// if value1 > 0x007f
+				// {
+				// 	break;
+				// }	
+				
 
 				if (value1 == '"' as u16) && (endIndex < data.len() + CHARSET_LE.len() - 4)		
 				{
@@ -638,10 +642,10 @@ io::println("abcdefgh++++++");
 				io::println(fmt!("value of data[endIndex+1] | data[endIndex]<<8 is %?", data[endIndex] | data[endIndex]<<8));
 
 				// Since it is Big-endian, data at MSB would be at lower address space
-				/*
-				let value1 : u16 = (data[endIndex + 1] | data[endIndex] << 8) as u16 ;
-				io::println(fmt!("value of value1 is %?", value1));
-				*/		
+				
+				// let value1 : u16 = (data[endIndex + 1] | data[endIndex] << 8) as u16 ;
+				// io::println(fmt!("value of value1 is %?", value1));
+						
 				
 				let mut value1 : u16 = data[endIndex] as u16;
 				io::println(fmt!("value of value1 is %?", value1));
@@ -652,13 +656,13 @@ io::println("abcdefgh++++++");
 				io::println(fmt!("value of 0x007f is %?", 0x007f));
 
 				// value1 is getting bigger val then 0x007f
-				/*
-				if value1 > 0x007f
-				{
-					io::println("Sushanta1: value1 > 0x007f is satisfied, Going to break...");
-					break;
-				}	
-				*/
+				
+				// if value1 > 0x007f
+				// {
+				// 	io::println("Sushanta1: value1 > 0x007f is satisfied, Going to break...");
+				// 	break;
+				// }	
+				
 
 				if (value1 == '"' as u16) && (endIndex < data.len() - 4)		
 				{
@@ -720,9 +724,7 @@ io::println("abcdefgh++++++");
 		PARSERUTILS_CHARSET_TRY_OK(@4)
 	}
 
-
-	// Sushanta: This is a sample implementation
-	pub fn  try_ascii_compatible_charset(&self, data : ~[u8]) -> parserutils_result {
+	pub fn  try_ascii_compatible_charset(&mut self, data : ~[u8]) -> parserutils_result {
 
 		let mut charset : u16 = 0;
 		let CHARSET : ~[u8] = ~[ '@' as u8, 'c' as u8, 'h' as u8, 'a' as u8 , 'r' as u8, 's' as u8, 'e' as u8, 't' as u8, ' ' as u8 , '\"'  as u8] ;
@@ -797,7 +799,7 @@ io::println("abcdefgh++++++");
 	}
 
 
-	pub fn css_charset_read_bom_or_charset(&self, data : ~[u8], mibenum : ~u16 ) -> parserutils_result {
+	pub fn css_charset_read_bom_or_charset(&mut self, data : ~[u8], mibenum : ~u16 ) -> parserutils_result {
 
 		let mut err : parserutils_result ;
 		let mut charset : u16  = 0;
@@ -843,23 +845,23 @@ io::println("abcdefgh++++++");
 			_ => {}	
 		}
 		
-		return self.try_ascii_compatible_charset(copy data/*,parser*/);
+		return self.try_ascii_compatible_charset(copy data);
 	}
 
 
-	pub fn css__charset_extract(&self,  data : ~[u8] ,
+	pub fn css__charset_extract(&mut self,  data : ~[u8] ,
 			mibenum : ~u16 , source : ~u32) -> parserutils_result {
 
 		let mut err : parserutils_result;
 		let mut charset : @u16 = @0;
 		let mut src : @u32 = @0 ;
 
-		if (data.len()==(0 as uint))  || mibenum==~(0 as u16) || source==~(0 as u32) {
+		if (data.len()==(0 as uint))  || mibenum==~(0 as u16) || source==~(0) {
 			return PARSERUTILS_BADPARAM ;
 		}
 
 		// If the charset was dictated by the client, we've nothing to detect 
-		if source==~4 /*CSS_CHARSET_DICTATED*/ {
+		if source==~4  {//CSS_CHARSET_DICTATED
 			charset=@*mibenum ;
 			return PARSERUTILS_CHARSET_EXT_OK((charset,@4));
 		}
@@ -896,11 +898,12 @@ io::println("abcdefgh++++++");
 
 		return PARSERUTILS_CHARSET_EXT_OK((charset,src));
 	}
+}
 		
-	pub fn parserutils_inputstream_create(&self,enc: ~str,
+	/*pub fn parserutils_inputstream_create(&mut self,enc: ~str,
 		encsrc: u32 )-> parserutils_result
 	{
-		let s: @parserutils_inputstream_private;
+		let s: @parserutils_inputstream;
 		let mut pRslt: parserutils_result;
         let inputTemp: @parserutils_filter;
 		let mut mibenumTemp: u16 = 0; 
@@ -917,9 +920,9 @@ io::println("abcdefgh++++++");
          	},
          	_=>
          	{
-         		/*parserutils_buffer_destroy(s->public.utf8);
-		        parserutils_buffer_destroy(s->raw);
-		        alloc(s, 0, pw);*/
+         	// 	parserutils_buffer_destroy(s->public.utf8);
+		        // parserutils_buffer_destroy(s->raw);
+		        // alloc(s, 0, pw);
               	return pRslt;    
          	} 
          }
@@ -932,17 +935,15 @@ io::println("abcdefgh++++++");
         	_=> {mibenumTemp = x;}
         }
 
-        s=  @parserutils_inputstream_private
+        s=  @parserutils_inputstream
         {
-        	public: parserutils_inputstream
-        	{
+        
         		utf8: ~[],	
 
 				cursor: 0,		
 
-				had_eof: false
-        	},	
-
+				had_eof: false,
+        
 			raw: ~[] ,	
 
 			done_first_chunk: false ,		 
@@ -974,21 +975,21 @@ io::println("abcdefgh++++++");
 				parserutils_buffer_destroy(s->public.utf8);
 				parserutils_buffer_destroy(s->raw);
 				alloc(s, 0, pw);
-				return err;*/
+				return err;
 				self.parserutils__filter_destroy(s.input);
 				return pRslt;
         	}
         }
 	
 	return PARSERUTILS_INPUTSTREAM_CREATE_OK(s);
-	}
-
-	pub fn parserutils_inputstream_destroy(&self,
-		stream:@parserutils_inputstream_private)-> parserutils_result
+	}*/
+//}
+	/*pub fn parserutils_inputstream_destroy(&mut self,
+		stream:@parserutils_inputstream)-> parserutils_result
 	{
 		self.parserutils__filter_destroy(stream.input);
 		PARSERUTILS_GENERAL_OK
-	}	
+	}	*/
 /**
  * Append data to an input stream at the end of raw data
  *
@@ -997,85 +998,81 @@ io::println("abcdefgh++++++");
  * \param len     Length, in bytes, of data
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-	pub fn parserutils_inputstream_append(&self,stream:@parserutils_inputstream_private, 
+	/*pub fn parserutils_inputstream_append(stream:@parserutils_inputstream, 
 		data: @[u8])-> parserutils_result{
 		if (data.len()==0) {
-			stream.public.had_eof = true;
+			stream.had_eof = true;
 			return PARSERUTILS_GENERAL_OK;
 		}
-		let mut rawTemp:~[u8] = ~[];
-		stream.raw <-> rawTemp;
-		rawTemp=append(rawTemp, data);
-		stream.raw <-> rawTemp;
+		stream.raw = append(stream.raw,data);
 		return PARSERUTILS_GENERAL_OK;
 	
-	}
+	}*/
 
-	pub fn print_inputstream(&self,stream:@parserutils_inputstream_private)
-	{
-		io::println("printing");
-		io::println(fmt!("%?",stream.public.cursor));
-		io::println(fmt!("%?",stream.public.utf8));
-		io::println(fmt!("%?",stream.raw));
-	}
-/**
- * Insert data into utf8 part of stream at current location. current location is
- * pointed by cursor position
- *
- * \param stream  Input stream to insert into
- * \param data    Data to insert (UTF-8 encoded)
- * \return PARSERUTILS_GENERAL_OK on success, appropriate error otherwise
- */
-    pub fn parserutils_inputstream_insert(&self,stream:@parserutils_inputstream_private,
-	   data: @[u8])-> parserutils_result{
-        let mut Iter=0;        
+	// pub fn print_inputstream(&mut self, stream:@parserutils_inputstream)
+	// {
+	// 	io::println("printing");
+	// 	io::println(fmt!("%?",stream.public.cursor));
+	// 	io::println(fmt!("%?",stream.public.utf8));
+	// 	io::println(fmt!("%?",stream.raw));
+	// }
+// *
+//  * Insert data into utf8 part of stream at current location. current location is
+//  * pointed by cursor position
+//  *
+//  * \param stream  Input stream to insert into
+//  * \param data    Data to insert (UTF-8 encoded)
+//  * \return PARSERUTILS_GENERAL_OK on success, appropriate error otherwise
+ 
+   /* pub fn parserutils_inputstream_insert(stream:@parserutils_inputstream, data: @[u8])-> parserutils_result{
+                
         let dataLen= data.len();
-        let mut buffer=  ~[];
-        let offset= stream.public.cursor;
-        buffer <->stream.public.utf8;
-        let bufLen= buffer.len();
         
+        let offset= stream.cursor;
+        
+        
+        let utf8Len= stream.utf8.len();
 		
 		if ( dataLen ==0) {
 			return PARSERUTILS_BADPARAM;
 		}
         
-        if (offset > bufLen as u32){//running past the allocated buffer
+        if (offset > utf8Len){//running past the allocated buffer
         	return PARSERUTILS_BADPARAM;
         }
 		
 
-		if (offset == bufLen as u32)//start writing from end of buffer
+		if (offset == utf8Len)//start writing from end of buffer
 		{
-			buffer  =  append(buffer, data);
-			buffer <-> stream.public.utf8;
+			
+			stream.utf8 = append(stream.utf8,data);
 			return	   PARSERUTILS_GENERAL_OK;
 		}
         //offset is less than bufflen,i.e., points to middle of utf8 data
-
+		let mut Iter= 0;
+		
         while(Iter < dataLen)
         {
-        	buffer.insert(Iter,data[Iter]);
+        	stream.utf8.insert(Iter  + offset,data[Iter]);
         	Iter += 1;
         }
-		
-		buffer <->stream.public.utf8;
+        
        return PARSERUTILS_GENERAL_OK; 
 	}
-
+*/
 	
-	pub fn parserutils_inputstream_read_charset(&self,
-		stream:@parserutils_inputstream_private,mut source:@mut u32)-> Option<~str>{
+	/*pub fn parserutils_inputstream_read_charset(&mut self,
+		stream:@parserutils_inputstream,mut source:@mut u32)-> Option<~str>{
 		*source = stream.encsrc;
 		if ((*source) == 0)
 		{
 			return Some(~"UTF-8")
 		}
 		return self.parserutils_charset_mibenum_to_name(stream.mibenum);
-	}
+	}*/
 
 
-	pub fn parserutils_inputstream_change_charset(&self,stream:@parserutils_inputstream_private, 
+	/*pub fn parserutils_inputstream_change_charset(&mut self,stream:@parserutils_inputstream, 
 		enc:~str, source:u32)-> parserutils_result{
 
 		let pRslt: parserutils_result;
@@ -1093,7 +1090,7 @@ io::println("abcdefgh++++++");
         io::println("Hello"); 
 		let mibenum = mibenum_search_result;
 
-		/* Ensure filter is using the correct encoding */
+		// Ensure filter is using the correct encoding 
 		//params.encoding.name = enc;
 		pRslt = self.parserutils__filter_setopt(stream.input,enc);
 		match(pRslt)
@@ -1103,16 +1100,15 @@ io::println("abcdefgh++++++");
 		}
 		
 
-		/* Finally, replace the current settings */
+		//Finally, replace the current settings 
 		stream.mibenum = mibenum;
 		stream.encsrc = source;
 
 		return PARSERUTILS_GENERAL_OK;
-	}
+	}*/
 
 
-	pub fn parserutils_inputstream_strip_bom(&self,mibenum:@mut u16, 
-		buffer:@mut~[u8])-> parserutils_result
+	/*pub fn parserutils_inputstream_strip_bom(&mut self,mibenum:@mut u16, mut buffer:~[u8])-> parserutils_result
 	{
 
 		let UTF32_BOM_LEN =(4);
@@ -1130,8 +1126,8 @@ io::println("abcdefgh++++++");
 				buffer[0] == 0xEF &&
 				buffer[1] == 0xBB && 
 				buffer[2] == 0xBF{
-					*buffer= slice(*buffer,UTF8_BOM_LEN-1,buffer.len()-1);
-					return PARSERUTILS_GENERAL_OK;
+					buffer= slice(buffer,UTF8_BOM_LEN-1,buffer.len()-1).to_owned();
+					return PARSERUTILS_INPUTSTREAM_STRIP_BOM_OK(buffer);
 				} 
 
 			},
@@ -1146,8 +1142,8 @@ io::println("abcdefgh++++++");
 				if (buffer.len() >= UTF16_BOM_LEN) {
 					if (buffer[0] == 0xFE && 
 							buffer[1] == 0xFF) {
-					*buffer= slice(*buffer,UTF16_BOM_LEN-1,buffer.len()-1);
-					return PARSERUTILS_GENERAL_OK;
+					buffer= slice(buffer,UTF16_BOM_LEN-1,buffer.len()-1).to_owned();
+					return PARSERUTILS_INPUTSTREAM_STRIP_BOM_OK(buffer);
 					
 					} else if (buffer[0] == 0xFF && 
 						buffer[1] == 0xFE) {
@@ -1158,8 +1154,8 @@ io::println("abcdefgh++++++");
 					}
 
 					*mibenum = mibenum_search_result;
-					*buffer= slice(*buffer,UTF16_BOM_LEN-1,buffer.len()-1);
-					return PARSERUTILS_GENERAL_OK;
+					buffer= slice(buffer,UTF16_BOM_LEN-1,buffer.len()-1).to_owned();
+					return PARSERUTILS_INPUTSTREAM_STRIP_BOM_OK(buffer);
 					
 					}
 				}
@@ -1168,16 +1164,16 @@ io::println("abcdefgh++++++");
 				if (buffer.len() >= UTF16_BOM_LEN &&
 				buffer[0] == 0xFE &&
 				buffer[1] == 0xFF) {
-					*buffer= slice(*buffer,UTF16_BOM_LEN-1,buffer.len()-1);
-					return PARSERUTILS_GENERAL_OK;
+					buffer= slice(buffer,UTF16_BOM_LEN-1,buffer.len()-1).to_owned();
+					return PARSERUTILS_INPUTSTREAM_STRIP_BOM_OK(buffer);
 				}
 			},
 			~"UTF-16LE" =>{
 				if (buffer.len() >= UTF16_BOM_LEN &&
 				buffer[0] == 0xFF &&
 				buffer[1] == 0xFE) {
-					*buffer= slice(*buffer,UTF16_BOM_LEN-1,buffer.len()-1);
-					return PARSERUTILS_GENERAL_OK;
+					buffer= slice(buffer,UTF16_BOM_LEN-1,buffer.len()-1).to_owned();
+					return PARSERUTILS_INPUTSTREAM_STRIP_BOM_OK(buffer);
 				}
 			},
 			~"UTF-32"   =>{
@@ -1193,22 +1189,23 @@ io::println("abcdefgh++++++");
 					buffer[1] == 0x00 &&
 					buffer[2] == 0xFE &&
 					buffer[3] == 0xFF) {
-				*buffer= slice(*buffer,UTF32_BOM_LEN-1,buffer.len()-1);
-					return PARSERUTILS_GENERAL_OK;
+						buffer= slice(buffer,UTF32_BOM_LEN-1,buffer.len()-1).to_owned();
+						return PARSERUTILS_INPUTSTREAM_STRIP_BOM_OK(buffer);
 				
-			} else if (buffer[0] == 0xFF && 
+					} 
+					else if (buffer[0] == 0xFF && 
 					buffer[1] == 0xFE &&
 					buffer[2] == 0x00 &&
 					buffer[3] == 0x00) {
 				
-				let mibenum_search_result  = self.parserutils_charset_mibenum_from_name(~"UTF-32LE");
-				if mibenum_search_result==0{
-					return PARSERUTILS_BADPARAM;
-				}
+						let mibenum_search_result  = self.parserutils_charset_mibenum_from_name(~"UTF-32LE");
+						if mibenum_search_result==0{
+							return PARSERUTILS_BADPARAM;
+						}
 
 				*mibenum = mibenum_search_result;
-				*buffer= slice(*buffer,UTF32_BOM_LEN-1,buffer.len()-1);
-					return PARSERUTILS_GENERAL_OK;
+				buffer= slice(buffer,UTF32_BOM_LEN-1,buffer.len()-1).to_owned();
+					return PARSERUTILS_INPUTSTREAM_STRIP_BOM_OK(buffer);
 				
 			}
 		}
@@ -1219,8 +1216,8 @@ io::println("abcdefgh++++++");
 				buffer[1] == 0x00 &&
 				buffer[2] == 0xFE &&
 				buffer[3] == 0xFF) {
-                  	*buffer= slice(*buffer,UTF32_BOM_LEN-1,buffer.len()-1);
-					return PARSERUTILS_GENERAL_OK;
+                  	buffer= slice(buffer,UTF32_BOM_LEN-1,buffer.len()-1).to_owned();
+					return PARSERUTILS_INPUTSTREAM_STRIP_BOM_OK(buffer);
 				}
 			},
 			~"UTF-32LE" =>{
@@ -1229,8 +1226,8 @@ io::println("abcdefgh++++++");
 				buffer[1] == 0xFE &&
 				buffer[2] == 0x00 &&
 				buffer[3] == 0x00) {
-					*buffer= slice(*buffer,UTF32_BOM_LEN-1,buffer.len()-1);
-					return PARSERUTILS_GENERAL_OK;
+					buffer= slice(buffer,UTF32_BOM_LEN-1,buffer.len()-1).to_owned();
+					return PARSERUTILS_INPUTSTREAM_STRIP_BOM_OK(buffer);
 				}
 			},
 			_=>{
@@ -1239,17 +1236,17 @@ io::println("abcdefgh++++++");
 		}
 		return PARSERUTILS_GENERAL_OK;
 	}
+*/
 
-
-	pub fn parserutils_inputstream_refill_buffer(&self,
-		stream:@parserutils_inputstream_private)-> parserutils_result{
+	/*pub fn parserutils_inputstream_refill_buffer(&mut self,
+		stream:@parserutils_inputstream)-> parserutils_result{
 		let mut pRslt:parserutils_result = PARSERUTILS_GENERAL_OK ;
 		if (stream.done_first_chunk == false) {
 			//parserutils_filter_optparams params;
 
-			/* If there is a charset detection routine, give it an 
-		 	* opportunity to override any charset specified when the
-		 	* inputstream was created */
+			 // If there is a charset detection routine, give it an 
+		 	// * opportunity to override any charset specified when the
+		 	// * inputstream was created 
 
 				//pRslt = (*stream.csdetect)(copy stream.raw, ~stream.mibenum, ~stream.encsrc);
 				pRslt = self.css__charset_extract(copy stream.raw ,~stream.mibenum , ~stream.encsrc) ;
@@ -1259,7 +1256,7 @@ io::println("abcdefgh++++++");
 						io::println("ok result");//sandeep
 					},
 					PARSERUTILS_NEEDDATA=>{
-						if stream.public.had_eof == false{
+						if stream.had_eof == false{
 							return pRslt;
 						}
 					},
@@ -1267,25 +1264,24 @@ io::println("abcdefgh++++++");
 				}
 				
 
-					/* We don't have enough data to detect the 
-					* input encoding, but we're not going to get 
-				 	* any more as we've been notified of EOF. 
-				 	* Therefore, leave the encoding alone
-					* so that any charset specified when the
-				 	* inputstream was created will be preserved.
-				 	* If there was no charset specified, then
-				 	* we'll default to UTF-8, below */
+					//  We don't have enough data to detect the 
+					// * input encoding, but we're not going to get 
+				 // 	* any more as we've been notified of EOF. 
+				 // 	* Therefore, leave the encoding alone
+					// * so that any charset specified when the
+				 // 	* inputstream was created will be preserved.
+				 // 	* If there was no charset specified, then
+				 // 	* we'll default to UTF-8, below 
 					
 			
 
-			/* Default to UTF-8 if there is still no encoding information 
-		 	* We'll do this if there was no encoding specified up-front
-		 	* and:
-		 	*    1) there was no charset detection routine
-		 	* or 2) there was insufficient data for the charset 
-		 	*       detection routine to detect an encoding
-		 	*/
-		 	io::println("line______#");//sandeep
+			 // Default to UTF-8 if there is still no encoding information 
+		 	// * We'll do this if there was no encoding specified up-front
+		 	// * and:
+		 	// *    1) there was no charset detection routine
+		 	// * or 2) there was insufficient data for the charset 
+		 	// *       detection routine to detect an encoding
+		 	
 			if (stream.mibenum == 0) {
 				
 				let mibenum_search_result = self.parserutils_charset_mibenum_from_name(~"UTF-8");
@@ -1297,25 +1293,26 @@ io::println("abcdefgh++++++");
 				stream.mibenum = mibenum_search_result;
 				stream.encsrc = 0;
 			}
-io::println("line______##");//sandeep
+
 			if (stream.mibenum == 0)
 				{
 					fail!();
 				}
-			let mut temp:@mut ~[u8] =@mut ~[];
-			*temp <-> stream.raw;	
-			/* Strip any BOM, and update encoding as appropriate */
-			pRslt = self.parserutils_inputstream_strip_bom( @mut stream.mibenum, 
-				  temp);
-			*temp <-> stream.raw;
-			match(pRslt)
+			let mut temp:~[u8] = ~[];
+			temp <-> stream.raw;	
+			// Strip any BOM, and update encoding as appropriate 
+			pRslt = self.parserutils_inputstream_strip_bom( @mut stream.mibenum, temp);
+			match(copy pRslt)
 			{
-				PARSERUTILS_GENERAL_OK=>{},
+				PARSERUTILS_INPUTSTREAM_STRIP_BOM_OK(buffer) => {
+					temp = buffer;
+					temp <-> stream.raw;
+				}
 				_=>{return pRslt;}
 			}
 			
-			io::println("line______###");//sandeep
-			/* Ensure filter is using the correct encoding */
+
+			// * Ensure filter is using the correct encoding 
 			
 
             let totype : Option<~str> = self.parserutils_charset_mibenum_to_name(stream.mibenum) ;
@@ -1340,20 +1337,20 @@ io::println("line______##");//sandeep
 			stream.done_first_chunk = true;
 		}
 		io::println("line______&");//sandeep
-			/* Work out how to perform the buffer fill */
-		if (stream.public.cursor == stream.public.utf8.len() as u32) {
-		/* Cursor's at the end, so simply reuse the entire buffer */
+			 // Work out how to perform the buffer fill 
+		if (stream.cursor == stream.utf8.len()) {
+		 // Cursor's at the end, so simply reuse the entire buffer 
 		
-		stream.public.utf8= ~[];
+		stream.utf8= ~[];
 		} else {
-			/* Cursor's not at the end, so shift data after cursor to the
-		 	* bottom of the buffer. If the buffer's still over half full, 
-		 		* extend it. */
-		 	stream.public.utf8=slice(stream.public.utf8,stream.public.cursor as uint,stream.public.utf8.len());
+			 // Cursor's not at the end, so shift data after cursor to the
+		 	// * bottom of the buffer. If the buffer's still over half full, 
+		 	// 	* extend it. 
+		 	stream.utf8=slice(stream.utf8,stream.cursor as uint,stream.utf8.len()).to_owned();
 			
 			
 		}
-		self.print_inputstream(stream);
+		//self.print_inputstream(stream);
 		io::println("line______&&");//sandeep	
 		let utf8:~[u8]= ~[];
 		let mut processedLen: uint;
@@ -1361,14 +1358,14 @@ io::println("line______##");//sandeep
 		*raw <-> stream.raw;
 		let raw_length = raw.len();
         io::println("line______&&");
-		/* Try to fill utf8 buffer from the raw data */
+		 // Try to fill utf8 buffer from the raw data 
 		pRslt = self.parserutils__filter_process_chunk(copy stream.input,copy *raw);
 		*raw <-> stream.raw;
 		io::println("line______&&**");
 		match(copy pRslt)
 		{
 			PARSERUTILS_FILTER_PROCESS_CHUNK_OK((len,data)) =>{
-				stream.public.utf8=append(copy stream.public.utf8,data);
+				stream.utf8=append(copy stream.utf8,data);
 				processedLen=len as uint;
 			}
 			_=>return pRslt
@@ -1378,39 +1375,38 @@ io::println("line______&&&");//sandeep
 		//let mut Iter = 0;
 		//while(Iter < utf8.len())
 		{
-			//stream.public.utf8.append(utf8);
+			//stream.utf8.append(utf8);
 		}
 
-		/* _NOMEM implies that there's more input to read than available space
-	 	* in the utf8 buffer. That's fine, so we'll ignore that error. */
+		//  _NOMEM implies that there's more input to read than available space
+	 // 	* in the utf8 buffer. That's fine, so we'll ignore that error. 
 		
 
-		/* Remove the raw data we've processed from the raw buffer */
-        stream.raw= slice(stream.raw,processedLen,stream.raw.len()-1);
+		// /* Remove the raw data we've processed from the raw buffer 
+        stream.raw= slice(stream.raw,processedLen,stream.raw.len()-1).to_owned();
 		
-		/* Fix up the utf8 buffer information */
+		 // Fix up the utf8 buffer information 
 		
 
-		/* Finally, fix up the cursor */
+		 // Finally, fix up the cursor 
 		io::println("line______&##");//sandeep
-		stream.public.cursor = 0;
+		stream.cursor = 0;
 
 			return PARSERUTILS_GENERAL_OK;
-		}
+		}*/
         
-		pub fn IS_ASCII(&self,data:u8)-> bool
+		/*pub fn IS_ASCII(&mut self,data:u8)-> bool
 		{
 			return (((data) & 0x80) == 0);
-		}
+		}*/
 
-		pub fn parserutils_inputstream_peek_slow(&self,	stream:@parserutils_inputstream_private, 
-			offset:size_t , ptr:@mut~[u8], length:@mut size_t )-> parserutils_result{
+		/*pub fn parserutils_inputstream_peek_slow(&mut self,	stream:@parserutils_inputstream, offset:uint , ptr:@mut~[u8], length:@mut uint )-> parserutils_result{
             io::println("line1_____");//sandeep
-            let len:size_t;
+            let len:uint;
             let mut pRslt:parserutils_result;
 			if (stream.raw.len() == 0) {
-		/* No more data to be had */
-				if(stream.public.had_eof){
+		 // No more data to be had 
+				if(stream.had_eof){
 					return PARSERUTILS_EOF;
 				} else{
 					return PARSERUTILS_NEEDDATA;
@@ -1418,28 +1414,28 @@ io::println("line______&&&");//sandeep
 
 			}
 
-			/* Refill utf8 buffer from raw buffer */
+			 // Refill utf8 buffer from raw buffer 
 			pRslt = self.parserutils_inputstream_refill_buffer(stream);
-			self.print_inputstream(stream);
+			//self.print_inputstream(stream);
 			match(pRslt)
 			{
 				PARSERUTILS_GENERAL_OK => {},
 				_=> return pRslt
 			}
 
-			/* Refill may have succeeded, but not actually produced any new data */
-			if (stream.public.cursor + offset as u32 == stream.public.utf8.len() as u32)
+			 // Refill may have succeeded, but not actually produced any new data 
+			if (stream.cursor + offset == stream.utf8.len())
 				{
 					io::println("No data produced");//sandeep
 					return PARSERUTILS_NEEDDATA;
 				}
              io::println("line______#");//sandeep
-			/* Now try the read */
-			if (self.IS_ASCII(stream.public.utf8[stream.public.cursor + offset as u32])) {
+			 // Now try the read 
+			if (self.IS_ASCII(stream.utf8[stream.cursor + offset])) {
 				len = 1;
 			} else {
 				let Temp= self.parserutils_charset_utf8_char_byte_length(slice
-					(stream.public.utf8,stream.public.cursor as uint+ offset as uint,stream.public.utf8.len()));
+					(stream.utf8,stream.cursor as uint+ offset as uint,stream.utf8.len()).to_owned());
 				match(Temp)
 				{
 					None=>{
@@ -1447,7 +1443,7 @@ io::println("line______&&&");//sandeep
 					 	return pRslt;
 					},
 					Some(x)=> {
-						len=x as size_t;
+						len=(x as uint);
 					}
 				}
 		
@@ -1455,7 +1451,7 @@ io::println("line______&&&");//sandeep
         		{
         			PARSERUTILS_GENERAL_OK => {},
         			PARSERUTILS_NEEDDATA   => {
-        				if(stream.public.had_eof){
+        				if(stream.had_eof){
 							return PARSERUTILS_EOF;
 						} else{
 							return PARSERUTILS_NEEDDATA;
@@ -1468,29 +1464,28 @@ io::println("line______&&&");//sandeep
 		}
 			io::println("line2_____");//sandeep
 			(*length) = len;
-			(*ptr) = slice(stream.public.utf8, stream.public.cursor as uint+ offset as uint,stream.public.utf8.len());
+			(*ptr) = slice(stream.utf8, stream.cursor + offset,stream.utf8.len()).to_owned();
 
 			return PARSERUTILS_GENERAL_OK;
 		}
+*/
+//}
 
-
-
-	pub fn parserutils_inputstream_advance(&self,stream:@parserutils_inputstream_private, bytes:size_t ){
+	/*pub fn parserutils_inputstream_advance(&mut self,stream:@parserutils_inputstream, bytes:uint ){
 		
-		if (bytes as uint> stream.public.utf8.len() - stream.public.cursor as uint)
+		if (bytes as uint> stream.utf8.len() - stream.cursor as uint)
 			{
 				fail!();
 			}
 
-		if (stream.public.cursor as uint == stream.public.utf8.len())
+		if (stream.cursor as uint == stream.utf8.len())
 			{
 				return;
 			}
 
-		stream.public.cursor += bytes as u32;
+		stream.cursor += bytes;
 	}
-
-
+*/
 	/**
  * Look at the character in the stream that starts at 
  * offset bytes from the cursor
@@ -1512,41 +1507,35 @@ io::println("line______&&&");//sandeep
  * the data pointed to. Thus, any attempt to dereference the pointer after 
  * advancing past the data it points to is a bug.
  */
-    pub fn parserutils_inputstream_peek(&self,stream:@parserutils_inputstream_private, offset: size_t, ptr:@mut ~[u8], length:@mut size_t) 
+ 
+    /*pub fn parserutils_inputstream_peek(&mut self,stream:@parserutils_inputstream, offset: uint, ptr:@mut ~[u8], length:@mut uint) 
     -> parserutils_result 
     {
 		let mut pRslt: parserutils_result = PARSERUTILS_GENERAL_OK;
 		//const parserutils_buffer *utf8;
-		let utf8_data:@mut~[u8]=@mut copy stream.public.utf8;
-		let mut len :size_t;
+		let utf8_data:@mut~[u8]=@mut copy stream.utf8;
+		let mut len :uint;
 		
-		let mut utf8_len = stream.public.utf8.len();;
-		let mut off = stream.public.cursor + offset as u32;
-		
+		let mut utf8_len = stream.utf8.len();;
+		let mut off = stream.cursor + offset;		
 
-		/*#ifdef RANDOMISE_INPUTSTREAM
-			parserutils_buffer_randomise(stream->utf8);//left out
-		#endif*/
-
-		
-
-		if (off < utf8_len as u32) {
+		if (off < utf8_len) {
 			if (self.IS_ASCII(utf8_data[off])) {
-				/* Early exit for ASCII case */
+				// Early exit for ASCII case 
 				(*length) = 1;
-				(*ptr) = slice(*utf8_data,off as uint,utf8_len);
+				(*ptr) = slice(*utf8_data,off as uint,utf8_len).to_owned();
 				return PARSERUTILS_GENERAL_OK;
 			} else {
-				match(self.parserutils_charset_utf8_char_byte_length(slice(*utf8_data, off as uint,utf8_len)))
+				match(self.parserutils_charset_utf8_char_byte_length(slice(*utf8_data, off as uint,utf8_len).to_owned()))
 				{
 					None => {
 					 	return PARSERUTILS_BADPARAM;
 					 	
 					},
 					Some(x) => {
-						len=x as size_t;
+						len=x as uint;
 						(*length) = len;
-					    (*ptr) = slice(*utf8_data,off as uint,utf8_len);
+					    (*ptr) = slice(*utf8_data,off as uint,utf8_len).to_owned();
 					    return PARSERUTILS_GENERAL_OK;
 					}
 				}
@@ -1556,7 +1545,7 @@ io::println("line______&&&");//sandeep
 		}
 
 
-		if (off != utf8_len as u32)
+		if (off != utf8_len)
 		{
 			match(pRslt)
 			{
@@ -1571,16 +1560,16 @@ io::println("line______&&&");//sandeep
 		}
 
 		return self.parserutils_inputstream_peek_slow(stream, offset, ptr, length);
-}
+	}*/
+//}
 
 
-}
 
-pub fn lpu() -> @lpu {
-	let new_lpu = @lpu {
+pub fn lpu() -> @mut lpu {
+	let mut new_lpu = @mut lpu {
 		canonical_name_list : ~[],
-		mibenum_map : @oldmap::HashMap::<u16,uint>(),
-		alias_map : @oldmap::HashMap::<~str,u16>()
+		mut mibenum_map : ~LinearMap::new(),
+		mut alias_map : ~LinearMap::new()
 	};
 
 	new_lpu.read_aliases();
