@@ -3,8 +3,9 @@
 
 
 
-extern mod parserutils;
-extern mod wapcaplet;
+extern mod std;
+mod parserutils;
+mod wapcaplet;
 
 use wapcaplet::*;
 use core::cast;
@@ -145,7 +146,9 @@ pub enum css_language_level {
 	CSS_LEVEL_21                = 2,	/**< CSS 2.1 */
 	CSS_LEVEL_3                 = 3		//< CSS 3 
 }
-const   CSS_LEVEL_DEFAULT :  css_language_level = CSS_LEVEL_21;	//< Default level >
+
+static  CSS_LEVEL_DEFAULT :  css_language_level = CSS_LEVEL_21;	//< Default level >
+// CSS_LEVEL_DEFAULT :  css_language_level = CSS_LEVEL_21;	//< Default level >
 
 /**
  * Stylesheet media types
@@ -1003,10 +1006,10 @@ pub type lwc_refcounter = u32;
 
 
 
-const CSS_SPECIFICITY_A:u32=0x01000000;
-const CSS_SPECIFICITY_B:u32=0x00010000;
-const CSS_SPECIFICITY_C:u32=0x00000100;
-const CSS_SPECIFICITY_D:u32=0x00000001;
+static CSS_SPECIFICITY_A:u32=0x01000000;
+static CSS_SPECIFICITY_B:u32=0x00010000;
+static CSS_SPECIFICITY_C:u32=0x00000100;
+static CSS_SPECIFICITY_D:u32=0x00000001;
 
 
 
@@ -1226,7 +1229,7 @@ pub enum op_background_position {
 	BACKGROUND_POSITION_VERT_BOTTOM	= 0x0001,
 	BACKGROUND_POSITION_VERT_TOP	= 0x0002
 } 
-const   BACKGROUND_POSITION_VERT_CENTER :  op_background_position = BACKGROUND_POSITION_HORZ_CENTER;	
+static   BACKGROUND_POSITION_VERT_CENTER :  op_background_position = BACKGROUND_POSITION_HORZ_CENTER;	
 
 pub enum op_background_repeat {
 	BACKGROUND_REPEAT_NO_REPEAT	= 0x0000,
@@ -1405,7 +1408,7 @@ pub enum op_content {
 	CONTENT_NO_OPEN_QUOTE		= 0x0004,
 	CONTENT_NO_CLOSE_QUOTE		= 0x0005
 } 
-const   CONTENT_COUNTERS_STYLE_SHIFT :  op_content = CONTENT_COUNTER_STYLE_SHIFT;	
+static   CONTENT_COUNTERS_STYLE_SHIFT :  op_content = CONTENT_COUNTER_STYLE_SHIFT;	
 
 pub enum op_counter_increment {
 	COUNTER_INCREMENT_NAMED		= 0x0080,
@@ -1967,9 +1970,9 @@ pub enum unit {
 	UNIT_HZ   = (1 << 11) + 0,
 	UNIT_KHZ  = (1 << 11) + 1
 } 
-const   UNIT_ANGLE :  unit = UNIT_DEG ;	//< Default level >
-const   UNIT_TIME  :  unit = UNIT_MS  ;	//< Default level >
-const   UNIT_FREQ  :  unit = UNIT_HZ  ;	//< Default level >
+static   UNIT_ANGLE :  unit = UNIT_DEG ;	//< Default level >
+static   UNIT_TIME  :  unit = UNIT_MS  ;	//< Default level >
+static   UNIT_FREQ  :  unit = UNIT_HZ  ;	//< Default level >
 
 type  colour =  u32;
 
@@ -2044,19 +2047,20 @@ pub fn lcss()->@lcss {
 
 impl lcss {
 
-
-
-	static pub fn isDigit( c:char)-> bool
+	//static pub fn isDigit( c:char)-> bool
+	pub fn isDigit( c:char)-> bool
 	{
 		return '0' <= c && c <= '9';
 	}
 
-	static pub fn isHex(c:char)->bool 
+	//static pub fn isHex(c:char)->bool 
+	pub fn isHex(c:char)->bool 
 	{
 		return lcss::isDigit(c) || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F');
 	}
 
-	static pub fn charToHex( mut c: char)-> u32
+	//static pub fn charToHex( mut c: char)-> u32
+	pub fn charToHex( mut c: char)-> u32
 	{
 		c -= '0';
 
@@ -2085,7 +2089,7 @@ impl lcss {
 	        
 	        return CSTR_OF(string);
 	}*/
-	static pub fn css__number_from_lwc_string(string:@lwc_string,
+	pub fn css__number_from_lwc_string(string:@lwc_string,
 			int_only:bool , consumed:@mut int)-> css_fixed
 	{
 		
@@ -2101,7 +2105,7 @@ impl lcss {
 				consumed);*/
 	}
 
-	static pub fn css__number_from_string(data:@str/*, len:size_t*/ ,
+	 pub fn css__number_from_string(data:@str/*, len:size_t*/ ,
 			int_only:bool , consumed:@mut int )-> css_fixed
 	{
 	    let mut sign:int = 1;
@@ -2130,11 +2134,11 @@ impl lcss {
 			return 0;
 		} else {
 			if (data[iter] == '.' as u8) {
-				if (len == 1 || data[iter+1] < '0' as u8|| '9' as u8 < data[iter+1]) {
+				if (len == 1 || data[iter+1] < '0' as u8 || data[iter+1] > '9' as u8) {
 					*consumed = 0 ;
 					return 0;
 				}
-			} else if (data[iter] < '0' as u8 || '9' as u8 < data[iter]) {
+			} else if (data[iter] < '0' as u8 || data[iter] > '9' as u8) {
 				*consumed = 0;
 				return 0;
 			}
@@ -2144,7 +2148,7 @@ impl lcss {
 	    /* Now extract intpart, assuming base 10 */
 		while (len > 0) {
 			/* Stop on first non-digit */
-			if (data[iter] < '0' as u8 || '9' as u8 < data[iter])
+			if (data[iter] < '0' as u8 || data[iter] > '9' as u8)
 				{break;}
 
 			/* Prevent overflow of 'intpart'; proper clamping below */
@@ -2164,7 +2168,7 @@ impl lcss {
 			len -= 1;
 
 			while (len > 0) {
-				if (data[iter] < '0' as u8 || '9' as u8 < data[iter])
+				if (data[iter] < '0' as u8 || ('9' as u8) < data[iter])
 					{break;}
 
 				if (pwr < 1000000) {
@@ -2213,29 +2217,29 @@ impl lcss {
 	}
 
 	
-	static pub fn buildOPV(opcode : css_properties_e , flags : u8 , value : u16 ) -> css_code_t {
+	 pub fn buildOPV(opcode : css_properties_e , flags : u8 , value : u16 ) -> css_code_t {
 
 		(( (opcode as int)  & 0x3ff) | ((flags as int)<< 10) | (((value as int)& 0x3fff)  << 18) ) as u32
 	}
 
-	static pub fn getOpcode(OPV : css_code_t ) -> css_properties_e {
+	 pub fn getOpcode(OPV : css_code_t ) -> css_properties_e {
 
 		 //((OPV & 0x3ff) as int) as opcode_t
 		 let op_code : int = (OPV & 0x3ff) as int ;
 		 unsafe { cast::transmute(&op_code) }
 	}
 
-	static pub fn getFlags(OPV : css_code_t ) -> u8 {
+	 pub fn getFlags(OPV : css_code_t ) -> u8 {
 
 		((OPV >> 10) & 0xff) as u8
 	}
 
-	static pub fn getValue(OPV : css_code_t ) -> u16 {
+	pub fn getValue(OPV : css_code_t ) -> u16 {
 
 		 (OPV >> 18) as u16
 	}
 
-	static pub fn isImportant(OPV : css_code_t ) -> bool {
+	 pub fn isImportant(OPV : css_code_t ) -> bool {
 
 		if (lcss::getFlags(OPV) & 0x1)==0 {
 		 	false
@@ -2245,7 +2249,7 @@ impl lcss {
 		 }
 	}
 
-	static pub fn isInherit(OPV : css_code_t ) -> bool {
+	pub fn isInherit(OPV : css_code_t ) -> bool {
 
 		if (lcss::getFlags(OPV) & 0x2)==0 {
 			false 
@@ -2573,11 +2577,10 @@ pub fn css__parser_setopt(/*css_parser *parser,*/&self,  opt_type:css_parser_opt
 // ===========================================================================================================
 // CSS-LEXER implementation/data-structs starts here 
 // ===========================================================================================================
-extern mod std;
 
-const ASCII_LOWER_OFFSET: char = 'a' - 'A';
+static ASCII_LOWER_OFFSET: char = 'a' - 'A';
 
-pub pure fn ascii_lower(string: &str) -> ~str {
+pub fn ascii_lower(string: &str) -> ~str {
     do str::map(string) |c| {
         match c {
             'A'..'Z' => c + ASCII_LOWER_OFFSET,
@@ -2624,9 +2627,9 @@ pub enum Token {
     EOF,
 }
 
-const MAX_UNICODE: char = '\U0010FFFF';
+static MAX_UNICODE: char = '\U0010FFFF';
 
-pure fn preprocess(input: &str) -> ~str {
+fn preprocess(input: &str) -> ~str {
     // TODO: Is this faster if done in one pass?
     str::replace(str::replace(str::replace(input,
     "\r\n", "\n"),
@@ -2654,7 +2657,7 @@ pub struct lcss_lexer {
 }
 
 impl lcss_lexer {
-    static fn from_vec(input: ~[u8], transform_function_whitespace: bool)
+     fn from_vec(input: ~[u8], transform_function_whitespace: bool)
             -> ~lcss_lexer {
                 let string_from_input = str::from_bytes(input);
                 let string_from_input = preprocess(string_from_input);
@@ -3036,7 +3039,7 @@ impl lcss_lexer {
             -> (Token, Option<ParseError>) {
         let next_3 = self.next_n_chars(3);
         // We got here with U or u
-        assert next_3[0] == 'u' || next_3[0] == 'U';
+        assert!((next_3[0] == 'u') || (next_3[0] == 'U'));
         // Check if this is indeed an unicode range. Fallback on ident.
         if next_3.len() == 3 && next_3[1] == '+' {
             match next_3[2] {
@@ -3054,7 +3057,7 @@ impl lcss_lexer {
                 _ => break
             }
         }
-        assert hex.len() > 0;
+        assert !(hex.len() > 0);
         let max_question_marks = 6u - hex.len();
         let mut question_marks = 0u;
         while question_marks < max_question_marks && !self.is_eof()
@@ -3730,7 +3733,7 @@ pub struct css_stylesheet {
 	mut propstrings:~[@lwc_string]					 
 }
 
-const CSS_STYLE_DEFAULT_SIZE:u32 =16;
+static CSS_STYLE_DEFAULT_SIZE:u32 =16;
 pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 	@css_stylesheet{
 		                lwc_instance:lwc_inst,
@@ -4246,7 +4249,7 @@ pub fn css__stylesheet_style_create(@mut self)-> css_result
 	CSS_STYLECREATED_OK(@SomeStyleNode(Style))
 }
 
-static pub fn css__stylesheet_merge_style(target:@css_style ,  style:@css_style)-> css_result
+ pub fn css__stylesheet_merge_style(target:@css_style ,  style:@css_style)-> css_result
 {
 	
 	target.bytecode = vec::append(copy target.bytecode, style.bytecode);
@@ -4780,7 +4783,6 @@ impl important
 			      0x06d          =>   enumVal =   CSS_PROP_COLUMN_SPAN		,
 			      0x06e			=>   enumVal = 	 CSS_PROP_COLUMN_WIDTH		,
 			      0x06f			=>   enumVal = 	CSS_N_PROPERTIES		,
-			      _		=>	() // Do nothing
 
 		}
 		return (enumVal);
@@ -4806,7 +4808,6 @@ impl important
 							AZIMUTH_RIGHT			=>   value   =     0x0006,
 							AZIMUTH_FAR_RIGHT		=>   value   =     0x0007,
 							AZIMUTH_RIGHT_SIDE		=>   value   =     0x0008,
-							//						_				=>	()  // Do nothing
 		}
 		return (value);
 	}
@@ -4821,7 +4822,6 @@ impl important
 			BACKGROUND_COLOR_TRANSPARENT	=>   value   =     0x0000,
 							BACKGROUND_COLOR_CURRENT_COLOR	=>   value   =     0x0001,
 							BACKGROUND_COLOR_SET		=>   value   =     0x0080,
-							//	_			=>   ()  // Do nothing
 		}
 		return (value);
 	}
@@ -4835,7 +4835,6 @@ impl important
 		{
 			BACKGROUND_IMAGE_URI		=>   value   =     0x0080,
 							BACKGROUND_IMAGE_NONE		=>   value   =     0x0000,
-							//	_				=>	()  // Do nothing
 		}
 		return (value);
 	}
@@ -4854,7 +4853,6 @@ impl important
 							//BACKGROUND_POSITION_VERT_CENTER	=>   value   =     0x0000,
 							BACKGROUND_POSITION_VERT_BOTTOM	=>   value   =     0x0001,
 							BACKGROUND_POSITION_VERT_TOP	=>   value   =     0x0002,
-							//		_			=>	()  // Do nothing
 		}
 		return (value);
 	}
@@ -4866,7 +4864,6 @@ impl important
 		match(enumVal)
 		{	
 			BORDER_SPACING_SET	=>	 value = 0x0080,
-						//	_			=>	()  // Do nothing
 		}
 		return (value);
 	}
@@ -4881,7 +4878,6 @@ impl important
 							BORDER_WIDTH_THIN		=>   value   =     0x0000,
 							BORDER_WIDTH_MEDIUM		=>   value   =     0x0001,
 							BORDER_WIDTH_THICK		=>   value   =     0x0002,
-							//	_				=>	()  // Do nothing
 		}
 		return (value);
 	}
@@ -4894,7 +4890,6 @@ impl important
 		{	
 			BOTTOM_SET			=>   value   =     0x0080,
 							BOTTOM_AUTO			=>   value   =    0x0000,
-							//	_				=>	()  // Do nothing
 		}
 		return (value);
 	}
@@ -4911,7 +4906,6 @@ impl important
 							CLIP_RECT_BOTTOM_AUTO		=>   value   =     0x0020,
 							CLIP_RECT_LEFT_AUTO		=>   value   =     0x0040,
 							CLIP_AUTO			=>   value   =     0x0000,
-							//	_				=>	()  // Do nothing
 		}
 		return (value);
 	}
@@ -4924,7 +4918,6 @@ impl important
 			COLOR_TRANSPARENT		=>   value   =     0x0000,
 							COLOR_CURRENT_COLOR		=>   value   =     0x0001,
 							COLOR_SET			=>   value   =     0x0080,
-							//	_				=>	()  // Do nothing
 		}
 		return (value);
 	}
@@ -4936,7 +4929,6 @@ impl important
 		{	
 			COLUMN_COUNT_AUTO		=>   value   =     0x0000,
 							COLUMN_COUNT_SET		=>   value   =     0x0080,
-							//		_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -4960,7 +4952,6 @@ impl important
 							CONTENT_CLOSE_QUOTE		=>   value   =     0x0003,
 							CONTENT_NO_OPEN_QUOTE		=>   value   =     0x0004,
 							CONTENT_NO_CLOSE_QUOTE		=>   value   =     0x0005,
-							//	_				=>	()  // Do nothing
 		}
 		return (value);
 	}
@@ -4973,7 +4964,6 @@ impl important
 		{
 			COUNTER_INCREMENT_NONE		=>   value = 0x0000,
 							COUNTER_INCREMENT_NAMED		=>   value = 0x0080,
-							//		_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5003,7 +4993,6 @@ impl important
 							CURSOR_WAIT			=>   value   =     0x000e,
 							CURSOR_HELP			=>   value   =     0x000f,
 							CURSOR_PROGRESS			=>   value   =     0x0010,
-							//					_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5020,7 +5009,6 @@ impl important
 							ELEVATION_ABOVE			=>   value   =     0x0002,
 							ELEVATION_HIGHER		=>   value   =     0x0003,
 							ELEVATION_LOWER			=>   value   =     0x0004,
-							//					_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5042,7 +5030,6 @@ impl important
 							FONT_FAMILY_CURSIVE		=>   value   =     0x0003,
 							FONT_FAMILY_FANTASY		=>   value   =     0x0004,
 							FONT_FAMILY_MONOSPACE		=>   value   =     0x0005,
-							//					_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5063,7 +5050,6 @@ impl important
 							FONT_SIZE_XX_LARGE		=>   value   =     0x0006,
 							FONT_SIZE_LARGER		=>   value   =     0x0007,
 							FONT_SIZE_SMALLER		=>   value   =     0x0008,
-							//	_				=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5076,7 +5062,6 @@ impl important
 		{
 			LETTER_SPACING_SET		=>   value   =     0x0080,
 							LETTER_SPACING_NORMAL		=>   value   =     0x0000,
-							//			_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5090,7 +5075,6 @@ impl important
 			LINE_HEIGHT_NUMBER		=>   value   =     0x0080,
 							LINE_HEIGHT_DIMENSION		=>   value   =     0x0081,
 							LINE_HEIGHT_NORMAL		=>   value   =     0x0000,
-							//	_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5103,7 +5087,6 @@ impl important
 		{
 			MAX_HEIGHT_SET			=>   value   =     0x0080,
 							MAX_HEIGHT_NONE			=>   value   =     0x0000,
-							//			_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5115,7 +5098,6 @@ impl important
 		match(enumVal)
 		{
 			MIN_HEIGHT_SET			=>	value =  0x0080,
-							//			_			=>   	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5127,7 +5109,6 @@ impl important
 		match(enumVal)
 		{
 			OPACITY_SET			=>   value   =     0x0080,
-							//						_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5140,7 +5121,6 @@ impl important
 		match(enumVal)
 		{
 			ORPHANS_SET			=>   value   =     0x0080,
-							//		_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5155,7 +5135,6 @@ impl important
 							OUTLINE_COLOR_CURRENT_COLOR	=>   value   =     0x0001,
 							OUTLINE_COLOR_INVERT		=>   value   =     0x0002,
 							OUTLINE_COLOR_SET		=>   value   =     0x0080,
-							//						_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5173,7 +5152,6 @@ impl important
 							PITCH_MEDIUM			=>   value   =     0x0002,
 							PITCH_HIGH			=>   value   =     0x0003,
 							PITCH_X_HIGH			=>   value   =     0x0004,
-							//						_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5190,7 +5168,6 @@ impl important
 							PLAY_DURING_REPEAT		=>   value   =     (1<<5),
 							PLAY_DURING_AUTO		=>   value   =     0x0000,
 							PLAY_DURING_NONE		=>   value   =     0x0001,
-							//						_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5203,7 +5180,6 @@ impl important
 		{
 			Z_INDEX_SET			=>   value   =     0x0080,
 							Z_INDEX_AUTO			=>   value   =     0x0000,
-							//		_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5222,7 +5198,6 @@ impl important
 							VOLUME_MEDIUM			=>   value   =     0x0003,
 							VOLUME_LOUD			=>   value   =     0x0004,
 							VOLUME_X_LOUD			=>   value   =     0x0005,
-							//	_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5241,7 +5216,6 @@ impl important
 							VOICE_FAMILY_MALE		=>   value   =     0x0001,
 							VOICE_FAMILY_FEMALE		=>   value   =     0x0002,
 							VOICE_FAMILY_CHILD		=>   value   =     0x0003,
-							//	_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5261,7 +5235,6 @@ impl important
 							VERTICAL_ALIGN_MIDDLE		=>   value   =     0x0005,
 							VERTICAL_ALIGN_BOTTOM		=>   value   =     0x0006,
 							VERTICAL_ALIGN_TEXT_BOTTOM	=>   value   =     0x0007,
-							//						_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5279,7 +5252,6 @@ impl important
 
 							PLAY_DURING_AUTO		=>   value   =     0x0000,
 							PLAY_DURING_NONE		=>   value   =     0x0001,
-							//						_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5299,7 +5271,6 @@ impl important
 							SPEECH_RATE_X_FAST		=>   value   =     0x0004,
 							SPEECH_RATE_FASTER		=>   value   =     0x0005,
 							SPEECH_RATE_SLOWER		=>   value   =     0x0006,
-							//			_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5312,7 +5283,6 @@ impl important
 		{
 			QUOTES_STRING			=>   value   =     0x0080,
 							QUOTES_NONE			=>   value   =     0x0000,
-							//	_			=>  	()  // Do nothing
 		}
 		return (value);
 	}
@@ -5989,7 +5959,6 @@ impl font_face
 	}	
 
 
-	//pub fn css_parse_font_descriptor(&self , cssLang : @css_language, descriptor : ~css_token, vector : ~parseutils_vector, cntx : ~int, rule_face : &css_rule_face) -> css_result
 	pub fn css_parse_font_descriptor(&self, cssLang : @css_language, descriptor : ~css_token, tokenVector : ~[~css_token], mut rule_face : &css_rule_face) -> css_result
 	{
 		let mut font_face  = rule_face.font_face ;
@@ -5997,11 +5966,19 @@ impl font_face
 		// initializing temporarily
 		let errorVal : css_result = CSS_GENERAL_OK;
 
+		match font_face
+		{
+			Some(ref data)	=> (), // Do nothing
+			None		=>  (), // assign default font face 
+		}	
+
 		// css_font_face_create Need to be implemented	
 
 		// Commenting temporarily to avoicd compilation error
 		//errorVal = self.css_font_face_create(cssLang.sheet.alloc, cssLang.sheet.pw, &font_face);  /* &font_face is this right ?*/ 
 
+		// Don't think it's needed
+		/*
 		match errorVal
 		{
 			CSS_GENERAL_OK	=> 	{
@@ -6011,6 +5988,7 @@ impl font_face
 						return errorVal
 					}
 		}
+		*/
 
 		if lwc::lwc_string_caseless_isequal(descriptor.idata, cssLang.strings[FONT_FAMILY as int]) == true 
 		{
@@ -6054,7 +6032,7 @@ impl font_face
 		/*
 		   let stringData : ~lwc_instance.lwc_string ;
 		   let error : css_result =  	
-		 */
+		*/
 
 		return CSS_GENERAL_OK;
 	}
@@ -6419,8 +6397,9 @@ struct css_hint_length {
 /**
  * Presentational hints
  */
+/*
 struct css_hint {
-	/* Ownership of all data is passed to libcss */
+	// Ownership of all data is passed to libcss
 	data: {
 	 	clip:@css_computed_clip_rect,
 		color:css_color,
@@ -6432,11 +6411,36 @@ struct css_hint {
 		position:{
 			h:css_hint_length, 
 			v:css_hint_length
-		} ,
+		},
 		string: lwc_string,
 		strings:@lwc_string
 	}, 
 
+	status:u8
+} 
+*/
+
+struct positionStruct{
+	h:css_hint_length, 
+	v:css_hint_length
+}
+
+struct dataStruct {
+ 	clip:@css_computed_clip_rect,
+	color:css_color,
+	content:@css_computed_content_item,
+	counter:@css_computed_counter,
+	fixed:css_fixed,
+	integer:i32,
+	length:css_hint_length,
+	position: positionStruct,
+	string: lwc_string,
+	strings:@lwc_string
+} 
+
+struct css_hint {
+	/* Ownership of all data is passed to libcss */
+	data : dataStruct,
 	status:u8
 } 
 
@@ -6472,23 +6476,28 @@ struct css_computed_clip_rect {
 	left_auto:bool
 } 
 
+struct counterStruct{
+	name:@lwc_string,
+	style:u8
+}
+
+struct countersStruct{
+	name:@lwc_string,
+	sep:@lwc_string,
+	style:u8
+} 
+
+struct dateStruct{
+	string:@lwc_string, 
+	uri:@lwc_string,
+	attr:@lwc_string,
+	counter : counterStruct,
+	counters: countersStruct
+}
 
 struct css_computed_content_item {
 	content_type:u8,
-	date: {
-		string:@lwc_string, 
-		uri:@lwc_string,
-		attr:@lwc_string,
-		counter: {
-			name:@lwc_string,
-			style:u8
-		} ,
-		counters: {
-			name:@lwc_string,
-			sep:@lwc_string,
-			style:u8
-		} 
-	}
+	date: dateStruct
 }
 
 
@@ -6543,11 +6552,11 @@ struct css_computed_uncommon {
  *  7 cccccccc	clip
  *  8 ccccccoo	clip           | content
  */
-	bits:[u8*8],
+	bits:[u8, ..8],
 
-	border_spacing:[css_fixed*2],
+	border_spacing:[css_fixed, ..2],
 
-	clip:[css_fixed*4],
+	clip:[css_fixed, ..4],
 
 	letter_spacing:css_fixed,
 
@@ -6573,7 +6582,8 @@ struct css_computed_uncommon {
  *  1 aaabbbii	page_break_after | page_break_before | page_break_inside
  *  2 ......wo	widows  | orphans
  */
-	bits:[u8*2],
+	// bits:[u8*2],
+	bits:[u8, ..2],
 	
 	widows:css_fixed,
 	orphans:css_fixed
@@ -6714,16 +6724,17 @@ struct css_computed_style {
  * 33 oooottuu	outline-style       | table-layout          | unicode-bidi
  * 34 vvlltttt	visibility          | list-style-position   | text-align
  */
-	bits:[u8*34],
+	//bits:[u8*34],
+	bits:[u8, ..34],
 
-	unused:[u8*2],
+	unused:[u8, ..2],
 
 	background_color:css_color,
 	background_image:@lwc_string,
-	background_position:[css_fixed*2],
+	background_position:[css_fixed, ..2],
 
-	border_color:[css_color*4],
-	border_width:[css_fixed*4],
+	border_color:[css_color, ..4],
+	border_width:[css_fixed, ..4],
 
 	top:css_fixed,
 	right:css_fixed,
@@ -6740,7 +6751,7 @@ struct css_computed_style {
 
 	list_style_image:@lwc_string,
 
-	margin:[css_fixed*4],
+	margin:[css_fixed, ..4],
 
 	max_height:css_fixed,
 	max_width:css_fixed,
@@ -6750,7 +6761,7 @@ struct css_computed_style {
 
 	opacity:css_fixed,
 
-	padding:[css_fixed*4],
+	padding:[css_fixed, ..4],
 
 	text_indent:css_fixed,
 
