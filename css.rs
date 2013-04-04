@@ -18,7 +18,6 @@ use core::vec::raw::* ;
 use parserutils::* ;
 use css_ds::*;
 use css_enum::* ;
-//use core::dvec::DVec;
 
 
 // ===========================================================================================================
@@ -100,24 +99,7 @@ pub fn css_result_to_string(css_err : css_result ) -> ~str {
  * This file is part of Rust-LibCSS.
  */
 
-//TO DO: Should be moved to fpmath
-type css_fixed = i32;
 
-
-
-//TO DO: Should be moved to libwapcaplet
-pub type lwc_hash = u32;
-pub type lwc_refcounter = u32;
-
-
-
-static CSS_SPECIFICITY_A:u32=0x01000000;
-static CSS_SPECIFICITY_B:u32=0x00010000;
-static CSS_SPECIFICITY_C:u32=0x00000100;
-static CSS_SPECIFICITY_D:u32=0x00000001;
-
-
-type css_code_t = u32 ; 
 
 
 	
@@ -564,7 +546,7 @@ pub fn css__parser_setopt(/*css_parser *parser,*/&self,  opt_type:css_parser_opt
 // CSS-LEXER implementation/data-structs starts here 
 // ===========================================================================================================
 
-static ASCII_LOWER_OFFSET: char = 'a' - 'A';
+
 
 pub fn ascii_lower(string: &str) -> ~str {
     do str::map(string) |c| {
@@ -576,7 +558,7 @@ pub fn ascii_lower(string: &str) -> ~str {
 }
 
 
-static MAX_UNICODE: char = '\U0010FFFF';
+
 
 fn preprocess(input: &str) -> ~str {
     // TODO: Is this faster if done in one pass?
@@ -1423,7 +1405,7 @@ pub fn CFRF(pw:~[u8],name:@lwc_string,  system_font:@css_system_font) -> css_res
 
 
 
-static CSS_STYLE_DEFAULT_SIZE:u32 =16;
+
 pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
 	@css_stylesheet{
 		                lwc_instance:lwc_inst,

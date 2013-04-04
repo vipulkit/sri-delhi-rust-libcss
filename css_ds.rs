@@ -1089,5 +1089,20 @@ pub struct css_select {
 }
 */
 
+//TO DO: Should be moved to libwapcaplet
+pub type lwc_hash = u32;
+pub type lwc_refcounter = u32;
 
 
+
+static CSS_SPECIFICITY_A:u32=0x01000000;
+static CSS_SPECIFICITY_B:u32=0x00010000;
+static CSS_SPECIFICITY_C:u32=0x00000100;
+static CSS_SPECIFICITY_D:u32=0x00000001;
+
+
+static MAX_UNICODE: char = '\U0010FFFF';
+
+static ASCII_LOWER_OFFSET: char = 'a' - 'A';
+
+static CSS_STYLE_DEFAULT_SIZE:u32 =16;
