@@ -120,7 +120,7 @@ impl lwc {
 		}
 	}
 	
-	pub fn lwc_intern_substring(&mut self , substring_to_intern: @lwc_string , ssoffset: u32, sslen: u32) -> @mut lwc_string {
+	pub fn lwc_intern_substring(&mut self , substring_to_intern: @mut lwc_string , ssoffset: u32, sslen: u32) -> @mut lwc_string {
 		self.lwc_intern_string(str::slice(substring_to_intern.string , ssoffset as uint , (ssoffset+sslen) as uint))
 	}
 
@@ -156,11 +156,11 @@ impl lwc {
 		}
 	}
 
-	pub fn lwc_string_isequal(str1: @lwc_string , str2: @lwc_string) ->bool {
-		managed::ptr_eq(str1 , str2)
+	pub fn lwc_string_isequal(str1: @mut lwc_string , str2: @mut lwc_string) ->bool {
+		managed::mut_ptr_eq(str1 , str2)
 	}
 
-	pub fn lwc_intern_caseless_string(&mut self , string_to_intern: @lwc_string) ->@mut lwc_string {
+	pub fn lwc_intern_caseless_string(&mut self , string_to_intern: @mut lwc_string) ->@mut lwc_string {
 		self.__lwc_intern(string_to_intern.string, true)
 	}
 
@@ -168,21 +168,21 @@ impl lwc {
 		(string_to_cmp1.is_case_insensitive && string_to_cmp2.is_case_insensitive)
 	}
 
-	pub fn lwc_string_length(string: @lwc_string) -> uint {
+	pub fn lwc_string_length(string: @mut lwc_string) -> uint {
 		string.length
 	}
 
-	pub fn lwc_string_hash_value(string: @lwc_string) -> u32 {
+	pub fn lwc_string_hash_value(string: @mut lwc_string) -> u32 {
 		string.hash
 	}
 
-	pub fn lwc_string_data(string: @lwc_string) -> @str {
+	pub fn lwc_string_data(string: @mut lwc_string) -> @str {
 		string.string
 	}
 }
 
-pub fn lwc()->@mut lwc {
-	@mut lwc {
+pub fn lwc()->~lwc {
+	~lwc {
 		bucketVector:~([~[], ..4091])
 	}
 }
