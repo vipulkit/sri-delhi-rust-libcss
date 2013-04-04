@@ -181,8 +181,8 @@ impl lwc {
 	}
 }
 
-pub fn lwc()->@mut lwc {
-	@mut lwc {
+pub fn lwc()->~lwc {
+	~lwc {
 		bucketVector:~([~[], ..4091])
 	}
 }
