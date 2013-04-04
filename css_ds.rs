@@ -3,9 +3,11 @@
 
 extern mod parserutils;
 extern mod wapcaplet;
+extern mod css_enum ;
 
 use wapcaplet::*;
 use parserutils::* ;
+use css_enum::* ;
 
 // =======================================================
 // Enums 

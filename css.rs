@@ -7,6 +7,7 @@ extern mod std;
 extern mod parserutils;
 extern mod wapcaplet;
 extern mod css_ds;
+extern mod css_enum ;
 
 use wapcaplet::*;
 use core::cast;
@@ -16,6 +17,7 @@ use core::str::raw::* ;
 use core::vec::raw::* ;
 use parserutils::* ;
 use css_ds::*;
+use css_enum::* ;
 //use core::dvec::DVec;
 
 

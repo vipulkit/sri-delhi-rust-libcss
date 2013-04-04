@@ -5,5 +5,6 @@ gcc -fPIC -shared iconv_wrapper.c -o libiconv_wrapper.so
 rustc -L . iconv_crate.rc 
 rustc -L . parserutils.rs
 rustc -L . wapcaplet.rs
+rustc -L . css_enum.rs
 rustc -L . css_ds.rs
 rustc -L . css.rs
