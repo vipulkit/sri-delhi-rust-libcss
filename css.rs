@@ -4,8 +4,8 @@
 
 
 extern mod std;
-mod parserutils;
-mod wapcaplet;
+extern mod parserutils;
+extern mod wapcaplet;
 
 use wapcaplet::*;
 use core::cast;
@@ -14,7 +14,7 @@ use core::str::* ;
 use core::str::raw::* ;
 use core::vec::raw::* ;
 use parserutils::* ;
-use core::dvec::DVec;
+//use core::dvec::DVec;
 
 
 // ===========================================================================================================
@@ -144,10 +144,11 @@ pub enum css_language_level {
 	CSS_LEVEL_1                 = 0,	/**< CSS 1 */
 	CSS_LEVEL_2                 = 1,	/**< CSS 2 */
 	CSS_LEVEL_21                = 2,	/**< CSS 2.1 */
-	CSS_LEVEL_3                 = 3		//< CSS 3 
+	CSS_LEVEL_3                 = 3,		//< CSS 3 
+	CSS_LEVEL_DEFAULT	    = CSS_LEVEL_21
 }
 
-static  CSS_LEVEL_DEFAULT :  css_language_level = CSS_LEVEL_21;	//< Default level >
+//static  CSS_LEVEL_DEFAULT :  css_language_level = CSS_LEVEL_21;	//< Default level >
 // CSS_LEVEL_DEFAULT :  css_language_level = CSS_LEVEL_21;	//< Default level >
 
 /**
@@ -1005,15 +1006,10 @@ pub type lwc_refcounter = u32;
 
 
 
-
 static CSS_SPECIFICITY_A:u32=0x01000000;
 static CSS_SPECIFICITY_B:u32=0x00010000;
 static CSS_SPECIFICITY_C:u32=0x00000100;
 static CSS_SPECIFICITY_D:u32=0x00000001;
-
-
-
-
 
 
 //pub type css_code_t  =  ~[u32];
@@ -1225,11 +1221,11 @@ pub enum op_background_position {
 	BACKGROUND_POSITION_HORZ_LEFT	= 0x0020,
 
 	BACKGROUND_POSITION_VERT_SET	= 0x0008,
-	//BACKGROUND_POSITION_VERT_CENTER	= 0x0000,
+	BACKGROUND_POSITION_VERT_CENTER	= 0x0000,
 	BACKGROUND_POSITION_VERT_BOTTOM	= 0x0001,
 	BACKGROUND_POSITION_VERT_TOP	= 0x0002
 } 
-static   BACKGROUND_POSITION_VERT_CENTER :  op_background_position = BACKGROUND_POSITION_HORZ_CENTER;	
+//static   BACKGROUND_POSITION_VERT_CENTER :  op_background_position = BACKGROUND_POSITION_HORZ_CENTER;	
 
 pub enum op_background_repeat {
 	BACKGROUND_REPEAT_NO_REPEAT	= 0x0000,
@@ -1997,7 +1993,7 @@ struct css_namespace {
  
 
 
-struct context_entry {
+pub struct context_entry {
 	event_type:css_parser_event,		/**< Type of entry */
 	data:@css_rule		/*< Data for context */
 } 
@@ -4294,7 +4290,7 @@ pub struct css_language {
 	mut lwc_instance:@lwc,
 //#define STACK_CHUNK 32
     STACK_CHUNK:int,
-	context:@DVec<context_entry>,      //parseutils_stack	/**< Context stack */
+	context:@[context_entry],      //parseutils_stack	/**< Context stack */
 
 	 state:language_state,			/**< State flag, for at-rule handling */
 
@@ -4310,7 +4306,7 @@ pub struct css_language {
 }
 pub fn lcss_language(sheet:@css_stylesheet)->@css_language {
 	let empty_lwc_string = sheet.lwc_instance.lwc_intern_string(@"");
-	let stack:@DVec<context_entry> = @dvec::DVec();
+	let stack:@vec<context_entry> = ~[]; 
 	
 	//@css_language {
 					
@@ -4339,7 +4335,7 @@ pub fn  css__language_create( sheet:@css_stylesheet,parserNode:@mut css_parser_n
 	{
 		let lwc_inst=lwc();
 	let empty_lwc_string = lwc_inst.lwc_intern_string(@"");
-	let stack:@DVec<context_entry> = @dvec::DVec();
+	let stack:@vec<context_entry> = ~[];
 	
 	//@css_language {
 					
@@ -5370,8 +5366,8 @@ impl important
 					},
 							  CSS_PROP_BORDER_TOP_COLOR  |  CSS_PROP_BORDER_RIGHT_COLOR  | CSS_PROP_BORDER_BOTTOM_COLOR  |  CSS_PROP_BORDER_LEFT_COLOR  |  CSS_PROP_BACKGROUND_COLOR | CSS_PROP_COLUMN_RULE_COLOR  =>
 							  {
-								  //	assert(BACKGROUND_COLOR_SET == 	BORDER_COLOR_SET);
-								  //	assert(BACKGROUND_COLOR_SET == 	COLUMN_RULE_COLOR_SET);
+								  	assert!(BACKGROUND_COLOR_SET == BORDER_COLOR_SET);
+									assert!(BACKGROUND_COLOR_SET == COLUMN_RULE_COLOR_SET);
 
 								  if (value == self.convert_enum_op_backgroundColor_2_u32(BACKGROUND_COLOR_SET))
 								  {
@@ -5381,9 +5377,9 @@ impl important
 
 							  CSS_PROP_BACKGROUND_IMAGE |  CSS_PROP_CUE_AFTER  | CSS_PROP_CUE_BEFORE  | CSS_PROP_LIST_STYLE_IMAGE  => 
 							  {
-								  //	assert(BACKGROUND_IMAGE_URI == CUE_AFTER_URI);
-								  //      assert(BACKGROUND_IMAGE_URI == CUE_BEFORE_URI);
-								  //	assert(BACKGROUND_IMAGE_URI == LIST_STYLE_IMAGE_URI);
+								 	assert!(BACKGROUND_IMAGE_URI == CUE_AFTER_URI);
+								        assert!(BACKGROUND_IMAGE_URI == CUE_BEFORE_URI);
+								  	assert!(BACKGROUND_IMAGE_URI == LIST_STYLE_IMAGE_URI);
 
 								  if (value == self.convert_enum_op_backgroundImage_2_u32(BACKGROUND_IMAGE_URI))
 								  {
@@ -5414,8 +5410,8 @@ impl important
 
 							  CSS_PROP_BORDER_TOP_WIDTH  | CSS_PROP_BORDER_RIGHT_WIDTH |  CSS_PROP_BORDER_BOTTOM_WIDTH  |  CSS_PROP_BORDER_LEFT_WIDTH  |	 CSS_PROP_OUTLINE_WIDTH  | CSS_PROP_COLUMN_RULE_WIDTH  => 
 							  {
-								  //	assert(BORDER_WIDTH_SET == OUTLINE_WIDTH_SET);
-								  //	assert(BORDER_WIDTH_SET == COLUMN_RULE_WIDTH_SET);
+								  	assert!(BORDER_WIDTH_SET == OUTLINE_WIDTH_SET);
+								  	assert!(BORDER_WIDTH_SET == COLUMN_RULE_WIDTH_SET);
 
 								  if (value == self.convert_enum_op_borderWidth_2_u32(BORDER_WIDTH_SET))
 								  {
@@ -5425,14 +5421,14 @@ impl important
 
 							  CSS_PROP_MARGIN_TOP  |  CSS_PROP_MARGIN_RIGHT | CSS_PROP_MARGIN_BOTTOM  | CSS_PROP_MARGIN_LEFT  | CSS_PROP_BOTTOM  | CSS_PROP_LEFT  | CSS_PROP_RIGHT  | CSS_PROP_TOP  | CSS_PROP_HEIGHT |  CSS_PROP_WIDTH  |  CSS_PROP_COLUMN_WIDTH  | CSS_PROP_COLUMN_GAP  => 
 							  {
-								  //	assert(BOTTOM_SET == LEFT_SET);
-								  //	assert(BOTTOM_SET == RIGHT_SET);
-								  //	assert(BOTTOM_SET == TOP_SET);
-								  //	assert(BOTTOM_SET == HEIGHT_SET);
-								  //	assert(BOTTOM_SET == MARGIN_SET);
-								  //	assert(BOTTOM_SET == WIDTH_SET);
-								  // 	assert(BOTTOM_SET == COLUMN_WIDTH_SET);
-								  // 	assert(BOTTOM_SET == COLUMN_GAP_SET);
+								  	assert!(BOTTOM_SET == LEFT_SET);
+								  	assert!(BOTTOM_SET == RIGHT_SET);
+								  	assert!(BOTTOM_SET == TOP_SET);
+								  	assert!(BOTTOM_SET == HEIGHT_SET);
+								  	assert!(BOTTOM_SET == MARGIN_SET);
+								  	assert!(BOTTOM_SET == WIDTH_SET);
+								   	assert!(BOTTOM_SET == COLUMN_WIDTH_SET);
+								   	assert!(BOTTOM_SET == COLUMN_GAP_SET);
 
 								  if (value == self.convert_enum_op_bottom_2_u32(BOTTOM_SET))
 								  {
@@ -5574,7 +5570,7 @@ impl important
 
 							  CSS_PROP_LETTER_SPACING  |  CSS_PROP_WORD_SPACING  => 
 							  {
-								  //	assert(LETTER_SPACING_SET == WORD_SPACING_SET);
+								  assert!(LETTER_SPACING_SET == WORD_SPACING_SET);
 
 								  if (value == self.convert_enum_op_letterSpacing_2_u32(LETTER_SPACING_SET)){
 									  styleOffset += 2; // length + units 
@@ -5595,7 +5591,7 @@ impl important
 
 							  CSS_PROP_MAX_HEIGHT  |  CSS_PROP_MAX_WIDTH  => 
 							  {
-								  // assert(MAX_HEIGHT_SET == MAX_WIDTH_SET);
+								  assert!(MAX_HEIGHT_SET == MAX_WIDTH_SET);
 
 								  if (value == self.convert_enum_op_maxHeight_2_u32(MAX_HEIGHT_SET)){
 									  styleOffset += 2; // length + units 
@@ -5605,11 +5601,11 @@ impl important
 							  CSS_PROP_PADDING_TOP |   CSS_PROP_PADDING_RIGHT  |  CSS_PROP_PADDING_BOTTOM  |	 CSS_PROP_PADDING_LEFT  | CSS_PROP_MIN_HEIGHT |	 CSS_PROP_MIN_WIDTH |	 CSS_PROP_PAUSE_AFTER | CSS_PROP_PAUSE_BEFORE  |
 								  CSS_PROP_TEXT_INDENT  => 
 								  {	
-									  //assert(MIN_HEIGHT_SET == MIN_WIDTH_SET);
-									  //assert(MIN_HEIGHT_SET == PADDING_SET);
-									  //assert(MIN_HEIGHT_SET == PAUSE_AFTER_SET);
-									  //assert(MIN_HEIGHT_SET == PAUSE_BEFORE_SET);
-									  //assert(MIN_HEIGHT_SET == TEXT_INDENT_SET);
+									  assert!(MIN_HEIGHT_SET == MIN_WIDTH_SET);
+									  assert!(MIN_HEIGHT_SET == PADDING_SET);
+									  assert!(MIN_HEIGHT_SET == PAUSE_AFTER_SET);
+									  assert!(MIN_HEIGHT_SET == PAUSE_BEFORE_SET);
+									  assert!(MIN_HEIGHT_SET == TEXT_INDENT_SET);
 
 									  if (value == self.convert_enum_op_minHeight_2_u32(MIN_HEIGHT_SET)){
 										  styleOffset += 2; // length + units 
@@ -5625,10 +5621,10 @@ impl important
 
 							  CSS_PROP_ORPHANS  |  CSS_PROP_PITCH_RANGE  | CSS_PROP_RICHNESS  | CSS_PROP_STRESS  |	 CSS_PROP_WIDOWS  =>
 							  {
-								  // assert(ORPHANS_SET == PITCH_RANGE_SET);
-								  // assert(ORPHANS_SET == RICHNESS_SET);
-								  // assert(ORPHANS_SET == STRESS_SET);
-								  // assert(ORPHANS_SET == WIDOWS_SET);
+								   assert!(ORPHANS_SET == PITCH_RANGE_SET);
+								   assert!(ORPHANS_SET == RICHNESS_SET);
+								   assert!(ORPHANS_SET == STRESS_SET);
+								   assert!(ORPHANS_SET == WIDOWS_SET);
 
 								  if (value ==  self.convert_enum_op_orphans_2_u32(ORPHANS_SET)){
 									  styleOffset  += 1; // value 
@@ -5746,8 +5742,8 @@ pub enum UniversalEnum
 	/* At-rules */
 
 	// Sushanta: 
-	// CHARSET is removed , 'coz it was clashing with charset valriable used below in the code.
-	//CHARSET, LIBCSS_IMPORT, MEDIA, NAMESPACE, FONT_FACE, PAGE,
+	//CHARSET is removed , 'coz it was clashing with charset valriable used below in the code.
+	// CHARSET, LIBCSS_IMPORT, MEDIA, NAMESPACE, FONT_FACE, PAGE,
 	LIBCSS_IMPORT, MEDIA, NAMESPACE, FONT_FACE, PAGE,
 
 	/* Media types */
@@ -5894,13 +5890,8 @@ pub enum css_font_face_location_type{
 
 pub struct font_face
 {
-	mut lpu_instance : @lpu,
-	    mut lwc_instance : @lwc,
-
-	    // Q: Should I include below mentioned functionas also in the structure ?
-	    //	cssLang : @css_language,		
-	    //	rule : @css_rule_face,
-	    //	font_face_location_type : @css_font_face_location_type,
+    mut lpu_instance : @lpu,
+    mut lwc_instance : @lwc,
 }
 
 pub fn font_face()->@font_face
@@ -5919,14 +5910,12 @@ impl font_face
 	{
 		let mut result : bool = false;
 
-		//if token.token_type == 0x09 && lwc::lwc_string_length(token.idata) == 1
 		match (token.token_type)	
 		{
 			CSS_TOKEN_CHAR	=>		
 			{
 				let mut tempCharData : u8 = lwc::lwc_string_data(token.idata)[0]; 
 
-				// ensuring lowerCase comparison
 				if tempCharData >= 'A' as u8 && tempCharData <= 'Z' as u8
 				{
 					tempCharData += ('a' - 'A') as u8;	
@@ -5958,37 +5947,19 @@ impl font_face
 		}	
 	}	
 
-
 	pub fn css_parse_font_descriptor(&self, cssLang : @css_language, descriptor : ~css_token, tokenVector : ~[~css_token], mut rule_face : &css_rule_face) -> css_result
 	{
 		let mut font_face  = rule_face.font_face ;
 
-		// initializing temporarily
-		let errorVal : css_result = CSS_GENERAL_OK;
-
 		match font_face
 		{
 			Some(ref data)	=> (), // Do nothing
-			None		=>  (), // assign default font face 
+			None		=> {
+						// assigning default value
+														   	      // Need to implement enum 2 Int function here also
+						font_face = css_font_face{font_family:None, srcs: None, n_srcs: 0, bits:~((CSS_FONT_WEIGHT_NORMAL << 2) | CSS_FONT_STYLE_NORMAL)};
+					   }	
 		}	
-
-		// css_font_face_create Need to be implemented	
-
-		// Commenting temporarily to avoicd compilation error
-		//errorVal = self.css_font_face_create(cssLang.sheet.alloc, cssLang.sheet.pw, &font_face);  /* &font_face is this right ?*/ 
-
-		// Don't think it's needed
-		/*
-		match errorVal
-		{
-			CSS_GENERAL_OK	=> 	{
-				rule_face.font_face = font_face;	
-			},
-					_		=>	{
-						return errorVal
-					}
-		}
-		*/
 
 		if lwc::lwc_string_caseless_isequal(descriptor.idata, cssLang.strings[FONT_FAMILY as int]) == true 
 		{
@@ -6006,8 +5977,6 @@ impl font_face
 		{
 			return self.font_face_parse_font_weight(cssLang, tokenVector, font_face);		
 		}
-
-		return CSS_GENERAL_OK;	
 	}
 
 	pub fn font_rule_font_family_reserved (&self, cssLang : @css_language, identifier : ~css_token) -> bool
@@ -6024,35 +5993,37 @@ impl font_face
 		      ) ;
 	}
 
-	// pub fn font_face_parse_font_family (&self, cssLang : @css_language, vector : ~parseutils_vector, cntx : ~int,  font_face : ~css_font_face) -> css_result
+	// 2 b discussed
 	pub fn font_face_parse_font_family (&self, cssLang : @css_language, tokenVector : ~[~css_token], font_face : @css_font_face) -> css_result
 	{
-		// Corresponding C code shows, that a function itself is being passed as an argument 
-		// Need to chk how come it is possible ?
-		/*
-		   let stringData : ~lwc_instance.lwc_string ;
-		   let error : css_result =  	
-		*/
+
+		//let bResult = font_rule_font_family_reserved(	
+		//css_result = css_ident_list_or_string_to_string(cssLang, tokenVector, font_rule_font_family_reserved,  
 
 		return CSS_GENERAL_OK;
 	}
 
-	// pub fn font_face_src_parse_format (&self, cssLang : @css_language, vector : ~parseutils_vector, cntx : ~int,  font_face_format : ~css_font_face) -> css_result
 	pub fn font_face_src_parse_format (&self, cssLang : @css_language, tokenVector : ~[~css_token], mut font_face_format : css_font_face_format) -> css_result
 	{
 		font_face_format = CSS_FONT_FACE_FORMAT_UNSPECIFIED;	
 
+		// since I am doing copy tokenVector, would the called function remvoe all the leading white spaces
 		self.consumeWhiteSpace(copy tokenVector);
-		//let token : ~css_token = self.lpu_instance.parseutils_vector_iterate(tokenVector); 
 
 		for tokenVector.each |&token|
 		{
 			match (token.token_type)
 			{
-				CSS_TOKEN_STRING	=>	{
+				// does CSS_TOKEN_STRING accept whiteSpaces also, if yes then below mentioned line might be needed
+				// self.consumeWhiteSpace(tokenVector);
+
+				CSS_TOKEN_STRING  =>	
+				{
 					if  lwc::lwc_string_isequal(token.idata, cssLang.strings[WOFF as int]) == true 
 					{
-						// Sushanta: How to implement bitwise operator in RUST?
+						// Sushanta: How to implement bitwise operator in RUST ?
+						// Well, to implement bitwise opearation, function enum to int needs to be called and then apply operation
+
 						// font_face_format |= CSS_FONT_FACE_FORMAT_WOFF ; 	
 					}
 					else if   lwc::lwc_string_isequal(token.idata, cssLang.strings[TRUETYPE as int]) ==  true  ||
@@ -6072,117 +6043,90 @@ impl font_face
 					{	
 						//font_face_format |= CSS_FONT_FACE_FORMAT_UNKNOWN; 	
 					}	
-
-					// Sushanta: Do we need this ?
-					// self.consumeWhiteSpace(tokenVector);
-
 				},
-							_			=>	return CSS_INVALID	
+				_		=>	return CSS_INVALID	
 			}
-
 		}
 
-		// temporary comment
+		// Temporary comment
 		/*
 		if (self.tokenIsChar(token, ')') == false)
 		{
 			return CSS_INVALID;	
 		}
 		*/
-		
+
 		return CSS_GENERAL_OK;
 	}
 
-	// pub fn font_face_src_parse_spec_or_name (&self, cssLang : @css_language, vector : ~parseutils_vector, cntx : ~int, location : ~lwc_string, font_face_location_type : ~css_font_face_location_type, font_face_format : ~css_font_face) -> css_result
+
+
 	pub fn font_face_src_parse_spec_or_name (&self, cssLang : @css_language, tokenVector : ~[~css_token], location : ~lwc_string, mut font_face_location_type : css_font_face_location_type, font_face_format : css_font_face_format) -> css_result
 	{
 		let mut errorVal : css_result = CSS_GENERAL_OK;
 		self.consumeWhiteSpace(copy tokenVector);		
-		//let token : ~css_token = self.lpu_instance.parseutils_vector_iterate(tokenVector); 
 
 		for tokenVector.each |&token|
 		{
-			//if token.type == CSS_TOKEN_URI
 			match(token.token_type) 
 			{
 				CSS_TOKEN_URI	=> {
-					// Sushanta: temporary comment
-					/*
-					errorVal = cssLang.sheet.resolve(cssLang.sheet.resolve_pw, cssLang.sheet.url, token.idata, location);
+					
+					errorVal = cssLang.sheet.resolve(cssLang.sheet.url, token.idata, location);
 					if errorVal != CSS_GENERAL_OK
 					{
 						return errorVal;
 					}
-					*/
 	
 					font_face_location_type = CSS_FONT_FACE_LOCATION_TYPE_URI; 
-					//self.consumeWhiteSpace(tokenVector);		
-
-					// Sushanta: 	
-					//token =  self.lpu_instance.parserutils_vector_peek(tokenVector);
+					self.consumeWhiteSpace(tokenVector);		
 
 					match(token.token_type)
 					{
 						CSS_TOKEN_FUNCTION 	=> {
 							if  (lwc::lwc_string_caseless_isequal(token.idata, cssLang.strings[FORMAT as int]) == true) 
 							{
-								//self.lpu_instance.parserutils_vector_iterate(tokenVector);	
-								 //  Sushanta: Do we need this
-								/*
 								errorVal = self.font_face_src_parse_format(cssLang, tokenVector, font_face_format);
 
 								match(errorVal)
 								{
-									CSS_GENERAL_OK  =>	return errorVal,
-											_	=>	()
+									CSS_GENERAL_OK  =>	(),
+										_	=>	return errorVal
 								}
-								*/													
 							}	
-
 						},
-									_			=>	()
+						_			=>	()
 
 					}				
+				},
+				
+				CSS_TOKEN_FUNCTION  => {
 
-					},
-						CSS_TOKEN_FUNCTION 	=>	{
-							if (lwc::lwc_string_caseless_isequal(token.idata, cssLang.strings[LOCAL as int]) == true)
-							{
-								// Sushanta: Do we need this fun
-								//self.consumeWhiteSpace(tokenVector);	
-								// below mentioned fun is defined in Parse/Properties/Utils.c
-								// think abt 4th parameter namely NULL
+					if (lwc::lwc_string_caseless_isequal(token.idata, cssLang.strings[LOCAL as int]) == true)
+					{
+						self.consumeWhiteSpace(tokenVector);	
+						
+						// below mentioned fun is defined in Parse/Properties/Utils.c
+						// errorVal = css_ident_list_or_string_to_string(cssLang, tokenVector, location);
 
-								// Below mentioned function calls function pointer, Commenting temporarily
-								// Commenting to avoid compilation error
-								/*
-								errorVal = css_ident_list_or_string_to_string(cssLang, tokenVector, NULL, location);
-
-								if errorVal != CSS_GENERAL_OK 
-								{
-									return errorVal;	
-								}
-								*/
-
-								// Sushanta: Do we need this fun
-								//self.consumeWhiteSpace(tokenVector);
-								
-								// see precisely at which condition CSS_INVALID should be called
-								/*
-								token =  self.lpu_instance.parserutils_vector_iterate(tokenVector);	
-
-								if self.tokenIsChar(token, ')') == false
-								{
-									return CSS_INVALID;	
-								}
-								*/
-
-								font_face_location_type = CSS_FONT_FACE_LOCATION_TYPE_LOCAL; 
-							}
-						},
-						_	=>	{
-							return CSS_INVALID;	
+						if errorVal != CSS_GENERAL_OK 
+						{
+							return errorVal;	
 						}
+
+						self.consumeWhiteSpace(tokenVector);
+
+						if self.tokenIsChar(token, ')') == false
+						{
+								return CSS_INVALID;	
+						}
+
+						font_face_location_type = CSS_FONT_FACE_LOCATION_TYPE_LOCAL; 
+					}
+				},
+				_		=>{
+								return CSS_INVALID;	
+						  }
 			} // match block ends
 		}
 
@@ -6190,63 +6134,47 @@ impl font_face
 	}
 
 	// In this function, LABELs are used
-	// pub fn font_face_parse_src (&self, cssLang : @css_language, vector : ~parseutils_vector, cntx : ~int,  font_face : ~css_font_face) -> css_result
 	pub fn font_face_parse_src (&self, cssLang : @css_language, tokenVector : ~[~css_token], font_face : @css_font_face) -> css_result
 	{
 		//let orig_cntx : int = *cntx;
 		let errorVal : css_result = CSS_GENERAL_OK;	
 		let n_srcs : u32 = 0;	
-		let srcs : ~css_font_face_src;
+		// Can we initialise srcs as NONE (or anything else as NULL in C)
+		let srcs : ~css_font_face_src ; 
 		let new_srcs : ~css_font_face_src;
 
 		self.consumeWhiteSpace(copy tokenVector);
-		//token = self.lpu_instance.parserutils_vector_iterate(tokenVector);
 
-		//while self.tokenIsChar(token, ',')
-			
 		for tokenVector.each |&token|
 		{
 			let font_face_location : ~lwc_string ;
 			let font_face_location_type : css_font_face_location_type = CSS_FONT_FACE_LOCATION_TYPE_UNSPECIFIED;
 			let font_face_format : css_font_face_format = CSS_FONT_FACE_FORMAT_UNSPECIFIED; 	
 
-			// Sushanta: Temporary comment
-			//errorVal =  self.font_face_src_parse_spec_or_name(cssLang, tokenVector, font_face_location, font_face_location_type, font_face_format);  
-			//if errorVal != CSS_GENERAL_OK
+			errorVal =  self.font_face_src_parse_spec_or_name(cssLang, tokenVector, font_face_location, font_face_location_type, font_face_format);  
+			
 			match(errorVal)
 			{
 				CSS_GENERAL_OK 	=>
-				{
-					// *cntx = orig_cntx;
-					// Q: what to do here ?
-					// if srcs != NULL 			
-				},
-					_		=>	()
+					{
+						// But where new_srcs is initialized ?
+						srcs = new_srcs;
+						srcs[n_srcs].location = font_face_location; 		
+						srcs[n_srcs].bits[0] = font_face_format << 2 | font_face_location_type;
+						n_srcs += 1;		
+					},
+					_	=>	()
 			}
 
-			// But how / where new_srcs is initialized ?
-
-			// Sushanta: commenting temporarily
-			/*
-			srcs = new_srcs;
-			srcs[n_srcs].location = font_face_location; 		
-
-			srcs[n_srcs].bits[0] = font_face_format << 2 | font_face_location_type;
-			n_srcs += 1;		
-			*/
 			// Do we need this	
-			//self.consumeWhiteSpace(tokenVector);
+			self.consumeWhiteSpace(tokenVector);
 		}
-
 		// Q: below mentioned function is defined in src/selects/Font_face.c
-
-		// Sushanta: commenting temporarily
-		//errorVal =  self.css_font_face_set_srcs(font_face, srcs, n_srcs); 
-
+		// and hence not yet implemented
+		errorVal =  self.css_font_face_set_srcs(font_face, srcs, n_srcs); 
 		return errorVal;
 	}
 
-	//pub fn font_face_parse_font_style (&self, cssLang : @css_language, vector : ~parseutils_vector, cntx : ~int,  font_face : ~css_font_face) -> css_result
 	pub fn font_face_parse_font_style (&self, cssLang : @css_language, tokenVector : ~[~css_token], font_face : @css_font_face) -> css_result
 	{
 		let mut errorVal : css_result = CSS_GENERAL_OK; 
@@ -6280,28 +6208,18 @@ impl font_face
 
 		}
 
-		// commenting temporarily
-		/*
 		   if errorVal == CSS_GENERAL_OK
 		   {
-		   font_face.bits[0] = (font_face.bits[0] & 0xfc) | style;
+		   	font_face.bits[0] = (font_face.bits[0] & 0xfc) | style;
 		   }
-		   else
-		   {
-		//*cntx = orig_cntx;	
-		();
-		}	
-		 */
 
 		return 	errorVal;
 	}
 
-	// pub fn font_face_parse_font_weight (cssLang : @css_language, vector : ~lpu_instance. parseutils_vector, cntx : ~int,  font_face : ~css_font_face) -> css_result
 	pub fn font_face_parse_font_weight (&self, cssLang : @css_language, tokenVector : ~[~css_token],  font_face : @css_font_face) -> css_result
 	{
 		let mut errorVal : css_result = CSS_GENERAL_OK; 
 		let mut weight : css_font_weight_e = CSS_FONT_WEIGHT_INHERIT ; 
-		// let token : ~css_token = self.lpu_instance.parseutils_vector_iterate(tokenVector);
 
 		for tokenVector.each |&token|
 		{
@@ -6397,28 +6315,6 @@ struct css_hint_length {
 /**
  * Presentational hints
  */
-/*
-struct css_hint {
-	// Ownership of all data is passed to libcss
-	data: {
-	 	clip:@css_computed_clip_rect,
-		color:css_color,
-		content:@css_computed_content_item,
-		counter:@css_computed_counter,
-		fixed:css_fixed,
-		integer:i32,
-		length:css_hint_length,
-		position:{
-			h:css_hint_length, 
-			v:css_hint_length
-		},
-		string: lwc_string,
-		strings:@lwc_string
-	}, 
-
-	status:u8
-} 
-*/
 
 struct positionStruct{
 	h:css_hint_length, 
