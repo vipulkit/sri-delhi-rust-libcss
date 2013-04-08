@@ -17,29 +17,7 @@ use css_enum::* ;
 
 // errors.h 
 pub enum css_result {
-		//CSS_OK  ,
-		CSS_LANGUAGE_CREATED_OK(@mut css_language),
-		CSS_STYLESHEET_CREATE_OK(@css_stylesheet),
-		CSS_STRING_GET(@lwc_string),
-		CSS_STRING_ADD_OK(@mut u32),
-		CSS_RULE_CREATED_OK(@css_high_level),
-		CSS_IMPORTS_PENDING_OK(@lwc_string,u64),
-		CSS_GET_LANGUAGE_LEVEL(css_language_level),
-		CSS_GET_URL(~str),
-		CSS_GET_TITLE(~str),
-		CSS_IS_QUIRK_ALLOWED(bool),
-		CSS_IS_QUIRK_USED(bool),
-		CSS_GET_SHEET_DISABLED(bool),
-		CSS_STYLECREATED_OK(@css_style_Node),
-		/*CSS_RULE_SELECTOR_CREATED( @css_rule_selector),
-		CSS_RULE_CHARSET_CREATED(@css_rule_charset),
-		CSS_RULE_IMPORT_CREATED(@css_rule_import),
-		CSS_RULE_MEDIA_CREATED(@css_rule_media),
-		CSS_RULE_FONT_FACE_CREATED(@css_rule_font_face),
-		CSS_RULE_PAGE_CREATED(@css_rule_page),*/
-		CSS_GENERAL_OK,
-		CSS_LANGUAGE_CREATED(@mut css_language),
-		CSS_PROPSTRINGS_OK(~[@lwc_string]),
+		CSS_OK  ,
 		CSS_NOMEM,
 		CSS_BADPARM,
 		CSS_INVALID,
@@ -49,48 +27,7 @@ pub enum css_result {
 		CSS_EOF,
 		CSS_IMPORTS_PENDING,
 		CSS_PROPERTY_NOT_SET,
-		//CSS_LWC_INTERN_STRING_OK([@lwc_string])
-		
-	}
-
-
-enum css_style_Node{
-	SomeStyleNode(@css_style),
-	NoStyleNode
 }
-
-enum css_parser_node
-{
-	SomeParserNode(@ lcss_parser),
-  	NoParserNode
-}
-
-pub enum css_high_level_ptr
-{
-	high_level_pointer(@mut css_high_level),
-	no_high_level_pointer
-}
-
-enum css_rule_node
-{
-	SomeRuleNode(@mut css_rule),
-  	NoRuleNode
-}
-
-pub enum StyleSheetNode
-{
-	SomeStyleSheetNode(@mut css_stylesheet),
-	NoStyleSheetNode
-}
-
-pub enum css_language_node
-{
-	SomeLanguageNode(@mut css_language),
-  	NoLanguageNode
-}
-
-
-
 
 // =======================================================
 // Structs 
@@ -136,12 +73,12 @@ pub struct css_system_font {
 
 
 pub type css_code_t  = uint;
-pub struct css_style{
 
-	bytecode:~[css_code_t] ,
+pub struct css_style{
 	//used : u32,
 	//allocated: u32,
-	 sheet:@StyleSheetNode
+	bytecode:~[css_code_t]
+	//sheet: Option<@css_stylesheet>
 }
 
 pub struct css_selector_detail_value {
@@ -164,15 +101,15 @@ pub struct css_selector_detail {
 
 struct CONTEXT{
 	first:u8,		/**< First character read for token */
-	origBytes:size_t,	/**< Storage of current number of 
+	origBytes:uint,	/**< Storage of current number of 
 					 * bytes read, for rewinding */
 	lastWasStar:bool,	/**< Whether the previous character 
 					 * was an asterisk */
 	lastWasCR:bool ,		/**< Whether the previous character
 					 * was CR */
-	bytesForURL:size_t,	/**< Input bytes read for "url(", for 
+	bytesForURL:uint,	/**< Input bytes read for "url(", for 
 					 * rewinding */
-	dataLenForURL:size_t ,	/**< Output length for "url(", for
+	dataLenForURL:uint ,	/**< Output length for "url(", for
 					 * rewinding */
 	hexCount:int		/*< Counter for reading hex digits */
 	} 
@@ -180,7 +117,7 @@ struct css_lexer
 {
 	input:@parserutils_inputstream,	/**< Inputstream containing CSS */
 
-	bytesReadForToken:size_t ,	/**< Total bytes read from the 
+	bytesReadForToken:uint ,	/**< Total bytes read from the 
 					 * inputstream for the current token */
 
 	token:css_token,		/**< The current token */
@@ -209,7 +146,7 @@ struct css_lexer
 
 struct DATA{
     data:~[u8],
-    len:size_t,
+    len:uint,
 }
 
 struct css_token {
@@ -250,26 +187,26 @@ pub struct parserutils_filter {
 /////////////////////////////////////////////////////////////////////////////////
 
 
-struct css_namespace {
+pub struct css_namespace {
 	prefix:@lwc_string,	/**< Namespace prefix */
 	uri:@lwc_string		/*< Namespace URI */
 }
  
 pub struct context_entry {
-	event_type:css_parser_event,		/**< Type of entry */
+	event_type:css_parser_event,		/* < Type of entry */
 	data:@css_rule		/*< Data for context */
 } 
 
 pub struct lcss {
-	 lwc_instance:@lwc,
-	 lpu_instance:@lpu,
-	 lcss_language:@css_language,
-	 lcss_stylesheet:@css_stylesheet,
-	 lcss_parser:@lcss_parser,
-	 lcss_lexer:@lcss_lexer,
-	//  propstrings_call_count:uint,
-	//  propstrings_list:@[@str],
-	//  propstrings:~[@lwc_string]
+	lwc_instance:@lwc,
+	lpu_instance:@mut lpu,
+	lcss_language:~css_language,
+	lcss_stylesheet:@mut css_stylesheet,
+	lcss_parser:@lcss_parser,
+	lcss_lexer:@lcss_lexer
+	// mut propstrings_call_count:uint,
+	// mut propstrings_list:@[@str],
+	// mut propstrings:~[@lwc_string]
 }
 
 
@@ -277,17 +214,16 @@ pub struct lcss {
  * Css parser event handler structure
  */ 
 pub struct css_parser_event_handler_struct{
-		// ToDo
-		// handler:css_parser_event_handler,
-		pw:@css_language
+		//TODO function pointer handler:css_parser_event_handler,
+		pw:~css_language
 }
 
 /*
  * Css parser opt paramemeters
  */
 pub struct  css_parser_optparams {
-	 quirks:bool,
-	 event_handler: css_parser_event_handler_struct
+	quirks:bool,
+	event_handler: css_parser_event_handler_struct
 	
 } 
 
@@ -356,14 +292,14 @@ pub struct css_high_level
 	 media     : @css_rule_media,
 	 font_face : @css_rule_font_face,
 	 page      : @css_rule_page,
-	 prev      : @mut css_high_level_ptr,
-	 next      : @mut css_high_level_ptr
+	 prev      : Option<@css_high_level>,
+	 next      : Option<@css_high_level>
 
 }
 
 struct css_selector {
 	 combinator:~[@css_selector],		/*< Combining selector */
-	 rule:@css_high_level_ptr ,				/*< Owning rule */
+	 rule:Option<~css_high_level> ,				/*< Owning rule */
 	 specificity:u32,			//< Specificity of selector 
      data:@css_selector_detail		/*< Selector data */
 }
@@ -375,13 +311,13 @@ pub struct css_rule {
 			/**< containing rule or owning 
 						 * stylesheet (defined by ptype)
 						 */
-	next:@mut css_rule_node ,				/**< next in list */
-	prev:@mut css_rule_node ,				/**< previous in list */
+	next:Option<@css_rule> ,				/**< next in list */
+	prev:Option<@css_rule> ,				/**< previous in list */
 
-	 rule_type  :  css_rule_type,		/**< css_rule_type */
-	 index : uint,		/**< index in sheet */
-	 items : uint,		/**< # items in rule */
-	 ptype : uint		/*< css_rule_parent_type */
+	rule_type  :  css_rule_type,		/**< css_rule_type */
+	index : uint,		/**< index in sheet */
+	items : uint,		/**< # items in rule */
+	ptype : uint		/*< css_rule_parent_type */
 }
 
 pub struct css_rule_selector {
@@ -394,9 +330,8 @@ pub struct css_rule_media {
 	//base:css_rule ,
 
 	media:u64,
-
-	first_child:@mut  css_rule_node,
-	last_child:@mut  css_rule_node
+	first_child:Option<@css_rule>, 
+	last_child:Option<@css_rule> 
 }
 
 
@@ -452,7 +387,7 @@ pub struct css_rule_import {
 	 url:@lwc_string,
 	 media:u64,
 
-	 sheet:@mut StyleSheetNode
+	 sheet:Option<~css_stylesheet>
 }
 
 pub struct css_rule_charset {
@@ -514,11 +449,11 @@ struct css_stylesheet_params {
 pub struct css_stylesheet {
 	//selectors:@css_selector_hash,	TODO REPLACE WITH BUILT IN HASH TABLE
 		/* < Hashtable of selectors */
-	 lwc_instance:@lwc,
+	lwc_instance:~lwc,
     //parser_instance:@lcss_parser,
 	 rule_count:u32,			/**< Number of rules in sheet */
-	 rule_list:@mut css_high_level_ptr ,			/**< List of rules in sheet */
-	 last_rule:@mut css_high_level_ptr,			/**< Last rule in list */
+	 rule_list:Option<~css_high_level> ,			/**< List of rules in sheet */
+	 last_rule:Option<~css_high_level>,			/**< Last rule in list */
 
 	 disabled:bool,				/**< Whether this sheet is 
 						 * disabled */
@@ -527,8 +462,8 @@ pub struct css_stylesheet {
 	 title:~str,			/**< Title of this sheet */
 
 	 level:css_language_level ,		/**< Language level of sheet */
-	 parser:@mut css_parser_node ,			/**< Core parser for sheet */
-	 parser_frontend:@mut css_language_node,			/**< Frontend parser */////////look for type
+	 parser:Option<@lcss_parser>,			/**< Core parser for sheet */
+	 parser_frontend:Option<@css_language>,			/**< Frontend parser */////////look for type
 	//propstrings:@ mut[@lwc_string ],		/**< Property strings, for parser */
 
 	 quirks_allowed:bool,			/**< Quirks permitted */
@@ -559,7 +494,7 @@ pub struct css_stylesheet {
 	// alloc:css_allocator_fn,			/**< Allocation function */
 	//pw:~[u8],				/**< Private word */
   
-	 cached_style:@ css_style_Node ,		/**< Cache for style parsing */
+	 cached_style:Option<@css_style>,		/**< Cache for style parsing */
   
 	 string_vector:~[@lwc_string],            /**< Bytecode string vector */
 	//string_vector_l:u32,              /**< The string vector allocated
@@ -567,17 +502,17 @@ pub struct css_stylesheet {
 	//string_vector_c:u32,               /*< The number of string * vector entries used */ 
 	 propstrings_call_count:uint,
      propstrings_list:@[@str],
-	 propstrings:~[@lwc_string]					 
+	propstrings:~[@mut lwc_string]					 
 }
 
 pub struct css_language {
-	sheet:@css_stylesheet ,		/**< The stylesheet to parse for */
-	 lwc_instance:@lwc,
+	//cyclic dependency on sheet:@css_stylesheet ,		/**< The stylesheet to parse for */
+	lwc_instance:@lwc,
 //#define STACK_CHUNK 32
     STACK_CHUNK:int,
 	context:@[context_entry],      //parseutils_stack	/**< Context stack */
 
-	 state:language_state,			/**< State flag, for at-rule handling */
+	state:language_state,			/**< State flag, for at-rule handling */
 
 	/** Interned strings */
 	 strings: ~[@lwc_string ],

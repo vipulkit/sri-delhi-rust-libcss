@@ -55,7 +55,7 @@ pub fn css_result_to_string(css_err : css_result ) -> ~str {
 		CSS_IS_QUIRK_ALLOWED(x)=>{result = ~"is Quirks allowed?"},
 		CSS_IS_QUIRK_USED(x)=>{result= ~"IS_QUIRK_USED?"},
 		CSS_GET_SHEET_DISABLED(x)=>{result=~"_GET_if-SHEET_DISABLED"},
-		CSS_STYLECREATED_OK(x)=>{result=~"Style created successfully"}
+		CSS_STYLECREATED_OK(x)=>{result=~"Style created successfully"},
 		/*CSS_RULE_SELECTOR_CREATED(x) => {result=~"Css rule selector created successfully"},
 		CSS_RULE_CHARSET_CREATED(x) => {result=~"Css rule charset created successfully"},
 		CSS_RULE_IMPORT_CREATED(x) => {result=~"Css rule imported successfully"},
@@ -108,14 +108,14 @@ pub fn css_result_to_string(css_err : css_result ) -> ~str {
 // ===========================================================================================================
 
 
-pub fn lcss()->@lcss {
-	let lwc_inst        = lwc();
-	let lexer_inst      = lcss_lexer();
-	let stylesheet_inst = lcss_stylesheet(lwc_inst);
-	let language_inst   = lcss_language(stylesheet_inst);
-	let parser_inst     = lcss_parser(lexer_inst,language_inst);
-	@lcss {
-		lwc_instance:lwc_inst,
+pub fn lcss()->@mut lcss {
+	let mut lwc_inst        = lwc();
+	let mut lexer_inst      = lcss_lexer();
+	let mut stylesheet_inst = lcss_stylesheet(&mut lwc_inst);
+	let mut language_inst   = lcss_language(stylesheet_inst);
+	let mut parser_inst     = lcss_parser(lexer_inst,language_inst);
+	@mut lcss {
+		lwc_instance:&lwc_inst,
 		lpu_instance:lpu(),
 		lcss_language:language_inst,
 		lcss_stylesheet:stylesheet_inst,
@@ -171,7 +171,7 @@ impl lcss {
 	        
 	        return CSTR_OF(string);
 	}*/
-	pub fn css__number_from_lwc_string(string:@lwc_string,
+	pub fn css__number_from_lwc_string(string:@mut lwc_string,
 			int_only:bool , consumed:@mut int)-> css_fixed
 	{
 		
@@ -366,19 +366,19 @@ impl lcss {
 
 // null function for initializing
 pub fn dummy_par_ev_hand(css_intance:@lcss, event_type:css_parser_event, 
-		tokens:~[~str] , pw:@css_language) -> css_result {
+		tokens:~[~str] , pw:&css_language) -> css_result {
 	CSS_GENERAL_OK
 }
 
 
 fn Stylesheet_event_handler(css_intance:@lcss, event_type:css_parser_event, 
-		tokens:~[~str] , pw:@css_language)-> css_result
+		tokens:~[~str] , pw:&css_language)-> css_result
 {
 	CSS_GENERAL_OK
 }
 
 pub type css_parser_event_handler =  @extern fn(css_intance:@lcss, event_type:css_parser_event, 
-		tokens:~[~str] , pw:@css_language) -> css_result;
+		tokens:~[~str] , pw:&css_language) -> css_result;
 
 pub fn css_parser_optparams_instance()->@css_parser_optparams
 {   let sheet = lcss_stylesheet(lwc());
@@ -1171,7 +1171,7 @@ pub fn lcss_lexer()->@lcss_lexer {
 pub fn lcss_high_level(/*sheet:@css_stylesheet*/)-> @css_high_level
 {
 	let lwc_instance= lwc();
-	@css_high_level
+	@mut css_high_level
 	{
 		base:@css_rule
 		{
@@ -1406,8 +1406,8 @@ pub fn CFRF(pw:~[u8],name:@lwc_string,  system_font:@css_system_font) -> css_res
 
 
 
-pub fn lcss_stylesheet(lwc_inst:@lwc)->@css_stylesheet {
-	@css_stylesheet{
+pub fn lcss_stylesheet(lwc_inst:&mut ~lwc)->@mut css_stylesheet {
+	@mut css_stylesheet{
 		                lwc_instance:lwc_inst,
 		                //parser_instance: parser_inst,
 		            	rule_count:0,			/*< Number of rules in sheet */
@@ -1950,7 +1950,7 @@ pub fn css__stylesheet_style_vappend(style:@css_style,  css_code:~[css_code_t])-
 // CSS-STYLESHEET implementation/data-structs ends here 
 // ===========================================================================================================
 
-pub fn lcss_language(sheet:@css_stylesheet)->@css_language {
+pub fn lcss_language(sheet:@mut css_stylesheet)->@css_language {
 	let empty_lwc_string = sheet.lwc_instance.lwc_intern_string(@"");
 	let stack:@vec<context_entry> = ~[]; 
 	
