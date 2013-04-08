@@ -14,7 +14,7 @@ use core::vec::raw::* ;
 pub struct parserutils_charset_aliases_canon {
 	mib_enum:u16,
 	name_len:u16,
-	name: @str
+	name: ~str
 }
 
 pub enum css_charset_source {
@@ -101,21 +101,23 @@ impl lpu {
 		}
 	}
 
-	pub fn parserutils__charset_alias_canonicalise(&mut self, alias: &~str) -> Option<parserutils_charset_aliases_canon> { 
-        match self.alias_map.find(alias) {
+	pub fn parserutils__charset_alias_canonicalise(&mut self, alias: ~str) -> Option<parserutils_charset_aliases_canon> { 
+        match self.alias_map.find(&alias) {
         	None => None,
         	Some(temp_mib_enum) => {
         		match self.mibenum_map.find(temp_mib_enum) {
         			None => None,
         			Some(canonical_name_list_index) => {
-        				if (canonical_name_list_index < &self.canonical_name_list.len()) {
-        					let temp_name = (self.canonical_name_list[*canonical_name_list_index]).to_managed();
+        				if (*canonical_name_list_index < self.canonical_name_list.len()) {
+        					
+        					let temp_name = copy (self.canonical_name_list[*canonical_name_list_index]);
+        					let temp_name_len = temp_name.len() as u16;
         					Some( parserutils_charset_aliases_canon {
-								        mib_enum : *temp_mib_enum,
-								        name : temp_name,
-								        name_len : temp_name.len() as u16
-			    					}
-        						)
+							        mib_enum: *temp_mib_enum,
+							        name: temp_name,
+							        name_len: temp_name_len
+			    				}
+        					)
         				}
         				else {
         					None
