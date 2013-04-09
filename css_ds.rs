@@ -2,11 +2,18 @@
 #[crate_type = "lib"];
 
 extern mod parserutils;
+extern mod parserutils_filter;
+extern mod parserutils_inputstream;
 extern mod wapcaplet;
+extern mod std;
+
+
 extern mod css_enum ;
 
 use wapcaplet::*;
-use parserutils::* ;
+use parserutils::*;
+use parserutils_filter::*;
+use parserutils_inputstream::*;
 use css_enum::* ;
 
 
@@ -115,7 +122,7 @@ struct CONTEXT{
 	} 
 struct css_lexer
 {
-	input:@parserutils_inputstream,	/**< Inputstream containing CSS */
+	input:@lpu_inputstream,	/**< Inputstream containing CSS */
 
 	bytesReadForToken:uint ,	/**< Total bytes read from the 
 					 * inputstream for the current token */

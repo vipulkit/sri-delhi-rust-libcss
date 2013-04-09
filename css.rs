@@ -5,19 +5,24 @@
 
 extern mod std;
 extern mod parserutils;
+extern mod parserutils_filter;
+extern mod parserutils_inputstream;
 extern mod wapcaplet;
 extern mod css_ds;
 extern mod css_enum ;
 
-use wapcaplet::*;
 use core::cast;
 use core::vec::* ; 
 use core::str::* ;
 use core::str::raw::* ;
 use core::vec::raw::* ;
-use parserutils::* ;
-use css_ds::*;
+
+use wapcaplet::*;
+use parserutils::*;
+use parserutils_filter::*;
+use parserutils_inputstream::*;
 use css_enum::* ;
+use css_ds::*;
 
 
 // ===========================================================================================================
