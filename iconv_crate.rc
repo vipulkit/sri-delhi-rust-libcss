@@ -5,11 +5,8 @@
 
 extern mod std;
 use core::str::* ;
-use core::vec::* ;
-use core::libc::{c_char, c_void, size_t};
+use core::libc::size_t;
 use core::libc::c_int ;
-use core::libc::types::common::c99::uint32_t;
-use core::libc::* ;
 
 pub struct  chunk_result {
     outbuf : ~[u8] ,

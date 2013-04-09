@@ -28,7 +28,6 @@ pub fn lpu_inputstream(int_enc: ~str) -> (Option<~lpu_inputstream> , parserutils
 		return (None,PARSERUTILS_BADPARAM) ;
 	}
 
-	let mut filter : Option<~parserutils_filter::lpu_filter> ;
 	let mut stream: ~lpu_inputstream ;
 	match parserutils_filter::lpu_filter(parserutils::lpu() , copy int_enc) {
 		(x,PARSERUTILS_OK) =>{

@@ -8,8 +8,7 @@ use core::io::Reader;
 use core::io::ReaderUtil;
 use core::hashmap::linear::LinearMap;
 use core::vec::*;
-use core::str::raw::* ;
-use core::vec::raw::* ;
+
 
 pub struct parserutils_charset_aliases_canon {
 	mib_enum:u16,
