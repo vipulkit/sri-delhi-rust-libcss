@@ -20,13 +20,16 @@ fn main()
 
 	retVal = parser.parserutils__charset_alias_canonicalise(~"csinvariant");
 
-	io::println(fmt!("%?", retVal));
-
 	match(copy retVal)
 	{
 		Some(x) => io::println(fmt!("name is %? and mib_enum is %?", x.name, x.mib_enum)),		
 		None	=>	io::println("FAIL - failed finding encoding 'csinvariant' ")
 	}
+
+
+    retVal = parser.parserutils__charset_alias_canonicalise(~"US-ASCII");
+	io::println(fmt!("\n[test_aliases] : [file=parserutils.rs] : [function=lpu::parserutils__charset_alias_canonicalise] %?", retval.get()==3));
+    io::printlf(fmt!("\n Test with values US-ASCII result is %? ",retval.get()));
 
 	retVal = parser.parserutils__charset_alias_canonicalise(~"csinvariant\"");
 	match(copy retVal)
