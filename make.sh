@@ -11,7 +11,6 @@ rustc -L . css_enum.rs
 rustc -L . css_ds.rs
 rustc -L . css.rs
 
-
-cd test
-./make_test.sh
-cd ..
+#cd test
+#./make_test.sh
+#cd ..
