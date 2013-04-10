@@ -77,13 +77,16 @@ pub fn safe_riconv (hnd : u64, inbuf : ~[u8] ) -> ~chunk_result  {
             let mut c_output : *u8 = iconv_wrapper::AllocateBuffer( c_outsize as int );
 
             let mut c_inargs = c_insize ;
+            
+            let mut initLength=c_insize;
             let mut c_ouargs = c_outsize ;
             //let mut c_inbuf = c_input ;
             let mut c_oubuf = c_output ;
 
             result.ret_val = iconv_wrapper::rust_iconv(hnd , &vec::raw::to_ptr(inbuf) /*c_input*/, &c_inargs  , &c_output , &c_ouargs , &err ) ;
             result.outbuf = vec::from_buf(c_oubuf,(c_outsize- c_ouargs)as uint); ;
-            result.len_processed=c_inargs ;
+            result.len_processed=c_insize-c_inargs ;
+           
             result.err_state=err ;
             //iconv_wrapper::DeallocateBuffer(c_inbuf);
             iconv_wrapper::DeallocateBuffer(c_oubuf);

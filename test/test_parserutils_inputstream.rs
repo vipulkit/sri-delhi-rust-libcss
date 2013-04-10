@@ -1,53 +1,51 @@
 extern mod std;
-
+extern mod parserutils_inputstream;
 extern mod parserutils ; 
 use parserutils::* ;
+use parserutils_inputstream::*;
  fn main()
 {
 let args : ~[~str] = os::args();
     io::println(args[1]);
-    let r:@Reader = io::file_reader(&Path(args[1])).get(); // r is result<reader, err_str>
-    
-    // r.read_line(); // skip line
+    let r:@Reader = io::file_reader(&Path(args[1])).get(); 
+    let reader = io::stdin();
 
-
-    let mut parser : @mut lpu = lpu();
-	//let mut asc: parserutils_inputstream_private_ptr;
-	let pRslt= parser.parserutils_inputstream_create(~"ASCII",1);
-	let mut stream:parserutils_inputstream;
-	match(pRslt)
+    let (inputStreamOption, ParserUtilsError)= lpu_inputstream(~"UTF-16");
+	match(ParserUtilsError)
 	{
-		PARSERUTILS_INPUTSTREAM_CREATE_OK(temp)=>
-		{ 
-			// let mut data:@[u8]= @[10,10,10,10,10,10,10,10,10,10,10];
-			// let mut dta2:@[u8]= @[10,10,10,10,10,10,10];
-			stream = temp;
-			let reader = io::stdin();
-			let mut (ptr,length):(~[u8],uint)= (~[],0) ;
+		PARSERUTILS_OK=>{
+			io::println("test name:test_parserUtils_inputStream>>file name:parserutils_input stream>> functn name>> lpu_inputstream");
+			io::println("Pass");
+			let mut stream:~lpu_inputstream = inputStreamOption.get();
+			
+			
+			//let mut (ptr,length):(~[u8],uint)= (~[],0) ;
 			while !r.eof() {
-     			let line:&str=r.read_line();
-     			let data:~[u8]= line.to_bytes();
-         		io::println(line);
+				io::println("line");
+     			//let line:&str=r.read_bytes();
+     			let data:~[u8]= r.read_bytes(100);
+         		//io::println(line);
+         		io::println("line");
          		io::println(fmt!("%?",data));
          		reader.read_byte();
-         		lpu::parserutils_inputstream_append(&mut stream,data);
+         		stream.parserutils_inputstream_append(data);
          		//parser.print_inputstream(&mut stream);
          		io::println("Pass");
          		loop{
-         			match(parser.parserutils_inputstream_peek(&mut stream,0))
+         			let (tuple,parserutilsError)=stream.parserutils_inputstream_peek(2);
+         			match(parserutilsError)
 					{
-						PARSERUTILS_PEEK_OK(x,y)=>{
-							ptr=x;
-							length=y;
-							parser.parserutils_inputstream_advance(& mut stream, length);
+						PARSERUTILS_OK=>{
+							let mut(ptr,length)= tuple.get();
+							stream.parserutils_inputstream_advance( length);
 							io::println(fmt!("peek data->%?,%?",ptr,length));
 							io::println("sandeep");
 						},
 						PARSERUTILS_NEEDDATA =>{break;}
 						PARSERUTILS_EOF=>{break;}
-						_=>{io::println("invalid");}
+						_=>{io::println("invalid");break;}
 					}
-					parser.print_inputstream(&mut stream);
+					//parser.print_inputstream(&mut stream);
 					
 					
 					reader.read_byte();
