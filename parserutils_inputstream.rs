@@ -6,8 +6,6 @@ extern mod parserutils_filter;
 extern mod std;
 extern mod riconv;
 use core::vec::*;
-use core::str::raw::* ;
-use core::vec::raw::* ;
 use parserutils::*;
 use parserutils_filter::*;
 
@@ -281,7 +279,7 @@ impl lpu_inputstream {
 		self.cursor = 0;
 
 		 // Try to fill utf8 buffer from the raw data
-		let mut processedLen = 0;
+		let mut processedLen:uint;
 		match(self.input.parserutils__filter_process_chunk(copy self.raw)) { //TODO :: remove copy
 			(processed_chunk , PARSERUTILS_OK) => {
 				self.utf8 += processed_chunk.outbuf;
@@ -348,7 +346,7 @@ impl lpu_inputstream {
  
     pub fn parserutils_inputstream_peek(&mut self, offset: uint)-> (Option<(~[u8],uint)>,parserutils_error) {
 		
-		let mut ptr:~[u8]= ~[];
+		let mut ptr:~[u8];
 		let mut len :uint;
 		
 		if self.cursor + offset < self.utf8.len() {

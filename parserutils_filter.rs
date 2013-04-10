@@ -117,7 +117,7 @@ impl lpu_filter {
 		if iconv_result.len_processed==0 {
 			if iconv_result.err_state==1 {
 				status = PARSERUTILS_NOMEM;
-			}
+			} else
 			if iconv_result.err_state==2 {
 				status = PARSERUTILS_BADPARAM;
 			}
