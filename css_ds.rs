@@ -12,7 +12,6 @@ extern mod css_enum ;
 
 use wapcaplet::*;
 use parserutils::*;
-use parserutils_filter::*;
 use parserutils_inputstream::*;
 use css_enum::* ;
 
