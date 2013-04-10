@@ -101,8 +101,7 @@ impl lpu_filter {
 
 	pub fn parserutils__filter_reset(&mut self ) -> parserutils_error {
 		if riconv::riconv_initialized(self.iconv_h) {
-			riconv::safe_riconv_close(self.iconv_h);
-			self.iconv_h=riconv::riconv_initialize();
+			riconv::safe_riconv(self.iconv_h, ~[]);
 			return PARSERUTILS_OK;
 		}
 		else {
@@ -139,7 +138,7 @@ pub fn lpu_filter(mut existing_lpu_instance: arc::ARC<~lpu> , int_enc: ~str) -> 
 		int_enc: arc::get(&existing_lpu_instance).parserutils_charset_mibenum_from_name(int_enc),               // The internal encoding
 		encoding : 0,
 		iconv_h : riconv::riconv_initialize(),
-		lpu_instance : existing_lpu_instance
+		lpu_instance : existing_lpu_instance.clone()
 	};
 	match filter.filter_set_encoding(~"UTF-8") {
 		PARSERUTILS_OK => {
