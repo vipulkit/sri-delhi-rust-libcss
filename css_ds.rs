@@ -17,25 +17,6 @@ use css_enum::* ;
 
 
 // =======================================================
-// Enum
-// =======================================================
-
-
-// errors.h 
-pub enum css_result {
-		CSS_OK  ,
-		CSS_NOMEM,
-		CSS_BADPARM,
-		CSS_INVALID,
-		CSS_FILENOTFOUND,
-		CSS_NEEDDATA,
-		CSS_BADCHARSET,
-		CSS_EOF,
-		CSS_IMPORTS_PENDING,
-		CSS_PROPERTY_NOT_SET,
-}
-
-// =======================================================
 // Structs 
 // =======================================================
 
@@ -203,17 +184,7 @@ pub struct context_entry {
 	data:@css_rule		/*< Data for context */
 } 
 
-pub struct lcss {
-	lwc_instance:@lwc,
-	lpu_instance:@mut lpu,
-	lcss_language:~css_language,
-	lcss_stylesheet:@mut css_stylesheet,
-	lcss_parser:@lcss_parser,
-	lcss_lexer:@lcss_lexer
-	// mut propstrings_call_count:uint,
-	// mut propstrings_list:@[@str],
-	// mut propstrings:~[@lwc_string]
-}
+
 
 
 /*
@@ -242,51 +213,12 @@ pub struct parser_state
 	substate : u16 
 }
 
-/*
- * Css parser main strcuture
-*/
 
-pub struct lcss_parser {
-
-	//stream:@parserutils_inputstream,	/* < The inputstream */
-	//lexer:@css_lexer,		/* < The lexer to use */
-
-	// quirks:bool	/* < Whether to enable parsing quirks */
-
-// #define STACK_CHUNK 32
-    //STACK_CHUNK: uint,
-	// states:DVec<u8>,	/* < Stack of states */
-
-	//tokens:~[u8],	/* < Vector of pending tokens */
-
-	//pushback:@css_token,	/* < Push back buffer */
-
-	//parseError:bool,		/* < A parse error has occurred */
-	//open_items:DVec<u8>,	/* < Stack of open brackets */
-
-	//match_char:u8,		/* < Close bracket type for parseAny */
-
-	//last_was_ws:bool,		/* < Last token was whitespace */
-
-	//css_allocator_fn alloc;		/* < Memory (de)allocation function */
-	//void *pw;			/**< Client-specific private data */
-	// event:@css_parser_event_handler,	/* < Client's event handler */
-	 event_pw:@css_language,		/* < Client data for event handler */
-	 quirks:bool,
-	lcss_lexer_instance:@lcss_lexer,
-	lparserutils_instance:@lpu
-}
 
 pub struct ParseError {
     message: ~str,
 }
 
-pub struct lcss_lexer {
-    priv transform_function_whitespace: bool,
-    priv input: ~[u8],
-    priv length: uint, // Counted in bytes, not characters
-    priv  position: uint, // Counted in bytes, not characters
-}
 
 pub struct css_high_level
 {
@@ -468,7 +400,7 @@ pub struct css_stylesheet {
 	 title:~str,			/**< Title of this sheet */
 
 	 level:css_language_level ,		/**< Language level of sheet */
-	 parser:Option<@lcss_parser>,			/**< Core parser for sheet */
+	// parser:Option<@lcss_parser>,			/**< Core parser for sheet */
 	 parser_frontend:Option<@css_language>,			/**< Frontend parser */////////look for type
 	//propstrings:@ mut[@lwc_string ],		/**< Property strings, for parser */
 

@@ -1,6 +1,23 @@
 #[link(name = "css_enum", vers = "0.1")];
 #[crate_type = "lib"];
 
+
+
+// errors.h 
+pub enum css_result {
+		CSS_OK  ,
+		CSS_NOMEM,
+		CSS_BADPARM,
+		CSS_INVALID,
+		CSS_FILENOTFOUND,
+		CSS_NEEDDATA,
+		CSS_BADCHARSET,
+		CSS_EOF,
+		CSS_IMPORTS_PENDING,
+		CSS_PROPERTY_NOT_SET,
+}
+
+
 /**
  * Source of charset information, in order of importance.
  * A client-dictated charset will override all others.
