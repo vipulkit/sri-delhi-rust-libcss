@@ -13,7 +13,7 @@ fn sss(data: ~[u8], smibenum:~u16, source:~u32) -> parserutils_error
 
 fn main() {
 	
-	let (inputStreamOption, ParserUtilsError)= lpu_inputstream(~"ASCII");
+	let (inputStreamOption, ParserUtilsError)= lpu_inputstream(~"ASCII" , None);
 	match(ParserUtilsError)
 	{
 		PARSERUTILS_OK=>{

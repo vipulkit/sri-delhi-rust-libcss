@@ -9,14 +9,14 @@ use parserutils_filter::*;
 fn main()
 {				
 	let mut parser = lpu();
-	let (filterInstance, filterResult) : (Option<~lpu_filter> , parserutils_filter_result) = lpu_filter(parser, ~"UTF-8");
+	let (filterInstance, filterResult) : (Option<~lpu_filter> , parserutils_error) = lpu_filter(parser, ~"UTF-8");
 	
 	match(filterResult)
 	{
-		PARSERUTILS_FILTER_CREATE_OK   => {
+		PARSERUTILS_OK   => {
 											io::println("Pass:  Filter created");
 											}
-		_                              => {
+									_  => {
 											io::println("Fail : Filter not created");
 											}
 	}

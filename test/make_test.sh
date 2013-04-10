@@ -19,7 +19,7 @@ rustc -L ./.. test_wapcaplet.rs
 ./test_riconv
 ./test_parserutils 
 ./test_parserutils_filter 
-./test_parserutils_inputstream 
+./test_parserutils_inputstream ./utf16.txt 
 
  
 

@@ -10,7 +10,7 @@ let args : ~[~str] = os::args();
     let r:@Reader = io::file_reader(&Path(args[1])).get(); 
     let reader = io::stdin();
 
-    let (inputStreamOption, ParserUtilsError)= lpu_inputstream(~"UTF-16");
+    let (inputStreamOption, ParserUtilsError)= lpu_inputstream(~"UTF-16",None);
 	match(ParserUtilsError)
 	{
 		PARSERUTILS_OK=>{
