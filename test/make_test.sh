@@ -5,6 +5,7 @@ rm -rf *.so *.o test_aliases test_parserutils_filter test_parserutils_inputstrea
 
 # make test executables
 export LD_LIBRARY_PATH=.:./..:$LD_LIBRARY_PATH
+rustc test.rc
 rustc -L ./.. test_aliases.rs
 rustc -L ./.. test_parserutils_filter.rs
 rustc -L ./.. test_parserutils_inputstream.rs
