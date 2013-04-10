@@ -3,25 +3,15 @@
 
 extern mod std;
 extern mod riconv;
-//extern mod parserutils_filter;
 use core::io::Reader;
 use core::io::ReaderUtil;
 use core::hashmap::linear::LinearMap;
 use core::vec::*;
 
-
 pub struct parserutils_charset_aliases_canon {
 	mib_enum:u16,
 	name_len:u16,
 	name: ~str
-}
-
-pub enum css_charset_source {
-	CSS_CHARSET_DEFAULT,
-	CSS_CHARSET_REFERRED,
-	CSS_CHARSET_METADATA,
-	CSS_CHARSET_DOCUMENT,
-	CSS_CHARSET_DICTATED
 }
 
 pub enum parserutils_error {
