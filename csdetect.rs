@@ -333,13 +333,13 @@ pub enum css_charset_source {
 		try_ascii_compatible_charset(data, lpu_arc.clone())
 	}
 
-	pub fn css__charset_extract(data : &~[u8] ,	mibenum : ~u16 , source : css_charset_source, lpu_arc: arc::ARC<~lpu>)
+	pub fn css__charset_extract(data : &~[u8] ,	mibenum : u16 , source : css_charset_source, lpu_arc: arc::ARC<~lpu>)
 		-> (Option<u16>, Option<css_charset_source>, parserutils_error) {
 
 		let mut charset : u16 = 0;
 		let mut src :css_charset_source;
 
-		if (data.len()==(0 as uint))  || mibenum==~(0 as u16){
+		if (data.len()==(0 as uint))  || mibenum==(0 as u16){
 			return (None ,None, PARSERUTILS_BADPARAM);
 		}
 
@@ -351,7 +351,7 @@ pub enum css_charset_source {
 		// If the charset was dictated by the client, we've nothing to detect 
 		match (source)  {
 			CSS_CHARSET_DICTATED => {
-				charset=*mibenum ;
+				charset=mibenum ;
 				return (Some(charset), Some(source), PARSERUTILS_OK);
 			}
 			_ => {}

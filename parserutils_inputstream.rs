@@ -13,7 +13,7 @@ use std::arc;
 use csdetect::*;
 
 pub type  parserutils_charset_detect_func =  ~extern fn(
- 		data: ~[u8], mibenum:u16, source:int, lpu_arc:arc::ARC<~lpu>) -> parserutils::parserutils_error;
+ 		data: &~[u8], mibenum:u16, source:int, lpu_arc:arc::ARC<~lpu>) -> parserutils::parserutils_error;
 
 pub struct lpu_inputstream {
 	utf8: ~[u8],		// Buffer containing UTF-8 data 
@@ -22,7 +22,7 @@ pub struct lpu_inputstream {
 	raw: ~[u8],			// Buffer containing raw data 
 	done_first_chunk: bool,		// Whether the first chunk has been processed 
 	mibenum: u16,		// MIB enum for charset, or 0
-	encsrc: uint,		// Charset source
+	encsrc: int,		// Charset source
 	input: ~lpu_filter, // Charset conversion filter
 	csdetect_instance: Option<parserutils_charset_detect_func>
 }
@@ -96,12 +96,12 @@ impl lpu_inputstream {
         PARSERUTILS_OK
 	}
 
-	pub fn parserutils_inputstream_read_charset(&mut self)-> (Option<~str>,uint) {
+	pub fn parserutils_inputstream_read_charset(&mut self)-> (Option<~str>,int) {
 		
 		(arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_to_name(self.mibenum),self.encsrc)
 	}
 
-	pub fn parserutils_inputstream_change_charset(&mut self, enc:~str, source:uint)-> parserutils_error {
+	pub fn parserutils_inputstream_change_charset(&mut self, enc:~str, source:int)-> parserutils_error {
 
     	if enc.len() == 0 {
     		return PARSERUTILS_BADPARAM;
@@ -248,7 +248,7 @@ impl lpu_inputstream {
 
 			match(self.csdetect_instance) {
 				Some(copy f) => {
-					let error: parserutils_error = (*f)(~[], 0, 0, self.input.lpu_instance.clone());
+					let error: parserutils_error = (*f)(&self.raw, self.mibenum, self.encsrc, self.input.lpu_instance.clone());
 
 					match error {
 						PARSERUTILS_OK => {},
