@@ -1,12 +1,6 @@
 #[link(name = "css_enum", vers = "0.1")];
 #[crate_type = "lib"];
 
-extern mod parserutils;
-extern mod wapcaplet;
-
-use wapcaplet::*;
-use parserutils::* ;
-
 /**
  * Source of charset information, in order of importance.
  * A client-dictated charset will override all others.
