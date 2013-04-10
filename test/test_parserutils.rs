@@ -28,7 +28,7 @@ fn main() {
             io::println(fmt!("%?,%?",charsetStringOption.get(),charsetSource));
             io::println("test name:test_parserUtils>>file name:parserutils_input stream>> functn name>> parserutils_inputstream_read_charset");
 			io::println("Pass if valid values in above line");
-			match(stream.parserutils_inputstream_change_charset(~"ISO-10646-UTF-1", 0))
+			match(stream.parserutils_inputstream_change_charset(~"UTF-16", 0))
 			{
 				PARSERUTILS_OK=>{
 					io::println("test name:test_parserUtils>>file name:parserutils_input stream>> functn name>> parserutils_inputstream_change_charset");
