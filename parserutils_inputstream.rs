@@ -8,6 +8,7 @@ extern mod riconv;
 use core::vec::*;
 use parserutils::*;
 use parserutils_filter::*;
+use std::arc;
 
 pub type  parserutils_charset_detect_func =  @extern fn(
 		data: ~[u8], mibenum:u16, source:u32) -> parserutils::parserutils_error;
@@ -33,14 +34,14 @@ pub fn lpu_inputstream(int_enc: ~str, csdetect: Option<parserutils_charset_detec
 	let mut stream: ~lpu_inputstream ;
 	match parserutils_filter::lpu_filter(parserutils::lpu() , copy int_enc) {
 		(x,PARSERUTILS_OK) =>{
-			let mut lpu_filter_instance = x.get(); 
+			let mut lpu_filter_instance = x.unwrap(); 
 			stream = ~lpu_inputstream{
 				utf8: ~[],
 				cursor: 0,
 				had_eof: false,
 				raw: ~[],
 				done_first_chunk: false,
-				mibenum: lpu_filter_instance.lpu_instance.parserutils_charset_mibenum_from_name(copy int_enc),
+				mibenum: arc::get(&lpu_filter_instance.lpu_instance).parserutils_charset_mibenum_from_name(copy int_enc),
 				encsrc: 0,
 				input: lpu_filter_instance,
 				csdetect: csdetect
@@ -95,7 +96,7 @@ impl lpu_inputstream {
 
 	pub fn parserutils_inputstream_read_charset(&mut self)-> (Option<~str>,uint) {
 		
-		(self.input.lpu_instance.parserutils_charset_mibenum_to_name(self.mibenum),self.encsrc)
+		(arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_to_name(self.mibenum),self.encsrc)
 	}
 
 	pub fn parserutils_inputstream_change_charset(&mut self, enc:~str, source:uint)-> parserutils_error {
@@ -108,7 +109,7 @@ impl lpu_inputstream {
 			return PARSERUTILS_INVALID;
 		}
         
-		self.mibenum  = self.input.lpu_instance.parserutils_charset_mibenum_from_name(copy enc);
+		self.mibenum  = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_from_name(copy enc);
 		if self.mibenum==0 {
 			return PARSERUTILS_BADPARAM;
 		}
@@ -132,13 +133,13 @@ impl lpu_inputstream {
 		let UTF16_BOM_LEN =2;
 		let UTF8_BOM_LEN  =3;
 
-		let totype : Option<~str> = self.input.lpu_instance.parserutils_charset_mibenum_to_name(self.mibenum);
+		let totype : Option<~str> = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_to_name(self.mibenum);
 
 		if totype.is_none()  {
 			return PARSERUTILS_BADPARAM;
 		}
 
-		let result: ~str= totype.get();
+		let result: ~str= totype.unwrap();
 		match(result) {
 			~"UTF-8" => {
 				if (self.raw.len() >= UTF8_BOM_LEN) && self.raw[0] == 0xEF && self.raw[1] == 0xBB && self.raw[2] == 0xBF {
@@ -147,7 +148,7 @@ impl lpu_inputstream {
 				} 
 			},
 			~"UTF-16" => {
-				self.mibenum  = self.input.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16BE");
+				self.mibenum  = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16BE");
 				
 				if self.mibenum==0 {
 					return PARSERUTILS_BADPARAM;
@@ -159,7 +160,7 @@ impl lpu_inputstream {
 						return PARSERUTILS_OK;
 					}
 					else if self.raw[0] == 0xFF && self.raw[1] == 0xFE {
-						self.mibenum  = self.input.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16LE");
+						self.mibenum  = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16LE");
 						if self.mibenum == 0 {
 							return PARSERUTILS_BADPARAM;
 						}
@@ -182,7 +183,7 @@ impl lpu_inputstream {
 				}
 			},
 			~"UTF-32" => {
-				self.mibenum  = self.input.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32BE");
+				self.mibenum  = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32BE");
 				if self.mibenum==0 {
 					return PARSERUTILS_BADPARAM;
 				}
@@ -193,7 +194,7 @@ impl lpu_inputstream {
 						return PARSERUTILS_OK;
 					}
 					else if self.raw[0] == 0xFF && self.raw[1] == 0xFE && self.raw[2] == 0x00 && self.raw[3] == 0x00 {
-						self.mibenum  = self.input.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32LE");
+						self.mibenum  = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32LE");
 						if self.mibenum==0 {
 							return PARSERUTILS_BADPARAM;
 						}
@@ -244,7 +245,7 @@ impl lpu_inputstream {
 		if (self.done_first_chunk == false) {
 
 			if (!self.csdetect.is_none()) {
-				let error: parserutils_error = (*self.csdetect.get())(~[], 0, 0);
+				let error: parserutils_error = (*self.csdetect.unwrap())(~[], 0, 0);
 
 				match error {
 					PARSERUTILS_OK => {},
@@ -259,7 +260,7 @@ impl lpu_inputstream {
 				}
 			}	
 			if (self.mibenum == 0) {
-				self.mibenum = self.input.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-8");
+				self.mibenum = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-8");
 				if self.mibenum == 0 {
 					return PARSERUTILS_BADPARAM;
 				}
@@ -275,7 +276,7 @@ impl lpu_inputstream {
 				} 
 			}
 
-            match self.input.lpu_instance.parserutils_charset_mibenum_to_name(self.mibenum) {
+            match arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_to_name(self.mibenum) {
             	None => { 
             		return PARSERUTILS_BADENCODING
             		},

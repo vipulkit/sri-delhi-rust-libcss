@@ -5,13 +5,8 @@ extern mod std;
 extern mod riconv;
 extern mod parserutils;
 
-use core::io::Reader;
-use core::io::ReaderUtil;
-use core::hashmap::linear::LinearMap;
-use core::vec::*;
-use core::str::raw::*;
-use core::vec::raw::*;
 use parserutils::*;
+use std::arc;
 
 pub enum css_charset_source {
 	CSS_CHARSET_DEFAULT,
@@ -22,7 +17,7 @@ pub enum css_charset_source {
 }
 
 pub struct csdetect {
-	lpu_instance: ~lpu
+	lpu_instance: arc::ARC<~lpu>
 }
 
 impl csdetect {
@@ -84,7 +79,7 @@ impl csdetect {
 			if (buffMemory.len() ==(str::len(~"UTF-32LE")) && memcmp(&buffMemory, UTF32LE, buffMemory.len()) == 0) ||
 				(buffMemory.len() == (str::len(~"UTF-32")) && memcmp(&buffMemory, UTF32, buffMemory.len()) == 0) {
 
-					charset = self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32LE");
+					charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32LE");
 			}
 		}
 		
@@ -131,7 +126,7 @@ impl csdetect {
 			if (buffMemory.len() ==(str::len(~"UTF-32BE")) && memcmp(&buffMemory, UTF32BE, buffMemory.len()) == 0) ||
 				(buffMemory.len() == (str::len(~"UTF-32")) && memcmp(&buffMemory, UTF32, buffMemory.len()) == 0) {
 
-					charset = self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32BE");
+					charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32BE");
 			}
 		}// else if terminates
 		(Some(charset) , PARSERUTILS_OK)
@@ -195,7 +190,7 @@ impl csdetect {
 			if (buffMemory.len() ==(str::len(~"UTF-16LE")) && memcmp(&buffMemory, UTF16LE, buffMemory.len()) == 0) ||
 				(buffMemory.len() == (str::len(~"UTF-16")) && memcmp(&buffMemory, UTF16, buffMemory.len()) == 0) {
 
-					charset = self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16LE");
+					charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16LE");
 			}
 		}
 
@@ -245,7 +240,7 @@ impl csdetect {
 			if (buffMemory.len() ==(str::len(~"UTF-16BE")) && memcmp(&buffMemory, UTF16BE, buffMemory.len()) == 0) ||
 				(buffMemory.len() == (str::len(~"UTF-16")) && memcmp(&buffMemory, UTF16, buffMemory.len()) == 0) {
 
-					charset = self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16BE");
+					charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16BE");
 			}
 		}// else if terminates
 		(Some(charset) , PARSERUTILS_OK)
@@ -283,13 +278,13 @@ impl csdetect {
 			}
 			// Convert to MIB enum 
 
-			charset = self.lpu_instance.parserutils_charset_mibenum_from_name(str::from_bytes(data.slice(CHARSET.len(), data.len()-1)));
+			charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(str::from_bytes(data.slice(CHARSET.len(), data.len()-1)));
 
 			// Any non-ASCII compatible charset must be ignored, as
 			// we've just used an ASCII parser to read it. 
-			if (charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
-				charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16") ||
-				charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
+			if (charset == arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
+				charset == arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16") ||
+				charset == arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
 			{
 				charset = 0;
 			}
@@ -311,16 +306,16 @@ impl csdetect {
 		// Look for BOM 
 		if (data[0] == 0x00 && data[1] == 0x00 && 
 				data[2] == 0xFE && data[3] == 0xFF) {
-			charset = self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32BE");
+			charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32BE");
 		} else if (data[0] == 0xFF && data[1] == 0xFE &&
 				data[2] == 0x00 && data[3] == 0x00) {
-			charset = self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-32LE");
+			charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32LE");
 		} else if (data[0] == 0xFE && data[1] == 0xFF) {
-			charset = self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16BE");
+			charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16BE");
 		} else if (data[0] == 0xFF && data[1] == 0xFE) {
-			charset = self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-16LE");
+			charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16LE");
 		} else if (data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF) {
-			charset = self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-8");
+			charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-8");
 		}
 
 		if (charset!=0) {
@@ -389,7 +384,7 @@ impl csdetect {
 			}
 		}
 		// We've not yet found a charset, so use the default fallback 
-		charset = self.lpu_instance.parserutils_charset_mibenum_from_name(~"UTF-8");
+		charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-8");
 
 		if charset==0 {
 			return (None, None, PARSERUTILS_BADENCODING) ;

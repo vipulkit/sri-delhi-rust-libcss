@@ -7,6 +7,7 @@ use core::io::Reader;
 use core::io::ReaderUtil;
 use core::hashmap::linear::LinearMap;
 use core::vec::*;
+use std::arc;
 
 pub struct parserutils_charset_aliases_canon {
 	mib_enum:u16,
@@ -48,7 +49,7 @@ pub fn memcmp(str1 : &~[u8] , str2 : &[u8] , len : uint ) -> int {
 impl lpu {
 
 	fn read_aliases(&mut self) {
-		let aliases_file_reader: @Reader = (&io::file_reader(&Path(&"Aliases"))).get();
+		let aliases_file_reader: @Reader = (&io::file_reader(&Path(&"Aliases"))).unwrap();
 
 		let mut line_number=1;
 
@@ -63,7 +64,7 @@ impl lpu {
 				// first column is canonical name
 				let canonical_name = copy alias_entry_columns[0];
 				// second column is mibenum
-				let mibenum = u16::from_str(alias_entry_columns[1]).get();
+				let mibenum = u16::from_str(alias_entry_columns[1]).unwrap();
 				
 				// add the canonical name to the list of canonical names
 				self.canonical_name_list.push(copy canonical_name);
@@ -89,7 +90,7 @@ impl lpu {
 		}
 	}
 
-	pub fn parserutils__charset_alias_canonicalise(&mut self, alias: ~str) -> Option<parserutils_charset_aliases_canon> { 
+	pub fn parserutils__charset_alias_canonicalise(&self, alias: ~str) -> Option<parserutils_charset_aliases_canon> { 
         match self.alias_map.find(&alias) {
         	None => None,
         	Some(temp_mib_enum) => {
@@ -116,14 +117,14 @@ impl lpu {
         }
 	}
 
-	pub fn parserutils_charset_mibenum_from_name(&mut self, alias: ~str) -> u16 {
+	pub fn parserutils_charset_mibenum_from_name(&self, alias: ~str) -> u16 {
         match self.alias_map.find(&alias) {
         	None => 0 ,
         	Some(mib_enum) => *mib_enum
         }
 	}
 
-	pub fn parserutils_charset_mibenum_to_name(&mut self, mibenum: u16)-> Option<~str> {
+	pub fn parserutils_charset_mibenum_to_name(&self, mibenum: u16)-> Option<~str> {
 		match self.mibenum_map.find(&(mibenum)) {
 			None => None,
 			Some (canonical_name_list_index) => {
@@ -138,7 +139,7 @@ impl lpu {
 	}
 } //impl lpu
 
-pub fn lpu() -> ~ lpu {
+pub fn lpu() -> arc::ARC<~lpu> {
 	let mut new_lpu = ~lpu {
 		canonical_name_list : ~[],
 		mut mibenum_map : ~LinearMap::new(),
@@ -146,5 +147,5 @@ pub fn lpu() -> ~ lpu {
 	};
 
 	new_lpu.read_aliases();
-	new_lpu
+	arc::ARC(new_lpu)
 }

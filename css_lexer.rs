@@ -322,7 +322,7 @@ impl lcss_lexer {
     }
 
     fn char_from_hex(&self ,hex: &[char]) -> char {
-        uint::from_str_radix(str::from_chars(hex), 16).get() as char
+        uint::from_str_radix(str::from_chars(hex), 16).unwrap() as char
     }
 
     fn consume_escape(&mut self) -> char {
@@ -550,7 +550,7 @@ impl lcss_lexer {
         let value = Integer(int::from_str(temp
             // Remove any + sign as int::from_str() does not parse them.
 
-        ).get()); // XXX handle overflow
+        ).unwrap()); // XXX handle overflow
         self.consume_numeric_end(string, value)
     }
 
@@ -566,7 +566,7 @@ impl lcss_lexer {
                 }
             }
         }
-        let value = Float(float::from_str(string).get()); // XXX handle overflow
+        let value = Float(float::from_str(string).unwrap()); // XXX handle overflow
         self.consume_numeric_end(string, value)
     }
 
@@ -613,7 +613,7 @@ impl lcss_lexer {
         while !self.is_eof() && is_match!(self.current_char(), '0'..'9') {
             push_char!(string,self.consume_char())
         }
-        let value = Float(float::from_str(string).get());
+        let value = Float(float::from_str(string).unwrap());
         Ok(Number(value, string))
     }
 

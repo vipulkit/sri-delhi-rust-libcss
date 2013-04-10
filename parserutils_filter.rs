@@ -6,12 +6,13 @@ extern mod std;
 extern mod riconv;
 
 use parserutils::*;
+use std::arc;
 
 pub struct lpu_filter {
 	int_enc: u16,               // The internal encoding
 	encoding : u16,
 	iconv_h : u64,
-	lpu_instance: ~lpu
+	lpu_instance: arc::ARC<~lpu>
 }
 
 impl lpu_filter {
@@ -22,7 +23,7 @@ impl lpu_filter {
 			return PARSERUTILS_BADPARAM;
 		}
 
-		let mibenum_search_result  = self.lpu_instance.parserutils_charset_mibenum_from_name(enc);
+		let mibenum_search_result  = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(enc);
 		if mibenum_search_result==0 {
 			return PARSERUTILS_BADPARAM;
 		}
@@ -38,13 +39,13 @@ impl lpu_filter {
 			self.iconv_h=riconv::riconv_initialize();
 		}
 
-		let totype: Option<~str> = self.lpu_instance.parserutils_charset_mibenum_to_name(self.int_enc) ;
-		let fromtype: Option<~str> = self.lpu_instance.parserutils_charset_mibenum_to_name(mibenum) ;
+		let totype: Option<~str> = arc::get(&self.lpu_instance).parserutils_charset_mibenum_to_name(self.int_enc) ;
+		let fromtype: Option<~str> = arc::get(&self.lpu_instance).parserutils_charset_mibenum_to_name(mibenum) ;
 		if totype.is_none() || fromtype.is_none() {
 			return PARSERUTILS_BADPARAM;
 		}
 
-		self.iconv_h = riconv::safe_riconv_open(totype.get(),fromtype.get());
+		self.iconv_h = riconv::safe_riconv_open(totype.unwrap(),fromtype.unwrap());
 		if (!riconv::riconv_initialized(self.iconv_h)) {
 
 			return PARSERUTILS_BADENCODING;
@@ -132,10 +133,10 @@ impl lpu_filter {
 	}
 }
 
-pub fn lpu_filter(mut existing_lpu_instance: ~lpu , int_enc: ~str) -> (Option<~lpu_filter> , parserutils_error) {
+pub fn lpu_filter(mut existing_lpu_instance: arc::ARC<~lpu> , int_enc: ~str) -> (Option<~lpu_filter> , parserutils_error) {
 
 	let mut filter = ~lpu_filter{
-		int_enc: existing_lpu_instance.parserutils_charset_mibenum_from_name(int_enc),               // The internal encoding
+		int_enc: arc::get(&existing_lpu_instance).parserutils_charset_mibenum_from_name(int_enc),               // The internal encoding
 		encoding : 0,
 		iconv_h : riconv::riconv_initialize(),
 		lpu_instance : existing_lpu_instance
