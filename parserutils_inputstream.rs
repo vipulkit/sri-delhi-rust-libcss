@@ -5,13 +5,15 @@ extern mod parserutils;
 extern mod parserutils_filter;
 extern mod std;
 extern mod riconv;
+extern mod csdetect;
 use core::vec::*;
 use parserutils::*;
 use parserutils_filter::*;
 use std::arc;
+use csdetect::*;
 
-pub type  parserutils_charset_detect_func =  @extern fn(
-		data: ~[u8], mibenum:u16, source:u32) -> parserutils::parserutils_error;
+pub type  parserutils_charset_detect_func =  ~extern fn(
+ 		data: &~[u8], mibenum:u16, source:int, lpu_arc:arc::ARC<~lpu>) -> parserutils::parserutils_error;
 
 pub struct lpu_inputstream {
 	utf8: ~[u8],		// Buffer containing UTF-8 data 
@@ -20,12 +22,12 @@ pub struct lpu_inputstream {
 	raw: ~[u8],			// Buffer containing raw data 
 	done_first_chunk: bool,		// Whether the first chunk has been processed 
 	mibenum: u16,		// MIB enum for charset, or 0
-	encsrc: uint,		// Charset source
+	encsrc: int,		// Charset source
 	input: ~lpu_filter, // Charset conversion filter
-	csdetect: Option<parserutils_charset_detect_func>		
+	csdetect_instance: Option<parserutils_charset_detect_func>
 }
 
-pub fn lpu_inputstream(int_enc: ~str, csdetect: Option<parserutils_charset_detect_func>) -> (Option<~lpu_inputstream> , parserutils_error) {
+pub fn lpu_inputstream(int_enc: ~str, csdetect_instance: Option<parserutils_charset_detect_func>) -> (Option<~lpu_inputstream> , parserutils_error) {
 
 	if int_enc.len()==0 {
 		return (None,PARSERUTILS_BADPARAM) ;
@@ -44,7 +46,7 @@ pub fn lpu_inputstream(int_enc: ~str, csdetect: Option<parserutils_charset_detec
 				mibenum: arc::get(&lpu_filter_instance.lpu_instance).parserutils_charset_mibenum_from_name(copy int_enc),
 				encsrc: 0,
 				input: lpu_filter_instance,
-				csdetect: csdetect
+				csdetect_instance: csdetect_instance
 			};
 		},
 		
@@ -68,7 +70,7 @@ impl lpu_inputstream {
 	 	self.done_first_chunk = false ;
 	 	self.mibenum = 0 ;
 	 	self.encsrc = 0 ;
-	 	self.csdetect = None;
+	 	self.csdetect_instance = None;
 	 	PARSERUTILS_OK
 	}
 
@@ -94,12 +96,12 @@ impl lpu_inputstream {
         PARSERUTILS_OK
 	}
 
-	pub fn parserutils_inputstream_read_charset(&mut self)-> (Option<~str>,uint) {
+	pub fn parserutils_inputstream_read_charset(&mut self)-> (Option<~str>,int) {
 		
 		(arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_to_name(self.mibenum),self.encsrc)
 	}
 
-	pub fn parserutils_inputstream_change_charset(&mut self, enc:~str, source:uint)-> parserutils_error {
+	pub fn parserutils_inputstream_change_charset(&mut self, enc:~str, source:int)-> parserutils_error {
 
     	if enc.len() == 0 {
     		return PARSERUTILS_BADPARAM;
@@ -244,20 +246,23 @@ impl lpu_inputstream {
 		
 		if (self.done_first_chunk == false) {
 
-			if (!self.csdetect.is_none()) {
-				let error: parserutils_error = (*self.csdetect.unwrap())(~[], 0, 0);
+			match(self.csdetect_instance) {
+				Some(copy f) => {
+					let error: parserutils_error = (*f)(&self.raw, self.mibenum, self.encsrc, self.input.lpu_instance.clone());
 
-				match error {
-					PARSERUTILS_OK => {},
-					x => match x {
-							PARSERUTILS_NEEDDATA => {	
-														if self.had_eof == false {
-															return x;
-														}
-													},
-												_ => return x	
+					match error {
+						PARSERUTILS_OK => {},
+						x => match x {
+								PARSERUTILS_NEEDDATA => {	
+															if self.had_eof == false {
+																return x;
+															}
+														},
+													_ => return x	
+						}
 					}
-				}
+				},
+				None => {}
 			}	
 			if (self.mibenum == 0) {
 				self.mibenum = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-8");

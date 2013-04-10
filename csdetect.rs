@@ -9,20 +9,16 @@ use parserutils::*;
 use std::arc;
 
 pub enum css_charset_source {
-	CSS_CHARSET_DEFAULT,
-	CSS_CHARSET_REFERRED,
-	CSS_CHARSET_METADATA,
-	CSS_CHARSET_DOCUMENT,
-	CSS_CHARSET_DICTATED
+	CSS_CHARSET_DEFAULT=0,
+	CSS_CHARSET_REFERRED=1,
+	CSS_CHARSET_METADATA=2,
+	CSS_CHARSET_DOCUMENT=3,
+	CSS_CHARSET_DICTATED=4
 }
 
-pub struct csdetect {
-	lpu_instance: arc::ARC<~lpu>
-}
 
-impl csdetect {
 
-	pub fn try_utf32_charset(&mut self, data : &~[u8]) -> (Option<u16>, parserutils_error) {
+	pub fn try_utf32_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>, parserutils_error) {
 
 		let mut charset: u16 = 0;
 		let CHARSET_BE : &[u8] = ['0' as u8, '0' as u8, '0' as u8, '@' as u8, '0' as u8, '0' as u8, '0' as u8, 'c' as u8, '0' as u8, '0' as u8, '0' as u8, 'h' as u8, '0' as u8, '0' as u8, '0' as u8, 'a' as u8, '0' as u8, '0' as u8, '0' as u8, 'r' as u8, '0' as u8, '0' as u8, '0' as u8, 's' as u8, '0' as u8, '0' as u8, '0' as u8, 'e' as u8, '0' as u8, '0' as u8, '0' as u8, 't' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '0' as u8, '"' as u8] ; 
@@ -79,7 +75,7 @@ impl csdetect {
 			if (buffMemory.len() ==(str::len(~"UTF-32LE")) && memcmp(&buffMemory, UTF32LE, buffMemory.len()) == 0) ||
 				(buffMemory.len() == (str::len(~"UTF-32")) && memcmp(&buffMemory, UTF32, buffMemory.len()) == 0) {
 
-					charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32LE");
+					charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-32LE");
 			}
 		}
 		
@@ -126,14 +122,14 @@ impl csdetect {
 			if (buffMemory.len() ==(str::len(~"UTF-32BE")) && memcmp(&buffMemory, UTF32BE, buffMemory.len()) == 0) ||
 				(buffMemory.len() == (str::len(~"UTF-32")) && memcmp(&buffMemory, UTF32, buffMemory.len()) == 0) {
 
-					charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32BE");
+					charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-32BE");
 			}
 		}// else if terminates
 		(Some(charset) , PARSERUTILS_OK)
 	}	
 		
 
-	pub fn try_utf16_charset(&mut self, data : &~[u8]) -> (Option<u16>, parserutils_error) {
+	pub fn try_utf16_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>, parserutils_error) {
 		let mut charset: u16 = 0;
 		let CHARSET_BE : &[u8] = ['0' as u8, '@' as u8, '0' as u8, 'c' as u8, '0' as u8, 'h' as u8, '0' as u8, 'a' as u8, '0' as u8, 'r' as u8, '0' as u8, 's' as u8, '0' as u8, 'e' as u8, '0' as u8, 't' as u8, '0' as u8, ' ' as u8,'0' as u8, '"' as u8] ; 
 		let CHARSET_LE : &[u8] = ['@' as u8, '0' as u8, 'c' as u8, '0' as u8, 'h' as u8, '0' as u8, 'a' as u8, '0' as u8, 'r' as u8, '0' as u8, 's' as u8, '0' as u8, 'e' as u8, '0' as u8, 't' as u8, '0' as u8, ' ' as u8, '0' as u8, '"' as u8, '0' as u8] ; 
@@ -190,7 +186,7 @@ impl csdetect {
 			if (buffMemory.len() ==(str::len(~"UTF-16LE")) && memcmp(&buffMemory, UTF16LE, buffMemory.len()) == 0) ||
 				(buffMemory.len() == (str::len(~"UTF-16")) && memcmp(&buffMemory, UTF16, buffMemory.len()) == 0) {
 
-					charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16LE");
+					charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-16LE");
 			}
 		}
 
@@ -240,13 +236,13 @@ impl csdetect {
 			if (buffMemory.len() ==(str::len(~"UTF-16BE")) && memcmp(&buffMemory, UTF16BE, buffMemory.len()) == 0) ||
 				(buffMemory.len() == (str::len(~"UTF-16")) && memcmp(&buffMemory, UTF16, buffMemory.len()) == 0) {
 
-					charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16BE");
+					charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-16BE");
 			}
 		}// else if terminates
 		(Some(charset) , PARSERUTILS_OK)
 	}
 
-	pub fn  try_ascii_compatible_charset(&mut self, data : &~[u8]) -> (Option<u16>, parserutils_error) {
+	pub fn  try_ascii_compatible_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>, parserutils_error) {
 
 		let mut charset : u16 = 0;
 		let CHARSET : ~[u8] = ~[ '@' as u8, 'c' as u8, 'h' as u8, 'a' as u8 , 'r' as u8, 's' as u8, 'e' as u8, 't' as u8, ' ' as u8 , '\"'  as u8] ;
@@ -278,13 +274,13 @@ impl csdetect {
 			}
 			// Convert to MIB enum 
 
-			charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(str::from_bytes(data.slice(CHARSET.len(), data.len()-1)));
+			charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(str::from_bytes(data.slice(CHARSET.len(), data.len()-1)));
 
 			// Any non-ASCII compatible charset must be ignored, as
 			// we've just used an ASCII parser to read it. 
-			if (charset == arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
-				charset == arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16") ||
-				charset == arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
+			if (charset == arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
+				charset == arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-16") ||
+				charset == arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
 			{
 				charset = 0;
 			}
@@ -292,7 +288,7 @@ impl csdetect {
 		(Some(charset),PARSERUTILS_OK)
 	}
 
-	pub fn css_charset_read_bom_or_charset(&mut self, data : &~[u8])
+	pub fn css_charset_read_bom_or_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>)
 	 -> (Option<u16>, parserutils_error) {
 
 		//let mut err : parserutils_error ;
@@ -306,44 +302,44 @@ impl csdetect {
 		// Look for BOM 
 		if (data[0] == 0x00 && data[1] == 0x00 && 
 				data[2] == 0xFE && data[3] == 0xFF) {
-			charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32BE");
+			charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-32BE");
 		} else if (data[0] == 0xFF && data[1] == 0xFE &&
 				data[2] == 0x00 && data[3] == 0x00) {
-			charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32LE");
+			charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-32LE");
 		} else if (data[0] == 0xFE && data[1] == 0xFF) {
-			charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16BE");
+			charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-16BE");
 		} else if (data[0] == 0xFF && data[1] == 0xFE) {
-			charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16LE");
+			charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-16LE");
 		} else if (data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF) {
-			charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-8");
+			charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-8");
 		}
 
 		if (charset!=0) {
 			return (Some(charset), PARSERUTILS_OK);
 		}
 		
-		let (option_return , err): (Option<u16>, parserutils_error) = self.try_utf32_charset(data);
+		let (option_return , err): (Option<u16>, parserutils_error) = try_utf32_charset(data, lpu_arc.clone());
 		match(err) {
 			PARSERUTILS_OK => return (option_return , err) ,
 			_ => {}	
 		}
 
-		let (option_return , err): (Option<u16>, parserutils_error) = self.try_utf16_charset(data);
+		let (option_return , err): (Option<u16>, parserutils_error) = try_utf16_charset(data, lpu_arc.clone());
 		match(err) {
 			PARSERUTILS_OK => return (option_return , err) ,
 			_ => {}	
 		}
 		
-		self.try_ascii_compatible_charset(data)
+		try_ascii_compatible_charset(data, lpu_arc.clone())
 	}
 
-	pub fn css__charset_extract(&mut self,  data : &~[u8] ,	mibenum : ~u16 , source : css_charset_source)
+	pub fn css__charset_extract(data : &~[u8] ,	mibenum : u16 , source : css_charset_source, lpu_arc: arc::ARC<~lpu>)
 		-> (Option<u16>, Option<css_charset_source>, parserutils_error) {
 
 		let mut charset : u16 = 0;
 		let mut src :css_charset_source;
 
-		if (data.len()==(0 as uint))  || mibenum==~(0 as u16){
+		if (data.len()==(0 as uint))  || mibenum==(0 as u16){
 			return (None ,None, PARSERUTILS_BADPARAM);
 		}
 
@@ -355,14 +351,14 @@ impl csdetect {
 		// If the charset was dictated by the client, we've nothing to detect 
 		match (source)  {
 			CSS_CHARSET_DICTATED => {
-				charset=*mibenum ;
+				charset=mibenum ;
 				return (Some(charset), Some(source), PARSERUTILS_OK);
 			}
 			_ => {}
 		}
 
 		// Look for a BOM and/or @charset 
-		let (option_return , err): (Option<u16>, parserutils_error) = self.css_charset_read_bom_or_charset(data);
+		let (option_return , err): (Option<u16>, parserutils_error) = css_charset_read_bom_or_charset(data, lpu_arc.clone());
 		match(err) {
 			PARSERUTILS_OK => {} ,
 			_ => return (None, None, PARSERUTILS_BADPARAM)
@@ -384,7 +380,7 @@ impl csdetect {
 			}
 		}
 		// We've not yet found a charset, so use the default fallback 
-		charset = arc::get(&self.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-8");
+		charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-8");
 
 		if charset==0 {
 			return (None, None, PARSERUTILS_BADENCODING) ;
@@ -393,9 +389,5 @@ impl csdetect {
 		src = CSS_CHARSET_DEFAULT ; // CSS_CHARSET_DEFAULT;
 		(Some(charset) , Some(src) , PARSERUTILS_OK)
 	}
-}
 
-pub fn csdetect() {
-
-}
 
