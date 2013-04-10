@@ -13,7 +13,3 @@ rustc -L . css_ds.rs
 rustc -L . css_lexer.rs
 rustc -L . css_parser.rs
 rustc -L . css.rs
-
-cd test
-./make_test.sh
-cd ..
