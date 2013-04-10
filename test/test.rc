@@ -9,7 +9,7 @@ pub struct log_entry {
 	test:~str,
 	file:~str,
 	func:~str,
-	status:bool
+	status:~str
 }
 
 pub struct test_report {
@@ -28,21 +28,27 @@ impl Drop for test_report {
 }
 
 impl test_report {
+	pub fn log_pass(&mut self, test_name : ~str , file_name : ~str , function_name : ~str ) {
+		self.do_log(test_name ,file_name, function_name , ~"PASSED" );
+	}
+
+	pub fn log_fail(&mut self, test_name : ~str , file_name : ~str , function_name : ~str ) {
+		self.do_log(test_name ,file_name, function_name , ~"FAIl" );
+	}
+
+	pub fn log_info(&mut self, test_name : ~str , file_name : ~str , function_name : ~str ) {
+		self.do_log(test_name ,file_name, function_name , ~"INFO" );
+	}
 
 	// collects log in the memory and also print them on the console
-	pub fn do_log(&mut self, test_name : ~str , file_name : ~str , function_name : ~str , result : bool) {
-		if( result == true ) {
-			io::print(fmt!("\n\t \t [%s] [%s] [%s] = PASSED ",test_name,file_name,function_name));
-		}
-		else {
-			io::print(fmt!("\n\t \t [%s] [%s] [%s] = FAIL ",test_name,file_name,function_name));
-		}
+	fn do_log(&mut self, test_name : ~str , file_name : ~str , function_name : ~str , result : ~str) {
+		io::print(fmt!("\n\t \t [%s] [%s] [%s] = [%s] ",test_name,file_name,function_name,result));
 		self.do_silent_log(test_name, file_name , function_name  , result ) ;
 	}
 
 	// Collects log silently in the memory
-	pub fn do_silent_log(&mut self, test_name : ~str , file_name : ~str , function_name : ~str , result : bool) {
-		let a = log_entry{test:test_name , file:file_name , func:function_name , status : result };
+	pub fn do_silent_log(&mut self, test_name : ~str , file_name : ~str , function_name : ~str , result : ~str) {
+		let a = log_entry{test:test_name , file:file_name , func:function_name , status:result };
 		self.log_list.push(a);
 	}
 
@@ -51,12 +57,7 @@ impl test_report {
 		self.is_logged = true ;
 		self.file_handle.write_line(fmt!("Test Name,File Name,Function Name,Status"));
 		for self.log_list.each() |lg| {
-			if lg.status==true {
-				self.file_handle.write_line(fmt!("%s,%s,%s,PASSED",lg.test,lg.file,lg.func));
-			}
-			else {
-				self.file_handle.write_line(fmt!("%s,%s,%s,PASSED",lg.test,lg.file,lg.func));
-			}
+			self.file_handle.write_line(fmt!("%s,%s,%s,%s",lg.test,lg.file,lg.func,lg.status));
 		}
 	}
 
@@ -64,12 +65,7 @@ impl test_report {
 	pub fn do_forceful_log_dump(&self) {
 		self.file_handle.write_line(fmt!("Test Name,File Name,Function Name,Status"));
 		for self.log_list.each() |lg| {
-			if lg.status==true {
-				self.file_handle.write_line(fmt!("%s,%s,%s,PASSED",lg.test,lg.file,lg.func));
-			}
-			else {
-				self.file_handle.write_line(fmt!("%s,%s,%s,PASSED",lg.test,lg.file,lg.func));
-			}
+			self.file_handle.write_line(fmt!("%s,%s,%s,%s",lg.test,lg.file,lg.func,lg.status));
 		}
 	}
 }

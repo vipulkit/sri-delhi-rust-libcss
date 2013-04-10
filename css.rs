@@ -50,28 +50,7 @@ pub fn css_result_to_string(css_err : css_result ) -> ~str {
 
 	let mut result : ~str = ~"" ;
 	match css_err {
-		CSS_IMPORTS_PENDING_OK(x,y)=>{result=~"import pending list created"}
-		CSS_LANGUAGE_CREATED_OK(x)=> {result=~"language instance created successfully"},
-		CSS_STYLESHEET_CREATE_OK(sheet)=>{result=~"stylesheet successfully created"},
-		CSS_STRING_GET(x)=>{result = ~"get the string from vector part of stylesheet"},
-		CSS_RULE_CREATED_OK(x) => {result=~"Css rule created successfully"},
-		CSS_STRING_ADD_OK(x)  => {result = ~"string added to stylesheet successfully"}, 
-		CSS_GET_LANGUAGE_LEVEL(x)=>{result= ~"get language level"},
-		CSS_GET_URL(x)=>{result=~"get url"},
-		CSS_GET_TITLE(x)=>{result=~"get title"},
-		CSS_IS_QUIRK_ALLOWED(x)=>{result = ~"is Quirks allowed?"},
-		CSS_IS_QUIRK_USED(x)=>{result= ~"IS_QUIRK_USED?"},
-		CSS_GET_SHEET_DISABLED(x)=>{result=~"_GET_if-SHEET_DISABLED"},
-		CSS_STYLECREATED_OK(x)=>{result=~"Style created successfully"},
-		/*CSS_RULE_SELECTOR_CREATED(x) => {result=~"Css rule selector created successfully"},
-		CSS_RULE_CHARSET_CREATED(x) => {result=~"Css rule charset created successfully"},
-		CSS_RULE_IMPORT_CREATED(x) => {result=~"Css rule imported successfully"},
-		CSS_RULE_MEDIA_CREATED(x) => {result=~"Css rule media created successfully"},
-		CSS_RULE_FONT_FACE_CREATED(x) => {result=~"Css rule font-face created successfully"},
-		CSS_RULE_PAGE_CREATED(x) => {result=~"Css rule page created successfully"},*/
-		CSS_GENERAL_OK=> {result=~"Css Success "},
-		CSS_LANGUAGE_CREATED(x) => {result=~"Css language created successfully"},
-		CSS_PROPSTRINGS_OK(x) => {result=~"Css propstrings success "},
+		CSS_OK=> {result=~"Css Success "},
 		CSS_NOMEM=> {result=~"Css error : No-memory"},
 		CSS_BADPARM=> {result=~"Css error : bad-parameters "},
 		CSS_INVALID=> {result=~"Css error : Invalid operation "},
@@ -81,7 +60,6 @@ pub fn css_result_to_string(css_err : css_result ) -> ~str {
 		CSS_EOF=> {result=~"Css error : end of file "},
 		CSS_IMPORTS_PENDING=> {result=~"Css imports pending "},
 		CSS_PROPERTY_NOT_SET=> {result=~"Css property not set "},
-		// _ => { result=~"Unknown error enumeration" },
 	}
 	result
 }
@@ -371,194 +349,6 @@ impl lcss {
 // ===========================================================================================================
 
 
-
-// ===========================================================================================================
-// CSS-PARSER implementation/data-structs Starts here 
-// ===========================================================================================================
-
-
-
-/*
- * Css parser event handler function pointer
- */
-
-// null function for initializing
-pub fn dummy_par_ev_hand(css_intance:@lcss, event_type:css_parser_event, 
-		tokens:~[~str] , pw:&css_language) -> css_result {
-	CSS_GENERAL_OK
-}
-
-
-fn Stylesheet_event_handler(css_intance:@lcss, event_type:css_parser_event, 
-		tokens:~[~str] , pw:&css_language)-> css_result
-{
-	CSS_GENERAL_OK
-}
-
-pub type css_parser_event_handler =  @extern fn(css_intance:@lcss, event_type:css_parser_event, 
-		tokens:~[~str] , pw:&css_language) -> css_result;
-
-pub fn css_parser_optparams_instance()->@css_parser_optparams
-{   let sheet = lcss_stylesheet(lwc());
-	let lang=lcss_language(sheet);
-	@css_parser_optparams
-	{
-		quirks:false,
-		event_handler: css_parser_event_handler_struct
-		{
-			handler:@Stylesheet_event_handler,
-			pw:lang
-		}	
-	}
-}
-/*
- * Css parser constructor
- */
-
- pub fn css__parser_create(charset:~str,cs_source:css_charset_source ,lcss_language_inst:@css_language)->@lcss_parser {
-	@lcss_parser{ event_pw:lcss_language_inst, 
-		quirks:false,lcss_lexer_instance:lcss_lexer() , lparserutils_instance:lpu() }
-}
-pub fn css__parser_create_for_inline_style(charset:~str,cs_source:css_charset_source ,lcss_language_inst:@css_language)->@lcss_parser {
-	@lcss_parser{ event_pw:lcss_language_inst, 
-		quirks:false,lcss_lexer_instance:lcss_lexer() , lparserutils_instance:lpu() }
-}
-pub fn lcss_parser(lcss_lexer_inst:@lcss_lexer,lcss_language_inst:@css_language)->@lcss_parser {
-	@lcss_parser{ event_pw:lcss_language_inst, 
-		quirks:false,lcss_lexer_instance:lcss_lexer_inst , lparserutils_instance:lpu() }
-}
-
-
-/*
- * Css parser implementation
- */
-impl lcss_parser {
-	pub fn css__parser_completed(&self)->css_result {
-	CSS_GENERAL_OK
-	}
-	pub fn css__parser_create(&self)  {
-
-	}
-	pub fn css__parser_parse_chunk(&self, data:~[u8]) -> css_result{
-     CSS_GENERAL_OK
-	}
-	
-	pub fn css__parser_create_internal(&self,charset:~str, 
-			cs_source:css_charset_source ,pw :~[u8], initial:parser_state ) -> css_result
-	{
-		let mut err : css_result ;
-		//css_parser *p;
-		let mut perr : parserutils::parserutils_result ;
-
-		//if (alloc == NULL || parser == NULL)
-		//	return CSS_BADPARM;
-
-		//p = alloc(NULL, sizeof(css_parser), pw);
-		//if (p == NULL)
-		//	return CSS_NOMEM;
-		/*
-		perror = self.lparserutils_instance.parserutils_inputstream_create(charset, cs_source as u32,
-				css__charset_extract, (parserutils_alloc) alloc, pw,
-				&p->stream);
-		perror = parserutils_inputstream_create(charset,ccs)
-		if (perror != PARSERUTILS_OK) {
-			alloc(p, 0, pw);
-			return css_error_from_parserutils_error(perror);
-		}
-
-		error = css__lexer_create(p->stream, alloc, pw, &p->lexer);
-		if (error != CSS_OK) {
-			parserutils_inputstream_destroy(p->stream);
-			alloc(p, 0, pw);
-			return error;
-		}
-
-		perror = parserutils_stack_create(sizeof(parser_state), 
-				STACK_CHUNK, (parserutils_alloc) alloc, pw,
-				&p->states);
-		if (perror != PARSERUTILS_OK) {
-			css__lexer_destroy(p->lexer);
-			parserutils_inputstream_destroy(p->stream);
-			alloc(p, 0, pw);
-			return css_error_from_parserutils_error(perror);
-		}
-
-		perror = parserutils_vector_create(sizeof(css_token), 
-				STACK_CHUNK, (parserutils_alloc) alloc, pw,
-				&p->tokens);
-		if (perror != PARSERUTILS_OK) {
-			parserutils_stack_destroy(p->states);
-			css__lexer_destroy(p->lexer);
-			parserutils_inputstream_destroy(p->stream);
-			alloc(p, 0, pw);
-			return css_error_from_parserutils_error(perror);
-		}
-
-		perror = parserutils_stack_create(sizeof(char), 
-				STACK_CHUNK, (parserutils_alloc) alloc, pw,
-				&p->open_items);
-		if (perror != PARSERUTILS_OK) {
-			parserutils_vector_destroy(p->tokens);
-			parserutils_stack_destroy(p->states);
-			css__lexer_destroy(p->lexer);
-			parserutils_inputstream_destroy(p->stream);
-			alloc(p, 0, pw);
-			return css_error_from_parserutils_error(perror);
-		}
-
-		perror = parserutils_stack_push(p->states, (void *) &initial);
-		if (perror != PARSERUTILS_OK) {
-			parserutils_stack_destroy(p->open_items);
-			parserutils_vector_destroy(p->tokens);
-			parserutils_stack_destroy(p->states);
-			css__lexer_destroy(p->lexer);
-			parserutils_inputstream_destroy(p->stream);
-			alloc(p, 0, pw);
-			return css_error_from_parserutils_error(perror);
-		}
-
-		p->quirks = false;
-		p->pushback = NULL;
-		p->parseError = false;
-		p->match_char = 0;
-		p->event = NULL;
-		p->last_was_ws = false;
-		p->event_pw = NULL;
-		p->alloc = alloc;
-		p->pw = pw;
-
-		*parser = p;
-		*/
-		CSS_GENERAL_OK
-	}
-pub fn css__parser_setopt(/*css_parser *parser,*/&self,  opt_type:css_parser_opttype,
-		params:@css_parser_optparams )-> css_result
-{
-	/*if (parser == NULL || params == NULL)
-		return CSS_BADPARM;
-*/
-	match (opt_type) {
-	 CSS_PARSER_QUIRKS=>{
-			//self.quirks = params.quirks;
-		},	
-		
-	 CSS_PARSER_EVENT_HANDLER=>	{
-			//self.event = params.event_handler.handler;
-			//self.event_pw = params.event_handler.pw;
-		}
-		
-	}
-
-	return CSS_GENERAL_OK;
-}
-}
-
-
-// ===========================================================================================================
-// CSS-PARSER implementation/data-structs ends here 
-// ===========================================================================================================
-
-
 pub fn lcss_high_level(/*sheet:@css_stylesheet*/)-> @css_high_level
 {
 	let lwc_instance= lwc();
@@ -753,7 +543,7 @@ pub fn lcss_high_level(/*sheet:@css_stylesheet*/)-> @css_high_level
 
 pub fn css__selector_hash_create()-> css_result
 {
-	CSS_GENERAL_OK
+	CSS_OK
 }
 
 
@@ -778,19 +568,19 @@ pub type  css_font_resolution_fn =  @extern fn(pw:~[u8],
 
 pub fn CINF(pw:~[u8], parent:@css_stylesheet,  url:@lwc_string, media:u64) -> css_result
 {
-	CSS_GENERAL_OK
+	CSS_OK
 }
 pub  fn CURF(pw:~[u8],base:~str, rel:@lwc_string , abs:@lwc_string ) -> css_result
 {
-	CSS_GENERAL_OK
+	CSS_OK
 }
 pub fn CCRF(pw:~[u8],name:@lwc_string,  color:@css_color) -> css_result
 {
-	CSS_GENERAL_OK
+	CSS_OK
 }
 pub fn CFRF(pw:~[u8],name:@lwc_string,  system_font:@css_system_font) -> css_result
 {
-	CSS_GENERAL_OK
+	CSS_OK
 }
 
 
@@ -982,7 +772,7 @@ pub fn  css__stylesheet_rule_create(@self,sheet:@css_stylesheet ,  rule_type:css
 	let mut high_level_css_struct:@css_high_level =  lcss_high_level(/*self*/);
 	high_level_css_struct.base.rule_type = rule_type;
 	CSS_RULE_CREATED_OK(high_level_css_struct)	
-	//CSS_GENERAL_OK
+	//CSS_OK
 }
 
 pub fn css__stylesheet_string_add(&self,sheet:css_stylesheet , string:@lwc_string /*, uint32_t *string_number*/)-> css_result
@@ -1059,7 +849,7 @@ pub fn css__stylesheet_string_get(/*sheet:@css_stylesheet,*/ &self,mut string_nu
 		}
 		match (copy Result)
 		{
-			CSS_GENERAL_OK=>{}
+			CSS_OK=>{}
 			_=>{
 				self.css__propstrings_unref();
 				return Result;
@@ -1160,7 +950,7 @@ pub fn css_stylesheet_data_done(&self/*css_stylesheet *sheet*/)-> css_result
     
 
 
-	CSS_GENERAL_OK
+	CSS_OK
 }
 pub fn css_stylesheet_next_pending_import(&self/*,
 		url:@lwc_string , media:u64*/)->css_result
@@ -1225,7 +1015,7 @@ pub fn css_stylesheet_register_import(&self,
     							@SomeStyleSheetNode(x)=>{},
     							@NoStyleSheetNode=>  {
     								x.import.sheet=@mut SomeStyleSheetNode(import);
-    								return CSS_GENERAL_OK;
+    								return CSS_OK;
     							}
     						}
     						
@@ -1283,11 +1073,11 @@ pub fn css_stylesheet_get_disabled(&self)-> css_result
 pub fn css_stylesheet_set_disabled(&self,disabled:bool)-> css_result
 {
 	self.disabled = disabled;
-	return CSS_GENERAL_OK;
+	return CSS_OK;
 }
 pub fn css_stylesheet_size(&self, size:uint)-> css_result
 {
-    CSS_GENERAL_OK//(size)
+    CSS_OK//(size)
 	//not implemented
 }
 pub fn css__stylesheet_style_create(@mut self)-> css_result
@@ -1315,20 +1105,20 @@ pub fn css__stylesheet_style_create(@mut self)-> css_result
 {
 	
 	target.bytecode = vec::append(copy target.bytecode, style.bytecode);
-	CSS_GENERAL_OK
+	CSS_OK
 
 }
 
 pub fn css__stylesheet_style_append(style:@css_style,  css_code:css_code_t)-> css_result
 {
   style.bytecode.push(css_code);
-  CSS_GENERAL_OK
+  CSS_OK
 }
 //check this functn
 pub fn css__stylesheet_style_vappend(style:@css_style,  css_code:~[css_code_t])-> css_result
 {
 	style.bytecode = vec::append(copy style.bytecode, css_code);
-	CSS_GENERAL_OK
+	CSS_OK
 }
 
 
@@ -1507,7 +1297,7 @@ pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_resu
 				},	
     	 };
 	    c.context.push(entry);
-		CSS_GENERAL_OK
+		CSS_OK
 	}
 
 	pub fn handleEndStylesheet(&self, c:@css_language, vector:~[~str])->css_result
@@ -1541,7 +1331,7 @@ pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_resu
 		// 	return css_result_from_parserutils_error(perror);
 		// }
 
-		CSS_GENERAL_OK
+		CSS_OK
 	}
 
 	pub fn handleStartRuleset(&self, c:@css_language , vector:~[~str])->css_result 
@@ -1627,42 +1417,42 @@ pub fn handleStartStylesheet(&self, c:@css_language, vector:~[~str]) -> css_resu
 
 		/* Rule is now owned by the sheet, so no need to destroy it */
 
-		  CSS_GENERAL_OK
+		  CSS_OK
 	}
 
 pub fn handleEndRuleset(&self, c:@css_language , vector:~[~str])->css_result
 {
-	CSS_GENERAL_OK	
+	CSS_OK	
 }
 
 pub fn handleStartAtRule(&self, c:@css_language , vector:~[~str])->css_result
 {
-	CSS_GENERAL_OK	
+	CSS_OK	
 }
 
 pub fn handleEndAtRule(&self, c:@css_language , vector:~[~str])->css_result
 {
-	CSS_GENERAL_OK	
+	CSS_OK	
 }
 
 pub fn handleStartBlock(&self, c:@css_language , vector:~[~str])->css_result
 {
-	CSS_GENERAL_OK	
+	CSS_OK	
 }
 
 pub fn handleEndBlock(&self, c:@css_language , vector:~[~str])->css_result
 {
-	CSS_GENERAL_OK	
+	CSS_OK	
 }
 
 pub fn handleBlockContent(&self, c:@css_language , vector:~[~str])->css_result
 {
-	CSS_GENERAL_OK	
+	CSS_OK	
 }
 
 pub fn handleDeclaration(&self, c:@css_language , vector:~[~str])->css_result
 {
-	CSS_GENERAL_OK	
+	CSS_OK	
 }
 
  }
@@ -2348,7 +2138,7 @@ impl important
 			} // match block ends
 		} // for block ends
 
-		return CSS_GENERAL_OK;
+		return CSS_OK;
 	}
 
 	pub fn css_make_style_important (&self, style : &css_style)
@@ -2860,7 +2650,7 @@ impl font_face
 		//let bResult = font_rule_font_family_reserved(	
 		//css_result = css_ident_list_or_string_to_string(cssLang, tokenVector, font_rule_font_family_reserved,  
 
-		return CSS_GENERAL_OK;
+		return CSS_OK;
 	}
 
 	pub fn font_face_src_parse_format (&self, cssLang : @css_language, tokenVector : ~[~css_token], mut font_face_format : css_font_face_format) -> css_result
@@ -2916,14 +2706,14 @@ impl font_face
 		}
 		*/
 
-		return CSS_GENERAL_OK;
+		return CSS_OK;
 	}
 
 
 
 	pub fn font_face_src_parse_spec_or_name (&self, cssLang : @css_language, tokenVector : ~[~css_token], location : ~lwc_string, mut font_face_location_type : css_font_face_location_type, font_face_format : css_font_face_format) -> css_result
 	{
-		let mut errorVal : css_result = CSS_GENERAL_OK;
+		let mut errorVal : css_result = CSS_OK;
 		self.consumeWhiteSpace(copy tokenVector);		
 
 		for tokenVector.each |&token|
@@ -2933,7 +2723,7 @@ impl font_face
 				CSS_TOKEN_URI	=> {
 					
 					errorVal = cssLang.sheet.resolve(cssLang.sheet.url, token.idata, location);
-					if errorVal != CSS_GENERAL_OK
+					if errorVal != CSS_OK
 					{
 						return errorVal;
 					}
@@ -2950,7 +2740,7 @@ impl font_face
 
 								match(errorVal)
 								{
-									CSS_GENERAL_OK  =>	(),
+									CSS_OK  =>	(),
 										_	=>	return errorVal
 								}
 							}	
@@ -2969,7 +2759,7 @@ impl font_face
 						// below mentioned fun is defined in Parse/Properties/Utils.c
 						// errorVal = css_ident_list_or_string_to_string(cssLang, tokenVector, location);
 
-						if errorVal != CSS_GENERAL_OK 
+						if errorVal != CSS_OK 
 						{
 							return errorVal;	
 						}
@@ -2990,14 +2780,14 @@ impl font_face
 			} // match block ends
 		}
 
-		return CSS_GENERAL_OK;
+		return CSS_OK;
 	}
 
 	// In this function, LABELs are used
 	pub fn font_face_parse_src (&self, cssLang : @css_language, tokenVector : ~[~css_token], font_face : @css_font_face) -> css_result
 	{
 		//let orig_cntx : int = *cntx;
-		let errorVal : css_result = CSS_GENERAL_OK;	
+		let errorVal : css_result = CSS_OK;	
 		let n_srcs : u32 = 0;	
 		// Can we initialise srcs as NONE (or anything else as NULL in C)
 		let srcs : ~css_font_face_src ; 
@@ -3015,7 +2805,7 @@ impl font_face
 			
 			match(errorVal)
 			{
-				CSS_GENERAL_OK 	=>
+				CSS_OK 	=>
 					{
 						// But where new_srcs is initialized ?
 						srcs = new_srcs;
@@ -3037,7 +2827,7 @@ impl font_face
 
 	pub fn font_face_parse_font_style (&self, cssLang : @css_language, tokenVector : ~[~css_token], font_face : @css_font_face) -> css_result
 	{
-		let mut errorVal : css_result = CSS_GENERAL_OK; 
+		let mut errorVal : css_result = CSS_OK; 
 		let mut style : css_font_style_e = CSS_FONT_STYLE_INHERIT; 
 
 		for tokenVector.each |&token|
@@ -3068,7 +2858,7 @@ impl font_face
 
 		}
 
-		   if errorVal == CSS_GENERAL_OK
+		   if errorVal == CSS_OK
 		   {
 		   	font_face.bits[0] = (font_face.bits[0] & 0xfc) | style;
 		   }
@@ -3078,7 +2868,7 @@ impl font_face
 
 	pub fn font_face_parse_font_weight (&self, cssLang : @css_language, tokenVector : ~[~css_token],  font_face : @css_font_face) -> css_result
 	{
-		let mut errorVal : css_result = CSS_GENERAL_OK; 
+		let mut errorVal : css_result = CSS_OK; 
 		let mut weight : css_font_weight_e = CSS_FONT_WEIGHT_INHERIT ; 
 
 		for tokenVector.each |&token|
@@ -3137,7 +2927,7 @@ impl font_face
 
 								match (errorVal)
 								{
-									CSS_GENERAL_OK  =>	{
+									CSS_OK  =>	{
 										// font_face.bits[0] = (font_face.bits[0] & 0xc3) | (weight << 2);	
 									}
 									_		=>	{	
