@@ -17,7 +17,7 @@ fn main()
 	{
 		PARSERUTILS_OK   => {
 				io::println("test file>> test_parser_utils_filter>> file to test>> parser_utils_filter.rs>> functn>>lpu_filter>>Pass:  Filter created");
-				filter = filterInstance.get();
+				filter = filterInstance.unwrap();
 				match(filter.filter_set_encoding(~"UTF-8"))
 				{
 					PARSERUTILS_OK=>io::println("test file>> test_parser_utils_filter>> file to test>> parser_utils_filter.rs>> functn>>filter_set_encoding>>Pass: "),

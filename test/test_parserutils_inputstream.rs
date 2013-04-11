@@ -16,7 +16,7 @@ let args : ~[~str] = os::args();
 		PARSERUTILS_OK=>{
 			io::println("test name:test_parserUtils_inputStream>>file name:parserutils_input stream>> functn name>> lpu_inputstream");
 			io::println("Pass");
-			let mut stream:~lpu_inputstream = inputStreamOption.get();
+			let mut stream:~lpu_inputstream = inputStreamOption.unwrap();
 			
 			
 			//let mut (ptr,length):(~[u8],uint)= (~[],0) ;
