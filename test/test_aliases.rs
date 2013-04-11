@@ -1,65 +1,73 @@
 
 extern mod std;
 extern mod parserutils;
+extern mod test;
 
+use std::arc;
 use parserutils::*;
+use test::*;
+use core::str::*;
 
 fn main()
 {
-	let mut parser : ~lpu = lpu();
+ 	let mut parser : arc::ARC<~lpu> = lpu();
+	let mut test_logger = result::unwrap(test_report(&"temp_log.csv"));
+	let aliasData = ~[~"moose", ~"csinvariant", ~"csinvariant\"", ~"nats-sefi-add", ~"u.t.f.8"];
+	 
+	let mut index : uint = 0;
 
-	let mut retVal = parser.parserutils__charset_alias_canonicalise(~"moose");
+	while index < aliasData.len() 
+	{
+		let mut retVal = arc::get(&parser).parserutils__charset_alias_canonicalise(copy aliasData[index]);
+		
+		match(retVal)
+		{
+			Some(x) => {
+						if !eq(&aliasData[index], &~"moose")
+						{
+							test_logger.pass( ~"parserutils", ~"parserutils.rs", ~"parserutils__charset_alias_canonicalise", copy aliasData[index], ~"");
 
-	match(copy retVal)
-	{
-		Some(x) => io::println("FAIL - found invalid encoding 'moose'\n"),		
-		None => (io::println("PASS: moose "))
-	}
+							if !eq(&aliasData[index], &~"u.t.f.8")
+							{																
+								if (arc::get(&parser).parserutils_charset_mibenum_from_name(copy x.name) == 0 as u16)
+								{
+									test_logger.fail( ~"parserutils", ~"parserutils.rs", ~"mibenum_from_name", copy x.name, ~"")
+								}	
+								else
+								{
+									test_logger.pass( ~"parserutils", ~"parserutils.rs", ~"mibenum_from_name", copy x.name, ~"")
+								}
+							
+					
+								match(arc::get(&parser).parserutils_charset_mibenum_to_name(copy x.mib_enum))
+								{
+									Some(val)	=> {
+														test_logger.pass( ~"parserutils", ~"parserutils.rs", ~"mibenum_to_name", copy x.name, ~"")
+							 						},
+									None		=>{
+													test_logger.fail( ~"parserutils", ~"parserutils.rs", ~"mibenum_to_name", copy x.name, ~"")
+							 						}				 
+								}
+							}
 
-	retVal = parser.parserutils__charset_alias_canonicalise(~"csinvariant");
-    retVal = parser.parserutils__charset_alias_canonicalise(~"US-ASCII");
-	match(copy retVal)
-	{
-		Some(x) => { //io::println(fmt!("name is %? and mib_enum is %?", x.name, x.mib_enum));
-			if( x.mib_enum==3 ) {
-            	io::print(fmt!("\n[test_aliases] : [file=parserutils.rs] : [function=lpu::parserutils__charset_alias_canonicalise] : PASSED"));
-            }
-            else {
-            	io::print(fmt!("\n[test_aliases] : [file=parserutils.rs] : [function=lpu::parserutils__charset_alias_canonicalise] : FAIL"));
-            }
-            io::print(fmt!("\n Test with values US-ASCII result is %? ",x.mib_enum)); },		
-		None	=>	io::println("FAIL - failed finding encoding 'csinvariant' ")
-	}
-
-	/*
-	retVal = parser.parserutils__charset_alias_canonicalise(~"csinvariant\"");
-	match(copy retVal)
-	{
-		Some(x) => io::println(fmt!("name is %? and mib_enum is %?", x.name, x.mib_enum)),
-		None	=>	io::println("FAIL - failed finding encoding 'csinvariant' ")
-	}
-	
-	retVal = parser.parserutils__charset_alias_canonicalise(~"nats-sefi-add");
-	match(copy retVal)
-	{
-		Some(x) => io::println(fmt!("name is %? and mib_enum is %?", x.name, x.mib_enum)),
-		None	=>	io::println("FAIL - failed finding encoding 'nats-sefi-add' ")
-	}
-
-	match(copy retVal)
-	{
-		Some(x)	=> {
-					io::println(fmt!("%?", parser.parserutils_charset_mibenum_from_name(copy x.name)));
-					io::println(fmt!("%?", parser.parserutils_charset_mibenum_to_name(copy x.mib_enum)));
+						else
+						 {
+						 	test_logger.fail( ~"parserutils", ~"parserutils.rs", ~"parserutils__charset_alias_canonicalise", copy aliasData[index], ~"")
+						 }								
+						}
 					},
-		None	=>	()
-	}		
+			None => {	
+						if eq(&aliasData[index], &~"moose")
+						{
+							test_logger.pass( ~"parserutils", ~"parserutils.rs", ~"parserutils__charset_alias_canonicalise", copy aliasData[index], ~"")
+						}
+						else
+						{
+							test_logger.fail( ~"parserutils", ~"parserutils.rs", ~"parserutils__charset_alias_canonicalise", copy aliasData[index], ~"")
+						}
+					}
+			}														
+			index += 1;
+		}		
+	}					
 
-	let retVal = parser.parserutils__charset_alias_canonicalise(~"u.t.f.8");
-	match(copy retVal)
-	{
-		Some(x) => io::println(fmt!("name is %? and mib_enum is %?", copy x.name, copy x.mib_enum)),
-		None	=>	io::println("FAIL - failed finding encoding 'u.t.f.8' ")
-	}
-	*/
-}	
