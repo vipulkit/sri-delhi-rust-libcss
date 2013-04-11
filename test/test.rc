@@ -10,6 +10,7 @@ pub struct log_entry {
 	file_name:~str,
 	function_name:~str,
 	test_name:~str,
+	result: ~str,
 	comment:~str
 }
 
@@ -29,31 +30,38 @@ impl Drop for test_report {
 }
 
 impl test_report {
-	pub fn pass(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str) {
-		self.do_log(module_name, file_name, function_name, test_name , ~"PASS" );
+	pub fn pass(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, comment: ~str) {
+		self.do_log(module_name, file_name, function_name, test_name , ~"PASS", comment );
 	}
 
-	pub fn fail(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str) {
-		self.do_log(module_name, file_name, function_name, test_name , ~"FAIL" );
+	pub fn fail(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, comment: ~str) {
+		self.do_log(module_name, file_name, function_name, test_name , ~"FAIL", comment );
 	}
 
 	pub fn info(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, comment : ~str ) {
-		self.do_log(module_name, file_name, function_name, test_name , comment );
+		self.do_log(module_name, file_name, function_name, test_name , ~"", comment );
 	}
 
 	// collects log in the memory and also print them on the console
-	fn do_log(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, comment : ~str) {
-		io::print(fmt!("\n\t \t [%s]::[%s]::[%s] [%s] %s ",module_name, file_name,function_name, test_name, comment));
-		self.do_silent_log(module_name, file_name , test_name, function_name  , comment ) ;
+	fn do_log(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, result:~str, comment : ~str) {
+		if result==~"" {
+			io::print(fmt!("\n\t \t [%s]::[%s]::[%s] Test:[%s] %s ",module_name, file_name,function_name, test_name, comment));	
+		}
+		else {
+			io::print(fmt!("\n\t \t [%s]::[%s]::[%s] Test:[%s] %s %s ",module_name, file_name,function_name, test_name, result, comment));	
+		}
+		
+		self.do_silent_log(module_name, file_name , test_name, function_name  , result, comment ) ;
 	}
 
 	// Collects log silently in the memory
-	fn do_silent_log(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, comment : ~str) {
+	fn do_silent_log(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, result: ~str, comment : ~str) {
 		let a = log_entry {
 			module_name:module_name, 
 			file_name:file_name , 
 			test_name:test_name ,  
 			function_name:function_name , 
+			result:result,
 			comment:comment 
 		};
 		
@@ -68,14 +76,15 @@ impl test_report {
 
 	// do forcefull logging in the end, if user not done file logging during usage
 	fn do_forceful_log_dump(&self) {
-		self.file_handle.write_line(fmt!("Module,File,Function,Test,Comment"));
+		self.file_handle.write_line(fmt!("Module,File,Function,Test,Result, Comment"));
 		for self.log_list.each() |log_entry| {
 			self.file_handle.write_line (
-					fmt!("%s,%s,%s,%s,%s",
+					fmt!("%s,%s,%s,%s,%s, %s",
 							log_entry.module_name,
 							log_entry.file_name,
 							log_entry.function_name,
 							log_entry.test_name, 
+							log_entry.result,
 							log_entry.comment
 						)
 				);
