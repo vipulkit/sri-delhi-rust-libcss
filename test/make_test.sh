@@ -14,7 +14,6 @@ rustc -L ./.. test_riconv.rs -L .
 rustc -L ./.. test_wapcaplet.rs -L .
 
 
-
 # run test programs 
 ./test_aliases 
 ./test_wapcaplet
