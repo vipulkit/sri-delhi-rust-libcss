@@ -6,10 +6,11 @@ extern mod std;
 use core::io::*;
 
 pub struct log_entry {
-	test:~str,
-	file:~str,
-	func:~str,
-	status:~str
+	module_name: ~str,
+	file_name:~str,
+	function_name:~str,
+	test_name:~str,
+	comment:~str
 }
 
 pub struct test_report {
@@ -21,51 +22,63 @@ pub struct test_report {
 #[unsafe_destructor]
 impl Drop for test_report {
     fn finalize(&self) {
-    	if self.is_logged==false {
+    	if (self.is_logged == false) {
     		self.do_forceful_log_dump() ;
     	}
     }
 }
 
 impl test_report {
-	pub fn log_pass(&mut self, test_name : ~str , file_name : ~str , function_name : ~str ) {
-		self.do_log(test_name ,file_name, function_name , ~"PASSED" );
+	pub fn pass(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str) {
+		self.do_log(module_name, file_name, function_name, test_name , ~"PASS" );
 	}
 
-	pub fn log_fail(&mut self, test_name : ~str , file_name : ~str , function_name : ~str ) {
-		self.do_log(test_name ,file_name, function_name , ~"FAIl" );
+	pub fn fail(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str) {
+		self.do_log(module_name, file_name, function_name, test_name , ~"FAIL" );
 	}
 
-	pub fn log_info(&mut self, test_name : ~str , file_name : ~str , function_name : ~str ) {
-		self.do_log(test_name ,file_name, function_name , ~"INFO" );
+	pub fn info(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, comment : ~str ) {
+		self.do_log(module_name, file_name, function_name, test_name , comment );
 	}
 
 	// collects log in the memory and also print them on the console
-	fn do_log(&mut self, test_name : ~str , file_name : ~str , function_name : ~str , result : ~str) {
-		io::print(fmt!("\n\t \t [%s] [%s] [%s] = [%s] ",test_name,file_name,function_name,result));
-		self.do_silent_log(test_name, file_name , function_name  , result ) ;
+	fn do_log(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, comment : ~str) {
+		io::print(fmt!("\n\t \t [%s]::[%s]::[%s] [%s] %s ",module_name, file_name,function_name, test_name, comment));
+		self.do_silent_log(module_name, file_name , test_name, function_name  , comment ) ;
 	}
 
 	// Collects log silently in the memory
-	pub fn do_silent_log(&mut self, test_name : ~str , file_name : ~str , function_name : ~str , result : ~str) {
-		let a = log_entry{test:test_name , file:file_name , func:function_name , status:result };
+	fn do_silent_log(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, comment : ~str) {
+		let a = log_entry {
+			module_name:module_name, 
+			file_name:file_name , 
+			test_name:test_name ,  
+			function_name:function_name , 
+			comment:comment 
+		};
+		
 		self.log_list.push(a);
 	}
 
 	// do log dump in the file
 	pub fn do_log_dump(&mut self) {
-		self.is_logged = true ;
-		self.file_handle.write_line(fmt!("Test Name,File Name,Function Name,Status"));
-		for self.log_list.each() |lg| {
-			self.file_handle.write_line(fmt!("%s,%s,%s,%s",lg.test,lg.file,lg.func,lg.status));
-		}
+		self.is_logged = true;
+		self.do_forceful_log_dump();
 	}
 
 	// do forcefull logging in the end, if user not done file logging during usage
-	pub fn do_forceful_log_dump(&self) {
-		self.file_handle.write_line(fmt!("Test Name,File Name,Function Name,Status"));
-		for self.log_list.each() |lg| {
-			self.file_handle.write_line(fmt!("%s,%s,%s,%s",lg.test,lg.file,lg.func,lg.status));
+	fn do_forceful_log_dump(&self) {
+		self.file_handle.write_line(fmt!("Module,File,Function,Test,Comment"));
+		for self.log_list.each() |log_entry| {
+			self.file_handle.write_line (
+					fmt!("%s,%s,%s,%s,%s",
+							log_entry.module_name,
+							log_entry.file_name,
+							log_entry.function_name,
+							log_entry.test_name, 
+							log_entry.comment
+						)
+				);
 		}
 	}
 }
