@@ -5,12 +5,10 @@ extern mod parserutils;
 extern mod parserutils_filter;
 extern mod std;
 extern mod riconv;
-extern mod csdetect;
 use core::vec::*;
 use parserutils::*;
 use parserutils_filter::*;
 use std::arc;
-use csdetect::*;
 
 pub type  parserutils_charset_detect_func =  ~extern fn(
  		data: &~[u8], mibenum:u16, source:int, lpu_arc:arc::ARC<~lpu>) -> parserutils::parserutils_error;
