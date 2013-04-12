@@ -4,7 +4,6 @@
 extern mod std;
 extern mod riconv;
 extern mod parserutils;
-
 use parserutils::*;
 use std::arc;
 
@@ -341,16 +340,17 @@ pub fn css__charset_extract(data : &~[u8] ,	mibenum : u16 , source : css_charset
 		return (None ,None, PARSERUTILS_BADPARAM);
 	}
 
-	match source {
-		CSS_CHARSET_DEFAULT => return (None ,None, PARSERUTILS_BADPARAM),
+	/*match source {
+		//CSS_CHARSET_DEFAULT => return (None ,None, PARSERUTILS_BADPARAM),
+		CSS_CHARSET_DEFAULT => return (Some(mibenum) ,Some(source), PARSERUTILS_OK),
 		_ => {}
-	}
+	}*/
 
 	// If the charset was dictated by the client, we've nothing to detect 
 	match (source)  {
 		CSS_CHARSET_DICTATED => {
 			charset=mibenum ;
-			return (Some(charset), Some(source), PARSERUTILS_OK);
+			return (Some(charset), Some(CSS_CHARSET_DICTATED), PARSERUTILS_OK);
 		}
 		_ => {}
 	}
@@ -359,7 +359,10 @@ pub fn css__charset_extract(data : &~[u8] ,	mibenum : u16 , source : css_charset
 	let (option_return , err): (Option<u16>, parserutils_error) = css_charset_read_bom_or_charset(data, lpu_arc.clone());
 	match(err) {
 		PARSERUTILS_OK => {} ,
-		_ => return (None, None, PARSERUTILS_BADPARAM)
+		_ => {
+           
+			return (None, None, PARSERUTILS_BADPARAM);
+		}
 	}
 
 	if charset!=0 {
@@ -373,14 +376,16 @@ pub fn css__charset_extract(data : &~[u8] ,	mibenum : u16 , source : css_charset
 	match (source) {
 		CSS_CHARSET_DEFAULT => {},
 		_ => {
-			src= source;
+			src= CSS_CHARSET_DEFAULT;
 			return (Some(charset), Some(src), PARSERUTILS_OK);
 		}
 	}
+	
 	// We've not yet found a charset, so use the default fallback 
 	charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-8");
 
 	if charset==0 {
+		
 		return (None, None, PARSERUTILS_BADENCODING) ;
 	}
 

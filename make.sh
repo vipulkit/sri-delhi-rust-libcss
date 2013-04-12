@@ -7,6 +7,7 @@ rustc -L . parserutils.rs
 rustc -L . csdetect.rs
 rustc -L . parserutils_filter.rs
 rustc -L . parserutils_inputstream.rs
+
 rustc -L . wapcaplet.rs
 #rustc -L . css_enum.rs
 #rustc -L . css_ds.rs
