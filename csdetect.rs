@@ -364,7 +364,7 @@ pub fn css__charset_extract(data : &~[u8] ,	mibenum : u16 , source : css_charset
 			return (None, None, PARSERUTILS_BADPARAM);
 		}
 	}
-
+	charset= option_return.unwrap();
 	if charset!=0 {
 		//mibenum = charset;
 		src = CSS_CHARSET_DOCUMENT ; // CSS_CHARSET_DOCUMENT;
