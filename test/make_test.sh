@@ -12,16 +12,3 @@ rustc -L ./.. test_parserutils_inputstream.rs -L .
 rustc -L ./.. test_parserutils.rs -L .
 rustc -L ./.. test_riconv.rs -L .
 rustc -L ./.. test_wapcaplet.rs -L .
-
-
-# run test programs 
-./test_aliases 
-./test_wapcaplet
-./test_riconv
-./test_parserutils 
-./test_parserutils_filter 
-./test_parserutils_inputstream ./utf16.txt 
-
- 
-
-
