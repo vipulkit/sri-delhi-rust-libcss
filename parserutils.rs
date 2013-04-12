@@ -82,7 +82,7 @@ impl lpu {
 					} 
 					// insert <alias, mibenum> into alias_map
 					for aliases.each |&alias| {
-						self.alias_map.insert(alias, mibenum);
+						self.alias_map.insert(alias.to_lower(), mibenum);
 					}
 				}
 				line_number=line_number+1;
@@ -90,12 +90,12 @@ impl lpu {
 		}
 	}
 
-	pub fn parserutils__charset_alias_canonicalise(&self, alias: ~str) -> Option<parserutils_charset_aliases_canon> { 
-        match self.alias_map.find(&alias) {
-        	None => None,
+	pub fn parserutils__charset_alias_canonicalise(&self, alias: ~str) -> Option<parserutils_charset_aliases_canon> { 		
+        match self.alias_map.find(&alias) {        	
+        	None => None,       			
         	Some(temp_mib_enum) => {
         		match self.mibenum_map.find(temp_mib_enum) {
-        			None => None,
+        			None => None,        			
         			Some(canonical_name_list_index) => {
         				if (*canonical_name_list_index < self.canonical_name_list.len()) {
         					
