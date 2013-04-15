@@ -1,10 +1,13 @@
 #[link(name = "wapcaplet", vers = "1.0")];
 #[crate_type = "lib"];
 
-use core::managed;
+extern mod std;
+
+use std::arc;
+use core::ptr;
 
 pub struct lwc_string {
-	string: @str,
+	string: ~str,
 	length: uint,
 	refcnt: u32,
 	hash: u32,
@@ -12,7 +15,7 @@ pub struct lwc_string {
 }
 
 pub struct lwc {
-	bucketVector: ~([~[@mut lwc_string],  ..4091])
+	bucketVector: ~([~[arc::RWARC<~lwc_string>]])
 }
 
 impl lwc {
@@ -80,11 +83,11 @@ impl lwc {
 	    }
 	}
 
-	pub fn lwc_intern_string(&mut self, string_to_intern: &str) -> @mut lwc_string {
+	pub fn lwc_intern_string(&mut self, string_to_intern: ~str) -> arc::RWARC<~lwc_string> {
 		self.__lwc_intern(string_to_intern, false)
 	}
 
-	fn __lwc_intern(&mut self , string_to_intern: &str, case_insensitive:bool) -> @mut lwc_string {
+	fn __lwc_intern(&mut self , string_to_intern: ~str, case_insensitive:bool) -> arc::RWARC<~lwc_string> {
 		let hash_value = 
 			match (case_insensitive) {
 			false=> self.lwc_calculate_hash(string_to_intern),
@@ -93,97 +96,164 @@ impl lwc {
 	
 		let len = str::char_len(string_to_intern);
 		let mut vector_index = self.bucketVector[hash_value].len();
-		let string_to_intern_managed = string_to_intern.to_managed();
 
-		let lwc_string_to_intern = @mut lwc_string {
-			string: string_to_intern_managed , 
+		let copy_of_string_to_intern = copy string_to_intern;
+
+		let lwc_string_to_intern = arc::RWARC(~lwc_string {
+			string: string_to_intern , 
 			length: len ,
 			refcnt: 1 , 
 			hash: hash_value , 
 			is_case_insensitive:case_insensitive
-		};
+		});
 		
 		if vector_index == 0 {
-			vec::push(&mut self.bucketVector[hash_value], lwc_string_to_intern);
+			vec::push(&mut self.bucketVector[hash_value], lwc_string_to_intern.clone());
 			return lwc_string_to_intern;
 		}
 		else {
 			while vector_index>0 {
-				if self.bucketVector[hash_value][vector_index-1].string == string_to_intern_managed {
-					self.bucketVector[hash_value][vector_index-1].refcnt += 1;
-					return self.bucketVector[hash_value][vector_index-1];
+				let mut found_flag = false;
+				
+				do self.bucketVector[hash_value][vector_index-1].write |l| {
+					if ((*l).string == copy_of_string_to_intern) {
+						(*l).refcnt += 1;
+						found_flag = true;
+					}
 				}
+				
+				if (found_flag) {
+					return self.bucketVector[hash_value][vector_index-1].clone();
+				}
+				
 				vector_index = vector_index-1;
-			}
-			vec::push(&mut self.bucketVector[hash_value], lwc_string_to_intern);
+				
+			}	
+			vec::push(&mut self.bucketVector[hash_value], lwc_string_to_intern.clone());
 			return lwc_string_to_intern;
 		}
 	}
 	
-	pub fn lwc_intern_substring(&mut self , substring_to_intern: @mut lwc_string , ssoffset: u32, sslen: u32) -> @mut lwc_string {
-		self.lwc_intern_string(str::slice(substring_to_intern.string , ssoffset as uint , (ssoffset+sslen) as uint))
-	}
-
-	pub fn lwc_string_ref(&mut self , string_to_ref: @mut lwc_string) -> @mut lwc_string {
-		let hash_value = string_to_ref.hash;
-		let mut vector_index = self.bucketVector[hash_value].len();
-
-		while vector_index > 0 {
-			if (self.bucketVector[hash_value][vector_index - 1].string.len() == string_to_ref.string.len())&&(str::contains(string_to_ref.string ,(self.bucketVector[hash_value][vector_index - 1].string) )) {
-				string_to_ref.refcnt += 1;
-			}
-			vector_index = vector_index - 1;
-		}
-		string_to_ref
-	}
-
-	pub fn lwc_string_unref(&mut self , string_to_unref: @mut lwc_string) {
-		let hash_value = string_to_unref.hash;
-		let mut vector_index = self.bucketVector[hash_value].len();
-
-		while vector_index > 0 {
-			if (self.bucketVector[hash_value][vector_index - 1].string.len() == string_to_unref.string.len())&&(str::contains(string_to_unref.string ,(self.bucketVector[hash_value][vector_index - 1].string) )) {
-				if string_to_unref.refcnt!= 1 {
-					string_to_unref.refcnt -= 1;
-
-				}
-				else {
-					vec::remove(&mut self.bucketVector[hash_value] , (vector_index - 1) as uint);
-				}
-				break;
-			}
-			vector_index = vector_index - 1;
+	pub fn lwc_intern_substring(&mut self , substring_to_intern: arc::RWARC<~lwc_string> , ssoffset: u32, sslen: u32) -> arc::RWARC<~lwc_string> {
+		do substring_to_intern.read |l| {
+			self.lwc_intern_string((str::slice(l.string , ssoffset as uint , (ssoffset+sslen) as uint)).to_owned())
 		}
 	}
 
-	pub fn lwc_string_isequal(str1: @mut lwc_string , str2: @mut lwc_string) ->bool {
-		managed::mut_ptr_eq(str1 , str2)
+	pub fn lwc_string_ref(&mut self , string_to_ref: arc::RWARC<~lwc_string>) -> arc::RWARC<~lwc_string> {
+		do string_to_ref.read |l| {
+			let hash_value = l.hash;
+
+			let mut vector_index = self.bucketVector[hash_value].len();
+
+			while vector_index > 0 {
+				let mut found_flag = false;
+				do self.bucketVector[hash_value][vector_index-1].write |i_l| {
+					if ((*i_l).string == (*l).string) {
+						(*i_l).refcnt += 1;
+						found_flag = true;
+					}
+				}
+				if found_flag {
+					break;
+				}
+				vector_index = vector_index - 1;
+			}
+		}
+		
+		
+		string_to_ref.clone()
 	}
 
-	pub fn lwc_intern_caseless_string(&mut self , string_to_intern: @mut lwc_string) ->@mut lwc_string {
-		self.__lwc_intern(string_to_intern.string, true)
+	pub fn lwc_string_unref(&mut self , string_to_unref: arc::RWARC<~lwc_string>) {
+		do string_to_unref.write |l| {
+
+			let hash_value = l.hash;
+			let mut vector_index = self.bucketVector[hash_value].len();
+
+			let mut remove_flag = false;
+			
+			while vector_index > 0 {
+				let mut found_flag = false;
+				
+				do self.bucketVector[hash_value][vector_index-1].write |i_l| {
+					if ((*i_l).string == (*l).string) {
+						found_flag = true;
+
+						if ((*i_l).refcnt > 1) {
+							(*i_l).refcnt -= 1;
+						}
+						else {
+							remove_flag = true;
+						}
+					}
+				}
+
+				if (found_flag) {
+					break;	
+				}
+
+				vector_index = vector_index - 1;
+			}
+
+			if (remove_flag) {
+				vec::remove(&mut self.bucketVector[hash_value] , vector_index - 1);
+			}
+		}
 	}
 
-	pub fn lwc_string_caseless_isequal(string_to_cmp1: @mut lwc_string , string_to_cmp2: @mut lwc_string) ->bool {
-		(string_to_cmp1.is_case_insensitive && string_to_cmp2.is_case_insensitive)
+	pub fn lwc_string_isequal(str1: arc::RWARC<~lwc_string> , str2: arc::RWARC<~lwc_string>) ->bool {
+		do str1.read |s1| {
+			do str2.read |s2| {
+				ptr::ref_eq(s1,s2)
+			}
+		}
 	}
 
-	pub fn lwc_string_length(string: @mut lwc_string) -> uint {
-		string.length
+	pub fn lwc_intern_caseless_string(&mut self , string_to_intern: arc::RWARC<~lwc_string>) ->  arc::RWARC<~lwc_string> {
+		do string_to_intern.read |s| {
+			self.__lwc_intern(copy s.string, true)
+		}
+		
 	}
 
-	pub fn lwc_string_hash_value(string: @mut lwc_string) -> u32 {
-		string.hash
+	pub fn lwc_string_caseless_isequal(str1: arc::RWARC<~lwc_string> , str2: arc::RWARC<~lwc_string>) ->bool {
+		do str1.read |s1| {
+			do str2.read |s2| {
+				s1.is_case_insensitive && s2.is_case_insensitive
+			}
+		}
 	}
 
-	pub fn lwc_string_data(string: @mut lwc_string) -> @str {
-		string.string
+	pub fn lwc_string_length(string: arc::RWARC<~lwc_string>) -> uint {
+		do string.read |s| {
+			s.string.len()
+		}
+	}
+
+	pub fn lwc_string_hash_value(string: arc::RWARC<~lwc_string>) -> u32 {
+		do string.read |s| {
+			s.hash
+		}
+	}
+
+	pub fn lwc_string_data(string: arc::RWARC<~lwc_string>) -> ~str {
+		do string.read |s| {
+			copy s.string
+		}
 	}
 }
 
 pub fn lwc()->~lwc {
+	
+	let mut tempBucketVector: ~([~[arc::RWARC<~lwc_string>]]) = ~[];
+	for uint::range(0, 4091) |_| {
+		let bucket:~[arc::RWARC<~lwc_string>] = ~[];
+		tempBucketVector.push(bucket);
+	}
+
 	~lwc {
-		bucketVector:~([~[], ..4091])
+		bucketVector:tempBucketVector
 	}
 }
 
