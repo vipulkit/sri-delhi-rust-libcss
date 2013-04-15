@@ -284,33 +284,6 @@ pub struct css_rule_font_face {
 	font_face:@css_font_face 
 }
 
-pub struct css_font_face {
-	font_family:@lwc_string,
-	srcs:@css_font_face_src,
-	n_srcs:u32,
-	
-	/*
-	 * Bit allocations:
-	 *
-	 *    76543210
-	 *  1 __wwwwss	font-weight | font-style
-	 */
-	bits:~[u8]
-	
-	//css_allocator_fn alloc;
-	//void *pw;
-}
-
-pub struct css_font_face_src {
-	location:@lwc_string,
-	/*
-	 * Bit allocations:
-	 *
-	 *    76543210
-	 *  1 _fffffll	format | location type
-	 */
-	bits:~[u8]
-}
 
 pub struct css_rule_page {
 	//base:css_rule ,
@@ -961,6 +934,32 @@ pub struct css_select {
 	
 }
 */
+
+// for use in css_fontface.rs
+pub struct css_font_face_src {
+	location:@mut lwc_string,
+	/*
+	 * Bit allocations:
+	 *
+	 *    76543210
+	 *  1 _fffffll	format | location type
+	 */
+	bits:[u8, ..1]
+}
+
+pub struct css_font_face {
+	font_family:@mut lwc_string,
+	src:~css_font_face_src, 
+	n_srcs:uint,
+	
+	/*
+	 * Bit allocations:
+	 *
+	 *    76543210
+	 *  1 __wwwwss	font-weight | font-style
+	 */
+	bits:[u8, ..1]
+}
 
 //TO DO: Should be moved to libwapcaplet
 pub type lwc_hash = u32;

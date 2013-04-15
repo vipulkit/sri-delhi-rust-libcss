@@ -1778,34 +1778,35 @@ enum rule_stylesheet
 // ===========================================================================================================
 
 // Ref: Propstrings.h
+/*
 pub enum UniversalEnum
 {
 
-	/* Universal selector */
+	
 	UNIVERSAL,
 
-	/* At-rules */
+	
 
-	// Sushanta: 
+	
 	//CHARSET is removed , 'coz it was clashing with charset valriable used below in the code.
 	// CHARSET, LIBCSS_IMPORT, MEDIA, NAMESPACE, FONT_FACE, PAGE,
 	LIBCSS_IMPORT, MEDIA, NAMESPACE, FONT_FACE, PAGE,
 
-	/* Media types */
+	
 	AURAL, BRAILLE, EMBOSSED, HANDHELD, PRINT, PROJECTION, 
 	SCREEN, SPEECH, TTY, TV, ALL,
 
-	/* Pseudo classes */
+	
 	FIRST_CHILD, LINK, VISITED, HOVER, ACTIVE, FOCUS, LANG, 
-	/* LEFT, RIGHT, -- already in properties */ FIRST,
+	 FIRST,
 	ROOT, NTH_CHILD, NTH_LAST_CHILD, NTH_OF_TYPE, NTH_LAST_OF_TYPE,
 	LAST_CHILD, FIRST_OF_TYPE, LAST_OF_TYPE, ONLY_CHILD,
 	ONLY_OF_TYPE, EMPTY, TARGET, ENABLED, DISABLED, CHECKED, NOT, 
 
-	/* Pseudo elements */
+	
 	FIRST_LINE, FIRST_LETTER, BEFORE, AFTER,
 
-	/* Properties */
+	
 	FIRST_PROP,
 
 
@@ -1842,7 +1843,7 @@ pub enum UniversalEnum
 	// Below mentione line is commented temporarily to avoid compilation error
 	//LAST_PROP = Z_INDEX,
 
-	/* Other keywords */
+	
 	INHERIT, IMPORTANT, NONE, BOTH, FIXED, SCROLL, TRANSPARENT,
 	NO_REPEAT, REPEAT_X, REPEAT_Y, REPEAT, HIDDEN, DOTTED, DASHED,
 	SOLID, LIBCSS_DOUBLE, GROOVE, RIDGE, INSET, OUTSET, THIN, MEDIUM, THICK,
@@ -1872,7 +1873,7 @@ pub enum UniversalEnum
 	FORMAT, WOFF, TRUETYPE, OPENTYPE, EMBEDDED_OPENTYPE, SVG, COLUMN,
 	AVOID_PAGE, AVOID_COLUMN, BALANCE,
 
-	/* Named colours */
+	
 	FIRST_COLOUR,
 
 	// Below mentione line is commented temporarily to avoid compilation error
@@ -1907,8 +1908,16 @@ pub enum UniversalEnum
 	// LAST_COLOUR = YELLOWGREEN,
 
 	LAST_KNOWN
-}
+} */
 
+static SERIF  :uint = 333 ;
+static SANS_SERIF  :uint =334 ;
+static CURSIVE  :uint = 335 ;
+static FANTASY  :uint = 336 ;
+static MONOSPACE  :uint = 337 ;
+static INHERIT  :uint = 175 ;
+static INITIAL  :uint = 358 ;
+static DEFAULT  :uint = 318 ;
 
 pub enum css_font_face_format {
 	CSS_FONT_FACE_FORMAT_UNSPECIFIED	= 	0x00,
