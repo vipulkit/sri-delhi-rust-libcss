@@ -336,15 +336,9 @@ pub fn css__charset_extract(data : &~[u8] ,	mibenum : u16 , source : css_charset
 	let mut charset : u16 = 0;
 	let mut src :css_charset_source;
 
-	if (data.len()==(0 as uint))  || mibenum==(0 as u16){
-		return (None ,None, PARSERUTILS_BADPARAM);
+	if (data.len()==(0 as uint))  || mibenum==0u16 {
+		return (None, None, PARSERUTILS_BADPARAM);
 	}
-
-	/*match source {
-		//CSS_CHARSET_DEFAULT => return (None ,None, PARSERUTILS_BADPARAM),
-		CSS_CHARSET_DEFAULT => return (Some(mibenum) ,Some(source), PARSERUTILS_OK),
-		_ => {}
-	}*/
 
 	// If the charset was dictated by the client, we've nothing to detect 
 	match (source)  {
@@ -356,39 +350,46 @@ pub fn css__charset_extract(data : &~[u8] ,	mibenum : u16 , source : css_charset
 	}
 
 	// Look for a BOM and/or @charset 
-	let (option_return , err): (Option<u16>, parserutils_error) = css_charset_read_bom_or_charset(data, lpu_arc.clone());
+	let (option_return , err): (Option<u16>, parserutils_error) = 
+		css_charset_read_bom_or_charset(data, lpu_arc.clone());
+	
 	match(err) {
-		PARSERUTILS_OK => {} ,
+		PARSERUTILS_OK => {
+			charset= option_return.unwrap();
+			if charset !=0 {
+				//mibenum = charset;
+				src = CSS_CHARSET_DOCUMENT;
+				return (Some(charset), Some(src), PARSERUTILS_OK);
+			}
+		},
+		
 		_ => {
            
 			return (None, None, PARSERUTILS_BADPARAM);
 		}
 	}
-	charset= option_return.unwrap();
-	if charset!=0 {
-		//mibenum = charset;
-		src = CSS_CHARSET_DOCUMENT ; // CSS_CHARSET_DOCUMENT;
-		return (Some(charset), Some(src), PARSERUTILS_OK);
-	}
+	
+
 
 	// If we've already got a charset from the linking mechanism or 
 	//  referring document, then we've nothing further to do 
 	match (source) {
-		CSS_CHARSET_DEFAULT => {},
+		CSS_CHARSET_DEFAULT => {
+			// We've not yet found a charset, so use the default fallback 
+			charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-8");
+
+			if charset == 0 {
+				
+				return (None, None, PARSERUTILS_BADENCODING) ;
+			}
+
+			src = CSS_CHARSET_DEFAULT;
+			(Some(charset) , Some(src) , PARSERUTILS_OK)
+		},
+
 		_ => {
-			src= CSS_CHARSET_DEFAULT;
-			return (Some(charset), Some(src), PARSERUTILS_OK);
+			return (Some(charset), Some(source), PARSERUTILS_OK);
 		}
 	}
 	
-	// We've not yet found a charset, so use the default fallback 
-	charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-8");
-
-	if charset==0 {
-		
-		return (None, None, PARSERUTILS_BADENCODING) ;
-	}
-
-	src = CSS_CHARSET_DEFAULT ; // CSS_CHARSET_DEFAULT;
-	(Some(charset) , Some(src) , PARSERUTILS_OK)
 }
