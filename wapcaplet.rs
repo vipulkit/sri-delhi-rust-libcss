@@ -142,16 +142,15 @@ impl lwc {
 	}
 
 	pub fn lwc_string_ref(&mut self , string_to_ref: arc::RWARC<~lwc_string>) -> arc::RWARC<~lwc_string> {
+		let mut hash_value = 0u32;
+		let mut vector_index = 0u;
 		do string_to_ref.read |l| {
-			let hash_value = l.hash;
-
-			let mut vector_index = self.bucketVector[hash_value].len();
-
+			hash_value = l.hash;
+			vector_index = self.bucketVector[hash_value].len();
 			while vector_index > 0 {
 				let mut found_flag = false;
-				do self.bucketVector[hash_value][vector_index-1].write |i_l| {
+				do self.bucketVector[hash_value][vector_index-1].read |i_l| {
 					if ((*i_l).string == (*l).string) {
-						(*i_l).refcnt += 1;
 						found_flag = true;
 					}
 				}
@@ -161,32 +160,31 @@ impl lwc {
 				vector_index = vector_index - 1;
 			}
 		}
+
+		do self.bucketVector[hash_value][vector_index-1].write |i_l| {
+			(*i_l).refcnt += 1;
+		}
 		
-		
-		string_to_ref.clone()
+		string_to_ref
 	}
 
 	pub fn lwc_string_unref(&mut self , string_to_unref: arc::RWARC<~lwc_string>) {
-		do string_to_unref.write |l| {
+		let mut hash_value = 0u32;
+		let mut vector_index = 0u;
 
-			let hash_value = l.hash;
-			let mut vector_index = self.bucketVector[hash_value].len();
+		let mut remove_flag = false;
 
-			let mut remove_flag = false;
+		do string_to_unref.read |l| {
+
+			hash_value = l.hash;
+			vector_index = self.bucketVector[hash_value].len();
 			
 			while vector_index > 0 {
 				let mut found_flag = false;
 				
-				do self.bucketVector[hash_value][vector_index-1].write |i_l| {
+				do self.bucketVector[hash_value][vector_index-1].read |i_l| {
 					if ((*i_l).string == (*l).string) {
 						found_flag = true;
-
-						if ((*i_l).refcnt > 1) {
-							(*i_l).refcnt -= 1;
-						}
-						else {
-							remove_flag = true;
-						}
 					}
 				}
 
@@ -196,10 +194,19 @@ impl lwc {
 
 				vector_index = vector_index - 1;
 			}
+		}
 
-			if (remove_flag) {
-				vec::remove(&mut self.bucketVector[hash_value] , vector_index - 1);
+		do self.bucketVector[hash_value][vector_index-1].write |i_l| {
+			if ((*i_l).refcnt > 1) {
+				(*i_l).refcnt -= 1;
 			}
+			else {
+				remove_flag = true;
+			}
+		} 
+
+		if (remove_flag) {
+			vec::remove(&mut self.bucketVector[hash_value] , vector_index - 1);
 		}
 	}
 
