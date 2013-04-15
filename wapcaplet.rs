@@ -11,8 +11,9 @@ pub struct lwc_string {
 	length: uint,
 	refcnt: u32,
 	hash: u32,
-	is_case_insensitive: bool
+	case_insensitive: Option<arc::RWARC<~lwc_string>>
 }
+
 
 pub struct lwc {
 	bucketVector: ~([~[arc::RWARC<~lwc_string>]])
@@ -104,7 +105,7 @@ impl lwc {
 			length: len ,
 			refcnt: 1 , 
 			hash: hash_value , 
-			is_case_insensitive:case_insensitive
+			case_insensitive: None
 		});
 		
 		if vector_index == 0 {
@@ -217,12 +218,44 @@ impl lwc {
 		
 	}
 
-	pub fn lwc_string_caseless_isequal(str1: arc::RWARC<~lwc_string> , str2: arc::RWARC<~lwc_string>) ->bool {
-		do str1.read |s1| {
-			do str2.read |s2| {
-				s1.is_case_insensitive && s2.is_case_insensitive
+
+	pub fn lwc_string_caseless_isequal(&mut self, str1: arc::RWARC<~lwc_string> , str2: arc::RWARC<~lwc_string>) ->bool {
+		
+		let mut s1_c: Option<arc::RWARC<~lwc_string>> = None;
+		let mut s2_c: Option<arc::RWARC<~lwc_string>> = None; 
+
+		do str1.write |s| {
+			if (*s).case_insensitive.is_none() {
+				let temp = self.__lwc_intern(copy s.string, true);
+				(*s).case_insensitive = Some(temp.clone());
+				s1_c = Some(temp.clone());
+			}
+			else {
+				let temp = (*s).case_insensitive.swap_unwrap();
+				(*s).case_insensitive = Some(temp.clone());
+				s1_c = Some(temp.clone());
 			}
 		}
+
+		do str2.write |s| {
+			if (*s).case_insensitive.is_none() {
+				let temp = self.__lwc_intern(copy s.string, true);
+				(*s).case_insensitive = Some(temp.clone());
+				s2_c = Some(temp.clone());
+			}
+			else {
+				let temp = (*s).case_insensitive.swap_unwrap();
+				(*s).case_insensitive = Some(temp.clone());
+				s2_c = Some(temp.clone());
+			}
+		}
+
+		
+		let s1 = s1_c.unwrap();
+		let s2 = s2_c.unwrap();
+
+		lwc::lwc_string_isequal(s1,s2)
+
 	}
 
 	pub fn lwc_string_length(string: arc::RWARC<~lwc_string>) -> uint {
