@@ -12,9 +12,15 @@ fn main()
 {
 	let (inputStreamOption, ParserUtilsError)= lpu_inputstream(~"UTF-16",Some(~css__charset_extract));
 	let args : ~[~str] = os::args();
-    io::println(args[1]);
-    let r:@Reader = io::file_reader(&Path(args[1])).get();
+    io::println(copy args[1]);    
+
+    let r:@Reader = io::file_reader(&Path(copy args[1])).get();
+	
 	let mut test1 = result::unwrap(test_report(&"temp_log.csv"));
+	test1.info(~"",~""  , ~"", ~"" , ~"");
+	test1.info( ~"parserutils",~"parserutils_inputStream.rs"  , ~"lpu_inputstream", ~"test_parserutils_inputstream.rs" , copy args[1]) ;
+	test1.info(~"",~""  , ~"", ~"" , ~"");
+
 	match(ParserUtilsError)
 	{
 		PARSERUTILS_OK=>{
