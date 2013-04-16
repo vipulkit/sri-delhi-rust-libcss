@@ -51,9 +51,9 @@ impl lwc {
 
 		while string_index>0 {
 			z = z*0x01000193;
-			i = i+1;
 			z = (z^self.dolower(string[i]) as u32);
 	        string_index = string_index-1;
+	        i = i+1;
 		}
 		z = z%4091;
 		z
@@ -285,7 +285,7 @@ impl lwc {
 	}
 }
 
-pub fn lwc()->~lwc {
+pub fn lwc()->arc::RWARC<~lwc> {
 	
 	let mut tempBucketVector: ~([~[arc::RWARC<~lwc_string>]]) = ~[];
 	for uint::range(0, 4091) |_| {
@@ -293,8 +293,8 @@ pub fn lwc()->~lwc {
 		tempBucketVector.push(bucket);
 	}
 
-	~lwc {
+	arc::RWARC(~lwc {
 		bucketVector:tempBucketVector
-	}
+	})
 }
 
