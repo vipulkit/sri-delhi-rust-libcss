@@ -1,0 +1,3 @@
+@charset "EUC-JP";
+Unknown encoding test file
+

@@ -17,31 +17,21 @@ fn main()
     let r:@Reader = io::file_reader(&Path(copy args[1])).get();
 	
 	let mut test1 = result::unwrap(test_report(&"temp_log.csv"));
-	test1.info(~"",~""  , ~"", ~"" , ~"");
-	test1.info( ~"parserutils",~"parserutils_inputStream.rs"  , ~"lpu_inputstream", ~"test_parserutils_inputstream.rs" , copy args[1]) ;
-	test1.info(~"",~""  , ~"", ~"" , ~"");
+	test1.info( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"") ;
 
 	match(ParserUtilsError)
 	{
 		PARSERUTILS_OK=>{
 			
-			test1.pass( ~"parserutils",~"parserutils_inputStream.rs"  , ~"lpu_inputstream", ~"test_parserutils_inputstream.rs" , ~"input stream created successfully") ;
+			test1.info( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"input stream created successfully") ;
 			let mut stream:~lpu_inputstream = inputStreamOption.unwrap();
 			
 			
-			//let mut (ptr,length):(~[u8],uint)= (~[],0) ;
 			while !r.eof() {
 				io::println("line");
-     			//let line:&str=r.read_bytes();
      			let data:~[u8]= r.read_bytes(100);
-         		//io::println(line);
-         		test1.pass( ~"test_parserutils_inputstream.rs",~"test_parserutils_inputstream.rs"  , ~"file reader", ~"test_parserutils_inputstream.rs" , ~"file read successfully"+fmt!("%?",data)) ;
-         		/*io::println("line");
-         		io::println(fmt!("%?",data));*/
-         		//reader.read_byte();
+         		test1.info( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"file read successfully"+fmt!("%?",data)) ;
          		stream.parserutils_inputstream_append(data);
-         		//parser.print_inputstream(&mut stream);
-         		//io::println("Pass");
          		loop{
          			let (tuple,parserutilsError)=stream.parserutils_inputstream_peek(2);
          			match(parserutilsError)
@@ -49,42 +39,20 @@ fn main()
 						PARSERUTILS_OK=>{
 							let mut(ptr,length)= tuple.get();
 							stream.parserutils_inputstream_advance( length);
-							test1.pass( ~"parserutils",~"parserutils_inputStream.rs"  , ~"parserutils_inputstream_peek", ~"test_parserutils_inputstream.rs" , fmt!("peek data->%?,%?",ptr,length)) ;
-							/*io::println(fmt!("peek data->%?,%?",ptr,length));
-							io::println("sandeep");*/
+							test1.info( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , fmt!("peek data->%?,%?",ptr,length)) ;
 						},
 						PARSERUTILS_NEEDDATA =>{break;}
 						PARSERUTILS_EOF=>{break;}
-						_=>{test1.fail( ~"parserutils",~"parserutils_inputStream.rs"  , ~"parserutils_inputstream_peek", ~"test_parserutils_inputstream.rs" , ~"invalid ") ;break;}
+						_=>{
+							test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"invalid ");
+							break;
+						}
 					}
-					//parser.print_inputstream(&mut stream);
-					
-					
-					/*reader.read_byte();
-					reader.read_byte();*/
-
-         		}//end of loop
-				
+         		}
 	         }
-	         /*
-	         lpu::parserutils_inputstream_insert(&mut stream,"helloo".to_bytes());
-	         io::println("Pass");
-	         loop{
-         			match(parser.parserutils_inputstream_peek(&mut stream,0))
-					{
-						PARSERUTILS_PEEK_OK(x,y)=>{
-							ptr=x;
-							length=y;
-							parser.parserutils_inputstream_advance(& mut stream, length);
-						},
-						PARSERUTILS_NEEDDATA =>{break;}
-						_=>{}
-					}
-					io::println(fmt!("%?,%?",ptr,length));
-         		}//end of loop*/
 		},
-		_=>{test1.fail( ~"parserutils",~"parserutils_inputStream.rs"  , ~"lpu_inputstream", ~"test_parserutils_inputstream.rs" , ~"input stream not created successfully") ;}
+		_=>{test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"input stream not created successfully") ;}
 	}
-	test1.pass( ~"parserutils",~"parserutils_inputStream.rs"  , ~"whole functionality", ~"test_parserutils_inputstream.rs" , ~"PASS") ; 
+	test1.pass( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"") ; 
      
 }

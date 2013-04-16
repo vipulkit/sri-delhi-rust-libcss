@@ -45,10 +45,10 @@ impl test_report {
 	// collects log in the memory and also print them on the console
 	fn do_log(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, result:~str, comment : ~str) {
 		if result==~"" {
-			io::print(fmt!("\n\t \t [%s]::[%s]::[%s] Test:[%s] %s ",module_name, file_name,function_name, test_name, comment));	
+			io::print(fmt!("\n[%s]::[%s]::[%s] Test:[%s] %s ",module_name, file_name,function_name, test_name, comment));	
 		}
 		else {
-			io::print(fmt!("\n\t \t [%s]::[%s]::[%s] Test:[%s] %s %s ",module_name, file_name,function_name, test_name, result, comment));	
+			io::print(fmt!("\n[%s]::[%s]::[%s] Test:[%s] %s %s ",module_name, file_name,function_name, test_name, result, comment));	
 		}
 		
 		self.do_silent_log(module_name, file_name , test_name, function_name  , result, comment ) ;
