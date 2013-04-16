@@ -3,6 +3,8 @@ extern mod std;
 extern mod parserutils_inputstream;
 extern mod parserutils ; 
 extern mod test;
+extern mod csdetect;
+use csdetect::*;
 use test::*;
 use core::str::*;
 
@@ -48,7 +50,7 @@ fn main() {
             function_name=~"parserutils_inputstream_change_charset";
 			let toCharset= ~"UTF-16";
 
-            match(stream.parserutils_inputstream_change_charset(copy toCharset, 0))
+            match(stream.parserutils_inputstream_change_charset(copy toCharset,CSS_CHARSET_DEFAULT))
 			{
 				PARSERUTILS_OK=>{
 					comment = ~"charset changed successfully ";
