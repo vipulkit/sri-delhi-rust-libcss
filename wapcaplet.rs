@@ -200,7 +200,7 @@ impl lwc {
 			if ((*i_l).refcnt > 1) {
 				(*i_l).refcnt -= 1;
 			}
-			else {
+			else if ((*i_l).refcnt > 0) {
 				remove_flag = true;
 			}
 		} 
@@ -219,10 +219,11 @@ impl lwc {
 	}
 
 	pub fn lwc_intern_caseless_string(&mut self , string_to_intern: arc::RWARC<~lwc_string>) ->  arc::RWARC<~lwc_string> {
+		let mut string = ~"";
 		do string_to_intern.read |s| {
-			self.__lwc_intern(copy s.string, true)
+			string = copy s.string;
 		}
-		
+		self.__lwc_intern(string, true)
 	}
 
 
