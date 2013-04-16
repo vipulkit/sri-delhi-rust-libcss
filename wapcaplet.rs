@@ -232,26 +232,50 @@ impl lwc {
 		let mut s1_c: Option<arc::RWARC<~lwc_string>> = None;
 		let mut s2_c: Option<arc::RWARC<~lwc_string>> = None; 
 
-		do str1.write |s| {
+		let mut string = ~"";
+
+		let mut case_insensitive_is_none = false;
+
+		do str1.read |s| {
 			if (*s).case_insensitive.is_none() {
-				let temp = self.__lwc_intern(copy s.string, true);
-				(*s).case_insensitive = Some(temp.clone());
-				s1_c = Some(temp.clone());
+				string = copy s.string;
+				case_insensitive_is_none = true;
 			}
-			else {
+		}
+
+		if (case_insensitive_is_none) {
+				case_insensitive_is_none = false;
+				let temp = self.__lwc_intern(copy string, true);
+				s1_c = Some(temp.clone());
+				do str1.write |s|  {
+					(*s).case_insensitive = Some(temp.clone());
+			}
+		}
+		else {
+			do str1.write |s|  {
 				let temp = (*s).case_insensitive.swap_unwrap();
 				(*s).case_insensitive = Some(temp.clone());
 				s1_c = Some(temp.clone());
 			}
 		}
-
-		do str2.write |s| {
+		
+		do str2.read |s| {
 			if (*s).case_insensitive.is_none() {
-				let temp = self.__lwc_intern(copy s.string, true);
-				(*s).case_insensitive = Some(temp.clone());
-				s2_c = Some(temp.clone());
+				string = copy s.string;
+				case_insensitive_is_none = true;
 			}
-			else {
+		}
+
+		if (case_insensitive_is_none) {
+				case_insensitive_is_none = false;
+				let temp = self.__lwc_intern(string, true);
+				s2_c = Some(temp.clone());
+				do str2.write |s|  {
+					(*s).case_insensitive = Some(temp.clone());
+			}
+		}
+		else {
+			do str2.write |s|  {
 				let temp = (*s).case_insensitive.swap_unwrap();
 				(*s).case_insensitive = Some(temp.clone());
 				s2_c = Some(temp.clone());
