@@ -31,9 +31,9 @@ fn main()
 							encsrcVal = CSS_CHARSET_DOCUMENT;
 							num_skip_char = 4;
 							},
-		_           =>  {	encoding = ~"" ; //Unknown File Format"
-							encsrcVal = CSS_CHARSET_DICTATED;   // means ERROR
-							}
+		_           =>  {	encoding = ~"UTF-8" ;
+							encsrcVal = CSS_CHARSET_DEFAULT;   // any unknow encoding would be considered as UTF-8
+						}
 	}
 
 
@@ -122,7 +122,7 @@ fn main()
 			}
 
 		},
-		_=>{test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"input stream not created") ;}
+		_=>{test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~" Test-1 : input stream not created") ;}
 	}
 
 	// Test 2: Header of input file is not being skipped
@@ -191,6 +191,6 @@ fn main()
 							}
 			}
 		},
-		_=>{test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"input stream not created") ;}
+		_=>{test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"Test 2: input stream not created") ;}
 	}	
 }
