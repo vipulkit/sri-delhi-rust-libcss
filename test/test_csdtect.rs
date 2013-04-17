@@ -23,11 +23,11 @@ fn main()
 						   encsrcVal = CSS_CHARSET_DEFAULT;	
 						   num_skip_char = 0;
 							},
-		~"utf16.txt"  => { encoding = ~"UTF-16";
+		~"utf16.txt"  => { encoding = ~"UTF-16LE";
 							encsrcVal = CSS_CHARSET_DOCUMENT;
 							num_skip_char = 2;
 						 },
-		~"utf32.txt"  => {	encoding = ~"UTF-32";
+		~"utf32.txt"  => {	encoding = ~"UTF-32LE";
 							encsrcVal = CSS_CHARSET_DOCUMENT;
 							num_skip_char = 4;
 							},
