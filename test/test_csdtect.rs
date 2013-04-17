@@ -37,13 +37,12 @@ fn main()
 	}
 
 
-// Header of input file is  being skipped, intentionally
+	// Test 1: Header of input file is  being skipped
+	
 	let (inputStreamOption, ParserUtilsError) = lpu_inputstream(copy encoding, Some(~css__charset_extract));
     let r2 : @Reader = io::file_reader(&Path(copy args[1])).get();	    
 	let mut test1 = result::unwrap(test_report(&"temp_log.csv"));
-	test1.info( ~"csdetect", ~"csdetect.rs", ~"css__charset_extract", copy args[1] , ~"") ;
-
-	io::println(" Test 1");
+	test1.info( ~"csdetect", ~"csdetect.rs", ~"css__charset_extract", copy args[1] , ~"") ;	
 
 	match(ParserUtilsError)
 	{
@@ -51,13 +50,8 @@ fn main()
 			
 			test1.info( ~"csdetect",~"csdetect.rs", ~"css__charset_extract", copy args[1] , ~"input stream created successfully") ;			
 			let mut stream2 : ~lpu_inputstream = inputStreamOption.unwrap();
-
-
-// // mibenum test
-			
-
-
 			let mut flagValue : int = 0;
+
 			while !r2.eof() {				
      			let mut data : ~[u8]= r2.read_bytes(100);
      			let mut buffData : ~[u8];     	
@@ -104,6 +98,8 @@ fn main()
 					}
          		}
 	         }
+
+	         // mibenum test
 	         match(arc::get(&stream2.input.lpu_instance).parserutils_charset_mibenum_to_name(stream2.mibenum))
 			{
 				Some(x)  => {
@@ -129,14 +125,12 @@ fn main()
 		_=>{test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"input stream not created") ;}
 	}
 
-	let (inputStreamOption, ParserUtilsError) = lpu_inputstream(copy encoding, Some(~css__charset_extract));	
+	// Test 2: Header of input file is not being skipped
 
-	// Header of input file is not being skipped
+	let (inputStreamOption, ParserUtilsError) = lpu_inputstream(copy encoding, Some(~css__charset_extract));		
     let r : @Reader = io::file_reader(&Path(copy args[1])).get();	    
 	let mut test1 = result::unwrap(test_report(&"temp_log.csv"));
 	test1.info( ~"csdetect", ~"csdetect.rs", ~"css__charset_extract", copy args[1] , ~"") ;
-
-	io::println(" Test 2");
 
 	match(ParserUtilsError)
 	{
@@ -199,7 +193,5 @@ fn main()
 	         }
 		},
 		_=>{test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"input stream not created") ;}
-	}
-	
-	
+	}	
 }
