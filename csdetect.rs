@@ -17,9 +17,12 @@ pub enum css_charset_source {
 
 pub fn try_utf32_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>, parserutils_error) {
 
+	io::println("entering : pub fn try_utf32_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>, parserutils_error)");
 	let mut charset: u16 = 0;
+	// 2 b updated...
 	let CHARSET_BE : &[u8] = [0, 0, 0, '@' as u8, 0, 0, 0, 'c' as u8, 0, 0, 0, 'h' as u8, 0, 0, 0, 'a' as u8, 0, 0, 0, 'r' as u8, 0, 0, 0, 's' as u8, 0, 0, 0, 'e' as u8, 0, 0, 0, 't' as u8, 0, 0, 0, 0, 0, 0, '"' as u8] ; 
-	let CHARSET_LE : &[u8] = [ 255, 254, 0, 0,'@' as u8,0,0,0,'c' as u8,0,0,0,'h' as u8,0,0,0,'a' as u8,0,0,0,'r' as u8,0,0,0,'s' as u8,0,0,0,'e' as u8,0,0,0,'t' as u8,0,0,0,' ' as u8,0,0,0,'"' as u8,0,0,0, ] ;
+	//let CHARSET_LE : &[u8] = [ 255, 254, 0, 0,'@' as u8,0,0,0,'c' as u8,0,0,0,'h' as u8,0,0,0,'a' as u8,0,0,0,'r' as u8,0,0,0,'s' as u8,0,0,0,'e' as u8,0,0,0,'t' as u8,0,0,0,' ' as u8,0,0,0,'"' as u8,0,0,0, ] ;
+	let CHARSET_LE : &[u8] = [ '@' as u8,0,0,0,'c' as u8,0,0,0,'h' as u8,0,0,0,'a' as u8,0,0,0,'r' as u8,0,0,0,'s' as u8,0,0,0,'e' as u8,0,0,0,'t' as u8,0,0,0,' ' as u8,0,0,0,'"' as u8,0,0,0, ] ;
 
 	let UTF32LE: &[u8] = ['U' as u8 , 'T' as u8 , 'F' as u8 , '-' as u8 , '3' as u8 , '2' as u8 , 'L' as u8 , 'E' as u8];
 	let UTF32BE: &[u8] = ['U' as u8 , 'T' as u8 , 'F' as u8 , '-' as u8 , '3' as u8 , '2' as u8 , 'B' as u8 , 'E' as u8];
@@ -123,18 +126,23 @@ pub fn try_utf32_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>
 		}
 	}// else if terminates
 	
+	io::println("exiting : pub fn try_utf32_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>, parserutils_error)");
 	(Some(charset) , PARSERUTILS_OK)
 }	
 	
 
 pub fn try_utf16_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>, parserutils_error) {	
 
+	io::println("entering : pub fn try_utf16_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>, parserutils_error)");
+
 	let mut charset: u16 = 0;
 	//let CHARSET_BE : &[u8] = ['0' as u8, '@' as u8, '0' as u8, 'c' as u8, '0' as u8, 'h' as u8, '0' as u8, 'a' as u8, '0' as u8, 'r' as u8, '0' as u8, 's' as u8, '0' as u8, 'e' as u8, '0' as u8, 't' as u8, '0' as u8, ' ' as u8,'0' as u8, '"' as u8] ; 
 	//let CHARSET_LE : &[u8] = ['@' as u8, '0' as u8, 'c' as u8, '0' as u8, 'h' as u8, '0' as u8, 'a' as u8, '0' as u8, 'r' as u8, '0' as u8, 's' as u8, '0' as u8, 'e' as u8, '0' as u8, 't' as u8, '0' as u8, ' ' as u8, '0' as u8, '"' as u8, '0' as u8] ; 
 	
-	let CHARSET_BE : &[u8] = [254, 255, 0, 64, 0, 'c' as u8, 0, 'h' as u8, 0, 'a' as u8, 0, 'r' as u8, 0, 's' as u8, 0, 'e' as u8, 0, 't' as u8, 0, ' ' as u8,0, '"' as u8] ; 
-	let CHARSET_LE : &[u8] = [255, 254, 64, 0, 'c' as u8, 0, 'h' as u8, 0, 'a' as u8, 0, 'r' as u8, 0, 's' as u8, 0, 'e' as u8, 0, 't' as u8, 0, ' ' as u8, 0, '"' as u8, 0] ; 
+	//let CHARSET_BE : &[u8] = [254, 255, 0, 64, 0, 'c' as u8, 0, 'h' as u8, 0, 'a' as u8, 0, 'r' as u8, 0, 's' as u8, 0, 'e' as u8, 0, 't' as u8, 0, ' ' as u8,0, '"' as u8] ; 
+	//let CHARSET_LE : &[u8] = [255, 254, 64, 0, 'c' as u8, 0, 'h' as u8, 0, 'a' as u8, 0, 'r' as u8, 0, 's' as u8, 0, 'e' as u8, 0, 't' as u8, 0, ' ' as u8, 0, '"' as u8, 0] ; 
+	let CHARSET_BE : &[u8] = [0, 64, 0, 'c' as u8, 0, 'h' as u8, 0, 'a' as u8, 0, 'r' as u8, 0, 's' as u8, 0, 'e' as u8, 0, 't' as u8, 0, ' ' as u8,0, '"' as u8] ; 
+	let CHARSET_LE : &[u8] = [64, 0, 'c' as u8, 0, 'h' as u8, 0, 'a' as u8, 0, 'r' as u8, 0, 's' as u8, 0, 'e' as u8, 0, 't' as u8, 0, ' ' as u8, 0, '"' as u8, 0] ; 
 	
 	let UTF16LE: &[u8] = ['U' as u8 , 'T' as u8 , 'F' as u8 , '-' as u8 , '1' as u8 , '6' as u8 , 'L' as u8 , 'E' as u8];
 	let UTF16BE: &[u8] = ['U' as u8 , 'T' as u8 , 'F' as u8 , '-' as u8 , '1' as u8 , '6' as u8 , 'B' as u8 , 'E' as u8];
@@ -245,12 +253,14 @@ pub fn try_utf16_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>
 		}
 	}// else if terminates
 	
+	io::println("exiting : pub fn try_utf16_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>, parserutils_error)");
 	(Some(charset) , PARSERUTILS_OK)
 }
 
 pub fn  try_ascii_compatible_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>, parserutils_error) {
 
-	
+	io::println("entering : pub fn  try_ascii_compatible_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>, parserutils_error) ");
+
 	let mut charset : u16 = 0;
 	let CHARSET : ~[u8] = ~[ '@' as u8, 'c' as u8, 'h' as u8, 'a' as u8 , 'r' as u8, 's' as u8, 'e' as u8, 't' as u8, ' ' as u8 , '\"'  as u8] ;
 
@@ -293,6 +303,7 @@ pub fn  try_ascii_compatible_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> 
 		}
 	}
 	
+	io::println("exiting : pub fn  try_ascii_compatible_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>, parserutils_error) ");
 	(Some(charset),PARSERUTILS_OK)
 }
 
@@ -306,6 +317,8 @@ pub fn css_charset_read_bom_or_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>)
 	if (data.len()<4) {
 		return (None, PARSERUTILS_BADPARAM);
 	}
+
+	io::println("Just be4 BOM function");
 
 	//Look for BOM 
 	if (data[0] == 0x00 && data[1] == 0x00 && 
@@ -322,28 +335,38 @@ pub fn css_charset_read_bom_or_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>)
 		charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-8");
 	}
 
+	io::println(fmt!("value of charset is %?", charset));
+
 	if (charset!=0) {
 		return (Some(charset), PARSERUTILS_OK);
 	}
 
+	io::println("Just after BOM function");
+
+	io::println("Just be4 try_utf32_charset function");
     let default_option:Option<u16> = Some(0);
 	let (option_return , err): (Option<u16>, parserutils_error) = try_utf32_charset(data, lpu_arc.clone());
 	match(err) {
 		PARSERUTILS_OK => if option_return.unwrap()!=0 {return (option_return , err) },
 		_ => {}	
 	}
+	io::println("Just after try_utf32_charset function");
 
+	io::println("Just before try_utf16_charset function");
 	let (option_return , err): (Option<u16>, parserutils_error) = try_utf16_charset(data, lpu_arc.clone());
 	match(err) {
 		PARSERUTILS_OK => if option_return.unwrap()!=0 {return (option_return , err)} ,
 		_ => {}	
 	}
+	io::println("Just after try_utf16_charset function");
 
+	io::println("Just before try_ascii_compatible_charset function");
 	let (option_return , err): (Option<u16>, parserutils_error) = try_ascii_compatible_charset(data, lpu_arc.clone());
 	match(err){
 		PARSERUTILS_OK => if option_return.unwrap()!=0 {return (option_return , err)},
 		_ => {}	
 	}
+	io::println("Just after try_ascii_compatible_charset function");
 
 	 return (default_option , PARSERUTILS_OK);	
 	}
@@ -351,6 +374,8 @@ pub fn css_charset_read_bom_or_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>)
 
 pub fn css__charset_extract(data : &~[u8] ,	mibenum : u16 , source : css_charset_source, lpu_arc: arc::ARC<~lpu>)
 	-> (Option<u16>, Option<css_charset_source>, parserutils_error) {
+
+	//io::println("1. Inside pub fn css__charset_extract(data : &~[u8] ,	mibenum : u16 , source : css_charset_source, lpu_arc: arc::ARC<~lpu>) ");
 
 	let mut charset : u16 = 0;
 	let mut src :css_charset_source;
@@ -368,14 +393,20 @@ pub fn css__charset_extract(data : &~[u8] ,	mibenum : u16 , source : css_charset
 		_ => {}
 	}
 
+	//io::println("2.  Inside pub fn css__charset_extract(data : &~[u8] ,	mibenum : u16 , source : css_charset_source, lpu_arc: arc::ARC<~lpu>) ");
+
 	// Look for a BOM and/or @charset 
 	let (option_return , err): (Option<u16>, parserutils_error) = 
 		css_charset_read_bom_or_charset(data, lpu_arc.clone());
 	
 	match(err) {
 		PARSERUTILS_OK => {
+			//io::println(" 3. sush");			
 			charset= option_return.unwrap();
+			//io::println(fmt!(" value of charset is %?", charset));
+
 			if charset !=0 {
+				//io::println(" 4. sush");
 				//mibenum = charset;
 				src = CSS_CHARSET_DOCUMENT;
 				return (Some(charset), Some(src), PARSERUTILS_OK);
@@ -383,7 +414,7 @@ pub fn css__charset_extract(data : &~[u8] ,	mibenum : u16 , source : css_charset
 		},
 		
 		_ => {
-           
+           //io::println(" 5. sush");
 			return (None, None, PARSERUTILS_BADPARAM);
 		}
 	}

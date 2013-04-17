@@ -12,3 +12,4 @@ rustc -L ./.. test_parserutils_inputstream.rs -L .
 rustc -L ./.. test_parserutils.rs -L .
 rustc -L ./.. test_riconv.rs -L .
 rustc -L ./.. test_wapcaplet.rs -L .
+rustc -L ./.. test_csdtect.rs -L .
