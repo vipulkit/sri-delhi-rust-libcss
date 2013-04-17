@@ -54,26 +54,7 @@ fn main()
 
 
 // // mibenum test
-			match(arc::get(&stream2.input.lpu_instance).parserutils_charset_mibenum_to_name(stream2.mibenum))
-			{
-				Some(x)  => {
-								if eq(&x, &encoding){
-								test1.pass( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"mibenum value") ;								
-								}
-								else{
-								test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"mibenum value") ;								
-								}
-							},
-				None     => test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"mibenum value") 
-			}			
-
-			// encsrc test
-			match stream2.encsrc
-			{
-				encsrcVal  => {
-									test1.pass( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"encsrc value");									
-							}
-			}
+			
 
 
 			let mut flagValue : int = 0;
@@ -126,7 +107,26 @@ fn main()
 		},
 		_=>{test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"input stream not created") ;}
 	}
+match(arc::get(&stream2.input.lpu_instance).parserutils_charset_mibenum_to_name(stream2.mibenum))
+			{
+				Some(x)  => {
+								if eq(&x, &encoding){
+								test1.pass( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"mibenum value") ;								
+								}
+								else{
+								test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"mibenum value") ;								
+								}
+							},
+				None     => test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"mibenum value") 
+			}			
 
+			// encsrc test
+			match stream2.encsrc
+			{
+				encsrcVal  => {
+									test1.pass( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"encsrc value");									
+							}
+			}
 
 	let (inputStreamOption, ParserUtilsError) = lpu_inputstream(copy encoding, Some(~css__charset_extract));	
 
