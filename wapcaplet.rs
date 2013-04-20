@@ -245,6 +245,18 @@ impl lwc {
 
 
 	pub fn lwc_string_caseless_isequal(&mut self, str1: arc::RWARC<~lwc_string> , str2: arc::RWARC<~lwc_string>) ->bool {
+			
+		let mut retVal: bool = false;	
+		do str1.read |s1| {
+			do str2.read |s2| {
+				retVal = ptr::ref_eq(s1,s2);
+			}
+		}
+
+		if retVal {
+			return true;
+		}
+
 		let mut s1_c: Option<arc::RWARC<~lwc_string>> = None;
 		let mut s2_c: Option<arc::RWARC<~lwc_string>> = None; 
 
@@ -309,19 +321,10 @@ impl lwc {
 			}
 		}
 
-		
 		let s1 = s1_c.unwrap();
 		let s2 = s2_c.unwrap();
 
-		do s1.read |s| {
-			io::println(fmt!("lwc_string_caseless_isequal: string s1 is: %?" , s));
-		}
-
-		do s2.read |s| {
-			io::println(fmt!("lwc_string_caseless_isequal: string s2 is: %?" , s));
-		}
 		lwc::lwc_string_isequal(s1,s2)
-
 	}
 
 	pub fn lwc_string_length(string: arc::RWARC<~lwc_string>) -> uint {

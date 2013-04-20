@@ -50,8 +50,8 @@ impl test_report {
 		else {
 			io::print(fmt!("\n[%s]::[%s]::[%s] Test:[%s] %s %s ",module_name, file_name,function_name, test_name, result, comment));	
 		}
-		
-		self.do_silent_log(module_name, file_name , test_name, function_name  , result, comment ) ;
+				
+		self.do_silent_log(module_name, file_name , function_name, test_name,  result, comment);
 	}
 
 	// Collects log silently in the memory
