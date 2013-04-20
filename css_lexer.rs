@@ -1,15 +1,22 @@
 #[link(name = "css_lexer", vers = "0.1")];
 #[crate_type = "lib"];
 
-extern mod css_ds;
 extern mod css_enum;
 extern mod parserutils_inputstream;
 extern mod std;
 
 
 use css_enum::* ;
-use css_ds::*;
 use parserutils_inputstream::*;
+
+static MAX_UNICODE: char = '\U0010FFFF';
+
+static ASCII_LOWER_OFFSET: char = 'a' - 'A';
+
+pub struct ParseError {
+    message: ~str,
+}
+
 
 pub fn ascii_lower(string: &str) -> ~str {
     do str::map(string) |c| {
