@@ -14,30 +14,12 @@ use wapcaplet::*;
 use parserutils::*;
 use parserutils_inputstream::*;
 use css_enum::* ;
+use std::arc;
 
 
 // =======================================================
 // Structs 
 // =======================================================
-
-/**
- * Type of a qualified name
- */
-pub struct css_qname {
-	/**
-	 * Namespace URI:
-	 *
-	 * NULL for no namespace
-	 * '*' for any namespace (including none)
-	 * URI for a specific namespace
-	 */
-	ns : @lwc_string ,
-
-	/**
-	 * Local part of qualified name
-	 */
-	name : @lwc_string 
-}  
 
 pub type css_fixed = int;
 
@@ -59,33 +41,6 @@ pub struct css_system_font {
 }
 
 
-pub type css_code_t  = uint;
-
-pub struct css_style{
-	//used : u32,
-	//allocated: u32,
-	bytecode:~[css_code_t]
-	//sheet: Option<@css_stylesheet>
-}
-
-pub struct css_selector_detail_value {
-	string:~str,		/*< Interned string, or NULL */
-	a:u32,
-	b:u32			/*< Data for x = an + b */
-} 
-
-pub struct css_selector_detail {
-	qname:css_qname,			/*< Interned name */
-	value:css_selector_detail_value,	/** Detail value */
-
-	type_of     :int ,    		    /*< Type of selector */
-	comb        :int ,    		    /*< Type of combinator */
-	next        :int ,     		    /*< Another selector detail 
-						             * follows */
-	value_type  :int,		        /*< Type of value field */
-	negate      :int ,   		    /*< Detail match is inverted */
-}
-
 struct CONTEXT{
 	first:u8,		/**< First character read for token */
 	origBytes:uint,	/**< Storage of current number of 
@@ -100,6 +55,7 @@ struct CONTEXT{
 					 * rewinding */
 	hexCount:int		/*< Counter for reading hex digits */
 	} 
+
 struct css_lexer
 {
 	input:@lpu_inputstream,	/**< Inputstream containing CSS */
@@ -131,20 +87,11 @@ struct css_lexer
 	//void *pw;			/**< Pointer to client-specific data */
 }
 
-struct DATA{
-    data:~[u8],
-    len:uint,
-}
 
 struct css_token {
 	token_type:css_token_type,
-
-    data:DATA,
-
-	idata:@lwc_string ,
-	
-	col:u32,
-	line:u32,
+    data:~[u8],
+	idata:arc::RWARC<~lwc_string> 
 }
 
 
@@ -181,7 +128,7 @@ pub struct css_namespace {
  
 pub struct context_entry {
 	event_type:css_parser_event,		/* < Type of entry */
-	data:@css_rule		/*< Data for context */
+	//data:@css_rule		/*< Data for context */
 } 
 
 
@@ -219,60 +166,6 @@ pub struct ParseError {
     message: ~str,
 }
 
-
-pub struct css_high_level
-{
-	 base:@css_rule,
-	//rule_type : css_rule_type,
-	 selector  : @css_rule_selector,
-	 charset   : @css_rule_charset,
-	 import    : @css_rule_import,
-	 media     : @css_rule_media,
-	 font_face : @css_rule_font_face,
-	 page      : @css_rule_page,
-	 prev      : Option<@css_high_level>,
-	 next      : Option<@css_high_level>
-
-}
-
-struct css_selector {
-	 combinator:~[@css_selector],		/*< Combining selector */
-	 rule:Option<~css_high_level> ,				/*< Owning rule */
-	 specificity:u32,			//< Specificity of selector 
-     data:@css_selector_detail		/*< Selector data */
-}
-
-
-
-pub struct css_rule {
-	parent:@rule_stylesheet,		
-			/**< containing rule or owning 
-						 * stylesheet (defined by ptype)
-						 */
-	next:Option<@css_rule> ,				/**< next in list */
-	prev:Option<@css_rule> ,				/**< previous in list */
-
-	rule_type  :  css_rule_type,		/**< css_rule_type */
-	index : uint,		/**< index in sheet */
-	items : uint,		/**< # items in rule */
-	ptype : uint		/*< css_rule_parent_type */
-}
-
-pub struct css_rule_selector {
-	 // base:css_rule,
-
-	  selectors:~[@css_selector],
-	 style:css_style 
-}
-pub struct css_rule_media {
-	//base:css_rule ,
-
-	media:u64,
-	first_child:Option<@css_rule>, 
-	last_child:Option<@css_rule> 
-}
-
-
 // ===========================================================================================================
 // CSS-STYLESHEET implementation/data-structs start here 
 // ===========================================================================================================
@@ -284,22 +177,6 @@ pub struct css_rule_font_face {
 	font_face:@css_font_face 
 }
 
-
-pub struct css_rule_page {
-	//base:css_rule ,
-
-	selector:@css_selector ,
-	style:@css_style 
-}
-
-pub struct css_rule_import {
-	//base:css_rule ,
-
-	 url:@lwc_string,
-	 media:u64,
-
-	 sheet:Option<~css_stylesheet>
-}
 
 pub struct css_rule_charset {
 	//base:css_rule ,
@@ -355,65 +232,6 @@ struct css_stylesheet_params {
 
 	/** Client private data for font */
 		 font_pw: ~[u8]
-}
-
-pub struct css_stylesheet {
-	//selectors:@css_selector_hash,	TODO REPLACE WITH BUILT IN HASH TABLE
-		/* < Hashtable of selectors */
-	lwc_instance:~lwc,
-    //parser_instance:@lcss_parser,
-	 rule_count:u32,			/**< Number of rules in sheet */
-	 rule_list:Option<~css_high_level> ,			/**< List of rules in sheet */
-	 last_rule:Option<~css_high_level>,			/**< Last rule in list */
-
-	 disabled:bool,				/**< Whether this sheet is 
-						 * disabled */
-
-	 url:~str,				/**< URL of this sheet */
-	 title:~str,			/**< Title of this sheet */
-
-	 level:css_language_level ,		/**< Language level of sheet */
-	// parser:Option<@lcss_parser>,			/**< Core parser for sheet */
-	 parser_frontend:Option<@css_language>,			/**< Frontend parser */////////look for type
-	//propstrings:@ mut[@lwc_string ],		/**< Property strings, for parser */
-
-	 quirks_allowed:bool,			/**< Quirks permitted */
-	 quirks_used:bool,			/**< Quirks actually used */
-
-	 inline_style:bool,			/**< Is an inline style */
-
-	 size:uint,				/**< Size, in bytes */
-
-	// TODO
-	//   import:css_import_notification_fn,	/**< Import notification function */
-	 import_pw:~[u8],			/**< Private word *////////look for type
-
-	// TODO
-	//  resolve:css_url_resolution_fn,		/**< URL resolution function */
-	 resolve_pw:~[u8],			/**< Private word *////////look for type
-
-		// TODO
-	//  color:css_color_resolution_fn,		/**< Colour resolution function */
-	 color_pw:~[u8],				/**< Private word *////////look for type
-
-	/** System font resolution function */
-		//TODO 
-	//  font:css_font_resolution_fn,		
-	 font_pw:~[u8],				/**< Private word *////////look for type
-
-
-	// alloc:css_allocator_fn,			/**< Allocation function */
-	//pw:~[u8],				/**< Private word */
-  
-	 cached_style:Option<@css_style>,		/**< Cache for style parsing */
-  
-	 string_vector:~[@lwc_string],            /**< Bytecode string vector */
-	//string_vector_l:u32,              /**< The string vector allocated
-					// * length in entries */
-	//string_vector_c:u32,               /*< The number of string * vector entries used */ 
-	 propstrings_call_count:uint,
-     propstrings_list:@[@str],
-	propstrings:~[@mut lwc_string]					 
 }
 
 pub struct css_language {
@@ -948,7 +766,7 @@ pub struct css_font_face_src {
 }
 
 pub struct css_font_face {
-	font_family:@mut lwc_string,
+	font_family: arc::RWARC<~lwc_string>,
 	src:~css_font_face_src, 
 	n_srcs:uint,
 	
@@ -967,10 +785,6 @@ pub type lwc_refcounter = u32;
 
 
 
-static CSS_SPECIFICITY_A:u32=0x01000000;
-static CSS_SPECIFICITY_B:u32=0x00010000;
-static CSS_SPECIFICITY_C:u32=0x00000100;
-static CSS_SPECIFICITY_D:u32=0x00000001;
 
 
 static MAX_UNICODE: char = '\U0010FFFF';
@@ -978,3 +792,5 @@ static MAX_UNICODE: char = '\U0010FFFF';
 static ASCII_LOWER_OFFSET: char = 'a' - 'A';
 
 static CSS_STYLE_DEFAULT_SIZE:u32 =16;
+
+

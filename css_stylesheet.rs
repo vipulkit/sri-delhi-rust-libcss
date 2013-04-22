@@ -34,7 +34,7 @@ pub struct css_selector_detail {
 
 pub struct css_selector {
 	combinator:Option<@css_selector>,
-	rule:Option<@css_rule>,
+	rule:Option<CSS_RULE_DATA_TYPE>,
 	specificity:uint,
 
 	data:~[@mut css_selector_detail]
@@ -65,8 +65,7 @@ pub struct css_stylesheet {
 	quirks_allowed:bool,
 	quirks_used:bool,
 	inline_style:bool,
-	size:uint,
-	cached_style:Option<~css_style>
+	cached_style:Option<@mut css_style>
 }
 
 pub struct css_rule {
@@ -75,14 +74,13 @@ pub struct css_rule {
 	prev:Option<@css_rule>,
 	next:Option<@css_rule>,
 	rule_type:css_rule_type,
-	index:uint,
-	items:uint
+	index:uint//,items:uint
 }
 
 pub struct css_rule_selector {
 	base:@css_rule,
-	selectors:~[~css_selector],
-	style:Option<@css_style>
+	selectors:~[@mut css_selector],
+	style:Option<@mut css_style>
 } 
 
 pub struct css_rule_media {
@@ -100,7 +98,7 @@ pub struct css_rule_font_face {
 pub struct css_rule_page {
 	base:@css_rule,
 	selector:Option<~css_selector>,
-	style:Option<@css_style>
+	style:Option<@mut css_style>
 } 
 
 pub struct css_rule_import {
@@ -116,40 +114,40 @@ pub struct css_rule_charset {
 
 
 enum CSS_RULE_DATA_TYPE {
-	RULE_UNKNOWN(~css_rule),
-	RULE_SELECTOR(~css_rule_selector),
-	RULE_CHARSET(~css_rule_charset),
-	RULE_IMPORT(~css_rule_import),
-	RULE_MEDIA(~css_rule_media),
-	RULE_FONT_FACE(~css_rule_font_face),
-	RULE_PAGE(~css_rule_page)
+	RULE_UNKNOWN(@mut css_rule),
+	RULE_SELECTOR(@mut css_rule_selector),
+	RULE_CHARSET(@mut css_rule_charset),
+	RULE_IMPORT(@mut css_rule_import),
+	RULE_MEDIA(@mut css_rule_media),
+	RULE_FONT_FACE(@mut css_rule_font_face),
+	RULE_PAGE(@mut css_rule_page)
 }
 
 impl css_stylesheet {
-	pub fn css__stylesheet_style_create(&mut self ) -> ~css_style {
+	pub fn css__stylesheet_style_create(&mut self ) -> @mut css_style {
 
 		if self.cached_style.is_none() {
-			~css_style{bytecode:~[]} 
+			@mut css_style{bytecode:~[]} 
 		}
 		else {
 			self.cached_style.swap_unwrap()
 		}
 	}
 
-	pub fn css__stylesheet_merge_style(target : &mut ~css_style, style: &css_style) {
-		target.bytecode += style.bytecode;
+	pub fn css__stylesheet_merge_style(target : @mut css_style, style: @mut css_style) {
+		target.bytecode += copy style.bytecode;
 	}
 
-	pub fn css__stylesheet_style_append(target : &mut ~css_style, bytecode: u32) {
+	pub fn css__stylesheet_style_append(target : @mut css_style, bytecode: u32) {
 		target.bytecode.push(bytecode);
 	}
 	
-	pub fn css__stylesheet_style_vappend(target : &mut ~css_style, bytecodes: &[u32] ) {
+	pub fn css__stylesheet_style_vappend(target : @mut css_style, bytecodes: &[u32] ) {
 		target.bytecode += bytecodes;
 	}
 
-	pub fn css__stylesheet_selector_create(&mut self, qname : css_qname ) -> ~css_selector {
-		let mut sel = ~css_selector{  
+	pub fn css__stylesheet_selector_create(&mut self, qname : css_qname ) -> @mut css_selector {
+		let mut sel = @mut css_selector{  
 			combinator:None, 
 			rule:None, 
 			specificity:{
@@ -211,7 +209,7 @@ impl css_stylesheet {
 		}
 	}
 	
-	pub fn css__stylesheet_selector_append_specific(selector : &mut ~css_selector, sel_type: css_selector_type,
+	pub fn css__stylesheet_selector_append_specific(selector : @mut css_selector, sel_type: css_selector_type,
 												name : css_qname , val_type : css_selector_detail_value_type,
 												string_value : Option<~str> , ab_value : Option<(int,int)>,
 												negate:bool, comb_type : css_combinator)  -> css_result  {
@@ -292,26 +290,24 @@ impl css_stylesheet {
 			next:None,
 			prev:None,
 			rule_type:typ,
-			index:0,
-			items:0
+			index:0
 		};
 
 		match typ {
 			CSS_RULE_UNKNOWN=>  { 	
-				let mut ret_rule = ~css_rule{ 
+				let mut ret_rule = @mut css_rule{ 
 					parent_rule:None,
 					parent_stylesheet:None,
 					next:None,
 					prev:None,
 					rule_type:typ,
-					index:0,
-					items:0
+					index:0
 				};
 				RULE_UNKNOWN(ret_rule) 
 			},
 
 			CSS_RULE_SELECTOR=> {	
-				let mut ret_rule = ~css_rule_selector{
+				let mut ret_rule = @mut css_rule_selector{
 					base:base_rule,
 					selectors:~[],
 					style:None
@@ -321,7 +317,7 @@ impl css_stylesheet {
 
 
 			CSS_RULE_CHARSET=>  {	
-				let mut ret_rule = ~css_rule_charset{
+				let mut ret_rule = @mut css_rule_charset{
 					base:base_rule,
 					encoding:~""
 				};  
@@ -329,7 +325,7 @@ impl css_stylesheet {
 			},
 
 			CSS_RULE_IMPORT=>   {	
-				let mut ret_rule = ~css_rule_import{
+				let mut ret_rule = @mut css_rule_import{
 					base:base_rule,
 					url:~"",
 					media:0,
@@ -339,7 +335,7 @@ impl css_stylesheet {
 			},
 
 			CSS_RULE_MEDIA=> 	{	
-				let mut ret_rule = ~css_rule_media{ 
+				let mut ret_rule = @mut css_rule_media{ 
 					base:base_rule,
 					media:0,
 					first_child:None,
@@ -349,14 +345,14 @@ impl css_stylesheet {
 			},
 
 			CSS_RULE_FONT_FACE=>{	
-				let mut ret_rule = ~css_rule_font_face{
+				let mut ret_rule = @mut css_rule_font_face{
 					base:base_rule
 				};  
 				RULE_FONT_FACE(ret_rule) 
 			},
 
 			CSS_RULE_PAGE=>		{ 	
-				let mut ret_rule = ~css_rule_page{
+				let mut ret_rule = @mut css_rule_page{
 					base:base_rule,
 					selector:None,
 					style:None
@@ -367,8 +363,59 @@ impl css_stylesheet {
 		}
 	}
 
-	pub fn css__stylesheet_rule_add_selector() {
-		
+	pub fn css__stylesheet_rule_add_selector(css_rule : CSS_RULE_DATA_TYPE , selector : @mut css_selector) -> css_result {
+
+		match css_rule {
+			RULE_SELECTOR(x)=> {
+				selector.rule = Some(css_rule);
+				x.selectors.push(selector);
+				CSS_OK
+			},
+			_=> CSS_BADPARM 
+		}
+	}
+	
+	pub fn css__stylesheet_rule_append_style(&mut self, css_rule : CSS_RULE_DATA_TYPE , style : @mut css_style) -> css_result {
+		match css_rule {
+			RULE_PAGE(page)=> {
+				if page.style.is_none() {
+					page.style = Some(style);
+				}
+				else {
+					let mut page_style = page.style.get();
+					css_stylesheet::css__stylesheet_merge_style(page_style,style);
+					page.style = Some(page_style);
+				}
+			},
+			RULE_SELECTOR(selector)=> {
+				if selector.style.is_none() {
+					selector.style = Some(style);
+				}
+				else {
+					let mut selector_style = selector.style.get();
+					css_stylesheet::css__stylesheet_merge_style(selector_style,style);
+					selector.style = Some(selector_style);
+				}
+			},
+			_=> return CSS_BADPARM 
+		};
+		CSS_OK
+	}
+
+	pub fn css__stylesheet_rule_set_charset(css_rule : CSS_RULE_DATA_TYPE, charset: ~str) -> css_result {
+		if charset.len() <= 0 {
+			return CSS_BADPARM;
+		}
+
+		match css_rule {
+			RULE_CHARSET(x) => {
+				x.encoding = charset;
+				CSS_OK
+			}
+			_ => {
+				CSS_BADPARM
+			}
+		}
 	}
 }
 
