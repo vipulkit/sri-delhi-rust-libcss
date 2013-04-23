@@ -41,16 +41,19 @@ pub struct css_selector {
 
 }
 
+
+
+pub struct css_style {
+	bytecode:~[u32]
+	//sheet:Option<@css_stylesheet>
+}
+
+
 pub struct css_selector_hash {
 	elements:@[@css_selector],
 	classes:@[css_selector],
 	ids:@[@css_selector],
 	universal:@[@css_selector]
-}
-
-pub struct css_style {
-	bytecode:~[u32]
-	//sheet:Option<@css_stylesheet>
 }
 
 pub struct css_stylesheet {
@@ -71,8 +74,8 @@ pub struct css_stylesheet {
 pub struct css_rule {
 	parent_rule:Option<@css_rule> ,
 	parent_stylesheet:Option<@css_stylesheet>,
-	prev:Option<@css_rule>,
-	next:Option<@css_rule>,
+	prev:Option<CSS_RULE_DATA_TYPE>,
+	next:Option<CSS_RULE_DATA_TYPE>,
 	rule_type:css_rule_type,
 	index:uint//,items:uint
 }
@@ -86,8 +89,8 @@ pub struct css_rule_selector {
 pub struct css_rule_media {
 	base:@css_rule,
 	media:u64,
-	first_child:Option<@css_rule>,
-	last_child:Option<@css_rule>
+	first_child:Option<CSS_RULE_DATA_TYPE>,
+	last_child:Option<CSS_RULE_DATA_TYPE>
 } 
 
 pub struct css_rule_font_face {
@@ -97,7 +100,7 @@ pub struct css_rule_font_face {
 
 pub struct css_rule_page {
 	base:@css_rule,
-	selector:Option<~css_selector>,
+	selector:Option<@mut css_selector>,
 	style:Option<@mut css_style>
 } 
 
@@ -267,7 +270,7 @@ impl css_stylesheet {
 	pub fn css__stylesheet_selector_combine(typ : css_combinator, a : @css_selector , 
 											b : &mut ~css_selector) -> css_result {
 		match b.combinator {
-			Some(x)=> return CSS_INVALID,
+			Some(_)=> return CSS_INVALID,
 			None=> {}
 		};
 
@@ -417,8 +420,230 @@ impl css_stylesheet {
 			}
 		}
 	}
-}
 
-fn main () {
-	io::println(fmt!("\n hellow world"));
+	pub fn css__stylesheet_rule_set_nascent_import(css_rule : CSS_RULE_DATA_TYPE, url_str:~str, 
+													media:u64) -> css_result 	{
+
+		match css_rule {
+			RULE_IMPORT(x) => {
+				x.url = url_str;
+				x.media=media;
+				CSS_OK
+			}
+			_ => {
+				CSS_BADPARM
+			}
+		}
+	}
+
+	pub fn css__stylesheet_rule_set_media(css_rule : CSS_RULE_DATA_TYPE,
+										 media:u64) -> css_result {
+
+		match css_rule {
+			RULE_MEDIA(x) => {
+				x.media=media;
+				CSS_OK
+			}
+			_ => {
+				CSS_BADPARM
+			}
+		}
+	}
+
+	pub fn css__stylesheet_rule_set_page_selector(css_rule : CSS_RULE_DATA_TYPE,
+													selector:@mut css_selector) -> css_result {
+
+		match css_rule {
+			RULE_PAGE(x) => {
+				x.selector= Some(selector);
+				CSS_OK
+			}
+			_ => {
+				CSS_BADPARM
+			}
+		}
+	}
+	
+	// pub fn css__stylesheet_add_rule(&mut self, css_rule : CSS_RULE_DATA_TYPE,
+	// 								) -> css_result {
+
+	// 	match css_rule {
+	// 		RULE_SELECTOR(x) => {
+	// 			x.base.index = self.rule_count;
+	// 			if self._add_selectors(css_rule)==CSS_OK {
+	// 				return CSS_BADPARM;
+	// 			}
+				
+	// 			if x.base.parent.is_some() {
+
+	// 			}
+	// 			else {
+
+	// 			}
+	// 		}
+	// 		_ => {
+	// 			CSS_BADPARM
+	// 		}
+	// 	}
+	// 	CSS_OK
+	// }
+	
+
+	pub fn _add_selectors(&mut self, css_rule : CSS_RULE_DATA_TYPE) -> css_result {
+		match css_rule {
+			RULE_SELECTOR(x) => {
+				if x.base.parent_rule.is_some() {
+					return CSS_INVALID;
+				}
+
+				for x.selectors.each_mut |&selector| {
+					// do hash insert , for each selector
+				}
+				CSS_OK
+			},
+			RULE_MEDIA(x) => {
+				if x.base.parent_rule.is_some() {
+					return CSS_INVALID;
+				}
+
+				let mut ptr = x.first_child;
+				loop {
+					match ptr {
+						None=> return CSS_OK,
+						Some(current_rule) => {
+							match(self._add_selectors(current_rule))
+							{
+								CSS_OK => {
+									match (current_rule) {
+										RULE_UNKNOWN(next_rule) => {
+											ptr = next_rule.next;
+										},
+										RULE_SELECTOR(next_rule)=>{
+											ptr = next_rule.base.next;
+										},
+										RULE_CHARSET(next_rule)=>{
+											ptr = next_rule.base.next;
+										},
+										RULE_IMPORT(next_rule)=>{
+											ptr = next_rule.base.next;
+										},
+										RULE_MEDIA(next_rule)=>{
+											ptr = next_rule.base.next;
+										},
+										RULE_FONT_FACE(next_rule)=>{
+											ptr = next_rule.base.next;
+										},
+										RULE_PAGE(next_rule)=>{
+											ptr = next_rule.base.next;
+										},
+									}
+									loop;
+								}
+
+								_ => {
+
+									let mut rptr = current_rule ;
+									loop {
+										match (
+											match rptr {
+												RULE_UNKNOWN(prev_rule) => {
+													prev_rule.prev
+												},
+												RULE_SELECTOR(prev_rule)=>{
+													prev_rule.base.next
+												},
+												RULE_CHARSET(prev_rule)=>{
+													prev_rule.base.next
+												},
+												RULE_IMPORT(prev_rule)=>{
+													prev_rule.base.next
+												},
+												RULE_MEDIA(prev_rule)=>{
+													prev_rule.base.next
+												},
+												RULE_FONT_FACE(prev_rule)=>{
+													prev_rule.base.next
+												},
+												RULE_PAGE(prev_rule)=>{
+													prev_rule.base.next
+												},
+											}
+										) {
+											Some(y)=> { 
+												self._remove_selectors(y);
+												loop;
+											},
+											None=> { return CSS_INVALID },
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				CSS_OK
+			},
+			_ => {
+				CSS_OK
+			}
+		}
+	}
+
+	pub fn _remove_selectors(&mut self, css_rule : CSS_RULE_DATA_TYPE) -> css_result {
+
+		match css_rule {
+			RULE_SELECTOR(x) => {
+				for x.selectors.each_mut |&selector| {
+					// do hash remove , for each selector
+					// check for error result , if error - return error
+				}
+				CSS_OK
+			},
+
+			RULE_MEDIA(x)=> {
+
+				let mut ptr = x.first_child;
+				loop {
+					match ptr {
+						None=> return CSS_OK,
+						Some(current_rule) => {
+							match(self._remove_selectors(current_rule))
+							{
+								CSS_OK => {
+									match (current_rule) {
+										RULE_UNKNOWN(next_rule) => {
+											ptr = next_rule.next;
+										},
+										RULE_SELECTOR(next_rule)=>{
+											ptr = next_rule.base.next;
+										},
+										RULE_CHARSET(next_rule)=>{
+											ptr = next_rule.base.next;
+										},
+										RULE_IMPORT(next_rule)=>{
+											ptr = next_rule.base.next;
+										},
+										RULE_MEDIA(next_rule)=>{
+											ptr = next_rule.base.next;
+										},
+										RULE_FONT_FACE(next_rule)=>{
+											ptr = next_rule.base.next;
+										},
+										RULE_PAGE(next_rule)=>{
+											ptr = next_rule.base.next;
+										},
+									}
+									loop;
+								}
+
+								_ => return CSS_INVALID
+							}
+						}
+					}
+				}
+				CSS_OK
+			},
+			_=>{CSS_OK}
+		}
+	}
 }
