@@ -2,15 +2,9 @@
 #[crate_type = "lib"];
 
 extern mod css_enum;
-extern mod parserutils_inputstream;
-extern mod wapcaplet;
 extern mod std ;
 
-
-use std::arc;
 use css_enum::* ;
-use wapcaplet::*;
-use parserutils_inputstream::*;
 
 static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
 
@@ -59,8 +53,8 @@ pub struct css_selector_hash {
 pub struct css_stylesheet {
 	selectors:css_selector_hash,
 	rule_count:uint,
-	rule_list:Option<@css_rule>,
-	last_rule:Option<@css_rule>,
+	rule_list:Option<CSS_RULE_DATA_TYPE>,
+	last_rule:Option<CSS_RULE_DATA_TYPE>,
 	disabled:bool,
 	url:~str,
 	title:~str,
@@ -72,8 +66,8 @@ pub struct css_stylesheet {
 }
 
 pub struct css_rule {
-	parent_rule:Option<@css_rule> ,
-	parent_stylesheet:Option<@css_stylesheet>,
+	parent_rule:Option<CSS_RULE_DATA_TYPE> ,
+	parent_stylesheet:Option<@mut css_stylesheet>,
 	prev:Option<CSS_RULE_DATA_TYPE>,
 	next:Option<CSS_RULE_DATA_TYPE>,
 	rule_type:css_rule_type,
@@ -81,37 +75,37 @@ pub struct css_rule {
 }
 
 pub struct css_rule_selector {
-	base:@css_rule,
+	base:@mut css_rule,
 	selectors:~[@mut css_selector],
 	style:Option<@mut css_style>
 } 
 
 pub struct css_rule_media {
-	base:@css_rule,
+	base:@mut css_rule,
 	media:u64,
 	first_child:Option<CSS_RULE_DATA_TYPE>,
 	last_child:Option<CSS_RULE_DATA_TYPE>
 } 
 
 pub struct css_rule_font_face {
-	base:@css_rule,
+	base:@mut css_rule,
 	//font_face:@css_font_face ;
 } 
 
 pub struct css_rule_page {
-	base:@css_rule,
+	base:@mut css_rule,
 	selector:Option<@mut css_selector>,
 	style:Option<@mut css_style>
 } 
 
 pub struct css_rule_import {
-	base:@css_rule,
+	base:@mut css_rule,
 	url:~str,
 	media:u64,
 	sheet:Option<@css_stylesheet>
 } 
 pub struct css_rule_charset {
-	base:@css_rule,
+	base:@mut css_rule,
 	encoding:~str	
 } 
 
@@ -287,7 +281,7 @@ impl css_stylesheet {
 		CSS_OK
 	}
 	pub fn css_stylesheet_rule_create(&mut self, typ : css_rule_type ) -> CSS_RULE_DATA_TYPE  {
-		let mut base_rule = @css_rule{ 
+		let mut base_rule = @mut css_rule{ 
 			parent_rule:None,
 			parent_stylesheet:None,
 			next:None,
@@ -464,30 +458,120 @@ impl css_stylesheet {
 		}
 	}
 	
-	// pub fn css__stylesheet_add_rule(&mut self, css_rule : CSS_RULE_DATA_TYPE,
-	// 								) -> css_result {
+	fn css__stylesheet_get_base_rule(css_rule : CSS_RULE_DATA_TYPE) -> @mut css_rule {
+		match css_rule {
+			RULE_UNKNOWN(r) => {
+				r
+			},
+			RULE_SELECTOR(r)=>{
+				r.base
+			},
+			RULE_CHARSET(r)=>{
+				r.base
+			},
+			RULE_IMPORT(r)=>{
+				r.base
+			},
+			RULE_MEDIA(r)=>{
+				r.base
+			},
+			RULE_FONT_FACE(r)=>{
+				r.base
+			},
+			RULE_PAGE(r)=>{
+				r.base
+			},
+		}
+	}
 
-	// 	match css_rule {
-	// 		RULE_SELECTOR(x) => {
-	// 			x.base.index = self.rule_count;
-	// 			if self._add_selectors(css_rule)==CSS_OK {
-	// 				return CSS_BADPARM;
-	// 			}
-				
-	// 			if x.base.parent.is_some() {
+	pub fn css__stylesheet_add_rule(sheet : @mut css_stylesheet, css_rule : CSS_RULE_DATA_TYPE,
+									parent_rule : Option<CSS_RULE_DATA_TYPE> ) -> css_result {
+		let mut base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
 
-	// 			}
-	// 			else {
+		base_rule.index = sheet.rule_count;
 
-	// 			}
-	// 		}
-	// 		_ => {
-	// 			CSS_BADPARM
-	// 		}
-	// 	}
-	// 	CSS_OK
-	// }
+		match sheet._add_selectors(css_rule) {
+			CSS_OK => {},
+			_=> return CSS_INVALID
+		}
+
+		match parent_rule {
+			Some(prule)=> {
+				match prule {
+					RULE_MEDIA(media_prule)=>{
+						base_rule.parent_rule = parent_rule;
+
+						match media_prule.last_child {
+							None=>{
+								base_rule.next = None;
+								base_rule.prev = None;
+								media_prule.first_child = Some(css_rule);
+								media_prule.last_child = Some(css_rule);
+							},
+							Some(last_child)=>{
+								let mut last_child_base_rule = css_stylesheet::css__stylesheet_get_base_rule(last_child);
+								last_child_base_rule.next = Some(css_rule);
+								base_rule.prev = media_prule.last_child ;
+								base_rule.next = None;
+								media_prule.last_child = Some(css_rule);
+							}
+						}
+					},
+					_=> return CSS_INVALID
+				}
+			},
+			None=>{
+				base_rule.parent_stylesheet = Some(sheet);
+
+				match sheet.last_rule {
+					None=>{
+						base_rule.prev = None;
+						base_rule.next = None;
+						sheet.rule_list = Some(css_rule);
+						sheet.last_rule = Some(css_rule);
+					},
+					Some(last_rule)=>{
+						let mut last_rule_base_rule = css_stylesheet::css__stylesheet_get_base_rule(last_rule);
+						last_rule_base_rule.next = Some(css_rule);
+						base_rule.prev = sheet.last_rule;
+						base_rule.next = None;
+						sheet.last_rule = Some(css_rule);
+					}
+				}
+			}
+		}
+		CSS_OK
+	}
 	
+	pub fn css__stylesheet_remove_rule(sheet : @mut css_stylesheet, css_rule : CSS_RULE_DATA_TYPE) 
+										-> css_result {
+		match sheet._remove_selectors(css_rule) {
+			CSS_OK=>{},
+			_=>return CSS_INVALID
+		}
+
+		let mut base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
+		match base_rule.next {
+			None=> {
+				sheet.last_rule = base_rule.prev;
+			},
+			Some(base_rule_next)=>{
+				let mut next_rule = css_stylesheet::css__stylesheet_get_base_rule(base_rule_next);
+				next_rule.prev = base_rule.prev;
+			}
+		}
+
+		match base_rule.prev {
+			None=>{
+				sheet.rule_list = base_rule.next ;
+			},
+			Some(base_rule_prev)=>{
+				let mut prev_rule = css_stylesheet::css__stylesheet_get_base_rule(base_rule_prev);
+				prev_rule.next = base_rule.next ;
+			}
+		}
+		CSS_OK
+	}
 
 	pub fn _add_selectors(&mut self, css_rule : CSS_RULE_DATA_TYPE) -> css_result {
 		match css_rule {
@@ -496,8 +580,9 @@ impl css_stylesheet {
 					return CSS_INVALID;
 				}
 
-				for x.selectors.each_mut |&selector| {
+				for x.selectors.each_mut |_| {
 					// do hash insert , for each selector
+					//
 				}
 				CSS_OK
 			},
@@ -514,29 +599,7 @@ impl css_stylesheet {
 							match(self._add_selectors(current_rule))
 							{
 								CSS_OK => {
-									match (current_rule) {
-										RULE_UNKNOWN(next_rule) => {
-											ptr = next_rule.next;
-										},
-										RULE_SELECTOR(next_rule)=>{
-											ptr = next_rule.base.next;
-										},
-										RULE_CHARSET(next_rule)=>{
-											ptr = next_rule.base.next;
-										},
-										RULE_IMPORT(next_rule)=>{
-											ptr = next_rule.base.next;
-										},
-										RULE_MEDIA(next_rule)=>{
-											ptr = next_rule.base.next;
-										},
-										RULE_FONT_FACE(next_rule)=>{
-											ptr = next_rule.base.next;
-										},
-										RULE_PAGE(next_rule)=>{
-											ptr = next_rule.base.next;
-										},
-									}
+									ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
 									loop;
 								}
 
@@ -544,33 +607,10 @@ impl css_stylesheet {
 
 									let mut rptr = current_rule ;
 									loop {
-										match (
-											match rptr {
-												RULE_UNKNOWN(prev_rule) => {
-													prev_rule.prev
-												},
-												RULE_SELECTOR(prev_rule)=>{
-													prev_rule.base.next
-												},
-												RULE_CHARSET(prev_rule)=>{
-													prev_rule.base.next
-												},
-												RULE_IMPORT(prev_rule)=>{
-													prev_rule.base.next
-												},
-												RULE_MEDIA(prev_rule)=>{
-													prev_rule.base.next
-												},
-												RULE_FONT_FACE(prev_rule)=>{
-													prev_rule.base.next
-												},
-												RULE_PAGE(prev_rule)=>{
-													prev_rule.base.next
-												},
-											}
-										) {
+										match css_stylesheet::css__stylesheet_get_base_rule(rptr).prev {
 											Some(y)=> { 
 												self._remove_selectors(y);
+												rptr = y;
 												loop;
 											},
 											None=> { return CSS_INVALID },
@@ -581,7 +621,6 @@ impl css_stylesheet {
 						}
 					}
 				}
-				CSS_OK
 			},
 			_ => {
 				CSS_OK
@@ -593,7 +632,7 @@ impl css_stylesheet {
 
 		match css_rule {
 			RULE_SELECTOR(x) => {
-				for x.selectors.each_mut |&selector| {
+				for x.selectors.each_mut |_| {
 					// do hash remove , for each selector
 					// check for error result , if error - return error
 				}
@@ -641,7 +680,6 @@ impl css_stylesheet {
 						}
 					}
 				}
-				CSS_OK
 			},
 			_=>{CSS_OK}
 		}
