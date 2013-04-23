@@ -1949,4 +1949,10 @@ enum css_select_handler_version {
 	CSS_SELECT_HANDLER_VERSION_1 = 1
 }
 
+static CSS_SPECIFICITY_A:uint=0x01000000;
+static CSS_SPECIFICITY_B:uint=0x00010000;
+static CSS_SPECIFICITY_C:uint=0x00000100;
+static CSS_SPECIFICITY_D:uint=0x00000001;
+
+
 // /////////////////////////////////////////////////////////////////////////////
