@@ -143,12 +143,35 @@ impl lpu_inputstream {
 		}
 
 		let result: ~str= totype.unwrap();
+		io::println(result);
 		match(result) {
 			~"UTF-8" => {
 				if (self.raw.len() >= UTF8_BOM_LEN) && self.raw[0] == 0xEF && self.raw[1] == 0xBB && self.raw[2] == 0xBF {
-					self.raw= slice(self.raw,UTF8_BOM_LEN-1,self.raw.len()-1).to_owned();
+					self.raw= slice(self.raw,UTF8_BOM_LEN,self.raw.len()).to_owned();
 					return PARSERUTILS_OK;
 				} 
+			},
+			~"UTF-32" => {
+				self.mibenum  = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32BE");
+				if self.mibenum==0 {
+					return PARSERUTILS_BADPARAM;
+				}
+
+				if self.raw.len() >= UTF32_BOM_LEN {
+					if self.raw[0] == 0x00 && self.raw[1] == 0x00 && self.raw[2] == 0xFE && self.raw[3] == 0xFF {
+						self.raw= slice(self.raw,UTF32_BOM_LEN,self.raw.len()).to_owned();
+						return PARSERUTILS_OK;
+					}
+					else if self.raw[0] == 0xFF && self.raw[1] == 0xFE && self.raw[2] == 0x00 && self.raw[3] == 0x00 {
+						self.mibenum  = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32LE");
+						if self.mibenum==0 {
+							return PARSERUTILS_BADPARAM;
+						}
+                        
+						self.raw= slice(self.raw,UTF32_BOM_LEN,self.raw.len()).to_owned();
+						return PARSERUTILS_OK;
+					}
+				}
 			},
 			~"UTF-16" => {
 				self.mibenum  = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-16BE");
@@ -159,7 +182,7 @@ impl lpu_inputstream {
 
 				if self.raw.len() >= UTF16_BOM_LEN {
 					if self.raw[0] == 0xFE && self.raw[1] == 0xFF {
-						self.raw= slice(self.raw,UTF16_BOM_LEN-1,self.raw.len()-1).to_owned();
+						self.raw= slice(self.raw,UTF16_BOM_LEN,self.raw.len()).to_owned();
 						return PARSERUTILS_OK;
 					}
 					else if self.raw[0] == 0xFF && self.raw[1] == 0xFE {
@@ -168,54 +191,35 @@ impl lpu_inputstream {
 							return PARSERUTILS_BADPARAM;
 						}
 
-						self.raw= slice(self.raw,UTF16_BOM_LEN-1,self.raw.len()-1).to_owned();
+						self.raw= slice(self.raw,UTF16_BOM_LEN,self.raw.len()).to_owned();
 						return PARSERUTILS_OK;
 					}
 				}
 			},
 			~"UTF-16BE" => {
 				if self.raw.len() >= UTF16_BOM_LEN && self.raw[0] == 0xFE && self.raw[1] == 0xFF {
-					self.raw= slice(self.raw,UTF16_BOM_LEN-1,self.raw.len()-1).to_owned();
+					self.raw= slice(self.raw,UTF16_BOM_LEN,self.raw.len()).to_owned();
 					return PARSERUTILS_OK;
 				}
 			},
 			~"UTF-16LE" => {
 				if self.raw.len() >= UTF16_BOM_LEN && self.raw[0] == 0xFF && self.raw[1] == 0xFE {
-					self.raw= slice(self.raw,UTF16_BOM_LEN-1,self.raw.len()-1).to_owned();
+					
+
+					self.raw= slice(self.raw,UTF16_BOM_LEN,self.raw.len()).to_owned();
 					return PARSERUTILS_OK;
 				}
 			},
-			~"UTF-32" => {
-				self.mibenum  = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32BE");
-				if self.mibenum==0 {
-					return PARSERUTILS_BADPARAM;
-				}
-
-				if self.raw.len() >= UTF32_BOM_LEN {
-					if self.raw[0] == 0x00 && self.raw[1] == 0x00 && self.raw[2] == 0xFE && self.raw[3] == 0xFF {
-						self.raw= slice(self.raw,UTF32_BOM_LEN-1,self.raw.len()-1).to_owned();
-						return PARSERUTILS_OK;
-					}
-					else if self.raw[0] == 0xFF && self.raw[1] == 0xFE && self.raw[2] == 0x00 && self.raw[3] == 0x00 {
-						self.mibenum  = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-32LE");
-						if self.mibenum==0 {
-							return PARSERUTILS_BADPARAM;
-						}
-
-						self.raw= slice(self.raw,UTF32_BOM_LEN-1,self.raw.len()-1).to_owned();
-						return PARSERUTILS_OK;
-					}
-				}
-			},
+			
 			~"UTF-32BE" => {
 				if self.raw.len() >= UTF32_BOM_LEN && self.raw[0] == 0x00 && self.raw[1] == 0x00 && self.raw[2] == 0xFE && self.raw[3] == 0xFF {
-                  	self.raw= slice(self.raw,UTF32_BOM_LEN-1,self.raw.len()-1).to_owned();
+                  	self.raw= slice(self.raw,UTF32_BOM_LEN,self.raw.len()).to_owned();
 					return PARSERUTILS_OK;
 				}
 			},
 			~"UTF-32LE" => {
 				if self.raw.len() >= UTF32_BOM_LEN && self.raw[0] == 0xFF && self.raw[1] == 0xFE && self.raw[2] == 0x00 && self.raw[3] == 0x00 {
-					self.raw= slice(self.raw,UTF32_BOM_LEN-1,self.raw.len()-1).to_owned();
+					self.raw= slice(self.raw,UTF32_BOM_LEN,self.raw.len()).to_owned();
 					return PARSERUTILS_OK;
 				}
 			},
@@ -279,7 +283,7 @@ impl lpu_inputstream {
 
 			match(self.parserutils_inputstream_strip_bom()) {
 				PARSERUTILS_OK => {
-					self.done_first_chunk = true;
+					//self.done_first_chunk = true;
 				},
 				_ => {
 					return PARSERUTILS_BADPARAM;
@@ -293,7 +297,7 @@ impl lpu_inputstream {
             	Some(x) => {
             		match self.input.filter_set_encoding(x) {
 						PARSERUTILS_OK => {
-							self.done_first_chunk = true; 
+							//self.done_first_chunk = true; 
 						},
 						_ => {
 						 return PARSERUTILS_BADENCODING;
@@ -310,12 +314,30 @@ impl lpu_inputstream {
 			self.utf8=slice(self.utf8,self.cursor,self.utf8.len()).to_owned();
 		}
 		self.cursor = 0;
-
+       
+      
 		 // Try to fill utf8 buffer from the raw data
 		let mut processedLen:uint;
 		match(self.input.parserutils__filter_process_chunk(copy self.raw)) { //TODO :: remove copy
 			(processed_chunk , PARSERUTILS_OK) => {
-				self.utf8 += processed_chunk.outbuf;
+				 
+					if (!self.done_first_chunk) {
+						self.done_first_chunk = true;
+						if processed_chunk.outbuf[0]== 0xFF && processed_chunk.outbuf[1]== 0xFE && processed_chunk.outbuf[2]== 0x00 && processed_chunk.outbuf[3]== 0x00{
+				    		self.utf8 += slice(processed_chunk.outbuf,4,processed_chunk.outbuf.len()).to_owned();
+				    	}
+				    	else if processed_chunk.outbuf[0]== 0xFF && processed_chunk.outbuf[1]== 0xFE {
+				    		self.utf8 += slice(processed_chunk.outbuf,2,processed_chunk.outbuf.len()).to_owned();
+				    	}
+					 	else {
+					 		self.utf8 += processed_chunk.outbuf;
+					 	}
+				}
+				else 
+				{
+					self.utf8 += processed_chunk.outbuf;
+				}
+                //self.utf8 += processed_chunk.outbuf;
 				processedLen = processed_chunk.len_processed as uint
 			},
 			(_ , y) => {
