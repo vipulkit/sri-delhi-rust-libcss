@@ -76,7 +76,7 @@ impl lcss_lexer {
         string_from_data = preprocess(string_from_data);
         self.internal_vector += str::to_bytes(string_from_data);
             
-            // self.lpu_inputstream_instance.parserutils_inputstream_advance(data.len());
+        self.lpu_inputstream_instance.parserutils_inputstream_advance(data.len());
     }
     
 
