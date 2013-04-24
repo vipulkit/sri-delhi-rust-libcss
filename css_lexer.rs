@@ -2,21 +2,25 @@
 #[crate_type = "lib"];
 
 extern mod css_enum;
+extern mod csdetect;
+extern mod parserutils;
 extern mod parserutils_inputstream;
 extern mod std;
 
-
+use csdetect::*;
 use css_enum::* ;
+use parserutils::*;
 use parserutils_inputstream::*;
 
 static MAX_UNICODE: char = '\U0010FFFF';
 
 static ASCII_LOWER_OFFSET: char = 'a' - 'A';
 
-pub struct ParseError {
-    message: ~str,
+pub enum lexer_error {
+    LEXER_OK = 0,
+    LEXER_NEEDDATA = 1,
+    LEXER_INVALID = 2
 }
-
 
 pub fn ascii_lower(string: &str) -> ~str {
     do str::map(string) |c| {
@@ -28,7 +32,6 @@ pub fn ascii_lower(string: &str) -> ~str {
 }
 
 pub fn preprocess(input: &str) -> ~str {
-    // TODO: Is this faster if done in one pass?
     str::replace(str::replace(str::replace(input,
     "\r\n", "\n"),
     "\r", "\n"),
@@ -49,87 +52,138 @@ macro_rules! is_match(
 
 pub struct lcss_lexer {
     transform_function_whitespace: bool,
-    input: ~[u8],
+    internal_vector: ~[u8],
     length: uint, // Counted in bytes, not characters
     position: uint, // Counted in bytes, not characters
+    lpu_inputstream_instance: ~lpu_inputstream,
+    inputstream_eof: bool,
+    eof_token_sent: bool
 }
 
 
 impl lcss_lexer {
-    fn from_vec(input: ~[u8], transform_function_whitespace: bool)
-            -> ~lcss_lexer {
-                let string_from_input = str::from_bytes(input);
-                let string_from_input = preprocess(string_from_input);
-                let input = str::to_bytes(string_from_input);
-        ~lcss_lexer {
-            length: input.len(),
-            input: input,
-            position: 0,
-            transform_function_whitespace: transform_function_whitespace
-        }
+   
+    pub fn lexer_append_data(&mut self, input_data: ~[u8]) {
+        self.lpu_inputstream_instance.parserutils_inputstream_append(input_data);
     }
 
-    pub fn css__lexer_get_token(&mut self) -> (Token, Option<ParseError>) {
-        if self.is_eof() { 
-            (EOF, None) 
+    fn read_from_inputstream(&mut self) {
+        let mut cursor_position = 0;
+
+        let (opt_value , error) = self.lpu_inputstream_instance.parserutils_inputstream_peek(cursor_position);
+        let (data, _)= opt_value.unwrap();
+        let mut string_from_data = str::from_bytes(data);
+        string_from_data = preprocess(string_from_data);
+        self.internal_vector += str::to_bytes(string_from_data);
+            
+            // self.lpu_inputstream_instance.parserutils_inputstream_advance(data.len());
+    }
+    
+
+    pub fn css__lexer_get_token(&mut self) -> (Option<Token>, lexer_error) {
+        self.read_from_inputstream();
+        
+        if self.is_eof() {
+            self.eof_token_sent= true;
+            (Some(EOF), LEXER_OK) 
         }
+        
         else { 
             self.consume_token()
         }
     }
 
-    fn handle_transform_function_whitespace(&mut self, string: ~str)
-            -> (Token, Option<ParseError>) {
+    fn handle_transform_function_whitespace(&mut self, string: ~str) -> (Option<Token> , lexer_error) {
+        
         while !self.is_eof() {
             match self.current_char() {
                 '\t' | '\n' | '\x0C' | ' ' => self.position += 1,
-                '(' => { self.position += 1; return (Function(string), None) }
+                '(' => { 
+                    self.position += 1;
+                    return (Some(Function(string)), LEXER_OK) 
+                },
                 _ => break,
             }
         }
+
         // Go back for one whitespace character.
         self.position -= 1;
-        (Ident(string), None)
+        (Some(Ident(string)), LEXER_OK)
     }
 
     fn is_eof(&self) -> bool {
-        self.position >= self.length
+        self.inputstream_eof && self.position >= self.length
     }
 
-    pub fn consume_token(&mut self) -> (Token, Option<ParseError>) {
-        // Comments are special because they do not even emit a token,
-        // unless they reach EOF which is an error.
-        match self.consume_comments() {
-            Some(result) => return result,
-            None => ()
+    pub fn consume_token(&mut self) -> (Option<Token>, lexer_error) {
+        // Comments are special because they do not even emit a token, unless they reach EOF which is an error.
+
+        // match self.consume_comments() {
+        //     Some(result) => return result,
+        //     None => ()
+        // }
+        if self.is_eof() {
+            if self.eof_token_sent{
+                return(None , LEXER_INVALID)
+            }
+            self.eof_token_sent = true;
+            return (Some(EOF), LEXER_OK) 
         }
-        if self.is_eof() { return (EOF, None) }
+        
         let c = self.current_char();
+        
         match c {
+            '/' => {
+                if (((self.internal_vector.len() - self.position) >= 2) && self.match_here(~"/"))  {
+                    self.position += 2;
+                    self.consume_comments()
+                }
+                else {
+                    (None , LEXER_NEEDDATA)
+                }
+            },
+
             '-' => {
-                if self.match_here(~"-->") {
-                    self.position += 3;
-                    (CDC, None)
+                if (self.internal_vector.len() - self.position) >= 3 {
+                    if self.match_here(~"-->") {
+                        self.position += 3;
+                        (Some(CDC), LEXER_OK)
+                    }
+                    else if self.next_is_namestart_or_escape() {
+                        self.consume_ident()
+                    } else {
+                        self.consume_numeric()
+                    }
                 }
-                else if self.next_is_namestart_or_escape() {
-                    self.consume_ident()
-                } else {
-                    self.consume_numeric()
+                else {
+                    (None , LEXER_NEEDDATA)
                 }
             },
+
             '<' => {
-                if self.match_here(~"<!--") {
-                    self.position += 4;
-                    (CDO, None)
-                } else {
-                    self.position += 1;
-                    (Delim('<'), None)
+                if (self.internal_vector.len() - self.position) >= 4 {
+                    if self.match_here(~"<!--") {
+                        self.position += 4;
+                        (Some(CDO), LEXER_OK)
+                    } 
+                    else {
+                        self.position += 1;
+                        (Some(Delim('<')), LEXER_OK)
+                    }
+                }
+                else {
+                    (None , LEXER_NEEDDATA)
                 }
             },
+
             '0'..'9' | '.' | '+' => self.consume_numeric(),
+
             'u' | 'U' => self.consume_unicode_range(),
+
             'a'..'z' | 'A'..'Z' | '_' | '\\' => self.consume_ident(),
+
             _ if c >= '\x80' => self.consume_ident(), // Non-ASCII
+
             _ => {
                 match self.consume_char() {
                     '\t' | '\n' | '\x0C' | ' ' => {
@@ -140,95 +194,94 @@ impl lcss_lexer {
                                 _ => break,
                             }
                         }
-                        (WhiteSpace, None)
+                        (Some(WhiteSpace), LEXER_OK)
                     },
                     '"' => self.consume_quoted_string(false),
                     '#' => self.consume_hash(),
                     '\'' => self.consume_quoted_string(true),
-                    '(' => (OpenParenthesis, None),
-                    ')' => (CloseParenthesis, None),
-                    ':' => (Colon, None),
-                    ';' => (Semicolon, None),
+                    '(' => (Some(OpenParenthesis), LEXER_OK),
+                    ')' => (Some(CloseParenthesis), LEXER_OK),
+                    ':' => (Some(Colon), LEXER_OK),
+                    ';' => (Some(Semicolon), LEXER_OK),
                     '@' => self.consume_at_keyword(),
-                    '[' => (OpenSquareBraket, None),
-                    ']' => (CloseSquareBraket, None),
-                    '{' => (OpenCurlyBraket, None),
-                    '}' => (CloseCurlyBraket, None),
-                    _ => (Delim(c), None)
+                    '[' => (Some(OpenSquareBraket), LEXER_OK),
+                    ']' => (Some(CloseSquareBraket), LEXER_OK),
+                    '{' => (Some(OpenCurlyBraket), LEXER_OK),
+                    '}' => (Some(CloseCurlyBraket), LEXER_OK),
+                    _ => (Some(Delim(c)), LEXER_OK)
                 }
             }
         }
     }
 
-    fn consume_quoted_string(&mut self, single_quote: bool)
-            -> (Token, Option<ParseError>) {
+    fn consume_quoted_string(&mut self, single_quote: bool) -> (Option<Token> , lexer_error) {
         let mut string: ~str = ~"";
         while !self.is_eof() {
             match self.consume_char() {
-                '"' if !single_quote => return (String(string), None),
-                '\'' if single_quote => return (String(string), None),
+                '"' if !single_quote => return (Some(String(string)), LEXER_OK),
+                '\'' if single_quote => return (Some(String(string)), LEXER_OK),
                 '\n' | '\x0C' => {
-                    return self.error_token(BadString, ~"Newline in quoted string");
+                    return (Some(BadString), LEXER_INVALID);
                 },
                 '\\' => {
                     match self.next_n_chars(1) {
                         // Quoted newline
                         ['\n'] | ['\x0C'] => self.position += 1,
                         [] =>
-                            return self.error_token(BadString, ~"EOF in quoted string"),
+                            return (Some(BadString), LEXER_INVALID),
                         _ => push_char!(string, self.consume_escape())
                     }
                 }
                 c => push_char!(string, c),
             }
         }
-        self.error_token(String(string), ~"EOF in quoted string")
+        (Some(String(string)), LEXER_INVALID)
     }
 
-    fn consume_hash(&mut self) -> (Token, Option<ParseError>) {
+    fn consume_hash(&mut self) -> (Option<Token> , lexer_error) {
         let string = self.consume_ident_string_rest();
-        (if string == ~"" { Delim('#') } else { Hash(string) }, None)
+        (if string == ~"" { Some(Delim('#')) } else { Some(Hash(string)) }, LEXER_OK)
     }
 
     fn consume_char(&mut self) -> char {
-        let range = str::char_range_at(str::from_bytes(self.input), self.position);
+        let range = str::char_range_at(str::from_bytes(self.internal_vector), self.position);
         self.position = range.next;
         range.ch
     }
 
     fn match_here(&mut self, needle: ~str) -> bool {
         let mut i = self.position;
-        if i + needle.len() > self.length { return false }
-        let haystack: &str = str::from_bytes(self.input);
+        if i + needle.len() > self.length { return false; }
+        let haystack: &str = str::from_bytes(self.internal_vector);
         for needle.each |c| { if haystack[i] != c { return false; } i += 1u; }
         return true;
     }
 
-    fn consume_comments(&mut self)
-            -> Option<(Token, Option<ParseError>)> {
-        let vec_to_string: ~str = str::from_bytes(self.input);
-        while self.match_here(~"/*") {
-            self.position += 2; // consume /*
+    fn consume_comments(&mut self)-> (Option<Token> , lexer_error) {
+        let vec_to_string: ~str = str::from_bytes(self.internal_vector);
             match str::find_str_from(vec_to_string, "*/", self.position) {
                 Some(end_position) => self.position = end_position + 2,
                 None => {
                     self.position = self.length;
-                    return Some(self.error_token(EOF, ~"Unclosed comment"))
+                    if self.is_eof() {
+                        return (None , LEXER_INVALID);  
+                    }
+                    return (None , LEXER_NEEDDATA);
                 }
             }
-        }
-        None
+        
+        return(None , LEXER_OK);
     }
 
-    fn consume_at_keyword(&mut self) -> (Token, Option<ParseError>) {
+    fn consume_at_keyword(&mut self) -> (Option<Token> , lexer_error) {
         (match self.consume_ident_string() {
-            Some(string) => AtKeyword(string),
-            None => Delim('@')
-        }, None)
+            Some(string) => Some(AtKeyword(string)),
+            None => Some(Delim('@'))
+        }, LEXER_OK)
     }
 
     fn current_char(&mut self) -> char {
-        str::char_at(str::from_bytes(self.input) , self.position)
+        self.internal_vector[self.position] as char
     }
 
     fn next_is_namestart_or_escape(&mut self) -> bool {
@@ -243,7 +296,7 @@ impl lcss_lexer {
         let mut position = self.position;
         for n.times {
             if position >= self.length { break }
-            let range = str::char_range_at(str::from_bytes(self.input), position);
+            let range = str::char_range_at(str::from_bytes(self.internal_vector), position);
             position = range.next;
             chars.push(range.ch);
         }
@@ -266,10 +319,12 @@ impl lcss_lexer {
     }
 
 
-    fn consume_ident(&mut self) -> (Token, Option<ParseError>) {
+    fn consume_ident(&mut self) -> (Option<Token> , lexer_error) {
         match self.consume_ident_string() {
             Some(string) => {
-                if self.is_eof() { return (Ident(string), None) }
+                if self.is_eof() { 
+                    return (Some(Ident(string)), LEXER_OK);
+                }
                 match self.current_char() {
                     '\t' | '\n' | '\x0C' | ' '
                             if self.transform_function_whitespace => {
@@ -279,21 +334,23 @@ impl lcss_lexer {
                     '(' => {
                         self.position += 1;
                         if ascii_lower(string) == ~"url" { self.consume_url() }
-                        else { (Function(string), None) }
+                        else {
+                            return (Some(Function(string)), LEXER_OK)
+                     }
                     },
-                    _ => (Ident(string), None)
+                    _ => return (Some(Ident(string)), LEXER_OK)
                 }
             },
             None => match self.current_char() {
                 '-' => {
                     self.position += 1;
-                    (Delim('-'), None)
+                    (Some(Delim('-')), LEXER_OK)
                 },
                 '\\' => {
                     self.position += 1;
-                    self.error_token(Delim('\\'), ~"Invalid escape")
+                    (Some(Delim('\\')), LEXER_INVALID)
                 },
-                _ => fail!(), // Should not have called consume_ident() here.
+                _ => (None , LEXER_INVALID) // Should not have called consume_ident() here.
             }
         }
     }
@@ -359,44 +416,46 @@ impl lcss_lexer {
         }
     }
 
-    fn consume_url(&mut self) -> (Token, Option<ParseError>) {
+    fn consume_url(&mut self) -> (Option<Token> , lexer_error) {
         while !self.is_eof() {
             match self.current_char() {
                 '\t' | '\n' | '\x0C' | ' ' => self.position += 1,
                 '"' => return self.consume_quoted_url(false),
                 '\'' => return self.consume_quoted_url(true),
-                ')' => { self.position += 1; return (URL(~""), None) },
+                ')' => { 
+                    self.position += 1;
+                    return (Some(URL(~"")), LEXER_OK) 
+                },
                 _ => return self.consume_unquoted_url(),
             }
         }
-        self.error_token(BadURL, ~"EOF in URL")
+        (Some(BadURL) , LEXER_INVALID)
     }
 
-    fn consume_quoted_url(&mut self, single_quote: bool)
-            -> (Token, Option<ParseError>) {
+    fn consume_quoted_url(&mut self, single_quote: bool) -> (Option<Token>, lexer_error) {
         self.position += 1; // The initial quote
         let (token, err) = self.consume_quoted_string(single_quote);
         match err {
-            Some(_) => {
-                let (token, _) = self.consume_bad_url();
-                (token, err)
-            },
-            None => match token {
+            LEXER_INVALID => match token.unwrap() {
                 String(string) => self.consume_url_end(string),
                 // consume_quoted_string() never returns a non-String token
                 // without error:
-                _ => fail!(),
+                _ => (None , LEXER_INVALID),
+            },
+            _ => {
+                let (token, _) = self.consume_bad_url();
+                (token, err)
             }
         }
     }
 
-    fn consume_unquoted_url(&mut self) -> (Token, Option<ParseError>) {
+    fn consume_unquoted_url(&mut self) -> (Option<Token>, lexer_error) {
         let mut string = ~"";
         while !self.is_eof() {
             let next_char = match self.consume_char() {
                 '\t' | '\n' | '\x0C' | ' '
                     => return self.consume_url_end(string),
-                ')' => return (URL(string), None),
+                ')' => return (Some(URL(string)), LEXER_OK),
                 '\x00'..'\x08' | '\x0E'..'\x1F' | '\x7F'..'\x9F' // non-printable
                     | '"' | '\'' | '(' => return self.consume_bad_url(),
                 '\\' => match self.next_n_chars(1) {
@@ -407,22 +466,21 @@ impl lcss_lexer {
             };
             push_char!(string, next_char)
         }
-        self.error_token(BadURL, ~"EOF in URL")
+        (Some(BadURL) , LEXER_INVALID)
     }
 
-    fn consume_url_end(&mut self, string: ~str)
-            -> (Token, Option<ParseError>) {
+    fn consume_url_end(&mut self, string: ~str) -> (Option<Token>, lexer_error) {
         while !self.is_eof() {
             match self.consume_char() {
                 '\t' | '\n' | '\x0C' | ' ' => (),
-                ')' => return (URL(string), None),
+                ')' => return (Some(URL(string)), LEXER_OK),
                 _ => return self.consume_bad_url()
             }
         }
-        self.error_token(BadURL, ~"EOF in URL")
+        (Some(BadURL) , LEXER_INVALID)
     }
 
-    fn consume_bad_url(&mut self) -> (Token, Option<ParseError>) {
+    fn consume_bad_url(&mut self) -> (Option<Token>, lexer_error) {
         // Consume up to the closing )
         while !self.is_eof() {
             match self.consume_char() {
@@ -431,11 +489,10 @@ impl lcss_lexer {
                 _ => ()
             }
         }
-        self.error_token(BadURL, ~"Invalid URL syntax")
+        (Some(BadURL) , LEXER_INVALID)
     }
 
-    fn consume_unicode_range(&mut self)
-            -> (Token, Option<ParseError>) {
+    fn consume_unicode_range(&mut self)-> (Option<Token>, lexer_error) {
         let next_3 = self.next_n_chars(3);
         // We got here with U or u
         assert! (next_3[0] == 'u')||(next_3[0] == 'U') ;
@@ -443,9 +500,14 @@ impl lcss_lexer {
         if next_3.len() == 3 && next_3[1] == '+' {
             match next_3[2] {
                 '0'..'9' | 'a'..'f' | 'A'..'F' => self.position += 2,
-                _ => { return self.consume_ident() }
+                _ => {
+                    return self.consume_ident() 
+                }
             }
-        } else { return self.consume_ident() }
+        } 
+        else {
+            return self.consume_ident() 
+        }
 
         let mut hex = ~[];
         while hex.len() < 6 && !self.is_eof() {
@@ -485,32 +547,36 @@ impl lcss_lexer {
             end = if hex.len() > 0 { self.char_from_hex(hex) } else { start }
         }
         (if start > MAX_UNICODE || end < start {
-            EmptyUnicodeRange
+            Some(EmptyUnicodeRange)
         } else {
             let end = if end <= MAX_UNICODE { end } else { MAX_UNICODE };
-            UnicodeRange(start, end)
-        }, None)
+            Some(UnicodeRange(start, end))
+        }, LEXER_OK)
     }
 
-    fn consume_numeric(&mut self) -> (Token, Option<ParseError>) {
+    fn consume_numeric(&mut self) -> (Option<Token> , lexer_error) {
+       
         let c = self.consume_char();
         match c {
             '-' | '+' => self.consume_numeric_sign(c),
             '.' => {
-                if self.is_eof() { return (Delim('.'), None) }
+                if self.is_eof() { 
+                    return (Some(Delim('.')), LEXER_OK) 
+                }
                 match self.current_char() {
                     '0'..'9' => self.consume_numeric_fraction(~"."),
-                    _ => (Delim('.'), None),
+                    _ => (Some(Delim('.')), LEXER_OK),
                 }
             },
             '0'..'9' => self.consume_numeric_rest(c),
-            _ => fail!(), 
+            _ => (None , LEXER_INVALID), // initially fail statement
         }
     }
 
-    fn consume_numeric_sign(&mut self, sign: char)
-            -> (Token, Option<ParseError>) {
-        if self.is_eof() { return (Delim(sign), None) }
+    fn consume_numeric_sign(&mut self, sign: char) -> (Option<Token> , lexer_error) {
+        if self.is_eof() { 
+            return (Some(Delim(sign)), LEXER_OK) 
+        }
         match self.current_char() {
             '.' => {
                 self.position += 1;
@@ -519,16 +585,15 @@ impl lcss_lexer {
                     self.consume_numeric_fraction(str::from_char(sign) + ~".")
                 } else {
                     self.position -= 1;
-                    (Delim(sign), None)
+                    (Some(Delim(sign)), LEXER_OK)
                 }
             },
             '0'..'9' => self.consume_numeric_rest(sign),
-            _ => (Delim(sign), None)
+            _ => (Some(Delim(sign)), LEXER_OK)
         }
     }
 
-    fn consume_numeric_rest(&mut self, initial_char: char)
-            -> (Token, Option<ParseError>) {
+    fn consume_numeric_rest(&mut self, initial_char: char) -> (Option<Token> , lexer_error) {
         let mut string = str::from_char(initial_char);
         while !self.is_eof() {
             let c = self.current_char();
@@ -545,7 +610,7 @@ impl lcss_lexer {
                     }
                 },
                 _ => match self.consume_scientific_number(string) {
-                    Ok(token) => return (token, None),
+                    Ok(token) => return (Some(token), LEXER_OK),
                     Err(s) => { string = s; break }
                 }
             }
@@ -554,21 +619,18 @@ impl lcss_lexer {
         let temp : ~str ;          
         if string[0] != '+' as u8 { temp = copy string; }
         else { temp = str::substr(string, 1, string.len()).to_owned(); }
-        let value = Integer(int::from_str(temp
-            // Remove any + sign as int::from_str() does not parse them.
-
-        ).unwrap()); // XXX handle overflow
+        let value = Integer(int::from_str(temp).unwrap()); // Remove any + sign as int::from_str() does not parse them.  // XXX handle overflow
+        
         self.consume_numeric_end(string, value)
     }
 
-    fn consume_numeric_fraction(&mut self, string: ~str)
-            -> (Token, Option<ParseError>) {
+    fn consume_numeric_fraction(&mut self, string: ~str) -> (Option<Token> , lexer_error) {
         let mut string: ~str = string;
         while !self.is_eof() {
             match self.current_char() {
                 '0'..'9' => push_char!(string, self.consume_char()),
                 _ => match self.consume_scientific_number(string) {
-                    Ok(token) => return (token, None),
+                    Ok(token) => return (Some(token), LEXER_OK),
                     Err(s) => { string = s; break }
                 }
             }
@@ -578,23 +640,27 @@ impl lcss_lexer {
     }
 
 
-    fn consume_numeric_end(&mut self, string: ~str,
-                           value: NumericValue) -> (Token, Option<ParseError>) {
-        if self.is_eof() { return (Number(value, string), None) }
+    fn consume_numeric_end(&mut self, string: ~str, value: NumericValue) -> (Option<Token> , lexer_error) {
+        
+        if self.is_eof() { 
+            return (Some(Number(value, string)), LEXER_OK) 
+        }
         (match self.current_char() {
-            '%' => { self.position += 1; Percentage(value, string) },
+            '%' => { 
+                self.position += 1; 
+                Some(Percentage(value, string)) 
+            },
             _ => {
                 match self.consume_ident_string() {
-                    Some(unit) => Dimension(value, string, unit),
-                    None => Number(value, string),
+                    Some(unit) => Some(Dimension(value, string, unit)),
+                    None => Some(Number(value, string)),
                 }
             },
-        }, None)
+        }, LEXER_OK)
     }
 
 
-    fn consume_scientific_number(&mut self, string: ~str)
-            -> Result<Token, ~str> {
+    fn consume_scientific_number(&mut self, string: ~str) -> Result<Token, ~str> {
         let next_3 = self.next_n_chars(3);
         let mut string: ~str = string;
         if (next_3.len() >= 2
@@ -623,21 +689,22 @@ impl lcss_lexer {
         let value = Float(float::from_str(string).unwrap());
         Ok(Number(value, string))
     }
-
-    pub fn error_token(&mut self ,t: Token, message: ~str) -> (Token, Option<ParseError>) {
-        (t, Some(ParseError{message: message}))
-    }
-
-    pub fn css__lexer_create(input: ~lpu_inputstream) -> css_result {
-        CSS_OK
-    }
 }
 
-pub fn lcss_lexer()->~lcss_lexer {
-    let mut lexer :~lcss_lexer= 
-    	~lcss_lexer{ transform_function_whitespace: false,
-    	input: ~[],
-    	length: 0, 
-    	position: 0 } ;
-    lexer
+pub fn lcss_lexer() -> Option<~lcss_lexer> {
+    let mut lexer : ~lcss_lexer= 
+    	~lcss_lexer{ 
+            transform_function_whitespace: false,
+        	internal_vector: ~[],
+        	length: 0, 
+        	position: 0, 
+            lpu_inputstream_instance: match lpu_inputstream(~"UTF-8" , Some(~css__charset_extract)) {
+
+                (None, _) => return None,
+                (x, _) => x.unwrap()
+            },
+            inputstream_eof: false,
+            eof_token_sent: false,
+        };
+    Some(lexer)
 }

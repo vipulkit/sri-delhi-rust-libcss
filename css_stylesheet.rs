@@ -27,7 +27,7 @@ pub struct css_selector_detail {
 }
 
 pub struct css_selector {
-	combinator:Option<@css_selector>,
+	combinator:Option<@mut css_selector>,
 	rule:Option<CSS_RULE_DATA_TYPE>,
 	specificity:uint,
 
@@ -44,10 +44,10 @@ pub struct css_style {
 
 
 pub struct css_selector_hash {
-	elements:@[@css_selector],
-	classes:@[css_selector],
-	ids:@[@css_selector],
-	universal:@[@css_selector]
+	elements:~[@mut css_selector],
+	classes:~[@mut css_selector],
+	ids:~[@mut css_selector],
+	universal:~[@mut css_selector]
 }
 
 pub struct css_stylesheet {
@@ -70,7 +70,7 @@ pub struct css_rule {
 	parent_stylesheet:Option<@mut css_stylesheet>,
 	prev:Option<CSS_RULE_DATA_TYPE>,
 	next:Option<CSS_RULE_DATA_TYPE>,
-	rule_type:css_rule_type,
+	//rule_type:css_rule_type,
 	index:uint//,items:uint
 }
 
@@ -175,10 +175,15 @@ impl css_stylesheet {
 		sel
 	}
 
-	pub fn css__stylesheet_selector_detail_init(detail : &mut ~css_selector_detail, sel_type: css_selector_type,
-												qname : css_qname , value_type : css_selector_detail_value_type,
-												string_value : Option<~str> , ab_value : Option<(int,int)>,
-												negate:bool)  -> css_result {
+	pub fn css__stylesheet_selector_detail_init (
+		detail : @mut css_selector_detail, 
+		sel_type: css_selector_type,
+		qname : css_qname, 
+		value_type : css_selector_detail_value_type,
+		string_value : Option<~str> , 
+		ab_value : Option<(int,int)>,
+		negate:bool
+	)  -> css_result {
 
 		detail.selector_type = sel_type;
 		detail.qname= qname;
@@ -206,7 +211,7 @@ impl css_stylesheet {
 		}
 	}
 	
-	pub fn css__stylesheet_selector_append_specific(selector : @mut css_selector, sel_type: css_selector_type,
+	pub fn css__stylesheet_selector_append_specific(selector : @mut css_selector, selector_type: css_selector_type,
 												name : css_qname , val_type : css_selector_detail_value_type,
 												string_value : Option<~str> , ab_value : Option<(int,int)>,
 												negate:bool, comb_type : css_combinator)  -> css_result  {
@@ -216,7 +221,7 @@ impl css_stylesheet {
 			// specificity:0,
 
 			qname:name,
-			selector_type:sel_type,
+			selector_type:selector_type,
 			combinator_type:comb_type,
 			value_type:val_type,
 			negate:negate,
@@ -226,7 +231,7 @@ impl css_stylesheet {
 			b:0
 		};
 
-		match sel_type {
+		match selector_type {
 			CSS_SELECTOR_CLASS=> selector.specificity += CSS_SPECIFICITY_C, 
 			CSS_SELECTOR_PSEUDO_CLASS=> selector.specificity += CSS_SPECIFICITY_C, 
 			CSS_SELECTOR_ATTRIBUTE=> selector.specificity += CSS_SPECIFICITY_C, 
@@ -261,14 +266,15 @@ impl css_stylesheet {
 		selector.data.push(detail);
 		CSS_OK
 	}
-	pub fn css__stylesheet_selector_combine(typ : css_combinator, a : @css_selector , 
-											b : &mut ~css_selector) -> css_result {
+
+	pub fn css__stylesheet_selector_combine(combinator_type : css_combinator, a : @mut css_selector , 
+											b : @mut css_selector) -> css_result {
 		match b.combinator {
 			Some(_)=> return CSS_INVALID,
 			None=> {}
 		};
 
-		for a.data.each |&detail| {
+		for a.data.each_mut |&detail| {
 			match detail.selector_type {
 				CSS_SELECTOR_PSEUDO_ELEMENT => return CSS_INVALID ,
 				_=> loop
@@ -276,28 +282,27 @@ impl css_stylesheet {
 		}
 
 		b.combinator=Some(a);
-		b.data[0].combinator_type=typ;
+		b.data[0].combinator_type=combinator_type;
 		b.specificity += a.specificity;
 		CSS_OK
 	}
-	pub fn css_stylesheet_rule_create(&mut self, typ : css_rule_type ) -> CSS_RULE_DATA_TYPE  {
+
+	pub fn css_stylesheet_rule_create(&mut self, rule_type : css_rule_type ) -> CSS_RULE_DATA_TYPE  {
 		let mut base_rule = @mut css_rule{ 
 			parent_rule:None,
 			parent_stylesheet:None,
 			next:None,
 			prev:None,
-			rule_type:typ,
 			index:0
 		};
 
-		match typ {
+		match rule_type {
 			CSS_RULE_UNKNOWN=>  { 	
 				let mut ret_rule = @mut css_rule{ 
 					parent_rule:None,
 					parent_stylesheet:None,
 					next:None,
 					prev:None,
-					rule_type:typ,
 					index:0
 				};
 				RULE_UNKNOWN(ret_rule) 
@@ -486,6 +491,7 @@ impl css_stylesheet {
 
 	pub fn css__stylesheet_add_rule(sheet : @mut css_stylesheet, css_rule : CSS_RULE_DATA_TYPE,
 									parent_rule : Option<CSS_RULE_DATA_TYPE> ) -> css_result {
+		
 		let mut base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
 
 		base_rule.index = sheet.rule_count;
@@ -649,29 +655,7 @@ impl css_stylesheet {
 							match(self._remove_selectors(current_rule))
 							{
 								CSS_OK => {
-									match (current_rule) {
-										RULE_UNKNOWN(next_rule) => {
-											ptr = next_rule.next;
-										},
-										RULE_SELECTOR(next_rule)=>{
-											ptr = next_rule.base.next;
-										},
-										RULE_CHARSET(next_rule)=>{
-											ptr = next_rule.base.next;
-										},
-										RULE_IMPORT(next_rule)=>{
-											ptr = next_rule.base.next;
-										},
-										RULE_MEDIA(next_rule)=>{
-											ptr = next_rule.base.next;
-										},
-										RULE_FONT_FACE(next_rule)=>{
-											ptr = next_rule.base.next;
-										},
-										RULE_PAGE(next_rule)=>{
-											ptr = next_rule.base.next;
-										},
-									}
+									ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
 									loop;
 								}
 
