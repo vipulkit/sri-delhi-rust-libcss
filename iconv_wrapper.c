@@ -30,7 +30,7 @@ extern void DeallocateBuffer( char * buffer)
 extern uint64_t rust_iconv_open ( const char * to_code, const char * from_code )
 {
 	uint64_t result ;
-	void * handle = iconv_open(to_code,from_code);
+	void * handle = iconv_open("UTF-8",from_code);
 	result = handle ;
 	printf("\n Opened rust iconv =%lld=%lld=%s=%s= \n",result,handle, to_code , from_code );
 	return result ;
