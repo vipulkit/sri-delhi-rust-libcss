@@ -5,6 +5,7 @@ extern mod css_enum;
 extern mod std ;
 
 use css_enum::* ;
+use core::managed::*;
 
 static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
 
@@ -695,15 +696,21 @@ impl css_stylesheet {
 // 			Implementation of css/src/select/hash.c
 /////////////////////////////////////////////////////
 
-impl css_selector_hash {
+pub enum css_hash_type {
+	Element = 1,
+	Class = 2,
+	Ids = 3,
+	Universal = 4
+}
 
+impl css_selector_hash {
 
 	pub fn css__selector_hash_create() -> @mut css_selector_hash {
 		let mut hash = @mut css_selector_hash{ 
 						default_slots:(1<<6),
 						elements:~[], 
-						classes:~[] , 
-						ids:~[] ,
+						classes:~[], 
+						ids:~[],
 						universal:~[] 
 		};
 		for uint::range(0,hash.default_slots) |_| {
@@ -767,7 +774,7 @@ impl css_selector_hash {
 	
 	pub fn css__selector_hash_insert(&mut self, selector : @mut css_selector) 
 									-> css_result {
-/*		unsafe {
+		unsafe {
 			let mut mask :uint ;
 			let mut index:uint=0;
 			let mut name :~str ;
@@ -778,7 +785,7 @@ impl css_selector_hash {
 					(str::char_at(selector.data[0].qname.name,0) != '*' ) {
 						mask = self.default_slots-1 ;
 						index = css_selector_hash::_hash_name(copy (selector.data[0].qname.name)) & mask ;
-						return self._insert_into_chain(&self.elements,index,selector);
+						return self._insert_into_chain(Element,index,selector);
 				}
 
 				// Named Class
@@ -786,7 +793,7 @@ impl css_selector_hash {
 					name = css_selector_hash::_class_name(selector);
 					mask = self.default_slots-1 ;
 					index = css_selector_hash::_hash_name(name) & mask ;
-					return self._insert_into_chain(&self.classes,index,selector);
+					return self._insert_into_chain(Class,index,selector);
 				}
 
 				// Named Id
@@ -794,40 +801,184 @@ impl css_selector_hash {
 					name = css_selector_hash::_id_name(selector);
 					mask = self.default_slots-1 ;
 					index = css_selector_hash::_hash_name(name) & mask ;
-					return self._insert_into_chain(&self.ids,index,selector);
+					return self._insert_into_chain(Ids,index,selector);
 				}
 				else{
-					return self._insert_into_chain(&self.universal,index,selector);
+					return self._insert_into_chain(Universal,index,selector);
 				}
 			}
 			// Universal Chain
-			return self._insert_into_chain(&self.universal,index,selector);
-		}*/
-
-		CSS_OK
+			return self._insert_into_chain(Universal,index,selector);
+		}
 	}
 
 	
 	pub fn _insert_into_chain(&mut self, 
-							list : &~[Option<@mut hash_entry>],
+							hash_type : css_hash_type,
 							index:uint,
 							selector : @mut css_selector) 
 							-> css_result {
-		/*match list[index] {
+
+		let mut hash_entry_list = 
+				match hash_type {
+					Element => &mut self.elements ,
+					Class => &mut self.classes ,
+					Ids =>  &mut self.ids ,
+					Universal => &mut self.universal ,
+				};
+		let mut entry = @mut hash_entry{
+				selector:selector,
+				next:None
+		};
+		//&~[Option<@mut hash_entry>] 
+
+		match (*hash_entry_list)[index] {
 			None=>{
-				let mut entry = @mut hash_entry{
-									selector:selector,
-									next:None
-								};
-				list[index] = Some(entry);
+				(*hash_entry_list)[index] = Some(entry);
 			},
 			Some(index_element)=>{
+
 				let mut search = index_element;
 				let mut prev = index_element ;
+				let mut first_pos : bool = true ;
+				loop {
+					if( search.selector.specificity> selector.specificity ) {
+						break ;
+					}
+
+					if( search.selector.specificity == selector.specificity){
+						if(search.selector.rule.is_none() || selector.rule.is_none() ){
+							return CSS_BADPARM ;
+						}
+
+						let mut base_search_rule = css_stylesheet::css__stylesheet_get_base_rule(search.selector.rule.get());
+						let mut base_selector_rule = css_stylesheet::css__stylesheet_get_base_rule(selector.rule.get());
+
+						if(base_search_rule.index > base_selector_rule.index) {
+							break ;
+						}
+					}
+
+					prev = search ;
+					search = 
+						match search.next {
+							None=>{
+								break ;
+							},
+							Some(next_ptr)=>{
+								first_pos = false ;
+								next_ptr
+							}
+					};
+				}
+				if(first_pos){
+					(*hash_entry_list)[index] = Some(entry);
+					entry.next = Some(search);
+				}
+				else {
+					prev.next= Some(entry);
+					entry.next=Some(search);
+				}
 			}
-		}*/
+		}
 		CSS_OK
 	}
+
+	pub fn css__selector_hash_remove(&mut self, selector : @mut css_selector) 
+									-> css_result {
+		unsafe {
+			let mut mask :uint ;
+			let mut index:uint=0;
+			let mut name :~str ;
+			if (vec::uniq_len(&selector.data) > 0){
+
+				// Named Element
+				if ( selector.data[0].qname.name.len() != 1) || 
+					(str::char_at(selector.data[0].qname.name,0) != '*' ) {
+						mask = self.default_slots-1 ;
+						index = css_selector_hash::_hash_name(copy (selector.data[0].qname.name)) & mask ;
+						return self._remove_from_chain(Element,index,selector);
+				}
+
+				// Named Class
+				else if css_selector_hash::_class_name(selector).len() == 0  {
+					name = css_selector_hash::_class_name(selector);
+					mask = self.default_slots-1 ;
+					index = css_selector_hash::_hash_name(name) & mask ;
+					return self._remove_from_chain(Class,index,selector);
+				}
+
+				// Named Id
+				else if css_selector_hash::_id_name(selector).len() == 0 {
+					name = css_selector_hash::_id_name(selector);
+					mask = self.default_slots-1 ;
+					index = css_selector_hash::_hash_name(name) & mask ;
+					return self._remove_from_chain(Ids,index,selector);
+				}
+				else{
+					return self._remove_from_chain(Universal,index,selector);
+				}
+			}
+			// Universal Chain
+			return self._remove_from_chain(Universal,index,selector);
+		}
+	}
+
+	pub fn _remove_from_chain(&mut self, 
+							hash_type : css_hash_type,
+							index:uint,
+							selector : @mut css_selector) 
+							-> css_result {
+
+		let mut hash_entry_list = 
+			match hash_type {
+				Element => &mut self.elements ,
+				Class => &mut self.classes ,
+				Ids =>  &mut self.ids ,
+				Universal => &mut self.universal ,
+			};
+		//&~[Option<@mut hash_entry>] 
+
+		match (*hash_entry_list)[index] {
+			None=>{
+				return CSS_INVALID ;
+			},
+			Some(index_element)=>{
+
+				let mut search = index_element;
+				let mut prev = index_element ;
+				let mut first_pos : bool = true ;
+
+				loop {
+
+					if (mut_ptr_eq(selector,search.selector) == true ) {
+						break;
+					}
+
+					prev = search ;
+					search = 
+						match search.next {
+							None=>{
+								return CSS_INVALID ;
+							},
+							Some(next_ptr)=>{
+								first_pos = false ;
+								next_ptr
+							}
+					};
+				}
+				if(first_pos){
+					(*hash_entry_list)[index] = search.next;
+				}
+				else {
+					prev.next= search.next;
+				}
+			}
+		}
+		CSS_OK
+	}
+
+	
 }
 
 
