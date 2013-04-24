@@ -687,14 +687,14 @@ impl lcss_lexer {
     }
 }
 
-pub fn lcss_lexer() -> Option<~lcss_lexer> {
+pub fn lcss_lexer( (lpu_inputstream , error ): (Option<~lpu_inputstream> , parserutils_error)) -> Option<~lcss_lexer> {
     let mut lexer : ~lcss_lexer= 
     	~lcss_lexer{ 
             transform_function_whitespace: false,
         	internal_vector: ~[],
         	length: 0, 
         	position: 0, 
-            lpu_inputstream_instance: match lpu_inputstream(~"UTF-8" , Some(~css__charset_extract)) {
+            lpu_inputstream_instance: match (lpu_inputstream , error) {
 
                 (None, _) => return None,
                 (x, _) => x.unwrap()
