@@ -876,18 +876,28 @@ pub enum css_selector_detail_value_type {
 //   	NoSelectorNode
 // }
 
+
 pub enum css_token_type { 
-	CSS_TOKEN_IDENT, CSS_TOKEN_ATKEYWORD, CSS_TOKEN_HASH,
-	CSS_TOKEN_FUNCTION, CSS_TOKEN_STRING, CSS_TOKEN_INVALID_STRING, 
-	CSS_TOKEN_URI, CSS_TOKEN_UNICODE_RANGE, CSS_TOKEN_CHAR, 
-	CSS_TOKEN_NUMBER, CSS_TOKEN_PERCENTAGE, CSS_TOKEN_DIMENSION,
-
-	/* Those tokens that want strings interned appear above */
-	CSS_TOKEN_LAST_INTERN,
-
- 	CSS_TOKEN_CDO, CSS_TOKEN_CDC, CSS_TOKEN_S, CSS_TOKEN_COMMENT, 
-	CSS_TOKEN_INCLUDES, CSS_TOKEN_DASHMATCH, CSS_TOKEN_PREFIXMATCH, 
-	CSS_TOKEN_SUFFIXMATCH, CSS_TOKEN_SUBSTRINGMATCH, CSS_TOKEN_EOF 
+	CSS_TOKEN_IDENT(~str),
+	CSS_TOKEN_ATKEYWORD(~str),
+ 	CSS_TOKEN_HASH(~str),
+	CSS_TOKEN_FUNCTION(~str), 
+	CSS_TOKEN_STRING(~str), 
+	CSS_TOKEN_INVALID_STRING, 
+	CSS_TOKEN_URI(~str), 
+	CSS_TOKEN_UNICODE_RANGE(char , char), 
+	CSS_TOKEN_CHAR(char),
+	CSS_TOKEN_NUMBER(NumericValue , ~str), 
+	CSS_TOKEN_PERCENTAGE(NumericValue , ~str), 
+	CSS_TOKEN_DIMENSION(NumericValue , ~str, ~str),
+ 	CSS_TOKEN_CDO, 
+ 	CSS_TOKEN_CDC, 
+ 	CSS_TOKEN_S,
+ 	Delim(char),
+ 	// CSS_TOKEN_COMMENT, 
+	// CSS_TOKEN_INCLUDES, CSS_TOKEN_DASHMATCH, CSS_TOKEN_PREFIXMATCH, 
+	// CSS_TOKEN_SUFFIXMATCH, CSS_TOKEN_SUBSTRINGMATCH, 
+	CSS_TOKEN_EOF 
 }
 
 
@@ -1719,36 +1729,6 @@ pub enum NumericValue {
     Float(float),
 }
 
-pub enum Token {
-    Ident(~str),
-    Function(~str),
-    AtKeyword(~str),
-    Hash(~str),
-    String(~str),
-    BadString,
-    URL(~str),
-    BadURL,
-    Delim(char),
-    Number(NumericValue, ~str), // value, representation
-    Percentage(NumericValue, ~str), // value, representation
-    Dimension(NumericValue, ~str, ~str), // value, representation, unit
-    UnicodeRange(char, char), // start, end
-    EmptyUnicodeRange,
-    WhiteSpace,
-    CDO, // <!--
-    CDC, // -->
-    Colon, // :
-    Semicolon, // ;
-    OpenParenthesis, // (
-    OpenSquareBraket, // [
-    OpenCurlyBraket, // {
-    CloseParenthesis, // )
-    CloseSquareBraket, // ]
-    CloseCurlyBraket, // }
-    EOF,
-}
-
-
 pub enum css_rule_type {
 	CSS_RULE_UNKNOWN,
 	CSS_RULE_SELECTOR,
@@ -1769,7 +1749,6 @@ enum rule_stylesheet
 	rule(int),  //update int toproper value
 	stylesheet(int)
 }
-
 
 
 

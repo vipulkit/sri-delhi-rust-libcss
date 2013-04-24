@@ -80,12 +80,12 @@ impl lcss_lexer {
     }
     
 
-    pub fn css__lexer_get_token(&mut self) -> (Option<Token>, lexer_error) {
+    pub fn css__lexer_get_token(&mut self) -> (Option<css_token_type>, lexer_error) {
         self.read_from_inputstream();
         
         if self.is_eof() {
             self.eof_token_sent= true;
-            (Some(EOF), LEXER_OK) 
+            (Some(CSS_TOKEN_EOF), LEXER_OK) 
         }
         
         else { 
@@ -93,14 +93,14 @@ impl lcss_lexer {
         }
     }
 
-    fn handle_transform_function_whitespace(&mut self, string: ~str) -> (Option<Token> , lexer_error) {
+    fn handle_transform_function_whitespace(&mut self, string: ~str) -> (Option<css_token_type> , lexer_error) {
         
         while !self.is_eof() {
             match self.current_char() {
                 '\t' | '\n' | '\x0C' | ' ' => self.position += 1,
                 '(' => { 
                     self.position += 1;
-                    return (Some(Function(string)), LEXER_OK) 
+                    return (Some(CSS_TOKEN_FUNCTION(string)), LEXER_OK) 
                 },
                 _ => break,
             }
@@ -108,33 +108,29 @@ impl lcss_lexer {
 
         // Go back for one whitespace character.
         self.position -= 1;
-        (Some(Ident(string)), LEXER_OK)
+        (Some(CSS_TOKEN_IDENT(string)), LEXER_OK)
     }
 
     fn is_eof(&self) -> bool {
         self.inputstream_eof && self.position >= self.length
     }
 
-    pub fn consume_token(&mut self) -> (Option<Token>, lexer_error) {
+    pub fn consume_token(&mut self) -> (Option<css_token_type>, lexer_error) {
         // Comments are special because they do not even emit a token, unless they reach EOF which is an error.
 
-        // match self.consume_comments() {
-        //     Some(result) => return result,
-        //     None => ()
-        // }
         if self.is_eof() {
             if self.eof_token_sent{
                 return(None , LEXER_INVALID)
             }
             self.eof_token_sent = true;
-            return (Some(EOF), LEXER_OK) 
+            return (Some(CSS_TOKEN_EOF), LEXER_OK) 
         }
         
         let c = self.current_char();
         
         match c {
             '/' => {
-                if (((self.internal_vector.len() - self.position) >= 2) && self.match_here(~"/"))  {
+                if (((self.internal_vector.len() - self.position) >= 2) && self.match_here(~"/*"))  {
                     self.position += 2;
                     self.consume_comments()
                 }
@@ -147,7 +143,7 @@ impl lcss_lexer {
                 if (self.internal_vector.len() - self.position) >= 3 {
                     if self.match_here(~"-->") {
                         self.position += 3;
-                        (Some(CDC), LEXER_OK)
+                        (Some(CSS_TOKEN_CDC), LEXER_OK)
                     }
                     else if self.next_is_namestart_or_escape() {
                         self.consume_ident()
@@ -164,7 +160,7 @@ impl lcss_lexer {
                 if (self.internal_vector.len() - self.position) >= 4 {
                     if self.match_here(~"<!--") {
                         self.position += 4;
-                        (Some(CDO), LEXER_OK)
+                        (Some(CSS_TOKEN_CDO), LEXER_OK)
                     } 
                     else {
                         self.position += 1;
@@ -194,53 +190,53 @@ impl lcss_lexer {
                                 _ => break,
                             }
                         }
-                        (Some(WhiteSpace), LEXER_OK)
+                        (Some(CSS_TOKEN_S), LEXER_OK)
                     },
                     '"' => self.consume_quoted_string(false),
                     '#' => self.consume_hash(),
                     '\'' => self.consume_quoted_string(true),
-                    '(' => (Some(OpenParenthesis), LEXER_OK),
-                    ')' => (Some(CloseParenthesis), LEXER_OK),
-                    ':' => (Some(Colon), LEXER_OK),
-                    ';' => (Some(Semicolon), LEXER_OK),
+                    '(' => (Some(CSS_TOKEN_CHAR(c)), LEXER_OK),
+                    ')' => (Some(CSS_TOKEN_CHAR(c)), LEXER_OK),
+                    ':' => (Some(CSS_TOKEN_CHAR(c)), LEXER_OK),
+                    ';' => (Some(CSS_TOKEN_CHAR(c)), LEXER_OK),
                     '@' => self.consume_at_keyword(),
-                    '[' => (Some(OpenSquareBraket), LEXER_OK),
-                    ']' => (Some(CloseSquareBraket), LEXER_OK),
-                    '{' => (Some(OpenCurlyBraket), LEXER_OK),
-                    '}' => (Some(CloseCurlyBraket), LEXER_OK),
+                    '[' => (Some(CSS_TOKEN_CHAR(c)), LEXER_OK),
+                    ']' => (Some(CSS_TOKEN_CHAR(c)), LEXER_OK),
+                    '{' => (Some(CSS_TOKEN_CHAR(c)), LEXER_OK),
+                    '}' => (Some(CSS_TOKEN_CHAR(c)), LEXER_OK),
                     _ => (Some(Delim(c)), LEXER_OK)
                 }
             }
         }
     }
 
-    fn consume_quoted_string(&mut self, single_quote: bool) -> (Option<Token> , lexer_error) {
+    fn consume_quoted_string(&mut self, single_quote: bool) -> (Option<css_token_type> , lexer_error) {
         let mut string: ~str = ~"";
         while !self.is_eof() {
             match self.consume_char() {
-                '"' if !single_quote => return (Some(String(string)), LEXER_OK),
-                '\'' if single_quote => return (Some(String(string)), LEXER_OK),
+                '"' if !single_quote => return (Some(CSS_TOKEN_STRING(string)), LEXER_OK),
+                '\'' if single_quote => return (Some(CSS_TOKEN_STRING(string)), LEXER_OK),
                 '\n' | '\x0C' => {
-                    return (Some(BadString), LEXER_INVALID);
+                    return (Some(CSS_TOKEN_INVALID_STRING), LEXER_INVALID);
                 },
                 '\\' => {
                     match self.next_n_chars(1) {
                         // Quoted newline
                         ['\n'] | ['\x0C'] => self.position += 1,
                         [] =>
-                            return (Some(BadString), LEXER_INVALID),
+                            return (Some(CSS_TOKEN_INVALID_STRING), LEXER_INVALID),
                         _ => push_char!(string, self.consume_escape())
                     }
                 }
                 c => push_char!(string, c),
             }
         }
-        (Some(String(string)), LEXER_INVALID)
+        (Some(CSS_TOKEN_STRING(string)), LEXER_INVALID)
     }
 
-    fn consume_hash(&mut self) -> (Option<Token> , lexer_error) {
+    fn consume_hash(&mut self) -> (Option<css_token_type> , lexer_error) {
         let string = self.consume_ident_string_rest();
-        (if string == ~"" { Some(Delim('#')) } else { Some(Hash(string)) }, LEXER_OK)
+        (if string == ~"" { Some(Delim('#')) } else { Some(CSS_TOKEN_HASH(string)) }, LEXER_OK)
     }
 
     fn consume_char(&mut self) -> char {
@@ -257,7 +253,7 @@ impl lcss_lexer {
         return true;
     }
 
-    fn consume_comments(&mut self)-> (Option<Token> , lexer_error) {
+    fn consume_comments(&mut self)-> (Option<css_token_type> , lexer_error) {
         let vec_to_string: ~str = str::from_bytes(self.internal_vector);
             match str::find_str_from(vec_to_string, "*/", self.position) {
                 Some(end_position) => self.position = end_position + 2,
@@ -273,9 +269,9 @@ impl lcss_lexer {
         return(None , LEXER_OK);
     }
 
-    fn consume_at_keyword(&mut self) -> (Option<Token> , lexer_error) {
+    fn consume_at_keyword(&mut self) -> (Option<css_token_type> , lexer_error) {
         (match self.consume_ident_string() {
-            Some(string) => Some(AtKeyword(string)),
+            Some(string) => Some(CSS_TOKEN_ATKEYWORD(string)),
             None => Some(Delim('@'))
         }, LEXER_OK)
     }
@@ -319,11 +315,11 @@ impl lcss_lexer {
     }
 
 
-    fn consume_ident(&mut self) -> (Option<Token> , lexer_error) {
+    fn consume_ident(&mut self) -> (Option<css_token_type> , lexer_error) {
         match self.consume_ident_string() {
             Some(string) => {
                 if self.is_eof() { 
-                    return (Some(Ident(string)), LEXER_OK);
+                    return (Some(CSS_TOKEN_IDENT(string)), LEXER_OK);
                 }
                 match self.current_char() {
                     '\t' | '\n' | '\x0C' | ' '
@@ -335,10 +331,10 @@ impl lcss_lexer {
                         self.position += 1;
                         if ascii_lower(string) == ~"url" { self.consume_url() }
                         else {
-                            return (Some(Function(string)), LEXER_OK)
+                            return (Some(CSS_TOKEN_FUNCTION(string)), LEXER_OK)
                      }
                     },
-                    _ => return (Some(Ident(string)), LEXER_OK)
+                    _ => return (Some(CSS_TOKEN_IDENT(string)), LEXER_OK)
                 }
             },
             None => match self.current_char() {
@@ -416,7 +412,7 @@ impl lcss_lexer {
         }
     }
 
-    fn consume_url(&mut self) -> (Option<Token> , lexer_error) {
+    fn consume_url(&mut self) -> (Option<css_token_type> , lexer_error) {
         while !self.is_eof() {
             match self.current_char() {
                 '\t' | '\n' | '\x0C' | ' ' => self.position += 1,
@@ -424,20 +420,20 @@ impl lcss_lexer {
                 '\'' => return self.consume_quoted_url(true),
                 ')' => { 
                     self.position += 1;
-                    return (Some(URL(~"")), LEXER_OK) 
+                    return (Some(CSS_TOKEN_URI(~"")), LEXER_OK) 
                 },
                 _ => return self.consume_unquoted_url(),
             }
         }
-        (Some(BadURL) , LEXER_INVALID)
+        (Some(CSS_TOKEN_INVALID_STRING) , LEXER_INVALID)
     }
 
-    fn consume_quoted_url(&mut self, single_quote: bool) -> (Option<Token>, lexer_error) {
+    fn consume_quoted_url(&mut self, single_quote: bool) -> (Option<css_token_type>, lexer_error) {
         self.position += 1; // The initial quote
         let (token, err) = self.consume_quoted_string(single_quote);
         match err {
             LEXER_INVALID => match token.unwrap() {
-                String(string) => self.consume_url_end(string),
+                CSS_TOKEN_STRING(string) => self.consume_url_end(string),
                 // consume_quoted_string() never returns a non-String token
                 // without error:
                 _ => (None , LEXER_INVALID),
@@ -449,13 +445,13 @@ impl lcss_lexer {
         }
     }
 
-    fn consume_unquoted_url(&mut self) -> (Option<Token>, lexer_error) {
+    fn consume_unquoted_url(&mut self) -> (Option<css_token_type>, lexer_error) {
         let mut string = ~"";
         while !self.is_eof() {
             let next_char = match self.consume_char() {
                 '\t' | '\n' | '\x0C' | ' '
                     => return self.consume_url_end(string),
-                ')' => return (Some(URL(string)), LEXER_OK),
+                ')' => return (Some(CSS_TOKEN_URI(string)), LEXER_OK),
                 '\x00'..'\x08' | '\x0E'..'\x1F' | '\x7F'..'\x9F' // non-printable
                     | '"' | '\'' | '(' => return self.consume_bad_url(),
                 '\\' => match self.next_n_chars(1) {
@@ -466,21 +462,21 @@ impl lcss_lexer {
             };
             push_char!(string, next_char)
         }
-        (Some(BadURL) , LEXER_INVALID)
+        (Some(CSS_TOKEN_INVALID_STRING) , LEXER_INVALID)
     }
 
-    fn consume_url_end(&mut self, string: ~str) -> (Option<Token>, lexer_error) {
+    fn consume_url_end(&mut self, string: ~str) -> (Option<css_token_type>, lexer_error) {
         while !self.is_eof() {
             match self.consume_char() {
                 '\t' | '\n' | '\x0C' | ' ' => (),
-                ')' => return (Some(URL(string)), LEXER_OK),
+                ')' => return (Some(CSS_TOKEN_URI(string)), LEXER_OK),
                 _ => return self.consume_bad_url()
             }
         }
-        (Some(BadURL) , LEXER_INVALID)
+        (Some(CSS_TOKEN_INVALID_STRING) , LEXER_INVALID)
     }
 
-    fn consume_bad_url(&mut self) -> (Option<Token>, lexer_error) {
+    fn consume_bad_url(&mut self) -> (Option<css_token_type>, lexer_error) {
         // Consume up to the closing )
         while !self.is_eof() {
             match self.consume_char() {
@@ -489,10 +485,10 @@ impl lcss_lexer {
                 _ => ()
             }
         }
-        (Some(BadURL) , LEXER_INVALID)
+        (Some(CSS_TOKEN_INVALID_STRING) , LEXER_INVALID)
     }
 
-    fn consume_unicode_range(&mut self)-> (Option<Token>, lexer_error) {
+    fn consume_unicode_range(&mut self)-> (Option<css_token_type>, lexer_error) {
         let next_3 = self.next_n_chars(3);
         // We got here with U or u
         assert! (next_3[0] == 'u')||(next_3[0] == 'U') ;
@@ -547,14 +543,14 @@ impl lcss_lexer {
             end = if hex.len() > 0 { self.char_from_hex(hex) } else { start }
         }
         (if start > MAX_UNICODE || end < start {
-            Some(EmptyUnicodeRange)
+            Some(CSS_TOKEN_INVALID_STRING)
         } else {
             let end = if end <= MAX_UNICODE { end } else { MAX_UNICODE };
-            Some(UnicodeRange(start, end))
+            Some(CSS_TOKEN_UNICODE_RANGE(start, end))
         }, LEXER_OK)
     }
 
-    fn consume_numeric(&mut self) -> (Option<Token> , lexer_error) {
+    fn consume_numeric(&mut self) -> (Option<css_token_type> , lexer_error) {
        
         let c = self.consume_char();
         match c {
@@ -573,7 +569,7 @@ impl lcss_lexer {
         }
     }
 
-    fn consume_numeric_sign(&mut self, sign: char) -> (Option<Token> , lexer_error) {
+    fn consume_numeric_sign(&mut self, sign: char) -> (Option<css_token_type> , lexer_error) {
         if self.is_eof() { 
             return (Some(Delim(sign)), LEXER_OK) 
         }
@@ -593,7 +589,7 @@ impl lcss_lexer {
         }
     }
 
-    fn consume_numeric_rest(&mut self, initial_char: char) -> (Option<Token> , lexer_error) {
+    fn consume_numeric_rest(&mut self, initial_char: char) -> (Option<css_token_type> , lexer_error) {
         let mut string = str::from_char(initial_char);
         while !self.is_eof() {
             let c = self.current_char();
@@ -624,7 +620,7 @@ impl lcss_lexer {
         self.consume_numeric_end(string, value)
     }
 
-    fn consume_numeric_fraction(&mut self, string: ~str) -> (Option<Token> , lexer_error) {
+    fn consume_numeric_fraction(&mut self, string: ~str) -> (Option<css_token_type> , lexer_error) {
         let mut string: ~str = string;
         while !self.is_eof() {
             match self.current_char() {
@@ -640,27 +636,27 @@ impl lcss_lexer {
     }
 
 
-    fn consume_numeric_end(&mut self, string: ~str, value: NumericValue) -> (Option<Token> , lexer_error) {
+    fn consume_numeric_end(&mut self, string: ~str, value: NumericValue) -> (Option<css_token_type> , lexer_error) {
         
         if self.is_eof() { 
-            return (Some(Number(value, string)), LEXER_OK) 
+            return (Some(CSS_TOKEN_NUMBER(value, string)), LEXER_OK) 
         }
         (match self.current_char() {
             '%' => { 
                 self.position += 1; 
-                Some(Percentage(value, string)) 
+                Some(CSS_TOKEN_PERCENTAGE(value, string)) 
             },
             _ => {
                 match self.consume_ident_string() {
-                    Some(unit) => Some(Dimension(value, string, unit)),
-                    None => Some(Number(value, string)),
+                    Some(unit) => Some(CSS_TOKEN_DIMENSION(value, string, unit)),
+                    None => Some(CSS_TOKEN_NUMBER(value, string)),
                 }
             },
         }, LEXER_OK)
     }
 
 
-    fn consume_scientific_number(&mut self, string: ~str) -> Result<Token, ~str> {
+    fn consume_scientific_number(&mut self, string: ~str) -> Result<css_token_type, ~str> {
         let next_3 = self.next_n_chars(3);
         let mut string: ~str = string;
         if (next_3.len() >= 2
@@ -687,7 +683,7 @@ impl lcss_lexer {
             push_char!(string,self.consume_char())
         }
         let value = Float(float::from_str(string).unwrap());
-        Ok(Number(value, string))
+        Ok(CSS_TOKEN_NUMBER(value, string))
     }
 }
 
