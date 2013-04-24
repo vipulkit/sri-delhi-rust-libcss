@@ -32,7 +32,6 @@ pub struct css_selector {
 	specificity:uint,
 
 	data:~[@mut css_selector_detail]
-
 }
 
 
@@ -41,17 +40,21 @@ pub struct css_style {
 	bytecode:~[u32]
 	//sheet:Option<@css_stylesheet>
 }
-
+pub struct hash_entry {
+	selector:@mut css_selector,
+	next:Option<@mut hash_entry>
+}
 
 pub struct css_selector_hash {
-	elements:~[@mut css_selector],
-	classes:~[@mut css_selector],
-	ids:~[@mut css_selector],
-	universal:~[@mut css_selector]
+	default_slots:uint,
+	elements:~[Option<@mut hash_entry>],
+	classes:~[Option<@mut hash_entry>],
+	ids:~[Option<@mut hash_entry>],
+	universal:~[Option<@mut hash_entry>]
 }
 
 pub struct css_stylesheet {
-	selectors:css_selector_hash,
+	selectors:@mut css_selector_hash,
 	rule_count:uint,
 	rule_list:Option<CSS_RULE_DATA_TYPE>,
 	last_rule:Option<CSS_RULE_DATA_TYPE>,
@@ -110,7 +113,7 @@ pub struct css_rule_charset {
 } 
 
 
-enum CSS_RULE_DATA_TYPE {
+pub enum CSS_RULE_DATA_TYPE {
 	RULE_UNKNOWN(@mut css_rule),
 	RULE_SELECTOR(@mut css_rule_selector),
 	RULE_CHARSET(@mut css_rule_charset),
@@ -120,9 +123,14 @@ enum CSS_RULE_DATA_TYPE {
 	RULE_PAGE(@mut css_rule_page)
 }
 
-impl css_stylesheet {
-	pub fn css__stylesheet_style_create(&mut self ) -> @mut css_style {
+pub enum CSS_RULE_PARENT_TYPE {
+	CSS_RULE_PARENT_STYLESHEET,
+	CSS_RULE_PARENT_RULE
+}
 
+impl css_stylesheet {
+	
+	pub fn css__stylesheet_style_create(&mut self ) -> @mut css_style {
 		if self.cached_style.is_none() {
 			@mut css_style{bytecode:~[]} 
 		}
@@ -420,8 +428,8 @@ impl css_stylesheet {
 		}
 	}
 
-	pub fn css__stylesheet_rule_set_nascent_import(css_rule : CSS_RULE_DATA_TYPE, url_str:~str, 
-													media:u64) -> css_result 	{
+	pub fn css__stylesheet_rule_set_nascent_import(
+		css_rule : CSS_RULE_DATA_TYPE, url_str:~str, media:u64) -> css_result {
 
 		match css_rule {
 			RULE_IMPORT(x) => {
@@ -435,8 +443,8 @@ impl css_stylesheet {
 		}
 	}
 
-	pub fn css__stylesheet_rule_set_media(css_rule : CSS_RULE_DATA_TYPE,
-										 media:u64) -> css_result {
+	pub fn css__stylesheet_rule_set_media(
+		css_rule : CSS_RULE_DATA_TYPE, media:u64) -> css_result {
 
 		match css_rule {
 			RULE_MEDIA(x) => {
@@ -449,8 +457,8 @@ impl css_stylesheet {
 		}
 	}
 
-	pub fn css__stylesheet_rule_set_page_selector(css_rule : CSS_RULE_DATA_TYPE,
-													selector:@mut css_selector) -> css_result {
+	pub fn css__stylesheet_rule_set_page_selector(
+		css_rule : CSS_RULE_DATA_TYPE, selector:@mut css_selector) -> css_result {
 
 		match css_rule {
 			RULE_PAGE(x) => {
@@ -463,7 +471,20 @@ impl css_stylesheet {
 		}
 	}
 	
-	fn css__stylesheet_get_base_rule(css_rule : CSS_RULE_DATA_TYPE) -> @mut css_rule {
+	pub fn css__stylesheet_get_parent_type(css_rule :  CSS_RULE_DATA_TYPE) -> CSS_RULE_PARENT_TYPE {
+		let base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
+
+		if (base_rule.parent_rule.is_some() && base_rule.parent_stylesheet.is_none()) {
+			return CSS_RULE_PARENT_RULE;
+		}
+
+		if (base_rule.parent_rule.is_none() && base_rule.parent_stylesheet.is_some()) {
+			return CSS_RULE_PARENT_STYLESHEET;
+		}
+
+		fail!(~"Parent type is ambiguous");
+	}
+	pub fn css__stylesheet_get_base_rule(css_rule : CSS_RULE_DATA_TYPE) -> @mut css_rule {
 		match css_rule {
 			RULE_UNKNOWN(r) => {
 				r
@@ -669,3 +690,145 @@ impl css_stylesheet {
 		}
 	}
 }
+
+/////////////////////////////////////////////////////
+// 			Implementation of css/src/select/hash.c
+/////////////////////////////////////////////////////
+
+impl css_selector_hash {
+
+
+	pub fn css__selector_hash_create() -> @mut css_selector_hash {
+		let mut hash = @mut css_selector_hash{ 
+						default_slots:(1<<6),
+						elements:~[], 
+						classes:~[] , 
+						ids:~[] ,
+						universal:~[] 
+		};
+		for uint::range(0,hash.default_slots) |_| {
+			hash.elements.push(None);
+			hash.classes.push(None);
+			hash.ids.push(None);
+			hash.universal.push(None);
+		}
+		hash
+	}
+	
+	pub fn _class_name(selector : @mut css_selector) 
+						-> ~str {
+
+		for selector.data.each_mut |&element| {
+			match element.selector_type {
+				CSS_SELECTOR_CLASS=>{
+					if (element.negate == false) {
+					return copy element.qname.name;
+					}
+				},
+				_=>{}
+			}
+		}
+
+		~""
+	}
+
+	pub fn _id_name(selector : @mut css_selector) 
+						-> ~str {
+
+		for selector.data.each_mut |&element| {
+			match element.selector_type {
+				CSS_SELECTOR_ID=>{
+					if (element.negate == false) {
+					return copy element.qname.name;
+					}
+				},
+				_=>{}
+			}
+		}
+
+		~""
+	}
+
+
+	pub fn _hash_name( string: ~str ) -> uint {
+
+		let mut z: uint = 0x811c9dc5;
+	    let mut i: uint = 0;
+	    let mut string_index = str::char_len(string);
+	    while string_index>0 {
+	        z = z*0x01000193;
+	        z = (z^(string[i]) as uint);
+	        string_index = string_index-1;
+	        i = i+1; 
+	    }
+	    z = z%4091;
+	    z
+	}
+	
+	pub fn css__selector_hash_insert(&mut self, selector : @mut css_selector) 
+									-> css_result {
+/*		unsafe {
+			let mut mask :uint ;
+			let mut index:uint=0;
+			let mut name :~str ;
+			if (vec::uniq_len(&selector.data) > 0){
+
+				// Named Element
+				if ( selector.data[0].qname.name.len() != 1) || 
+					(str::char_at(selector.data[0].qname.name,0) != '*' ) {
+						mask = self.default_slots-1 ;
+						index = css_selector_hash::_hash_name(copy (selector.data[0].qname.name)) & mask ;
+						return self._insert_into_chain(&self.elements,index,selector);
+				}
+
+				// Named Class
+				else if css_selector_hash::_class_name(selector).len() == 0  {
+					name = css_selector_hash::_class_name(selector);
+					mask = self.default_slots-1 ;
+					index = css_selector_hash::_hash_name(name) & mask ;
+					return self._insert_into_chain(&self.classes,index,selector);
+				}
+
+				// Named Id
+				else if css_selector_hash::_id_name(selector).len() == 0 {
+					name = css_selector_hash::_id_name(selector);
+					mask = self.default_slots-1 ;
+					index = css_selector_hash::_hash_name(name) & mask ;
+					return self._insert_into_chain(&self.ids,index,selector);
+				}
+				else{
+					return self._insert_into_chain(&self.universal,index,selector);
+				}
+			}
+			// Universal Chain
+			return self._insert_into_chain(&self.universal,index,selector);
+		}*/
+
+		CSS_OK
+	}
+
+	
+	pub fn _insert_into_chain(&mut self, 
+							list : &~[Option<@mut hash_entry>],
+							index:uint,
+							selector : @mut css_selector) 
+							-> css_result {
+		/*match list[index] {
+			None=>{
+				let mut entry = @mut hash_entry{
+									selector:selector,
+									next:None
+								};
+				list[index] = Some(entry);
+			},
+			Some(index_element)=>{
+				let mut search = index_element;
+				let mut prev = index_element ;
+			}
+		}*/
+		CSS_OK
+	}
+}
+
+
+/////////////////////////////////////////////////////
