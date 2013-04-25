@@ -93,10 +93,12 @@ impl lwc {
 		
 		let mut num_threads : uint = 8;
 		let num_strings = string_list.len();
-		if (num_strings + 1 < num_threads) {
+		if (num_strings < num_threads) {
 			num_threads = num_strings;
 		}
-		let size_of_slice : uint = (num_strings + 1) / num_threads;
+		let size_of_slice : uint = (num_strings / num_threads) + 1;
+
+		//io::println(fmt!("num_threads, num_strings, size_of_slice : %? %? %?", num_threads, num_strings, size_of_slice));
 
 		let mut interned_string_list : ~[arc::RWARC<~lwc_string>] = ~[];
 		let dummy_lwc_string = arc::RWARC(~lwc_string {
@@ -112,14 +114,12 @@ impl lwc {
 			dummy_lwc_string.clone()
 		};
 
+		io::println(fmt!("len of interned_string_list: %?", interned_string_list.len()));
+
 		let string_list_arc = arc::ARC(string_list);
-
-
 		let p:PortSet<(uint, u32)> = PortSet();
 		
 		let mut thread_number = 0;
-
-		
 		
 		loop {
 			
@@ -136,15 +136,21 @@ impl lwc {
 			do task::spawn {
 				let start_index = current_thread_number * size_of_slice;
 				let mut end_index = (current_thread_number + 1) * size_of_slice - 1;
-				if end_index > num_strings {
-					end_index = num_strings;
+				if end_index >= num_strings {
+					end_index = num_strings-1;
 				}
 
-				for uint::range(start_index, end_index) |index| {
+				io::println(fmt!("current_thread_number, start_index, end_index: %? %? %?", current_thread_number, start_index, end_index));
+
+				let mut send_count = 0;
+
+				for uint::range(start_index, end_index+1) |index| {
 					let hash_value = lwc::lwc_calculate_hash(arc::get(&string_list_arc_clone)[index]);
+					//io::println(fmt!("sending (index,hash_value): (%?,%?)", index, hash_value));
 					child_to_parent_channel.send((index, hash_value));
+					send_count += 1;
 				}
-				
+				io::println(fmt!("current_thread_number, send_count: %? %?", current_thread_number, send_count));
 			}
 			
 			thread_number += 1;
@@ -155,8 +161,11 @@ impl lwc {
 			
 		}
 
-		for uint::range(0,num_strings) |_| {
+		for uint::range(0,num_strings) |recv_count| {
 			let mut (index, hash_value) = p.recv();
+
+			io::println(fmt!("recv_count: %?", recv_count));
+			io::println(fmt!("receiving (index,hash_value): (%?,%?)", index, hash_value));
 
 			let mut vector_index = self.bucketVector[hash_value].len();
 
