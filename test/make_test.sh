@@ -13,3 +13,4 @@ rustc -L ./.. test_parserutils.rs -L .
 rustc -L ./.. test_riconv.rs -L .
 rustc -L ./.. test_wapcaplet.rs -L .
 rustc -L ./.. test_csdtect.rs -L .
+rustc -L ./.. test_css_stylesheet.rs -L .
