@@ -164,7 +164,6 @@ afterValue = copy css_style_value.bytecode;
  	None     =>   test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_selector_create", ~"" , ~"rule value is correct")
  }
 
- 
  if css_selector_instance_2.specificity != CSS_SPECIFICITY_D{
  	test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_selector_create", ~"" , ~"specificity value is wrong");
  }
@@ -240,6 +239,8 @@ else{
 // =====================================================================================================================================================================
 
 
+// 2.
+
 let mut css_result_value = css_stylesheet::css__stylesheet_selector_detail_init(css_selector_data[0], CSS_SELECTOR_ELEMENT, copy buff_qname, CSS_SELECTOR_DETAIL_VALUE_STRING,
 	None, None, false);
 
@@ -248,6 +249,7 @@ let mut css_result_value = css_stylesheet::css__stylesheet_selector_detail_init(
 		 _  =>  test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_selector_detail_init", ~"" , ~"")	
 	}
 
+// 3.
 
 // Need to correct: Remove "COPY"
 match(css_stylesheet::css__stylesheet_selector_append_specific(copy css_selector_instance, CSS_SELECTOR_ELEMENT, copy buff_qname, CSS_SELECTOR_DETAIL_VALUE_STRING,
@@ -257,6 +259,7 @@ match(css_stylesheet::css__stylesheet_selector_append_specific(copy css_selector
 }
 
 
+// Need to correct: Remove "COPY"	
 match(css_stylesheet::css__stylesheet_selector_combine(CSS_COMBINATOR_NONE,copy css_selector_instance, copy css_selector_instance)){
 		CSS_OK => test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_selector_combine", ~"" , ~""),
 		 _  =>  test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_selector_combine", ~"" , ~"")	
@@ -319,12 +322,12 @@ RULE_PAGE(x)    => {
 	
 }
 
+
 let css_rule_selector_instance = @mut css_rule_selector{
 									 base: css_rule_instance,	
 									 selectors: ~[copy css_selector_instance],
 									 style: None
 };
-
 
 	match(css_stylesheet::css__stylesheet_rule_add_selector(RULE_SELECTOR(copy css_rule_selector_instance), copy css_selector_instance)){
 		CSS_OK  =>  test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_rule_add_selector", ~"RULE_SELECTOR" , ~""),
@@ -349,9 +352,7 @@ let css_rule_selector_instance = @mut css_rule_selector{
 	{
 		CSS_OK   => test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_rule_append_style", ~"RULE_UNKNOWN" , ~""),
 		  _      => test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_rule_append_style", ~"RULE_UNKNOWN" , ~"")
-	}
-
-
+	}    
 
 	let css_rule_charset_instance = @mut css_rule_charset {
 		base: css_rule_instance,
@@ -399,24 +400,6 @@ let css_rule_selector_instance = @mut css_rule_selector{
     	   _    => test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_rule_set_page_selector", ~"RULE_PAGE" , ~"")	
 	}
 
-	// Commenting because this function is failing and stopping the execution of the program
-	/*
-	let mut flagValue : bool = false;	
-	match(css_stylesheet::css__stylesheet_get_parent_type(RULE_PAGE(css_rule_page_instance))) {
-		CSS_RULE_PARENT_RULE | CSS_RULE_PARENT_STYLESHEET 	=> flagValue = true,      
-	}
-
-	if flagValue == true{
-		test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_get_parent_type", ~"RULE_PAGE" , ~"");
-	}
-	else{
-		test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_get_parent_type", ~"RULE_PAGE" , ~"");
-	}
-	*/
-
-
-	// It is Failing because, "css_rule_instance" has been created with two "None" value.
-	// And that' why previous fun i.e css__stylesheet_get_parent_type was failing.
 	let base_rule = css_stylesheet::css__stylesheet_get_base_rule(RULE_PAGE(css_rule_page_instance));
 
 	if (base_rule.parent_rule.is_some() && base_rule.parent_stylesheet.is_some()) {
@@ -441,6 +424,7 @@ match(css_stylesheet::css__stylesheet_add_rule(css_stylesheet_instance, RULE_MED
 	   _     =>  test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_add_rule", ~"RULE_MEDIA" , ~"")
 }
 	
+
 match(css_stylesheet::css__stylesheet_remove_rule(css_stylesheet_instance, RULE_MEDIA(css_rule_media_instance))) {
 	CSS_OK   =>  test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_remove_rule", ~"RULE_MEDIA" , ~""),
 	   _     =>  test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_remove_rule", ~"RULE_MEDIA" , ~"")
@@ -461,6 +445,138 @@ match(css_stylesheet_instance._add_selectors(RULE_PAGE(css_rule_page_instance)))
 match(css_stylesheet_instance._remove_selectors(RULE_PAGE(css_rule_page_instance))){
 	CSS_OK   =>  test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"_remove_selectors", ~"RULE_PAGE" , ~""),
 	   _     =>  test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"_remove_selectors", ~"RULE_PAGE" , ~"")	
+}
+
+// =========================================================================================================================
+
+
+let css_selector_hash_instance_2 = css_selector_hash::css__selector_hash_create();	
+
+if css_selector_hash_instance_2.default_slots == (1<<6){
+	test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_create", ~"default_slots" , ~"default_slots value is correct");
+}
+else{
+	test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_create", ~"default_slots" , ~"default_slots value is wrong");
+}
+
+match(css_selector_hash_instance_2.elements[0]){
+	Some(x)  => test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_create", ~"elements" , ~"elements value is wrong"),
+	None     => test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_create", ~"elements" , ~"elements value is correct")
+}
+
+match(css_selector_hash_instance_2.classes[0]){
+	Some(x)  => test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_create", ~"classes" , ~"classes value is wrong"),
+	None     => test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_create", ~"classes" , ~"classes value is correct")
+}
+
+match(css_selector_hash_instance_2.ids[0]){
+	Some(x)  => test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_create", ~"ids" , ~"ids value is wrong"),
+	None     => test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_create", ~"ids" , ~"ids value is correct")
+}
+
+match(css_selector_hash_instance_2.universal[0]){
+	Some(x)  => test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_create", ~"universal" , ~"universal value is wrong"),
+	None     => test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_create", ~"universal" , ~"universal value is correct")
+}
+
+
+// ====================================================================================================
+
+
+let css_selector_detail_instance_100 = @mut css_selector_detail {
+	qname: copy buff_qname,
+	selector_type: CSS_SELECTOR_CLASS,
+	combinator_type:CSS_COMBINATOR_NONE,
+	value_type:CSS_SELECTOR_DETAIL_VALUE_STRING,
+	negate:false,
+	string:None,
+	a:100,
+	b:200
+};
+
+
+let css_selector_instance_100 =  @mut css_selector {
+	combinator:None,
+	rule:None,
+	specificity:0,
+
+	data:~[css_selector_detail_instance_100] };
+
+
+let _class_name_str = css_selector_hash::_class_name(css_selector_instance_100);	
+if _class_name_str.eq(&buff_qname.name){
+	test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"_class_name", ~"" , ~"_class_name value is correct");
+}
+else{
+	test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"_class_name", ~"" , ~"_class_name value is wrong");
+}
+
+// ================================================================================================================
+
+
+let css_selector_detail_instance_100 = @mut css_selector_detail {
+	qname: copy buff_qname,
+	selector_type: CSS_SELECTOR_ID,
+	combinator_type:CSS_COMBINATOR_NONE,
+	value_type:CSS_SELECTOR_DETAIL_VALUE_STRING,
+	negate:false,
+	string:None,
+	a:100,
+	b:200
+};
+
+
+let css_selector_instance_100 =  @mut css_selector {
+	combinator:None,
+	rule:None,
+	specificity:0,
+	data:~[css_selector_detail_instance_100] };
+
+let _id_name_str = css_selector_hash::_id_name(css_selector_instance_100);	
+if _id_name_str.eq(&buff_qname.name){
+	test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"_id_name", ~"" , ~"_id_name value is correct");
+}
+else{
+	test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"_id_name", ~"" , ~"_id_name value is wrong");
+}
+
+
+match(css_selector_hash_instance_2.css__selector_hash_insert(css_selector_instance_100)){
+		CSS_OK   =>  test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_insert", ~"" , ~""),
+		   _     =>  test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_insert", ~"" , ~"")
+	}
+
+
+match(css_selector_hash_instance_2._insert_into_chain(Element, 0, css_selector_instance_100)){
+	CSS_OK   =>  test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"_insert_into_chain", ~"" , ~"Element"),
+		   _     =>  test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"_insert_into_chain", ~"" , ~"Element")
+}
+
+match(css_selector_hash_instance_2._insert_into_chain(Universal, 0, css_selector_instance_100)){
+	CSS_OK   =>  test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"_insert_into_chain", ~"" , ~"Universal"),
+		   _     =>  test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"_insert_into_chain", ~"" , ~"Universal")
+}
+
+
+match(css_selector_hash_instance_2.css__selector_hash_remove(css_selector_instance_100)){
+CSS_OK   =>  test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_remove", ~"" , ~""),
+		   _     =>  test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_remove", ~"" , ~"")	
+}
+
+
+match(css_selector_hash_instance_2._remove_from_chain(Universal, 0, css_selector_instance_100)){
+	CSS_OK   =>  test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"_remove_from_chain", ~"Universal_index_0" , ~""),
+		_    =>  test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"_remove_from_chain", ~"Universal_index_0" , ~"")	
+}
+
+match(css_selector_hash_instance_2._remove_from_chain(Universal, 3, css_selector_instance_100)){
+	CSS_OK   =>  test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"_remove_from_chain", ~"Universal_index_3" , ~""),
+		_    =>  test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"_remove_from_chain", ~"Universal_index_3" , ~"")	
+}
+
+match(css_selector_hash_instance_2._remove_from_chain(Element, 3, css_selector_instance_100)){
+	CSS_OK   =>  test_logger.pass( ~"stylesheet",~"css_stylesheet.rs", ~"_remove_from_chain", ~"Element_index_3" , ~""),
+		_    =>  test_logger.fail( ~"stylesheet",~"css_stylesheet.rs", ~"_remove_from_chain", ~"Element_index_3" , ~"")	
 }
 
 
