@@ -40,7 +40,7 @@ fn main() {
 		comment = ~"string interned successfull";
 		test_logger.info(copy module_name , copy file_name , copy function_name , copy test_name , copy comment);
 		let q = l.lwc_intern_string(~"hellowapcaplet");
-		
+
 		// test 4: interning a sub string with correct offset and length
 		function_name = ~"lwc_intern_substring";
 		test_name = ~"interning a sub string of a lwc_string";
@@ -91,6 +91,8 @@ fn main() {
 		l.lwc_string_unref(t.clone());
 		l.lwc_string_unref(t.clone());
 
+
+
 		// test 10: ref count decrease of a interned string with ref count already 0
 		// function_name = ~"lwc_string_unref";
 		// test_name = ~"ref count decrease of a interned string with ref count already 0";
@@ -100,14 +102,19 @@ fn main() {
 		// l.lwc_string_unref(t.clone());
 		// l.lwc_string_unref(t.clone());
 
-		
+		// test 11: test for a static function
+		function_name = ~"lwc_string_data";
+		test_name = ~"data of a lwc_string";
+		comment = ~"returns data ";
+		test_logger.info(copy module_name , copy file_name , copy function_name , copy test_name , copy comment);
+		io::println(fmt!("%?" , lwc::lwc_string_data(p)));
 
-		// test 10: internment of a sub string of lenght 5 from offset 2 in null string(slice with lenght or offset greater than actual length of string)
-		function_name = ~"lwc_intern_substring";
-		test_name = ~"internment of a sub string of lenght 5 from offset 2 in null string(slice with lenght or offset greater than actual length of string)";
-		comment = ~"task fails: index out of bound";
-		test_logger.fail(copy module_name , copy file_name , copy function_name , copy test_name , copy comment);
-		let r = l.lwc_intern_substring(p ,2 , 5);
+		// test 12: internment of a sub string of lenght 5 from offset 2 in null string(slice with lenght or offset greater than actual length of string)
+		// function_name = ~"lwc_intern_substring";
+		// test_name = ~"internment of a sub string of lenght 5 from offset 2 in null string(slice with lenght or offset greater than actual length of string)";
+		// comment = ~"task fails: index out of bound";
+		// test_logger.fail(copy module_name , copy file_name , copy function_name , copy test_name , copy comment);
+		// let r = l.lwc_intern_substring(p ,2 , 5);
 
 	}
 }
