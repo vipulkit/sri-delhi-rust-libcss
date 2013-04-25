@@ -487,9 +487,9 @@ impl css_language
 		{
 			CSS_TOKEN_CHAR(c) =>
 				{ 	
-					if lwc_string_length(token.idata.clone()) == 1
+					if lwc::lwc_string_length(token.idata.clone()) == 1
 					{
-						let mut token_char = lwc_string_data(token.idata.clone()).char_at(0);
+						let mut token_char = lwc::lwc_string_data(token.idata.clone()).char_at(0);
 
 						// Ensure lowercase comparison 
 						if 'A' <= token_char && token_char <= 'Z'

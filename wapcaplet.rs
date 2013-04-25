@@ -23,7 +23,7 @@ pub struct lwc {
 	bucketVector: ~([~[arc::RWARC<~lwc_string>]])
 }
 
-impl lwc {
+pub impl lwc {
 
 	pub fn dolower(c: u8 ) -> char {
 		if (c >= 'A' as u8 && c <= 'Z' as u8) {
