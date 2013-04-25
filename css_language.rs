@@ -4,19 +4,30 @@
 extern mod css_enum;
 extern mod css_stylesheet;
 extern mod std;
+extern mod wapcaplet;
 
 
 use css_enum::* ;
 use css_stylesheet::*;
+use std::arc;
+use wapcaplet::*;
 
 pub struct context_entry {
 	event_type:css_parser_event,		/* < Type of entry */
 	data:Option<CSS_RULE_DATA_TYPE>		/*< Data for context */
 } 
 
+pub struct css_token {
+	token_type: css_token_type,
+	data: ~[u8],
+	idata: arc::RWARC<~lwc_string>,
+	// col: u32,
+	// line: u32
+}
+
 pub struct css_language {
 		sheet:@mut css_stylesheet,
-		//lwc_instance:sheet.lwc_instance,		
+		//lwc_instance:arc::RWARC<~lwc>,		
 		context:~[context_entry], 
 		state:language_state,	
 		// strings:copy sheet.propstrings,
@@ -25,7 +36,8 @@ pub struct css_language {
 		// num_namespaces:uint	
 }
 
-fn  css_language(sheet:@mut css_stylesheet) -> ~css_language {
+//fn  css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc>) -> ~css_language {
+	fn  css_language(sheet:@mut css_stylesheet) -> ~css_language {
 		//let empty_lwc_string = sheet.lwc_instance.lwc_intern_string(@"");
 		//lwc_instance:sheet.lwc_instance,		
 		// strings:copy sheet.propstrings,
@@ -42,6 +54,7 @@ fn  css_language(sheet:@mut css_stylesheet) -> ~css_language {
 
 	~css_language {
 		sheet:sheet,
+		//lwc_instance:lwc_inst.clone(),
 		context:~[], 
 		state:CHARSET_PERMITTED,	
 	}
@@ -51,7 +64,7 @@ fn  css_language(sheet:@mut css_stylesheet) -> ~css_language {
 impl css_language
 {
 	
-	pub fn  language_handle_event(&mut self, event_type:css_parser_event, tokens:~[~str])-> css_result
+	pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:~[~css_token])-> css_result
 		{
 			match event_type {
 				
@@ -88,11 +101,11 @@ impl css_language
 				}
 				
 				CSS_PARSER_BLOCK_CONTENT=>{
-					self.handleBlockContent()
+					self.handleBlockContent(tokens)
 				}
 				
 				CSS_PARSER_DECLARATION=>{
-					self.handleDeclaration()
+					self.handleDeclaration(tokens)
 				}
 			}
 		}
@@ -126,7 +139,7 @@ impl css_language
 			CSS_OK
 		}
 
-		pub fn handleStartRuleset(&mut self, tokens:~[~str]) ->css_result 
+		pub fn handleStartRuleset(&mut self, tokens:~[~css_token]) ->css_result 
 		{
 			
 			let mut cur:context_entry ;
@@ -204,7 +217,7 @@ impl css_language
 			}
 	}
 
-	pub fn handleStartAtRule(&self, vector:~[~str])->css_result
+	pub fn handleStartAtRule(&self, vector:~[~css_token])->css_result
 	{
 		CSS_OK	
 	}
@@ -304,30 +317,230 @@ impl css_language
 		}		
 	}
 
-	pub fn handleBlockContent(&self)->css_result
-	{
-		/* Block content comprises either declarations (if the current block is
-	 * associated with @page, @font-face or a selector), or rulesets (if the
-	 * current block is associated with @media). */
 
-		CSS_OK	
+	pub fn handleBlockContent(&mut self, tokens:~[~css_token])-> css_result
+	{
+	 // * Block content comprises either declarations (if the current block is
+	 // * associated with @page, @font-face or a selector), or rulesets (if the
+	 // * current block is associated with @media). 
+		let mut cur:context_entry;
+		
+		if !vec::is_empty(self.context)
+		{
+			cur=self.context[self.context.len()-1];
+			match cur.data
+			{
+				None => CSS_INVALID,
+				Some(curRule) => 
+				{	match curRule
+					{
+						RULE_SELECTOR(_) | RULE_PAGE (_) | RULE_FONT_FACE(_) =>
+							{									
+								//Expect declarations 
+								return self.handleDeclaration(tokens);
+							},
+						RULE_MEDIA(_) =>  
+							{
+								// Expect rulesets 
+								return self.handleStartRuleset(tokens);
+							},	
+						_ => 	return CSS_INVALID
+					}
+				}
+			} // end of match
+		}
+		else
+		{
+			return CSS_INVALID	
+		}		
 	}
 
-	pub fn handleDeclaration(&self)->css_result
+ // pub fn handleDeclaration(&mut self, tokens:~[~css_token])->css_result
+	// {
+	// 	CSS_OK
+	// }
+	pub fn handleDeclaration(&mut self, tokens:~[~css_token])->css_result
 	{
-		CSS_OK	
+		let ctx: @mut uint = @mut 0u;	
+		 // Locations where declarations are permitted:
+		 // *
+		 // * + In @page
+		 // * + In @font-face
+		 // * + In ruleset
+		 
+		let mut cur:context_entry;
+		
+		if !vec::is_empty(self.context)
+		{
+			cur=self.context[self.context.len()-1];
+			match cur.data
+			{
+				None => CSS_INVALID,
+				Some(curRule) => 
+				{	match curRule
+					{
+						RULE_SELECTOR(_) | RULE_PAGE (_) | RULE_FONT_FACE(_) =>
+							{									
+								// Strip any leading whitespace (can happen if in nested block) 
+								css_language::consumeWhitespace(&tokens, ctx);
+
+								 // IDENT ws ':' ws value 
+								 // * 
+								 // * In CSS 2.1, value is any1, so '{' or ATKEYWORD => parse error
+								 
+								
+								if tokens.len() > *ctx
+								{ 	
+								   	let ident =&tokens[*ctx];
+									*ctx = *ctx + 1;
+									match ident.token_type
+										{ 
+											CSS_TOKEN_IDENT(_) => 
+												{
+													 css_language::consumeWhitespace(&tokens, ctx);
+													 if tokens.len() <= *ctx || ((tokens.len() > *ctx) && !css_language::tokenIsChar(&tokens[*ctx],':')) 
+													 {
+													 		return CSS_INVALID
+													 }
+													else 
+													{
+													 	*ctx += 1;
+													 	css_language::consumeWhitespace(&tokens, ctx);
+													 	match curRule
+														{
+															RULE_FONT_FACE(font_face_rule) =>	
+													 			return css_language::css__parse_font_descriptor(ident, &tokens, ctx, font_face_rule),
+													 		_ =>	
+													 			return css_language::parseProperty(ident, &tokens, ctx, curRule)	
+													 	}
+													 }				
+												} 
+									 		_ => return CSS_INVALID
+										} 
+								}
+								else
+								{
+									return CSS_INVALID
+								}		
+							},
+						_ => 	return CSS_INVALID
+					}
+				}
+			} // end of match
+		}
+		else
+		{
+			return CSS_INVALID	
+		}		
 	}
 
-	pub fn parseSelectorList(&self, tokens:&~[~str], curRule: Option<CSS_RULE_DATA_TYPE>) -> css_result
+	pub fn parseSelectorList(&self, tokens:&~[~css_token], curRule: Option<CSS_RULE_DATA_TYPE>) -> css_result
 	{
 		CSS_OK
 	}
 
+	/******************************************************************************
+	 * Helper functions                                                           *
+	 ******************************************************************************/
+
+	/**
+	 * Consume all leading whitespace tokens
+	 *
+	 * \param vector  The vector to consume from
+	 * \param ctx     The vector's context
+	 */
+	pub fn consumeWhitespace(vector:&~[~css_token], ctx:@mut uint) 
+	{
+		loop
+		{
+			if *ctx < vector.len() 
+			{
+				match vector[*ctx].token_type
+				 {
+					CSS_TOKEN_S =>
+						{
+							*ctx = *ctx+1
+						},
+					_  => return	
+				 } 
+
+			}
+			else 
+			{
+				break
+			}
+		} 
+	}	
+
+	/**
+	 * Determine if a token is a character
+	 *
+	 * \param token  The token to consider
+	 * \param c      The character to match (lowercase ASCII only)
+	 * \return True if the token matches, false otherwise
+	 */
+	pub fn tokenIsChar(token:&~css_token, c:char) -> bool
+	{
+		let result = false;
+
+		match token.token_type
+		{
+			CSS_TOKEN_CHAR(c) =>
+				{ 	
+					if lwc_string_length(token.idata.clone()) == 1
+					{
+						let mut token_char = lwc_string_data(token.idata.clone()).char_at(0);
+
+						// Ensure lowercase comparison 
+						if 'A' <= token_char && token_char <= 'Z'
+						{
+							token_char += 'a' - 'A'
+						}
+							
+						if token_char == c
+						{
+							return true
+						}
+					}						
+				},
+			_ => return result
+		}			
+		
+		return result
+	}
+
+	/******************************************************************************
+	 * Property parsing functions						      *
+	 ******************************************************************************/
+
+	pub fn parseProperty(property:&~css_token,vector:&~[~css_token], ctx:@mut uint, curRule:CSS_RULE_DATA_TYPE) -> css_result
+	{
+		CSS_OK
+	}
+
+	// ===========================================================================================================
+	// CSS-LANGUAGE implementation/data-structs ends here 
+	// ===========================================================================================================
+
+	// ===========================================================================================================
+	// CSS-FONT-FACE implementation/data-structs starts here 
+	// ===========================================================================================================
+
+	/**
+	 * Parse a descriptor in an @font-face rule
+	 *
+	 * \param descriptor  Token for this descriptor
+	 * \param vector      Vector of tokens to process
+	 * \param ctx	      Pointer to vector iteration context
+	 * \param rule	      Rule to process descriptor into
+	 * \return CSS_OK on success,
+	 *         CSS_BADPARM on bad parameters,
+	 *         CSS_INVALID on invalid syntax,
+	 *        
+	 */
+	pub fn css__parse_font_descriptor( descriptor:&~css_token, vector:&~[~css_token], cts:@mut uint, curRule:@mut css_rule_font_face) -> css_result
+	{
+		CSS_OK
+	}	
 
 }
-
-
-// ===========================================================================================================
-// CSS-LANGUAGE implementation/data-structs ends here 
-// ===========================================================================================================
-
