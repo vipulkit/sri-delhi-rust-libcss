@@ -33,7 +33,7 @@ pub struct css_selector {
 	combinator:Option<@mut css_selector>,   /**< Combining selector */
 	rule:Option<CSS_RULE_DATA_TYPE>,		/**< Owning rule */
 	specificity:uint,						/**< Specificity of selector */	
-	data:~[@mut css_selector_detail]		/* *< Selector data */
+	data:~[@mut css_selector_detail]		/**< Selector data */
 }
 
 
@@ -67,7 +67,7 @@ pub struct css_stylesheet {
 	quirks_allowed:bool,					/**< Quirks permitted */
 	quirks_used:bool,						/**< Quirks actually used */
 	inline_style:bool,						/**< Is an inline style */
-	cached_style:Option<@mut css_style>		/* *< Cache for style parsing */	
+	cached_style:Option<@mut css_style>		/**< Cache for style parsing */
 }
 
 pub struct css_rule {
@@ -135,8 +135,8 @@ impl css_stylesheet {
 /**
  * Create a style
  *
- * \param self css_stylesheet
- * \return css_style 
+ * \param	 self css_stylesheet
+ * \return 	 css_style 
  */
 	pub fn css__stylesheet_style_create(&mut self ) -> @mut css_style {
 		if self.cached_style.is_none() {
@@ -151,8 +151,8 @@ impl css_stylesheet {
 	/**
 	 * Merge a style to a CSS style
 	 * 
-	 * \param target The style to merge to
-	 * \param style	 The style to merge
+	 * \param target 	The style to merge to
+	 * \param style	 	The style to merge
 	 */
 	
 	pub fn css__stylesheet_merge_style(target : @mut css_style, style: @mut css_style) {
@@ -162,8 +162,8 @@ impl css_stylesheet {
 	/**
 	 * Append a style to a CSS style
 	 * 
-	 * \param target The style to add to
-	 * \param style	 The style to add
+	 * \param target    The style to add to
+	 * \param style	    The style to be added
 	 */
 
 	pub fn css__stylesheet_style_append(target : @mut css_style, bytecode: u32) {
@@ -172,13 +172,21 @@ impl css_stylesheet {
 	
 	/** append one or more css code entries to a style 
 	 * 
-	 * \param target The style to add to
-	 * \param bytecodes	vector of style to add
+	 * \param target 		The style to add to
+	 * \param bytecodes		the vector of style to be added
 	 */
-	 
+
 	pub fn css__stylesheet_style_vappend(target : @mut css_style, bytecodes: &[u32] ) {
 		target.bytecode += bytecodes;
 	}
+
+	/**
+	 * Create an element selector
+	 *
+	 * \param self 		  css_stylesheet
+	 * \param qname		  Qualified name of selector	 
+	 * \return css_selector 
+	 */
 
 	pub fn css__stylesheet_selector_create(&mut self, qname : css_qname ) -> @mut css_selector {
 		let mut sel = @mut css_selector{  
@@ -211,6 +219,22 @@ impl css_stylesheet {
 		sel.data.push(sel_data);
 		sel
 	}
+
+	/**
+	 * Initialise a selector detail
+	 *
+	 * \param detail	      enum css_selector_detail
+	 * \param sel_type	      The type of selector to create
+	 * \param qname	 		  Qualified name of selector	 
+	 * \param value_type      enum css_selector_detail_value_type
+	 * \param string_value    Value of css_selector_detail.string_value
+	 * \param ab_value        Value of css_selector_detail.a and css_selector_detail.b
+	 * \param negated         Whether the detail match should be negated 
+
+	 * \return CSS_OK on success,
+	 *	   CSS_BADPARM on bad parameters
+	 */
+
 
 	pub fn css__stylesheet_selector_detail_init (
 		detail : @mut css_selector_detail, 
@@ -248,6 +272,22 @@ impl css_stylesheet {
 		}
 	}
 	
+	/**
+	 * Append a selector to the specifics chain of another selector
+	 *
+	 * \param selector	       css_selector to add to
+	 * \param selector_type    type of selector to add to
+	 * \param name  		   name of qname to add to	
+	 * \param val_type   	   enum css_selector_detail_value_type to add to 
+	 * \param string_value	   string_value to add to
+	 * \param ab_value			'a' and 'b' value to add to
+	 * \param negate           negate value to add to
+	 * \param comb_type 		comb_type to add to
+
+	 * \return CSS_OK on success,
+	 *	   CSS_BADPARM on bad parameters
+	 */
+
 	pub fn css__stylesheet_selector_append_specific(selector : @mut css_selector, selector_type: css_selector_type,
 												name : css_qname , val_type : css_selector_detail_value_type,
 												string_value : Option<~str> , ab_value : Option<(int,int)>,
@@ -304,6 +344,17 @@ impl css_stylesheet {
 		CSS_OK
 	}
 
+
+	/**
+	 * Combine a pair of selectors
+	 *
+	 * \param combinator_type   enum css_combinator 
+	 * \param a	 				The first operand
+	 * \param b	 				The second operand
+	 * \return 			CSS_OK on success,
+	 *			        CSS_INVALID on bad parameters
+	 */
+
 	pub fn css__stylesheet_selector_combine(combinator_type : css_combinator, a : @mut css_selector , 
 											b : @mut css_selector) -> css_result {
 		match b.combinator {
@@ -323,6 +374,17 @@ impl css_stylesheet {
 		b.specificity += a.specificity;
 		CSS_OK
 	}
+
+
+	/**
+	 * Create a CSS rule
+	 *
+	 * \param self	 css_stylesheet
+	 * \param type	 enum css_rule_type
+
+	 * \return CSS_RULE_DATA_TYPE on success
+	 */
+
 
 	pub fn css_stylesheet_rule_create(&mut self, rule_type : css_rule_type ) -> CSS_RULE_DATA_TYPE  {
 		let mut base_rule = @mut css_rule{ 
@@ -402,6 +464,16 @@ impl css_stylesheet {
 		}
 	}
 
+	/**
+	 * Add a selector to a CSS rule
+	 *	 
+	 * \param css_rule	    The rule to be added 
+	 * \param selector  	The selector to add to
+
+	 * \return 			CSS_OK on success,
+	 *			        CSS_BADPARM on bad parameters
+	 */
+
 	pub fn css__stylesheet_rule_add_selector(css_rule : CSS_RULE_DATA_TYPE , selector : @mut css_selector) -> css_result {
 
 		match css_rule {
@@ -414,6 +486,18 @@ impl css_stylesheet {
 		}
 	}
 	
+
+	/**
+	 * Append a style to a CSS rule
+	 *
+	 * \param self	 	css_stylesheet
+	 * \param css_rule	The rule to appende to
+	 * \param style	 	The style to be appended
+
+	 * \return CSS_OK on success, 
+	 		   CSS_BADPARM otherwise
+	 */
+
 	pub fn css__stylesheet_rule_append_style(&mut self, css_rule : CSS_RULE_DATA_TYPE , style : @mut css_style) -> css_result {
 		match css_rule {
 			RULE_PAGE(page)=> {
@@ -440,6 +524,16 @@ impl css_stylesheet {
 		};
 		CSS_OK
 	}
+
+	/**
+	 * Set the charset of a CSS rule
+	 *	 
+	 * \param css_rule	   The rule to add to (must be of type CSS_RULE_CHARSET)
+	 * \param charset  	   The charset
+
+	 * \return CSS_OK on success, 
+	 		   CSS_BADPARM otherwise
+	 */
 
 	pub fn css__stylesheet_rule_set_charset(css_rule : CSS_RULE_DATA_TYPE, charset: ~str) -> css_result {
 		if charset.len() <= 0 {
@@ -636,24 +730,10 @@ impl css_stylesheet {
 					return CSS_INVALID;
 				}
 
-				let mut i : uint = 0 ;
-				unsafe {
-					while (i<x.selectors.len()) {
-						match self.selectors.css__selector_hash_insert(x.selectors[i]) {
-							CSS_OK=> loop ,
-							_=> {
-								while (i>=0){
-									// Ignore errors 
-									self.selectors.css__selector_hash_remove(x.selectors[i]);
-									i -= 1;
-								}
-								return CSS_INVALID;
-							}
-						}
-						i += 1;
-					}
+				for x.selectors.each_mut |_| {
+					// do hash insert , for each selector
+					//
 				}
-
 				CSS_OK
 			},
 			RULE_MEDIA(x) => {
@@ -702,15 +782,10 @@ impl css_stylesheet {
 
 		match css_rule {
 			RULE_SELECTOR(x) => {
-
-				for x.selectors.each_mut |&selector| {
-
-					match self.selectors.css__selector_hash_remove(selector) {
-						CSS_OK=> loop ,
-						_=> return CSS_INVALID
-					}
+				for x.selectors.each_mut |_| {
+					// do hash remove , for each selector
+					// check for error result , if error - return error
 				}
-
 				CSS_OK
 			},
 
