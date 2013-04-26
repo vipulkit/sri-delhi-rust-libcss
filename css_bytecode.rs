@@ -765,6 +765,11 @@ pub fn buildOPV(opcode : css_properties_e , flags : u8 , value : u16 ) -> u32 {
 	(( (opcode as int)  & 0x3ff) | ((flags as int)<< 10) | (((value as int)& 0x3fff)  << 18) ) as u32
 }
 
+pub fn buildOPV_flag(opcode : css_properties_e , flags :flag , value : u16 ) -> u32 {
+
+	(( (opcode as int)  & 0x3ff) | ((flags as int)<< 10) | (((value as int)& 0x3fff)  << 18) ) as u32
+}
+
  pub fn getOpcode(OPV : u32 ) -> css_properties_e {
 
 	 //((OPV & 0x3ff) as int) as opcode_t
