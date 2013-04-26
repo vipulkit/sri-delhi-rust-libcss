@@ -33,8 +33,8 @@ pub struct css_selector {
 	combinator:Option<@mut css_selector>,   /**< Combining selector */
 	rule:Option<CSS_RULE_DATA_TYPE>,		/**< Owning rule */
 	specificity:uint,						/**< Specificity of selector */	
-	data:~[@mut css_selector_detail]		/**< Selector data */
-}
+	data:~[@mut css_selector_detail]}		/**< Selector data */
+
 
 
 pub struct css_style {
@@ -67,8 +67,8 @@ pub struct css_stylesheet {
 	quirks_allowed:bool,					/**< Quirks permitted */
 	quirks_used:bool,						/**< Quirks actually used */
 	inline_style:bool,						/**< Is an inline style */
-	cached_style:Option<@mut css_style>		/**< Cache for style parsing */
-}
+	cached_style:Option<@mut css_style>	}	/**< Cache for style parsing */
+
 
 pub struct css_rule {
 	parent_rule:Option<CSS_RULE_DATA_TYPE> ,         /**< containing parent rule */ 
@@ -76,8 +76,8 @@ pub struct css_rule {
 	prev:Option<CSS_RULE_DATA_TYPE>,				 /**< prev in list */
 	next:Option<CSS_RULE_DATA_TYPE>,				/**< next in list */
 	//rule_type:css_rule_type,
-	index:uint//,items:uint							/**< index in sheet */
-}
+	index:uint		}			/**< index in sheet */
+
 
 pub struct css_rule_selector {
 	base:@mut css_rule,
