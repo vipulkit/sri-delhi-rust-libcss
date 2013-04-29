@@ -665,17 +665,21 @@ impl css_stylesheet {
 				unsafe {
 					while (i<x.selectors.len()) {
 						match self.selectors.css__selector_hash_insert(x.selectors[i]) {
-							CSS_OK=> loop ,
+							CSS_OK=> { 
+								i += 1;
+								loop;
+							} ,
 							_=> {
-								while (i>=0){
+								while (i>0){
 									// Ignore errors 
 									self.selectors.css__selector_hash_remove(x.selectors[i]);
 									i -= 1;
 								}
+								// Remove zeroth element
+								self.selectors.css__selector_hash_remove(x.selectors[i]);
 								return CSS_INVALID;
 							}
 						}
-						i += 1;
 					}
 				}
 
