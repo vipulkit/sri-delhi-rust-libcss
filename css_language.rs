@@ -61,7 +61,7 @@ pub struct css_language {
 }
 
 
-impl css_language
+pub impl css_language
 {
 	
 	pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:~[~css_token])-> css_result
@@ -160,7 +160,7 @@ impl css_language
 	        
 			if !vec::is_empty(tokens)
 			{
-				match self.parseSelectorList(&tokens, Some(curRule))
+				match self.parseSelectorList(&tokens, curRule)
 				{
 					CSS_OK => {},
 					x      =>	return x  
@@ -335,15 +335,15 @@ impl css_language
 				{	match curRule
 					{
 						RULE_SELECTOR(_) | RULE_PAGE (_) | RULE_FONT_FACE(_) =>
-							{									
-								//Expect declarations 
-								return self.handleDeclaration(tokens);
-							},
+						{									
+							//Expect declarations 
+							return self.handleDeclaration(tokens);
+						},
 						RULE_MEDIA(_) =>  
-							{
-								// Expect rulesets 
-								return self.handleStartRuleset(tokens);
-							},	
+						{
+							// Expect rulesets 
+							return self.handleStartRuleset(tokens);
+						},	
 						_ => 	return CSS_INVALID
 					}
 				}
@@ -380,49 +380,49 @@ impl css_language
 				{	match curRule
 					{
 						RULE_SELECTOR(_) | RULE_PAGE (_) | RULE_FONT_FACE(_) =>
-							{									
-								// Strip any leading whitespace (can happen if in nested block) 
-								css_language::consumeWhitespace(&tokens, ctx);
+						{									
+							// Strip any leading whitespace (can happen if in nested block) 
+							css_language::consumeWhitespace(&tokens, ctx);
 
-								 // IDENT ws ':' ws value 
-								 // * 
-								 // * In CSS 2.1, value is any1, so '{' or ATKEYWORD => parse error
-								 
-								
-								if tokens.len() > *ctx
-								{ 	
-								   	let ident =&tokens[*ctx];
-									*ctx = *ctx + 1;
-									match ident.token_type
-										{ 
-											CSS_TOKEN_IDENT(_) => 
-												{
-													 css_language::consumeWhitespace(&tokens, ctx);
-													 if tokens.len() <= *ctx || ((tokens.len() > *ctx) && !css_language::tokenIsChar(&tokens[*ctx],':')) 
-													 {
-													 		return CSS_INVALID
-													 }
-													else 
-													{
-													 	*ctx += 1;
-													 	css_language::consumeWhitespace(&tokens, ctx);
-													 	match curRule
-														{
-															RULE_FONT_FACE(font_face_rule) =>	
-													 			return css_language::css__parse_font_descriptor(ident, &tokens, ctx, font_face_rule),
-													 		_ =>	
-													 			return css_language::parseProperty(ident, &tokens, ctx, curRule)	
-													 	}
-													 }				
-												} 
-									 		_ => return CSS_INVALID
-										} 
-								}
-								else
-								{
-									return CSS_INVALID
-								}		
-							},
+							 // IDENT ws ':' ws value 
+							 // * 
+							 // * In CSS 2.1, value is any1, so '{' or ATKEYWORD => parse error
+							 
+							
+							if tokens.len() > *ctx
+							{ 	
+							   	let ident =&tokens[*ctx];
+								*ctx = *ctx + 1;
+								match ident.token_type
+								{ 
+									CSS_TOKEN_IDENT(_) => 
+									{
+										css_language::consumeWhitespace(&tokens, ctx);
+										if tokens.len() <= *ctx || !css_language::tokenIsChar(&tokens[*ctx],':')
+										{
+											return CSS_INVALID
+										}
+										else 
+										{
+											*ctx += 1;
+											css_language::consumeWhitespace(&tokens, ctx);
+											match curRule
+											{
+												RULE_FONT_FACE(font_face_rule) =>	
+										 			return css_language::css__parse_font_descriptor(ident, &tokens, ctx, font_face_rule),
+										 		_ =>	
+										 			return css_language::parseProperty(ident, &tokens, ctx, curRule)	
+										 	}
+										 }				
+									} 
+							 		_ => return CSS_INVALID
+								} 
+							}
+							else
+							{
+								return CSS_INVALID
+							}		
+						},
 						_ => 	return CSS_INVALID
 					}
 				}
@@ -434,8 +434,52 @@ impl css_language
 		}		
 	}
 
-	pub fn parseSelectorList(&self, tokens:&~[~css_token], curRule: Option<CSS_RULE_DATA_TYPE>) -> css_result
+	pub fn parseSelectorList(&self, tokens:&~[~css_token], curRule: CSS_RULE_DATA_TYPE) -> css_result
 	{
+		let ctx: @mut uint = @mut 0u;
+		
+		loop 
+		{
+		
+			/* Strip any leading whitespace (can happen if in nested block) */
+			css_language::consumeWhitespace(tokens, ctx);
+
+			/* selector_list   -> selector [ ',' ws selector ]* */
+
+			match self.parseSelector(tokens, ctx)
+			{
+				(CSS_OK, Some(selector)) => 
+				{
+					match css_stylesheet::css__stylesheet_rule_add_selector(curRule, selector)
+					{
+						CSS_OK =>
+						{
+							if *ctx < tokens.len() 
+							{
+								//Iterate over vector to check for invalid character
+								if !css_language::tokenIsChar(&tokens[*ctx],',') 
+								{
+									*ctx = *ctx+1;   //For iteration to the next position
+									return CSS_INVALID
+								}
+								
+								*ctx = *ctx+1 //For iteration to the next position
+								
+							}
+							else
+							{
+								break
+							} 
+
+						},
+						x => return x
+					}//End of match rule_add_selector
+				},
+				(x, y) => return x				
+			} //End of match parseSelector
+
+		}// End of Loop
+
 		CSS_OK
 	}
 
@@ -538,9 +582,98 @@ impl css_language
 	 *         CSS_INVALID on invalid syntax,
 	 *        
 	 */
-	pub fn css__parse_font_descriptor( descriptor:&~css_token, vector:&~[~css_token], cts:@mut uint, curRule:@mut css_rule_font_face) -> css_result
+	pub fn css__parse_font_descriptor( descriptor:&~css_token, vector:&~[~css_token], ctx:@mut uint, curRule:@mut css_rule_font_face) -> css_result
 	{
 		CSS_OK
+	}	
+
+	pub fn parseSelector(&self, vector:&~[~css_token], ctx:@mut uint) -> (css_result, Option<@mut css_selector>)
+	{
+		
+		/* selector -> simple_selector [ combinator simple_selector ]* ws
+		 * 
+		 * Note, however, that, as combinator can be wholly whitespace,
+		 * there's an ambiguity as to whether "ws" has been reached. We 
+		 * resolve this by attempting to extract a combinator, then 
+		 * recovering when we detect that we've reached the end of the
+		 * selector.
+		 */
+
+		match self.parseSimpleSelector(vector, ctx)
+		{
+			(CSS_OK, Some(selector)) =>
+			{
+				let mut result = selector;
+				loop
+				{
+					if *ctx >= vector.len() || css_language::tokenIsChar(&vector[*ctx],',')
+					{
+						return (CSS_OK, Some(result))
+					}
+					else
+					{
+						let comb = @mut CSS_COMBINATOR_NONE;		
+						match self.parseCombinator(vector, ctx, comb)
+						{
+							CSS_OK =>
+							{
+							 /* In the case of "html , body { ... }", the whitespace after
+							  * "html" and "body" will be considered an ancestor combinator.
+							  * This clearly is not the case, however. Therefore, as a 
+							  * special case, if we've got an ancestor combinator and there 
+							  * are no further tokens, or if the next token is a comma,
+							  * we ignore the supposed combinator and continue. */
+								match *comb
+								{
+								 	CSS_COMBINATOR_ANCESTOR => 
+							 		{
+								 		if *ctx >= vector.len() || css_language::tokenIsChar(&vector[*ctx],',')
+								 		{
+								 			loop
+								 		}
+							 		},
+								 	_ =>  
+								 	{
+								 		match self.parseSimpleSelector(vector, ctx)
+										{
+											(CSS_OK, Some(other_selector)) =>
+											{	
+										 		match css_stylesheet::css__stylesheet_selector_combine(*comb, selector, other_selector)
+										 		{
+										 			CSS_OK => { result = other_selector}
+										 			x => return (x,None)
+										 		}
+										 	},
+										 	(x,y) => return(x,y)
+										} // End of match parseSimpleSelector
+									}		
+								} // End of match comb
+							},	
+							x => return (x, Some(selector))
+						}// End of outer match parseCombinator
+					} // End of If Else
+				} //End of loop
+			},
+			(x,y) => return (x,y)
+		} // End of outer match parseSimpleSelector
+	}
+
+	pub fn parseSimpleSelector(&self, vector:&~[~css_token], ctx:@mut uint) -> (css_result, Option<@mut css_selector>)
+	{
+		let selector:@mut css_selector = @mut css_selector{  
+			combinator:None, 
+			rule:None, 
+			specificity:0u,
+			data:~[]
+		};
+
+		return (CSS_OK, Some(selector))
+	}
+
+	 pub fn parseCombinator(&self, vector:&~[~css_token], ctx:@mut uint, comb:@mut css_combinator) -> css_result
+	{
+		*comb = CSS_COMBINATOR_NONE;
+		return CSS_OK
 	}	
 
 }
