@@ -5,6 +5,9 @@ extern mod std;
 
 use std::arc;
 use core::ptr;
+use core::pipes::{GenericPort, Chan, Port};
+use core::pipes::stream;
+use core::comm::PortSet;
 
 pub struct lwc_string {
 	string: ~str,
@@ -20,9 +23,9 @@ pub struct lwc {
 	bucketVector: ~([~[arc::RWARC<~lwc_string>]])
 }
 
-impl lwc {
+pub impl lwc {
 
-	pub fn dolower(&self , c: u8 ) -> char {
+	pub fn dolower(c: u8 ) -> char {
 		if (c >= 'A' as u8 && c <= 'Z' as u8) {
 			  return (c as char + 'a' - 'A');
 		}
@@ -31,7 +34,7 @@ impl lwc {
 		}
 	}
 
-	pub fn lwc_calculate_hash(&self , string: &str) -> u32{
+	pub fn lwc_calculate_hash(string: &str) -> u32{
 		let mut z: u32 = 0x811c9dc5;
 	    let mut i: uint = 0;
 	    let mut string_index = str::char_len(string);
@@ -45,14 +48,14 @@ impl lwc {
 	    z
 	}
 
-	pub fn lwc_calculate_lcase_hash(&self , string: &str) -> u32 {
+	pub fn lwc_calculate_lcase_hash(string: &str) -> u32 {
 		let mut z: u32 = 0x811c9dc5;
 		let mut i: uint = 0;
 		let mut string_index = str::char_len(string);
 
 		while string_index>0 {
 			z = z*0x01000193;
-			z = (z^self.dolower(string[i]) as u32);
+			z = (z^lwc::dolower(string[i]) as u32);
 	        string_index = string_index-1;
 	        i = i+1;
 		}
@@ -60,20 +63,20 @@ impl lwc {
 		z
 	}
 
-	pub fn lwc_lcase_strncmp(&self , s1: &str, s2: &str, n: uint) -> int {
+	pub fn lwc_lcase_strncmp(s1: &str, s2: &str, n: uint) -> int {
 		let mut i: uint = 0;
 	    let mut t = n;
 	    while t>0 {
 	    	t = t-1;
 	    	i = i+1;
-	        if s1[i] != self.dolower(s2[i]) as u8 {
+	        if s1[i] != lwc::dolower(s2[i]) as u8 {
 	            return 1;
 	        }
 	    }
 	    return 0;
 	}
 
-	pub fn lwc_lcase_memcpy(&self , target: &str, source: &str, n: uint) {
+	pub fn lwc_lcase_memcpy(target: &str, source: &str, n: uint) {
 		let mut i: uint = 0;
 		let mut t =n;
 		let mut str1: ~str = str::from_slice(source);
@@ -81,8 +84,131 @@ impl lwc {
 	    while t>0 {
 	        t = t - 1;
 	        i = i + 1;
-	        str2[i] = self.dolower(str1[i]) as u8;
+	        str2[i] = lwc::dolower(str1[i]) as u8;
 	    }
+	}
+
+
+	pub fn lwc_intern_string_vector(&mut self, string_list: ~[~str]) -> ~[arc::RWARC<~lwc_string>] {
+		
+		let mut num_threads : uint = 8;
+		let num_strings = string_list.len();
+		if (num_strings < num_threads) {
+			num_threads = num_strings;
+		}
+		let size_of_slice : uint = (num_strings / num_threads) + 1;
+
+		//io::println(fmt!("num_threads, num_strings, size_of_slice : %? %? %?", num_threads, num_strings, size_of_slice));
+
+		let mut interned_string_list : ~[arc::RWARC<~lwc_string>] = ~[];
+		let dummy_lwc_string = arc::RWARC(~lwc_string {
+			string: ~"" , 
+			length: 0 ,
+			refcnt: 0 , 
+			hash: 0 , 
+			is_case_insensitive : false,
+			case_insensitive: None
+		});
+
+		do vec::grow_fn(&mut interned_string_list, num_strings) |_| {
+			dummy_lwc_string.clone()
+		};
+
+		// io::println(fmt!("len of interned_string_list: %?", interned_string_list.len()));
+
+		let string_list_arc = arc::ARC(string_list);
+		let p:PortSet<(uint, u32)> = PortSet();
+		
+		let mut thread_number = 0;
+		
+		loop {
+			
+			let (child_to_parent_port, child_to_parent_channel):
+				(Port<(uint, u32)>, Chan<(uint, u32)>)
+				= stream();
+			
+			p.add(child_to_parent_port);
+
+			let string_list_arc_clone = string_list_arc.clone();
+			let current_thread_number = thread_number;
+
+
+			do task::spawn {
+				let start_index = current_thread_number * size_of_slice;
+				let mut end_index = (current_thread_number + 1) * size_of_slice - 1;
+				if end_index >= num_strings {
+					end_index = num_strings-1;
+				}
+
+				// io::println(fmt!("current_thread_number, start_index, end_index: %? %? %?", current_thread_number, start_index, end_index));
+
+				let mut send_count = 0;
+
+				for uint::range(start_index, end_index+1) |index| {
+					let hash_value = lwc::lwc_calculate_hash(arc::get(&string_list_arc_clone)[index]);
+					//io::println(fmt!("sending (index,hash_value): (%?,%?)", index, hash_value));
+					child_to_parent_channel.send((index, hash_value));
+					send_count += 1;
+				}
+				// io::println(fmt!("current_thread_number, send_count: %? %?", current_thread_number, send_count));
+			}
+			
+			thread_number += 1;
+			
+			if (thread_number > num_threads-1) {
+				break;
+			}
+			
+		}
+
+		for uint::range(0,num_strings) |recv_count| {
+			let mut (index, hash_value) = p.recv();
+
+			// io::println(fmt!("recv_count: %?", recv_count));
+			// io::println(fmt!("receiving (index,hash_value): (%?,%?)", index, hash_value));
+
+			let mut vector_index = self.bucketVector[hash_value].len();
+
+			let copy_of_string_to_intern = copy arc::get(&string_list_arc)[index];
+			let len = copy_of_string_to_intern.len();
+
+			let lwc_string_to_intern = arc::RWARC(~lwc_string {
+				string: copy copy_of_string_to_intern , 
+				length: len ,
+				refcnt: 1 , 
+				hash: hash_value , 
+				is_case_insensitive : false,
+				case_insensitive: None
+			});
+			
+			if vector_index == 0 {
+				vec::push(&mut self.bucketVector[hash_value], lwc_string_to_intern.clone());
+				interned_string_list[index] = lwc_string_to_intern;
+			}
+			else {
+				while vector_index>0 {
+					let mut found_flag = false;
+					
+					do self.bucketVector[hash_value][vector_index-1].write |l| {
+						if ((*l).string == copy_of_string_to_intern) {
+							(*l).refcnt += 1;
+							found_flag = true;
+						}
+					}
+					
+					if (found_flag) {
+						interned_string_list[index] = self.bucketVector[hash_value][vector_index-1].clone();
+					}
+					
+					vector_index = vector_index-1;
+					
+				}	
+				vec::push(&mut self.bucketVector[hash_value], lwc_string_to_intern.clone());
+				interned_string_list[index] = lwc_string_to_intern;
+			}
+		}
+
+		interned_string_list
 	}
 
 	pub fn lwc_intern_string(&mut self, string_to_intern: ~str) -> arc::RWARC<~lwc_string> {
@@ -98,14 +224,14 @@ impl lwc {
 
 		match (case_insensitive) {
 			false=> {
-				hash_value = self.lwc_calculate_hash(string_to_intern);
+				hash_value = lwc::lwc_calculate_hash(string_to_intern);
 				string_to_intern_actual = string_to_intern;
 				if (string_to_intern_actual==string_to_intern_lcase) {
 					is_case_insensitive = true;
 				}
 			}
 			true=> { 
-				hash_value = self.lwc_calculate_lcase_hash(string_to_intern);
+				hash_value = lwc::lwc_calculate_lcase_hash(string_to_intern);
 				string_to_intern_actual = string_to_intern_lcase;
 			}
 		};
