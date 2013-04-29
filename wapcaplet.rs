@@ -114,7 +114,7 @@ pub impl lwc {
 			dummy_lwc_string.clone()
 		};
 
-		io::println(fmt!("len of interned_string_list: %?", interned_string_list.len()));
+		// io::println(fmt!("len of interned_string_list: %?", interned_string_list.len()));
 
 		let string_list_arc = arc::ARC(string_list);
 		let p:PortSet<(uint, u32)> = PortSet();
@@ -140,7 +140,7 @@ pub impl lwc {
 					end_index = num_strings-1;
 				}
 
-				io::println(fmt!("current_thread_number, start_index, end_index: %? %? %?", current_thread_number, start_index, end_index));
+				// io::println(fmt!("current_thread_number, start_index, end_index: %? %? %?", current_thread_number, start_index, end_index));
 
 				let mut send_count = 0;
 
@@ -150,7 +150,7 @@ pub impl lwc {
 					child_to_parent_channel.send((index, hash_value));
 					send_count += 1;
 				}
-				io::println(fmt!("current_thread_number, send_count: %? %?", current_thread_number, send_count));
+				// io::println(fmt!("current_thread_number, send_count: %? %?", current_thread_number, send_count));
 			}
 			
 			thread_number += 1;
@@ -164,8 +164,8 @@ pub impl lwc {
 		for uint::range(0,num_strings) |recv_count| {
 			let mut (index, hash_value) = p.recv();
 
-			io::println(fmt!("recv_count: %?", recv_count));
-			io::println(fmt!("receiving (index,hash_value): (%?,%?)", index, hash_value));
+			// io::println(fmt!("recv_count: %?", recv_count));
+			// io::println(fmt!("receiving (index,hash_value): (%?,%?)", index, hash_value));
 
 			let mut vector_index = self.bucketVector[hash_value].len();
 

@@ -1,25 +1,29 @@
 #[link(name = "css_stylesheet", vers = "0.1")];
 #[crate_type = "lib"];
 
+extern mod css_bytecode;
 extern mod css_enum;
 extern mod std ;
 
+
 use css_enum::* ;
+use css_bytecode::*;
 use core::managed::*;
 
 static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
 
-pub struct css_qname {
+// /**< Qualified name of selector */
+pub struct css_qname {  
 	name:~str,
 	ns:~str
 }
 
 pub struct css_selector_detail {
-	qname:css_qname,
-	selector_type:css_selector_type,
-	combinator_type:css_combinator,
-	value_type:css_selector_detail_value_type,
-	negate:bool,
+	qname:css_qname,      				 /**< Interned name */
+	selector_type:css_selector_type,     /**< The type of selector  */
+	combinator_type:css_combinator,      /**< The combinator type */
+	value_type:css_selector_detail_value_type,  /**<   Value of selector  */
+	negate:bool,						/**< Detail match is inverted */
 
 	//css_selector_detail_value - union merged
 	string:Option<~str>,
@@ -27,18 +31,17 @@ pub struct css_selector_detail {
 	b:int
 }
 
+/**< css_selector */
 pub struct css_selector {
-	combinator:Option<@mut css_selector>,
-	rule:Option<CSS_RULE_DATA_TYPE>,
-	specificity:uint,
-
-	data:~[@mut css_selector_detail]
+	combinator:Option<@mut css_selector>,   /**< Combining selector */
+	rule:Option<CSS_RULE_DATA_TYPE>,		/**< Owning rule */
+	specificity:uint,						/**< Specificity of selector */	
+	data:~[@mut css_selector_detail]		/* *< Selector data */
 }
 
 
-
 pub struct css_style {
-	bytecode:~[u32]
+	bytecode:~[u32]        				
 	//sheet:Option<@css_stylesheet>
 }
 pub struct hash_entry {
@@ -46,6 +49,7 @@ pub struct hash_entry {
 	next:Option<@mut hash_entry>
 }
 
+/**< Hashtable of selectors */
 pub struct css_selector_hash {
 	default_slots:uint,
 	elements:~[Option<@mut hash_entry>],
@@ -55,27 +59,27 @@ pub struct css_selector_hash {
 }
 
 pub struct css_stylesheet {
-	selectors:@mut css_selector_hash,
-	rule_count:uint,
-	rule_list:Option<CSS_RULE_DATA_TYPE>,
-	last_rule:Option<CSS_RULE_DATA_TYPE>,
-	disabled:bool,
-	url:~str,
-	title:~str,
-	level:css_language_level,
-	quirks_allowed:bool,
-	quirks_used:bool,
-	inline_style:bool,
-	cached_style:Option<@mut css_style>
+	selectors:@mut css_selector_hash,   	/**< Hashtable of selectors */
+	rule_count:uint,						/**< Number of rules in sheet */
+	rule_list:Option<CSS_RULE_DATA_TYPE>,	/**< List of rules in sheet */
+	last_rule:Option<CSS_RULE_DATA_TYPE>,   /**< Last rule in list */
+	disabled:bool,				     		/**< Whether this sheet is  disabled */
+	url:~str,								/**< URL of this sheet */
+	title:~str,								/**< Title of this sheet */
+	level:css_language_level,				/**< Language level of sheet */
+	quirks_allowed:bool,					/**< Quirks permitted */
+	quirks_used:bool,						/**< Quirks actually used */
+	inline_style:bool,						/**< Is an inline style */
+	cached_style:Option<@mut css_style>		/* *< Cache for style parsing */	
 }
 
 pub struct css_rule {
-	parent_rule:Option<CSS_RULE_DATA_TYPE> ,
-	parent_stylesheet:Option<@mut css_stylesheet>,
-	prev:Option<CSS_RULE_DATA_TYPE>,
-	next:Option<CSS_RULE_DATA_TYPE>,
+	parent_rule:Option<CSS_RULE_DATA_TYPE> ,         /**< containing parent rule */ 
+	parent_stylesheet:Option<@mut css_stylesheet>,   /**< parent stylesheet */				
+	prev:Option<CSS_RULE_DATA_TYPE>,				 /**< prev in list */
+	next:Option<CSS_RULE_DATA_TYPE>,				/**< next in list */
 	//rule_type:css_rule_type,
-	index:uint//,items:uint
+	index:uint//,items:uint							/**< index in sheet */
 }
 
 pub struct css_rule_selector {
@@ -131,6 +135,34 @@ pub enum CSS_RULE_PARENT_TYPE {
 
 impl css_stylesheet {
 	
+	pub fn css__stylesheet_style_appendOPV(
+										style: @mut css_style,
+										opcode:css_properties_e,
+										flags:u8,
+										value:u16 ) {
+
+		css_stylesheet::css__stylesheet_style_append(
+			style,
+			buildOPV(opcode,flags,value)
+		)
+	}
+
+	pub fn css_stylesheet_style_inherit(
+										style: @mut css_style,
+										opcode:css_properties_e) {
+
+		css_stylesheet::css__stylesheet_style_append(
+			style,
+			buildOPV_flag(opcode,FLAG_INHERIT,0) 
+		)
+	}
+
+	/**
+	 * Create a style
+	 *
+	 * \param self css_stylesheet
+	 * \return css_style 
+	 */
 	pub fn css__stylesheet_style_create(&mut self ) -> @mut css_style {
 		if self.cached_style.is_none() {
 			@mut css_style{bytecode:~[]} 
@@ -140,14 +172,35 @@ impl css_stylesheet {
 		}
 	}
 
+
+	/**
+	 * Merge a style to a CSS style
+	 * 
+	 * \param target The style to merge to
+	 * \param style	 The style to merge
+	 */
+	
 	pub fn css__stylesheet_merge_style(target : @mut css_style, style: @mut css_style) {
 		target.bytecode += copy style.bytecode;
 	}
+
+	/**
+	 * Append a style to a CSS style
+	 * 
+	 * \param target The style to add to
+	 * \param style	 The style to add
+	 */
 
 	pub fn css__stylesheet_style_append(target : @mut css_style, bytecode: u32) {
 		target.bytecode.push(bytecode);
 	}
 	
+	/** append one or more css code entries to a style 
+	 * 
+	 * \param target The style to add to
+	 * \param bytecodes	vector of style to add
+	 */
+	 
 	pub fn css__stylesheet_style_vappend(target : @mut css_style, bytecodes: &[u32] ) {
 		target.bytecode += bytecodes;
 	}
@@ -608,10 +661,28 @@ impl css_stylesheet {
 					return CSS_INVALID;
 				}
 
-				for x.selectors.each_mut |_| {
-					// do hash insert , for each selector
-					//
+				let mut i : uint = 0 ;
+				unsafe {
+					while (i<x.selectors.len()) {
+						match self.selectors.css__selector_hash_insert(x.selectors[i]) {
+							CSS_OK=> { 
+								i += 1;
+								loop;
+							} ,
+							_=> {
+								while (i>0){
+									// Ignore errors 
+									self.selectors.css__selector_hash_remove(x.selectors[i]);
+									i -= 1;
+								}
+								// Remove zeroth element
+								self.selectors.css__selector_hash_remove(x.selectors[i]);
+								return CSS_INVALID;
+							}
+						}
+					}
 				}
+
 				CSS_OK
 			},
 			RULE_MEDIA(x) => {
@@ -660,10 +731,15 @@ impl css_stylesheet {
 
 		match css_rule {
 			RULE_SELECTOR(x) => {
-				for x.selectors.each_mut |_| {
-					// do hash remove , for each selector
-					// check for error result , if error - return error
+
+				for x.selectors.each_mut |&selector| {
+
+					match self.selectors.css__selector_hash_remove(selector) {
+						CSS_OK=> loop ,
+						_=> return CSS_INVALID
+					}
 				}
+
 				CSS_OK
 			},
 
