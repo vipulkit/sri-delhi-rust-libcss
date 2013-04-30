@@ -61,7 +61,7 @@ pub struct css_language {
 		sheet:sheet,
 		lwc_instance: lwc_inst.clone(),
 		strings: css_propstrings::css_propstrings(lwc_inst.clone()),
-		properties: css_properties(),
+		properties: css_properties::css_properties(),
 		context:~[], 
 		state:CHARSET_PERMITTED,	
 	}

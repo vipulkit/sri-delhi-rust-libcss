@@ -17,8 +17,9 @@ rustc -L . css_bytecode.rs
 #rustc -L . css_ds.rs
 rustc -L . css_lexer.rs
 rustc -L . css_stylesheet.rs
-rustc -L . css_language.rs
 rustc -L . css_properties.rs
+rustc -L . css_language.rs
+
 #rustc -L . css_parser.rs
 #rustc -L . css_parse_properties.rs
 #rustc -L . css_fontface.rs
