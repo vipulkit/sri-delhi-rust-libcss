@@ -1,4 +1,4 @@
-//sandy
+
 extern mod std;
 extern mod parserutils_inputstream;
 extern mod parserutils ; 
@@ -8,16 +8,8 @@ use csdetect::*;
 use test::*;
 use core::str::*;
 
-
-
 use parserutils::* ;
 use parserutils_inputstream::*;
-// use libc::c_uint;
-//use libc::size_t  ;
-fn sss(data: ~[u8], smibenum:~u16, source:~u32) -> parserutils_error
-{
-	return PARSERUTILS_OK;
-}
 
 fn main() {
 	let mut test1 = result::unwrap(test_report(&"temp_log.csv"));
@@ -66,23 +58,27 @@ fn main() {
             test_name =~"";
             function_name=~"parserutils_inputstream_change_charset";
 			let toCharset= ~"UTF-16";
-            if eq(&toCharset,&charsetStringOption.get()) {comment = ~"charset changed successfully ";
-					test1.pass( copy module_name, copy file_name  , function_name, test_name , comment) ;}
-            else{comment = ~"charset not changed successfully ";
-					test1.fail( copy module_name, copy file_name  , function_name, test_name , comment)}
-          let (tuple,parserutilsError)=stream.parserutils_inputstream_peek(0);
-          let (array,length)= tuple.get();
-          io::println(fmt!("%?,%?",array,length));
-          function_name=~"parserutils_inputstream_peek";
+            if eq(&toCharset,&charsetStringOption.get()) {
+            	comment = ~"charset changed successfully ";
+				test1.pass( copy module_name, copy file_name  , function_name, test_name , comment) ;
+			}
+            else{
+            	comment = ~"charset not changed successfully ";
+				test1.fail( copy module_name, copy file_name  , function_name, test_name , comment)
+			}
+            let (tuple,parserutilsError)=stream.parserutils_inputstream_peek(0);
+            let (array,length)= tuple.get();
+            io::println(fmt!("%?,%?",array,length));
+            function_name=~"parserutils_inputstream_peek";
 			comment = ~"peek read successfully if valid value in tuple in this line";
-          test_name=fmt!("%?,%?",array,length);
-          test1.fail( copy module_name, copy file_name  , function_name, test_name , comment) ;
+            test_name=fmt!("%?,%?",array,length);
+            test1.fail( copy module_name, copy file_name  , function_name, test_name , comment) ;
 				
 		}
 		_=>{
 			function_name=~"lpu_inputstream";
 			comment = ~"input stream creation failed";
-          test_name=~"";
+            test_name=~"";
 			test1.fail( copy module_name, copy file_name  , function_name, test_name , comment) ;
 		}
 	}
