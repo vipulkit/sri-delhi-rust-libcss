@@ -15,8 +15,7 @@ use test::*;
 use parserutils::* ;
 use parserutils_inputstream::*;
  
- fn main()
-{
+ fn main() {
 	let CHUNKSIZE:uint =10;
 	let args : ~[~str] = os::args();
     io::println(args[1]);
@@ -49,7 +48,6 @@ use parserutils_inputstream::*;
                     if tokOpt.is_some() {
                         tok= tokOpt.unwrap();
                         test1.info( ~"lexer",~"css_lexer.rs"  , ~"file reading", ~"test_lexer" , fmt!("token read is---NEED DATA---- %?",tok )) ;
-                               
                     }
                     break
                 },
