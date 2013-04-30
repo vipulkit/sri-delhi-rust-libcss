@@ -629,15 +629,15 @@ impl css_propstrings_parallel {
 	}
 
 
-	pub fn lwc_string_caseless_isequal(&mut self , lwc_string_instance: arc::RWARC<~lwc_string> , string_index: index_property) -> bool {
+	pub fn lwc_string_caseless_isequal(&mut self , lwc_string_instance: arc::RWARC<~lwc_string> , string_index: uint) -> bool {
 
 		let lwc_instance = self.lwc_instance.clone();
 		do lwc_instance.write |l| {
-			l.lwc_string_caseless_isequal(lwc_string_instance.clone() , self.propstrings[string_index as int].clone())
+			l.lwc_string_caseless_isequal(lwc_string_instance.clone() , self.propstrings[string_index].clone())
 		}
 	}
 
-	pub fn lwc_string_isequal(&mut self , lwc_string_instance: arc::RWARC<~lwc_string> , string_index: index_property) -> bool {
-			lwc::lwc_string_isequal(lwc_string_instance.clone() , self.propstrings[string_index as int].clone())
+	pub fn lwc_string_isequal(&mut self , lwc_string_instance: arc::RWARC<~lwc_string> , string_index: uint) -> bool {
+			lwc::lwc_string_isequal(lwc_string_instance.clone() , self.propstrings[string_index].clone())
 	}
 }
