@@ -19,8 +19,8 @@ fn main() {
 	let mut test_name : ~str=~"";
 	let mut comment: ~str=~"";
 	let (inputStreamOption, ParserUtilsError)= lpu_inputstream(~"ASCII" , None);
-	match(ParserUtilsError)
-	{
+
+	match(ParserUtilsError)	{
 		PARSERUTILS_OK=>{
 			function_name=~"lpu_inputstream";
 			comment = ~"input stream created successfully";
@@ -42,13 +42,12 @@ fn main() {
             function_name=~"parserutils_inputstream_change_charset";
 			let toCharset= ~"UTF-16";
 
-            match(stream.parserutils_inputstream_change_charset(copy toCharset,CSS_CHARSET_DEFAULT))
-			{
+            match(stream.parserutils_inputstream_change_charset(copy toCharset,CSS_CHARSET_DEFAULT)) {
 				PARSERUTILS_OK=>{
 					comment = ~"charset changed successfully ";
 					test1.pass( copy module_name, copy file_name  , function_name, test_name , comment) ;
 						},
-				_=>{
+				  _  => {
 					comment = ~"charset not changed successfully ";
 					test1.fail( copy module_name, copy file_name  , function_name, test_name , comment) ;
 				}

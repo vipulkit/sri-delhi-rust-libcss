@@ -8,20 +8,19 @@ use parserutils::*;
 use test::*;
 use core::str::*;
 
-fn main()
-{
+fn main(){
+
  	let mut parser : arc::ARC<~lpu> = lpu();
 	let mut test_logger = result::unwrap(test_report(&"temp_log.csv"));
 	let aliasData = ~[~"moose", ~"csinvariant", ~"csinvariant\"", ~"nats-sefi-add", ~"u.t.f.8"];
 	 
 	let mut index : uint = 0;
 
-	while index < aliasData.len() 
-	{
+	while index < aliasData.len() {
 		let mut retVal = arc::get(&parser).parserutils__charset_alias_canonicalise(copy aliasData[index]);
 		
-		match(retVal)
-		{
+		match(retVal){
+
 			Some(x) => {
 						if !eq(&aliasData[index], &~"moose")
 						{
@@ -36,8 +35,7 @@ fn main()
 								else
 								{
 									test_logger.pass( ~"parserutils", ~"parserutils.rs", ~"mibenum_from_name", copy x.name, ~"")
-								}
-							
+								}							
 					
 								match(arc::get(&parser).parserutils_charset_mibenum_to_name(copy x.mib_enum))
 								{

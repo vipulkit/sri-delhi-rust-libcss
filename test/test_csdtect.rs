@@ -10,8 +10,8 @@ use parserutils_inputstream::*;
 use core::str::*;
 use std::arc;
 
-fn main()
-{
+fn main() {
+
 	let args : ~[~str] = os::args(); 
 
     // value initialization
@@ -48,8 +48,7 @@ fn main()
 	let mut test1 = result::unwrap(test_report(&"temp_log.csv"));
 	test1.info( ~"csdetect", ~"csdetect.rs", ~"css__charset_extract", copy args[1] , ~"") ;	
 
-	match(ParserUtilsError)
-	{
+	match(ParserUtilsError)	{
 		PARSERUTILS_OK=>{			
 			
 			test1.info( ~"csdetect",~"csdetect.rs", ~"css__charset_extract", copy args[1] , ~"input stream created successfully") ;			
@@ -122,7 +121,9 @@ fn main()
 			}
 
 		},
-		_=>{test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~" Test-1 : input stream not created") ;}
+		_   =>  {
+			 		test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~" Test-1 : input stream not created");
+			 	}
 	}
 
 	// Test 2: Header of input file is not being skipped
@@ -131,8 +132,7 @@ fn main()
 	let mut test1 = result::unwrap(test_report(&"temp_log.csv"));
 	test1.info( ~"csdetect", ~"csdetect.rs", ~"css__charset_extract", copy args[1] , ~"") ;
 
-	match(ParserUtilsError)
-	{
+	match(ParserUtilsError) {
 		PARSERUTILS_OK=>{			
 			
 			test1.info( ~"csdetect",~"csdetect.rs", ~"css__charset_extract", copy args[1] , ~"input stream created successfully") ;			
@@ -168,8 +168,7 @@ fn main()
 	        }
 
 	         // mibenum test
-			match(arc::get(&stream.input.lpu_instance).parserutils_charset_mibenum_to_name(stream.mibenum))
-			{
+			match(arc::get(&stream.input.lpu_instance).parserutils_charset_mibenum_to_name(stream.mibenum)) {
 				Some(x)  => {
 								if eq(&x, &encoding){
 								test1.pass( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"mibenum value") ;								
@@ -182,13 +181,14 @@ fn main()
 			}			
 
 			// encsrc test
-			match stream.encsrc
-			{
-				encsrcVal  => {
-									test1.pass( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"encsrc value");									
-							}
+			match stream.encsrc {
+			encsrcVal  => {
+								test1.pass( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"encsrc value");									
+			    			}
 			}
 		},
-		_=>{test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"Test 2: input stream not created") ;}
+		_   =>  {
+					test1.fail( ~"csdetect",~"csdetect.rs"  , ~"css__charset_extract", copy args[1] , ~"Test 2: input stream not created");
+				 }
 	}	
 }

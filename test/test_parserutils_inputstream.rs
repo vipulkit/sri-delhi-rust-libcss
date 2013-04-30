@@ -1,10 +1,13 @@
+
 extern mod std;
 extern mod parserutils_inputstream;
 extern mod parserutils ; 
 extern mod test;
+
 use test::*;
 use parserutils::* ;
 use parserutils_inputstream::*;
+
  fn main() {
 	let args : ~[~str] = os::args();
     io::println(args[1]);
@@ -39,16 +42,11 @@ use parserutils_inputstream::*;
 						PARSERUTILS_NEEDDATA =>{break;}
 						PARSERUTILS_EOF=>{break;}
 						_=>{test1.pass( ~"parserutils",~"parserutils_inputStream.rs"  , ~"parserutils_inputstream_peek", ~"test_parserutils_inputstream.rs" , ~"invalid") ;break;}
-					}
-					
-
-         		}//end of loop
-				
-	         }
-	        
+					}					
+         		}//end of loop				
+	         }	        
 		},
 		_=>{test1.fail( ~"parserutils",~"parserutils_inputStream.rs"  , ~"lpu_inputstream", ~"test_parserutils_inputstream.rs" , ~"input stream not created successfully") ;}
 	}
-	test1.pass( ~"parserutils",~"parserutils_inputStream.rs"  , ~"whole functionality", ~"test_parserutils_inputstream.rs" , ~"PASS") ; 
-     
+	test1.pass( ~"parserutils",~"parserutils_inputStream.rs"  , ~"whole functionality", ~"test_parserutils_inputstream.rs" , ~"PASS") ;      
 }
