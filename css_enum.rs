@@ -1249,7 +1249,7 @@ pub enum op_font_style {
 } 
 
 pub enum op_font_variant {
-	FONT_VARIANT_NORMAL		= 0x0000,
+	FONT_VARIANT_NORMAL			= 0x0000,
 	FONT_VARIANT_SMALL_CAPS		= 0x0001
 } 
 
@@ -1617,12 +1617,13 @@ pub enum op_z_index {
 	Z_INDEX_AUTO			= 0x0000
 } 
 
+static FLAG_IMPORTANT:	u8		= (1u8<<0);
+static FLAG_INHERIT:	u8		= (1u8<<1);
 
-
-pub enum flag {
-	FLAG_IMPORTANT			= (1<<0),
-	FLAG_INHERIT			= (1<<1)
-}
+// pub enum flag {
+// 	FLAG_IMPORTANT			= (1<<0),
+// 	FLAG_INHERIT			= (1<<1)
+// }
 
 pub enum unit {
 	UNIT_PX   = 0,
