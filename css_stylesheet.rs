@@ -273,27 +273,8 @@ impl css_stylesheet {
 		}
 	}
 	
-	pub fn css__stylesheet_selector_append_specific(selector : @mut css_selector, selector_type: css_selector_type,
-												name : css_qname , val_type : css_selector_detail_value_type,
-												string_value : Option<~str> , ab_value : Option<(int,int)>,
-												negate:bool, comb_type : css_combinator)  -> css_result  {
-		let mut detail = @mut css_selector_detail{
-			// combinator:None,
-			// rule:None,
-			// specificity:0,
-
-			qname:name,
-			selector_type:selector_type,
-			combinator_type:comb_type,
-			value_type:val_type,
-			negate:negate,
-
-			string:None,
-			a:0,
-			b:0
-		};
-
-		match selector_type {
+	pub fn css__stylesheet_selector_append_specific(selector : @mut css_selector, detail: @mut css_selector_detail)  -> css_result  {
+		match detail.selector_type {
 			CSS_SELECTOR_CLASS=> selector.specificity += CSS_SPECIFICITY_C, 
 			CSS_SELECTOR_PSEUDO_CLASS=> selector.specificity += CSS_SPECIFICITY_C, 
 			CSS_SELECTOR_ATTRIBUTE=> selector.specificity += CSS_SPECIFICITY_C, 
@@ -310,21 +291,6 @@ impl css_stylesheet {
 			CSS_SELECTOR_ELEMENT=> selector.specificity += CSS_SPECIFICITY_D 
 		};
 
-		match val_type {
-			CSS_SELECTOR_DETAIL_VALUE_STRING =>	match string_value {
-													None=> return CSS_BADPARM,
-													Some(copy x)=>	{ 
-														detail.string=Some(x);
-													}
-												},
-			CSS_SELECTOR_DETAIL_VALUE_NTH=> match ab_value { 
-												None=> return CSS_BADPARM,
-												Some((x,y))=> { 
-													detail.a=x ; 
-													detail.b=y;
-									  			}
-									  		}
-		};
 		selector.data.push(detail);
 		CSS_OK
 	}
