@@ -238,39 +238,43 @@ impl css_stylesheet {
 	}
 
 	pub fn css__stylesheet_selector_detail_init (
-		detail : @mut css_selector_detail, 
 		sel_type: css_selector_type,
 		qname : css_qname, 
 		value_type : css_selector_detail_value_type,
 		string_value : Option<~str> , 
 		ab_value : Option<(int,int)>,
 		negate:bool
-	)  -> css_result {
+	)  -> (css_result, Option<@mut css_selector_detail>) 
+	{
+		let detail : @mut css_selector_detail = @mut css_selector_detail{
+			qname:qname,
+			selector_type:sel_type,
+			combinator_type:CSS_COMBINATOR_NONE,  
+			value_type:value_type,
+			negate:negate,
 
-		detail.selector_type = sel_type;
-		detail.qname= qname;
-		detail.value_type=value_type;
-		detail.negate=negate;
+			//css_selector_detail_value - union merged
+			string:None,
+			a:0,
+			b:0
+		};
+		
 		match value_type {
 			CSS_SELECTOR_DETAIL_VALUE_STRING=>  {
-				if string_value.is_none() {
-					CSS_BADPARM
-				}
-				else { 
+				if string_value.is_some() {
 					detail.string=string_value ;
-					CSS_OK 
 				}
-			}
+			},
 			CSS_SELECTOR_DETAIL_VALUE_NTH => 
 				match ab_value { 
-					None=> CSS_BADPARM,
+					None=> {},
 					Some((x,y))=> { 
 									detail.a=x ; 
 									detail.b=y; 
-									CSS_OK
 								  }
 				}
 		}
+		(CSS_OK,Some(detail)) 
 	}
 	
 	pub fn css__stylesheet_selector_append_specific(selector : @mut css_selector, selector_type: css_selector_type,
@@ -280,7 +284,7 @@ impl css_stylesheet {
 		let mut detail = @mut css_selector_detail{
 			// combinator:None,
 			// rule:None,
-			// specificity:0,
+			// specificity:0, 
 
 			qname:name,
 			selector_type:selector_type,

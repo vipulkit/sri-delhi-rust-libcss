@@ -847,27 +847,107 @@ pub impl css_language {
 		return CSS_OK
 	}   
 
-	pub fn parseAppendSpecific(&self, vector:&~[~css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_result
+	pub fn parseSelectorSpecifics(&mut self, vector:&~[~css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_result
+	{
+		let token:&~css_token;
+
+		/* specifics -> specific* */
+		loop
+		{
+			if *ctx >= vector.len()
+			{
+				break;
+			}	
+			else
+			{
+				token = &vector[*ctx];
+				if (match token.token_type { CSS_TOKEN_S => false, _ => true }) && 
+					!css_language::tokenIsChar(token, '+')  &&
+					!css_language::tokenIsChar(token, '>')  &&
+					!css_language::tokenIsChar(token, '~')  &&
+					!css_language::tokenIsChar(token, ',') 
+				{
+					match self.parseAppendSpecific(vector,ctx,parent)
+					{
+						CSS_OK 	=> loop,
+						error	=>	return error
+					}
+				}
+				else
+				{
+					break;
+				}
+			}	
+		}
+		CSS_OK		
+	}  
+
+
+	pub fn parseAppendSpecific(&mut self, vector:&~[~css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_result
 	{
 		
 
 		match self.parseSpecific(vector, ctx, false)
 		{
-			(CSS_OK,Some(specific)) => CSS_OK, //TO DO return css_stylesheet::css__stylesheet_selector_append_specific(parent,specific),
+			(CSS_OK,Some(specific)) => return css_stylesheet::css__stylesheet_selector_append_specific(parent,specific),
 			(error,_) => return error
 		}   
 		
 	}   
 
-	pub fn parseSelectorSpecifics(&self, vector:&~[~css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_result
-	{
-		return CSS_OK
 
-	}   
-
-	pub fn parseSpecific(&self, vector:&~[~css_token], ctx:@mut uint, in_not:bool) -> (css_result,Option<@mut css_selector_detail>)
+	pub fn parseSpecific(&mut self, vector:&~[~css_token], ctx:@mut uint, in_not:bool) -> (css_result,Option<@mut css_selector_detail>)
 	{
-		return (CSS_OK,None)
+		
+		/* specific  -> [ HASH | class | attrib | pseudo ] */
+
+		let mut token:&~css_token;
+		
+		if *ctx >= vector.len()
+		{
+			return (CSS_INVALID, None)
+		}	
+		
+		token = &vector[*ctx];
+
+		match token.token_type
+		{
+			CSS_TOKEN_HASH(_)	=>
+			{
+				let qname:css_qname=css_qname{ns:~"", name:lwc::lwc_string_data(token.idata.clone())};
+				match css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_ID, qname, 
+											CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false)
+				{
+					(CSS_OK, res) =>
+					{
+						*ctx +=1;
+						(CSS_OK, res) 
+					} 
+
+					(error, y) =>  (error,y)	
+				}
+	
+			} 
+			_ 	=> 
+			{
+		 		if (css_language::tokenIsChar(token, '.')) 
+		 		{
+					self.parseClass(vector, ctx)
+				} 
+				else if (css_language::tokenIsChar(token, '[')) 
+				{
+					self.parseAttrib(vector, ctx)
+				}
+				else if (css_language::tokenIsChar(token, ':')) 
+				{
+					self.parsePseudo(vector, ctx, in_not)
+				} 
+				else 
+				{
+					(CSS_INVALID,None)
+				}
+			}
+		}		
 	}
 
 	/**
@@ -883,11 +963,11 @@ pub impl css_language {
 	* Post condition: \a *ctx is updated with the next token to process
 	*                 If the input is invalid, then \a *ctx remains unchanged.
 	*/
-	pub fn css__parse_important(&self, vector:&~[~css_token], ctx:@mut uint) -> css_result{
+	pub fn css__parse_important(&mut self, vector:&~[~css_token], ctx:@mut uint) -> css_result{
 		CSS_OK
 	}
 
-	pub fn css__make_style_important(&self, vector:&~[~css_token], ctx:@mut uint) -> css_result{
+	pub fn css__make_style_important(&mut self, vector:&~[~css_token], ctx:@mut uint) -> css_result{
 		CSS_OK
 	}
 
@@ -907,9 +987,58 @@ pub impl css_language {
 		return CSS_OK
 	}
 
+	/******************************************************************************
+ 	* Selector list parsing functions					      *
+ 	******************************************************************************/
+ 	pub fn  parseClass(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result,Option<@mut css_selector_detail>)
+	{
+		
+		let mut token:&~css_token;
+		
+		/* class     -> '.' IDENT */
+		if *ctx >= vector.len()
+		{
+			return (CSS_INVALID, None)
+		}	
+		
+		token = &vector[*ctx];
+		*ctx +=1; //Iterate				
+		
+		if !css_language::tokenIsChar(token, '.')
+		{
+			return (CSS_INVALID,None)
+		}	
+
+		token = &vector[*ctx];
+		*ctx +=1; //Iterate	
+
+		match token.token_type 
+		{
+			CSS_TOKEN_IDENT(_) => 
+			{
+				let qname:css_qname=css_qname{ns:~"", name:lwc::lwc_string_data(token.idata.clone())};
+				return css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_CLASS, qname, 
+													CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false)
+			}
+			_ => return (CSS_INVALID,None)
+		}
+	}
+
+	pub fn  parseAttrib(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result,Option<@mut css_selector_detail>)
+	{
+		return (CSS_OK,None)
+	}
+
+	pub fn  parsePseudo(&mut self, vector:&~[~css_token], ctx:@mut uint, in_not:bool) -> (css_result,Option<@mut css_selector_detail>)
+	{
+		return (CSS_OK,None)
+	}
+
 	// ===========================================================================================================
 	// CSS-LANGUAGE implementation/data-structs ends here 
 	// ===========================================================================================================
+
+	
 
 	// ===========================================================================================================
 	// CSS-FONT-FACE implementation/data-structs starts here 
