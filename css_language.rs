@@ -849,7 +849,7 @@ pub impl css_language {
 
 	pub fn parseSelectorSpecifics(&mut self, vector:&~[~css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_result
 	{
-		let token:&~css_token;
+		let mut token:&~css_token;
 
 		/* specifics -> specific* */
 		loop
