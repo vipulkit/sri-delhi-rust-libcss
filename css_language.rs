@@ -20,16 +20,13 @@ use css_properties::*;
 
 pub struct context_entry {
 	event_type:css_parser_event,        /* < Type of entry */
-	data:Option<CSS_RULE_DATA_TYPE>     /*< Data for context */
+	data:Option<CSS_RULE_DATA_TYPE>     //< Data for context */
 } 
 
-// pub struct css_token {
-// 	token_type: css_token_type,
-// 	data: ~[u8],
-// 	idata: arc::RWARC<~lwc_string>,
-// 	// col: u32,
-// 	// line: u32
-// }
+pub struct css_namespace {
+	prefix:Option<arc::RWARC<~lwc_string>> ,		/**< Namespace prefix */
+	uri:Option<arc::RWARC<~lwc_string>>		//< Namespace URI */
+}
 
 pub struct css_language {
 	sheet:@mut css_stylesheet,
@@ -38,12 +35,11 @@ pub struct css_language {
 	state:language_state,	
 	strings: ~css_propstrings,  //  css_propstrings_parallel
 	properties: ~css_properties,
-	default_namespace:~str, 
-	//namespaces:~[~css_namespace],   >>> ccdf8f8ed78046111bd157d7aeb13f95aacc66ae
+	default_namespace:Option<~str>, 
+	namespaces:~[~css_namespace],
 }
 
-//fn  css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc>) -> ~css_language {
-	fn  css_language(sheet:@mut css_stylesheet) -> ~css_language {
+	fn  css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc>) -> ~css_language {
 		//let empty_lwc_string = sheet.lwc_instance.lwc_intern_string(@"");
 		//lwc_instance:sheet.lwc_instance,      
 		// strings:copy sheet.propstrings,
@@ -54,7 +50,6 @@ pub struct css_language {
 		// 	uri:empty_lwc_string	
 		// },	
 		// num_namespaces:0	
-		let lwc_inst=lwc();
 		// let empty_lwc_string = lwc_inst.lwc_intern_string(@"");
 		
 
@@ -65,9 +60,10 @@ pub struct css_language {
 		properties: css_properties::css_properties(),
 		context:~[], 
 		state:CHARSET_PERMITTED,
-		strings:~[],
-		default_namespace:~"",   
-		//namespaces:~[~css_namespce{prefix:lwc_inst.lwc_intern_string(@""), uri:lwc_inst.lwc_intern_string(@"")}]
+		default_namespace:None,   
+		namespaces:~[]
+		//~css_namespce{prefix:None, uri:None}
+		//{prefix:lwc_inst.clone().lwc_intern_string(~""), uri:lwc_inst.clone().lwc_intern_string(@"")}]
 	}
 }
 
@@ -702,30 +698,22 @@ pub impl css_language {
 		else
 		{
 			/* Universal selector */
-			if (self.default_namespace == ~"")
+			match self.default_namespace
 			{
-				qname.ns = copy self.strings[UNIVERSAL as uint]
+				Some (copy ns) => qname.ns = ns,
+				None => qname.ns = lwc::lwc_string_data(self.strings.propstrings[UNIVERSAL as uint].clone())
 			}   
-			else
-			{
-				qname.ns = copy self.default_namespace;
-			}   
-
-			qname.name = copy self.strings[UNIVERSAL as uint];
+			
+			qname.name = lwc::lwc_string_data(self.strings.propstrings[UNIVERSAL as uint].clone());
 
 			selector =  self.sheet.css__stylesheet_selector_create(copy *qname);
-			// {
-			//  CSS_OK => 
-			//  {
-					/* Ensure we have at least one specific selector */
+			/* Ensure we have at least one specific selector */
 			match self.parseAppendSpecific(vector, ctx, selector)
 			{
 				CSS_OK => {},
 				error  => return (error,None)
 			}
-			//  },
-			//  (error,y) => return (error,None)
-			// }
+			
 		}   
 		
 		
@@ -800,7 +788,7 @@ pub impl css_language {
 	pub fn parseTypeSelector(&self, vector:&~[~css_token], ctx:@mut uint, qname:@mut css_qname) -> css_result
 	{
 		let mut token:&~css_token;
-		//let prefix:lwc_string;
+		let mut prefix:Option<arc::RWARC<~lwc_string>> =None;
 
 		/* type_selector    -> namespace_prefix? element_name
 		 * namespace_prefix -> [ IDENT | '*' ]? '|'
@@ -815,7 +803,7 @@ pub impl css_language {
 		
 		if !css_language::tokenIsChar(token, '|')  
 		{
-			//TO DO prefix = token.idata;
+			 prefix = Some(token.idata.clone());
 			*ctx += 1; //Iterate
 		}
 
@@ -826,30 +814,34 @@ pub impl css_language {
 			*ctx += 1; //Iterate
 
 			/* Expect element_name */
-			if *ctx >= vector.len() || match token.token_type { CSS_TOKEN_IDENT(_) => false, _ => true} && !css_language::tokenIsChar(&vector[*ctx], '*') 
+			if *ctx >= vector.len() || ( match vector[*ctx].token_type { CSS_TOKEN_IDENT(_) => false, _ => true} && !css_language::tokenIsChar(&vector[*ctx], '*') ) 
 			{
 				return CSS_INVALID
 			}
+			*ctx += 1; //Iterate
 
-			//TO DO match self.lookupNamespace(prefix, qname)
-			// {
-			// 	CSS_OK  => qname.name = token.idata,
-			// 	error   => return error
-			// }   
+			match self.lookupNamespace(prefix, qname)
+			{
+				CSS_OK  => qname.name = lwc::lwc_string_data(vector[*ctx].idata.clone()),
+				error   => return error
+			}   
 		} 
 		else 
 		{
 			/* No namespace prefix */
-			if self.default_namespace == ~""
+			match self.default_namespace
 			{
-				qname.ns = copy self.strings[UNIVERSAL as uint];
-			} 
-			else 
-			{
-				qname.ns = copy self.default_namespace
+				Some (copy ns) => qname.ns = ns,
+				None => qname.ns = lwc::lwc_string_data(self.strings.propstrings[UNIVERSAL as uint].clone())
 			}
 
-			//TO DO qname.name = prefix;
+
+			qname.name = match prefix
+						{
+							Some (x) => lwc::lwc_string_data(x),
+							None => ~""
+						}
+			
 		}
 		
 		return CSS_OK
@@ -909,7 +901,7 @@ pub impl css_language {
 	 * \return CSS_OK on success, CSS_INVALID if prefix is not found
 	 */
 	//pub fn lookupNamespace(&self, prefix:@lwc_string, uri:@mut lwc_string) -> css_result
-	pub fn lookupNamespace(&self, prefix:@lwc_string, qname:@mut css_qname) -> css_result
+	pub fn lookupNamespace(&self, prefix:Option<arc::RWARC<~lwc_string>>, qname:@mut css_qname) -> css_result
 	{
 		
 		return CSS_OK
