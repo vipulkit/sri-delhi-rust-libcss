@@ -436,7 +436,7 @@ pub impl css_language {
 		}       
 	}
 
-	pub fn parseSelectorList(&self, tokens:&~[~css_token], curRule: CSS_RULE_DATA_TYPE) -> css_result
+	pub fn parseSelectorList(&mut self, tokens:&~[~css_token], curRule: CSS_RULE_DATA_TYPE) -> css_result
 	{
 		let ctx: @mut uint = @mut 0u;
 		
@@ -584,7 +584,7 @@ pub impl css_language {
 		CSS_OK
 	}
 
-	pub fn parseSelector(&self, vector:&~[~css_token], ctx:@mut uint) -> (css_result, Option<@mut css_selector>)
+	pub fn parseSelector(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result, Option<@mut css_selector>)
 	{
 		
 		/* selector -> simple_selector [ combinator simple_selector ]* ws
@@ -655,7 +655,7 @@ pub impl css_language {
 		} // End of outer match parseSimpleSelector
 	}
 
-	pub fn parseSimpleSelector(&self, vector:&~[~css_token], ctx:@mut uint) -> (css_result, Option<@mut css_selector>)
+	pub fn parseSimpleSelector(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result, Option<@mut css_selector>)
 	{
 		let orig_ctx = *ctx;
 		/* simple_selector  -> type_selector specifics
@@ -701,10 +701,10 @@ pub impl css_language {
 			match self.default_namespace
 			{
 				Some (copy ns) => qname.ns = ns,
-				None => qname.ns = lwc::lwc_string_data(self.strings.propstrings[UNIVERSAL as uint].clone())
+				None => qname.ns = self.strings.lwc_string_data(UNIVERSAL as uint)
 			}   
 			
-			qname.name = lwc::lwc_string_data(self.strings.propstrings[UNIVERSAL as uint].clone());
+			qname.name = self.strings.lwc_string_data(UNIVERSAL as uint);
 
 			selector =  self.sheet.css__stylesheet_selector_create(copy *qname);
 			/* Ensure we have at least one specific selector */
@@ -725,7 +725,7 @@ pub impl css_language {
 		
 	}
 
-	pub fn parseCombinator(&self, vector:&~[~css_token], ctx:@mut uint, comb:@mut css_combinator) -> css_result
+	pub fn parseCombinator(&mut self, vector:&~[~css_token], ctx:@mut uint, comb:@mut css_combinator) -> css_result
 	{
 		
 		let mut token:&~css_token;
@@ -785,7 +785,7 @@ pub impl css_language {
 				
 	}   
 
-	pub fn parseTypeSelector(&self, vector:&~[~css_token], ctx:@mut uint, qname:@mut css_qname) -> css_result
+	pub fn parseTypeSelector(&mut self, vector:&~[~css_token], ctx:@mut uint, qname:@mut css_qname) -> css_result
 	{
 		let mut token:&~css_token;
 		let mut prefix:Option<arc::RWARC<~lwc_string>> =None;
@@ -832,7 +832,7 @@ pub impl css_language {
 			match self.default_namespace
 			{
 				Some (copy ns) => qname.ns = ns,
-				None => qname.ns = lwc::lwc_string_data(self.strings.propstrings[UNIVERSAL as uint].clone())
+				None => qname.ns = self.strings.lwc_string_data(UNIVERSAL as uint)
 			}
 
 
