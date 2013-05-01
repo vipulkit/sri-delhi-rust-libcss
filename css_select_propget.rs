@@ -16,9 +16,9 @@ use css_select_computed::*;
 
 fn get_letter_spacing(
 		style : @mut css_computed_style) 
-		-> (u8,Option<u8>,Option<css_unit>) {
+		-> (u8,Option<i32>,Option<css_unit>) {
 
-    let mut length :Option<u8> = None;
+    let mut length :Option<i32> = None;
     let mut unit : Option<css_unit>  = None;
     match style.uncommon {
         None=>{
@@ -65,9 +65,9 @@ fn get_outline_color(
 
 fn get_outline_width(
         style : @mut css_computed_style) 
-        -> (u8,Option<u8>,Option<css_unit>) {
+        -> (u8,Option<i32>,Option<css_unit>) {
 
-    let mut length :Option<u8> = None;
+    let mut length :Option<i32> = None;
     let mut unit : Option<css_unit>  = None;
     match style.uncommon {
         None=>{
@@ -91,8 +91,8 @@ fn get_outline_width(
 }
 
 pub struct border_spacing_result {
-    hlength:u8,
-    vlength:u8,
+    hlength:i32,
+    vlength:i32,
     hunit:css_unit,
     vunit:css_unit,
     result:u8

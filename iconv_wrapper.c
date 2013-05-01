@@ -23,7 +23,7 @@ extern  char * AllocateBuffer(int bytes)
 extern void DeallocateBuffer( char * buffer) 
 {
 	if (buffer>0) 
-		free(buffer);
+		free((void*)buffer);
 	buffer=0 ;
 }
 
@@ -31,8 +31,8 @@ extern uint64_t rust_iconv_open ( const char * to_code, const char * from_code )
 {
 	uint64_t result ;
 	void * handle = iconv_open("UTF-8",from_code);
-	result = handle ;
-	printf("\n Opened rust iconv =%lld=%lld=%s=%s= \n",result,handle, to_code , from_code );
+	result = (uint64_t)handle ;
+	//printf("\n Opened rust iconv =%lld=%lld=%s=%s= \n",result,handle, to_code , from_code );
 	return result ;
 }
 
@@ -42,10 +42,10 @@ extern size_t rust_iconv(uint64_t handle , char ** inbuf , size_t * insize , cha
 {
 	size_t result ; 
 	if ((inbuf==NULL)||(*inbuf==NULL)) {
-		result = iconv(handle, NULL,0,NULL,0) ;
+		result = iconv((void*)handle, NULL,0,NULL,0) ;
 	}
 	else {
-	    void * res = handle ;
+	    void * res = (void*)handle ;
 		result = iconv(res,inbuf,insize,outbuf,outsize);
 	}
 
@@ -69,7 +69,7 @@ extern size_t rust_iconv(uint64_t handle , char ** inbuf , size_t * insize , cha
 
 extern int rust_iconv_close(uint64_t handle)
 {
-	void * res = handle ;
-	printf("\n ICONV_WRAPPER::Calling Rust Iconv Close =%lld=%lld= \n",handle,res);
+	void * res = (void*)handle ;
+	//printf("\n ICONV_WRAPPER::Calling Rust Iconv Close =%lld=%lld= \n",handle,res);
 	return iconv_close(res);
 }

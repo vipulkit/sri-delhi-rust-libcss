@@ -598,6 +598,10 @@ impl css_propstrings {
 	pub fn lwc_string_isequal(&mut self , lwc_string_instance: arc::RWARC<~lwc_string> , string_index: uint) -> bool {
 			lwc::lwc_string_isequal(lwc_string_instance.clone() , self.propstrings[string_index].clone())
 	}
+
+	pub fn lwc_string_data(&mut self, string_index:uint) -> ~str {
+		lwc::lwc_string_data(self.propstrings[string_index].clone())
+	}
 }
 
  
