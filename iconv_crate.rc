@@ -16,7 +16,7 @@ pub struct  chunk_result {
 }
 
 extern mod iconv_wrapper {
-    fn AllocateBuffer(bytes:int) -> *u8 ;
+    fn AllocateBuffer(bytes:libc::c_int) -> *u8 ;
     fn DeallocateBuffer(buffer:*u8)  ;
     fn rust_iconv_open( tocode: * u8 , fromcode : * u8) -> u64;
     fn rust_iconv(s: u64, inbuf : **u8 , insize : * size_t , outbuf : ** u8 , outsize : * size_t , error : * int ) -> size_t ;
@@ -74,11 +74,11 @@ pub fn safe_riconv (hnd : u64, inbuf : ~[u8] ) -> ~chunk_result  {
             let c_outsize : size_t = (c_insize+1)*4 ;
             //let c_input : * u8 = iconv_wrapper::AllocateBuffer(c_insize as int );
             //copy_rust_to_c(copy inbuf, c_input, c_insize as uint );
-            let mut c_output : *u8 = iconv_wrapper::AllocateBuffer( c_outsize as int );
+            let mut c_output : *u8 = iconv_wrapper::AllocateBuffer( c_outsize as libc::c_int );
 
             let mut c_inargs = c_insize ;
             
-            let mut initLength=c_insize;
+            //let mut initLength=c_insize;
             let mut c_ouargs = c_outsize ;
             //let mut c_inbuf = c_input ;
             let mut c_oubuf = c_output ;

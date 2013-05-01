@@ -1,10 +1,13 @@
 #[link(name = "css_select_computed", vers = "0.1")];
 #[crate_type = "lib"];
 
+extern mod css_enum;
+
+use css_enum::* ;
 
 pub struct css_computed_counter {
 	name:~str ,
-	value:u8
+	value:i32
 }
 
 pub enum css_computed_content_item_type {
@@ -82,16 +85,16 @@ pub struct css_computed_uncommon {
  */
 	bits:~[u8, ..8],
 
-	border_spacing:~[u8, ..2],
+	border_spacing:~[i32, ..2],
 
-	clip:~[u8, ..4],
+	clip:~[i32, ..4],
 
-	letter_spacing:u8,
+	letter_spacing:i32,
 
  	outline_color:u32,
-	outline_width:u8,
+	outline_width:i32,
 
-	word_spacing:u8,
+	word_spacing:i32,
 
 	counter_increment:@mut css_computed_counter,
 	counter_reset:@mut css_computed_counter,
@@ -109,7 +112,7 @@ pub struct css_computed_page {
  * 				---
  *				  8 bits
  */
-    bits:~[u8, ..2]
+    bits:~[u8, ..1]
 } 
     
 pub struct css_computed_style {
@@ -253,43 +256,43 @@ pub struct css_computed_style {
 
 	background_image:~str,
 
-	background_position:[u8, ..2],
+	background_position:[i32, ..2],
 
 	border_color:[u32, ..4],
-	border_width:[u8, ..4],
+	border_width:[i32, ..4],
 
-	top:u8,
-	right:u8,
-	bottom:u8,
-	left:u8,
+	top:i32,
+	right:i32,
+	bottom:i32,
+	left:i32,
 
 	color:u32,
 
-	font_size:u8,
+	font_size:i32,
 
-	height:u8,
+	height:i32,
 
-	line_height:u8,
+	line_height:i32,
 
 	list_style_image:~str,
 
-	margin:~[u8, ..4],
+	margin:~[i32, ..4],
 
-	max_height:u8,
-	max_width:u8,
+	max_height:i32,
+	max_width:i32,
 
-	min_height:u8,
-	min_width:u8,
+	min_height:i32,
+	min_width:i32,
 
-	opacity:u8,
+	opacity:i32,
 
-	padding:~[u8, ..4],
+	padding:~[i32, ..4],
 
-	text_indent:u8,
+	text_indent:i32,
 
-	vertical_align:u8,
+	vertical_align:i32,
 
-	width:u8,
+	width:i32,
 
 	z_index:i32,
 
@@ -303,3 +306,23 @@ pub struct css_computed_style {
 
 }
 
+
+pub struct css_computed_clip_rect {
+	top:i32,
+	right:i32,
+	bottom:i32,
+	left:i32,
+
+	tunit:css_unit,
+	runit:css_unit,
+	bunit:css_unit,
+	lunit:css_unit,
+
+	top_auto:bool,
+	right_auto:bool,
+	bottom_auto:bool,
+	left_auto:bool
+}
+
+
+////////////////////////////////////
