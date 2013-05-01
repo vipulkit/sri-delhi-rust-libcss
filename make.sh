@@ -11,12 +11,20 @@ rustc -L . wapcaplet.rs
 rustc -L . css_propstrings.rs
 rustc -L . css_propstrings_parallel.rs
 rustc -L . css_enum.rs
+rustc -L . css_fpmath.rs
 rustc -L . css_bytecode.rs
+
 #rustc -L . css_ds.rs
 rustc -L . css_lexer.rs
 rustc -L . css_stylesheet.rs
+rustc -L . css_properties.rs
 rustc -L . css_language.rs
+
 #rustc -L . css_parser.rs
 #rustc -L . css_parse_properties.rs
 #rustc -L . css_fontface.rs
 #rustc -L . css.rs
+rustc -L . css_select_const.rs
+rustc -L . css_select_computed.rs
+rustc -L . css_select_propget.rs
+

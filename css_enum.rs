@@ -899,8 +899,22 @@ pub enum css_token_type {
 	// CSS_TOKEN_SUFFIXMATCH, CSS_TOKEN_SUBSTRINGMATCH, 
 	CSS_TOKEN_EOF 
 }
+    static AZIMUTH_ANGLE:u16			= 0x0080;
 
+	static AZIMUTH_LEFTWARDS:u16		= 0x0040;
+	static AZIMUTH_RIGHTWARDS:u16		= 0x0041;
 
+	static AZIMUTH_BEHIND:u16			= (1<<5);
+	static AZIMUTH_LEFT_SIDE:u16		= 0x0000;
+	static AZIMUTH_FAR_LEFT:u16		= 0x0001;
+	static AZIMUTH_LEFT:u16			= 0x0002;
+	static AZIMUTH_CENTER_LEFT:u16		= 0x0003;
+	static AZIMUTH_CENTER:u16			= 0x0004;
+	static AZIMUTH_CENTER_RIGHT	:u16	= 0x0005;
+	static AZIMUTH_RIGHT:u16			= 0x0006;
+	static AZIMUTH_FAR_RIGHT:u16		= 0x0007;
+	static AZIMUTH_RIGHT_SIDE:u16		= 0x0008;
+/*
 pub enum op_azimuth {
 	AZIMUTH_ANGLE			= 0x0080,
 
@@ -917,7 +931,7 @@ pub enum op_azimuth {
 	AZIMUTH_RIGHT			= 0x0006,
 	AZIMUTH_FAR_RIGHT		= 0x0007,
 	AZIMUTH_RIGHT_SIDE		= 0x0008
-} 
+} */
 
 pub enum op_background_attachment {
 	BACKGROUND_ATTACHMENT_FIXED	= 0x0000,
@@ -1249,7 +1263,7 @@ pub enum op_font_style {
 } 
 
 pub enum op_font_variant {
-	FONT_VARIANT_NORMAL		= 0x0000,
+	FONT_VARIANT_NORMAL			= 0x0000,
 	FONT_VARIANT_SMALL_CAPS		= 0x0001
 } 
 
@@ -1617,12 +1631,13 @@ pub enum op_z_index {
 	Z_INDEX_AUTO			= 0x0000
 } 
 
+static FLAG_IMPORTANT:	u8		= (1u8<<0);
+static FLAG_INHERIT:	u8		= (1u8<<1);
 
-
-pub enum flag {
-	FLAG_IMPORTANT			= (1<<0),
-	FLAG_INHERIT			= (1<<1)
-}
+// pub enum flag {
+// 	FLAG_IMPORTANT			= (1<<0),
+// 	FLAG_INHERIT			= (1<<1)
+// }
 
 pub enum unit {
 	UNIT_PX   = 0,
