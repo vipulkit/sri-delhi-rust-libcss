@@ -5,36 +5,41 @@ extern mod css_enum;
 extern mod css_stylesheet;
 extern mod std;
 extern mod wapcaplet;
-extern mod css_propstrings_parallel;
+extern mod css_propstrings;
+extern mod css_properties;
+
 
 
 use css_enum::* ;
 use css_stylesheet::*;
 use std::arc;
 use wapcaplet::*;
-use css_propstrings_parallel::*;
+use css_propstrings::*;
+use css_properties::*;
+
 
 pub struct context_entry {
 	event_type:css_parser_event,        /* < Type of entry */
 	data:Option<CSS_RULE_DATA_TYPE>     /*< Data for context */
 } 
 
-pub struct css_token {
-	token_type: css_token_type,
-	data: ~[u8],
-	idata: arc::RWARC<~lwc_string>,
-	// col: u32,
-	// line: u32
-}
+// pub struct css_token {
+// 	token_type: css_token_type,
+// 	data: ~[u8],
+// 	idata: arc::RWARC<~lwc_string>,
+// 	// col: u32,
+// 	// line: u32
+// }
 
 pub struct css_language {
-		sheet:@mut css_stylesheet,
-		//lwc_instance:arc::RWARC<~lwc>,        
-		context:~[context_entry], 
-		state:language_state,   
-		strings:~[~str],
-		default_namespace:~str, 
-		//namespaces:~[~css_namespace],   
+	sheet:@mut css_stylesheet,
+	lwc_instance:arc::RWARC<~lwc>,		
+	context:~[context_entry], 
+	state:language_state,	
+	strings: ~css_propstrings,  //  css_propstrings_parallel
+	properties: ~css_properties,
+	default_namespace:~str, 
+	//namespaces:~[~css_namespace],   >>> ccdf8f8ed78046111bd157d7aeb13f95aacc66ae
 }
 
 //fn  css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc>) -> ~css_language {
@@ -45,16 +50,19 @@ pub struct css_language {
 		// default_namespace:empty_lwc_string,  
 		// namespaces:@css_namespace
 		// {
-		//  prefix:empty_lwc_string,    
-		//  uri:empty_lwc_string    
-		// },   
-		// let lwc_inst=lwc();
+		// 	prefix:empty_lwc_string,	
+		// 	uri:empty_lwc_string	
+		// },	
+		// num_namespaces:0	
+		let lwc_inst=lwc();
 		// let empty_lwc_string = lwc_inst.lwc_intern_string(@"");
 		
 
 	~css_language {
 		sheet:sheet,
-		//lwc_instance:lwc_inst.clone(),
+		lwc_instance: lwc_inst.clone(),
+		strings: css_propstrings::css_propstrings(lwc_inst.clone()),
+		properties: css_properties(),
 		context:~[], 
 		state:CHARSET_PERMITTED,
 		strings:~[],
@@ -64,8 +72,7 @@ pub struct css_language {
 }
 
 
-pub impl css_language
-{
+pub impl css_language {
 	
 	pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:~[~css_token])-> css_result
 		{
@@ -286,8 +293,8 @@ pub impl css_language
 					let mut curRule = cur.data;
 					self.context.pop();
 					/* If the block we just popped off the stack was associated with a 
-* non-block stack entry, and that entry is not a top-level statement,
-* then report the end of that entry, too. */
+					* non-block stack entry, and that entry is not a top-level statement,
+					* then report the end of that entry, too. */
 					match curRule
 					{
 						None => CSS_OK,
@@ -407,12 +414,12 @@ pub impl css_language
 											css_language::consumeWhitespace(&tokens, ctx);
 											match curRule
 											{
-												RULE_FONT_FACE(font_face_rule) =>   
-													return css_language::css__parse_font_descriptor(ident, &tokens, ctx, font_face_rule),
-												_ =>    
-													return css_language::parseProperty(ident, &tokens, ctx, curRule)    
-											}
-										 }              
+												RULE_FONT_FACE(font_face_rule) =>	
+										 			return css_language::css__parse_font_descriptor(ident, &tokens, ctx, font_face_rule),
+										 		_ =>	
+										 			return self.parseProperty(ident, &tokens, ctx, curRule)	
+										 	}
+										 }				
 									} 
 									_ => return CSS_INVALID
 								} 
@@ -550,8 +557,34 @@ pub impl css_language
 	 * Property parsing functions                             *
 	 ******************************************************************************/
 
-	pub fn parseProperty(property:&~css_token,vector:&~[~css_token], ctx:@mut uint, curRule:CSS_RULE_DATA_TYPE) -> css_result
-	{
+	pub fn parseProperty(&mut self , property: &~css_token , vector: &~[~css_token], ctx:@mut uint, curRule: CSS_RULE_DATA_TYPE) -> css_result {
+		
+		let mut style: @mut css_style;
+		let mut index = AZIMUTH as uint;
+
+		while (index < Z_INDEX as uint) {
+			if self.strings.lwc_string_caseless_isequal(property.idata.clone() , index) {
+				break
+			}
+			index +=1;
+		}
+
+		if index == Z_INDEX as uint + 1 {
+			return CSS_INVALID;
+		}
+
+		style = self.sheet.css__stylesheet_style_create();
+
+		self.properties.property_handlers[index - AZIMUTH as uint]/*(self.strings , vector , ctx , style)*/;
+		self.css__parse_important(vector , ctx);
+
+		css_language::consumeWhitespace(vector , ctx);
+
+		// if tokens.len() > *ctx { 	
+		//    	let ident =&tokens[*ctx];
+		// 	*ctx = *ctx + 1;
+
+
 		CSS_OK
 	}
 
@@ -837,12 +870,35 @@ pub impl css_language
 	pub fn parseSelectorSpecifics(&self, vector:&~[~css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_result
 	{
 		return CSS_OK
+
 	}   
 
 	pub fn parseSpecific(&self, vector:&~[~css_token], ctx:@mut uint, in_not:bool) -> (css_result,Option<@mut css_selector_detail>)
 	{
 		return (CSS_OK,None)
 	}
+
+	/**
+	* Parse !important
+	*
+	* \param c       Parsing context
+	* \param vector  Vector of tokens to process
+	* \param ctx     Pointer to vector iteration context
+	* \param result  Pointer to location to receive result
+	* \return CSS_OK on success,
+	*         CSS_INVALID if "S* ! S* important" is not at the start of the vector
+	*
+	* Post condition: \a *ctx is updated with the next token to process
+	*                 If the input is invalid, then \a *ctx remains unchanged.
+	*/
+	pub fn css__parse_important(&self, vector:&~[~css_token], ctx:@mut uint) -> css_result{
+		CSS_OK
+	}
+
+	pub fn css__make_style_important(&self, vector:&~[~css_token], ctx:@mut uint) -> css_result{
+		CSS_OK
+	}
+
 
 	/**
 	 * Look up a namespace prefix

@@ -1054,7 +1054,266 @@ impl css_selector_hash {
 		CSS_OK
 	}
 
+	pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
+
+		if ( a.len() != b.len() ) {
+			return false ;
+		}
+		
+		let mut i :uint = a.len() ;
+		for uint::range(0,i) |e| {
+			if a[e] == b[e] {
+				loop;
+			}
+
+			if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
+			  	if (a[e]+32) == b[e] {
+					loop;
+				}
+				else {
+					return false ;
+				}
+			}
+
+			if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
+			  	if (b[e]+32) == a[e] {
+					loop;
+				}
+				else {
+					return false ;
+				}
+			}
+			return false ;
+		}
+		return true ;
+	}
+
+	pub fn css__selector_hash_find(&mut self,
+								name : ~str) 
+								-> (Option<@mut hash_entry>,css_result) {
+
+		let mut mask  = self.default_slots-1 ;
+		let mut index = css_selector_hash::_hash_name(copy name) & mask ; 
+		let mut head = self.elements[index];
+
+		loop {
+			match head {
+				None=>{
+					return (None,CSS_OK);
+				},
+				Some(node_element)=>{
+
+					for node_element.selector.data.each_mut |&detail_element| {
+						unsafe {
+							if css_selector_hash::is_string_caseless_equal(
+								detail_element.qname.name,name) {
+								return (head,CSS_OK);
+							}
+						}
+					}
+
+					match node_element.next {
+						None=> {
+							return (None,CSS_OK);
+						},
+						Some(_)=>{
+							head = node_element.next ;
+							loop ;
+						}
+					}
+				}
+			}
+		}
+	}
 	
+
+	pub fn css__selector_hash_find_by_class(&mut self,
+								name : ~str) 
+								-> (Option<@mut hash_entry>,css_result) {
+
+		let mut mask  = self.default_slots-1 ;
+		let mut index = css_selector_hash::_hash_name(copy name) & mask ; 
+		let mut head = self.classes[index];
+
+		loop {
+			match head {
+				None=>{
+					return (None,CSS_OK);
+				},
+				Some(node_element)=>{
+
+					let mut n = css_selector_hash::_class_name(node_element.selector);
+
+					unsafe {
+						if css_selector_hash::is_string_caseless_equal(n, name) {
+							return (head,CSS_OK);
+						}
+					}
+
+					match node_element.next {
+						None=> {
+							return (None,CSS_OK);
+						},
+						Some(_)=>{
+							head = node_element.next ;
+							loop ;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	pub fn css__selector_hash_find_by_id(&mut self,
+								name : ~str) 
+								-> (Option<@mut hash_entry>,css_result) {
+
+		let mut mask  = self.default_slots-1 ;
+		let mut index = css_selector_hash::_hash_name(copy name) & mask ; 
+		let mut head = self.ids[index];
+
+		loop {
+			match head {
+				None=>{
+					return (None,CSS_OK);
+				},
+				Some(node_element)=>{
+
+					let mut n = css_selector_hash::_id_name(node_element.selector);
+
+					unsafe {
+						if css_selector_hash::is_string_caseless_equal(n, name) {
+							return (head,CSS_OK);
+						}
+					}
+
+					match node_element.next {
+						None=> {
+							return (None,CSS_OK);
+						},
+						Some(_)=>{
+							head = node_element.next ;
+							loop ;
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	pub fn css__selector_hash_find_universal(&mut self) 
+								-> (Option<@mut hash_entry>,css_result) {
+
+		let mut head = self.universal[0] ;
+		match head {
+			None=>{
+				return (None,CSS_OK);
+			},
+			Some(_)=>{
+				return (self.universal[0],CSS_OK);
+			}
+		}
+	}
+
+	pub fn _iterate_elements(current : @mut hash_entry) 
+							-> (Option<@mut hash_entry>,css_result) {
+
+		let mut head = current;
+
+		loop {
+			match head.next {
+				None=>{
+					return (None,CSS_OK);
+				},
+				Some(next_entry)=>{
+					unsafe {
+						if vec::uniq_len(&head.selector.data)==0 || 
+							vec::uniq_len(&next_entry.selector.data)==0 {
+							return (None,CSS_INVALID);
+						}
+						if css_selector_hash::is_string_caseless_equal(
+							head.selector.data[0].qname.name,
+							next_entry.selector.data[0].qname.name) == true {
+
+							return (head.next,CSS_OK);
+						}
+						head = next_entry ;
+						loop ;
+					}
+				}
+			}
+		}
+	}
+
+	pub fn _iterate_classes(current : @mut hash_entry) 
+							-> (Option<@mut hash_entry>,css_result) {
+
+		let mut head = current;
+
+		let mut current_refer = css_selector_hash::_class_name(current.selector);
+
+		loop {
+			match head.next {
+				None=>{
+					return (None,CSS_OK);
+				},
+				Some(next_entry)=>{
+					unsafe {
+						let mut name = css_selector_hash::_class_name(next_entry.selector);
+						if( name.len()==0){
+							loop;
+						}
+						if css_selector_hash::is_string_caseless_equal(name,current_refer) == true {
+							return (current.next,CSS_OK);
+						}
+						head = next_entry ;
+						loop ;
+					}
+				}
+			}
+		}
+		return (None,CSS_OK);
+	}
+
+	pub fn _iterate_ids(current : @mut hash_entry) 
+							-> (Option<@mut hash_entry>,css_result) {
+
+		let mut head = current;
+
+		let mut current_refer = css_selector_hash::_id_name(current.selector);
+
+		loop {
+			match head.next {
+				None=>{
+					return (None,CSS_OK);
+				},
+				Some(next_entry)=>{
+					unsafe {
+						let mut name = css_selector_hash::_id_name(next_entry.selector);
+						if( name.len()==0){
+							loop;
+						}
+						if css_selector_hash::is_string_caseless_equal(name,current_refer) == true {
+							return (current.next,CSS_OK);
+						}
+						head = next_entry ;
+						loop ;
+					}
+				}
+			}
+		}
+		return (None,CSS_OK);
+	}
+
+	pub fn _iterate_universal(current : @mut hash_entry) 
+							-> (Option<@mut hash_entry>,css_result) {
+
+		if current.next.is_some() {
+			return (current.next,CSS_OK);
+		}
+		(None,CSS_OK)
+	}
 }
 
 
