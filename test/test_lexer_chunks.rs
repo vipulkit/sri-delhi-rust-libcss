@@ -13,11 +13,19 @@ use test::*;
 use parserutils::* ;
 use parserutils_inputstream::*;
  
+<<<<<<< HEAD
+fn main() {
+	let CHUNKSIZE:int =10;
+	let args : ~[~str] = os::args();
+    // io::println(args[1]);
+=======
 fn main()
 {
-	let CHUNKSIZE:uint =10;
+	let CHUNKSIZE:int =10;
 	let args : ~[~str] = os::args();
+    let external_argument : ~str = copy args[1];
     io::println(args[1]);
+>>>>>>> 39712dfcfc408342c7dc7a3037377a26268dc3cf
     let r:@Reader = io::file_reader(&Path(args[1])).get(); 
     let mut fileLen:int;
     let mut data:~str;
@@ -33,13 +41,20 @@ fn main()
 	
 	r.seek(0,SeekSet);
 
-	while(fileLen > 1026) {
-		dataBytes = r.read_bytes(CHUNKSIZE);
+<<<<<<< HEAD
+	while(fileLen > 0 ) {
+=======
+	while(fileLen > CHUNKSIZE) {
+>>>>>>> 39712dfcfc408342c7dc7a3037377a26268dc3cf
+		dataBytes = r.read_bytes(CHUNKSIZE as uint);
                 
         fileLen -= dataBytes.len() as int ;
 		let str1= str::from_bytes(dataBytes);
 				
-        test1.pass( ~"lexer",~"css_lexer.rs"  , ~"file reading", ~"test_lexer" , fmt!("read data is %?", str1)) ;   
+<<<<<<< HEAD
+=======
+        test1.info(~"test_lexer_chunks.rs", copy external_argument, ~"lexer",~"css_lexer.rs"  , ~"file reading", ~"test_lexer" ,~"contents of file", fmt!("read data is %?", str1),~"") ;  
+>>>>>>> 39712dfcfc408342c7dc7a3037377a26268dc3cf
 				
 		lexer.lexer_append_data(dataBytes);
         let mut tok:css_token_type;
@@ -49,7 +64,10 @@ fn main()
                 LEXER_NEEDDATA => {
                     if tokOpt.is_some() {
                         tok= tokOpt.unwrap();
-                        test1.info( ~"lexer",~"css_lexer.rs"  , ~"css__lexer_get_token", ~"test_lexer" , fmt!("token read is---NEED DATA---- %?",tok )) ;
+<<<<<<< HEAD
+=======
+                        test1.info( ~"test_lexer_chunks.rs", copy external_argument, ~"file reading", ~"test_lexer" ,~"token read is---NEED DATA----", fmt!(" %?",tok )) ;
+>>>>>>> 39712dfcfc408342c7dc7a3037377a26268dc3cf
                                
                     }
                     break
@@ -59,10 +77,16 @@ fn main()
 
             tok= match(tokOpt)	{
                	Some(tok)=>tok,
-               	None=> break
+               	None=> {
+                    test1.info( ~"lexer",~"css_lexer.rs"  , ~"css__lexer_get_token", ~"test_lexer" , ~"token read is None") ;
+                    break
+                }
             };
 
+<<<<<<< HEAD
             test1.info( ~"lexer",~"css_lexer.rs"  , ~"css__lexer_get_token", ~"test_lexer" , fmt!("token read is %?",tok )) ;
+=======
+           test1.info( ~"test_lexer_chunks.rs", copy external_argument, ~"file reading", ~"test_lexer" ,~"token read is", fmt!(" %?",tok )) ;
                 	              	
 
 					
@@ -73,15 +97,21 @@ fn main()
                 },
 				_=>{}
 			}					
+>>>>>>> 39712dfcfc408342c7dc7a3037377a26268dc3cf
         }
 	}
+
 
 	dataBytes = r.read_bytes(fileLen as uint);
                 
                 
     let str1= str::from_bytes(dataBytes);
               
-    test1.info( ~"lexer",~"css_lexer.rs"  , ~"file reading", ~"test_lexer" , fmt!("read data is %?", str1)) ;   
+<<<<<<< HEAD
+    lexer.lexer_append_data(dataBytes);
+    lexer.data_done();
+=======
+    test1.info( ~"test_lexer_chunks.rs", copy external_argument, ~"file reading", ~"test_lexer" ,~"contents of file", fmt!("read data is %?", str1),~"") ;   
                 
     lexer.lexer_append_data(dataBytes);
     let mut tok:css_token_type;
@@ -91,7 +121,7 @@ fn main()
             LEXER_NEEDDATA => {
                 if tokOpt.is_some() {
                     tok= tokOpt.unwrap();
-                    test1.info( ~"lexer",~"css_lexer.rs"  , ~"css__lexer_get_token", ~"test_lexer" , fmt!("token read is---NEED DATA---- %?",tok )) ;
+                    test1.info( ~"test_lexer_chunks.rs", copy external_argument, ~"file reading", ~"test_lexer" ,~"token read is---NEED DATA----", fmt!(" %?",tok )) ;
                                
                 }
                 break
@@ -103,18 +133,21 @@ fn main()
             Some(tok)=>tok,
             None=> break
         };
-        test1.info( ~"lexer",~"css_lexer.rs"  , ~"css__lexer_get_token", ~"test_lexer" , fmt!("token read is %?",tok )) ;
+        test1.info( ~"test_lexer_chunks.rs", copy external_argument, ~"file reading", ~"test_lexer" ,~"token read is", fmt!(" %?",tok )) ;
                                     
+>>>>>>> 39712dfcfc408342c7dc7a3037377a26268dc3cf
 
-                    
-        match(tok) {
-            CSS_TOKEN_EOF  => { 
-                exit=true ;
-                break
-            },
-            _=>{}
-        }                   
-    }
 
-	
+    let (tokOpt,Errr)= lexer.css__lexer_get_token();
+
+    match(tokOpt)  {
+        Some(tok)=>{
+            test1.info( ~"lexer",~"css_lexer.rs"  , ~"css__lexer_get_token", ~"test_lexer" , fmt!("token read is %?",tok ));
+            match tok {
+                CSS_TOKEN_EOF => test1.pass( ~"lexer",~"css_lexer.rs"  , ~"css__lexer_get_token", ~"test_lexer" , ~"CSS_LEXER_PASSED"),
+                _=> test1.fail( ~"lexer",~"css_lexer.rs"  , ~"css__lexer_get_token", ~"test_lexer" , ~"CSS_LEXER_FAILED")
+            }
+        },
+        None=> test1.info( ~"lexer",~"css_lexer.rs"  , ~"css__lexer_get_token", ~"test_lexer" , ~"token read is None")
+    };
 } 

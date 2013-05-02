@@ -6,10 +6,14 @@ extern mod std;
 use core::io::*;
 
 pub struct log_entry {
+	testfile_name: ~str,
+	external_argument : ~str,
 	module_name: ~str,
 	file_name:~str,
 	function_name:~str,
-	test_name:~str,
+	test_argument:~str,
+	expected_result: ~str,
+	obtained_result: ~str,	
 	result: ~str,
 	comment:~str
 }
@@ -30,36 +34,40 @@ impl Drop for test_report {
 }
 
 impl test_report {
-	pub fn pass(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, comment: ~str) {
-		self.do_log(module_name, file_name, function_name, test_name , ~"PASS", comment );
+	pub fn pass(&mut self, testfile_name: ~str, external_argument : ~str, module_name: ~str, file_name : ~str , function_name : ~str, test_argument : ~str, expected_result: ~str, obtained_result: ~str, comment: ~str) {
+		self.do_log(testfile_name,external_argument,  module_name, file_name, function_name, test_argument, expected_result, obtained_result, ~"PASS", comment );
 	}
 
-	pub fn fail(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, comment: ~str) {
-		self.do_log(module_name, file_name, function_name, test_name , ~"FAIL", comment );
+	pub fn fail(&mut self, testfile_name: ~str, external_argument : ~str, module_name: ~str, file_name : ~str , function_name : ~str, test_argument : ~str, expected_result: ~str, obtained_result: ~str, comment: ~str) {		
+		self.do_log(testfile_name, external_argument, module_name, file_name, function_name, test_argument, expected_result, obtained_result, ~"FAIL", comment );
 	}
 
-	pub fn info(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, comment : ~str ) {
-		self.do_log(module_name, file_name, function_name, test_name , ~"", comment );
+	pub fn info(&mut self, testfile_name: ~str, external_argument : ~str, module_name: ~str, file_name : ~str , function_name : ~str,expected_result: ~str, obtained_result: ~str, comment : ~str ) {			
+		self.do_log(testfile_name, external_argument, module_name, file_name, function_name, ~"", ~"",expected_result , obtained_result, comment );
 	}
 
 	// collects log in the memory and also print them on the console
-	fn do_log(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, result:~str, comment : ~str) {
+	fn do_log(&mut self, testfile_name: ~str, external_argument : ~str, module_name: ~str, file_name : ~str , function_name : ~str, test_argument : ~str, expected_result: ~str, obtained_result: ~str, result:~str, comment : ~str) {
 		if result==~"" {
-			io::print(fmt!("\n[%s]::[%s]::[%s] Test:[%s] %s ",module_name, file_name,function_name, test_name, comment));	
+			io::print(fmt!("\n[%s]::[%s]::[%s]::[%s]::[%s] Test:[%s]::[%s]::[%s]::[%s]", testfile_name, external_argument, module_name, file_name, function_name, test_argument, expected_result, obtained_result, comment));	
 		}
 		else {
-			io::print(fmt!("\n[%s]::[%s]::[%s] Test:[%s] %s %s ",module_name, file_name,function_name, test_name, result, comment));	
+			io::print(fmt!("\n[%s]::[%s]::[%s]::[%s]::[%s] Test:[%s]::[%s]::[%s]::[%s] %s", testfile_name, external_argument, module_name, file_name,function_name, test_argument, expected_result, obtained_result, result, comment));	
 		}
 				
-		self.do_silent_log(module_name, file_name , function_name, test_name,  result, comment);
+		self.do_silent_log(testfile_name, external_argument, module_name, file_name , function_name, test_argument, expected_result, obtained_result, result, comment);
 	}
 
 	// Collects log silently in the memory
-	fn do_silent_log(&mut self, module_name: ~str, file_name : ~str , function_name : ~str, test_name : ~str, result: ~str, comment : ~str) {
+	fn do_silent_log(&mut self, testfile_name: ~str, external_argument : ~str, module_name: ~str, file_name : ~str , function_name : ~str, test_argument : ~str, expected_result: ~str, obtained_result: ~str, result: ~str, comment : ~str) {
 		let a = log_entry {
+			testfile_name: testfile_name,
+			external_argument : external_argument,
 			module_name:module_name, 
 			file_name:file_name , 
-			test_name:test_name ,  
+			test_argument:test_argument ,  
+			expected_result: expected_result,
+			obtained_result: obtained_result,		
 			function_name:function_name , 
 			result:result,
 			comment:comment 
@@ -76,14 +84,18 @@ impl test_report {
 
 	// do forcefull logging in the end, if user not done file logging during usage
 	fn do_forceful_log_dump(&self) {
-		self.file_handle.write_line(fmt!("Module,File,Function,Test,Result, Comment"));
+		self.file_handle.write_line(fmt!("Test File, External argument, Module, File, Function, Internal test argument, Expected output, Obtained output, Result, Comment"));
 		for self.log_list.each() |log_entry| {
 			self.file_handle.write_line (
-					fmt!("%s,%s,%s,%s,%s, %s",
+					fmt!("%s,%s,%s,%s,%s,%s,%s, %s, %s, %s",
+							log_entry.testfile_name,
+							log_entry.external_argument,
 							log_entry.module_name,
 							log_entry.file_name,
 							log_entry.function_name,
-							log_entry.test_name, 
+							log_entry.test_argument, 
+							log_entry.expected_result,
+							log_entry.obtained_result,
 							log_entry.result,
 							log_entry.comment
 						)

@@ -10,15 +10,17 @@ use parserutils_inputstream::*;
 
  fn main() {
 	let args : ~[~str] = os::args();
-    io::println(args[1]);
+	let mut external_argument : ~str = copy args[1];
+    io::println(fmt!("value of external_argument is %?", external_argument));
     let r:@Reader = io::file_reader(&Path(args[1])).get(); 
     let reader = io::stdin();
     let mut test1 = result::unwrap(test_report(&"temp_log.csv"));
     let (inputStreamOption, ParserUtilsError)= lpu_inputstream(~"UTF-16",None);
+
 	match(ParserUtilsError) {
 		PARSERUTILS_OK=>{
 			
-			test1.pass( ~"parserutils",~"parserutils_inputStream.rs"  , ~"lpu_inputstream", ~"test_parserutils_inputstream.rs" , ~"input stream created successfully") ;
+			test1.pass( ~"test_parserutils_inputstream.rs", copy external_argument, ~"parserutils",~"parserutils_inputStream.rs"  , ~"lpu_inputstream", ~"input stream creation with UTF-16,None" , ~"input stream should be created",~"input stream created successfully",~"") ;
 			let mut stream:~lpu_inputstream = inputStreamOption.unwrap();
 			
 			while !r.eof() {
@@ -26,7 +28,7 @@ use parserutils_inputstream::*;
      			
      			let data:~[u8]= r.read_bytes(100);
          		
-         		test1.pass( ~"test_parserutils_inputstream.rs",~"test_parserutils_inputstream.rs"  , ~"file reader", ~"test_parserutils_inputstream.rs" , ~"file read successfully"+fmt!("%?",data)) ;
+         		test1.pass( ~"test_parserutils_inputstream.rs", copy external_argument, ~"test_parserutils_inputstream.rs",~"test_parserutils_inputstream.rs"  , ~"file reader", ~"file reads 100 bytes",~"file reads 100 bytes" , ~"file read successfully"+fmt!("%?",data),~"") ;
          		
          		stream.parserutils_inputstream_append(data);
          		
@@ -36,17 +38,17 @@ use parserutils_inputstream::*;
 						PARSERUTILS_OK=>{
 							let mut(ptr,length)= tuple.get();
 							stream.parserutils_inputstream_advance( length);
-							test1.pass( ~"parserutils",~"parserutils_inputStream.rs"  , ~"parserutils_inputstream_peek", ~"test_parserutils_inputstream.rs" , fmt!("peek data->%?,%?",ptr,length)) ;
+							test1.pass( ~"test_parserutils_inputstream.rs", copy external_argument, ~"parserutils",~"parserutils_inputStream.rs"  , ~"parserutils_inputstream_peek", ~"input stream reading with offset 2" ,~"input stream should be read" ,fmt!("peek data->%?,%?",ptr,length),~"") ;
 							
 						},
 						PARSERUTILS_NEEDDATA =>{break;}
 						PARSERUTILS_EOF=>{break;}
-						_=>{test1.pass( ~"parserutils",~"parserutils_inputStream.rs"  , ~"parserutils_inputstream_peek", ~"test_parserutils_inputstream.rs" , ~"invalid") ;break;}
+						_=>{test1.pass( ~"test_parserutils_inputstream.rs", copy external_argument, ~"parserutils",~"parserutils_inputStream.rs"  , ~"parserutils_inputstream_peek", ~"input stream reading with offset 2",~"end of file should be encountered"  , ~"end of file encountered",~"") ;break;}
 					}					
          		}//end of loop				
 	         }	        
 		},
-		_=>{test1.fail( ~"parserutils",~"parserutils_inputStream.rs"  , ~"lpu_inputstream", ~"test_parserutils_inputstream.rs" , ~"input stream not created successfully") ;}
+		_=>{test1.fail( ~"test_parserutils_inputstream.rs", copy external_argument, ~"parserutils",~"parserutils_inputStream.rs"  , ~"lpu_inputstream", ~"input stream creation with UTF-16,None" , ~"input stream should be created", ~"input stream not created successfully",~"") ;}
 	}
-	test1.pass( ~"parserutils",~"parserutils_inputStream.rs"  , ~"whole functionality", ~"test_parserutils_inputstream.rs" , ~"PASS") ;      
+	test1.pass( ~"test_parserutils_inputstream.rs", copy external_argument, ~"parserutils",~"parserutils_inputStream.rs"  , ~"whole functionality", ~"test_parserutils_inputstream.rs" ,~"",~"", ~"PASS") ;      
 }
