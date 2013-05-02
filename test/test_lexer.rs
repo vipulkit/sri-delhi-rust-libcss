@@ -18,6 +18,7 @@ use parserutils_inputstream::*;
  fn main() {
 	let CHUNKSIZE:uint =10;
 	let args : ~[~str] = os::args();
+    let external_argument : ~str = copy args[1];
     io::println(args[1]);
     let r:@Reader = io::file_reader(&Path(args[1])).get(); 
     let mut fileLen:int;
@@ -37,7 +38,7 @@ use parserutils_inputstream::*;
                 
 		let str1= str::from_bytes(dataBytes);
 		
-        test1.pass( ~"lexer",~"css_lexer.rs"  , ~"file reading", ~"test_lexer" , fmt!("read data is %?", str1)) ;   
+        test1.info( ~"test_lexer.rs", copy external_argument, ~"lexer",~"css_lexer.rs"  , ~"file reading", ~"test_lexer" ,~"contents of file", fmt!("read data is %?", str1),~"") ;   
 				
 		lexer.lexer_append_data(dataBytes);
         let mut tok:css_token_type;
@@ -47,7 +48,7 @@ use parserutils_inputstream::*;
                 LEXER_NEEDDATA => {
                     if tokOpt.is_some() {
                         tok= tokOpt.unwrap();
-                        test1.info( ~"lexer",~"css_lexer.rs"  , ~"file reading", ~"test_lexer" , fmt!("token read is---NEED DATA---- %?",tok )) ;
+                        test1.info( ~"test_lexer.rs", copy external_argument, ~"lexer",~"css_lexer.rs"  , ~"file reading", ~"test_lexer" ,~"token read is---NEED DATA----", fmt!(" %?",tok )) ;
                     }
                     break
                 },
@@ -57,7 +58,7 @@ use parserutils_inputstream::*;
                 Some(tok)=>tok,
                 None=> break
     	    };
-            test1.info( ~"lexer",~"css_lexer.rs"  , ~"file reading", ~"test_lexer" , fmt!("token read is %?",tok )) ;                	              	
+            test1.info( ~"test_lexer.rs", copy external_argument, ~"lexer",~"css_lexer.rs"  , ~"file reading", ~"test_lexer" ,~"token read is", fmt!(" %?",tok )) ;                	              	
 					
 		    match(tok)	{
                 CSS_TOKEN_EOF  => { 

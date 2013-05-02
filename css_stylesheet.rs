@@ -70,7 +70,8 @@ pub struct css_stylesheet {
 	quirks_allowed:bool,					/**< Quirks permitted */
 	quirks_used:bool,						/**< Quirks actually used */
 	inline_style:bool,						/**< Is an inline style */
-	cached_style:Option<@mut css_style>		/* *< Cache for style parsing */	
+	cached_style:Option<@mut css_style>,	/**< Cache for style parsing */
+	string_vector:~[~str]
 }
 
 pub struct css_rule {
@@ -134,7 +135,29 @@ pub enum CSS_RULE_PARENT_TYPE {
 }
 
 impl css_stylesheet {
+
+	pub fn css__stylesheet_string_add(&mut self, string: ~str) -> uint {
+
+		let mut i : uint = self.string_vector.len() ;
+		while(i!=0) {
+			i -= 1;
+			if string == self.string_vector[i] {
+				return (i+1) as uint ;
+			}
+		}
+		self.string_vector.push(string);
+		self.string_vector.len()
+	}
 	
+	pub fn css__stylesheet_string_get(&mut self, num:uint) 
+									-> (css_result,Option<~str>) {
+
+		if( (self.string_vector.len() < num) || (num == 0) ) {
+			return (CSS_BADPARM,None) ;
+		}
+		( CSS_OK, Some(copy self.string_vector[num-1]) )
+	}
+
 	pub fn css__stylesheet_style_appendOPV(
 										style: @mut css_style,
 										opcode:css_properties_e,
@@ -1243,7 +1266,6 @@ impl css_selector_hash {
 				}
 			}
 		}
-		return (None,CSS_OK);
 	}
 
 	pub fn _iterate_ids(current : @mut hash_entry) 
@@ -1273,7 +1295,6 @@ impl css_selector_hash {
 				}
 			}
 		}
-		return (None,CSS_OK);
 	}
 
 	pub fn _iterate_universal(current : @mut hash_entry) 
