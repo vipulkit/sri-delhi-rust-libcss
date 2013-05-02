@@ -950,10 +950,45 @@ pub impl css_language {
 	 * \return CSS_OK on success, CSS_INVALID if prefix is not found
 	 */
 	//pub fn lookupNamespace(&self, prefix:@lwc_string, uri:@mut lwc_string) -> css_result
-	pub fn lookupNamespace(&self, prefix:Option<arc::RWARC<~lwc_string>>, qname:@mut css_qname) -> css_result
+	pub fn lookupNamespace(&mut self, prefix:Option<arc::RWARC<~lwc_string>>, qname:@mut css_qname) -> css_result
 	{
+		let mut idx:uint=0;
 		
-		return CSS_OK
+		match prefix 
+		{
+			None =>	qname.ns = ~"",
+			Some(value) => 
+			{
+				for self.namespaces.each |ns|{
+					match ns.prefix
+					{
+						Some(_) => 
+						{
+							let ns_prefix = ns.prefix.get_ref().clone();
+							if lwc::lwc_string_isequal(ns_prefix,value.clone()) 
+							{
+								break
+							}	
+						},	
+						None => {}
+					}
+					idx += 1;	
+				}
+
+				if (idx == self.namespaces.len())
+				{
+					return CSS_INVALID
+				}	
+
+				match self.namespaces[idx].uri
+				{
+					Some(_) => qname.ns = lwc::lwc_string_data(self.namespaces[idx].uri.get_ref().clone()),
+					None => qname.ns = ~""
+				}
+				
+			}
+		}	
+		 CSS_OK
 	}
 
 	/******************************************************************************
