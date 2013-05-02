@@ -849,7 +849,310 @@ pub fn css_computed_top(
     ((bits&0x3),length,unit)
 }
 
+pub fn css_computed_right(
+                        style: @mut css_computed_style)
+                        -> (u8,Option<i32>,Option<css_unit>) {
 
+    let mut bits : u8 = style.bits[CSS_RIGHT_INDEX];
+    bits = bits & (CSS_RIGHT_MASK as u8);
+    bits = bits >> CSS_RIGHT_SHIFT;   
+    let mut length : Option<i32> = None;
+    let mut unit : Option<css_unit> = None;
+
+    if( css_computed_position(style)==(CSS_POSITION_STATIC as u8) ){
+        bits = (CSS_RIGHT_AUTO as u8);
+    }
+    else if ( css_computed_position(style)==(CSS_POSITION_RELATIVE as u8) ) {
+        let mut left : u8 = style.bits[CSS_LEFT_INDEX];
+        left = left & (CSS_LEFT_MASK as u8);
+        left = left >> CSS_LEFT_SHIFT;  
+
+        if( (bits&0x3)==(CSS_RIGHT_AUTO as u8) &&
+            (left&0x3)==(CSS_LEFT_AUTO as u8) ) {
+            length = Some(0);
+            unit = Some(CSS_UNIT_PX);
+        }
+        else if ( (bits&0x3)==(CSS_RIGHT_AUTO as u8) ) {
+            length = Some(-style.left);
+            unit = Some(unsafe { cast::transmute((left >> 2) as int)});
+        }
+        else {
+            length = Some(style.right);
+            unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        }
+
+        bits = (CSS_RIGHT_SET as u8);
+    }
+    else if ( (bits&0x3)==(CSS_RIGHT_SET as u8) ) {
+        length = Some(style.right);
+        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+    }
+
+    ((bits&0x3),length,unit)
+}
+
+pub fn css_computed_bottom(
+                        style: @mut css_computed_style)
+                        -> (u8,Option<i32>,Option<css_unit>) {
+
+    let mut bits : u8 = style.bits[CSS_BOTTOM_INDEX];
+    bits = bits & (CSS_BOTTOM_MASK as u8);
+    bits = bits >> CSS_BOTTOM_SHIFT;   
+    let mut length : Option<i32> = None;
+    let mut unit : Option<css_unit> = None;
+
+    if( css_computed_position(style)==(CSS_POSITION_STATIC as u8) ){
+        bits = (CSS_BOTTOM_AUTO as u8);
+    }
+    else if ( css_computed_position(style)==(CSS_POSITION_RELATIVE as u8) ) {
+        let mut top : u8 = style.bits[CSS_TOP_INDEX];
+        top = top & (CSS_TOP_MASK as u8);
+        top = top >> CSS_TOP_SHIFT;  
+
+        if( (bits&0x3)==(CSS_BOTTOM_AUTO as u8) &&
+            (top&0x3)==(CSS_TOP_AUTO as u8) ) {
+            length = Some(0);
+            unit = Some(CSS_UNIT_PX);
+        }
+        else if ( (bits&0x3)==(CSS_BOTTOM_AUTO as u8) || 
+                   (top&0x3)==(CSS_TOP_AUTO as u8) ) {
+            length = Some(-style.top);
+            unit = Some(unsafe { cast::transmute((top >> 2) as int)});
+        }
+        else {
+            length = Some(style.bottom);
+            unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        }
+
+        bits = (CSS_BOTTOM_SET as u8);
+    }
+    else if ( (bits&0x3)==(CSS_BOTTOM_SET as u8) ) {
+        length = Some(style.bottom);
+        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+    }
+
+    ((bits&0x3),length,unit)
+}
+
+pub fn css_computed_left(
+                        style: @mut css_computed_style)
+                        -> (u8,Option<i32>,Option<css_unit>) {
+
+    let mut bits : u8 = style.bits[CSS_LEFT_INDEX];
+    bits = bits & (CSS_LEFT_MASK as u8);
+    bits = bits >> CSS_LEFT_SHIFT;   
+    let mut length : Option<i32> = None;
+    let mut unit : Option<css_unit> = None;
+
+    if( css_computed_position(style)==(CSS_POSITION_STATIC as u8) ){
+        bits = (CSS_LEFT_AUTO as u8);
+    }
+    else if ( css_computed_position(style)==(CSS_POSITION_RELATIVE as u8) ) {
+        let mut right : u8 = style.bits[CSS_RIGHT_INDEX];
+        right = right & (CSS_RIGHT_MASK as u8);
+        right = right >> CSS_RIGHT_SHIFT;  
+
+        if( (bits&0x3)==(CSS_LEFT_AUTO as u8) &&
+            (right&0x3)==(CSS_RIGHT_AUTO as u8) ) {
+            length = Some(0);
+            unit = Some(CSS_UNIT_PX);
+        }
+        else if ( (bits&0x3)==(CSS_LEFT_AUTO as u8) ) {
+            length = Some(-style.right);
+            unit = Some(unsafe { cast::transmute((right >> 2) as int)});
+        }
+        else {
+            length = Some(style.left);
+            unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        }
+
+        bits = (CSS_LEFT_SET as u8);
+    }
+    else if ( (bits&0x3)==(CSS_LEFT_SET as u8) ) {
+        length = Some(style.left);
+        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+    }
+
+    ((bits&0x3),length,unit)
+}
+
+pub fn css_computed_border_top_color(style: @mut css_computed_style)
+                                    -> (u8,u32) {
+
+    let mut bits : u8 = style.bits[CSS_BORDER_TOP_COLOR_INDEX];
+    bits = bits & (CSS_BORDER_TOP_COLOR_MASK as u8);
+    bits = bits >> CSS_BORDER_TOP_COLOR_SHIFT; 
+
+    (bits,style.border_color[0]) 
+}
+
+pub fn css_computed_border_right_color(style: @mut css_computed_style)
+                                    -> (u8,u32) {
+
+    let mut bits : u8 = style.bits[CSS_BORDER_RIGHT_COLOR_INDEX];
+    bits = bits & (CSS_BORDER_RIGHT_COLOR_MASK as u8);
+    bits = bits >> CSS_BORDER_RIGHT_COLOR_SHIFT; 
+
+    (bits,style.border_color[1]) 
+}
+
+pub fn css_computed_border_bottom_color(style: @mut css_computed_style)
+                                    -> (u8,u32) {
+
+    let mut bits : u8 = style.bits[CSS_BORDER_BOTTOM_COLOR_INDEX];
+    bits = bits & (CSS_BORDER_BOTTOM_COLOR_MASK as u8);
+    bits = bits >> CSS_BORDER_BOTTOM_COLOR_SHIFT; 
+
+    (bits,style.border_color[2]) 
+}
+
+pub fn css_computed_border_left_color(style: @mut css_computed_style)
+                                    -> (u8,u32) {
+
+    let mut bits : u8 = style.bits[CSS_BORDER_LEFT_COLOR_INDEX];
+    bits = bits & (CSS_BORDER_LEFT_COLOR_MASK as u8);
+    bits = bits >> CSS_BORDER_LEFT_COLOR_SHIFT; 
+
+    (bits,style.border_color[3]) 
+}
+
+pub fn css_computed_height(style: @mut css_computed_style)
+                        -> (u8,Option<i32>,Option<css_unit>) {
+
+    let mut bits : u8 = style.bits[CSS_HEIGHT_INDEX];
+    bits = bits & (CSS_HEIGHT_MASK as u8);
+    bits = bits >> CSS_HEIGHT_SHIFT;  
+    let mut length : Option<i32> = None;
+    let mut unit : Option<css_unit> = None;
+
+    if ( (bits&0x3) == (CSS_HEIGHT_SET as u8) ) {
+        length = Some(style.height);
+        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+    }
+
+    ((bits&0x3),length,unit)
+}
+
+pub fn css_computed_line_height(style: @mut css_computed_style)
+                        -> (u8,Option<i32>,Option<css_unit>) {
+
+    let mut bits : u8 = style.bits[CSS_LINE_HEIGHT_INDEX];
+    bits = bits & (CSS_LINE_HEIGHT_MASK as u8);
+    bits = bits >> CSS_LINE_HEIGHT_SHIFT;  
+    let mut length : Option<i32> = None;
+    let mut unit : Option<css_unit> = None;
+
+    if ( (bits&0x3) == (CSS_LINE_HEIGHT_NUMBER as u8) || 
+         (bits&0x3) == (CSS_LINE_HEIGHT_DIMENSION as u8)) {
+        length = Some(style.line_height);
+    }
+
+    if ( (bits&0x3) == (CSS_LINE_HEIGHT_DIMENSION as u8) ) {
+        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+    }
+
+    ((bits&0x3),length,unit)
+}
+
+pub fn css_computed_background_color(style: @mut css_computed_style)
+                                    -> (u8,u32) {
+
+    let mut bits : u8 = style.bits[CSS_BACKGROUND_COLOR_INDEX];
+    bits = bits & (CSS_BACKGROUND_COLOR_MASK as u8);
+    bits = bits >> CSS_BACKGROUND_COLOR_SHIFT; 
+
+    (bits,style.background_color) 
+}
+
+pub fn css_computed_z_index(style: @mut css_computed_style)
+                            -> (u8,i32) {
+
+    let mut bits : u8 = style.bits[CSS_Z_INDEX_INDEX];
+    bits = bits & (CSS_Z_INDEX_MASK as u8);
+    bits = bits >> CSS_Z_INDEX_SHIFT; 
+
+    (bits,style.z_index) 
+}
+
+pub fn css_computed_margin_top(style: @mut css_computed_style)
+                        -> (u8,Option<i32>,Option<css_unit>) {
+
+    let mut bits : u8 = style.bits[CSS_MARGIN_TOP_INDEX];
+    bits = bits & (CSS_MARGIN_TOP_MASK as u8);
+    bits = bits >> CSS_MARGIN_TOP_SHIFT;  
+    let mut length : Option<i32> = None;
+    let mut unit : Option<css_unit> = None;
+
+    if ( (bits&0x3) == (CSS_MARGIN_SET as u8) ) {
+        length = Some(style.margin[0]);
+        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+    }
+
+    ((bits&0x3),length,unit)
+}
+
+pub fn css_computed_margin_right(style: @mut css_computed_style)
+                        -> (u8,Option<i32>,Option<css_unit>) {
+
+    let mut bits : u8 = style.bits[CSS_MARGIN_RIGHT_INDEX];
+    bits = bits & (CSS_MARGIN_RIGHT_MASK as u8);
+    bits = bits >> CSS_MARGIN_RIGHT_SHIFT;  
+    let mut length : Option<i32> = None;
+    let mut unit : Option<css_unit> = None;
+
+    if ( (bits&0x3) == (CSS_MARGIN_SET as u8) ) {
+        length = Some(style.margin[1]);
+        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+    }
+
+    ((bits&0x3),length,unit)
+}
+
+pub fn css_computed_margin_bottom(style: @mut css_computed_style)
+                        -> (u8,Option<i32>,Option<css_unit>) {
+
+    let mut bits : u8 = style.bits[CSS_MARGIN_BOTTOM_INDEX];
+    bits = bits & (CSS_MARGIN_BOTTOM_MASK as u8);
+    bits = bits >> CSS_MARGIN_BOTTOM_SHIFT;  
+    let mut length : Option<i32> = None;
+    let mut unit : Option<css_unit> = None;
+
+    if ( (bits&0x3) == (CSS_MARGIN_SET as u8) ) {
+        length = Some(style.margin[2]);
+        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+    }
+
+    ((bits&0x3),length,unit)
+}
+
+pub fn css_computed_margin_left(style: @mut css_computed_style)
+                        -> (u8,Option<i32>,Option<css_unit>) {
+
+    let mut bits : u8 = style.bits[CSS_MARGIN_LEFT_INDEX];
+    bits = bits & (CSS_MARGIN_LEFT_MASK as u8);
+    bits = bits >> CSS_MARGIN_LEFT_SHIFT;  
+    let mut length : Option<i32> = None;
+    let mut unit : Option<css_unit> = None;
+
+    if ( (bits&0x3) == (CSS_MARGIN_SET as u8) ) {
+        length = Some(style.margin[3]);
+        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+    }
+
+    ((bits&0x3),length,unit)
+}
+
+
+
+
+
+
+
+
+
+
+
+// required in function , written earlier in this file
 
 pub fn css_computed_position(
                             style: @mut css_computed_style)
