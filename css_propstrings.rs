@@ -3,9 +3,11 @@
 
 extern mod std;
 extern mod wapcaplet;
+extern mod css_enum;
 
 use std::arc;
 use wapcaplet::*;
+use css_enum::*;
 
 
 pub enum index_property {
@@ -602,6 +604,76 @@ impl css_propstrings {
 	pub fn lwc_string_data(&mut self, string_index:uint) -> ~str {
 		lwc::lwc_string_data(self.propstrings[string_index].clone())
 	}
+
+	pub fn is_selector_pseudo(&mut self, name: ~str) -> Option<(css_selector_type, index_property)> {
+		
+		let pseudo_class_list = 
+		[ 
+			FIRST_CHILD,
+			LINK,
+			VISITED,
+			HOVER,
+			ACTIVE,
+			FOCUS,
+			LANG,
+			LEFT,
+			RIGHT,
+			FIRST,
+			ROOT,
+			NTH_CHILD,
+			NTH_LAST_CHILD,
+			NTH_OF_TYPE,
+			NTH_LAST_OF_TYPE,
+			LAST_CHILD,
+			FIRST_OF_TYPE,
+			LAST_OF_TYPE,
+			ONLY_CHILD,
+			ONLY_OF_TYPE,
+			EMPTY,
+			TARGET,
+			ENABLED,
+			DISABLED,
+			CHECKED,
+			NOT,
+		];
+
+		let pseudo_element_list = [
+			FIRST_LINE, 
+			FIRST_LETTER, 
+			BEFORE, 
+			AFTER,
+ 		];
+ 		
+ 		let mut return_value : Option<(css_selector_type, index_property)> = None;
+
+ 		do (self.lwc_instance).write |l| {
+			let name_intern = l.lwc_intern_string(copy name);
+
+			for pseudo_class_list.each |&string_index| {
+				if  (
+						l.lwc_string_caseless_isequal(
+							name_intern.clone(),
+							self.propstrings[string_index as uint].clone()
+						)
+					) {
+					return_value = Some((CSS_SELECTOR_PSEUDO_CLASS, string_index));
+				}
+			}
+
+			for pseudo_element_list.each |&string_index| {
+				if (
+					l.lwc_string_caseless_isequal(
+						name_intern.clone(), 
+						self.propstrings[string_index as uint].clone()
+					)
+				) {
+					return_value = Some((CSS_SELECTOR_PSEUDO_ELEMENT , string_index));
+				}
+			}
+		}
+
+		return_value
+ 	}
 }
 
  

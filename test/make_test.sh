@@ -15,3 +15,4 @@ rustc -L ./.. test_wapcaplet.rs -L .
 rustc -L ./.. test_csdtect.rs -L .
 rustc -L ./.. test_css_stylesheet.rs -L .
 rustc -L ./.. propstrings_perf.rs -L .
+rustc -L ./.. test_lexer_chunks.rs -L .
