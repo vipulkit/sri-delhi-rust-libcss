@@ -384,7 +384,7 @@ pub impl css_language {
 						RULE_SELECTOR(_) | RULE_PAGE (_) | RULE_FONT_FACE(_) =>
 						{                                   
 							// Strip any leading whitespace (can happen if in nested block) 
-							css_language::consumeWhitespace(&tokens, ctx);
+							css_properties::consumeWhitespace(&tokens, ctx);
 
 							// IDENT ws ':' ws value 
 							// * 
@@ -399,7 +399,7 @@ pub impl css_language {
 								{ 
 									CSS_TOKEN_IDENT(_) => 
 									{
-										css_language::consumeWhitespace(&tokens, ctx);
+										css_properties::consumeWhitespace(&tokens, ctx);
 										if tokens.len() <= *ctx || !css_language::tokenIsChar(&tokens[*ctx],':')
 										{
 											return CSS_INVALID
@@ -407,7 +407,7 @@ pub impl css_language {
 										else 
 										{
 											*ctx += 1;
-											css_language::consumeWhitespace(&tokens, ctx);
+											css_properties::consumeWhitespace(&tokens, ctx);
 											match curRule
 											{
 												RULE_FONT_FACE(font_face_rule) =>	
@@ -443,7 +443,7 @@ pub impl css_language {
 		loop 
 		{
 			/* Strip any leading whitespace (can happen if in nested block) */
-			css_language::consumeWhitespace(tokens, ctx);
+			css_properties::consumeWhitespace(tokens, ctx);
 
 			/* selector_list   -> selector [ ',' ws selector ]* */
 			match self.parseSelector(tokens, ctx)
@@ -480,37 +480,6 @@ pub impl css_language {
 		CSS_OK
 	}
 
-	/******************************************************************************
-	 * Helper functions                                                           *
-	 ******************************************************************************/
-
-	/**
-	 * Consume all leading whitespace tokens
-	 *
-	 * \param vector  The vector to consume from
-	 * \param ctx     The vector's context
-	 */
-	pub fn consumeWhitespace(vector:&~[~css_token], ctx:@mut uint) 
-	{
-		loop
-		{
-			if *ctx < vector.len() 
-			{
-				match vector[*ctx].token_type
-				{
-					CSS_TOKEN_S =>
-					{
-						*ctx = *ctx+1
-					},
-					_  => return    
-				} 
-			}
-			else 
-			{
-				break
-			}
-		} 
-	}   
 
 	/**
 	 * Determine if a token is a character
@@ -574,7 +543,7 @@ pub impl css_language {
 		self.properties.property_handlers[index - AZIMUTH as uint]/*(self.strings , vector , ctx , style)*/;
 		self.css__parse_important(vector , ctx);
 
-		css_language::consumeWhitespace(vector , ctx);
+		css_properties::consumeWhitespace(vector , ctx);
 
 		// if tokens.len() > *ctx { 	
 		//    	let ident =&tokens[*ctx];
@@ -778,7 +747,7 @@ pub impl css_language {
 			_                   => 
 			{
 				/* Consume any trailing whitespace */
-				css_language::consumeWhitespace(vector, ctx);
+				css_properties::consumeWhitespace(vector, ctx);
 				return CSS_OK
 			}
 		} 
@@ -1026,8 +995,150 @@ pub impl css_language {
 
 	pub fn  parseAttrib(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result,Option<@mut css_selector_detail>)
 	{
-		return (CSS_OK,None)
+		let mut token:&~css_token;
+		
+		/* attrib    -> '[' ws namespace_prefix? IDENT ws [
+		 *		       [ '=' | 
+		 *		         INCLUDES | 
+		 *		         DASHMATCH | 
+		 *		         PREFIXMATCH |
+		 *		         SUFFIXMATCH | 
+		 *		         SUBSTRINGMATCH 
+		 *		       ] ws
+		 *		       [ IDENT | STRING ] ws ]? ']'
+		 * namespace_prefix -> [ IDENT | '*' ]? '|'
+		 */
+		
+		if *ctx >= vector.len()
+		{
+			return (CSS_INVALID, None)
+		}	
+		
+		token = &vector[*ctx];
+		*ctx +=1; //Iterate				
+		
+		if !css_language::tokenIsChar(token, '[')
+		{
+			return (CSS_INVALID,None)
+		}	
+
+		css_properties::consumeWhitespace(vector, ctx);
+
+		if *ctx >= vector.len()
+		{
+			return (CSS_INVALID, None)
+		}
+
+		token = &vector[*ctx];
+		*ctx +=1; //Iterate				
+
+		if (match token.token_type { CSS_TOKEN_IDENT(_) => false, _ => true}) && !css_language::tokenIsChar(token, '*') &&
+				!css_language::tokenIsChar(token, '|')
+		{
+			return (CSS_INVALID, None)
+		}	
+		
+		let mut prefix: Option<arc::RWARC<~lwc_string>> = None;
+
+		if css_language::tokenIsChar(token, '|') 
+		{
+			if *ctx >= vector.len()
+			{
+				return (CSS_INVALID, None)
+			}
+
+			token = &vector[*ctx];
+			*ctx +=1; //Iterate
+		} 
+		else if (*ctx < vector.len() && css_language::tokenIsChar(&vector[*ctx], '|')) 
+		{
+			prefix = Some(token.idata.clone());
+			*ctx += 1;
+			if *ctx >= vector.len()
+			{
+				return (CSS_INVALID, None)
+			}
+
+			token = &vector[*ctx];
+			*ctx +=1; //Iterate
+		}
+
+		if match token.token_type { CSS_TOKEN_IDENT(_) => false, _ => true}
+		{
+			return (CSS_INVALID, None)
+		}	
+
+		let qname:@mut css_qname=@mut css_qname{ns:~"", name:~""};
+		match self.lookupNamespace(prefix, qname) {	CSS_OK  => {}, error   => return (error,None)}   
+
+		qname.name = lwc::lwc_string_data(vector[*ctx].idata.clone());
+
+		css_properties::consumeWhitespace(vector, ctx);
+
+		if *ctx >= vector.len()
+		{
+			return (CSS_INVALID, None)
+		}
+
+		token = &vector[*ctx];
+		*ctx +=1; //Iterate
+
+		let mut tkn_type = CSS_SELECTOR_ATTRIBUTE;
+		let mut value:Option<&~css_token> = None;
+
+		if !css_language::tokenIsChar(token, ']') 
+		{
+			if css_language::tokenIsChar(token, '=')
+			{
+				tkn_type = CSS_SELECTOR_ATTRIBUTE_EQUAL;
+			}
+			// else 
+			// {
+			// 	match token.token_type 
+			// 	{
+			// 		CSS_TOKEN_INCLUDES 		 => tkn_type = CSS_SELECTOR_ATTRIBUTE_INCLUDES, 
+			// 		CSS_TOKEN_DASHMATCH 	 => tkn_type = CSS_SELECTOR_ATTRIBUTE_DASHMATCH,
+			// 		CSS_TOKEN_PREFIXMATCH 	 => tkn_type = CSS_SELECTOR_ATTRIBUTE_PREFIX,
+			// 		CSS_TOKEN_SUFFIXMATCH 	 => tkn_type = CSS_SELECTOR_ATTRIBUTE_SUFFIX,
+			// 		CSS_TOKEN_SUBSTRINGMATCH => tkn_type = CSS_SELECTOR_ATTRIBUTE_SUBSTRING,
+			// 		_ 						 => return (CSS_INVALID,None)
+			// 	}
+			// }
+			css_properties::consumeWhitespace(vector, ctx);
+
+			if *ctx >= vector.len()
+			{
+				return (CSS_INVALID, None)
+			}
+
+			token = &vector[*ctx];
+			*ctx +=1; //Iterate
+			
+			match token.token_type{ CSS_TOKEN_IDENT(_) => {}, CSS_TOKEN_STRING(_) => {}, _ => return (CSS_INVALID,None) }
+
+			value = Some(token);
+
+			css_properties::consumeWhitespace(vector, ctx);
+
+			if *ctx >= vector.len()
+			{
+				return (CSS_INVALID, None)
+			}
+
+			token = &vector[*ctx];
+			*ctx +=1; //Iterate
+			
+			if !css_language::tokenIsChar(token, ']')
+			{
+				return (CSS_INVALID, None)
+			}	
+		}
+		
+		 
+		return css_stylesheet::css__stylesheet_selector_detail_init (tkn_type,copy *qname, CSS_SELECTOR_DETAIL_VALUE_STRING,
+							match value {Some(tkn)=>Some(lwc::lwc_string_data(tkn.idata.clone())), None => None }, None, false)
 	}
+
 
 	pub fn  parsePseudo(&mut self, vector:&~[~css_token], ctx:@mut uint, in_not:bool) -> (css_result,Option<@mut css_selector_detail>)
 	{

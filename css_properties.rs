@@ -845,6 +845,37 @@ impl css_properties {
 		CSS_OK
 	}
 
-	
+		/******************************************************************************
+	 * Helper functions                                                           *
+	 ******************************************************************************/
+
+	/**
+	 * Consume all leading whitespace tokens
+	 *
+	 * \param vector  The vector to consume from
+	 * \param ctx     The vector's context
+	 */
+	pub fn consumeWhitespace(vector:&~[~css_token], ctx:@mut uint) 
+	{
+		loop
+		{
+			if *ctx < vector.len() 
+			{
+				match vector[*ctx].token_type
+				{
+					CSS_TOKEN_S =>
+					{
+						*ctx = *ctx+1
+					},
+					_  => return    
+				} 
+			}
+			else 
+			{
+				break
+			}
+		} 
+	}   
+
 
 }
