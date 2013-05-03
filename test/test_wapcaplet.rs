@@ -61,7 +61,7 @@ fn main() {
 			    ~ "slategray", ~"slategrey",~ "snow",~ "springgreen",~ "steelblue", ~ "tan", ~ "teal",~ "thistle",~ "tomato",~ "turquoise",~"violet",~ "violetred",
 			    ~ "wheat",~ "white", ~ "whitesmoke",~"yellow",~ "yellowgreen"];
 
-	let mut test_logger = result::unwrap(test_report(&"temp_log.csv"));
+	let mut test_logger = result::unwrap(test_report(&"Unit_test_report.csv"));
 	let mut external_argument : ~str = ~"";
 	let module_name: ~str=~"wapcaplet";
 	let  file_name : ~str=~"wapcaplet.rs";

@@ -14,7 +14,7 @@ use parserutils_inputstream::*;
     io::println(fmt!("value of external_argument is %?", external_argument));
     let r:@Reader = io::file_reader(&Path(args[1])).get(); 
     let reader = io::stdin();
-    let mut test1 = result::unwrap(test_report(&"temp_log.csv"));
+    let mut test1 = result::unwrap(test_report(&"Unit_test_report.csv"));
     let (inputStreamOption, ParserUtilsError)= lpu_inputstream(~"UTF-16",None);
 
 	match(ParserUtilsError) {
