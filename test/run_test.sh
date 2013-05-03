@@ -7,7 +7,7 @@
 ./test_parserutils_filter 
 ./test_css_stylesheet
 ./test_lexer_chunks style_sample_1.css
-./test_lexer_chunks style_sample_2.css
+#./test_lexer_chunks style_sample_2.css
 
 #./test_parserutils_inputstream ./utf16.txt 
 

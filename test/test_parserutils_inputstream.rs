@@ -46,7 +46,7 @@ use parserutils_inputstream::*;
 						_=>{test1.pass( ~"test_parserutils_inputstream.rs", copy external_argument, ~"parserutils",~"parserutils_inputStream.rs"  , ~"parserutils_inputstream_peek", ~"input stream reading with offset 2",~"end of file should be encountered"  , ~"end of file encountered",~"") ;break;}
 					}					
          		}//end of loop				
-	         }	        
+	        }	        
 		},
 		_=>{test1.fail( ~"test_parserutils_inputstream.rs", copy external_argument, ~"parserutils",~"parserutils_inputStream.rs"  , ~"lpu_inputstream", ~"input stream creation with UTF-16,None" , ~"input stream should be created", ~"input stream not created successfully",~"") ;}
 	}

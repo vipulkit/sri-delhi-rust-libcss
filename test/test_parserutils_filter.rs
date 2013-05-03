@@ -237,21 +237,21 @@ fn main(){
 				
 				match(filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
 					(processed_chunk , PARSERUTILS_OK) => {
-															outbuf += processed_chunk.outbuf;					
-														},
-								(_ , _) 				=> {	
-															test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_process_chunk", ~"hell\xe2\x80\xa2o!_test_parserUtils_filter_line7.2", ~"PARSERUTILS_OK", ~"PARSERUTILS_OK", ~"");
-														}
+						outbuf += processed_chunk.outbuf;
+					},
+					(_ , _) => {
+						test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_process_chunk", ~"hell\xe2\x80\xa2o!_test_parserUtils_filter_line7.2", ~"PARSERUTILS_OK", ~"PARSERUTILS_OK", ~"");
+					}
 				}
 				outbuf=~[];
 				
 				match(filter.parserutils__filter_process_chunk(inbuf)) { 
 					(processed_chunk , PARSERUTILS_OK) => {
-															outbuf += processed_chunk.outbuf;									
-														},
-							(_ , _) 					=> {
-																test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_process_chunk", ~"hell\xe2\x80\xa2o!_ est_parserUtils_filter_line7.3", ~"PARSERUTILS_OK", ~"Non PARSERUTILS_OK", ~"");
-														}
+						outbuf += processed_chunk.outbuf;									
+					},
+					(_ , _)	=> {
+						test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_process_chunk", ~"hell\xe2\x80\xa2o!_ est_parserUtils_filter_line7.3", ~"PARSERUTILS_OK", ~"Non PARSERUTILS_OK", ~"");
+					}
 				}
 
 				if eq(outbuf,"hell\xe2\x80\xa2o!".to_bytes()){
