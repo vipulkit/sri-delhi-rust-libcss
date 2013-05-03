@@ -1,0 +1,9 @@
+Samsung R&D Institute - Delhi
+
+Developing Rust versions of 3 libraries:
+libwapcaplet
+libparserutils
+libcss
+
+Instructions to build:
+run make.sh in root or run make.sh in individual folders (libwapcaplet,libparserutils,libcss).
