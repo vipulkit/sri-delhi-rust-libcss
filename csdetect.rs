@@ -111,8 +111,7 @@ pub fn try_utf32_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>
 			endIndex += 4;	
 		} // while loop ends
 
-		if (endIndex == data.len() - 4)
-		{
+		if (endIndex == data.len() - 4) {
 			return (None, PARSERUTILS_NEEDDATA);
 		}
 
@@ -143,8 +142,7 @@ pub fn try_utf16_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>
 		return (None, PARSERUTILS_BADPARAM);
 	}
 
-	if (memcmp(data, CHARSET_LE, CHARSET_LE.len()) == 0) 
-	{		
+	if (memcmp(data, CHARSET_LE, CHARSET_LE.len()) == 0) {		
 		let startIndex : uint = CHARSET_LE.len() ;
 		let mut endIndex : uint = startIndex;
 
@@ -231,8 +229,7 @@ pub fn try_utf16_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>
 			endIndex += 2;	
 		} // while loop ends		
 		
-		if (endIndex == data.len()- 2)
-		{
+		if (endIndex == data.len()- 2) {
 			return (None, PARSERUTILS_NEEDDATA);
 		}		
 
@@ -258,15 +255,12 @@ pub fn  try_ascii_compatible_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> 
 	// Look for @charset, assuming ASCII-compatible source data 
 	//if ( memcmp(data, CHARSET, CHARSET.len() ) == 0) 
 	let retVal : int = memcmp(data, CHARSET, CHARSET.len());
-	if (retVal == 0) 
-	{
+	if (retVal == 0) {
 		let mut indexVal = CHARSET.len()-1;
 		// Looking for "; at the end of charset declaration
-		while (indexVal < data.len()) 
-		{
+		while (indexVal < data.len()) {
 			//if data[indexVal] == ('"' as u8) && data[indexVal+1] == (';' as u8) && indexVal < (data.len()-1)  
-			if data[indexVal] == ('"' as u8) && data[indexVal+1] == (';' as u8) && indexVal < (data.len())  
-			{
+			if data[indexVal] == ('"' as u8) && data[indexVal+1] == (';' as u8) && indexVal < (data.len()) {
 				
 				break ;
 			}
@@ -293,8 +287,7 @@ pub fn  try_ascii_compatible_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> 
 	(Some(charset),PARSERUTILS_OK)
 }
 
-pub fn css_charset_read_bom_or_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>)
- -> (Option<u16>, parserutils_error) {
+pub fn css_charset_read_bom_or_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>) -> (Option<u16>, parserutils_error) {
 
 	//let mut err : parserutils_error ;
 	let mut charset : u16  = 0;
@@ -308,14 +301,18 @@ pub fn css_charset_read_bom_or_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>)
 	if (data[0] == 0x00 && data[1] == 0x00 && 
 			data[2] == 0xFE && data[3] == 0xFF) {
 		charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-32BE");
-	} else if (data[0] == 0xFF && data[1] == 0xFE &&
+	} 
+	else if (data[0] == 0xFF && data[1] == 0xFE &&
 			data[2] == 0x00 && data[3] == 0x00) {
 		charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-32LE");
-	} else if (data[0] == 0xFE && data[1] == 0xFF) {
+	} 
+	else if (data[0] == 0xFE && data[1] == 0xFF) {
 		charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-16BE");
-	} else if (data[0] == 0xFF && data[1] == 0xFE) {
+	} 
+	else if (data[0] == 0xFF && data[1] == 0xFE) {
 		charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-16LE");
-	} else if (data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF) {
+	} 
+	else if (data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF) {
 		charset = arc::get(&lpu_arc).parserutils_charset_mibenum_from_name(~"UTF-8");
 	}
 	
@@ -325,7 +322,7 @@ pub fn css_charset_read_bom_or_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>)
 	}
 	
 	
-    let default_option:Option<u16> = Some(0);
+	let default_option:Option<u16> = Some(0);
 	let (option_return , err): (Option<u16>, parserutils_error) = try_utf32_charset(data, lpu_arc.clone());
 	match(err) {
 		PARSERUTILS_OK => if option_return.unwrap()!=0 {return (option_return , err) },
@@ -350,7 +347,7 @@ pub fn css_charset_read_bom_or_charset(data : &~[u8], lpu_arc: arc::ARC<~lpu>)
 	
 
 pub fn css__charset_extract(data : &~[u8] ,	mibenum : u16 , source : css_charset_source, lpu_arc: arc::ARC<~lpu>)
-	-> (Option<u16>, Option<css_charset_source>, parserutils_error) {	
+								-> (Option<u16>, Option<css_charset_source>, parserutils_error) {	
 
 	let mut charset : u16 = 0;
 	let mut src :css_charset_source;

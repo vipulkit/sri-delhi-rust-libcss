@@ -702,7 +702,7 @@ pub enum op_white_space {
 
 pub enum op_widows {
 	WIDOWS_SET			= 0x0080
-} 
+}
 
 pub enum op_width {
 	WIDTH_SET			= 0x0080,
@@ -770,31 +770,31 @@ pub fn buildOPV_flag(opcode : css_properties_e , flags :flag , value : u16 ) -> 
 	(( (opcode as int)  & 0x3ff) | ((flags as int)<< 10) | (((value as int)& 0x3fff)  << 18) ) as u32
 }
 
- pub fn getOpcode(OPV : u32 ) -> css_properties_e {
+pub fn getOpcode(OPV : u32 ) -> css_properties_e {
 
-	 //((OPV & 0x3ff) as int) as opcode_t
-	 let op_code : int = (OPV & 0x3ff) as int ;
-	 unsafe { cast::transmute(&op_code) }
+	//((OPV & 0x3ff) as int) as opcode_t
+	let op_code : int = (OPV & 0x3ff) as int ;
+	unsafe { cast::transmute(&op_code) }
 }
 
- pub fn getFlags(OPV : u32 ) -> u8 {
+pub fn getFlags(OPV : u32 ) -> u8 {
 
 	((OPV >> 10) & 0xff) as u8
 }
 
 pub fn getValue(OPV : u32 ) -> u16 {
 
-	 (OPV >> 18) as u16
+	(OPV >> 18) as u16
 }
 
- pub fn isImportant(OPV : u32 ) -> bool {
+pub fn isImportant(OPV : u32 ) -> bool {
 
 	if (getFlags(OPV) & 0x1)==0 {
-	 	false
-	 }
-	 else {
-	 	true
-	 }
+		false
+	}
+	else {
+		true
+	}
 }
 
 pub fn isInherit(OPV : u32 ) -> bool {

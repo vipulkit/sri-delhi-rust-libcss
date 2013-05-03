@@ -164,16 +164,15 @@ impl css_properties {
 		vec.push(@css_properties::css__parse_width); //126
 		vec.push(@css_properties::css__parse_word_spacing); //127
 		vec.push(@css_properties::css__parse_z_index); //128
-        
+		
 		~css_properties{
 			property_handlers: vec
 		}
 	}
 
 	fn css__parse_azimuth(strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_stylesheet)->css_result {
-	    let orig_context:uint = *ctx;
+		let orig_context:uint = *ctx;
 		//css_error error;
-		
 		
 		let mut flags:u8 = 0;
 		let mut  value:u16 = 0;
@@ -181,8 +180,7 @@ impl css_properties {
 		let mut unit:u32 = 0;
 		//let mut  matches:bool;
 
-		if *ctx >= vector.len()
-		{
+		if *ctx >= vector.len() {
 			return CSS_INVALID;
 		}
 		
@@ -191,7 +189,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), INHERIT as uint) 
+			} && strings.lwc_string_caseless_isequal(token.idata.clone(), INHERIT as uint) 
 		) {
 			token=&vector[*ctx];
 			*ctx += 1;
@@ -202,7 +200,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), LEFTWARDS as uint) 
+			} && strings.lwc_string_caseless_isequal(token.idata.clone(), LEFTWARDS as uint) 
 		) {
 			token=&vector[*ctx];
 			*ctx += 1;
@@ -213,7 +211,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), RIGHTWARDS as uint) 
+			} && strings.lwc_string_caseless_isequal(token.idata.clone(), RIGHTWARDS as uint) 
 		) {
 			token=&vector[*ctx];
 			*ctx += 1;
@@ -225,7 +223,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), LEFT_SIDE as uint) 
+			} && strings.lwc_string_caseless_isequal(token.idata.clone(), LEFT_SIDE as uint) 
 		) {
 			token=&vector[*ctx];
 			*ctx += 1;
@@ -237,7 +235,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), FAR_LEFT as uint) 
+			} && strings.lwc_string_caseless_isequal(token.idata.clone(), FAR_LEFT as uint) 
 		) {
 			token=&vector[*ctx];
 			*ctx += 1;
@@ -248,7 +246,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), LEFT as uint) 
+			} && strings.lwc_string_caseless_isequal(token.idata.clone(), LEFT as uint) 
 		) {
 			token=&vector[*ctx];
 			*ctx += 1;
@@ -259,7 +257,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), CENTER_LEFT as uint) 
+			} && strings.lwc_string_caseless_isequal(token.idata.clone(), CENTER_LEFT as uint) 
 		) {
 			token=&vector[*ctx];
 			*ctx += 1;
@@ -270,7 +268,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), CENTER as uint) 
+			} && strings.lwc_string_caseless_isequal(token.idata.clone(), CENTER as uint) 
 		) {
 			token=&vector[*ctx];
 			*ctx += 1;
@@ -281,7 +279,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(),CENTER_RIGHT as uint) 
+			} && strings.lwc_string_caseless_isequal(token.idata.clone(),CENTER_RIGHT as uint) 
 		) {
 			token=&vector[*ctx];
 			*ctx += 1;
@@ -292,7 +290,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), RIGHT as uint) 
+			} && strings.lwc_string_caseless_isequal(token.idata.clone(), RIGHT as uint) 
 		) {
 			token=&vector[*ctx];
 			*ctx += 1;
@@ -303,7 +301,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), FAR_RIGHT as uint) 
+			} && strings.lwc_string_caseless_isequal(token.idata.clone(), FAR_RIGHT as uint) 
 		) {
 			token=&vector[*ctx];
 			*ctx += 1;
@@ -314,7 +312,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), RIGHT_SIDE as uint) 
+			} && strings.lwc_string_caseless_isequal(token.idata.clone(), RIGHT_SIDE as uint) 
 		) {
 			token=&vector[*ctx];
 			*ctx += 1;
@@ -325,7 +323,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), BEHIND as uint) 
+			} && strings.lwc_string_caseless_isequal(token.idata.clone(), BEHIND as uint) 
 		) {
 			token=&vector[*ctx];
 			*ctx += 1;
@@ -855,27 +853,20 @@ impl css_properties {
 	 * \param vector  The vector to consume from
 	 * \param ctx     The vector's context
 	 */
-	pub fn consumeWhitespace(vector:&~[~css_token], ctx:@mut uint) 
-	{
-		loop
-		{
-			if *ctx < vector.len() 
-			{
-				match vector[*ctx].token_type
-				{
-					CSS_TOKEN_S =>
-					{
+	pub fn consumeWhitespace(vector:&~[~css_token], ctx:@mut uint) {
+		loop {
+			if *ctx < vector.len() {
+				match vector[*ctx].token_type {
+					CSS_TOKEN_S => {
 						*ctx = *ctx+1
 					},
 					_  => return    
 				} 
 			}
-			else 
-			{
+			else {
 				break
 			}
 		} 
 	}   
-
 
 }

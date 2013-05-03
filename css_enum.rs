@@ -5,16 +5,16 @@
 
 // errors.h 
 pub enum css_result {
-		CSS_OK  ,
-		CSS_NOMEM,
-		CSS_BADPARM,
-		CSS_INVALID,
-		CSS_FILENOTFOUND,
-		CSS_NEEDDATA,
-		CSS_BADCHARSET,
-		CSS_EOF,
-		CSS_IMPORTS_PENDING,
-		CSS_PROPERTY_NOT_SET,
+	CSS_OK  ,
+	CSS_NOMEM,
+	CSS_BADPARM,
+	CSS_INVALID,
+	CSS_FILENOTFOUND,
+	CSS_NEEDDATA,
+	CSS_BADCHARSET,
+	CSS_EOF,
+	CSS_IMPORTS_PENDING,
+	CSS_PROPERTY_NOT_SET,
 }
 
 
@@ -853,7 +853,7 @@ pub enum css_selector_type {
 	CSS_SELECTOR_ATTRIBUTE_PREFIX,
 	CSS_SELECTOR_ATTRIBUTE_SUFFIX,
 	CSS_SELECTOR_ATTRIBUTE_SUBSTRING
-	}
+}
 
 pub	enum css_combinator {
 	CSS_COMBINATOR_NONE,
@@ -880,7 +880,7 @@ pub enum css_selector_detail_value_type {
 pub enum css_token_type { 
 	CSS_TOKEN_IDENT(~str),
 	CSS_TOKEN_ATKEYWORD(~str),
- 	CSS_TOKEN_HASH(~str),
+	CSS_TOKEN_HASH(~str),
 	CSS_TOKEN_FUNCTION(~str), 
 	CSS_TOKEN_STRING(~str), 
 	CSS_TOKEN_INVALID_STRING, 
@@ -890,30 +890,32 @@ pub enum css_token_type {
 	CSS_TOKEN_NUMBER(NumericValue , ~str), 
 	CSS_TOKEN_PERCENTAGE(NumericValue , ~str), 
 	CSS_TOKEN_DIMENSION(NumericValue , ~str, ~str),
- 	CSS_TOKEN_CDO, 
- 	CSS_TOKEN_CDC, 
- 	CSS_TOKEN_S,
- 	Delim(char),
- 	// CSS_TOKEN_COMMENT, 
+	CSS_TOKEN_CDO, 
+	CSS_TOKEN_CDC, 
+	CSS_TOKEN_S,
+	Delim(char),
+	// CSS_TOKEN_COMMENT, 
 	// CSS_TOKEN_INCLUDES, CSS_TOKEN_DASHMATCH, CSS_TOKEN_PREFIXMATCH, 
 	// CSS_TOKEN_SUFFIXMATCH, CSS_TOKEN_SUBSTRINGMATCH, 
 	CSS_TOKEN_EOF 
 }
-    static AZIMUTH_ANGLE:u16			= 0x0080;
 
-	static AZIMUTH_LEFTWARDS:u16		= 0x0040;
-	static AZIMUTH_RIGHTWARDS:u16		= 0x0041;
 
-	static AZIMUTH_BEHIND:u16			= (1<<5);
-	static AZIMUTH_LEFT_SIDE:u16		= 0x0000;
-	static AZIMUTH_FAR_LEFT:u16		= 0x0001;
-	static AZIMUTH_LEFT:u16			= 0x0002;
-	static AZIMUTH_CENTER_LEFT:u16		= 0x0003;
-	static AZIMUTH_CENTER:u16			= 0x0004;
-	static AZIMUTH_CENTER_RIGHT	:u16	= 0x0005;
-	static AZIMUTH_RIGHT:u16			= 0x0006;
-	static AZIMUTH_FAR_RIGHT:u16		= 0x0007;
-	static AZIMUTH_RIGHT_SIDE:u16		= 0x0008;
+static AZIMUTH_ANGLE:u16			= 0x0080;
+
+static AZIMUTH_LEFTWARDS:u16		= 0x0040;
+static AZIMUTH_RIGHTWARDS:u16		= 0x0041;
+
+static AZIMUTH_BEHIND:u16			= (1<<5);
+static AZIMUTH_LEFT_SIDE:u16		= 0x0000;
+static AZIMUTH_FAR_LEFT:u16		= 0x0001;
+static AZIMUTH_LEFT:u16			= 0x0002;
+static AZIMUTH_CENTER_LEFT:u16		= 0x0003;
+static AZIMUTH_CENTER:u16			= 0x0004;
+static AZIMUTH_CENTER_RIGHT	:u16	= 0x0005;
+static AZIMUTH_RIGHT:u16			= 0x0006;
+static AZIMUTH_FAR_RIGHT:u16		= 0x0007;
+static AZIMUTH_RIGHT_SIDE:u16		= 0x0008;
 /*
 pub enum op_azimuth {
 	AZIMUTH_ANGLE			= 0x0080,
@@ -1139,6 +1141,7 @@ pub enum op_content {
 	CONTENT_NO_OPEN_QUOTE		= 0x0004,
 	CONTENT_NO_CLOSE_QUOTE		= 0x0005
 } 
+
 static   CONTENT_COUNTERS_STYLE_SHIFT :  op_content = CONTENT_COUNTER_STYLE_SHIFT;	
 
 pub enum op_counter_increment {
@@ -1671,8 +1674,7 @@ pub enum shape {
 	SHAPE_RECT = 0
 } 
 
-enum language_state
-{
+enum language_state {
 
 	CHARSET_PERMITTED,
 	IMPORT_PERMITTED,
@@ -1740,8 +1742,8 @@ pub enum Parse_state_e {
 }
 
 pub enum NumericValue {
-    Integer(int),
-    Float(float),
+	Integer(int),
+	Float(float),
 }
 
 pub enum css_rule_type {
@@ -1759,8 +1761,7 @@ pub enum css_rule_parent_type {
 	CSS_RULE_PARENT_RULE
 }
 
-enum rule_stylesheet
-{
+enum rule_stylesheet {
 	rule(int),  //update int toproper value
 	stylesheet(int)
 }
@@ -1923,10 +1924,10 @@ pub enum css_font_face_format {
 }
 
 pub enum css_font_face_location_type{
-		CSS_FONT_FACE_LOCATION_TYPE_UNSPECIFIED 	= 	0,
-		CSS_FONT_FACE_LOCATION_TYPE_LOCAL 		= 	1,
-		CSS_FONT_FACE_LOCATION_TYPE_URI 		= 	2			
-	}
+	CSS_FONT_FACE_LOCATION_TYPE_UNSPECIFIED 	= 	0,
+	CSS_FONT_FACE_LOCATION_TYPE_LOCAL 		= 	1,
+	CSS_FONT_FACE_LOCATION_TYPE_URI 		= 	2			
+}
 	
 enum css_pseudo_element {
 	CSS_PSEUDO_ELEMENT_NONE         = 0,
