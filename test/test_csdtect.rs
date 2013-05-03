@@ -16,7 +16,7 @@ fn main() {
 
 	let args : ~[~str] = os::args(); 
 	
-    // value initialization
+	// value initialization
 	let mut encoding : ~str;	
 	let mut encsrcVal: css_charset_source;
 	let mut num_skip_char : uint = 0;	
@@ -24,25 +24,25 @@ fn main() {
 	io::println(fmt!("value of external_argument is %?", external_argument));
 	match args[1] {
 		~"utf8.txt"  => {
-		                   encoding = ~"UTF-8" ;
+						   encoding = ~"UTF-8" ;
 						   encsrcVal = CSS_CHARSET_DEFAULT;	
 						   num_skip_char = 0;
 						   external_argument = ~"utf8.txt";
 							},
 		~"utf16.txt"  => {
-		                    encoding = ~"UTF-16LE";
+							encoding = ~"UTF-16LE";
 							encsrcVal = CSS_CHARSET_DOCUMENT;
 							num_skip_char = 2;
 							external_argument = ~"utf16.txt";
 						 },
 		~"utf32.txt"  => {
-		                 	encoding = ~"UTF-32LE";
+							encoding = ~"UTF-32LE";
 							encsrcVal = CSS_CHARSET_DOCUMENT;
 							num_skip_char = 4;
 							external_argument = ~"utf32.txt";
 							},
 		_           =>  {	
-			                encoding = ~"UTF-8" ;
+							encoding = ~"UTF-8" ;
 							encsrcVal = CSS_CHARSET_DEFAULT;   
 							// any unknow encoding would be considered as UTF-8
 						}
@@ -51,7 +51,7 @@ fn main() {
 
 	// Test 1: Header of input file is  being skipped	
 	let (inputStreamOption, ParserUtilsError) = lpu_inputstream(copy encoding, Some(~css__charset_extract));
-    let r2 : @Reader = io::file_reader(&Path(copy args[1])).get();	    
+	let r2 : @Reader = io::file_reader(&Path(copy args[1])).get();	    
 	let mut test1 = result::unwrap(test_report(&"temp_log.csv"));
 	//test1.info( ~"csdetect", ~"csdetect.rs", ~"css__charset_extract", copy args[1] , ~"") ;	
 
@@ -63,33 +63,37 @@ fn main() {
 			let mut flagValue : int = 0;
 
 			while !r2.eof() {				
-     			let mut data : ~[u8]= r2.read_bytes(100);
-     			let mut buffData : ~[u8];     	
+				let mut data : ~[u8]= r2.read_bytes(100);
+				let mut buffData : ~[u8];     	
 
 				if flagValue == 0 {
 					if (data[0] == 0x00 && data[1] == 0x00 && 
 							data[2] == 0xFE && data[3] == 0xFF) {
 						data.tailn(4);
-					} else if (data[0] == 0xFF && data[1] == 0xFE &&
+					} 
+					else if (data[0] == 0xFF && data[1] == 0xFE &&
 							data[2] == 0x00 && data[3] == 0x00) {
 						data.tailn(4);
-					} else if (data[0] == 0xFE && data[1] == 0xFF) {
+					} 
+					else if (data[0] == 0xFE && data[1] == 0xFF) {
 						data.tailn(2);
-					} else if (data[0] == 0xFF && data[1] == 0xFE) {
+					} 
+					else if (data[0] == 0xFF && data[1] == 0xFE) {
 						data.tailn(2);
-					} else if (data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF) {
+					} 
+					else if (data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF) {
 						data.tailn(3);
 					}
 					flagValue += 1;
 				}
 
-         		test1.pass( ~"test_csdtect.rs", copy external_argument, ~"csdetect",~"csdetect.rs", ~"css__charset_extract",~"file reading->"+ copy args[1] , ~"file reading", fmt!("%?",data),~"") ;
-         		stream2.parserutils_inputstream_append(data);         		         		
-         	
-         		loop {
-         			let (tuple, parserutilsError) = stream2.parserutils_inputstream_peek(2);
+				test1.pass( ~"test_csdtect.rs", copy external_argument, ~"csdetect",~"csdetect.rs", ~"css__charset_extract",~"file reading->"+ copy args[1] , ~"file reading", fmt!("%?",data),~"") ;
+				stream2.parserutils_inputstream_append(data);         		         		
+			
+				loop {
+					let (tuple, parserutilsError) = stream2.parserutils_inputstream_peek(2);
 
-         			match(parserutilsError) {
+					match(parserutilsError) {
 						PARSERUTILS_OK=>{
 
 							let mut(ptr,length)= tuple.get();
@@ -97,18 +101,18 @@ fn main() {
 							test1.info( ~"test_csdtect.rs", copy external_argument, ~"csdetect",~"csdetect.rs", ~"css__charset_extract", ~"read input stream chunk data and byte length per character " , fmt!("peek data->%?,%?",ptr,length),~"") ;
 						},
 
-						PARSERUTILS_NEEDDATA => {break;}
-						PARSERUTILS_EOF => {break;}
+						PARSERUTILS_NEEDDATA => break,
+						PARSERUTILS_EOF => break,
 						_=>{
 							test1.pass( ~"test_csdtect.rs", copy external_argument, ~"csdetect",~"csdetect.rs", ~"css__charset_extract", ~"end of file reached" , ~"completes reading of input stream", ~"reading of input stream completed", ~"");
 							break;
 						}
 					}
-         		}
-	        }
+				}
+			}
 
-	         // mibenum test
-	        match(arc::get(&stream2.input.lpu_instance).parserutils_charset_mibenum_to_name(stream2.mibenum)) {
+			 // mibenum test
+			match(arc::get(&stream2.input.lpu_instance).parserutils_charset_mibenum_to_name(stream2.mibenum)) {
 				Some(x)  => {
 								if eq(&x, &encoding){
 									test1.pass( ~"test_csdtect.rs", copy external_argument, ~"csdetect",~"csdetect.rs", ~"css__charset_extract", ~"check if the mibenum read by charset fn into input stream is ok ",copy encoding, x, ~"mibenum value") ;								
@@ -136,7 +140,7 @@ fn main() {
 
 	// Test 2: Header of input file is not being skipped
 	let (inputStreamOption, ParserUtilsError) = lpu_inputstream(copy encoding, Some(~css__charset_extract));		
-    let r : @Reader = io::file_reader(&Path(copy args[1])).get();	    
+	let r : @Reader = io::file_reader(&Path(copy args[1])).get();	    
 	let mut test1 = result::unwrap(test_report(&"temp_log.csv"));
 	//test1.info( ~"csdetect", ~"csdetect.rs", ~"css__charset_extract", copy args[1] , ~"") ;
 
@@ -146,17 +150,17 @@ fn main() {
 			test1.pass( ~"test_csdtect.rs", copy external_argument, ~"csdetect",~"csdetect.rs", ~"css__charset_extract",~"input stream created with default charset and css__charset_extract fn" ,~"input stream creation",~"input stream created successfully",~"") ;						let mut stream : ~lpu_inputstream = inputStreamOption.unwrap();
 
 			while !r.eof() {				
-     			let mut data : ~[u8]= r.read_bytes(100);
-     			let mut buffData : ~[u8];
-     			
-         		test1.pass( ~"test_csdtect.rs", copy external_argument, ~"csdetect",~"csdetect.rs", ~"css__charset_extract",~"file reading->"+ copy args[1] , ~"file reading",fmt!("%?",data),~"") ;
-         		stream.parserutils_inputstream_append(data);         		         		
+				let mut data : ~[u8]= r.read_bytes(100);
+				let mut buffData : ~[u8];
+				
+				test1.pass( ~"test_csdtect.rs", copy external_argument, ~"csdetect",~"csdetect.rs", ~"css__charset_extract",~"file reading->"+ copy args[1] , ~"file reading",fmt!("%?",data),~"") ;
+				stream.parserutils_inputstream_append(data);         		         		
 
-         	
-         		loop{
-         			let (tuple, parserutilsError) = stream.parserutils_inputstream_peek(2);
+			
+				loop{
+					let (tuple, parserutilsError) = stream.parserutils_inputstream_peek(2);
 
-         			match(parserutilsError) {
+					match(parserutilsError) {
 						PARSERUTILS_OK=>{
 
 							let mut(ptr,length)= tuple.get();
@@ -171,10 +175,10 @@ fn main() {
 							break;
 						}
 					}
-         		}
-	        }
+				}
+			}
 
-	         // mibenum test
+			 // mibenum test
 			match(arc::get(&stream.input.lpu_instance).parserutils_charset_mibenum_to_name(stream.mibenum)) {
 				Some(x)  => {
 								if eq(&x, &encoding){
@@ -191,7 +195,7 @@ fn main() {
 			match stream.encsrc {
 			encsrcVal  => {
 								test1.pass( ~"test_csdtect.rs", copy external_argument, ~"csdetect", ~"csdetect.rs", ~"css__charset_extract", ~"check if the encsrc value read by charset fn into input stream is ok " ,fmt!("%?",encsrcVal),fmt!("%?",stream.encsrc), ~"encsrc value");								
-			    			}
+							}
 			}
 		},
 		_   =>  {

@@ -73,8 +73,8 @@ fn main() {
 	let mut lwc_instance = lwc();
 	function_name = ~"lwc()";
 	test_name = ~"Creating a lwc instance";
-	comment = ~"lwc instance created";
-	//test_logger.info(copy module_name , copy file_name , copy function_name , copy test_name , ~"", ~"", copy comment);
+	comment = ~"lwc instance created successfully (no failure condition hence test passed)";
+	// test_logger.info(~"test_wapcaplet.rs" , copy external_argument , copy module_name , copy file_name , copy function_name, copy test_name, ~"" , copy comment);
 
 
 
@@ -83,7 +83,7 @@ fn main() {
 		// test 1 intern a vector of string
 		function_name = ~"lwc_intern_string_vector";
 		test_name = ~"intern a vector of string";
-		comment = ~"vector of  string interned";
+		comment = ~"vector of string interned successfully(no failure condition hence test passed)";
 		test_logger.info(~"test_wapcaplet.rs", copy external_argument, copy module_name , copy file_name , copy function_name , copy test_name , ~"", copy comment);
 		// io::println(fmt!("length of vector: %?", propstrings_list.len()));
 		//test_logger.info(copy module_name , copy file_name , copy function_name , copy test_name , ~"");

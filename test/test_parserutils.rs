@@ -53,7 +53,7 @@ fn main() {
 					test1.fail( ~"test_parserutils.rs",copy external_argument, copy module_name, copy file_name  , function_name, copy toCharset +~":checking return value" , ~"PARSERUTILS_OK",~"none PARSERUTILS_OK", comment) ;
 				}
 			}
-			 let (charsetStringOption,charsetSource)= stream.parserutils_inputstream_read_charset();
+			let (charsetStringOption,charsetSource)= stream.parserutils_inputstream_read_charset();
             
             test_name =~"";
             function_name=~"parserutils_inputstream_change_charset";
@@ -72,12 +72,12 @@ fn main() {
             function_name=~"parserutils_inputstream_peek";
 			comment = ~"peek read successfully if valid value in tuple in this line";
             test_name = ~"testing peek ";//fmt!("%?,%?",array,length);
-             match(parserutilsError) {
-             				PARSERUTILS_OK	=>	{
-             										test1.pass( ~"test_parserutils.rs",copy external_argument, copy module_name, copy file_name  , function_name, test_name, ~"PARSERUTILS_OK",~"PARSERUTILS_OK", comment);
-             									} ,
-             					_            => 	test1.fail( ~"test_parserutils.rs",copy external_argument, copy module_name, copy file_name  , function_name, test_name ,~"PARSERUTILS_OK",~"None PARSERUTILS_OK", comment) 
-             }
+            match(parserutilsError) {
+            	PARSERUTILS_OK	=>	{
+            		test1.pass( ~"test_parserutils.rs",copy external_argument, copy module_name, copy file_name  , function_name, test_name, ~"PARSERUTILS_OK",~"PARSERUTILS_OK", comment);
+             	},
+             	_ => test1.fail( ~"test_parserutils.rs",copy external_argument, copy module_name, copy file_name  , function_name, test_name ,~"PARSERUTILS_OK",~"None PARSERUTILS_OK", comment) 
+            }
            
 				
 		}

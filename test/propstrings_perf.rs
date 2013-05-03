@@ -21,8 +21,6 @@ fn test_sequential() {
 		delta += (end_time - start_time) as float;
 	}
 
-
-	
 	//let delta = (end_time - start_time) as float;
 
 	io::println(fmt!("Elapsed Time %f nsec", delta));
@@ -48,7 +46,6 @@ fn test_parallel() {
     io::println(fmt!("Elapsed Time %.3f usec", delta / 1000f));
     io::println(fmt!("Elapsed Time %.6f msec", delta / 1000000f));
     io::println(fmt!("Elapsed Time %.9f sec", delta / 1000000000f));
-
 
 }
 
