@@ -23,7 +23,7 @@ fn main() {
     let mut dataBytes:~[u8];
     let reader = io::stdin();
     let mut exit:bool=false;
-    let mut test_logger = result::unwrap(test_report(&"temp_log1.csv"));    
+    let mut test_logger = result::unwrap(test_report(&"Unit_test_report_lexer_chunk.csv"));    
     let (inputStreamOption, ParserUtilsError)= lpu_inputstream(~"UTF-8",Some(~css__charset_extract));
     let mut lexer = lcss_lexer((inputStreamOption, ParserUtilsError)).unwrap();
 	r.seek(0,SeekEnd);

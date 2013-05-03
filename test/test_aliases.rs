@@ -11,7 +11,7 @@ use core::str::*;
 fn main() {
 
 	let mut parser : arc::ARC<~lpu> = lpu();
-	let mut test_logger = result::unwrap(test_report(&"temp_log.csv"));
+	let mut test_logger = result::unwrap(test_report(&"Unit_test_report.csv"));
 	let mut external_argument : ~str = ~"";
 	let aliasData = ~[~"moose", ~"csinvariant", ~"csinvariant\"", ~"nats-sefi-add", ~"u.t.f.8"];
 	 
