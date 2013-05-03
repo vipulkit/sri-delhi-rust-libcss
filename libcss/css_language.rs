@@ -1210,3 +1210,120 @@ pub impl css_language {
 	}
 
 }
+
+pub fn css__number_from_string(data: ~str , int_only: bool) -> (int , uint){
+
+	let mut length = data.len();
+	let mut ptr = copy data;
+	let mut sign = 1;
+	let mut intpart = 0;
+	let mut fracpart = 0;
+	let mut pwr = 1;
+	let mut ret_value = 0;
+	let mut index = 0;
+	let mut consumed_length = 0;
+	
+
+	if data.is_empty()||length == 0 {
+		return (ret_value , consumed_length);
+	}
+
+	// number = [+-]? ([0-9]+ | [0-9]* '.' [0-9]+) 
+
+	// Extract sign, if any 
+	if ptr[0] == '-' as u8 {
+		sign = -1;
+		length -= 1;
+		index += 1;
+	}
+	else if ptr[0] == '+' as u8 {
+		length -=1;
+		index += 1;
+	}
+
+	if length == 0 {
+		return (ret_value , consumed_length);
+	}
+	else {
+		if ptr[0] == '.' as u8 {
+			if length ==1 || (ptr[1] < ('0' as u8)) || (('9' as u8) < ptr[1]) {
+				return (ret_value , consumed_length);
+			}
+		}
+		else if (ptr[0] < ('0' as u8)) || (('9' as u8) < ptr[0]) {
+			return (ret_value , consumed_length);
+		}
+	}
+
+	while length>0 {
+		if (ptr[0] < ('0' as u8))||(('9' as u8) < ptr[0]) {
+			break
+		}
+		if intpart < (1<<22) {
+			intpart *= 10;
+			intpart += (ptr[0] as u8) - ('0' as u8);
+		}
+		index += 1;
+		length -= 1;
+	}
+
+	if int_only == false && length > 1 && (ptr[0] == '.' as u8) && ('0' as u8 <= ptr[1] && ptr[1] <= '9' as u8) {
+		index += 1;	
+		length -= 1;
+
+		while length >0 {
+			if ((ptr[0] < '0' as u8))|| (('9' as u8) < ptr[0]) {
+				break
+			}
+
+			if pwr < 1000000 {
+				pwr *= 10;
+				fracpart *= 10;
+				fracpart += (ptr[0] - '0' as u8);
+			}
+			index += 1;
+			length -= 1;
+		}
+		fracpart = ((1 << 10) * fracpart + pwr/2) / pwr;
+		if fracpart >= (1 << 10) {
+			intpart += 1;
+			fracpart &= (1 << 10) - 1;
+		}
+	}
+
+	consumed_length = index;
+
+	if sign > 0 {
+		if intpart >= (1 << 21) {
+			intpart = (1 << 21) - 1;
+			fracpart = (1 << 10) - 1;
+		}
+	}
+	else {
+		 // If the negated result is smaller than we can represent then clamp to the minimum value we can store. 
+		if intpart >= (1 << 21) {
+			intpart = -(1 << 21);
+			fracpart = 0;
+		}
+		else {
+			intpart = -intpart;
+			if fracpart > 0 {
+				fracpart = (1 << 10) - fracpart;
+				intpart -= 1;
+			}
+		}
+	}
+	ret_value = ((intpart << 10) | fracpart )as int;
+	(ret_value , consumed_length)
+
+}
+
+pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bool) -> (int , uint) {
+	let mut ret_value = 0;
+	let mut consumed_length = 0;
+
+	if lwc::lwc_string_length(string.clone()) == 0 {
+		return (ret_value , consumed_length);
+	}
+	css__number_from_string(lwc::lwc_string_data(string.clone()) , int_only)
+}
