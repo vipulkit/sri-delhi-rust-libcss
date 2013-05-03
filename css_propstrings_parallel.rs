@@ -568,7 +568,7 @@ impl css_propstrings_parallel {
 	pub fn css_propstrings_parallel(lwc_instance: arc::RWARC<~lwc>) -> ~css_propstrings_parallel {
 		let mut css_propstrings_instance = ~css_propstrings_parallel {
 			lwc_instance: lwc_instance.clone(),
-	    	propstrings: ~[],
+			propstrings: ~[],
 		};
 
 		do (lwc_instance).write |s| {
@@ -613,16 +613,16 @@ impl css_propstrings_parallel {
 				~ "darkgoldenrod",~ "darkgray",~ "darkgreen",~ "darkgrey",~"darkkhaki", ~ "darkmagenta",~ "darkolivegreen",~ "darkorange",~ "darkorchid",~ "darkred",
 				~ "darksalmon",~ "darkseagreen",~ "darkslateblue",~ "darkslategray",~ "darkslategrey",~ "darkturquoise",~ "darkviolet",~ "deeppink", ~ "deepskyblue",
 				~ "dimgray",~ "dimgrey",~ "dodgerblue",~ "feldspar",~ "firebrick",~ "floralwhite", ~ "forestgreen",~ "fuchsia", ~ "gainsboro",~ "ghostwhite",
-			    ~ "gold",~ "goldenrod",~ "gray",~ "green",~ "greenyellow",~ "grey",~ "honeydew",~ "hotpink",~ "indianred",~ "indigo",~ "ivory",~ "khaki",~ "lavender",
-			    ~ "lavenderblush",~ "lawngreen",~ "lemonchiffon",~ "lightblue",~ "lightcoral",~ "lightcyan",~ "lightgoldenrodyellow",~ "lightgray",~ "lightgreen",
-			    ~ "lightgrey",~ "lightpink",~ "lightsalmon",~ "lightseagreen",~ "lightskyblue", ~ "lightslateblue", ~ "lightslategray",~ "lightslategrey",
-			    ~ "lightsteelblue", ~ "lightyellow",~ "lime",~ "limegreen",~ "linen", ~ "magenta",~"maroon",~ "mediumaquamarine",~ "mediumblue", ~ "mediumorchid",
-			    ~ "mediumpurple", ~ "mediumseagreen",~ "mediumslateblue",~ "mediumspringgreen",~ "mediumturquoise",~"mediumvioletred", ~ "midnightblue",~ "mintcream", 
-			    ~ "mistyrose",~ "moccasin",~ "navajowhite",~ "navy", ~ "oldlace", ~ "olive",~ "olivedrab",~ "orange",~ "orangered",~"orchid",~"palegoldenrod",
-			    ~ "palegreen",~ "paleturquoise",~ "palevioletred", ~ "papayawhip",~ "peachpuff",~ "peru",~ "pink",~ "plum",~ "powderblue", ~ "purple",~ "red",
-			    ~ "rosybrown",~ "royalblue", ~ "saddlebrown",~ "salmon",~ "sandybrown",~ "seagreen",~ "seashell",~ "sienna", ~ "silver", ~ "skyblue",~ "slateblue",
-			    ~ "slategray", ~"slategrey",~ "snow",~ "springgreen",~ "steelblue", ~ "tan", ~ "teal",~ "thistle",~ "tomato",~ "turquoise",~"violet",~ "violetred",
-			    ~ "wheat",~ "white", ~ "whitesmoke",~"yellow",~ "yellowgreen"];
+				~ "gold",~ "goldenrod",~ "gray",~ "green",~ "greenyellow",~ "grey",~ "honeydew",~ "hotpink",~ "indianred",~ "indigo",~ "ivory",~ "khaki",~ "lavender",
+				~ "lavenderblush",~ "lawngreen",~ "lemonchiffon",~ "lightblue",~ "lightcoral",~ "lightcyan",~ "lightgoldenrodyellow",~ "lightgray",~ "lightgreen",
+				~ "lightgrey",~ "lightpink",~ "lightsalmon",~ "lightseagreen",~ "lightskyblue", ~ "lightslateblue", ~ "lightslategray",~ "lightslategrey",
+				~ "lightsteelblue", ~ "lightyellow",~ "lime",~ "limegreen",~ "linen", ~ "magenta",~"maroon",~ "mediumaquamarine",~ "mediumblue", ~ "mediumorchid",
+				~ "mediumpurple", ~ "mediumseagreen",~ "mediumslateblue",~ "mediumspringgreen",~ "mediumturquoise",~"mediumvioletred", ~ "midnightblue",~ "mintcream", 
+				~ "mistyrose",~ "moccasin",~ "navajowhite",~ "navy", ~ "oldlace", ~ "olive",~ "olivedrab",~ "orange",~ "orangered",~"orchid",~"palegoldenrod",
+				~ "palegreen",~ "paleturquoise",~ "palevioletred", ~ "papayawhip",~ "peachpuff",~ "peru",~ "pink",~ "plum",~ "powderblue", ~ "purple",~ "red",
+				~ "rosybrown",~ "royalblue", ~ "saddlebrown",~ "salmon",~ "sandybrown",~ "seagreen",~ "seashell",~ "sienna", ~ "silver", ~ "skyblue",~ "slateblue",
+				~ "slategray", ~"slategrey",~ "snow",~ "springgreen",~ "steelblue", ~ "tan", ~ "teal",~ "thistle",~ "tomato",~ "turquoise",~"violet",~ "violetred",
+				~ "wheat",~ "white", ~ "whitesmoke",~"yellow",~ "yellowgreen"];
 			css_propstrings_instance.propstrings = s.lwc_intern_string_vector(propstrings_list)
 		}
 		css_propstrings_instance
@@ -638,6 +638,6 @@ impl css_propstrings_parallel {
 	}
 
 	pub fn lwc_string_isequal(&mut self , lwc_string_instance: arc::RWARC<~lwc_string> , string_index: uint) -> bool {
-			lwc::lwc_string_isequal(lwc_string_instance.clone() , self.propstrings[string_index].clone())
+		lwc::lwc_string_isequal(lwc_string_instance.clone() , self.propstrings[string_index].clone())
 	}
 }

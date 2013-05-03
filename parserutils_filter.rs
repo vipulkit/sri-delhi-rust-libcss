@@ -55,7 +55,7 @@ impl lpu_filter {
 		PARSERUTILS_OK
 	}
 
-	pub fn filter_set_defaults(&mut self ) -> parserutils_error{
+	pub fn filter_set_defaults(&mut self ) -> parserutils_error {
 		self.encoding = 0;
 		self.filter_set_encoding(~"UTF-8")
 	}
@@ -89,7 +89,7 @@ impl lpu_filter {
 	}
 
 	pub fn parserutils__filter_destroy(&mut self) -> parserutils_error {
-		if riconv::riconv_initialized(self.iconv_h)  {
+		if riconv::riconv_initialized(self.iconv_h) {
 			riconv::safe_riconv_close(self.iconv_h);
 			self.iconv_h=riconv::riconv_initialize();
 			PARSERUTILS_OK
@@ -117,8 +117,8 @@ impl lpu_filter {
 		if iconv_result.len_processed==0 {
 			if iconv_result.err_state==1 {
 				status = PARSERUTILS_NOMEM;
-			} else
-			if iconv_result.err_state==2 {
+			} 
+			else if iconv_result.err_state==2 {
 				status = PARSERUTILS_BADPARAM;
 			}
 			else {

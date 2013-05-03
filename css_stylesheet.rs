@@ -829,16 +829,16 @@ impl css_selector_hash {
 	pub fn _hash_name( string: ~str ) -> uint {
 
 		let mut z: uint = 0x811c9dc5;
-	    let mut i: uint = 0;
-	    let mut string_index = str::char_len(string);
-	    while string_index>0 {
-	        z = z*0x01000193;
-	        z = (z^(string[i]) as uint);
-	        string_index = string_index-1;
-	        i = i+1; 
-	    }
-	    z = z%4091;
-	    z
+		let mut i: uint = 0;
+		let mut string_index = str::char_len(string);
+		while string_index>0 {
+			z = z*0x01000193;
+			z = (z^(string[i]) as uint);
+			string_index = string_index-1;
+			i = i+1; 
+		}
+		z = z%4091;
+		z
 	}
 	
 	pub fn css__selector_hash_insert(&mut self, selector : @mut css_selector) 
@@ -847,7 +847,7 @@ impl css_selector_hash {
 			let mut mask :uint ;
 			let mut index:uint=0;
 			let mut name :~str ;
-			if (vec::uniq_len(&selector.data) > 0){
+			if (vec::uniq_len(&selector.data) > 0) {
 
 				// Named Element
 				if ( selector.data[0].qname.name.len() != 1) || 
@@ -872,7 +872,7 @@ impl css_selector_hash {
 					index = css_selector_hash::_hash_name(name) & mask ;
 					return self._insert_into_chain(Ids,index,selector);
 				}
-				else{
+				else {
 					return self._insert_into_chain(Universal,index,selector);
 				}
 			}
@@ -895,27 +895,27 @@ impl css_selector_hash {
 					Ids =>  &mut self.ids ,
 					Universal => &mut self.universal ,
 				};
-		let mut entry = @mut hash_entry{
+		let mut entry = @mut hash_entry {
 				selector:selector,
 				next:None
 		};
 		//&~[Option<@mut hash_entry>] 
 
 		match (*hash_entry_list)[index] {
-			None=>{
+			None=> {
 				(*hash_entry_list)[index] = Some(entry);
 			},
-			Some(index_element)=>{
+			Some(index_element)=> {
 
 				let mut search = index_element;
 				let mut prev = index_element ;
 				let mut first_pos : bool = true ;
 				loop {
-					if( search.selector.specificity> selector.specificity ) {
+					if search.selector.specificity> selector.specificity {
 						break ;
 					}
 
-					if( search.selector.specificity == selector.specificity){
+					if search.selector.specificity == selector.specificity {
 						if(search.selector.rule.is_none() || selector.rule.is_none() ){
 							return CSS_BADPARM ;
 						}
@@ -923,7 +923,7 @@ impl css_selector_hash {
 						let mut base_search_rule = css_stylesheet::css__stylesheet_get_base_rule(search.selector.rule.get());
 						let mut base_selector_rule = css_stylesheet::css__stylesheet_get_base_rule(selector.rule.get());
 
-						if(base_search_rule.index > base_selector_rule.index) {
+						if base_search_rule.index > base_selector_rule.index {
 							break ;
 						}
 					}
@@ -984,7 +984,7 @@ impl css_selector_hash {
 					index = css_selector_hash::_hash_name(name) & mask ;
 					return self._remove_from_chain(Ids,index,selector);
 				}
-				else{
+				else {
 					return self._remove_from_chain(Universal,index,selector);
 				}
 			}
@@ -1060,7 +1060,7 @@ impl css_selector_hash {
 			}
 
 			if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
-			  	if (a[e]+32) == b[e] {
+				if (a[e]+32) == b[e] {
 					loop;
 				}
 				else {
@@ -1069,7 +1069,7 @@ impl css_selector_hash {
 			}
 
 			if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
-			  	if (b[e]+32) == a[e] {
+				if (b[e]+32) == a[e] {
 					loop;
 				}
 				else {
@@ -1081,9 +1081,7 @@ impl css_selector_hash {
 		return true ;
 	}
 
-	pub fn css__selector_hash_find(&mut self,
-								name : ~str) 
-								-> (Option<@mut hash_entry>,css_result) {
+	pub fn css__selector_hash_find(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_result) {
 
 		let mut mask  = self.default_slots-1 ;
 		let mut index = css_selector_hash::_hash_name(copy name) & mask ; 
@@ -1120,9 +1118,7 @@ impl css_selector_hash {
 	}
 	
 
-	pub fn css__selector_hash_find_by_class(&mut self,
-								name : ~str) 
-								-> (Option<@mut hash_entry>,css_result) {
+	pub fn css__selector_hash_find_by_class(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_result) {
 
 		let mut mask  = self.default_slots-1 ;
 		let mut index = css_selector_hash::_hash_name(copy name) & mask ; 
@@ -1157,9 +1153,7 @@ impl css_selector_hash {
 		}
 	}
 
-	pub fn css__selector_hash_find_by_id(&mut self,
-								name : ~str) 
-								-> (Option<@mut hash_entry>,css_result) {
+	pub fn css__selector_hash_find_by_id(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_result) {
 
 		let mut mask  = self.default_slots-1 ;
 		let mut index = css_selector_hash::_hash_name(copy name) & mask ; 
@@ -1195,8 +1189,7 @@ impl css_selector_hash {
 	}
 
 
-	pub fn css__selector_hash_find_universal(&mut self) 
-								-> (Option<@mut hash_entry>,css_result) {
+	pub fn css__selector_hash_find_universal(&mut self) -> (Option<@mut hash_entry>,css_result) {
 
 		let mut head = self.universal[0] ;
 		match head {
@@ -1209,8 +1202,7 @@ impl css_selector_hash {
 		}
 	}
 
-	pub fn _iterate_elements(current : @mut hash_entry) 
-							-> (Option<@mut hash_entry>,css_result) {
+	pub fn _iterate_elements(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_result) {
 
 		let mut head = current;
 
@@ -1239,8 +1231,7 @@ impl css_selector_hash {
 		}
 	}
 
-	pub fn _iterate_classes(current : @mut hash_entry) 
-							-> (Option<@mut hash_entry>,css_result) {
+	pub fn _iterate_classes(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_result) {
 
 		let mut head = current;
 
@@ -1268,8 +1259,7 @@ impl css_selector_hash {
 		}
 	}
 
-	pub fn _iterate_ids(current : @mut hash_entry) 
-							-> (Option<@mut hash_entry>,css_result) {
+	pub fn _iterate_ids(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_result) {
 
 		let mut head = current;
 
@@ -1297,8 +1287,7 @@ impl css_selector_hash {
 		}
 	}
 
-	pub fn _iterate_universal(current : @mut hash_entry) 
-							-> (Option<@mut hash_entry>,css_result) {
+	pub fn _iterate_universal(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_result) {
 
 		if current.next.is_some() {
 			return (current.next,CSS_OK);

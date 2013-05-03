@@ -192,7 +192,7 @@ impl lcss_lexer {
 		
 		match c {
 			'/' => {
-				if (((self.internal_vector.len() - self.position) >2) && self.match_here(~"/*"))  {
+				if (((self.internal_vector.len() - self.position) >2) && self.match_here(~"/*")) {
 					self.position += 2;
 					self.consume_comments()
 				}
@@ -207,11 +207,11 @@ impl lcss_lexer {
 						self.position += 3;
 						(Some(CSS_TOKEN_CDC), LEXER_OK)
 					}
-					else if match self.next_is_namestart_or_escape()
-							{
+					else if 
+						match self.next_is_namestart_or_escape() {
 							   (None ,x) => return (None , x),
 							   (Some(x),_) =>  x 
-							} {
+						} {
 						self.consume_ident()
 					}
 					else {
@@ -232,9 +232,8 @@ impl lcss_lexer {
 					else {
 						if  self.position+1 < self.length {
 							self.position += 1
-							//return (Some(Delim('<')), error_condition);
 						} 
-						else /*if self.position+1 == self.length*/ {
+						else {
 							self.position += 1;
 							error_condition= LEXER_NEEDDATA;
 						}  
@@ -271,7 +270,7 @@ impl lcss_lexer {
 												self.position = head_position;
 												return (None,LEXER_NEEDDATA);
 											}
-										};
+									};
 									match  c {
 										'\t' | '\n' | '\x0C' | ' ' => if  self.position+1 < self.length {
 											self.position += 1
@@ -335,8 +334,7 @@ impl lcss_lexer {
 									},
 							[] =>
 								return (Some(CSS_TOKEN_INVALID_STRING), LEXER_INVALID),
-							_ => match self.consume_escape()
-							{
+							_ => match self.consume_escape() {
 								(None,x)=> {
 									self.position = head_position;
 									return (None,LEXER_NEEDDATA);
@@ -373,7 +371,7 @@ impl lcss_lexer {
 			_=>()
 		}
 		(if string == ~"" {
-		 Some(Delim('#')) 
+			Some(Delim('#')) 
 		} 
 		else { 
 			Some(CSS_TOKEN_HASH(string)) 
@@ -452,7 +450,6 @@ impl lcss_lexer {
 			(None,x) => match(x) {
 				LEXER_NEEDDATA =>(None,LEXER_NEEDDATA),
 				_=>(Some(Delim('@')),LEXER_OK)
-				
 			}
 		})
 	}
@@ -575,7 +572,7 @@ impl lcss_lexer {
 					}
 				}
 			},
-			(None,x) => { 
+			(None,x) => {
 				match x {
 					LEXER_NEEDDATA=> return (None,LEXER_NEEDDATA) ,
 					_=> { 
@@ -620,12 +617,10 @@ impl lcss_lexer {
 		};
 		match c {
 			'-' => {
-				if  match self.next_is_namestart_or_escape()
-					{
+				if  match self.next_is_namestart_or_escape() {
 						(None ,x) => return (None , LEXER_NEEDDATA),
 						(Some(x),_) =>  x 
-					}
-				{
+					} {
 					(None,LEXER_OK) 
 				}
 				else { 
@@ -676,7 +671,7 @@ impl lcss_lexer {
 					c 
 				},
 				_ if c >= '\x80' => 
-					 match(self.consume_char()) {
+					match(self.consume_char()) {
 						(Some(ch),x)=>{
 							error_condition=x;
 							ch
@@ -756,7 +751,7 @@ impl lcss_lexer {
 					}
 				}
 				if !self.is_eof() {
-					 let c:char= match self.current_char() {
+					let c:char= match self.current_char() {
 						(Some(ch),err)=>ch,
 						_=> {
 							self.position = head_position;
@@ -1138,7 +1133,7 @@ impl lcss_lexer {
 	fn consume_numeric(&mut self) -> (Option<css_token_type> , lexer_error) {
 		let head_position = self.position;
 		// io::println(fmt!("consume_numeric: head position is %?" , head_position));
-	   	// io::println("consume_numeric: inside function");
+		// io::println("consume_numeric: inside function");
 		let mut error_condition:lexer_error= LEXER_OK;
 		let c = match(self.consume_char()) {
 			(Some(ch),x)=>{

@@ -13,17 +13,17 @@ use parserutils::*;
 use parserutils_filter::*;
 use std::arc;
 
-pub type  parserutils_charset_detect_func =  ~extern fn(
- 		data: &~[u8], mibenum:u16, source:css_charset_source, lpu_arc:arc::ARC<~lpu>) -> (Option<u16>, Option<css_charset_source>, parserutils_error);
+pub type  parserutils_charset_detect_func =  
+	~extern fn(data: &~[u8], mibenum:u16, source:css_charset_source, lpu_arc:arc::ARC<~lpu>) -> (Option<u16>, Option<css_charset_source>, parserutils_error);
 
 pub struct lpu_inputstream {
-	utf8: ~[u8],		// Buffer containing UTF-8 data 
-	cursor: uint,		// Byte offset of current position 
-	had_eof: bool,		// Whether EOF has been reached 
-	raw: ~[u8],			// Buffer containing raw data 
-	done_first_chunk: bool,		// Whether the first chunk has been processed 
-	mibenum: u16,		// MIB enum for charset, or 0
-	encsrc: css_charset_source,		// Charset source
+	utf8: ~[u8],        // Buffer containing UTF-8 data 
+	cursor: uint,       // Byte offset of current position 
+	had_eof: bool,      // Whether EOF has been reached 
+	raw: ~[u8],         // Buffer containing raw data 
+	done_first_chunk: bool,     // Whether the first chunk has been processed 
+	mibenum: u16,       // MIB enum for charset, or 0
+	encsrc: css_charset_source,     // Charset source
 	input: ~lpu_filter, // Charset conversion filter
 	csdetect_instance: Option<parserutils_charset_detect_func>
 }
@@ -31,14 +31,14 @@ pub struct lpu_inputstream {
 pub fn lpu_inputstream(int_enc: ~str, csdetect_instance: Option<parserutils_charset_detect_func>) ->  (Option<~lpu_inputstream> , parserutils_error) {
 
 	if int_enc.len()==0 {
-		return (None,PARSERUTILS_BADPARAM) ;
+		return (None,PARSERUTILS_BADPARAM);
 	}
 
-	let mut stream: ~lpu_inputstream ;
+	let mut stream: ~lpu_inputstream;
 	match parserutils_filter::lpu_filter(parserutils::lpu() , copy int_enc) {
 		(x,PARSERUTILS_OK) =>{
 			let mut lpu_filter_instance = x.unwrap(); 
-			stream = ~lpu_inputstream{
+			stream = ~lpu_inputstream {
 				utf8: ~[],
 				cursor: 0,
 				had_eof: false,
@@ -62,39 +62,39 @@ pub fn lpu_inputstream(int_enc: ~str, csdetect_instance: Option<parserutils_char
 
 impl lpu_inputstream {
 
-	pub fn parserutils_inputstream_destroy(&mut self)-> parserutils_error	{
-	 	self.input.parserutils__filter_destroy();
-	 	self.utf8 = ~[] ;
-	 	self.raw = ~[] ;
-	 	self.cursor = 0 ;
-	 	self.had_eof = false ;
-	 	self.done_first_chunk = false ;
-	 	self.mibenum = 0 ;
-	 	self.encsrc =CSS_CHARSET_DEFAULT ;
-	 	self.csdetect_instance = None;
-	 	PARSERUTILS_OK
+	pub fn parserutils_inputstream_destroy(&mut self)-> parserutils_error {
+		self.input.parserutils__filter_destroy();
+		self.utf8 = ~[] ;
+		self.raw = ~[] ;
+		self.cursor = 0 ;
+		self.had_eof = false ;
+		self.done_first_chunk = false ;
+		self.mibenum = 0 ;
+		self.encsrc =CSS_CHARSET_DEFAULT ;
+		self.csdetect_instance = None;
+		PARSERUTILS_OK
 	}
 
 	pub fn parserutils_inputstream_append(&mut self, data: ~[u8]) -> parserutils_error {
-	 	if data.len()==0 {
-	 		self.had_eof = true;
-	 		return PARSERUTILS_OK;
-	 	}
-	 	self.raw += data;
-	 	PARSERUTILS_OK
+		if data.len()==0 {
+			self.had_eof = true;
+			return PARSERUTILS_OK;
+		}
+		self.raw += data;
+		PARSERUTILS_OK
 	}
 
 	pub fn parserutils_inputstream_insert(&mut self, data: ~[u8])-> parserutils_error {
-        
+		
 		if data.len()==0 && (self.utf8.len() < self.cursor) {
 			return PARSERUTILS_BADPARAM;
 		}
 
-        let temp = self.utf8.slice(self.cursor,self.utf8.len()).to_owned() ;
+		let temp = self.utf8.slice(self.cursor,self.utf8.len()).to_owned();
 		self.utf8.truncate(self.cursor);
 		self.utf8 += data ;
 		self.utf8 += temp ;
-        PARSERUTILS_OK
+		PARSERUTILS_OK
 	}
 
 	pub fn parserutils_inputstream_read_charset(&mut self)-> (Option<~str>,css_charset_source) {
@@ -104,19 +104,19 @@ impl lpu_inputstream {
 
 	pub fn parserutils_inputstream_change_charset(&mut self, enc:~str, source:css_charset_source)-> parserutils_error {
 
-    	if enc.len() == 0 {
-    		return PARSERUTILS_BADPARAM;
-    	}
+		if enc.len() == 0 {
+			return PARSERUTILS_BADPARAM;
+		}
 
 		if self.done_first_chunk {
 			return PARSERUTILS_INVALID;
 		}
-        
+		
 		self.mibenum  = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_from_name(copy enc);
 		if self.mibenum==0 {
 			return PARSERUTILS_BADPARAM;
 		}
-        
+		
 		// Ensure filter is using the correct encoding 
 		let filter_set_encoding_result = self.input.filter_set_encoding(enc);
 
@@ -138,7 +138,7 @@ impl lpu_inputstream {
 
 		let totype : Option<~str> = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_to_name(self.mibenum);
 
-		if totype.is_none()  {
+		if totype.is_none() {
 			return PARSERUTILS_BADPARAM;
 		}
 
@@ -167,7 +167,7 @@ impl lpu_inputstream {
 						if self.mibenum==0 {
 							return PARSERUTILS_BADPARAM;
 						}
-                        
+						
 						self.raw= slice(self.raw,UTF32_BOM_LEN,self.raw.len()).to_owned();
 						return PARSERUTILS_OK;
 					}
@@ -213,7 +213,7 @@ impl lpu_inputstream {
 			
 			~"UTF-32BE" => {
 				if self.raw.len() >= UTF32_BOM_LEN && self.raw[0] == 0x00 && self.raw[1] == 0x00 && self.raw[2] == 0xFE && self.raw[3] == 0xFF {
-                  	self.raw= slice(self.raw,UTF32_BOM_LEN,self.raw.len()).to_owned();
+					self.raw= slice(self.raw,UTF32_BOM_LEN,self.raw.len()).to_owned();
 					return PARSERUTILS_OK;
 				}
 			},
@@ -231,7 +231,7 @@ impl lpu_inputstream {
 	}
 
 	pub fn IS_ASCII(&mut self , data:u8) -> bool {
-	 	((data & 0x80) == 0)
+		((data & 0x80) == 0)
 	}
 
 	pub fn parserutils_inputstream_advance(&mut self, bytes:uint) -> parserutils_error {
@@ -253,8 +253,7 @@ impl lpu_inputstream {
 
 			match(self.csdetect_instance) {
 				Some(copy f) => {
-					let (charsetOption,srcOption,error)/*: parserutils_error*/ = (*f)(&self.raw, self.mibenum, self.encsrc, self.input.lpu_instance.clone());
-
+					let (charsetOption,srcOption,error)= (*f)(&self.raw, self.mibenum, self.encsrc, self.input.lpu_instance.clone());
 
 					match error {
 						PARSERUTILS_OK => {
@@ -262,17 +261,17 @@ impl lpu_inputstream {
 							self.encsrc = srcOption.unwrap();
 						},
 						x => match x {
-								PARSERUTILS_NEEDDATA => {	
+								PARSERUTILS_NEEDDATA => {   
 															if self.had_eof == false {
 																return x;
 															}
 														},
-													_ => return x	
+													_ => return x   
 						}
 					}
 				},
 				None => {}
-			}	
+			}   
 			if (self.mibenum == 0) {
 				self.mibenum = arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_from_name(~"UTF-8");
 				if self.mibenum == 0 {
@@ -290,12 +289,12 @@ impl lpu_inputstream {
 				} 
 			}
 
-            match arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_to_name(self.mibenum) {
-            	None => { 
-            		return PARSERUTILS_BADENCODING
-            		},
-            	Some(x) => {
-            		match self.input.filter_set_encoding(x) {
+			match arc::get(&self.input.lpu_instance).parserutils_charset_mibenum_to_name(self.mibenum) {
+				None => { 
+					return PARSERUTILS_BADENCODING
+					},
+				Some(x) => {
+					match self.input.filter_set_encoding(x) {
 						PARSERUTILS_OK => {
 							//self.done_first_chunk = true; 
 						},
@@ -303,19 +302,20 @@ impl lpu_inputstream {
 						 return PARSERUTILS_BADENCODING;
 						}
 					}
-            	}
-            }
+				}
+			}
 		}
 		
 		// Discard the data in the UTF-8 buffer before the cursor location
 		if self.cursor == self.utf8.len() {
 			self.utf8 = ~[] ;
-		} else {
+		} 
+		else {
 			self.utf8=slice(self.utf8,self.cursor,self.utf8.len()).to_owned();
 		}
 		self.cursor = 0;
-       
-      
+	   
+	  
 		 // Try to fill utf8 buffer from the raw data
 		let mut processedLen:uint;
 		match(self.input.parserutils__filter_process_chunk(copy self.raw)) { //TODO :: remove copy
@@ -324,20 +324,19 @@ impl lpu_inputstream {
 					if (!self.done_first_chunk) {
 						self.done_first_chunk = true;
 						if processed_chunk.outbuf[0]== 0xFF && processed_chunk.outbuf[1]== 0xFE && processed_chunk.outbuf[2]== 0x00 && processed_chunk.outbuf[3]== 0x00{
-				    		self.utf8 += slice(processed_chunk.outbuf,4,processed_chunk.outbuf.len()).to_owned();
-				    	}
-				    	else if processed_chunk.outbuf[0]== 0xFF && processed_chunk.outbuf[1]== 0xFE {
-				    		self.utf8 += slice(processed_chunk.outbuf,2,processed_chunk.outbuf.len()).to_owned();
-				    	}
-					 	else {
-					 		self.utf8 += processed_chunk.outbuf;
-					 	}
+							self.utf8 += slice(processed_chunk.outbuf,4,processed_chunk.outbuf.len()).to_owned();
+						}
+						else if processed_chunk.outbuf[0]== 0xFF && processed_chunk.outbuf[1]== 0xFE {
+							self.utf8 += slice(processed_chunk.outbuf,2,processed_chunk.outbuf.len()).to_owned();
+						}
+						else {
+							self.utf8 += processed_chunk.outbuf;
+						}
 				}
-				else 
-				{
+				else {
 					self.utf8 += processed_chunk.outbuf;
 				}
-                //self.utf8 += processed_chunk.outbuf;
+				//self.utf8 += processed_chunk.outbuf;
 				processedLen = processed_chunk.len_processed as uint
 			},
 			(_ , y) => {
@@ -345,14 +344,14 @@ impl lpu_inputstream {
 			}
 		}
 
-        self.raw= slice(self.raw,processedLen,self.raw.len()).to_owned();
+		self.raw= slice(self.raw,processedLen,self.raw.len()).to_owned();
 		return PARSERUTILS_OK;
 	}
 
 
 	pub fn parserutils_inputstream_peek_slow(&mut self , offset: uint)-> (Option<(~[u8],uint)>,parserutils_error) {
-            
-        let len: uint;
+			
+		let len: uint;
 
 		if self.raw.len() == 0 {
 			if self.had_eof {
@@ -372,11 +371,11 @@ impl lpu_inputstream {
 		}
 
 		 // Refill may have succeeded, but not actually produced any new data 
-		if self.cursor + offset == self.utf8.len() {					
+		if self.cursor + offset == self.utf8.len() {                    
 			return (None,PARSERUTILS_NEEDDATA);
 		}
-        
-        let requested_data = slice(self.utf8, self.cursor + offset, self.utf8.len()).to_owned();
+		
+		let requested_data = slice(self.utf8, self.cursor + offset, self.utf8.len()).to_owned();
 		 // Now try the read 
 		if self.IS_ASCII(self.utf8[self.cursor + offset]) {
 			len = 1;
@@ -386,8 +385,8 @@ impl lpu_inputstream {
 			
 			match(lpu_filter::parserutils_charset_utf8_char_byte_length(requested_data)) {
 				None=>{
-				 	return (None, PARSERUTILS_BADPARAM);
-				 	 
+					return (None, PARSERUTILS_BADPARAM);
+					 
 				},
 				Some(l)=> {
 					len=l as uint;
@@ -399,7 +398,7 @@ impl lpu_inputstream {
 	}
 
  
-    pub fn parserutils_inputstream_peek(&mut self, offset: uint)-> (Option<(~[u8],uint)>,parserutils_error) {
+	pub fn parserutils_inputstream_peek(&mut self, offset: uint)-> (Option<(~[u8],uint)>,parserutils_error) {
 		
 		let mut ptr:~[u8];
 		let mut len :uint;
@@ -416,7 +415,7 @@ impl lpu_inputstream {
 				
 				match(lpu_filter::parserutils_charset_utf8_char_byte_length(ptr)) {
 					None=>{
-					 	return (None, PARSERUTILS_BADPARAM);
+						return (None, PARSERUTILS_BADPARAM);
 					},
 					Some(l)=> {
 						len=l as uint;

@@ -17,18 +17,18 @@ pub struct parserutils_charset_aliases_canon {
 
 pub enum parserutils_error {
 	PARSERUTILS_OK = 0,
-    PARSERUTILS_BADPARAM = 1,
-    PARSERUTILS_NOMEM = 2,
-    PARSERUTILS_EOF = 3,
-    PARSERUTILS_BADENCODING = 4,
-    PARSERUTILS_NEEDDATA = 5,
-    PARSERUTILS_INVALID = 6,
-    PARSERUTILS_ICONV_ERROR = 8,
-    PARSERUTILS_SUCCESS = 9
+	PARSERUTILS_BADPARAM = 1,
+	PARSERUTILS_NOMEM = 2,
+	PARSERUTILS_EOF = 3,
+	PARSERUTILS_BADENCODING = 4,
+	PARSERUTILS_NEEDDATA = 5,
+	PARSERUTILS_INVALID = 6,
+	PARSERUTILS_ICONV_ERROR = 8,
+	PARSERUTILS_SUCCESS = 9
 }
 
 pub struct lpu {
-    // these two data structures together can be used for mibenum->canonical name conversion
+	// these two data structures together can be used for mibenum->canonical name conversion
 	canonical_name_list: ~[~str],
 	mibenum_map: ~LinearMap<u16,uint>,
 	// this data structure can be used for name (canonnical/alias) ->mibenum conversion
@@ -91,37 +91,37 @@ impl lpu {
 	}
 
 	pub fn parserutils__charset_alias_canonicalise(&self, alias: ~str) -> Option<parserutils_charset_aliases_canon> { 		
-        match self.alias_map.find(&alias) {        	
-        	None => None,       			
-        	Some(temp_mib_enum) => {
-        		match self.mibenum_map.find(temp_mib_enum) {
-        			None => None,        			
-        			Some(canonical_name_list_index) => {
-        				if (*canonical_name_list_index < self.canonical_name_list.len()) {
-        					
-        					let temp_name = copy (self.canonical_name_list[*canonical_name_list_index]);
-        					let temp_name_len = temp_name.len() as u16;
-        					Some( parserutils_charset_aliases_canon {
-							        mib_enum: *temp_mib_enum,
-							        name: temp_name,
-							        name_len: temp_name_len
-			    				}
-        					)
-        				}
-        				else {
-        					None
-        				}
-        			}
-        		}
-        	}
-        }
+		match self.alias_map.find(&alias) {        	
+			None => None,       			
+			Some(temp_mib_enum) => {
+				match self.mibenum_map.find(temp_mib_enum) {
+					None => None,        			
+					Some(canonical_name_list_index) => {
+						if (*canonical_name_list_index < self.canonical_name_list.len()) {
+							
+							let temp_name = copy (self.canonical_name_list[*canonical_name_list_index]);
+							let temp_name_len = temp_name.len() as u16;
+							Some( parserutils_charset_aliases_canon {
+									mib_enum: *temp_mib_enum,
+									name: temp_name,
+									name_len: temp_name_len
+								}
+							)
+						}
+						else {
+							None
+						}
+					}
+				}
+			}
+		}
 	}
 
 	pub fn parserutils_charset_mibenum_from_name(&self, alias: ~str) -> u16 {
-        match self.alias_map.find(&alias) {
-        	None => 0 ,
-        	Some(mib_enum) => *mib_enum
-        }
+		match self.alias_map.find(&alias) {
+			None => 0 ,
+			Some(mib_enum) => *mib_enum
+		}
 	}
 
 	pub fn parserutils_charset_mibenum_to_name(&self, mibenum: u16)-> Option<~str> {
@@ -137,6 +137,7 @@ impl lpu {
 			}
 		}
 	}
+	
 } //impl lpu
 
 pub fn lpu() -> arc::ARC<~lpu> {

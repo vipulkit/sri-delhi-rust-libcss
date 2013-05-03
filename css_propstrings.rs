@@ -570,7 +570,7 @@ impl css_propstrings {
 	pub fn css_propstrings(lwc_instance: arc::RWARC<~lwc>) -> ~css_propstrings {
 		let mut css_propstrings_instance = ~css_propstrings {
 			lwc_instance: lwc_instance.clone(),
-	    	propstrings: ~[],
+			propstrings: ~[],
 		};
 
 		let mut propstrings_list = ~[~"yellowgreen", ~"yellow", ~"whitesmoke", ~"white", ~"wheat", ~"violetred", ~"violet", ~"turquoise", ~"tomato", ~"thistle", ~"teal", ~"tan", ~"steelblue", ~"springgreen", ~"snow", ~"slategrey", ~"slategray", ~"slateblue", ~"skyblue", ~"silver", ~"sienna", ~"seashell", ~"seagreen", ~"sandybrown", ~"salmon", ~"saddlebrown", ~"royalblue", ~"rosybrown", ~"red", ~"purple", ~"powderblue", ~"plum", ~"pink", ~"peru", ~"peachpuff", ~"papayawhip", ~"palevioletred", ~"paleturquoise", ~"palegreen", ~"palegoldenrod", ~"orchid", ~"orangered", ~"orange", ~"olivedrab", ~"olive", ~"oldlace", ~"navy", ~"navajowhite", ~"moccasin", ~"mistyrose", ~"mintcream", ~"midnightblue", ~"mediumvioletred", ~"mediumturquoise", ~"mediumspringgreen", ~"mediumslateblue", ~"mediumseagreen", ~"mediumpurple", ~"mediumorchid", ~"mediumblue", ~"mediumaquamarine", ~"maroon", ~"magenta", ~"linen", ~"limegreen", ~"lime", ~"lightyellow", ~"lightsteelblue", ~"lightslategrey", ~"lightslategray", ~"lightslateblue", ~"lightskyblue", ~"lightseagreen", ~"lightsalmon", ~"lightpink", ~"lightgrey", ~"lightgreen", ~"lightgray", ~"lightgoldenrodyellow", ~"lightcyan", ~"lightcoral", ~"lightblue", ~"lemonchiffon", ~"lawngreen", ~"lavenderblush", ~"lavender", ~"khaki", ~"ivory", ~"indigo", ~"indianred", ~"hotpink", ~"honeydew", ~"grey", ~"greenyellow", ~"green", ~"gray", ~"goldenrod", ~"gold", ~"ghostwhite", ~"gainsboro", ~"fuchsia", ~"forestgreen", ~"floralwhite", ~"firebrick", ~"feldspar", ~"dodgerblue", ~"dimgrey", ~"dimgray", ~"deepskyblue", ~"deeppink", ~"darkviolet", ~"darkturquoise", ~"darkslategrey", ~"darkslategray", ~"darkslateblue", ~"darkseagreen", ~"darksalmon", ~"darkred", ~"darkorchid", ~"darkorange", ~"darkolivegreen", ~"darkmagenta", ~"darkkhaki", ~"darkgrey", ~"darkgreen", ~"darkgray", ~"darkgoldenrod", ~"darkcyan", ~"darkblue", ~"cyan", ~"crimson", ~"cornsilk", ~"cornflowerblue", ~"coral", ~"chocolate", ~"chartreuse", ~"cadetblue", ~"burlywood", ~"brown", ~"blueviolet", ~"blue", ~"blanchedalmond", ~"black", ~"bisque", ~"beige", ~"azure", ~"aquamarine", ~"aqua", ~"antiquewhite", ~"aliceblue", ~"balance", ~"avoid-column", ~"avoid-page", ~"column", ~"svg", ~"embedded-opentype", ~"opentype", ~"truetype", ~"woff", ~"format", ~"initial", ~"local", ~"src", ~"even", ~"odd", ~"currentColor", ~"-libcss-right", ~"-libcss-center", ~"-libcss-left", ~"hsla", ~"hsl", ~"rgba", ~"rgb", ~"blink", ~"line-through", ~"overline", ~"underline", ~"mix", ~"child", ~"female", ~"male", ~"monospace", ~"fantasy", ~"cursive", ~"sans-serif", ~"serif", ~"progress", ~"help", ~"wait", ~"text", ~"w-resize", ~"s-resize", ~"sw-resize", ~"se-resize", ~"n-resize", ~"nw-resize", ~"ne-resize", ~"e-resize", ~"move", ~"pointer", ~"default", ~"crosshair", ~"counters", ~"counter", ~"attr", ~"no-close-quote", ~"no-open-quote", ~"close-quote", ~"open-quote", ~"rect", ~"behind", ~"right-side", ~"far-right", ~"center-right", ~"center-left", ~"far-left", ~"left-side", ~"rightwards", ~"leftwards", ~"pre-line", ~"pre-wrap", ~"nowrap", ~"pre", ~"x-loud", ~"loud", ~"soft", ~"x-soft", ~"silent", ~"text-bottom", ~"middle", ~"text-top", ~"super", ~"sub", ~"baseline", ~"bidi-override", ~"embed", ~"lowercase", ~"uppercase", ~"capitalize", ~"justify", ~"center", ~"slower", ~"faster", ~"x-fast", ~"fast", ~"slow", ~"x-slow", ~"spell-out", ~"code", ~"continuous", ~"digits", ~"once", ~"absolute", ~"relative", ~"static", ~"x-high", ~"high", ~"low", ~"x-low", ~"avoid", ~"always", ~"visible", ~"invert", ~"upper-alpha", ~"lower-alpha", ~"georgian", ~"armenian", ~"upper-latin", ~"lower-latin", ~"lower-greek", ~"upper-roman", ~"lower-roman", ~"decimal-leading-zero", ~"decimal", ~"square", ~"circle", ~"disc", ~"outside", ~"inside", ~"lighter", ~"bolder", ~"bold", ~"small-caps", ~"oblique", ~"italic", ~"normal", ~"smaller", ~"larger", ~"xx-large", ~"x-large", ~"large", ~"small", ~"x-small", ~"xx-small", ~"hide", ~"show", ~"lower", ~"higher", ~"above", ~"level", ~"below", ~"table-caption", ~"table-cell", ~"table-column", ~"table-column-group", ~"table-row", ~"table-footer-group", ~"table-header-group", ~"table-row-group", ~"inline-table", ~"table", ~"inline-block", ~"run-in", ~"list-item", ~"block", ~"inline", ~"rtl", ~"ltr", ~"auto", ~"separate", ~"collapse", ~"thick", ~"medium", ~"thin", ~"outset", ~"inset", ~"ridge", ~"groove", ~"double", ~"solid", ~"dashed", ~"dotted", ~"hidden", ~"repeat", ~"repeat-y", ~"repeat-x", ~"no-repeat", ~"transparent", ~"scroll", ~"fixed", ~"both", ~"none", ~"important", ~"inherit", ~"z-index", ~"word-spacing", ~"width", ~"widows", ~"white-space", ~"volume", ~"voice-family", ~"visibility", ~"vertical-align", ~"unicode-bidi", ~"top", ~"text-transform", ~"text-indent", ~"text-decoration", ~"text-align", ~"table-layout", ~"stress", ~"speech-rate", ~"speak", ~"speak-punctuation", ~"speak-numeral", ~"speak-header", ~"right", ~"richness", ~"quotes", ~"position", ~"play-during", ~"pitch", ~"pitch-range", ~"pause-before", ~"pause-after", ~"pause", ~"page-break-inside", ~"page-break-before", ~"page-break-after", ~"padding-top", ~"padding-right", ~"padding-left", ~"padding-bottom", ~"padding", ~"overflow", ~"outline-width", ~"outline-style", ~"outline-color", ~"outline", ~"orphans", ~"opacity", ~"min-width", ~"min-height", ~"max-width", ~"max-height", ~"margin-top", ~"margin-right", ~"margin-left", ~"margin-bottom", ~"margin", ~"list-style-type", ~"list-style-position", ~"list-style-image", ~"list-style", ~"line-height", ~"letter-spacing", ~"left", ~"height", ~"font-weight", ~"font-variant", ~"font-style", ~"font-size", ~"font-family", ~"font", ~"float", ~"empty-cells", ~"elevation", ~"display", ~"direction", ~"cursor", ~"cue-before", ~"cue-after", ~"cue", ~"counter-reset", ~"counter-increment", ~"content", ~"column-width", ~"column-span", ~"column-rule-width", ~"column-rule-style", ~"column-rule-color", ~"column-rule", ~"column-gap", ~"column-fill", ~"column-count", ~"columns", ~"color", ~"clip", ~"clear", ~"caption-side", ~"break-inside", ~"break-before", ~"break-after", ~"bottom", ~"border-width", ~"border-top-width", ~"border-top-style", ~"border-top-color", ~"border-top", ~"border-style", ~"border-spacing", ~"border-right-width", ~"border-right-style", ~"border-right-color", ~"border-right", ~"border-left-width", ~"border-left-style", ~"border-left-color", ~"border-left", ~"border-color", ~"border-collapse", ~"border-bottom-width", ~"border-bottom-style", ~"border-bottom-color", ~"border-bottom", ~"border", ~"background-repeat", ~"background-position", ~"background-image", ~"background-color", ~"background-attachment", ~"background", ~"azimuth", ~"after", ~"before", ~"first-letter", ~"first-line", ~"not", ~"checked", ~"disabled", ~"enabled", ~"target", ~"empty", ~"only-of-type", ~"only-child", ~"last-of-type", ~"first-of-type", ~"last-child", ~"nth-last-of-type", ~"nth-of-type", ~"nth-last-child", ~"nth-child", ~"root", ~"first", ~"lang", ~"focus", ~"active", ~"hover", ~"visited", ~"link", ~"first-child", ~"all", ~"tv", ~"tty", ~"speech", ~"screen", ~"projection", ~"print", ~"handheld", ~"embossed", ~"braille", ~"aural", ~"page", ~"font-face", ~"namespace", ~"media", ~"import", ~"charset", ~"*"];
@@ -598,7 +598,7 @@ impl css_propstrings {
 	}
 
 	pub fn lwc_string_isequal(&mut self , lwc_string_instance: arc::RWARC<~lwc_string> , string_index: uint) -> bool {
-			lwc::lwc_string_isequal(lwc_string_instance.clone() , self.propstrings[string_index].clone())
+		lwc::lwc_string_isequal(lwc_string_instance.clone() , self.propstrings[string_index].clone())
 	}
 
 	pub fn lwc_string_data(&mut self, string_index:uint) -> ~str {
@@ -642,11 +642,11 @@ impl css_propstrings {
 			FIRST_LETTER, 
 			BEFORE, 
 			AFTER,
- 		];
- 		
- 		let mut return_value : Option<(css_selector_type, index_property)> = None;
+		];
+		
+		let mut return_value : Option<(css_selector_type, index_property)> = None;
 
- 		do (self.lwc_instance).write |l| {
+		do (self.lwc_instance).write |l| {
 			let name_intern = l.lwc_intern_string(copy name);
 
 			for pseudo_class_list.each |&string_index| {
@@ -673,7 +673,5 @@ impl css_propstrings {
 		}
 
 		return_value
- 	}
+	}
 }
-
- 
