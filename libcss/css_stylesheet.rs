@@ -664,12 +664,12 @@ impl css_stylesheet {
 							} ,
 							_=> {
 								while (i>0){
-									// Ignore errors 
-									self.selectors.css__selector_hash_remove(x.selectors[i]);
+									// Ignore errors
 									i -= 1;
+									self.selectors.css__selector_hash_remove(x.selectors[i]);
 								}
 								// Remove zeroth element
-								self.selectors.css__selector_hash_remove(x.selectors[i]);
+								//self.selectors.css__selector_hash_remove(x.selectors[i]);
 								return CSS_INVALID;
 							}
 						}
