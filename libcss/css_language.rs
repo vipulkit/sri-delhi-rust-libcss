@@ -54,7 +54,7 @@ pub struct css_language {
 
 pub impl css_language {
 	
-	pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:~[~css_token])-> css_result {
+	pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:&~[~css_token])-> css_result {
 			match event_type {
 				
 				CSS_PARSER_START_STYLESHEET => {
@@ -123,7 +123,7 @@ pub impl css_language {
 			CSS_OK
 		}
 
-		pub fn handleStartRuleset(&mut self, tokens:~[~css_token]) ->css_result	{
+		pub fn handleStartRuleset(&mut self, tokens:&~[~css_token]) ->css_result	{
 			
 			let mut cur:context_entry ;
 			let mut parent_rule :Option<CSS_RULE_DATA_TYPE> = None ;
@@ -139,8 +139,8 @@ pub impl css_language {
 			
 			let mut curRule = self.sheet.css_stylesheet_rule_create(CSS_RULE_SELECTOR);
 			
-			if !vec::is_empty(tokens) {
-				match self.parseSelectorList(&tokens, curRule) {
+			if !vec::is_empty(*tokens) {
+				match self.parseSelectorList(tokens, curRule) {
 					CSS_OK => {},
 					x      =>   return x  
 				}
@@ -190,7 +190,7 @@ pub impl css_language {
 			}
 	}
 
-	pub fn handleStartAtRule(&self, vector:~[~css_token])->css_result {
+	pub fn handleStartAtRule(&self, vector:&~[~css_token])->css_result {
 		CSS_OK  
 	}
 
@@ -273,7 +273,7 @@ pub impl css_language {
 	}
 
 
-	pub fn handleBlockContent(&mut self, tokens:~[~css_token])-> css_result {
+	pub fn handleBlockContent(&mut self, tokens:&~[~css_token])-> css_result {
 		// * Block content comprises either declarations (if the current block is
 		// * associated with @page, @font-face or a selector), or rulesets (if the
 		// * current block is associated with @media). 
@@ -303,7 +303,7 @@ pub impl css_language {
 		}       
 	}
 
-	pub fn handleDeclaration(&mut self, tokens:~[~css_token])->css_result {
+	pub fn handleDeclaration(&mut self, tokens:&~[~css_token])->css_result {
 		let ctx: @mut uint = @mut 0u;   
 		 // Locations where declarations are permitted:
 		 // *
@@ -321,7 +321,7 @@ pub impl css_language {
 					match curRule {
 						RULE_SELECTOR(_) | RULE_PAGE (_) | RULE_FONT_FACE(_) => {                                   
 							// Strip any leading whitespace (can happen if in nested block) 
-							css_properties::consumeWhitespace(&tokens, ctx);
+							css_properties::consumeWhitespace(tokens, ctx);
 
 							// IDENT ws ':' ws value 
 							// * 
@@ -333,18 +333,18 @@ pub impl css_language {
 								*ctx = *ctx + 1;
 								match ident.token_type { 
 									CSS_TOKEN_IDENT(_) => {
-										css_properties::consumeWhitespace(&tokens, ctx);
+										css_properties::consumeWhitespace(tokens, ctx);
 										if tokens.len() <= *ctx || !css_language::tokenIsChar(&tokens[*ctx],':') {
 											return CSS_INVALID
 										}
 										else {
 											*ctx += 1;
-											css_properties::consumeWhitespace(&tokens, ctx);
+											css_properties::consumeWhitespace(tokens, ctx);
 											match curRule {
 												RULE_FONT_FACE(font_face_rule) =>	
-													return css_language::css__parse_font_descriptor(ident, &tokens, ctx, font_face_rule),
+													return css_language::css__parse_font_descriptor(ident, tokens, ctx, font_face_rule),
 												_ =>	
-													return self.parseProperty(ident, &tokens, ctx, curRule)	
+													return self.parseProperty(ident, tokens, ctx, curRule)	
 											}
 										}				
 									} 
