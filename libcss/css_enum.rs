@@ -99,6 +99,11 @@ pub enum css_unit {
 	CSS_UNIT_KHZ                = 0xf
 }
 
+
+static   UNIT_ANGLE :  css_unit = CSS_UNIT_DEG ;	//< Default level >
+static   UNIT_TIME  :  css_unit = CSS_UNIT_MS  ;	//< Default level >
+static   UNIT_FREQ  :  css_unit = CSS_UNIT_HZ  ;	//< Default level >
+
 pub enum css_stylesheet_params_version {
 	CSS_STYLESHEET_PARAMS_VERSION_1 = 1
 }
@@ -1642,31 +1647,7 @@ static FLAG_INHERIT:	u8		= (1u8<<1);
 // 	FLAG_INHERIT			= (1<<1)
 // }
 
-pub enum unit {
-	UNIT_PX   = 0,
-	UNIT_EX   = 1,
-	UNIT_EM   = 2,
-	UNIT_IN   = 3,
-	UNIT_CM   = 4,
-	UNIT_MM   = 5,
-	UNIT_PT   = 6,
-	UNIT_PC   = 7,
 
-	UNIT_PCT  = (1 << 8),
-
-	UNIT_DEG  = (1 << 9) + 0,
-	UNIT_GRAD = (1 << 9) + 1,
-	UNIT_RAD  = (1 << 9) + 2,
-
-	UNIT_MS   = (1 << 10) + 0,
-	UNIT_S    = (1 << 10) + 1,
-
-	UNIT_HZ   = (1 << 11) + 0,
-	UNIT_KHZ  = (1 << 11) + 1
-} 
-static   UNIT_ANGLE :  unit = UNIT_DEG ;	//< Default level >
-static   UNIT_TIME  :  unit = UNIT_MS  ;	//< Default level >
-static   UNIT_FREQ  :  unit = UNIT_HZ  ;	//< Default level >
 
 type  colour =  u32;
 

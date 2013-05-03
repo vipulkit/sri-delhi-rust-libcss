@@ -8,8 +8,6 @@ extern mod wapcaplet;
 extern mod css_propstrings;
 extern mod css_properties;
 
-
-
 use css_enum::* ;
 use css_stylesheet::*;
 use std::arc;
@@ -33,26 +31,14 @@ pub struct css_language {
 	lwc_instance:arc::RWARC<~lwc>,		
 	context:~[context_entry], 
 	state:language_state,	
-	strings: ~css_propstrings,  //  css_propstrings_parallel
+	strings: ~css_propstrings,  
 	properties: ~css_properties,
 	default_namespace:Option<~str>, 
 	namespaces:~[~css_namespace],
 }
 
 	fn  css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc>) -> ~css_language {
-		//let empty_lwc_string = sheet.lwc_instance.lwc_intern_string(@"");
-		//lwc_instance:sheet.lwc_instance,      
-		// strings:copy sheet.propstrings,
-		// default_namespace:empty_lwc_string,  
-		// namespaces:@css_namespace
-		// {
-		// 	prefix:empty_lwc_string,	
-		// 	uri:empty_lwc_string	
-		// },	
-		// num_namespaces:0	
-		// let empty_lwc_string = lwc_inst.lwc_intern_string(@"");
 		
-
 	~css_language {
 		sheet:sheet,
 		lwc_instance: lwc_inst.clone(),
@@ -62,8 +48,6 @@ pub struct css_language {
 		state:CHARSET_PERMITTED,
 		default_namespace:None,   
 		namespaces:~[]
-		//~css_namespce{prefix:None, uri:None}
-		//{prefix:lwc_inst.clone().lwc_intern_string(~""), uri:lwc_inst.clone().lwc_intern_string(@"")}]
 	}
 }
 
@@ -118,9 +102,9 @@ pub impl css_language {
 
 	pub fn handleStartStylesheet(&mut self ) -> css_result {
 			let entry:context_entry = context_entry {
-											event_type: CSS_PARSER_START_STYLESHEET, 
-											data:None                                       
-										 };
+				event_type: CSS_PARSER_START_STYLESHEET, 
+				data:None                                       
+			};
 					
 			self.context.push(entry);
 			CSS_OK
@@ -132,7 +116,7 @@ pub impl css_language {
 			}
 			match self.context.last().event_type {
 				CSS_PARSER_START_STYLESHEET => {},
-										_   =>return CSS_INVALID
+				_   =>return CSS_INVALID
 			}
 
 			self.context.pop();
@@ -163,18 +147,18 @@ pub impl css_language {
 			}
 
 			let mut entry:context_entry = context_entry {
-											event_type: CSS_PARSER_START_STYLESHEET, 
-											data:Some(curRule)
-										 };
+				event_type: CSS_PARSER_START_STYLESHEET, 
+				data:Some(curRule)
+			};
 			self.context.push(entry);
 
 		
 			match css_stylesheet::css__stylesheet_add_rule(self.sheet, curRule, parent_rule) {
 				CSS_OK => 	{},
 				x      => 	{
-								self.context.pop();
-								return x  
-							}   
+					self.context.pop();
+					return x  
+				}   
 			 } 
 			
 			// /* Flag that we've had a valid rule, so @import/@namespace/@charset 
@@ -195,10 +179,10 @@ pub impl css_language {
 				cur=self.context[self.context.len()-1];
 				match cur.event_type {
 					CSS_PARSER_START_RULESET => {
-													self.context.pop();
-													CSS_OK
-												},
-					_                        =>     CSS_INVALID
+						self.context.pop();
+						CSS_OK
+					},
+					_ =>	CSS_INVALID
 				}
 			}
 			else {
@@ -217,10 +201,10 @@ pub impl css_language {
 			cur=self.context[self.context.len()-1];
 			match cur.event_type {
 				CSS_PARSER_START_ATRULE => {
-												self.context.pop();
-												CSS_OK
-											},
-				_                        =>     CSS_INVALID
+					self.context.pop();
+					CSS_OK
+				},
+				_ =>	CSS_INVALID
 			}
 		}
 		else {
@@ -241,8 +225,8 @@ pub impl css_language {
 		if !vec::is_empty(self.context) {
 			cur=self.context[self.context.len()-1];
 			match cur.event_type {
-				CSS_PARSER_START_BLOCK => {},
-				_                        =>     entry.data = cur.data
+				CSS_PARSER_START_BLOCK =>	{},
+				_ =>	entry.data = cur.data
 			}
 		}
 
@@ -280,8 +264,7 @@ pub impl css_language {
 						}
 					}
 				},
-				_    => 
-					return CSS_INVALID
+				_ 	=>	return CSS_INVALID
 			} // end of match
 		}
 		else {
@@ -469,8 +452,8 @@ pub impl css_language {
 
 		style = self.sheet.css__stylesheet_style_create();
 
-		self.properties.property_handlers[index - AZIMUTH as uint]/*(self.strings , vector , ctx , style)*/;
-		self.css__parse_important(vector , ctx);
+		(*self.properties.property_handlers[index - AZIMUTH as uint])(&mut self.strings , vector , ctx , style);
+		let flags = self.css__parse_important(vector , ctx);
 
 		css_properties::consumeWhitespace(vector , ctx);
 
@@ -478,8 +461,15 @@ pub impl css_language {
 		//    	let ident =&tokens[*ctx];
 		// 	*ctx = *ctx + 1;
 
+		if (flags != 0) {
+			self.css__make_style_important(style);
+		}
 
-		CSS_OK
+		/* Append style to rule */
+		match self.sheet.css__stylesheet_rule_append_style(curRule, style) {
+			CSS_OK => CSS_OK,
+			x => x
+		}
 	}
 
 	pub fn parseSelector(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result, Option<@mut css_selector>) {
@@ -771,28 +761,6 @@ pub impl css_language {
 	}
 
 	/**
-	* Parse !important
-	*
-	* \param c       Parsing context
-	* \param vector  Vector of tokens to process
-	* \param ctx     Pointer to vector iteration context
-	* \param result  Pointer to location to receive result
-	* \return CSS_OK on success,
-	*         CSS_INVALID if "S* ! S* important" is not at the start of the vector
-	*
-	* Post condition: \a *ctx is updated with the next token to process
-	*                 If the input is invalid, then \a *ctx remains unchanged.
-	*/
-	pub fn css__parse_important(&mut self, vector:&~[~css_token], ctx:@mut uint) -> css_result{
-		CSS_OK
-	}
-
-	pub fn css__make_style_important(&mut self, vector:&~[~css_token], ctx:@mut uint) -> css_result{
-		CSS_OK
-	}
-
-
-	/**
 	 * Look up a namespace prefix
 	 *
 	 * \param c       Language parser context
@@ -800,7 +768,6 @@ pub impl css_language {
 	 * \param uri     Pointer to location to receive namespace URI
 	 * \return CSS_OK on success, CSS_INVALID if prefix is not found
 	 */
-	//pub fn lookupNamespace(&self, prefix:@lwc_string, uri:@mut lwc_string) -> css_result
 	pub fn lookupNamespace(&mut self, prefix:Option<arc::RWARC<~lwc_string>>, qname:@mut css_qname) -> css_result {
 		let mut idx:uint=0;
 		
@@ -1186,7 +1153,9 @@ pub impl css_language {
 	}
 
 	pub fn  parseNth(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result,Option<@mut css_selector_detail>) {
-		return (CSS_INVALID, None)
+		
+
+		return (CSS_OK,None)
 	}
 	// ===========================================================================================================
 	// CSS-LANGUAGE implementation/data-structs ends here 
@@ -1214,6 +1183,30 @@ pub impl css_language {
 						
 		CSS_INVALID
 	}   
-
 	
+	// ===========================================================================================================
+	// PARSE-IMPORTANT implementation/data-structs starts here 
+	// ===========================================================================================================
+
+	/**
+	* Parse !important
+	*
+	* \param c       Parsing context
+	* \param vector  Vector of tokens to process
+	* \param ctx     Pointer to vector iteration context
+	* \param result  Pointer to location to receive result
+	* \return CSS_OK on success,
+	*         CSS_INVALID if "S* ! S* important" is not at the start of the vector
+	*
+	* Post condition: \a *ctx is updated with the next token to process
+	*                 If the input is invalid, then \a *ctx remains unchanged.
+	*/
+	pub fn css__parse_important(&mut self, vector:&~[~css_token], ctx:@mut uint) -> u8{
+		0
+	}
+
+	pub fn css__make_style_important(&mut self, style: @mut css_style) {
+		
+	}
+
 }
