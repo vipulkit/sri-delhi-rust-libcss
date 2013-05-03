@@ -51,7 +51,7 @@ macro_rules! is_match(
 	);
 )
 
-pub struct lcss_lexer {
+pub struct css_lexer {
 	transform_function_whitespace: bool,
 	internal_vector: ~[u8],
 	length: uint, // Counted in bytes, not characters
@@ -63,7 +63,7 @@ pub struct lcss_lexer {
 }
 
 
-impl lcss_lexer {
+impl css_lexer {
    
 	pub fn lexer_append_data(&mut self, input_data: ~[u8]) {
 		self.lpu_inputstream_instance.parserutils_inputstream_append(input_data);
@@ -1480,18 +1480,14 @@ impl lcss_lexer {
 	}
 }
 
-pub fn lcss_lexer( (lpu_inputstream , error ): (Option<~lpu_inputstream> , parserutils_error)) -> Option<~lcss_lexer> {
-	let mut lexer : ~lcss_lexer= 
-		~lcss_lexer{ 
+pub fn css_lexer( inputstream: ~lpu_inputstream ) -> Option<~css_lexer> {
+	let mut lexer = 
+		~css_lexer{ 
 			transform_function_whitespace: false,
 			internal_vector: ~[],
 			length: 0, 
 			position: 0, 
-			lpu_inputstream_instance: match (lpu_inputstream , error) {
-
-				(None, _) => return None,
-				(x, _) => x.unwrap()
-			},
+			lpu_inputstream_instance: inputstream,
 			inputstream_eof: false,
 			eof_token_sent: false,
 			flagConsumeComments:false,
