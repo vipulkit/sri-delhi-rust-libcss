@@ -130,39 +130,64 @@ fn css__stylesheet_style_functionalities_test(css_stylesheet_instance : @mut css
 	let mut css_style_instance = @mut css_style {bytecode : ~[]};  // value is initialised					
 
 	if (!css_stylesheet_instance.cached_style.is_none()){			
-			css_style_instance = css_stylesheet_instance.cached_style.unwrap();			
+		css_style_instance = css_stylesheet_instance.cached_style.unwrap();			
 	}
-	// else{
-	// 	  ()
-	// }
-			 
+					 
 	// A.			
 	let css_style_value = css_stylesheet_instance.css__stylesheet_style_create();
 
-	if css_style_value.bytecode == css_style_instance.bytecode{  		 
-		test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_style_create", ~"css_style_instance.bytecode", fmt!("%?", copy css_style_instance.bytecode), fmt!("%?", copy css_style_value.bytecode),  ~"") ;
+	// Appending string data for proper formatting.
+	let mut string_a : ~str = ~"";			
+	css_style_value.bytecode.each_mut(|&elt| {				
+	string_a.push_str(fmt!("%? ", elt));
+	true
+	});
+
+	let mut string_b : ~str = ~"";			
+	css_style_instance.bytecode.each_mut(|&elt| {				
+		string_b.push_str(fmt!("%? ", elt));
+		true
+	});
+
+						 					
+	if string_a.eq(&string_b){	
+	  	test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_style_create", ~"css_style_instance.bytecode", string_a, string_b,  ~"") ;
 	}
 	else{
-		test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_style_create", ~"css_style_instance.bytecode", fmt!("%?", copy css_style_value.bytecode), fmt!("%?", copy css_style_value.bytecode),  ~"") ;
+	  	test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_style_create", ~"css_style_instance.bytecode", string_a, string_b,  ~"") ;
 	}
+	
 
 	// B.
-	let css_style_source = @mut css_style { 
-		bytecode:~[11]
-	};
+	let css_style_source = @mut css_style {
+									bytecode:~[11]};
 	
-	let b4Value : ~[u32] = copy css_style_value.bytecode + copy css_style_source.bytecode;
+    let mut b4Value : ~[u32] = copy css_style_value.bytecode + copy css_style_source.bytecode;
 
 	css_stylesheet::css__stylesheet_merge_style(css_style_value, css_style_source); 
 
 	let mut afterValue = copy css_style_value.bytecode;
 				
-	if b4Value.eq(&afterValue){
-			test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_merge_style", ~"css_style_instance.bytecode", fmt!("%?",b4Value), fmt!("%?",afterValue), ~"") ;
-	}
-	else{
-		test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_merge_style", ~"css_style_instance.bytecode", fmt!("%?",b4Value), fmt!("%?",afterValue), ~"") ;
-	}
+	// Appending string data for proper formatting.
+	let mut string_a : ~str = ~"";			
+	b4Value.each_mut(|&elt| {				
+		string_a.push_str(fmt!("%? ", elt));
+		true
+	});
+
+	let mut string_b : ~str = ~"";			
+	afterValue.each_mut(|&elt| {				
+		string_b.push_str(fmt!("%? ", elt));
+		true
+	});
+
+	
+	if string_a.eq(&string_b){	
+		  	test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_merge_style", ~"css_style_instance.bytecode", string_a, string_b, ~"") ;
+	  }
+    else{
+	  	test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_merge_style", ~"css_style_instance.bytecode", string_a, string_b, ~"") ;
+	  }
 
 
 	// C.
@@ -177,13 +202,26 @@ fn css__stylesheet_style_functionalities_test(css_stylesheet_instance : @mut css
 	// afterValue is updated
 	afterValue = copy css_style_value.bytecode;
 
+	// Appending string data for proper formatting.
+	let mut string_a : ~str = ~"";			
+	b4Value.each_mut(|&elt| {				
+		string_a.push_str(fmt!("%? ", elt));
+		true
+	});
+
+	let mut string_b : ~str = ~"";			
+	afterValue.each_mut(|&elt| {				
+		string_b.push_str(fmt!("%? ", elt));
+		true
+	});
+
 			 
-	if afterValue.eq(&b4Value){
-		test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_style_append", ~"css_style_instance.bytecode", fmt!("%?",b4Value), fmt!("%?",afterValue), ~"") ;
-	}
-	else{
-		test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_style_append", ~"css_style_instance.bytecode", fmt!("%?",b4Value), fmt!("%?",afterValue), ~"") ;
-	}
+	if string_a.eq(&string_b){
+	  	test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_style_append", ~"css_style_instance.bytecode", string_a, string_b, ~"") ;
+	 }
+	 else{
+	  	test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_style_append", ~"css_style_instance.bytecode", string_a, string_b, ~"") ;
+	 }
 
 	// D.
 	let value : &[u32] = &[2000, 90, 100]; // random value for testing
@@ -196,11 +234,25 @@ fn css__stylesheet_style_functionalities_test(css_stylesheet_instance : @mut css
 	// afterValue is updated
 	afterValue = copy css_style_value.bytecode;
 
+	// Appending string data for proper formatting.
+	let mut string_a : ~str = ~"";			
+	b4Value.each_mut(|&elt| {				
+		string_a.push_str(fmt!("%? ", elt));
+		true
+	});
+
+	let mut string_b : ~str = ~"";			
+	afterValue.each_mut(|&elt| {				
+		string_b.push_str(fmt!("%? ", elt));
+		true
+	});
+
+
 	if afterValue.eq(&b4Value){
-		test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_style_vappend", ~"css_style_instance.bytecode", fmt!("%?",b4Value), fmt!("%?",afterValue), ~"") ;
+		  	test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_style_vappend", ~"css_style_instance.bytecode", string_a, string_b, ~"") ;
 	}
 	else{
-		test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_style_vappend", ~"css_style_instance.bytecode", fmt!("%?",b4Value), fmt!("%?",afterValue), ~"") ;
+		  	test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_style_vappend", ~"css_style_instance.bytecode", string_a, string_b, ~"") ;
 	}
 
 	// Updating the values

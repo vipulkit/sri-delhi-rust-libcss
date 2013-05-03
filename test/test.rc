@@ -84,7 +84,9 @@ impl test_report {
 
 	// do forcefull logging in the end, if user not done file logging during usage
 	fn do_forceful_log_dump(&self) {
+		self.file_handle.write_line("");
 		self.file_handle.write_line(fmt!("Test File, External argument, Module, File, Function, Internal test argument, Expected output, Obtained output, Result, Comment"));
+		self.file_handle.write_line("");
 		for self.log_list.each() |log_entry| {
 			self.file_handle.write_line (
 					fmt!("%s,%s,%s,%s,%s,%s,%s, %s, %s, %s",
