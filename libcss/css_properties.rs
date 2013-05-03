@@ -19,8 +19,7 @@ use core::str::*;
 //use css_propstrings::*; 
 pub struct css_token {
 	token_type: css_token_type,
-	data: ~[u8],
-	idata: arc::RWARC<~lwc_string>,
+	idata: Option<arc::RWARC<~lwc_string>>,
 	// col: u32,
 	// line: u32
 }
@@ -264,7 +263,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), INHERIT as uint) 
+			 } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) 
 		) {
 			//token=&vector[*ctx];
 			*ctx += 1;
@@ -275,7 +274,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), LEFTWARDS as uint)
+			 } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFTWARDS as uint)
 		) {
 			
 
@@ -289,7 +288,7 @@ impl css_properties {
 			match (token.token_type) {
 				CSS_TOKEN_IDENT(_) => true,
 				_=> false
-			 } && strings.lwc_string_caseless_isequal(token.idata.clone(), RIGHTWARDS as uint) 
+			 } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHTWARDS as uint) 
 			) {
 			//token=&vector[*ctx];
 			*ctx += 1;
@@ -303,7 +302,7 @@ impl css_properties {
 			 } 
 		)
 			{
-			if strings.lwc_string_caseless_isequal(token.idata.clone(), LEFT_SIDE as uint) {
+			if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT_SIDE as uint) {
 				//token=&vector[*ctx];
 				*ctx += 1;
 				value = AZIMUTH_LEFT_SIDE;
@@ -311,7 +310,7 @@ impl css_properties {
 			}
 
 			else if ( 
-			strings.lwc_string_caseless_isequal(token.idata.clone(), FAR_LEFT as uint) 
+			strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_LEFT as uint) 
 			) {
 				//token=&vector[*ctx];
 				*ctx += 1;
@@ -319,7 +318,7 @@ impl css_properties {
 
 			}
 			else if ( 
-			strings.lwc_string_caseless_isequal(token.idata.clone(), LEFT as uint) 
+			strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT as uint) 
 			) {
 				//token=&vector[*ctx];
 				*ctx += 1;
@@ -327,7 +326,7 @@ impl css_properties {
 
 			}
 			else if ( 
-			 strings.lwc_string_caseless_isequal(token.idata.clone(), CENTER_LEFT as uint) 
+			 strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER_LEFT as uint) 
 			) {
 				//token=&vector[*ctx];
 				*ctx += 1;
@@ -335,7 +334,7 @@ impl css_properties {
 
 			}
 			else if ( 
-			 strings.lwc_string_caseless_isequal(token.idata.clone(), CENTER as uint) 
+			 strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER as uint) 
 			) {
 				//token=&vector[*ctx];
 				*ctx += 1;
@@ -343,7 +342,7 @@ impl css_properties {
 
 			}
 			else if ( 
-			 strings.lwc_string_caseless_isequal(token.idata.clone(),CENTER_RIGHT as uint) 
+			 strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),CENTER_RIGHT as uint) 
 			) {
 				//token=&vector[*ctx];
 				*ctx += 1;
@@ -351,7 +350,7 @@ impl css_properties {
 
 			}
 			else if ( 
-			 strings.lwc_string_caseless_isequal(token.idata.clone(), RIGHT as uint) 
+			 strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT as uint) 
 			) {
 				//token=&vector[*ctx];
 				*ctx += 1;
@@ -359,7 +358,7 @@ impl css_properties {
 
 			}
 			else if ( 
-			 strings.lwc_string_caseless_isequal(token.idata.clone(), FAR_RIGHT as uint) 
+			 strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_RIGHT as uint) 
 			) {
 				//token=&vector[*ctx];
 				*ctx += 1;
@@ -367,7 +366,7 @@ impl css_properties {
 
 			}
 			else if ( 
-			 strings.lwc_string_caseless_isequal(token.idata.clone(), RIGHT_SIDE as uint) 
+			 strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT_SIDE as uint) 
 			) {
 				//token=&vector[*ctx];
 				*ctx += 1;
@@ -375,7 +374,7 @@ impl css_properties {
 
 			}
 			else if ( 
-			 strings.lwc_string_caseless_isequal(token.idata.clone(), BEHIND as uint) 
+			 strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BEHIND as uint) 
 			) {
 				//token=&vector[*ctx];
 				*ctx += 1;
@@ -395,31 +394,31 @@ impl css_properties {
 					_=> false
 			 	}&& value == AZIMUTH_BEHIND
 			) {
-				if strings.lwc_string_caseless_isequal(token.idata.clone(), LEFT_SIDE as uint) {
+				if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT_SIDE as uint) {
 					value |= AZIMUTH_LEFT_SIDE;
 				}
-				if strings.lwc_string_caseless_isequal(token.idata.clone(), FAR_LEFT as uint) {
+				if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_LEFT as uint) {
 					value |= AZIMUTH_FAR_LEFT;
 				}
-				if strings.lwc_string_caseless_isequal(token.idata.clone(), LEFT as uint) {
+				if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT as uint) {
 					value |= AZIMUTH_LEFT;
 				}
-				if strings.lwc_string_caseless_isequal(token.idata.clone(), CENTER_LEFT as uint) {
+				if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER_LEFT as uint) {
 					value |= AZIMUTH_CENTER_LEFT;
 				}
-				if strings.lwc_string_caseless_isequal(token.idata.clone(), CENTER as uint) {
+				if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER as uint) {
 					value |=  AZIMUTH_CENTER;
 				}
-				if strings.lwc_string_caseless_isequal(token.idata.clone(), CENTER_RIGHT as uint) {
+				if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER_RIGHT as uint) {
 					value |= AZIMUTH_CENTER_RIGHT;
 				}
-				if strings.lwc_string_caseless_isequal(token.idata.clone(), RIGHT as uint) {
+				if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT as uint) {
 					value |= AZIMUTH_RIGHT;
 				}
-				if strings.lwc_string_caseless_isequal(token.idata.clone(), FAR_RIGHT as uint) {
+				if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_RIGHT as uint) {
 					value |= AZIMUTH_FAR_RIGHT;
 				}
-				if strings.lwc_string_caseless_isequal(token.idata.clone(), RIGHT_SIDE as uint) {
+				if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT_SIDE as uint) {
 					value |= AZIMUTH_RIGHT_SIDE;
 				}
 				else {
@@ -433,7 +432,7 @@ impl css_properties {
 					_=> false
 			 	}&& value != AZIMUTH_BEHIND
 			) {
-				if strings.lwc_string_caseless_isequal(token.idata.clone(), BEHIND as uint) {
+				if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BEHIND as uint) {
 					value |= AZIMUTH_BEHIND;
 				}
 				else {

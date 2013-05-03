@@ -102,7 +102,7 @@ impl css_lexer {
 	}
 	
 
-	pub fn css__lexer_get_token(&mut self) -> (Option<css_token_type>, lexer_error) {
+	pub fn get_token(&mut self) -> (Option<css_token_type>, lexer_error) {
 		// if self.streamLen == 0 {
 		//   return (None, LEXER_NEEDDATA)  ;
 		// }
