@@ -34,18 +34,18 @@ pub impl lwc {
 		}
 	}
 
-	pub fn lwc_calculate_hash(string: &str) -> u32{
+	pub fn lwc_calculate_hash(string: &str) -> u32 {
 		let mut z: u32 = 0x811c9dc5;
-	    let mut i: uint = 0;
-	    let mut string_index = str::char_len(string);
-	    while string_index>0 {
-	        z = z*0x01000193;
-	        z = (z^(string[i]) as u32);
-	        string_index = string_index-1;
-	        i = i+1; 
-	    }
-	    z = z%4091;
-	    z
+		let mut i: uint = 0;
+		let mut string_index = str::char_len(string);
+		while string_index>0 {
+			z = z*0x01000193;
+			z = (z^(string[i]) as u32);
+			string_index = string_index-1;
+			i = i+1; 
+		}
+		z = z%4091;
+		z
 	}
 
 	pub fn lwc_calculate_lcase_hash(string: &str) -> u32 {
@@ -56,8 +56,8 @@ pub impl lwc {
 		while string_index>0 {
 			z = z*0x01000193;
 			z = (z^lwc::dolower(string[i]) as u32);
-	        string_index = string_index-1;
-	        i = i+1;
+			string_index = string_index-1;
+			i = i+1;
 		}
 		z = z%4091;
 		z
@@ -65,27 +65,27 @@ pub impl lwc {
 
 	pub fn lwc_lcase_strncmp(s1: &str, s2: &str, n: uint) -> int {
 		let mut i: uint = 0;
-	    let mut t = n;
-	    while t>0 {
-	    	t = t-1;
-	    	i = i+1;
-	        if s1[i] != lwc::dolower(s2[i]) as u8 {
-	            return 1;
-	        }
-	    }
-	    return 0;
+		let mut t = n;
+		while t>0 {
+			t = t-1;
+			i = i+1;
+			if s1[i] != lwc::dolower(s2[i]) as u8 {
+				return 1;
+			}
+		}
+		return 0;
 	}
 
 	pub fn lwc_lcase_memcpy(target: &str, source: &str, n: uint) {
 		let mut i: uint = 0;
 		let mut t =n;
 		let mut str1: ~str = str::from_slice(source);
-	    let mut str2: ~str = str::from_slice(target);
-	    while t>0 {
-	        t = t - 1;
-	        i = i + 1;
-	        str2[i] = lwc::dolower(str1[i]) as u8;
-	    }
+		let mut str2: ~str = str::from_slice(target);
+		while t>0 {
+			t = t - 1;
+			i = i + 1;
+			str2[i] = lwc::dolower(str1[i]) as u8;
+		}
 	}
 
 
@@ -131,7 +131,6 @@ pub impl lwc {
 
 			let string_list_arc_clone = string_list_arc.clone();
 			let current_thread_number = thread_number;
-
 
 			do task::spawn {
 				let start_index = current_thread_number * size_of_slice;
@@ -397,7 +396,6 @@ pub impl lwc {
 				string = copy s.string;
 				case_insensitive_is_none = true;
 			}
-			
 		}
 
 		if (case_insensitive_is_none) {
