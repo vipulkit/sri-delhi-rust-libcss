@@ -411,8 +411,8 @@ pub impl css_language {
 
 		match token.token_type {
 			CSS_TOKEN_CHAR(c) => {   
-					if lwc::lwc_string_length(token.idata.clone()) == 1 {
-						let mut token_char = lwc::lwc_string_data(token.idata.clone()).char_at(0);
+					if lwc::lwc_string_length(token.idata.get_ref().clone()) == 1 {
+						let mut token_char = lwc::lwc_string_data(token.idata.get_ref().clone()).char_at(0);
 
 						// Ensure lowercase comparison 
 						if 'A' <= token_char && token_char <= 'Z' {
@@ -440,7 +440,7 @@ pub impl css_language {
 		let mut index = AZIMUTH as uint;
 
 		while (index < Z_INDEX as uint) {
-			if self.strings.lwc_string_caseless_isequal(property.idata.clone() , index) {
+			if self.strings.lwc_string_caseless_isequal(property.idata.get_ref().clone() , index) {
 				break
 			}
 			index +=1;
@@ -642,7 +642,7 @@ pub impl css_language {
 		token = &vector[*ctx];
 		
 		if !css_language::tokenIsChar(token, '|') {
-			 prefix = Some(token.idata.clone());
+			 prefix = Some(token.idata.get_ref().clone());
 			*ctx += 1; //Iterate
 		}
 
@@ -658,7 +658,7 @@ pub impl css_language {
 			*ctx += 1; //Iterate
 
 			match self.lookupNamespace(prefix, qname) {
-				CSS_OK  => qname.name = lwc::lwc_string_data(vector[*ctx].idata.clone()),
+				CSS_OK  => qname.name = lwc::lwc_string_data(vector[*ctx].idata.get_ref().clone()),
 				error   => return error
 			}   
 		} 
@@ -732,7 +732,7 @@ pub impl css_language {
 
 		match token.token_type {
 			CSS_TOKEN_HASH(_)	=> {
-				let qname:css_qname=css_qname{ns:~"", name:lwc::lwc_string_data(token.idata.clone())};
+				let qname:css_qname=css_qname{ns:~"", name:lwc::lwc_string_data(token.idata.get_ref().clone())};
 				match css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_ID, qname, 
 											CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false) {
 					(CSS_OK, res) => {
@@ -824,7 +824,7 @@ pub impl css_language {
 
 		match token.token_type {
 			CSS_TOKEN_IDENT(_) => {
-				let qname:css_qname=css_qname{ns:~"", name:lwc::lwc_string_data(token.idata.clone())};
+				let qname:css_qname=css_qname{ns:~"", name:lwc::lwc_string_data(token.idata.get_ref().clone())};
 				return css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_CLASS, qname, 
 													CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false)
 			}
@@ -883,7 +883,7 @@ pub impl css_language {
 			*ctx +=1; //Iterate
 		} 
 		else if (*ctx < vector.len() && css_language::tokenIsChar(&vector[*ctx], '|')) {
-			prefix = Some(token.idata.clone());
+			prefix = Some(token.idata.get_ref().clone());
 			*ctx += 1;
 			if *ctx >= vector.len() {
 				return (CSS_INVALID, None)
@@ -900,7 +900,7 @@ pub impl css_language {
 		let qname:@mut css_qname=@mut css_qname{ns:~"", name:~""};
 		match self.lookupNamespace(prefix, qname) {	CSS_OK  => {}, error   => return (error,None)}   
 
-		qname.name = lwc::lwc_string_data(vector[*ctx].idata.clone());
+		qname.name = lwc::lwc_string_data(vector[*ctx].idata.get_ref().clone());
 
 		css_properties::consumeWhitespace(vector, ctx);
 
@@ -957,7 +957,7 @@ pub impl css_language {
 		
 		 
 		return css_stylesheet::css__stylesheet_selector_detail_init (tkn_type,copy *qname, CSS_SELECTOR_DETAIL_VALUE_STRING,
-							match value {Some(tkn)=>Some(lwc::lwc_string_data(tkn.idata.clone())), None => None }, None, false)
+							match value {Some(tkn)=>Some(lwc::lwc_string_data(tkn.idata.get_ref().clone())), None => None }, None, false)
 	}
 
 
@@ -1013,7 +1013,7 @@ pub impl css_language {
 			_ => return (CSS_INVALID, None)
 		} 
 			
-		qname.name=lwc::lwc_string_data(token.idata.clone());
+		qname.name=lwc::lwc_string_data(token.idata.get_ref().clone());
 		
 		/* Search lut for selector type */
 		match self.strings.is_selector_pseudo(copy qname.name) {
@@ -1055,7 +1055,7 @@ pub impl css_language {
 						_ => return (CSS_INVALID, None)
 					 } 
 						
-					detail_value_string = lwc::lwc_string_data(token.idata.clone());
+					detail_value_string = lwc::lwc_string_data(token.idata.get_ref().clone());
 					value_type = CSS_SELECTOR_DETAIL_VALUE_STRING;
 
 					css_properties::consumeWhitespace(vector, ctx);

@@ -78,7 +78,6 @@ impl css_parser {
 
 		/* Use pushback, if it exists */
 		if self.pushback.is_some() {
-			//return(CSS_OK, Some(self.pushback.swap_unwrap()));
 			token = Some(self.pushback.swap_unwrap());
 		}
 		else {
@@ -137,25 +136,25 @@ impl css_parser {
 								idata : None,
 							})
 						}, 
-						CSS_TOKEN_CHAR(char) => {
+						CSS_TOKEN_CHAR(_) => {
 							token = Some (~css_token {
 								token_type : lexer_token,
 								idata : None,
 							})
 						},
-						CSS_TOKEN_NUMBER(NumericValue , copy value) => {
+						CSS_TOKEN_NUMBER(_ , copy value) => {
 							token = Some (~css_token {
 								token_type : lexer_token,
 								idata : Some(self.intern_string(value)),
 							})
 						}, 
-						CSS_TOKEN_PERCENTAGE(NumericValue , copy value) => {
+						CSS_TOKEN_PERCENTAGE(_ , copy value) => {
 							token = Some (~css_token {
 								token_type : lexer_token,
 								idata : Some(self.intern_string(value)),
 							})
 						}, 
-						CSS_TOKEN_DIMENSION(NumericValue , copy value1, copy value2) => {
+						CSS_TOKEN_DIMENSION(_ , copy value1, copy value2) => {
 							token = Some (~css_token {
 								token_type : lexer_token,
 								idata : None,
@@ -194,8 +193,12 @@ impl css_parser {
 					}
 				}
 
-				_ => {
+				LEXER_NEEDDATA => {
+					return (CSS_NEEDDATA, None);
+				}
 
+				LEXER_INVALID => {
+					return (CSS_INVALID, None);
 				}
 			}
 		}
