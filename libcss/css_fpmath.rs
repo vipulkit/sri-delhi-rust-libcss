@@ -21,4 +21,19 @@ pub fn css_int_to_fixed(a:int) -> i32 {
 	xx as i32
 }
 
+pub fn css_divide_fixed(x : i32, y : i32) -> i32 {
+
+	let mut xx :i64 = ((x as i64) << CSS_RADIX_POINT) / (y as i64);
+	
+	if (xx < INT_MIN as i64) {
+		xx = INT_MIN as i64;
+	}
+
+	if (xx > INT_MAX as i64) {
+		xx = INT_MAX as i64;
+	}
+	
+	xx as i32
+}
+
 
