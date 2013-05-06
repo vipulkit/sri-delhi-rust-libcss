@@ -368,7 +368,7 @@ impl css_parser {
 		parser.tokens.clear();
 
 		return CSS_OK;
-	}
+	} /* parse_start */
 
 
 	pub fn parse_stylesheet(parser:&mut ~css_parser) -> css_result {
@@ -377,6 +377,80 @@ impl css_parser {
 			WS = 1 
 		};
 
+		let mut (current_state,current_substate) = parser.stack.pop();
+
+			while (true) {
+				match (current_substate) {
+					0 /*Initial*/=> {
+						let (token_option, parser_error) = parser.get_token();
+
+						if (token_option.is_none()) {
+							return parser_error;
+						}
+
+						let token = token_option.unwrap();
+
+						match token.token_type {
+							CSS_TOKEN_EOF => {
+								let push_back_result = parser.push_back(token);
+									match (push_back_result) {
+										CSS_OK => {
+											parser.tokens.clear();
+											parser.done();
+											return CSS_OK;
+										},
+										_ => {
+											return push_back_result;
+										}
+									}
+								} /* CSS_TOKEN_EOF */
+							CSS_TOKEN_CDO | CSS_TOKEN_CDC => {
+								/*do nothing*/
+							}
+							_ => {
+								let to = (sStatement as uint, Initial as uint);
+								let subsequent = (sStylesheet as uint, WS as uint);
+								
+								let push_back_result = parser.push_back(token);
+								
+								match (push_back_result) {
+									CSS_OK => {
+										/* continue */
+									},
+									_ => {
+										return push_back_result;
+									}
+								}
+
+								parser.transition(to, subsequent);
+
+								return CSS_OK;
+							} /* _ */
+						}
+						current_substate = WS as uint;
+					} /* Initial */
+
+					1 /* WS */=> {
+						let eat_ws_result = parser.eat_ws();
+						match (eat_ws_result) {
+							CSS_OK => {
+								current_substate = Initial as uint;
+							}
+							_ => {
+								return eat_ws_result;
+							}
+						}
+					} /* WS */
+
+					_ => {
+						/* error */
+						return CSS_INVALID;
+					}
+				}
+			} /* while */
+
 		CSS_OK
-	}
+	} /* parse_stylesheet */
+
+	
 }
