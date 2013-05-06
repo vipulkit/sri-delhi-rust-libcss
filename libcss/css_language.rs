@@ -15,6 +15,15 @@ use wapcaplet::*;
 use css_propstrings::*;
 use css_properties::*;
 
+// pub struct nth_struct {
+// 		a:i32,
+// 		b:i32
+// } 	
+
+// pub struct css_selector_detail_value {
+// 	string:arc::RWARC<~lwc_string>,		/**< Interned string, or NULL */
+// 	nth:nth_struct				//< Data for x = an + b */
+// }
 
 pub struct context_entry {
 	event_type:css_parser_event,        /* < Type of entry */
@@ -410,7 +419,7 @@ pub impl css_language {
 		let result = false;
 
 		match token.token_type {
-			CSS_TOKEN_CHAR(c) => {   
+			CSS_TOKEN_CHAR(_) => {   
 					if lwc::lwc_string_length(token.idata.clone()) == 1 {
 						let mut token_char = lwc::lwc_string_data(token.idata.clone()).char_at(0);
 
@@ -963,12 +972,12 @@ pub impl css_language {
 
 	pub fn  parsePseudo(&mut self, vector:&~[~css_token], ctx:@mut uint, in_not:bool) -> (css_result,Option<@mut css_selector_detail>) {
 		let mut token:&~css_token;
-		let mut tkn_type = CSS_SELECTOR_PSEUDO_CLASS;
+		//let mut tkn_type = CSS_SELECTOR_PSEUDO_CLASS;
 		let mut value_type = CSS_SELECTOR_DETAIL_VALUE_STRING;
 		let mut require_element:bool = false;
 		let mut negate:bool = false;
 		let mut lut_idx:uint;
-		let mut selector_type:css_selector_type = CSS_SELECTOR_PSEUDO_CLASS;
+		let mut selector_type:css_selector_type;
 		let qname:@mut css_qname=@mut css_qname{ns:~"", name:~""};
 		/* pseudo    -> ':' ':'? [ IDENT | FUNCTION ws any1 ws ')' ] */
 
@@ -1019,24 +1028,24 @@ pub impl css_language {
 		match self.strings.is_selector_pseudo(copy qname.name) {
 			Some((sel_type,idx)) => {
 				lut_idx = idx as uint;
-				tkn_type = selector_type
+				selector_type = sel_type
 			},	
 			None => return (CSS_INVALID, None) // Not found: invalid */
 		}
 		
 		/* Required a pseudo element, but didn't find one: invalid */
-		if require_element && match tkn_type {CSS_SELECTOR_PSEUDO_ELEMENT => false, _ => true} {
+		if require_element && match selector_type {CSS_SELECTOR_PSEUDO_ELEMENT => false, _ => true} {
 			return (CSS_INVALID, None)	
 		}	
 
 		/* :not() and pseudo elements are not permitted in :not() */
-		if in_not && (match tkn_type {CSS_SELECTOR_PSEUDO_ELEMENT => true, _ => false} || match self.strings.pseudo_class_list[lut_idx] {NOT => true, _  => false} ) {
+		if in_not && (match selector_type {CSS_SELECTOR_PSEUDO_ELEMENT => true, _ => false} || match self.strings.pseudo_class_list[lut_idx] {NOT => true, _  => false} ) {
 			return (CSS_INVALID, None)	
 		}	
 
 		if match token.token_type { CSS_TOKEN_FUNCTION(_) => true, _ => false} {
 			
-			let mut fun_type = match tkn_type{ CSS_SELECTOR_PSEUDO_ELEMENT => self.strings.pseudo_element_list[lut_idx],_ => self.strings.pseudo_class_list[lut_idx]} ;
+			let mut fun_type = match selector_type{ CSS_SELECTOR_PSEUDO_ELEMENT => self.strings.pseudo_element_list[lut_idx],_ => self.strings.pseudo_class_list[lut_idx]} ;
 
 			css_properties::consumeWhitespace(vector, ctx);
 
@@ -1064,7 +1073,8 @@ pub impl css_language {
 					/* an + b */
 					match self.parseNth(vector, ctx) {
 						(CSS_OK, Some(specific)) => {
-							specific.value_type = CSS_SELECTOR_DETAIL_VALUE_NTH;
+							
+							specific.selector_type = selector_type;
 							// Iterate to the next location
 							if *ctx >= vector.len() {
 								return (CSS_INVALID, None)
@@ -1097,7 +1107,7 @@ pub impl css_language {
 						/* Have type selector */
 						match self.parseTypeSelector(vector, ctx, qname) {
 							CSS_OK => {
-								tkn_type = CSS_SELECTOR_ELEMENT;
+								selector_type = CSS_SELECTOR_ELEMENT;
 
 								detail_value_string = ~"";
 								value_type = CSS_SELECTOR_DETAIL_VALUE_STRING;
@@ -1107,8 +1117,7 @@ pub impl css_language {
 					} 
 					else {
 						/* specific */
-						let mut det:css_selector_detail;
-
+						
 						match self.parseSpecific(vector, ctx, true) {
 							(CSS_OK,Some(specific)) => {
 								specific.negate = true;
@@ -1149,13 +1158,249 @@ pub impl css_language {
 		
 		}
 
-		return css_stylesheet::css__stylesheet_selector_detail_init( tkn_type,copy *qname, value_type, Some(detail_value_string), None, negate);
+		return css_stylesheet::css__stylesheet_selector_detail_init(selector_type,copy *qname, value_type, Some(detail_value_string), None, negate);
 	}
 
 	pub fn  parseNth(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result,Option<@mut css_selector_detail>) {
-		
+	
+		let mut token:&~css_token;
+		let mut negate:bool = false;
+		let qname:css_qname = css_qname{ name:~"", ns:~""};
+		let mut value: @mut css_selector_detail = @mut css_selector_detail{
+			qname:qname,
+			selector_type:CSS_SELECTOR_PSEUDO_CLASS,
+			combinator_type:CSS_COMBINATOR_NONE,  
+			value_type:CSS_SELECTOR_DETAIL_VALUE_NTH,
+			negate:negate,
 
-		return (CSS_OK,None)
+			//css_selector_detail_value - union merged
+			string:None,
+			a:0,
+			b:0
+		};;  
+		/* nth -> [ DIMENSION | IDENT ] ws [ [ CHAR ws ]? NUMBER ws ]?
+		 *        (e.g. DIMENSION: 2n-1, 2n- 1, 2n -1, 2n - 1)
+		 *        (e.g. IDENT: -n-1, -n- 1, -n -1, -n - 1)
+		 *     -> NUMBER ws
+		 *     -> IDENT(odd) ws
+		 *     -> IDENT(even) ws
+		 */
+
+		// Vector Iterate
+		if *ctx >= vector.len() {
+			return (CSS_INVALID, None)
+		}
+			
+		token = &vector[*ctx];
+						
+		match token.token_type { 
+			CSS_TOKEN_IDENT(_) | CSS_TOKEN_DIMENSION(_,_,_) => {
+				if (match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false}) &&
+						self.strings.lwc_string_caseless_isequal(token.idata.clone(), ODD as uint) {
+					/* Odd */
+					value.a = 2;
+					value.b = 1;
+				}
+				else if (match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false}) &&
+							self.strings.lwc_string_caseless_isequal(token.idata.clone(), EVEN as uint)
+				{
+					/* Even */
+					value.a = 2;
+					value.b = 0;
+				}
+				else {
+					/* [ DIMENSION | IDENT ] ws [ [ CHAR ws ]? NUMBER ws ]?
+					 *
+					 * (e.g. DIMENSION: 2n-1, 2n- 1, 2n -1, 2n - 1)
+					 * (e.g. IDENT: n, -n-1, -n- 1, -n -1, -n - 1)
+					 */
+										
+					let mut a:int;
+					let mut b:int = 0;
+					let mut sign:int = 1;
+					let mut had_sign = false;
+					let mut had_b = false;
+
+					let mut len = lwc::lwc_string_length(token.idata.clone());
+					let mut data = lwc::lwc_string_data(token.idata.clone());
+					let mut data_index = 0;
+					/* Compute a */
+					if (match token.token_type {
+						CSS_TOKEN_IDENT(_) => true, 
+						_ => false    //TODO check this condition
+					}) {
+						if len < 2 {
+							if (data[data_index + 0] != 'n' as u8) && (data[data_index + 0] != 'N' as u8)	{
+								return (CSS_INVALID, None)
+							}
+								
+							/* n */
+							a = 1 << 10;
+
+							data_index += 1;
+							len -= 1
+						} 
+						else {
+							if (data[data_index + 0] != '-' as u8) || ((data[data_index + 1] != 'n' as u8) && (data[data_index + 1] != 'N' as u8))
+							{
+								return (CSS_INVALID, None)	
+							}
+								
+							/* -n */
+							a = -1 << 10;
+
+							data_index += 2;
+							len -= 2;
+						}
+
+						if len > 0 {
+							if (data[data_index + 0] != '-' as u8)
+							{
+								return (CSS_INVALID, None)
+							}
+								
+
+							/* -n- */
+							sign = -1;
+							had_sign = true;
+
+							if len > 1 {
+								/* Reject additional sign */
+								if (data[data_index + 1] == '-' as u8) || (data[data_index + 1] == '+' as u8)
+								{
+									return (CSS_INVALID, None)
+								}
+									
+
+								/* -n-b */
+								let (ret_b,consumed) = css_language::css__number_from_string( data, data_index + 1, true);
+								b = ret_b;
+								if consumed != len - 1
+								{
+									return (CSS_INVALID, None)
+								}
+
+								had_b = true;
+							}
+						}
+					} 
+					else {
+						/* 2n */
+						let mut (ret_a, consumed) = css_language::css__number_from_lwc_string(token.idata.clone(), true);
+						a = ret_a;
+						if consumed == 0 || ((data[data_index + consumed] != 'n' as u8) && (data[data_index + consumed] != 'N' as u8)) {
+							return (CSS_INVALID, None)
+						}
+
+						consumed += 1;
+						if len - consumed > 0 {
+							if (data[data_index + consumed] != '-' as u8) {
+								return (CSS_INVALID, None)
+							}
+
+							/* 2n- */
+							sign = -1;
+							had_sign = true;
+
+							consumed += 1;
+							if len - consumed > 0 {
+								let bstart:uint;
+
+								/* Reject additional sign */
+								if (data[data_index + consumed] == '-' as u8) ||	(data[data_index + consumed] == '+' as u8) {
+									return (CSS_INVALID, None)
+								}
+
+								/* 2n-b */
+								bstart = consumed;
+
+								let (ret_b,consumed) = css_language::css__number_from_string( data, data_index + bstart, true);
+								b= ret_b;
+								if consumed != len - bstart {
+									return (CSS_INVALID, None)
+								}
+
+								had_b = true;
+							}
+						}
+					}
+
+					if had_b == false {
+						css_properties::consumeWhitespace(vector, ctx);
+
+						/* Look for optional b : [ [ CHAR ws ]? NUMBER ws ]? */
+						if *ctx < vector.len() {
+							token = &vector[*ctx];	
+						}
+						
+						if (had_sign == false &&  *ctx < vector.len() &&
+							 (css_language::tokenIsChar(token, '-') || css_language::tokenIsChar(token, '+'))) {
+							
+							*ctx += 1; //iterate
+
+							had_sign = true;
+
+							if css_language::tokenIsChar(token, '-'){
+								sign = -1
+							}	
+
+							css_properties::consumeWhitespace(vector, ctx);
+
+							if *ctx < vector.len() {
+								token = &vector[*ctx];
+							}
+							
+						}
+
+						/* Expect NUMBER */
+						if *ctx < vector.len() && (match token.token_type 
+							{ CSS_TOKEN_NUMBER(_,_) => true, _ => false }) {
+
+							*ctx += 1;
+
+							/* If we've already seen a sign, ensure one
+							 * does not occur at the start of this token
+							 */
+							if had_sign && lwc::lwc_string_length(token.idata.clone()) > 0 {
+								data = lwc::lwc_string_data(token.idata.clone());
+								data_index = 0;
+
+								if data.char_at(data_index + 0) == '-' || data.char_at(data_index + 0) == '+'
+								{
+									return (CSS_INVALID,None)	
+								}									
+							}
+
+							let (ret_b,consumed) = css_language::css__number_from_lwc_string(token.idata.clone(), true);
+							b = ret_b;
+							if consumed != lwc::lwc_string_length(token.idata.clone())
+							{
+								return (CSS_INVALID, None)
+							}
+						}
+					}
+
+					value.a = a << 10;
+					value.b = b << 10 * sign;
+				}
+			},
+			CSS_TOKEN_NUMBER(_,_)  => {
+				
+				let (ret_val,consumed) = css_language::css__number_from_lwc_string(token.idata.clone(), true);
+				if consumed != lwc::lwc_string_length(token.idata.clone())
+				{
+					return (CSS_INVALID, None)
+				}	
+
+				value.a = 0;
+				value.b = ret_val << 10;
+			} ,
+			_  => return (CSS_INVALID, None)
+		}
+	
+
+		css_properties::consumeWhitespace(vector, ctx);
+		return (CSS_OK,Some(value))
 	}
 	// ===========================================================================================================
 	// CSS-LANGUAGE implementation/data-structs ends here 
@@ -1209,4 +1454,121 @@ pub impl css_language {
 		
 	}
 
+
+	pub fn css__number_from_string(data: ~str, data_index:uint, int_only: bool) -> (int , uint){
+
+		let mut length = data.len();
+		let mut ptr = copy data;
+		let mut sign = 1;
+		let mut intpart = 0;
+		let mut fracpart = 0;
+		let mut pwr = 1;
+		let mut ret_value = 0;
+		let mut index = 0;
+		let mut consumed_length = 0;
+		
+
+		if data.is_empty()||length == 0 {
+			return (ret_value , consumed_length);
+		}
+
+		// number = [+-]? ([0-9]+ | [0-9]* '.' [0-9]+) 
+
+		// Extract sign, if any 
+		if ptr[0] == '-' as u8 {
+			sign = -1;
+			length -= 1;
+			index += 1;
+		}
+		else if ptr[0] == '+' as u8 {
+			length -=1;
+			index += 1;
+		}
+
+		if length == 0 {
+			return (ret_value , consumed_length);
+		}
+		else {
+			if ptr[0] == '.' as u8 {
+				if length ==1 || (ptr[1] < ('0' as u8)) || (('9' as u8) < ptr[1]) {
+					return (ret_value , consumed_length);
+				}
+			}
+			else if (ptr[0] < ('0' as u8)) || (('9' as u8) < ptr[0]) {
+				return (ret_value , consumed_length);
+			}
+		}
+
+		while length>0 {
+			if (ptr[0] < ('0' as u8))||(('9' as u8) < ptr[0]) {
+				break
+			}
+			if intpart < (1<<22) {
+				intpart *= 10;
+				intpart += (ptr[0] as u8) - ('0' as u8);
+			}
+			index += 1;
+			length -= 1;
+		}
+
+		if int_only == false && length > 1 && (ptr[0] == '.' as u8) && ('0' as u8 <= ptr[1] && ptr[1] <= '9' as u8) {
+			index += 1;	
+			length -= 1;
+
+			while length >0 {
+				if ((ptr[0] < '0' as u8))|| (('9' as u8) < ptr[0]) {
+					break
+				}
+
+				if pwr < 1000000 {
+					pwr *= 10;
+					fracpart *= 10;
+					fracpart += (ptr[0] - '0' as u8);
+				}
+				index += 1;
+				length -= 1;
+			}
+			fracpart = ((1 << 10) * fracpart + pwr/2) / pwr;
+			if fracpart >= (1 << 10) {
+				intpart += 1;
+				fracpart &= (1 << 10) - 1;
+			}
+		}
+
+		consumed_length = index;
+
+		if sign > 0 {
+			if intpart >= (1 << 21) {
+				intpart = (1 << 21) - 1;
+				fracpart = (1 << 10) - 1;
+			}
+		}
+		else {
+			 // If the negated result is smaller than we can represent then clamp to the minimum value we can store. 
+			if intpart >= (1 << 21) {
+				intpart = -(1 << 21);
+				fracpart = 0;
+			}
+			else {
+				intpart = -intpart;
+				if fracpart > 0 {
+					fracpart = (1 << 10) - fracpart;
+					intpart -= 1;
+				}
+			}
+		}
+		ret_value = ((intpart << 10) | fracpart )as int;
+		(ret_value , consumed_length)
+
+	}
+
+	pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bool) -> (int , uint) {
+		let mut ret_value = 0;
+		let mut consumed_length = 0;
+
+		if lwc::lwc_string_length(string.clone()) == 0 {
+			return (ret_value , consumed_length);
+		}
+		css_language::css__number_from_string(lwc::lwc_string_data(string.clone()), 0, int_only)
+	}
 }
