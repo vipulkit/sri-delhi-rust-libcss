@@ -1201,7 +1201,7 @@ pub impl css_language {
 					value.b = 1;
 				}
 				else if (match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false}) &&
-							self.strings.lwc_string_caseless_isequal(token.idata.clone(), EVEN as uint)
+							self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), EVEN as uint)
 				{
 					/* Even */
 					value.a = 2;
@@ -1220,8 +1220,8 @@ pub impl css_language {
 					let mut had_sign = false;
 					let mut had_b = false;
 
-					let mut len = lwc::lwc_string_length(token.idata.clone());
-					let mut data = lwc::lwc_string_data(token.idata.clone());
+					let mut len = lwc::lwc_string_length(token.idata.get_ref().clone());
+					let mut data = lwc::lwc_string_data(token.idata.get_ref().clone());
 					let mut data_index = 0;
 					/* Compute a */
 					if (match token.token_type {
@@ -1285,7 +1285,7 @@ pub impl css_language {
 					} 
 					else {
 						/* 2n */
-						let mut (ret_a, consumed) = css_language::css__number_from_lwc_string(token.idata.clone(), true);
+						let mut (ret_a, consumed) = css_language::css__number_from_lwc_string(token.idata.get_ref().clone(), true);
 						a = ret_a;
 						if consumed == 0 || ((data[data_index + consumed] != 'n' as u8) && (data[data_index + consumed] != 'N' as u8)) {
 							return (CSS_INVALID, None)
@@ -1360,8 +1360,8 @@ pub impl css_language {
 							/* If we've already seen a sign, ensure one
 							 * does not occur at the start of this token
 							 */
-							if had_sign && lwc::lwc_string_length(token.idata.clone()) > 0 {
-								data = lwc::lwc_string_data(token.idata.clone());
+							if had_sign && lwc::lwc_string_length(token.idata.get_ref().clone()) > 0 {
+								data = lwc::lwc_string_data(token.idata.get_ref().clone());
 								data_index = 0;
 
 								if data.char_at(data_index + 0) == '-' || data.char_at(data_index + 0) == '+'
@@ -1370,9 +1370,9 @@ pub impl css_language {
 								}									
 							}
 
-							let (ret_b,consumed) = css_language::css__number_from_lwc_string(token.idata.clone(), true);
+							let (ret_b,consumed) = css_language::css__number_from_lwc_string(token.idata.get_ref().clone(), true);
 							b = ret_b;
-							if consumed != lwc::lwc_string_length(token.idata.clone())
+							if consumed != lwc::lwc_string_length(token.idata.get_ref().clone())
 							{
 								return (CSS_INVALID, None)
 							}
@@ -1385,8 +1385,8 @@ pub impl css_language {
 			},
 			CSS_TOKEN_NUMBER(_,_)  => {
 				
-				let (ret_val,consumed) = css_language::css__number_from_lwc_string(token.idata.clone(), true);
-				if consumed != lwc::lwc_string_length(token.idata.clone())
+				let (ret_val,consumed) = css_language::css__number_from_lwc_string(token.idata.get_ref().clone(), true);
+				if consumed != lwc::lwc_string_length(token.idata.get_ref().clone())
 				{
 					return (CSS_INVALID, None)
 				}	
@@ -1453,7 +1453,6 @@ pub impl css_language {
 		
 	}
 
-<<<<<<< HEAD
 
 	pub fn css__number_from_string(data: ~str, data_index:uint, int_only: bool) -> (int , uint){
 
@@ -1506,84 +1505,10 @@ pub impl css_language {
 			if intpart < (1<<22) {
 				intpart *= 10;
 				intpart += (ptr[0] as u8) - ('0' as u8);
-=======
-}
-
-pub fn css__number_from_string(data: ~str , int_only: bool) -> (int , uint){
-
-	let mut length = data.len();
-	let mut ptr = copy data;
-	let mut sign = 1;
-	let mut intpart = 0;
-	let mut fracpart = 0;
-	let mut pwr = 1;
-	let mut ret_value = 0;
-	let mut index = 0;
-	let mut consumed_length = 0;
-	
-
-	if data.is_empty()||length == 0 {
-		return (ret_value , consumed_length);
-	}
-
-	// number = [+-]? ([0-9]+ | [0-9]* '.' [0-9]+) 
-
-	// Extract sign, if any 
-	if ptr[0] == '-' as u8 {
-		sign = -1;
-		length -= 1;
-		index += 1;
-	}
-	else if ptr[0] == '+' as u8 {
-		length -=1;
-		index += 1;
-	}
-
-	if length == 0 {
-		return (ret_value , consumed_length);
-	}
-	else {
-		if ptr[0] == '.' as u8 {
-			if length ==1 || (ptr[1] < ('0' as u8)) || (('9' as u8) < ptr[1]) {
-				return (ret_value , consumed_length);
-			}
-		}
-		else if (ptr[0] < ('0' as u8)) || (('9' as u8) < ptr[0]) {
-			return (ret_value , consumed_length);
-		}
-	}
-
-	while length>0 {
-		if (ptr[0] < ('0' as u8))||(('9' as u8) < ptr[0]) {
-			break
-		}
-		if intpart < (1<<22) {
-			intpart *= 10;
-			intpart += (ptr[0] as u8) - ('0' as u8);
-		}
-		index += 1;
-		length -= 1;
-	}
-
-	if int_only == false && length > 1 && (ptr[0] == '.' as u8) && ('0' as u8 <= ptr[1] && ptr[1] <= '9' as u8) {
-		index += 1;	
-		length -= 1;
-
-		while length >0 {
-			if ((ptr[0] < '0' as u8))|| (('9' as u8) < ptr[0]) {
-				break
-			}
-
-			if pwr < 1000000 {
-				pwr *= 10;
-				fracpart *= 10;
-				fracpart += (ptr[0] - '0' as u8);
->>>>>>> 4c21ddfc5163371156aa6c2b94d397f90c804b95
 			}
 			index += 1;
 			length -= 1;
 		}
-<<<<<<< HEAD
 
 		if int_only == false && length > 1 && (ptr[0] == '.' as u8) && ('0' as u8 <= ptr[1] && ptr[1] <= '9' as u8) {
 			index += 1;	
@@ -1645,48 +1570,4 @@ pub fn css__number_from_string(data: ~str , int_only: bool) -> (int , uint){
 		}
 		css_language::css__number_from_string(lwc::lwc_string_data(string.clone()), 0, int_only)
 	}
-=======
-		fracpart = ((1 << 10) * fracpart + pwr/2) / pwr;
-		if fracpart >= (1 << 10) {
-			intpart += 1;
-			fracpart &= (1 << 10) - 1;
-		}
-	}
-
-	consumed_length = index;
-
-	if sign > 0 {
-		if intpart >= (1 << 21) {
-			intpart = (1 << 21) - 1;
-			fracpart = (1 << 10) - 1;
-		}
-	}
-	else {
-		 // If the negated result is smaller than we can represent then clamp to the minimum value we can store. 
-		if intpart >= (1 << 21) {
-			intpart = -(1 << 21);
-			fracpart = 0;
-		}
-		else {
-			intpart = -intpart;
-			if fracpart > 0 {
-				fracpart = (1 << 10) - fracpart;
-				intpart -= 1;
-			}
-		}
-	}
-	ret_value = ((intpart << 10) | fracpart )as int;
-	(ret_value , consumed_length)
-
-}
-
-pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bool) -> (int , uint) {
-	let mut ret_value = 0;
-	let mut consumed_length = 0;
-
-	if lwc::lwc_string_length(string.clone()) == 0 {
-		return (ret_value , consumed_length);
-	}
-	css__number_from_string(lwc::lwc_string_data(string.clone()) , int_only)
->>>>>>> 4c21ddfc5163371156aa6c2b94d397f90c804b95
 }
