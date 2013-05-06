@@ -11,7 +11,7 @@ rustc -L ../libparserutils test_aliases.rs -L .
 rustc -L ../libparserutils test_parserutils_filter.rs -L .
 rustc -L ../libparserutils test_parserutils_inputstream.rs -L .
 rustc -L ../libparserutils test_parserutils.rs -L .
-rustc -L ./.. test_riconv.rs -L .
+#rustc -L ./.. test_riconv.rs -L .
 rustc -L ../libwapcaplet test_wapcaplet.rs -L .
 rustc -L ../libparserutils test_csdtect.rs -L .
 rustc -L ../libcss test_css_stylesheet.rs -L .
