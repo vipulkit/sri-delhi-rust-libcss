@@ -6,13 +6,14 @@ rm -rf *.so *.o test_aliases test_parserutils_filter test_parserutils_inputstrea
 make test executables
 export LD_LIBRARY_PATH=.:./..:$LD_LIBRARY_PATH
 rustc test.rc
-rustc -L ./.. test_aliases.rs -L .
-rustc -L ./.. test_parserutils_filter.rs -L .
-rustc -L ./.. test_parserutils_inputstream.rs -L .
-rustc -L ./.. test_parserutils.rs -L .
-rustc -L ./.. test_riconv.rs -L .
-rustc -L ./.. test_wapcaplet.rs -L .
-rustc -L ./.. test_csdtect.rs -L .
-rustc -L ./.. test_css_stylesheet.rs -L .
-rustc -L ./.. propstrings_perf.rs -L .
-rustc -L ./.. test_lexer_chunks.rs -L .
+
+rustc -L ../libparserutils test_aliases.rs -L .
+rustc -L ../libparserutils test_parserutils_filter.rs -L .
+rustc -L ../libparserutils test_parserutils_inputstream.rs -L .
+rustc -L ../libparserutils test_parserutils.rs -L .
+#rustc -L ./.. test_riconv.rs -L .
+rustc -L ../libwapcaplet test_wapcaplet.rs -L .
+rustc -L ../libparserutils test_csdtect.rs -L .
+rustc -L ../libcss test_css_stylesheet.rs -L .
+rustc -L ../libwapcaplet -L ../libcss propstrings_perf.rs -L .
+rustc -L ../libparserutils -L ../libcss test_lexer_chunks.rs -L .

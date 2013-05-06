@@ -12,7 +12,7 @@ use parserutils::* ;
 use parserutils_inputstream::*;
 
 fn main() {
-	let mut test1 = result::unwrap(test_report(&"temp_log.csv"));
+	let mut test1 = result::unwrap(test_report(&"Unit_test_report.csv"));
 	let module_name: ~str=~"test _parserutils";
 	let  file_name : ~str=~"parserutils_input stream";
 	let mut function_name : ~str;

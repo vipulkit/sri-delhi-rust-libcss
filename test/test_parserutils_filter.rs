@@ -18,7 +18,7 @@ fn main(){
 	let mut filter: ~lpu_filter;
 
 	// Log file 
-	let mut test_logger = result::unwrap(test_report(&"temp_log.csv"));
+	let mut test_logger = result::unwrap(test_report(&"Unit_test_report.csv"));
 
 	match(filterResult){
 		PARSERUTILS_OK   => {								

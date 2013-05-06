@@ -420,8 +420,8 @@ pub impl css_language {
 
 		match token.token_type {
 			CSS_TOKEN_CHAR(_) => {   
-					if lwc::lwc_string_length(token.idata.clone()) == 1 {
-						let mut token_char = lwc::lwc_string_data(token.idata.clone()).char_at(0);
+					if lwc::lwc_string_length(token.idata.get_ref().clone()) == 1 {
+						let mut token_char = lwc::lwc_string_data(token.idata.get_ref().clone()).char_at(0);
 
 						// Ensure lowercase comparison 
 						if 'A' <= token_char && token_char <= 'Z' {
@@ -449,7 +449,7 @@ pub impl css_language {
 		let mut index = AZIMUTH as uint;
 
 		while (index < Z_INDEX as uint) {
-			if self.strings.lwc_string_caseless_isequal(property.idata.clone() , index) {
+			if self.strings.lwc_string_caseless_isequal(property.idata.get_ref().clone() , index) {
 				break
 			}
 			index +=1;
@@ -651,7 +651,7 @@ pub impl css_language {
 		token = &vector[*ctx];
 		
 		if !css_language::tokenIsChar(token, '|') {
-			 prefix = Some(token.idata.clone());
+			 prefix = Some(token.idata.get_ref().clone());
 			*ctx += 1; //Iterate
 		}
 
@@ -667,7 +667,7 @@ pub impl css_language {
 			*ctx += 1; //Iterate
 
 			match self.lookupNamespace(prefix, qname) {
-				CSS_OK  => qname.name = lwc::lwc_string_data(vector[*ctx].idata.clone()),
+				CSS_OK  => qname.name = lwc::lwc_string_data(vector[*ctx].idata.get_ref().clone()),
 				error   => return error
 			}   
 		} 
@@ -741,7 +741,7 @@ pub impl css_language {
 
 		match token.token_type {
 			CSS_TOKEN_HASH(_)	=> {
-				let qname:css_qname=css_qname{ns:~"", name:lwc::lwc_string_data(token.idata.clone())};
+				let qname:css_qname=css_qname{ns:~"", name:lwc::lwc_string_data(token.idata.get_ref().clone())};
 				match css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_ID, qname, 
 											CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false) {
 					(CSS_OK, res) => {
@@ -833,7 +833,7 @@ pub impl css_language {
 
 		match token.token_type {
 			CSS_TOKEN_IDENT(_) => {
-				let qname:css_qname=css_qname{ns:~"", name:lwc::lwc_string_data(token.idata.clone())};
+				let qname:css_qname=css_qname{ns:~"", name:lwc::lwc_string_data(token.idata.get_ref().clone())};
 				return css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_CLASS, qname, 
 													CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false)
 			}
@@ -892,7 +892,7 @@ pub impl css_language {
 			*ctx +=1; //Iterate
 		} 
 		else if (*ctx < vector.len() && css_language::tokenIsChar(&vector[*ctx], '|')) {
-			prefix = Some(token.idata.clone());
+			prefix = Some(token.idata.get_ref().clone());
 			*ctx += 1;
 			if *ctx >= vector.len() {
 				return (CSS_INVALID, None)
@@ -909,7 +909,7 @@ pub impl css_language {
 		let qname:@mut css_qname=@mut css_qname{ns:~"", name:~""};
 		match self.lookupNamespace(prefix, qname) {	CSS_OK  => {}, error   => return (error,None)}   
 
-		qname.name = lwc::lwc_string_data(vector[*ctx].idata.clone());
+		qname.name = lwc::lwc_string_data(vector[*ctx].idata.get_ref().clone());
 
 		css_properties::consumeWhitespace(vector, ctx);
 
@@ -966,7 +966,7 @@ pub impl css_language {
 		
 		 
 		return css_stylesheet::css__stylesheet_selector_detail_init (tkn_type,copy *qname, CSS_SELECTOR_DETAIL_VALUE_STRING,
-							match value {Some(tkn)=>Some(lwc::lwc_string_data(tkn.idata.clone())), None => None }, None, false)
+							match value {Some(tkn)=>Some(lwc::lwc_string_data(tkn.idata.get_ref().clone())), None => None }, None, false)
 	}
 
 
@@ -1022,7 +1022,7 @@ pub impl css_language {
 			_ => return (CSS_INVALID, None)
 		} 
 			
-		qname.name=lwc::lwc_string_data(token.idata.clone());
+		qname.name=lwc::lwc_string_data(token.idata.get_ref().clone());
 		
 		/* Search lut for selector type */
 		match self.strings.is_selector_pseudo(copy qname.name) {
@@ -1064,7 +1064,7 @@ pub impl css_language {
 						_ => return (CSS_INVALID, None)
 					 } 
 						
-					detail_value_string = lwc::lwc_string_data(token.idata.clone());
+					detail_value_string = lwc::lwc_string_data(token.idata.get_ref().clone());
 					value_type = CSS_SELECTOR_DETAIL_VALUE_STRING;
 
 					css_properties::consumeWhitespace(vector, ctx);
@@ -1195,7 +1195,7 @@ pub impl css_language {
 		match token.token_type { 
 			CSS_TOKEN_IDENT(_) | CSS_TOKEN_DIMENSION(_,_,_) => {
 				if (match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false}) &&
-						self.strings.lwc_string_caseless_isequal(token.idata.clone(), ODD as uint) {
+						self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ODD as uint) {
 					/* Odd */
 					value.a = 2;
 					value.b = 1;
@@ -1453,6 +1453,7 @@ pub impl css_language {
 		
 	}
 
+<<<<<<< HEAD
 
 	pub fn css__number_from_string(data: ~str, data_index:uint, int_only: bool) -> (int , uint){
 
@@ -1505,10 +1506,84 @@ pub impl css_language {
 			if intpart < (1<<22) {
 				intpart *= 10;
 				intpart += (ptr[0] as u8) - ('0' as u8);
+=======
+}
+
+pub fn css__number_from_string(data: ~str , int_only: bool) -> (int , uint){
+
+	let mut length = data.len();
+	let mut ptr = copy data;
+	let mut sign = 1;
+	let mut intpart = 0;
+	let mut fracpart = 0;
+	let mut pwr = 1;
+	let mut ret_value = 0;
+	let mut index = 0;
+	let mut consumed_length = 0;
+	
+
+	if data.is_empty()||length == 0 {
+		return (ret_value , consumed_length);
+	}
+
+	// number = [+-]? ([0-9]+ | [0-9]* '.' [0-9]+) 
+
+	// Extract sign, if any 
+	if ptr[0] == '-' as u8 {
+		sign = -1;
+		length -= 1;
+		index += 1;
+	}
+	else if ptr[0] == '+' as u8 {
+		length -=1;
+		index += 1;
+	}
+
+	if length == 0 {
+		return (ret_value , consumed_length);
+	}
+	else {
+		if ptr[0] == '.' as u8 {
+			if length ==1 || (ptr[1] < ('0' as u8)) || (('9' as u8) < ptr[1]) {
+				return (ret_value , consumed_length);
+			}
+		}
+		else if (ptr[0] < ('0' as u8)) || (('9' as u8) < ptr[0]) {
+			return (ret_value , consumed_length);
+		}
+	}
+
+	while length>0 {
+		if (ptr[0] < ('0' as u8))||(('9' as u8) < ptr[0]) {
+			break
+		}
+		if intpart < (1<<22) {
+			intpart *= 10;
+			intpart += (ptr[0] as u8) - ('0' as u8);
+		}
+		index += 1;
+		length -= 1;
+	}
+
+	if int_only == false && length > 1 && (ptr[0] == '.' as u8) && ('0' as u8 <= ptr[1] && ptr[1] <= '9' as u8) {
+		index += 1;	
+		length -= 1;
+
+		while length >0 {
+			if ((ptr[0] < '0' as u8))|| (('9' as u8) < ptr[0]) {
+				break
+			}
+
+			if pwr < 1000000 {
+				pwr *= 10;
+				fracpart *= 10;
+				fracpart += (ptr[0] - '0' as u8);
+>>>>>>> 4c21ddfc5163371156aa6c2b94d397f90c804b95
 			}
 			index += 1;
 			length -= 1;
 		}
+<<<<<<< HEAD
 
 		if int_only == false && length > 1 && (ptr[0] == '.' as u8) && ('0' as u8 <= ptr[1] && ptr[1] <= '9' as u8) {
 			index += 1;	
@@ -1570,4 +1645,48 @@ pub impl css_language {
 		}
 		css_language::css__number_from_string(lwc::lwc_string_data(string.clone()), 0, int_only)
 	}
+=======
+		fracpart = ((1 << 10) * fracpart + pwr/2) / pwr;
+		if fracpart >= (1 << 10) {
+			intpart += 1;
+			fracpart &= (1 << 10) - 1;
+		}
+	}
+
+	consumed_length = index;
+
+	if sign > 0 {
+		if intpart >= (1 << 21) {
+			intpart = (1 << 21) - 1;
+			fracpart = (1 << 10) - 1;
+		}
+	}
+	else {
+		 // If the negated result is smaller than we can represent then clamp to the minimum value we can store. 
+		if intpart >= (1 << 21) {
+			intpart = -(1 << 21);
+			fracpart = 0;
+		}
+		else {
+			intpart = -intpart;
+			if fracpart > 0 {
+				fracpart = (1 << 10) - fracpart;
+				intpart -= 1;
+			}
+		}
+	}
+	ret_value = ((intpart << 10) | fracpart )as int;
+	(ret_value , consumed_length)
+
+}
+
+pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bool) -> (int , uint) {
+	let mut ret_value = 0;
+	let mut consumed_length = 0;
+
+	if lwc::lwc_string_length(string.clone()) == 0 {
+		return (ret_value , consumed_length);
+	}
+	css__number_from_string(lwc::lwc_string_data(string.clone()) , int_only)
+>>>>>>> 4c21ddfc5163371156aa6c2b94d397f90c804b95
 }
