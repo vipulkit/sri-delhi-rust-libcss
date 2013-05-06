@@ -1600,7 +1600,6 @@ pub fn css_computed_border_right_style(style:@mut css_computed_style)
 pub fn css_computed_border_bottom_style(style:@mut css_computed_style)
                                         -> u8 {
 
-}
     let mut bits : u8 = style.bits[CSS_BORDER_BOTTOM_STYLE_INDEX];
     bits = bits & (CSS_BORDER_BOTTOM_STYLE_MASK as u8);
     bits = bits >> CSS_BORDER_BOTTOM_STYLE_SHIFT;   
@@ -1618,4 +1617,84 @@ pub fn css_computed_border_left_style(style:@mut css_computed_style)
     bits
 }
 
+pub fn css_computed_font_weight(style:@mut css_computed_style)
+                                        -> u8 {
+
+    let mut bits : u8 = style.bits[CSS_FONT_WEIGHT_INDEX];
+    bits = bits & (CSS_FONT_WEIGHT_MASK as u8);
+    bits = bits >> CSS_FONT_WEIGHT_SHIFT;   
+
+    bits
+}
+
+pub fn css_computed_list_style_type(style:@mut css_computed_style)
+                                        -> u8 {
+
+    let mut bits : u8 = style.bits[CSS_LIST_STYLE_TYPE_INDEX];
+    bits = bits & (CSS_LIST_STYLE_TYPE_MASK as u8);
+    bits = bits >> CSS_LIST_STYLE_TYPE_SHIFT;   
+
+    bits
+}
+
+pub fn css_computed_outline_style(style:@mut css_computed_style)
+                                        -> u8 {
+
+    let mut bits : u8 = style.bits[CSS_OUTLINE_STYLE_INDEX];
+    bits = bits & (CSS_OUTLINE_STYLE_MASK as u8);
+    bits = bits >> CSS_OUTLINE_STYLE_SHIFT;   
+
+    bits
+}
+
+pub fn css_computed_table_layout(style:@mut css_computed_style)
+                                        -> u8 {
+
+    let mut bits : u8 = style.bits[CSS_TABLE_LAYOUT_INDEX];
+    bits = bits & (CSS_TABLE_LAYOUT_MASK as u8);
+    bits = bits >> CSS_TABLE_LAYOUT_SHIFT;   
+
+    bits
+}
+
+pub fn css_computed_unicode_bidi(style:@mut css_computed_style)
+                                        -> u8 {
+
+    let mut bits : u8 = style.bits[CSS_UNICODE_BIDI_INDEX];
+    bits = bits & (CSS_UNICODE_BIDI_MASK as u8);
+    bits = bits >> CSS_UNICODE_BIDI_SHIFT;   
+
+    bits
+}
+
+pub fn css_computed_visibility(style:@mut css_computed_style)
+                                        -> u8 {
+
+    let mut bits : u8 = style.bits[CSS_VISIBILITY_INDEX];
+    bits = bits & (CSS_VISIBILITY_MASK as u8);
+    bits = bits >> CSS_VISIBILITY_SHIFT;   
+
+    bits
+}
+
+pub fn css_computed_list_style_position(style:@mut css_computed_style)
+                                        -> u8 {
+
+    let mut bits : u8 = style.bits[CSS_LIST_STYLE_POSITION_INDEX];
+    bits = bits & (CSS_LIST_STYLE_POSITION_MASK as u8);
+    bits = bits >> CSS_LIST_STYLE_POSITION_SHIFT;   
+
+    bits
+}
+
+
+pub fn css_computed_text_align(style:@mut css_computed_style)
+                                        -> u8 {
+
+    let mut bits : u8 = style.bits[CSS_TEXT_ALIGN_INDEX];
+    bits = bits & (CSS_TEXT_ALIGN_MASK as u8);
+    bits = bits >> CSS_TEXT_ALIGN_SHIFT;   
+
+    bits
+}
 
