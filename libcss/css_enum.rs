@@ -15,6 +15,7 @@ pub enum css_result {
 	CSS_EOF,
 	CSS_IMPORTS_PENDING,
 	CSS_PROPERTY_NOT_SET,
+	CSS_SHOULD_NEVER_OCCUR
 }
 
 
@@ -1930,5 +1931,25 @@ static CSS_SPECIFICITY_B:uint=0x00010000;
 static CSS_SPECIFICITY_C:uint=0x00000100;
 static CSS_SPECIFICITY_D:uint=0x00000001;
 
+pub enum css_computed_content_item_type {
+    TYPE_STRING,
+    TYPE_URI,
+    TYPE_ATTR,
+    TYPE_COUNTER,
+    TYPE_COUNTERS_WITH_SEP
+}
+
+pub enum css_hint_data_type{
+    CLIP_RECT,
+    COLOR,
+    CONTENT_ITEM,
+    COUNTER,
+    FIXED,
+    INTEGER_TYPE,
+    HINT_LENGTH,
+    HINT_LENGTH_H_V,
+    STRING,
+    STRINGS_VECTOR
+}
 
 // /////////////////////////////////////////////////////////////////////////////

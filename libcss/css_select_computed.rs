@@ -4,332 +4,18 @@
 extern mod css_enum;
 extern mod css_select_const;
 extern mod css_fpmath;
+extern mod css_select_propset;
 extern mod std ;
 
 use css_enum::* ;
 use css_select_const::*;
 use css_fpmath::*;
+use css_select_propset::*;
 
-pub struct css_computed_counter {
-    name:~str ,
-    value:i32
-}
-
-pub enum css_computed_content_item_type {
-    TYPE_STRING,
-    TYPE_URI,
-    TYPE_ATTR,
-    TYPE_COUNTER,
-    TYPE_COUNTERS_WITH_SEP
-}
-
-pub struct css_computed_content_item_counter {
-    name:~str,
-    sep:~str,
-    style:Option<u8>
-}
-
-pub struct css_computed_content_item {
-    computed_type:u8,
-    item_type:css_computed_content_item_type,
-
-    data:Option<~str>,
-    counters_data:Option<css_computed_content_item_counter>
-}
-
-pub struct css_computed_uncommon {
-/*
- * border_spacing         1 + 2(4)    2(4)
- * clip               2 + 4(4) + 4    4(4)
- * letter_spacing         2 + 4       4
- * outline_color          2       4
- * outline_width          3 + 4       4
- * word_spacing           2 + 4       4
- *              ---     ---
- *               52 bits     40 bytes
- *
- * Encode counter_increment and _reset as an array of name, value pairs,
- * terminated with a blank entry.
- *
- * counter_increment          1       sizeof(ptr)
- * counter_reset          1       sizeof(ptr)
- *              ---     ---
- *                2 bits      2sizeof(ptr) bytes
- *
- * Encode cursor uri(s) as an array of string objects, terminated with a
- * blank entry.
- *
- * cursor             5       sizeof(ptr)
- *              ---     ---
- *                5 bits      sizeof(ptr) bytes
- *
- * Encode content as an array of content items, terminated with a blank entry.
- *
- * content            2       sizeof(ptr)
- *              ---     ---
- *                2 bits      sizeof(ptr)
- *
- *              ___     ___
- *               61 bits     40 + 4sizeof(ptr) bytes
- *
- *                8 bytes    40 + 4sizeof(ptr) bytes
- *              ===================
- *               48 + 4sizeof(ptr) bytes
- *
- * Bit allocations:
- *
- *    76543210
- *  1 llllllcc  letter-spacing | outline-color
- *  2 ooooooob  outline-width  | border-spacing
- *  3 bbbbbbbb  border-spacing
- *  4 wwwwwwir  word-spacing   | counter-increment | counter-reset
- *  5 uuuuu...  cursor         | <unused>
- *  6 cccccccc  clip
- *  7 cccccccc  clip
- *  8 ccccccoo  clip           | content
- */
-    bits:~[u8, ..8],
-
-    border_spacing:~[i32, ..2],
-
-    clip:~[i32, ..4],
-
-    letter_spacing:i32,
-
-    outline_color:u32,
-    outline_width:i32,
-
-    word_spacing:i32,
-
-    counter_increment:@mut css_computed_counter,
-    counter_reset:@mut css_computed_counter,
-
-    cursor:~[~str],
-
-    content:@mut css_computed_content_item,
-}
-
-pub struct css_computed_page {
-/*
- * page_break_after       3
- * page_break_before          3
- * page_break_inside          2
- *              ---
- *                8 bits
- */
-    bits:~[u8, ..1]
-} 
-    
-pub struct css_computed_style {
-/*
- * background_attachment      2
- * background_repeat          3
- * border_collapse        2
- * border_top_style       4
- * border_right_style         4
- * border_bottom_style        4
- * border_left_style          4
- * caption_side           2
- * clear              3
- * direction              2
- * display            5
- * empty_cells            2
- * float              2
- * font_style             2
- * font_variant           2
- * font_weight            4
- * list_style_position        2
- * list_style_type        4
- * overflow           3
- * outline_style          4
- * position           3
- * table_layout           2
- * text_align             4
- * text_decoration        5
- * text_transform         3
- * unicode_bidi           2
- * visibility             2
- * white_space            3
- *              ---
- *               84 bits
- *
- * Colours are 32bits of AARRGGBB
- * Dimensions are encoded as a fixed point value + 4 bits of unit data
- *
- * background_color       2       4
- * background_image       1       sizeof(ptr)
- * background_position        1 + 2(4)    2(4)
- * border_top_color       2       4
- * border_right_color         2       4
- * border_bottom_color        2       4
- * border_left_color          2       4
- * border_top_width       3 + 4       4
- * border_right_width         3 + 4       4
- * border_bottom_width        3 + 4       4
- * border_left_width          3 + 4       4
- * top                2 + 4       4
- * right              2 + 4       4
- * bottom             2 + 4       4
- * left               2 + 4       4
- * color              1       4
- * font_size              4 + 4       4
- * height             2 + 4       4
- * line_height            2 + 4       4
- * list_style_image       1       sizeof(ptr)
- * margin_top             2 + 4       4
- * margin_right           2 + 4       4
- * margin_bottom          2 + 4       4
- * margin_left            2 + 4       4
- * max_height             2 + 4       4
- * max_width              2 + 4       4
- * min_height             1 + 4       4
- * min_width              1 + 4       4
- * padding_top            1 + 4       4
- * padding_right          1 + 4       4
- * padding_bottom         1 + 4       4
- * padding_left           1 + 4       4
- * text_indent            1 + 4       4
- * vertical_align         4 + 4       4
- * width              2 + 4       4
- * z_index            2       4
- *              ---     ---
- *              181 bits    140 + 2sizeof(ptr) bytes
- *
- * Encode font family as an array of string objects, terminated with a 
- * blank entry.
- *
- * font_family            3       sizeof(ptr)
- *              ---     ---
- *                3 bits      sizeof(ptr)
- *
- * Encode quotes as an array of string objects, terminated with a blank entry.
- *
- * quotes             1       sizeof(ptr)
- *              ---     ---
- *                1 bit       sizeof(ptr) bytes
- *
- *              ___     ___
- *              269 bits    140 + 4sizeof(ptr) bytes
- *
- *               34 bytes   140 + 4sizeof(ptr) bytes
- *              ===================
- *              174 + 4sizeof(ptr) bytes
- *
- * Bit allocations:
- *
- *    76543210
- *  1 vvvvvvvv  vertical-align
- *  2 ffffffff  font-size
- *  3 ttttttti  border-top-width    | background-image
- *  4 rrrrrrrc  border-right-width  | color
- *  5 bbbbbbbl  border-bottom-width | list-style-image
- *  6 lllllllq  border-left-width   | quotes
- *  7 ttttttcc  top                 | border-top-color
- *  8 rrrrrrcc  right               | border-right-color
- *  9 bbbbbbcc  bottom              | border-bottom-color
- * 10 llllllcc  left                | border-left-color
- * 11 hhhhhhbb  height              | background-color
- * 12 llllllzz  line-height         | z-index
- * 13 ttttttbb  margin-top          | background-attachment
- * 14 rrrrrrbb  margin-right        | border-collapse
- * 15 bbbbbbcc  margin-bottom       | caption-side
- * 16 lllllldd  margin-left         | direction
- * 17 mmmmmmee  max-height          | empty-cells
- * 18 mmmmmmff  max-width           | float
- * 19 wwwwwwff  width               | font-style
- * 20 mmmmmbbb  min-height          | background-repeat
- * 21 mmmmmccc  min-width           | clear
- * 22 tttttooo  padding-top         | overflow
- * 23 rrrrrppp  padding-right       | position
- * 24 bbbbbo..  padding-bottom      | opacity               | <unused>
- * 25 lllllttt  padding-left        | text-transform
- * 26 tttttwww  text-indent         | white-space
- * 27 bbbbbbbb  background-position
- * 28 bdddddff  background-position | display               | font-variant
- * 29 tttttfff  text-decoration     | font-family
- * 30 ttttrrrr  border-top-style    | border-right-style
- * 31 bbbbllll  border-bottom-style | border-left-style
- * 32 ffffllll  font-weight         | list-style-type
- * 33 oooottuu  outline-style       | table-layout          | unicode-bidi
- * 34 vvlltttt  visibility          | list-style-position   | text-align
- */
-    bits:~[u8, ..34],
-
-    unused:~[u8, ..2],
-
-    background_color:u32,
-
-    background_image:~str,
-
-    background_position:[i32, ..2],
-
-    border_color:[u32, ..4],
-    border_width:[i32, ..4],
-
-    top:i32,
-    right:i32,
-    bottom:i32,
-    left:i32,
-
-    color:u32,
-
-    font_size:i32,
-
-    height:i32,
-
-    line_height:i32,
-
-    list_style_image:~str,
-
-    margin:~[i32, ..4],
-
-    max_height:i32,
-    max_width:i32,
-
-    min_height:i32,
-    min_width:i32,
-
-    opacity:i32,
-
-    padding:~[i32, ..4],
-
-    text_indent:i32,
-
-    vertical_align:i32,
-
-    width:i32,
-
-    z_index:i32,
-
-    font_family:~[~str],
-
-    //lwc_string **quotes;
-    quotes:~[~str],
-
-    uncommon:Option<@mut css_computed_uncommon>, /**< Uncommon properties */
-    // void *aural;         /**< Aural properties */
-    page:@mut css_computed_page /* *< Page properties */
-
-}
-
-
-pub struct css_computed_clip_rect {
-    top:i32,
-    right:i32,
-    bottom:i32,
-    left:i32,
-
-    tunit:css_unit,
-    runit:css_unit,
-    bunit:css_unit,
-    lunit:css_unit,
-
-    top_auto:bool,
-    right_auto:bool,
-    bottom_auto:bool,
-    left_auto:bool
-}
-
+// function pointer : used in "css__compute_absolute_values" function 
+pub type css_fnptr_compute_font_size =  ~extern fn(parent:Option<@mut css_hint>,
+                                                size:Option<@mut css_hint> ) 
+                                                    -> css_result ;
 
 ////////////////////////////////////
 
@@ -1697,4 +1383,176 @@ pub fn css_computed_text_align(style:@mut css_computed_style)
 
     bits
 }
+
+pub fn css_computed_page_break_after(style:@mut css_computed_style)
+                                        -> u8 {
+
+    match  style.page {
+        Some(computed_page)=>{
+            let mut bits : u8 = computed_page.bits[CSS_PAGE_BREAK_AFTER_INDEX];
+            bits = bits & (CSS_PAGE_BREAK_AFTER_MASK as u8);
+            bits = bits >> CSS_PAGE_BREAK_AFTER_SHIFT;   
+            bits
+        },
+        None=>{
+            (CSS_PAGE_BREAK_AFTER_AUTO as u8)
+        }
+    }
+}
+
+pub fn css_computed_page_break_before(style:@mut css_computed_style)
+                                        -> u8 {
+
+    match  style.page {
+        Some(computed_page)=>{
+            let mut bits : u8 = computed_page.bits[CSS_PAGE_BREAK_BEFORE_INDEX];
+            bits = bits & (CSS_PAGE_BREAK_BEFORE_MASK as u8);
+            bits = bits >> CSS_PAGE_BREAK_BEFORE_SHIFT;   
+            bits
+        },
+        None=>{
+            (CSS_PAGE_BREAK_BEFORE_AUTO as u8)
+        }
+    }
+}
+
+pub fn css_computed_page_break_inside(style:@mut css_computed_style)
+                                        -> u8 {
+
+    match  style.page {
+        Some(computed_page)=>{
+            let mut bits : u8 = computed_page.bits[CSS_PAGE_BREAK_INSIDE_INDEX];
+            bits = bits & (CSS_PAGE_BREAK_INSIDE_MASK as u8);
+            bits = bits >> CSS_PAGE_BREAK_INSIDE_SHIFT;   
+            bits
+        },
+        None=>{
+            (CSS_PAGE_BREAK_INSIDE_AUTO as u8)
+        }
+    }
+}
+
+pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
+                                    style: @mut css_computed_style,
+                                    compute_font_size:css_fnptr_compute_font_size) 
+                                    -> css_result {
+
+    let mut psize = @mut css_hint{
+        hint_type:HINT_LENGTH,
+        status:0,
+        clip:None,
+        content:None,
+        counter:None,
+        length:None,
+        position:None,
+        color:None,
+        fixed:None,
+        integer:None,
+        string:None,
+        strings:None
+    };
+    let mut size = @mut css_hint{
+        hint_type:HINT_LENGTH,
+        status:0,
+        clip:None,
+        content:None,
+        counter:None,
+        length:None,
+        position:None,
+        color:None,
+        fixed:None,
+        integer:None,
+        string:None,
+        strings:None
+    };
+    let mut ex_size = @mut css_hint{
+        hint_type:HINT_LENGTH,
+        status:0,
+        clip:None,
+        content:None,
+        counter:None,
+        length:None,
+        position:None,
+        color:None,
+        fixed:None,
+        integer:None,
+        string:None,
+        strings:None
+    };
+    let mut error : css_result ;
+
+    match parent {
+        Some(parent_style)=>{
+            let (a,b,c) = css_computed_font_size(parent_style);
+            psize.status = a;
+            let length = css_hint_length { 
+                value:b.get_or_default(0) , 
+                unit:c.get_or_default(CSS_UNIT_PX) 
+            };
+            psize.length = Some(length);
+            error = (*compute_font_size)(Some(psize),Some(size));
+        },
+        None=>{
+            let (a,b,c) = css_computed_font_size(style);
+            psize.status = a;
+            let length = css_hint_length { 
+                value:b.get_or_default(0) , 
+                unit:c.get_or_default(CSS_UNIT_PX) 
+            };
+            psize.length = Some(length);
+            error = (*compute_font_size)(None,Some(size));
+        }
+    }
+    match error {
+        CSS_OK=>{},
+        _=> return error
+    }
+
+    match size.hint_type {
+        HINT_LENGTH=>{
+            match size.length {
+                None=>{
+                    error = set_font_size(style,size.status,0,CSS_UNIT_PX);
+                }
+                Some(length)=>{
+                    error = set_font_size(style,size.status,length.value,length.unit);
+                }
+            }
+        },
+        _=> return CSS_SHOULD_NEVER_OCCUR
+    }
+    match error {
+        CSS_OK=>{},
+        _=> return error
+    }
+
+    ex_size.status = CSS_FONT_SIZE_DIMENSION as u8;
+    let length = css_hint_length { 
+        value:css_int_to_fixed(1) , 
+        unit:CSS_UNIT_EX 
+    };
+    ex_size.length = Some(length);
+    error = (*compute_font_size)(Some(size),Some(ex_size));
+    match error {
+        CSS_OK=>{},
+        _=> return error
+    }
+
+    // match  {
+        
+    // }
+
+
+    CSS_OK
+}
+
+
+
+
+
+
+
+
+
+
 
