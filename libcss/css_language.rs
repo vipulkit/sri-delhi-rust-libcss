@@ -1172,8 +1172,7 @@ pub impl css_language {
 			combinator_type:CSS_COMBINATOR_NONE,  
 			value_type:CSS_SELECTOR_DETAIL_VALUE_NTH,
 			negate:negate,
-
-			//css_selector_detail_value - union merged
+	
 			string:None,
 			a:0,
 			b:0
