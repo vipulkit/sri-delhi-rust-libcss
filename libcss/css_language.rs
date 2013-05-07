@@ -44,7 +44,7 @@ pub struct css_language {
 		sheet:sheet,
 		lwc_instance: lwc_inst.clone(),
 		strings: css_propstrings::css_propstrings(lwc_inst.clone()),
-		properties: css_properties::css_properties(),
+		properties: css_properties::css_properties(sheet),
 		context:~[], 
 		state:CHARSET_PERMITTED,
 		default_namespace:None,   
@@ -453,7 +453,7 @@ pub impl css_language {
 
 		style = self.sheet.css__stylesheet_style_create();
 
-		(*self.properties.property_handlers[index - AZIMUTH as uint])(&mut self.strings , vector , ctx , style);
+		(*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , &mut self.strings , vector , ctx , style);
 
 		let (status,flags) = self.css__parse_important(vector , ctx);
 		if match status { CSS_OK => false, _ => true} {
