@@ -332,11 +332,11 @@ pub struct css_computed_uncommon {
  *  7 cccccccc  clip
  *  8 ccccccoo  clip           | content
  */
-    bits:~[u8, ..8],
+    bits:~[u8],//~[u8, ..8],
 
-    border_spacing:~[i32, ..2],
+    border_spacing:~[i32],//~[i32, ..2],
 
-    clip:~[i32, ..4],
+    clip:~[i32],//~[i32, ..4],
 
     letter_spacing:i32,
 
@@ -345,12 +345,12 @@ pub struct css_computed_uncommon {
 
     word_spacing:i32,
 
-    counter_increment:@mut css_computed_counter,
-    counter_reset:@mut css_computed_counter,
+    counter_increment:Option<@mut css_computed_counter>,
+    counter_reset:Option<@mut css_computed_counter>,
 
     cursor:~[~str],
 
-    content:@mut css_computed_content_item,
+    content:Option<@mut css_computed_content_item>,
 }
 
 pub struct css_computed_page {
@@ -361,7 +361,7 @@ pub struct css_computed_page {
  *              ---
  *                8 bits
  */
-    bits:~[u8, ..1]
+    bits:~[u8],//~[u8, ..1]
 } 
     
 pub struct css_computed_style {
@@ -593,8 +593,8 @@ pub struct css_hint {
     clip:Option<@mut css_computed_clip_rect>,
     content:Option<@mut css_computed_content_item>,
     counter:Option<@mut css_computed_counter>,
-    length:Option<css_hint_length>,
-    position:Option<css_hint_length_hv>,
+    length:Option<@mut css_hint_length>,
+    position:Option<@mut css_hint_length_hv>,
     color:Option<u32>,
     fixed:Option<i32>,
     integer:Option<i32>,

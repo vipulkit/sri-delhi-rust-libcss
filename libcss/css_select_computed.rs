@@ -183,7 +183,7 @@ pub fn css_computed_counter_increment(
             bits = bits & (CSS_COUNTER_INCREMENT_MASK as u8);
             bits = bits >> CSS_COUNTER_INCREMENT_SHIFT;
 
-            counter = Some(uncommon_struct.counter_increment);
+            counter = uncommon_struct.counter_increment;
 
             (bits,counter)
         }
@@ -204,7 +204,7 @@ pub fn css_computed_counter_reset(
             bits = bits & (CSS_COUNTER_RESET_MASK as u8);
             bits = bits >> CSS_COUNTER_RESET_SHIFT;
 
-            counter = Some(uncommon_struct.counter_reset);
+            counter = uncommon_struct.counter_reset;
 
             (bits,counter)
         }
@@ -322,7 +322,7 @@ pub fn css_computed_content(
             bits = bits & (CSS_CONTENT_MASK as u8);
             bits = bits >> CSS_CONTENT_SHIFT;
 
-            (bits,Some(uncommon_struct.content))
+            (bits,uncommon_struct.content)
         }
     }  
 }
@@ -1485,7 +1485,7 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
         Some(parent_style)=>{
             let (a,b,c) = css_computed_font_size(parent_style);
             psize.status = a;
-            let length = css_hint_length { 
+            let length = @mut css_hint_length { 
                 value:b.get_or_default(0) , 
                 unit:c.get_or_default(CSS_UNIT_PX) 
             };
@@ -1495,7 +1495,7 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
         None=>{
             let (a,b,c) = css_computed_font_size(style);
             psize.status = a;
-            let length = css_hint_length { 
+            let length = @mut css_hint_length { 
                 value:b.get_or_default(0) , 
                 unit:c.get_or_default(CSS_UNIT_PX) 
             };
@@ -1512,22 +1512,18 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
         HINT_LENGTH=>{
             match size.length {
                 None=>{
-                    error = set_font_size(style,size.status,0,CSS_UNIT_PX);
+                    set_font_size(style,size.status,0,CSS_UNIT_PX);
                 }
                 Some(length)=>{
-                    error = set_font_size(style,size.status,length.value,length.unit);
+                    set_font_size(style,size.status,length.value,length.unit);
                 }
             }
         },
         _=> return CSS_SHOULD_NEVER_OCCUR
     }
-    match error {
-        CSS_OK=>{},
-        _=> return error
-    }
 
     ex_size.status = CSS_FONT_SIZE_DIMENSION as u8;
-    let length = css_hint_length { 
+    let length = @mut css_hint_length { 
         value:css_int_to_fixed(1) , 
         unit:CSS_UNIT_EX 
     };
@@ -1538,14 +1534,31 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
         _=> return error
     }
 
-    // match  {
-        
-    // }
-
-
+    match size.length {
+        None=>{
+            ex_size.length.get().value = 0 ;
+        },
+        Some(length)=>{
+            ex_size.length.get().value = css_divide_fixed(ex_size.length.get().value,length.value);
+        }
+    }
+    ex_size.length.get().unit = CSS_UNIT_EM ;
+    // ...........
+    // writing inside functions first 
+    // .......
     CSS_OK
 }
 
+
+// pub type css_fnptr_getcompute_absolute_color =  ~extern fn(style: @mut css_computed_style) 
+//                                                     -> (u8,u32) ;
+
+// pub fn css_computed_background_color(style: @mut css_computed_style)
+//                                     -> (u8,u32) {
+// pub fn compute_absolute_color( style: @mut css_computed_style ) -> {
+
+// }
+    
 
 
 
