@@ -71,7 +71,31 @@ impl css_parser {
 		
 		let mut states = ~[
 			~css_parser::parse_start,
-			~css_parser::parse_stylesheet
+			~css_parser::parse_stylesheet,
+			~css_parser::parse_statement,
+			~css_parser::parse_ruleset,
+			~css_parser::parse_ruleset_end,
+			~css_parser::parse_at_rule,
+			~css_parser::parse_at_rule_end,
+			~css_parser::parse_block,
+			~css_parser::parse_block_content,
+			~css_parser::parse_selector,
+			~css_parser::parse_declaration,
+			~css_parser::parse_decl_list,
+			~css_parser::parse_decl_list_end,
+			~css_parser::parse_property,
+			~css_parser::parse_value_0,
+			~css_parser::parse_value_1,
+			~css_parser::parse_value,
+			~css_parser::parse_any_0,
+			~css_parser::parse_any_1,
+			~css_parser::parse_any,
+			~css_parser::parse_malformed_declaration,
+			~css_parser::parse_malformed_selector,
+			~css_parser::parse_malformed_at_rule,
+			~css_parser::parse_inline_style,
+			~css_parser::parse_IS_body_0,
+			~css_parser::parse_IS_body
 		];
 
 		Some(~css_parser {
@@ -126,11 +150,9 @@ impl css_parser {
 	pub fn eat_ws(&mut self) -> css_result
 	{
 		let (token_option, parser_error) = self.get_token();
-
 		if (token_option.is_none()) {
 			return parser_error;
 		}
-
 		let token = token_option.unwrap();
 
 		match token.token_type {
@@ -329,11 +351,9 @@ impl css_parser {
 				},
 				2 /*AfterStylesheet*/ => {
 					let (token_option, parser_error) = parser.get_token();
-
 					if (token_option.is_none()) {
 						return parser_error;
 					}
-
 					let token = token_option.unwrap();
 
 					match token.token_type {
@@ -381,11 +401,9 @@ impl css_parser {
 				match (current_substate) {
 					0 /*Initial*/=> {
 						let (token_option, parser_error) = parser.get_token();
-
 						if (token_option.is_none()) {
 							return parser_error;
 						}
-
 						let token = token_option.unwrap();
 
 						match token.token_type {
@@ -459,11 +477,9 @@ impl css_parser {
 		let mut to = (sRuleset as uint, Initial as uint);
 
 		let (token_option, parser_error) = parser.get_token();
-
 		if (token_option.is_none()) {
 			return parser_error;
 		}
-
 		let token = token_option.unwrap();
 
 		match (token.token_type) {
@@ -507,11 +523,9 @@ impl css_parser {
 					parser.tokens.clear();
 
 					let (token_option, parser_error) = parser.get_token();
-
 					if (token_option.is_none()) {
 						return parser_error;
 					}
-
 					let token = token_option.unwrap();
 
 					match (token.token_type) {
@@ -578,11 +592,9 @@ impl css_parser {
 					}
 
 					let (token_option, parser_error) = parser.get_token();
-
 					if (token_option.is_none()) {
 						return parser_error;
 					}
-
 					let token = token_option.unwrap();
 
 					match (token.token_type) {
@@ -652,11 +664,9 @@ impl css_parser {
 			match (current_substate) {
 				0 /* Initial */ => {
 					let (token_option, parser_error) = parser.get_token();
-
 					if (token_option.is_none()) {
 						return parser_error;
 					}
-
 					let token = token_option.unwrap();
 
 					match (token.token_type) {
@@ -728,11 +738,9 @@ impl css_parser {
 
 				2 /* Brace */ => {
 					let (token_option, parser_error) = parser.get_token();
-
 					if (token_option.is_none()) {
 						return parser_error;
 					}
-
 					let token = token_option.unwrap();
 
 					match token.token_type {
@@ -802,11 +810,9 @@ impl css_parser {
 					parser.tokens.clear();
 
 					let (token_option, parser_error) = parser.get_token();
-
 					if (token_option.is_none()) {
 						return parser_error;
 					}
-
 					let token = token_option.unwrap();
 
 					match (token.token_type) {
@@ -847,11 +853,9 @@ impl css_parser {
 						return CSS_OK;
 					} /* if */
 					let (token_option, parser_error) = parser.get_token();
-
 					if (token_option.is_none()) {
 						return parser_error;
 					}
-
 					let token = token_option.unwrap();
 
 					match (token.token_type) {
@@ -928,11 +932,9 @@ impl css_parser {
 					}
 
 					let (token_option, parser_error) = parser.get_token();
-
 					if (token_option.is_none()) {
 						return parser_error;
 					}
-
 					let token = token_option.unwrap();
 
 					match (token.token_type) {
@@ -1009,4 +1011,344 @@ impl css_parser {
 		parser.done();
 		CSS_OK
 	} /* parse_at_rule_end */
+
+	pub fn parse_block(parser: &mut ~css_parser) -> css_result {
+		enum parse_block_substates { 
+			Initial = 0, 
+			WS = 1, 
+			Content = 2, 
+			Brace = 3, 
+			WS2 = 4 
+		};
+
+		let mut (_,current_substate) = parser.stack.pop();
+
+		while (true) {
+			match (current_substate) {
+				0 /* Initial */ => {
+					let (token_option, parser_error) = parser.get_token();
+					if (token_option.is_none()) {
+						return parser_error;
+					}
+					let token = token_option.unwrap();
+
+					parser.language.language_handle_event(CSS_PARSER_START_BLOCK, &parser.tokens);
+
+					match (token.token_type) {
+						CSS_TOKEN_CHAR(c) => {
+							if (c != '{') {
+								/* This should never happen, as FIRST(block) == '{' */
+								fail!();
+							}
+						}
+						_ => {
+							/* This should never happen, as FIRST(block) == '{' */
+							fail!();
+						}
+					} /* match token_type */
+
+					parser.tokens.clear();
+					current_substate = WS as uint;
+				} /* Initial */
+				
+				1 /* WS */ => {
+					let eat_ws_result = parser.eat_ws();
+					match (eat_ws_result) {
+						CSS_OK => {
+							current_substate = Content as uint;
+						}
+						_ => {
+							return eat_ws_result;
+						}
+					}
+				} /* WS */
+
+				2 /* Content */ => {
+					let to = (sBlockContent as uint, Initial as uint);
+					let subsequent = (sBlock as uint, Brace as uint);
+
+					parser.transition(to, subsequent);
+					return CSS_OK;
+				} /* Content */
+
+				3 /* Brace */ => {
+					let (token_option, parser_error) = parser.get_token();
+					if (token_option.is_none()) {
+						return parser_error;
+					}
+					let token = token_option.unwrap();
+
+					match (token.token_type) {
+						CSS_TOKEN_EOF => {
+							let push_back_result = parser.push_back(token);
+								
+							match (push_back_result) {
+								CSS_OK => {
+									parser.done();
+									return CSS_OK;
+								},
+								_ => {
+									return push_back_result;
+								}
+							}
+						} /* CSS_TOKEN_EOF */
+
+						CSS_TOKEN_CHAR(c) => {
+							if (c != '}') {
+								/* This should never happen, as 
+								 * FOLLOW(block-content) == '}' */
+								fail!();
+							}
+						} /* CSS_TOKEN_CHAR */
+
+						_ => {
+							fail!();
+						}
+					} /* match token_type */
+
+					current_substate = WS2 as uint;
+				} /* Brace */
+
+				4 /* WS2 */ => {
+					let eat_ws_result = parser.eat_ws();
+					match (eat_ws_result) {
+						CSS_OK => {
+							break;
+						}
+						_ => {
+							return eat_ws_result;
+						}
+					}
+				} /* WS2 */
+
+				_ => {
+					fail!();
+				}
+			} /* match current_substate */
+		} /* while */
+		
+		parser.language.language_handle_event(CSS_PARSER_END_BLOCK, &parser.tokens);
+		parser.tokens.clear();
+		parser.done();
+
+		CSS_OK
+	} /* parse_block */
+
+	pub fn parse_block_content(parser: &mut ~css_parser) -> css_result {
+		
+			enum parse_block_content_substates { 
+				Initial = 0, 
+				WS = 1 
+			};
+			
+			let mut (_,current_substate) = parser.stack.pop();
+
+			while (true) {
+				match (current_substate) {
+					0 /* Initial */ => {
+						let (token_option, parser_error) = parser.get_token();
+						if (token_option.is_none()) {
+							return parser_error;
+						}
+						let mut token = token_option.unwrap();
+
+						match (token.token_type) {
+							CSS_TOKEN_ATKEYWORD(_) => {
+								current_substate = WS as uint;
+							} /* CSS_TOKEN_ATKEYWORD */
+							
+							CSS_TOKEN_CHAR(c) => {
+								if (c=='{') { /* Grammar ambiguity. Assume block */
+									let push_back_result = parser.push_back(token);
+										
+									match (push_back_result) {
+										CSS_OK => {
+											parser.language.language_handle_event(CSS_PARSER_BLOCK_CONTENT, &parser.tokens);
+											parser.tokens.clear();
+
+											let to = (sBlock as uint, Initial as uint);
+											let subsequent = (sBlockContent as uint, Initial as uint);
+
+											parser.transition(to, subsequent);
+
+											return CSS_OK;
+										},
+										_ => {
+											return push_back_result;
+										}
+									}									
+								} /* if */
+								else if (c==';') { /* Grammar ambiguity. Assume semi */
+									let push_back_result = parser.push_back(token);
+										
+									match (push_back_result) {
+										CSS_OK => {
+											parser.language.language_handle_event(CSS_PARSER_BLOCK_CONTENT, &parser.tokens);
+
+											let (token_option, parser_error) = parser.get_token();
+											if (token_option.is_none()) {
+												return parser_error;
+											}
+											token = token_option.unwrap();
+											// TODO <Abhijeet> : Doesn't get used anywhere
+
+											parser.tokens.clear();
+
+											current_substate = WS as uint;
+										},
+										_ => {
+											return push_back_result;
+										}
+									} /* match push_back_result */									
+								} /* else if */
+								else if (c=='}') { /* Grammar ambiguity. Assume end */
+									let push_back_result = parser.push_back(token);
+										
+									match (push_back_result) {
+										CSS_OK => {
+											parser.language.language_handle_event(CSS_PARSER_BLOCK_CONTENT, &parser.tokens);
+											parser.tokens.clear();
+
+											parser.done();
+											return CSS_OK;
+										},
+										_ => {
+											return push_back_result;
+										}
+									} /* match push_back_result */	
+								} /* else if */
+							} /* CSS_TOKEN_CHAR */
+
+							CSS_TOKEN_EOF => {
+								let push_back_result = parser.push_back(token);
+									
+								match (push_back_result) {
+									CSS_OK => {
+										parser.language.language_handle_event(CSS_PARSER_BLOCK_CONTENT, &parser.tokens);
+										parser.tokens.clear();
+
+										parser.done();
+										return CSS_OK;
+									},
+									_ => {
+										return push_back_result;
+									}
+								} /* match push_back_result */
+							} /* CSS_TOKEN_EOF */
+
+							_ => {
+
+							}
+						} /* match token_type */
+
+						if (current_substate == Initial as uint) {
+							let push_back_result = parser.push_back(token);
+								
+							match (push_back_result) {
+								CSS_OK => {
+									let to = (sAny as uint, Initial as uint);
+									let subsequent = (sBlockContent as uint, Initial as uint);
+
+									parser.transition(to, subsequent);
+									return CSS_OK;
+								},
+								_ => {
+									return push_back_result;
+								}
+							} /* match push_back_result */							
+						} /* if */
+
+					} /* Initial */
+
+					1 /* WS */ => {
+						let eat_ws_result = parser.eat_ws();
+						match (eat_ws_result) {
+							CSS_OK => {
+								
+							}
+							_ => {
+								return eat_ws_result;
+							}
+						}
+						current_substate = Initial as uint;
+					} /* WS */
+
+					_ => {
+						fail!();
+					} /* _ */
+				} /* match current_substate */
+			} /* while */
+		
+		parser.done();
+		CSS_OK
+	} /* parse_block_content */
+
+	pub fn parse_selector(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_selector */
+
+	pub fn parse_declaration(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_declaration */
+
+	pub fn parse_decl_list(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_decl_list */
+
+	pub fn parse_decl_list_end(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_decl_list_end */
+
+	pub fn parse_property(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_property */
+
+	pub fn parse_value_0(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_value_0 */
+
+	pub fn parse_value_1(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_value_1 */
+
+	pub fn parse_value(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_value */
+
+	pub fn parse_any_0(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_any_0 */
+
+	pub fn parse_any_1(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_any_1 */
+
+	pub fn parse_any(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_any */
+
+	pub fn parse_malformed_declaration(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_malformed_declaration */
+
+	pub fn parse_malformed_selector(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_malformed_selector */
+
+	pub fn parse_malformed_at_rule(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_malformed_at_rule */
+
+	pub fn parse_inline_style(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_inline_style */
+
+	pub fn parse_IS_body_0(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_IS_body_0 */
+
+	pub fn parse_IS_body(parser: &mut ~css_parser) -> css_result {
+		CSS_OK
+	} /* parse_IS_body */
+
 }
