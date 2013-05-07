@@ -1190,7 +1190,7 @@ impl css_parser {
 												return parser_error;
 											}
 											token = token_option.unwrap();
-											// TODO <Abhijeet> : Doesn't get used anywhere
+											// TODO <Abhijeet> : Doesn't get used anywhere, why?
 
 											parser.tokens.clear();
 
@@ -1284,6 +1284,30 @@ impl css_parser {
 	} /* parse_block_content */
 
 	pub fn parse_selector(parser: &mut ~css_parser) -> css_result {
+		enum parse_selector_substates { 
+			Initial = 0, 
+			AfterAny1 = 1 
+		};
+		
+		let (_,substate) = parser.stack.pop();
+
+		match (substate) {
+			0 /* Initial */ => {
+				parser.tokens.clear();
+
+				let to = (sAny1 as uint, Initial as uint);
+				let subsequent = (sSelector as uint, AfterAny1 as uint);
+
+				parser.transition(to, subsequent);
+				return CSS_OK;				
+			} /* Initial */
+
+			1 /* AfterAny1 */ => {
+				/* do nothing */
+			} /* AfterAny1 */
+		}
+		
+		parser.done();
 		CSS_OK
 	} /* parse_selector */
 

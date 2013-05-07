@@ -9,7 +9,7 @@ rustc -L . -L ../libparserutils/ css_lexer.rs
 rustc -L . -L ../libwapcaplet css_stylesheet.rs 
 rustc -L . -L ../libwapcaplet css_properties.rs
 rustc -L . -L ../libwapcaplet css_language.rs 
+rustc -L . -L ../libwapcaplet -L ../libparserutils css_parser.rs
 rustc -L . css_select_const.rs 
 rustc -L . css_select_propset.rs
 rustc -L . css_select_computed.rs
-
