@@ -1305,6 +1305,10 @@ impl css_parser {
 			1 /* AfterAny1 */ => {
 				/* do nothing */
 			} /* AfterAny1 */
+
+			_ => {
+				fail!();
+			}
 		}
 		
 		parser.done();
