@@ -168,7 +168,7 @@ impl css_parser {
 
 	pub fn get_token(&mut self) -> (Option<~css_token>, css_result) {
 
-		let mut token: Option<~css_token> = None;
+		let mut token: Option<~css_token>;
 
 		/* Use pushback, if it exists */
 		if self.pushback.is_some() {
@@ -903,4 +903,110 @@ impl css_parser {
 		CSS_OK
 	} /* parse_at_rule */
 
+	pub fn parse_at_rule_end(parser: &mut ~css_parser) -> css_result {
+		
+		enum parser_at_rule_end_substates { 
+			Initial = 0, 
+			WS = 1, 
+			AfterBlock = 2 
+		};
+		
+		let mut (_,current_substate) = parser.stack.pop();
+
+		while (true) {
+			match (current_substate) {
+
+				0 /* Initial */ => {
+					match(parser.language.language_handle_event(CSS_PARSER_START_ATRULE, & parser.tokens)) {
+						CSS_INVALID => {
+							let to = (sMalformedAtRule as uint, Initial as uint);
+
+							parser.transition_no_ret(to);
+							return CSS_OK;
+						}
+						_=> {}
+					}
+
+					let (token_option, parser_error) = parser.get_token();
+
+					if (token_option.is_none()) {
+						return parser_error;
+					}
+
+					let token = token_option.unwrap();
+
+					match (token.token_type) {
+						CSS_TOKEN_EOF => {
+							let push_back_result = parser.push_back(token);
+								
+							match (push_back_result) {
+								CSS_OK => {
+									parser.done();
+									return CSS_OK;
+								},
+								_ => {
+									return push_back_result;
+								}
+							}
+						} /* CSS_TOKEN_EOF */
+
+						CSS_TOKEN_CHAR(c) => {
+							if (c=='{') {
+								let push_back_result = parser.push_back(token);
+
+								match (push_back_result) {
+									CSS_OK => {},
+									_ => {
+										return push_back_result;
+									}
+								}
+
+								let to = (sBlock as uint, Initial as uint);
+								let subsequent = (sAtRuleEnd as uint, AfterBlock as uint);
+								parser.transition(to,subsequent);
+								return CSS_OK;
+							} /* if */
+							else if (c==';') {}
+							else {
+								/* should never happen */
+								fail!();
+							}
+						}
+
+						_ => {
+							/* should never happen */
+								fail!();
+						}
+					} /* match token_type */
+					current_substate = WS as uint;
+				} /* Initial */
+
+				1 /* WS */ => {
+					let eat_ws_result = parser.eat_ws();
+					match (eat_ws_result) {
+						CSS_OK => {
+							break;
+						}
+						_ => {
+							return eat_ws_result;
+						}
+					}
+				} /* WS */
+
+				2 /* AfterBlock */ => {
+					break;
+				} /* AfterBlock */
+
+				_ => {
+					fail!();
+				}
+
+			} /* match current_substate */
+		} /* while */
+	
+		parser.language.language_handle_event(CSS_PARSER_END_ATRULE, &parser.tokens);
+
+		parser.done();
+		CSS_OK
+	} /* parse_at_rule_end */
 }
