@@ -17,16 +17,6 @@ use css_propstrings::*;
 use css_properties::*;
 use css_bytecode::*;
 
-// pub struct nth_struct {
-// 		a:i32,
-// 		b:i32
-// } 	
-
-// pub struct css_selector_detail_value {
-// 	string:arc::RWARC<~lwc_string>,		/**< Interned string, or NULL */
-// 	nth:nth_struct				//< Data for x = an + b */
-// }
-
 pub struct context_entry {
 	event_type:css_parser_event,        /* < Type of entry */
 	data:Option<CSS_RULE_DATA_TYPE>     //< Data for context */
@@ -353,7 +343,7 @@ pub impl css_language {
 											consumeWhitespace(tokens, ctx);
 											match curRule {
 												RULE_FONT_FACE(font_face_rule) =>	
-													return css_language::css__parse_font_descriptor(ident, tokens, ctx, font_face_rule),
+													return self.css__parse_font_descriptor(ident, tokens, ctx, font_face_rule),
 												_ =>	
 													return self.parseProperty(ident, tokens, ctx, curRule)	
 											}
@@ -1410,29 +1400,7 @@ pub impl css_language {
 	// CSS-LANGUAGE implementation/data-structs ends here 
 	// ===========================================================================================================
 
-	
-
-	// ===========================================================================================================
-	// CSS-FONT-FACE implementation/data-structs starts here 
-	// ===========================================================================================================
-
-	/**
-	 * Parse a descriptor in an @font-face rule
-	 *
-	 * \param descriptor  Token for this descriptor
-	 * \param vector      Vector of tokens to process
-	 * \param ctx         Pointer to vector iteration context
-	 * \param rule        Rule to process descriptor into
-	 * \return CSS_OK on success,
-	 *         CSS_BADPARM on bad parameters,
-	 *         CSS_INVALID on invalid syntax,
-	 *        
-	 */
-	pub fn css__parse_font_descriptor( descriptor:&~css_token, vector:&~[~css_token], ctx:@mut uint, curRule:@mut css_rule_font_face) -> css_result {
-						
-		CSS_INVALID
-	}   
-	
+		
 	// ===========================================================================================================
 	// PARSE-IMPORTANT implementation/data-structs starts here 
 	// ===========================================================================================================
@@ -1841,4 +1809,218 @@ pub impl css_language {
 		}
 
 	}
+
+	// ===========================================================================================================
+	// PARSE-IMPORTANT implementation/data-structs ends here 
+	// ===========================================================================================================
+
+
+	// ===========================================================================================================
+	// CSS-FONT-FACE implementation/data-structs starts here 
+	// ===========================================================================================================
+
+	/**
+	 * Parse a descriptor in an @font-face rule
+	 *
+	 * \param descriptor  Token for this descriptor
+	 * \param vector      Vector of tokens to process
+	 * \param ctx         Pointer to vector iteration context
+	 * \param rule        Rule to process descriptor into
+	 * \return CSS_OK on success,
+	 *         CSS_BADPARM on bad parameters,
+	 *         CSS_INVALID on invalid syntax,
+	 *        
+	 */
+	pub fn css__parse_font_descriptor(&mut self, descriptor:&~css_token, vector:&~[~css_token], ctx:@mut uint, curRule:@mut css_rule_font_face) -> css_result {
+		
+		let font_face:Option<@mut css_font_face> = curRule.font_face;
+
+		// match curRule.font_face {
+		// 		None => {},
+		// 		Some(rule_font_face) => font_face = rule_font_face
+		// }
+		if self.strings.lwc_string_caseless_isequal(descriptor.idata.get_ref().clone(), FONT_FAMILY as uint) {
+			return self.font_face_parse_font_family(vector, ctx, *font_face.get_ref())
+		}
+		else if self.strings.lwc_string_caseless_isequal(descriptor.idata.get_ref().clone(),SRC as uint) {
+			return self.font_face_parse_src(vector, ctx, *font_face.get_ref())
+		}
+		else if self.strings.lwc_string_caseless_isequal(descriptor.idata.get_ref().clone(),FONT_STYLE as uint) {
+			return self.font_face_parse_font_style(vector, ctx, *font_face.get_ref())
+		}
+		else if self.strings.lwc_string_caseless_isequal(descriptor.idata.get_ref().clone(),FONT_WEIGHT as uint) {
+			return self.font_face_parse_font_weight(vector, ctx, *font_face.get_ref())
+		}
+		
+		CSS_INVALID
+	}   
+
+	pub fn font_face_parse_font_family(&mut self, vector:&~[~css_token], ctx:@mut uint,	
+		font_face:@mut css_font_face) -> css_result	{
+		
+		let string:arc::RWARC<~lwc_string>;
+
+		// match self.css__ident_list_or_string_to_string(vector, ctx,font_rule_font_family_reserved, string)
+		// {
+		// 	CSS_OK => {
+		// 		css__font_face_set_font_family(font_face, string);
+		// 		lwc_string_unref(string);
+		// 		return CSS_OK
+		// 	},
+		// 	x => return x
+		// }
+		return CSS_OK
+	}
+
+	pub fn font_face_parse_src(&mut self, vector:&~[~css_token], ctx:@mut uint,
+		font_face:@mut css_font_face) -> css_result	{
+	
+		let orig_ctx = *ctx;
+		let mut token:&~css_token;
+		let mut srcs:~[~css_font_face_src]=~[];
+				
+		/* src             ::= spec-or-name [ ',' spec-or-name ]*
+	 	 * spec-or-name    ::= font-face-spec | font-face-name
+	 	 * font-face-spec  ::= URI [ 'format(' STRING [ ',' STRING ]* ')' ]?
+	 	 * font-face-name  ::= 'local(' ident-list-or-string ')'
+	 	 * ident-list-or-string ::= IDENT IDENT* | STRING
+	 	 */
+
+		/* Create one css_font_face_src for each consecutive location and
+		 * [potentially] type pair in the comma-separated list
+		 */
+		loop {	
+			let mut location:Option<arc::RWARC<lwc_string>> =None;
+			let location_type:css_font_face_location_type =	CSS_FONT_FACE_LOCATION_TYPE_UNSPECIFIED;
+			let format:css_font_face_format = CSS_FONT_FACE_FORMAT_UNSPECIFIED;
+
+			// match self.font_face_src_parse_spec_or_name(vector, ctx, &location, &location_type, &format) {
+			// 	CSS_OK => {},
+			// 	error => {
+			// 		*ctx = orig_ctx;
+			// 		return error
+			// 	}	
+			// }
+			
+			
+			let mut new_src:~css_font_face_src =~css_font_face_src{location:None, bits:~[]};			
+			new_src.location = location;
+			new_src.bits.push(format as u8 << 2 | location_type as u8 );
+			srcs.push(new_src);
+					
+			consumeWhitespace(vector, ctx);
+			if *ctx < vector.len() && css_language::tokenIsChar(&vector[*ctx], ',')
+			{
+				token = &vector[*ctx];
+				*ctx +=1
+			} 
+			else
+			{
+				break
+			}
+		
+		}
+
+		// match css__font_face_set_srcs(font_face, srcs) {
+		// 	CSS_OK => return CSS_OK, 
+		// 	error => {
+		// 		*ctx = orig_ctx;
+		// 		return error
+		// 	} 
+		// }
+		return CSS_OK
+	}
+
+	pub fn font_face_parse_font_style(&mut self, vector:&~[~css_token], ctx:@mut uint,
+		font_face:@mut css_font_face) -> css_result	{
+	
+		let orig_ctx = *ctx;
+		let style:css_font_style_e;
+		
+
+		/* IDENT(normal, italic, oblique) */
+
+		if *ctx > vector.len() || match vector[*ctx].token_type {CSS_TOKEN_IDENT(_) => false, _ => true} {
+			*ctx = orig_ctx;
+			return CSS_INVALID
+		}	
+		
+		let token = &vector[*ctx];
+		*ctx += 1;
+
+		if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NORMAL as uint) {
+			style = CSS_FONT_STYLE_NORMAL;
+		} 
+		else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ITALIC as uint) {
+			style = CSS_FONT_STYLE_ITALIC
+		}
+		else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), OBLIQUE as uint) {
+			style = CSS_FONT_STYLE_OBLIQUE
+		} else {
+			*ctx = orig_ctx;
+			 return CSS_INVALID;
+		}
+
+		
+		font_face.bits[0] = (font_face.bits[0] & 0xfc) | style as u8;
+		return CSS_OK;
+	}
+
+	pub fn font_face_parse_font_weight(&mut self, vector:&~[~css_token], ctx:@mut uint,
+		font_face:@mut css_font_face) -> css_result	{
+	
+		let orig_ctx = *ctx;
+		let token:&~css_token;
+		let weight:css_font_weight_e;
+		
+		/* NUMBER (100, 200, 300, 400, 500, 600, 700, 800, 900) | 
+		 * IDENT (normal, bold) */
+		
+		if *ctx >= vector.len() || match vector[*ctx].token_type { CSS_TOKEN_IDENT(_) | CSS_TOKEN_NUMBER(_,_) => false, _ => true } {
+			return CSS_INVALID;
+		}
+
+		token = &vector[*ctx];
+		*ctx += 1;
+
+
+		if match token.token_type { CSS_TOKEN_NUMBER(_,_) => true, _ => false }  {
+			let (num, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
+			/* Invalid if there are trailing characters */
+			if consumed != lwc::lwc_string_length(token.idata.get_ref().clone()) {
+				*ctx = orig_ctx;
+				return CSS_INVALID;
+			}
+
+			match num >> 10 {
+				100 => weight = CSS_FONT_WEIGHT_100,
+				200 => weight = CSS_FONT_WEIGHT_200,
+				300 => weight = CSS_FONT_WEIGHT_300,
+				400 => weight = CSS_FONT_WEIGHT_400,
+				500 => weight = CSS_FONT_WEIGHT_500,
+				600 => weight = CSS_FONT_WEIGHT_600,
+				700 => weight = CSS_FONT_WEIGHT_700,
+				800 => weight = CSS_FONT_WEIGHT_800,
+				900 => weight = CSS_FONT_WEIGHT_900,
+				_ =>  {
+					*ctx = orig_ctx;
+					return CSS_INVALID
+				}
+			}	
+		} 
+		else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),NORMAL as uint) {
+			weight = CSS_FONT_WEIGHT_NORMAL
+		} 
+		else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),BOLD as uint) {
+			weight = CSS_FONT_WEIGHT_BOLD
+		} else {
+			*ctx = orig_ctx;
+			return CSS_INVALID
+		}
+
+		font_face.bits[0] = (font_face.bits[0] & 0xc3) | (weight as u8 << 2);
+		
+		return CSS_OK;
+	}
+
 }
