@@ -7,6 +7,7 @@ extern mod std;
 extern mod wapcaplet;
 extern mod css_propstrings;
 extern mod css_properties;
+extern mod css_bytecode;
 
 use css_enum::* ;
 use css_stylesheet::*;
@@ -14,6 +15,7 @@ use std::arc;
 use wapcaplet::*;
 use css_propstrings::*;
 use css_properties::*;
+use css_bytecode::*;
 
 // pub struct nth_struct {
 // 		a:i32,
@@ -412,7 +414,7 @@ pub impl css_language {
 	 * Determine if a token is a character
 	 *
 	 * \param token  The token to consider
-	 * \param c      The character to match (lowercase ASCII only)
+	 * \param c      The character to match (lowerASCII only)
 	 * \return True if the token matches, false otherwise
 	 */
 	pub fn tokenIsChar(token:&~css_token, c:char) -> bool {
@@ -423,7 +425,7 @@ pub impl css_language {
 					if lwc::lwc_string_length(token.idata.get_ref().clone()) == 1 {
 						let mut token_char = lwc::lwc_string_data(token.idata.get_ref().clone()).char_at(0);
 
-						// Ensure lowercase comparison 
+						// Ensure lowercomparison 
 						if 'A' <= token_char && token_char <= 'Z' {
 							token_char += 'a' - 'A'
 						}
@@ -462,8 +464,10 @@ pub impl css_language {
 		style = self.sheet.css__stylesheet_style_create();
 
 		(*self.properties.property_handlers[index - AZIMUTH as uint])(&mut self.strings , vector , ctx , style);
-		let flags = self.css__parse_important(vector , ctx);
-
+		let (status,flags) = self.css__parse_important(vector , ctx);
+		if match status { CSS_OK => false, _ => true} {
+			return CSS_INVALID;
+		}
 		css_properties::consumeWhitespace(vector , ctx);
 
 		// if tokens.len() > *ctx { 	
@@ -503,7 +507,7 @@ pub impl css_language {
 						let comb = @mut CSS_COMBINATOR_NONE;        
 						match self.parseCombinator(vector, ctx, comb) {
 							CSS_OK => {
-								/* In the case of "html , body { ... }", the whitespace after
+								/* In the of "html , body { ... }", the whitespace after
 								 * "html" and "body" will be considered an ancestor combinator.
 								 * This clearly is not the case, however. Therefore, as a 
 								 * special case, if we've got an ancestor combinator and there 
@@ -1435,22 +1439,406 @@ pub impl css_language {
 	/**
 	* Parse !important
 	*
-	* \param c       Parsing context
 	* \param vector  Vector of tokens to process
 	* \param ctx     Pointer to vector iteration context
-	* \param result  Pointer to location to receive result
-	* \return CSS_OK on success,
-	*         CSS_INVALID if "S* ! S* important" is not at the start of the vector
+	* \return (CSS_OK, result) on success along with result,
+	*         (CSS_INVALID, 0) if "S* ! S* important" is not at the start of the vector
 	*
 	* Post condition: \a *ctx is updated with the next token to process
 	*                 If the input is invalid, then \a *ctx remains unchanged.
 	*/
-	pub fn css__parse_important(&mut self, vector:&~[~css_token], ctx:@mut uint) -> u8{
-		0
+	pub fn css__parse_important(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result,u8){
+		
+		let orig_ctx = *ctx;
+		let mut flags :u8 =0;
+		
+		css_properties::consumeWhitespace(vector, ctx);
+
+		if *ctx >= vector.len() {
+			return (CSS_OK,flags)
+		}
+		
+		let mut token = &vector[*ctx];
+		*ctx += 1; //Iterate
+		
+		if  css_language::tokenIsChar(token, '!') {
+			
+			css_properties::consumeWhitespace(vector, ctx);
+
+			if *ctx >= vector.len() || match vector[*ctx].token_type { CSS_TOKEN_IDENT(_) => false, _ => true} {
+				*ctx = orig_ctx;
+				return (CSS_INVALID,flags)
+			}
+						
+			token = &vector[*ctx];
+			*ctx += 1; //Iterate		
+
+			if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), IMPORTANT as uint) {
+				flags |= FLAG_IMPORTANT as u8;
+			} else {
+				*ctx = orig_ctx;
+				return (CSS_INVALID, flags);
+			}
+		} else {
+			*ctx = orig_ctx;
+			return (CSS_INVALID,flags);
+		}
+
+		return (CSS_OK,flags);
 	}
 
 	pub fn css__make_style_important(&mut self, style: @mut css_style) {
-		
+	
+		let bytecode:&mut ~[u32] = &mut style.bytecode;
+		let mut offset = 0;
+
+		while offset < bytecode.len() {
+			
+			let opv = copy bytecode[offset];
+
+			/* Extract opv components, setting important flag */
+			let op: css_properties_e = getOpcode(opv);
+			let flags = getFlags(opv) | FLAG_IMPORTANT as u8;
+			let mut value = getValue(opv);
+
+			/* Write OPV back to bytecode */
+			bytecode[offset] = buildOPV(op, flags, value);
+
+			offset += 1;
+
+			/* Advance past any property-specific data */
+			if !isInherit(opv) {
+				match op {
+					CSS_PROP_AZIMUTH => {
+						if (value & !(AZIMUTH_BEHIND as u16)) == AZIMUTH_ANGLE as u16 {
+							offset += 2; /* length + units */
+						}	
+					},	
+					
+					CSS_PROP_BORDER_TOP_COLOR |
+					CSS_PROP_BORDER_RIGHT_COLOR |
+					CSS_PROP_BORDER_BOTTOM_COLOR |
+					CSS_PROP_BORDER_LEFT_COLOR |
+					CSS_PROP_BACKGROUND_COLOR |
+					CSS_PROP_COLUMN_RULE_COLOR => {
+						//assert(BACKGROUND_COLOR_SET == //(enum op_background_color)BORDER_COLOR_SET);
+						//assert(BACKGROUND_COLOR_SET == //(enum op_background_color)COLUMN_RULE_COLOR_SET);
+
+						if value == (BACKGROUND_COLOR_SET as u16) {
+							offset += 1; /* colour */	
+						}				
+					},	
+					
+					CSS_PROP_BACKGROUND_IMAGE |
+					CSS_PROP_CUE_AFTER |
+					CSS_PROP_CUE_BEFORE |
+					CSS_PROP_LIST_STYLE_IMAGE => {
+						//assert(BACKGROUND_IMAGE_URI == //(enum op_background_image)CUE_AFTER_URI);
+						//assert(BACKGROUND_IMAGE_URI == //(enum op_background_image)CUE_BEFORE_URI);
+						//assert(BACKGROUND_IMAGE_URI == //(enum op_background_image)LIST_STYLE_IMAGE_URI);
+
+						if (value == BACKGROUND_IMAGE_URI as u16) {
+							offset += 1; /* string table entry */
+						}	
+					},	
+					
+					CSS_PROP_BACKGROUND_POSITION => {
+						if ((value & 0xf0) == BACKGROUND_POSITION_HORZ_SET as u16){
+							offset += 2; /* length + units */
+						}
+							
+						if ((value & 0x0f) == BACKGROUND_POSITION_VERT_SET as u16){
+							offset += 2; /* length + units */
+						}
+					},	
+					CSS_PROP_BORDER_SPACING => {
+						if (value == BORDER_SPACING_SET as u16){
+							offset += 4; /* two length + units */
+						}	
+					},
+
+					CSS_PROP_BORDER_TOP_WIDTH |
+					CSS_PROP_BORDER_RIGHT_WIDTH |
+					CSS_PROP_BORDER_BOTTOM_WIDTH |
+					CSS_PROP_BORDER_LEFT_WIDTH |
+					CSS_PROP_OUTLINE_WIDTH |
+					CSS_PROP_COLUMN_RULE_WIDTH => {
+						//assert(BORDER_WIDTH_SET == //(enum op_border_width)OUTLINE_WIDTH_SET);
+						//assert(BORDER_WIDTH_SET == //(enum op_border_width)COLUMN_RULE_WIDTH_SET);
+
+						if (value == BORDER_WIDTH_SET as u16){
+							offset += 2; /* length + units */
+						}
+					},
+						
+					CSS_PROP_MARGIN_TOP |
+					CSS_PROP_MARGIN_RIGHT |
+					CSS_PROP_MARGIN_BOTTOM |
+					CSS_PROP_MARGIN_LEFT |
+					CSS_PROP_BOTTOM |
+					CSS_PROP_LEFT |
+					CSS_PROP_RIGHT |
+					CSS_PROP_TOP |
+					CSS_PROP_HEIGHT |
+					CSS_PROP_WIDTH |
+					CSS_PROP_COLUMN_WIDTH |
+					CSS_PROP_COLUMN_GAP => {
+						//assert(BOTTOM_SET == //(enum op_bottom)LEFT_SET);
+						//assert(BOTTOM_SET == //(enum op_bottom)RIGHT_SET);
+						//assert(BOTTOM_SET == //(enum op_bottom)TOP_SET);
+						//assert(BOTTOM_SET == //(enum op_bottom)HEIGHT_SET);
+						//assert(BOTTOM_SET == //(enum op_bottom)MARGIN_SET);
+						//assert(BOTTOM_SET == //(enum op_bottom)WIDTH_SET);
+						//assert(BOTTOM_SET == //(enum op_bottom)COLUMN_WIDTH_SET);
+						//assert(BOTTOM_SET == //(enum op_bottom)COLUMN_GAP_SET);
+
+						if (value == BOTTOM_SET as u16) {
+							offset += 2; /* length + units */
+						}
+					},
+						
+					CSS_PROP_CLIP => {
+						if ((value & CLIP_SHAPE_MASK as u16) == CLIP_SHAPE_RECT as u16) {
+							if ((value & CLIP_RECT_TOP_AUTO as u16) == 0) {
+								offset += 2; /* length + units */
+							}
+								
+							if ((value & CLIP_RECT_RIGHT_AUTO as u16) == 0) {
+								offset += 2; /* length + units */
+							}
+								
+							if ((value & CLIP_RECT_BOTTOM_AUTO as u16) == 0) {
+								offset += 2; /* length + units */
+							}
+								
+							if ((value & CLIP_RECT_LEFT_AUTO as u16) == 0) {
+								offset += 2; /* length + units */
+							}	
+						}
+					},
+
+					CSS_PROP_COLOR => {
+						if (value == COLOR_SET as u16) {
+							offset+=1; /* colour */
+						}	
+					},
+
+					CSS_PROP_COLUMN_COUNT => {
+						if (value == COLUMN_COUNT_SET as u16) {
+							offset+=1; /* colour */
+						}	
+					},
+
+					CSS_PROP_CONTENT => {
+						while  (value != CONTENT_NORMAL as u16) && (value != CONTENT_NONE as u16) {
+							if value & 0xff == CONTENT_COUNTER as u16 || 
+								value & 0xff == CONTENT_URI as u16 ||
+								value & 0xff == CONTENT_ATTR as u16 || 
+								value & 0xff == CONTENT_STRING as u16 {
+									offset+=1; /* string table entry */
+							}
+
+							if	value & 0xff == CONTENT_COUNTERS as u16 {
+									offset+=2; /* two string entries */
+							}
+
+							//NOT NEEDED 
+							//if value & 0xff ==	CONTENT_OPEN_QUOTE as u16 ||
+							// 	value & 0xff == CONTENT_CLOSE_QUOTE as u16 ||
+							// 	value & 0xff == CONTENT_NO_OPEN_QUOTE as u16 ||
+							// 	value & 0xff == CONTENT_NO_CLOSE_QUOTE as u16 {
+							// 	//Do Nothing	
+							// }
+
+							value = bytecode[offset] as u16;
+						    offset += 1;
+						}
+					},
+
+					CSS_PROP_COUNTER_INCREMENT |
+					CSS_PROP_COUNTER_RESET => {
+						//assert(COUNTER_INCREMENT_NONE == //(enum op_counter_increment)COUNTER_RESET_NONE);
+
+						while value != COUNTER_INCREMENT_NONE as u16 {
+							offset+=2; /* string + integer */
+
+							value = bytecode[offset] as u16;
+						        offset+=1;
+						}
+					}
+
+					CSS_PROP_CURSOR => {
+						while value == CURSOR_URI as u16 {
+							offset += 1; /* string table entry */
+
+							value = bytecode[offset] as u16;
+						        offset += 1;
+						}
+					},
+
+					CSS_PROP_ELEVATION => {
+						if (value == ELEVATION_ANGLE as u16) {
+							offset += 2; /* length + units */
+						}	
+					},
+
+					CSS_PROP_FONT_FAMILY => {
+						while (value != FONT_FAMILY_END as u16) {
+							if value == FONT_FAMILY_STRING as u16 ||
+								value == FONT_FAMILY_IDENT_LIST as u16 {
+									offset += 1; /* string table entry */
+							}
+
+							value = bytecode[offset] as u16;
+					        offset += 1;
+						}
+					}
+
+					CSS_PROP_FONT_SIZE => {
+						if (value == FONT_SIZE_DIMENSION as u16) {
+							offset += 2; /* length + units */
+						}	
+					},
+
+					CSS_PROP_LETTER_SPACING |
+					CSS_PROP_WORD_SPACING => {
+						//assert(LETTER_SPACING_SET == //(enum op_letter_spacing)WORD_SPACING_SET);
+
+						if (value == LETTER_SPACING_SET as u16) {
+							offset += 2; /* length + units */
+						}	
+					},
+
+					CSS_PROP_LINE_HEIGHT => {
+						if value == LINE_HEIGHT_NUMBER as u16 {
+							offset += 1; /* value */
+						}
+						else if value == LINE_HEIGHT_DIMENSION as u16 {
+							offset += 2; /* length + units */
+						}
+					},
+
+					CSS_PROP_MAX_HEIGHT|
+					CSS_PROP_MAX_WIDTH => {
+						//assert(MAX_HEIGHT_SET == (enum op_max_height)MAX_WIDTH_SET);
+
+						if (value == MAX_HEIGHT_SET as u16){
+							offset += 2; /* length + units */
+						}	
+					},
+
+					CSS_PROP_PADDING_TOP|
+					CSS_PROP_PADDING_RIGHT|
+					CSS_PROP_PADDING_BOTTOM|
+					CSS_PROP_PADDING_LEFT|
+					CSS_PROP_MIN_HEIGHT|
+					CSS_PROP_MIN_WIDTH|
+					CSS_PROP_PAUSE_AFTER|
+					CSS_PROP_PAUSE_BEFORE|
+					CSS_PROP_TEXT_INDENT => {
+						//assert(MIN_HEIGHT_SET == (enum op_min_height)MIN_WIDTH_SET);
+						//assert(MIN_HEIGHT_SET == (enum op_min_height)PADDING_SET);
+						//assert(MIN_HEIGHT_SET == (enum op_min_height)PAUSE_AFTER_SET);
+						//assert(MIN_HEIGHT_SET == (enum op_min_height)PAUSE_BEFORE_SET);
+						//assert(MIN_HEIGHT_SET == (enum op_min_height)TEXT_INDENT_SET);
+
+						if (value == MIN_HEIGHT_SET as u16) {
+							offset += 2; /* length + units */
+						}	
+					},
+
+					CSS_PROP_OPACITY => {
+						if (value == OPACITY_SET as u16) {
+							offset += 1; /* value */
+						}	
+					},
+
+					CSS_PROP_ORPHANS|
+					CSS_PROP_PITCH_RANGE|
+					CSS_PROP_RICHNESS|
+					CSS_PROP_STRESS|
+					CSS_PROP_WIDOWS => {
+						//assert(ORPHANS_SET == //(enum op_orphans)PITCH_RANGE_SET);
+						//assert(ORPHANS_SET == //(enum op_orphans)RICHNESS_SET);
+						//assert(ORPHANS_SET == //(enum op_orphans)STRESS_SET);
+						//assert(ORPHANS_SET == //(enum op_orphans)WIDOWS_SET);
+
+						if (value == ORPHANS_SET as u16) {
+							offset += 1; /* value */
+						}	
+					},
+
+					CSS_PROP_OUTLINE_COLOR => {
+						if (value == OUTLINE_COLOR_SET as u16) {
+							offset += 1; /* color */
+						}	
+					},
+
+					CSS_PROP_PITCH => {
+						if (value == PITCH_FREQUENCY as u16) {
+							offset += 2; /* length + units */
+						}	
+					},
+
+					CSS_PROP_PLAY_DURING => {
+						if (value == PLAY_DURING_URI as u16) {
+							offset += 1; /* string table entry */
+						}	
+					},
+
+					CSS_PROP_QUOTES => {
+						while (value != QUOTES_NONE as u16) {
+							offset += 2; /* two string table entries */
+
+							value = bytecode[offset] as u16;
+						        offset += 1;
+						}
+					},
+
+					CSS_PROP_SPEECH_RATE => {
+						if (value == SPEECH_RATE_SET as u16) {
+							offset += 1; /* rate */
+						}	
+					},
+
+					CSS_PROP_VERTICAL_ALIGN => {
+						if (value == VERTICAL_ALIGN_SET as u16) {
+							offset += 2; /* length + units */
+						}	
+					},
+
+					CSS_PROP_VOICE_FAMILY => {
+						while (value != VOICE_FAMILY_END as u16) {
+							if value == VOICE_FAMILY_STRING as u16 ||
+								value == VOICE_FAMILY_IDENT_LIST as u16 {
+									offset += 1; /* string table entry */
+							}
+
+							value = bytecode[offset] as u16;
+							offset += 1;
+						}
+					},
+
+					CSS_PROP_VOLUME => {
+						if value ==	VOLUME_NUMBER as u16 {
+								offset += 1; /* value */
+						}
+						else if value == VOLUME_DIMENSION as u16 {
+								offset += 2; /* value + units */
+						}
+					},
+
+					CSS_PROP_Z_INDEX => {
+						if (value == Z_INDEX_SET as u16){
+							offset += 1; /* z index */
+						}	
+					},
+
+					_ =>  {}
+				}
+			}
+		}
+
 	}
 
 
