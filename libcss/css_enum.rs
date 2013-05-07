@@ -15,6 +15,7 @@ pub enum css_result {
 	CSS_EOF,
 	CSS_IMPORTS_PENDING,
 	CSS_PROPERTY_NOT_SET,
+	CSS_SHOULD_NEVER_OCCUR
 }
 
 
@@ -1690,38 +1691,6 @@ pub enum css_parser_opttype {
 }
 
 
-/**
- * Major state numbers
- */
-pub enum Parse_state_e {
-	sStart = 0,
-	sStylesheet = 1,
-	sStatement = 2,
-	sRuleset = 3,
-	sRulesetEnd = 4,
-	sAtRule = 5,
-	sAtRuleEnd = 6,
-	sBlock = 7,
-	sBlockContent = 8,
-	sSelector = 9,
-	sDeclaration = 10,
-	sDeclList = 11,
-	sDeclListEnd = 12,
-	sProperty = 13,
-	sValue0 = 14,
-	sValue1 = 15,
-	sValue = 16,
-	sAny0 = 17,
-	sAny1 = 18,
-	sAny = 19,
-	sMalformedDecl = 20,
-	sMalformedSelector = 21,
-	sMalformedAtRule = 22,
-	sInlineStyle = 23,
-	sISBody0 = 24,
-	sISBody = 25
-}
-
 pub enum NumericValue {
 	Integer(int),
 	Float(float),
@@ -1930,5 +1899,25 @@ static CSS_SPECIFICITY_B:uint=0x00010000;
 static CSS_SPECIFICITY_C:uint=0x00000100;
 static CSS_SPECIFICITY_D:uint=0x00000001;
 
+pub enum css_computed_content_item_type {
+    TYPE_STRING,
+    TYPE_URI,
+    TYPE_ATTR,
+    TYPE_COUNTER,
+    TYPE_COUNTERS_WITH_SEP
+}
+
+pub enum css_hint_data_type{
+    CLIP_RECT,
+    COLOR,
+    CONTENT_ITEM,
+    COUNTER,
+    FIXED,
+    INTEGER_TYPE,
+    HINT_LENGTH,
+    HINT_LENGTH_H_V,
+    STRING,
+    STRINGS_VECTOR
+}
 
 // /////////////////////////////////////////////////////////////////////////////

@@ -24,78 +24,6 @@ pub struct css_token {
 	// line: u32
 }
 
-pub fn css__parse_unit_keyword(ptr:~str)-> (Option<css_unit>,css_result) {
-	let mut unit: css_unit = CSS_UNIT_GRAD;
-	let len:uint= ptr.len();
-	match(len) {
-		4=>if eq(&(ptr.to_lower()),&~"grad") {
-              unit= CSS_UNIT_GRAD;    
-			},
-		3=>{
-			if eq(&(ptr.to_lower()),&~"KHz") {
-            	unit= CSS_UNIT_KHZ;    
-			}
-			else if eq(&(ptr.to_lower()),&~"deg") {
-            	unit= CSS_UNIT_DEG;    
-			}
-			else if eq(&(ptr.to_lower()),&~"rad") {
-            	unit= CSS_UNIT_RAD;    
-			}
-			else {
-				return (None,CSS_INVALID);
-			}
-		},
-		2=>{
-			if eq(&(ptr.to_lower()),&~"Hz") {
-            	unit= CSS_UNIT_HZ;    
-			}
-			else if eq(&(ptr.to_lower()),&~"ms") {
-            	unit= CSS_UNIT_MS;    
-			}
-			else if eq(&(ptr.to_lower()),&~"px") {
-            	unit= CSS_UNIT_PX;    
-			}
-			else if eq(&(ptr.to_lower()),&~"ex") {
-            	unit= CSS_UNIT_EX;    
-			}
-			else if eq(&(ptr.to_lower()),&~"em") {
-            	unit= CSS_UNIT_EM;    
-			}
-			else if eq(&(ptr.to_lower()),&~"in") {
-            	unit= CSS_UNIT_IN;    
-			}
-			else if eq(&(ptr.to_lower()),&~"cm") {
-            	unit= CSS_UNIT_CM;    
-			}
-			else if eq(&(ptr.to_lower()),&~"mm") {
-            	unit= CSS_UNIT_MM;    
-			}
-			else if eq(&(ptr.to_lower()),&~"pt") {
-            	unit= CSS_UNIT_PT;    
-			}
-			else if eq(&(ptr.to_lower()),&~"pc") {
-            	unit= CSS_UNIT_PC;    
-			}
-			else {
-				return (None,CSS_INVALID);
-			}
-		},
-		1=>{
-			if eq(&(ptr.to_lower()),&~"s") {
-            	unit= CSS_UNIT_S;    
-			}
-			else {
-				return (None,CSS_INVALID);
-			}
-		},
-		_=>{
-			return (None,CSS_INVALID);
-		}
-
-	}
-	(Some(unit) , CSS_OK)
-}
-
 pub type handle =  @extern fn(strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style) ->css_result;
 
 pub struct css_properties {
@@ -964,26 +892,224 @@ impl css_properties {
 		CSS_OK
 	}
 
-	pub fn consumeWhitespace(vector:&~[~css_token], ctx:@mut uint)
-	{
-		loop
-		{
-			if *ctx < vector.len()
-			{
-				match vector[*ctx].token_type
-				{
-					CSS_TOKEN_S =>
-					{
-						*ctx = *ctx+1
-					},
-					_ => return
-				}
+	// fn css__parse_unit_specifier(&mut self , vector: &~[~css_token] , ctx: @mut int , default_unit: u32) -> (Option<int> , Option<uint>, css_result) {
+
+	// 	consumeWhitespace(vector , ctx);
+	// 	if *ctx >= vector.len() {
+	// 		return (None , None , CSS_INVALID)
+	// 	}	
+
+	// 	match token.token_type {
+	// 		CSS_TOKEN_DIMENSION(_)||CSS_TOKEN_NUMBER(_)||CSS_TOKEN_PERCENTAGE(_) => {
+	// 			let num = 
+	// 		},
+	// 		_ => return(None , None , CSS_INVALID)
+	// 	}
+	// }
+
+}
+
+pub fn css__parse_unit_keyword(ptr:~str)-> (Option<css_unit>,css_result) {
+	let mut unit: css_unit = CSS_UNIT_GRAD;
+	let len:uint= ptr.len();
+	match(len) {
+		4=>if eq(&(ptr.to_lower()),&~"grad") {
+              unit= CSS_UNIT_GRAD;    
+			},
+		3=>{
+			if eq(&(ptr.to_lower()),&~"KHz") {
+            	unit= CSS_UNIT_KHZ;    
 			}
-			else
-			{
-				break
+			else if eq(&(ptr.to_lower()),&~"deg") {
+            	unit= CSS_UNIT_DEG;    
+			}
+			else if eq(&(ptr.to_lower()),&~"rad") {
+            	unit= CSS_UNIT_RAD;    
+			}
+			else {
+				return (None,CSS_INVALID);
+			}
+		},
+		2=>{
+			if eq(&(ptr.to_lower()),&~"Hz") {
+            	unit= CSS_UNIT_HZ;    
+			}
+			else if eq(&(ptr.to_lower()),&~"ms") {
+            	unit= CSS_UNIT_MS;    
+			}
+			else if eq(&(ptr.to_lower()),&~"px") {
+            	unit= CSS_UNIT_PX;    
+			}
+			else if eq(&(ptr.to_lower()),&~"ex") {
+            	unit= CSS_UNIT_EX;    
+			}
+			else if eq(&(ptr.to_lower()),&~"em") {
+            	unit= CSS_UNIT_EM;    
+			}
+			else if eq(&(ptr.to_lower()),&~"in") {
+            	unit= CSS_UNIT_IN;    
+			}
+			else if eq(&(ptr.to_lower()),&~"cm") {
+            	unit= CSS_UNIT_CM;    
+			}
+			else if eq(&(ptr.to_lower()),&~"mm") {
+            	unit= CSS_UNIT_MM;    
+			}
+			else if eq(&(ptr.to_lower()),&~"pt") {
+            	unit= CSS_UNIT_PT;    
+			}
+			else if eq(&(ptr.to_lower()),&~"pc") {
+            	unit= CSS_UNIT_PC;    
+			}
+			else {
+				return (None,CSS_INVALID);
+			}
+		},
+		1=>{
+			if eq(&(ptr.to_lower()),&~"s") {
+            	unit= CSS_UNIT_S;    
+			}
+			else {
+				return (None,CSS_INVALID);
+			}
+		},
+		_=>{
+			return (None,CSS_INVALID);
+		}
+
+	}
+	(Some(unit) , CSS_OK)
+}
+
+pub fn consumeWhitespace(vector:&~[~css_token], ctx:@mut uint) {
+	loop {
+		if *ctx < vector.len() {
+			match vector[*ctx].token_type {
+				CSS_TOKEN_S => {
+					*ctx = *ctx+1
+				},
+				_ => return
 			}
 		}
-	} 
+		else {
+			break
+		}
+	}
+}
+
+pub fn css__number_from_string(data: ~str, data_index:uint, int_only: bool) -> (int , uint){
+
+	let mut length = data.len();
+	let mut ptr = copy data;
+	let mut sign = 1;
+	let mut intpart = 0;
+	let mut fracpart = 0;
+	let mut pwr = 1;
+	let mut ret_value = 0;
+	let mut index = 0;
+	let mut consumed_length = 0;
 	
+
+	if data.is_empty()||length == 0 {
+		return (ret_value , consumed_length);
+	}
+
+	// number = [+-]? ([0-9]+ | [0-9]* '.' [0-9]+) 
+
+	// Extract sign, if any 
+	if ptr[0] == '-' as u8 {
+		sign = -1;
+		length -= 1;
+		index += 1;
+	}
+	else if ptr[0] == '+' as u8 {
+		length -=1;
+		index += 1;
+	}
+
+	if length == 0 {
+		return (ret_value , consumed_length);
+	}
+	else {
+		if ptr[0] == '.' as u8 {
+			if length ==1 || (ptr[1] < ('0' as u8)) || (('9' as u8) < ptr[1]) {
+				return (ret_value , consumed_length);
+			}
+		}
+		else if (ptr[0] < ('0' as u8)) || (('9' as u8) < ptr[0]) {
+			return (ret_value , consumed_length);
+		}
+	}
+
+	while length>0 {
+		if (ptr[0] < ('0' as u8))||(('9' as u8) < ptr[0]) {
+			break
+		}
+		if intpart < (1<<22) {
+			intpart *= 10;
+			intpart += (ptr[0] as u8) - ('0' as u8);
+		}
+		index += 1;
+		length -= 1;
+	}
+
+	if int_only == false && length > 1 && (ptr[0] == '.' as u8) && ('0' as u8 <= ptr[1] && ptr[1] <= '9' as u8) {
+		index += 1;	
+		length -= 1;
+
+		while length >0 {
+			if ((ptr[0] < '0' as u8))|| (('9' as u8) < ptr[0]) {
+				break
+			}
+
+			if pwr < 1000000 {
+				pwr *= 10;
+				fracpart *= 10;
+				fracpart += (ptr[0] - '0' as u8);
+			}
+			index += 1;
+			length -= 1;
+		}
+		fracpart = ((1 << 10) * fracpart + pwr/2) / pwr;
+		if fracpart >= (1 << 10) {
+			intpart += 1;
+			fracpart &= (1 << 10) - 1;
+		}
+	}
+
+	consumed_length = index;
+
+	if sign > 0 {
+		if intpart >= (1 << 21) {
+			intpart = (1 << 21) - 1;
+			fracpart = (1 << 10) - 1;
+		}
+	}
+	else {
+		 // If the negated result is smaller than we can represent then clamp to the minimum value we can store. 
+		if intpart >= (1 << 21) {
+			intpart = -(1 << 21);
+			fracpart = 0;
+		}
+		else {
+			intpart = -intpart;
+			if fracpart > 0 {
+				fracpart = (1 << 10) - fracpart;
+				intpart -= 1;
+			}
+		}
+	}
+	ret_value = ((intpart << 10) | fracpart )as int;
+	(ret_value , consumed_length)
+
+}
+
+pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bool) -> (int , uint) {
+	let mut ret_value = 0;
+	let mut consumed_length = 0;
+
+	if lwc::lwc_string_length(string.clone()) == 0 {
+		return (ret_value , consumed_length);
+	}
+	css__number_from_string(lwc::lwc_string_data(string.clone()), 0, int_only)
 }
