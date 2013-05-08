@@ -335,7 +335,7 @@ pub impl css_language {
 								match ident.token_type { 
 									CSS_TOKEN_IDENT(_) => {
 										consumeWhitespace(tokens, ctx);
-										if tokens.len() <= *ctx || !css_language::tokenIsChar(&tokens[*ctx],':') {
+										if tokens.len() <= *ctx || !tokenIsChar(&tokens[*ctx],':') {
 											return CSS_INVALID
 										}
 										else {
@@ -380,7 +380,7 @@ pub impl css_language {
 						CSS_OK => {
 							if *ctx < tokens.len() {
 								//Iterate over vector to check for invalid character
-								if !css_language::tokenIsChar(&tokens[*ctx],',') {
+								if !tokenIsChar(&tokens[*ctx],',') {
 									*ctx = *ctx+1;   //For iteration to the next position
 									return CSS_INVALID
 								}
@@ -397,38 +397,6 @@ pub impl css_language {
 			} //End of match parseSelector
 		}// End of Loop
 		CSS_OK
-	}
-
-
-	/**
-	 * Determine if a token is a character
-	 *
-	 * \param token  The token to consider
-	 * \param c      The character to match (lowerASCII only)
-	 * \return True if the token matches, false otherwise
-	 */
-	pub fn tokenIsChar(token:&~css_token, c:char) -> bool {
-		let result = false;
-
-		match token.token_type {
-			CSS_TOKEN_CHAR(_) => {   
-					if lwc::lwc_string_length(token.idata.get_ref().clone()) == 1 {
-						let mut token_char = lwc::lwc_string_data(token.idata.get_ref().clone()).char_at(0);
-
-						// Ensure lowercomparison 
-						if 'A' <= token_char && token_char <= 'Z' {
-							token_char += 'a' - 'A'
-						}
-							
-						if token_char == c {
-							return true
-						}
-					}                       
-				},
-			_ => return result
-		}           
-		
-		return result
 	}
 
 	/******************************************************************************
@@ -491,7 +459,7 @@ pub impl css_language {
 			(CSS_OK, Some(selector)) => {
 				let mut result = selector;
 				loop {
-					if *ctx >= vector.len() || css_language::tokenIsChar(&vector[*ctx],',') {
+					if *ctx >= vector.len() || tokenIsChar(&vector[*ctx],',') {
 						return (CSS_OK, Some(result))
 					}
 					else {
@@ -506,7 +474,7 @@ pub impl css_language {
 								 * we ignore the supposed combinator and continue. */
 								match *comb {
 									CSS_COMBINATOR_ANCESTOR => {
-										if *ctx >= vector.len() || css_language::tokenIsChar(&vector[*ctx],',') {
+										if *ctx >= vector.len() || tokenIsChar(&vector[*ctx],',') {
 											loop
 										}
 									},
@@ -545,7 +513,7 @@ pub impl css_language {
 		let qname: @mut css_qname = @mut css_qname{ name:~"", ns:~""};
 
 		//match ( vector[*ctx].token_type as uint ==    CSS_TOKEN_IDENT as uint )
-		if css_language::tokenIsChar(&vector[*ctx], '*') || css_language::tokenIsChar(&vector[*ctx], '|') {
+		if tokenIsChar(&vector[*ctx], '*') || tokenIsChar(&vector[*ctx], '|') {
 			
 			/* Have type selector */
 			match self.parseTypeSelector(vector, ctx, qname) {
@@ -595,13 +563,13 @@ pub impl css_language {
 			} 
 
 			token = &vector[*ctx];
-			if css_language::tokenIsChar(token, '+') {
+			if tokenIsChar(token, '+') {
 				*comb = CSS_COMBINATOR_SIBLING
 			}   
-			else if css_language::tokenIsChar(token,  '>') {
+			else if tokenIsChar(token,  '>') {
 				*comb = CSS_COMBINATOR_PARENT   
 			}
-			else if css_language::tokenIsChar(token, '~') {
+			else if tokenIsChar(token, '~') {
 				*comb = CSS_COMBINATOR_GENERIC_SIBLING
 			}   
 			else {
@@ -645,18 +613,18 @@ pub impl css_language {
 		
 		token = &vector[*ctx];
 		
-		if !css_language::tokenIsChar(token, '|') {
+		if !tokenIsChar(token, '|') {
 			 prefix = Some(token.idata.get_ref().clone());
 			*ctx += 1; //Iterate
 		}
 
-		if ( *ctx < vector.len() && css_language::tokenIsChar(&vector[*ctx], '|')) {
+		if ( *ctx < vector.len() && tokenIsChar(&vector[*ctx], '|')) {
 			
 			/* Have namespace prefix */
 			*ctx += 1; //Iterate
 
 			/* Expect element_name */
-			if *ctx >= vector.len() || ( match vector[*ctx].token_type { CSS_TOKEN_IDENT(_) => false, _ => true} && !css_language::tokenIsChar(&vector[*ctx], '*') ) {
+			if *ctx >= vector.len() || ( match vector[*ctx].token_type { CSS_TOKEN_IDENT(_) => false, _ => true} && !tokenIsChar(&vector[*ctx], '*') ) {
 				return CSS_INVALID
 			}
 			*ctx += 1; //Iterate
@@ -695,10 +663,10 @@ pub impl css_language {
 			else {
 				token = &vector[*ctx];
 				if (match token.token_type { CSS_TOKEN_S => false, _ => true }) && 
-					!css_language::tokenIsChar(token, '+')  &&
-					!css_language::tokenIsChar(token, '>')  &&
-					!css_language::tokenIsChar(token, '~')  &&
-					!css_language::tokenIsChar(token, ',') {
+					!tokenIsChar(token, '+')  &&
+					!tokenIsChar(token, '>')  &&
+					!tokenIsChar(token, '~')  &&
+					!tokenIsChar(token, ',') {
 					match self.parseAppendSpecific(vector,ctx,parent) {
 						CSS_OK 	=> loop,
 						error	=>	return error
@@ -748,13 +716,13 @@ pub impl css_language {
 	
 			} 
 			_ 	=> {
-				if (css_language::tokenIsChar(token, '.')) {
+				if (tokenIsChar(token, '.')) {
 					self.parseClass(vector, ctx)
 				} 
-				else if (css_language::tokenIsChar(token, '[')) {
+				else if (tokenIsChar(token, '[')) {
 					self.parseAttrib(vector, ctx)
 				}
-				else if (css_language::tokenIsChar(token, ':')) {
+				else if (tokenIsChar(token, ':')) {
 					self.parsePseudo(vector, ctx, in_not)
 				} 
 				else {
@@ -819,7 +787,7 @@ pub impl css_language {
 		token = &vector[*ctx];
 		*ctx +=1; //Iterate				
 		
-		if !css_language::tokenIsChar(token, '.') {
+		if !tokenIsChar(token, '.') {
 			return (CSS_INVALID,None)
 		}	
 
@@ -858,7 +826,7 @@ pub impl css_language {
 		token = &vector[*ctx];
 		*ctx +=1; //Iterate				
 		
-		if !css_language::tokenIsChar(token, '[') {
+		if !tokenIsChar(token, '[') {
 			return (CSS_INVALID,None)
 		}	
 
@@ -871,14 +839,14 @@ pub impl css_language {
 		token = &vector[*ctx];
 		*ctx +=1; //Iterate				
 
-		if (match token.token_type { CSS_TOKEN_IDENT(_) => false, _ => true}) && !css_language::tokenIsChar(token, '*') &&
-				!css_language::tokenIsChar(token, '|') {
+		if (match token.token_type { CSS_TOKEN_IDENT(_) => false, _ => true}) && !tokenIsChar(token, '*') &&
+				!tokenIsChar(token, '|') {
 			return (CSS_INVALID, None)
 		}	
 		
 		let mut prefix: Option<arc::RWARC<~lwc_string>> = None;
 
-		if css_language::tokenIsChar(token, '|') {
+		if tokenIsChar(token, '|') {
 			if *ctx >= vector.len() {
 				return (CSS_INVALID, None)
 			}
@@ -886,7 +854,7 @@ pub impl css_language {
 			token = &vector[*ctx];
 			*ctx +=1; //Iterate
 		} 
-		else if (*ctx < vector.len() && css_language::tokenIsChar(&vector[*ctx], '|')) {
+		else if (*ctx < vector.len() && tokenIsChar(&vector[*ctx], '|')) {
 			prefix = Some(token.idata.get_ref().clone());
 			*ctx += 1;
 			if *ctx >= vector.len() {
@@ -918,8 +886,8 @@ pub impl css_language {
 		let mut tkn_type = CSS_SELECTOR_ATTRIBUTE;
 		let mut value:Option<&~css_token> = None;
 
-		if !css_language::tokenIsChar(token, ']') {
-			if css_language::tokenIsChar(token, '=') {
+		if !tokenIsChar(token, ']') {
+			if tokenIsChar(token, '=') {
 				tkn_type = CSS_SELECTOR_ATTRIBUTE_EQUAL;
 			}
 			// else {
@@ -954,7 +922,7 @@ pub impl css_language {
 			token = &vector[*ctx];
 			*ctx +=1; //Iterate
 			
-			if !css_language::tokenIsChar(token, ']') {
+			if !tokenIsChar(token, ']') {
 				return (CSS_INVALID, None)
 			}	
 		}
@@ -985,7 +953,7 @@ pub impl css_language {
 		token = &vector[*ctx];
 		*ctx +=1; //Iterate
 		
-		if  !css_language::tokenIsChar(token, ':') {
+		if  !tokenIsChar(token, ':') {
 			return (CSS_INVALID,None)
 		}
 
@@ -997,7 +965,7 @@ pub impl css_language {
 		token = &vector[*ctx];
 		*ctx +=1; //Iterate
 
-		if css_language::tokenIsChar(token, ':') {
+		if tokenIsChar(token, ':') {
 			/* If present, we require a pseudo element */
 			require_element = true;
 
@@ -1078,7 +1046,7 @@ pub impl css_language {
 							token = &vector[*ctx];
 							*ctx += 1 ; 
 							
-							if !css_language::tokenIsChar(token, ')') {
+							if !tokenIsChar(token, ')') {
 								return (CSS_INVALID, None)
 							}
 
@@ -1098,7 +1066,7 @@ pub impl css_language {
 					token = &vector[*ctx];
 						
 					if (match token.token_type {	CSS_TOKEN_IDENT(_) => true, _  => false }) || 
-							css_language::tokenIsChar(token, '*') || css_language::tokenIsChar(token, '|') {
+							tokenIsChar(token, '*') || tokenIsChar(token, '|') {
 						/* Have type selector */
 						match self.parseTypeSelector(vector, ctx, qname) {
 							CSS_OK => {
@@ -1124,7 +1092,7 @@ pub impl css_language {
 								token = &vector[*ctx];
 								*ctx += 1 ;
 								
-								if !css_language::tokenIsChar(token, ')') {
+								if !tokenIsChar(token, ')') {
 									return (CSS_INVALID, None)
 								}
 
@@ -1147,7 +1115,7 @@ pub impl css_language {
 			token = &vector[*ctx];
 			*ctx += 1 ;
 			
-			if !css_language::tokenIsChar(token, ')') {
+			if !tokenIsChar(token, ')') {
 				return (CSS_INVALID, None)
 			} 
 		
@@ -1328,13 +1296,13 @@ pub impl css_language {
 						}
 						
 						if (had_sign == false &&  *ctx < vector.len() &&
-							 (css_language::tokenIsChar(token, '-') || css_language::tokenIsChar(token, '+'))) {
+							 (tokenIsChar(token, '-') || tokenIsChar(token, '+'))) {
 							
 							*ctx += 1; //iterate
 
 							had_sign = true;
 
-							if css_language::tokenIsChar(token, '-'){
+							if tokenIsChar(token, '-'){
 								sign = -1
 							}	
 
@@ -1430,7 +1398,7 @@ pub impl css_language {
 		let mut token = &vector[*ctx];
 		*ctx += 1; //Iterate
 		
-		if  css_language::tokenIsChar(token, '!') {
+		if  tokenIsChar(token, '!') {
 			
 			consumeWhitespace(vector, ctx);
 
@@ -1909,7 +1877,7 @@ pub impl css_language {
 			srcs.push(new_src);
 					
 			consumeWhitespace(vector, ctx);
-			if *ctx < vector.len() && css_language::tokenIsChar(&vector[*ctx], ',')
+			if *ctx < vector.len() && tokenIsChar(&vector[*ctx], ',')
 			{
 				token = &vector[*ctx];
 				*ctx +=1
