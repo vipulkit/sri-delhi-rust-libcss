@@ -1578,6 +1578,68 @@ impl css_parser {
 	} /* parse_value_1 */
 
 	pub fn parse_value(parser: &mut ~css_parser) -> css_result {
+		enum parse_value_substates { 
+			Initial = 0, 
+			WS = 1 
+		};
+		
+		let mut (_,current_substate) = parser.stack.pop();
+
+		while (true) {
+			match (current_substate) {
+				0 /* Initial */ => {
+					let (token_option, parser_error) = parser.get_token();
+					if (token_option.is_none()) {
+						return parser_error;
+					}
+					let token = token_option.unwrap();
+
+					match (token.token_type) {
+						CSS_TOKEN_ATKEYWORD(_) => {
+							current_substate = WS as uint;
+						}
+						CSS_TOKEN_CHAR(c) => {
+							parser.push_back(token);
+
+							let mut to = (sAny as uint, Initial as uint);
+
+							if (c=='{') {
+								to = (sBlock as uint, Initial as uint);
+							}
+
+							parser.transition_no_ret(to);
+							return CSS_OK;
+						}
+						_ => {
+							parser.push_back(token);
+
+							let mut to = (sAny as uint, Initial as uint);
+
+							parser.transition_no_ret(to);
+							return CSS_OK;
+						}
+					} /* match token_type */
+				} /* Initial */
+
+				1 /* WS */ => {
+					let eat_ws_result = parser.eat_ws();
+					match (eat_ws_result) {
+						CSS_OK => {
+							break;
+						}
+						_ => {
+							return eat_ws_result;
+						}
+					}
+				} /* WS */
+
+				_ => {
+					fail!();
+				} /* _ */
+			} /* match current_substate */
+		}/* while */
+
+		parser.done();
 		CSS_OK
 	} /* parse_value */
 
