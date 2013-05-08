@@ -1958,6 +1958,51 @@ impl css_parser {
 
 		let mut (_,current_substate) = parser.stack.pop();
 
+		while (true) {
+			match current_substate {
+				0 /* Initial */ => {
+					parser.language.language_handle_event(
+						CSS_PARSER_START_STYLESHEET, &parser.tokens);
+					parser.language.language_handle_event(
+						CSS_PARSER_START_RULESET, &parser.tokens);
+
+					current_substate = WS as uint;
+				} /* Initial */
+
+				1 /* WS */ => {
+					let eat_ws_result = parser.eat_ws();
+					match (eat_ws_result) {
+						CSS_OK => {
+							/*continue*/
+						}
+						_ => {
+							return eat_ws_result;
+						}
+					}
+
+					let to = (sISBody0 as uint, Initial as uint);
+					let subsequent = (sInlineStyle as uint, AfterISBody0 as uint);
+
+					parser.transition(to,subsequent);
+					return CSS_OK;
+				} /* WS */
+
+				2 /* AfterISBody0 */ => {
+					parser.language.language_handle_event(
+						CSS_PARSER_END_RULESET,&parser.tokens);
+					parser.language.language_handle_event(
+						CSS_PARSER_END_STYLESHEET,&parser.tokens);
+
+					break;
+				} /* AfterISBody0 */
+
+				_ => {
+					fail!();
+				}
+			} /* match current_substate */
+		} /* while */
+
+		parser.done();
 		CSS_OK
 	} /* parse_inline_style */
 
@@ -1969,6 +2014,51 @@ impl css_parser {
 
 		let mut (_,current_substate) = parser.stack.pop();
 
+		while (true) {
+			match current_substate {
+				0 /* Initial */ => {
+					let (token_option, parser_error) = parser.get_token();
+					if (token_option.is_none()) {
+						return parser_error;
+					}
+					let token = token_option.unwrap();
+
+					match token.token_type {
+						CSS_TOKEN_EOF => {
+							parser.push_back(token);
+							parser.done();
+							return CSS_OK;
+						}/* CSS_TOKEN_EOF */
+
+						_=> {
+							parser.push_back(token);
+
+							let to = ( sISBody as uint, Initial as uint );
+							let subsequent = ( sISBody0 as uint, AfterISBody as uint );
+
+							parser.transition(to, subsequent);
+							return CSS_OK;
+						} /* _ */
+					} /* match token_type */
+				} /* Initial */
+
+				1 /* AfterISBody */ => {
+					if parser.parse_error {
+						parser.done();
+						return CSS_OK;
+					}
+
+					current_substate = Initial as uint;
+				} /* AfterISBody */
+
+				_ /* _ */ => {
+					fail!();
+				} /* _ */
+
+			} /* match current_substate */
+		} /* while */
+
+		parser.done();
 		CSS_OK
 	} /* parse_IS_body_0 */
 
