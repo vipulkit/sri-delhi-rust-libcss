@@ -311,18 +311,18 @@ pub fn css_computed_clip(
 
 pub fn css_computed_content(
                 style : @mut css_computed_style)
-                -> (u8,Option<@mut css_computed_content_item>) {
+                -> (u8,~[@mut css_computed_content_item]) {
 
     match style.uncommon {
         None=>{
-            (CSS_CONTENT_NORMAL as u8,None)
+            (CSS_CONTENT_NORMAL as u8,~[])
         },
         Some(uncommon_struct)=>{
             let mut bits:u8= uncommon_struct.bits[CSS_CONTENT_INDEX];
             bits = bits & (CSS_CONTENT_MASK as u8);
             bits = bits >> CSS_CONTENT_SHIFT;
 
-            (bits,uncommon_struct.content)
+            (bits,copy uncommon_struct.content)
         }
     }  
 }
