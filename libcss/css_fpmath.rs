@@ -35,6 +35,51 @@ pub fn css_divide_fixed(x : i32, y : i32) -> i32 {
 	xx as i32
 }
 
+pub fn css_multiply_fixed(x: i32 , y: i32) -> i32 {
+	let mut xx: i64 = (x as i64)*((y as i64) >> CSS_RADIX_POINT);
+	
+	if xx < (INT_MIN as i64) {
+		xx = INT_MIN as i64;
+	}
+
+	if xx > (INT_MAX as i64) {
+		xx = INT_MAX as i64;
+	}
+	
+	xx as i32
+}
+
+pub fn css_add_fixed(x: i32 , y: i32) -> i32 {
+	let mut ux: i32 = x;
+	let mut uy: i32 = y;
+	let mut res = ux + uy;
+	
+	/* Calculate overflowed result. (Don't change the sign bit of ux) */
+	ux = (ux >> 31) + INT_MAX as i32;
+	
+	/* Force compiler to use cmovns instruction */
+	if ((ux ^ uy) | ((uy ^ res)^ (1 as i32)) >= 0) {
+		res = ux;
+	}
+		
+	return res;
+}
+
+pub fn css_subtract_fixed(x: i32 , y: i32) -> i32{
+	let mut ux: i32 = x;
+	let mut uy: i32 = y;
+	let mut res = ux - uy;
+	
+	ux = (ux >> 31) + INT_MAX as i32;
+	
+	/* Force compiler to use cmovns instruction */
+	if (((ux ^ uy) & (ux ^ res)) < 0) {
+		res = ux;
+	}
+		
+	return res;
+}
+
 static F_PI_2: int =	0x00000648;	/* 1.5708 (PI/2) */
 static F_PI: int =	0x00000c91;	/* 3.1415 (PI) */
 static F_3PI_2: int =	0x000012d9;	/* 4.7124 (3PI/2) */
