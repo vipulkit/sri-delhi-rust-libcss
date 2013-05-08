@@ -2072,6 +2072,94 @@ impl css_parser {
 
 		let mut (_,current_substate) = parser.stack.pop();
 
+		while(true) {
+			match current_substate {
+				0 /* Initial */ => {
+					let (token_option, parser_error) = parser.get_token();
+					if (token_option.is_none()) {
+						return parser_error;
+					}
+					let token = token_option.unwrap();
+
+					match token.token_type {
+						CSS_TOKEN_CHAR(c) => {
+							parser.push_back(token);
+
+							if (c != '}' && c !=';') {
+								let to = ( sDeclaration as uint, Initial as uint );
+								let subsequent = ( sISBody as uint, DeclList as uint );
+
+								parser.transition(to, subsequent);
+								return CSS_OK;
+							}
+
+							current_substate = DeclList as uint; /* fall through */
+						}
+
+						_ => {
+							parser.push_back(token);
+							let to = ( sDeclaration as uint, Initial as uint );
+							let subsequent = ( sISBody as uint, DeclList as uint );
+
+							parser.transition(to, subsequent);
+							return CSS_OK;
+						}
+					} /* match token_type */
+				} /* Initial */
+
+				1 /* DeclList */ => {
+					let to = (sDeclList as uint, Initial as uint);
+					let subsequent = (sISBody as uint, Brace as uint);
+
+					parser.transition(to,subsequent);
+					return CSS_OK;
+				} /* DeclList */
+
+				2 /* Brace */ => {
+					let (token_option, parser_error) = parser.get_token();
+					if (token_option.is_none()) {
+						return parser_error;
+					}
+					let token = token_option.unwrap();
+
+					match token.token_type {
+						CSS_TOKEN_EOF => {
+							parser.push_back(token);
+							parser.done();
+							return CSS_OK;
+						}/* CSS_TOKEN_EOF */
+
+						CSS_TOKEN_CHAR(c) => {
+							if (c != '}') {
+								fail!();
+							}
+							current_substate = WS as uint; /* fall through */
+						}
+
+						_ => {
+							current_substate = WS as uint; /* fall through */
+						}
+					} /* match token_type */
+				} /* Brace */
+
+				3 /* WS */ => {
+					let eat_ws_result = parser.eat_ws();
+					match (eat_ws_result) {
+						CSS_OK => {
+							break;
+						}
+						_ => {
+							return eat_ws_result;
+						}
+					}
+				} /* WS */
+
+				_ /*  */ => {
+					fail!();
+				} /*  */
+			} /* match current_substate */
+		} /* while */
+
 		CSS_OK
 	} /* parse_IS_body */
 
