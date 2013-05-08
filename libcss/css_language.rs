@@ -1877,7 +1877,7 @@ pub impl css_language {
 			srcs.push(new_src);
 					
 			consumeWhitespace(vector, ctx);
-			if *ctx < vector.len() && css_language::tokenIsChar(&vector[*ctx], ',')
+			if *ctx < vector.len() && tokenIsChar(&vector[*ctx], ',')
 			{
 				token = &vector[*ctx];
 				*ctx +=1
