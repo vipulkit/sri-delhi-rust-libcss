@@ -17,6 +17,18 @@ use css_propstrings::*;
 use css_properties::*;
 use css_bytecode::*;
 
+/**
+ * Callback to resolve an URL
+ *
+ * \param dict  String internment context
+ * \param base  Base URI (absolute)
+ * \param rel   URL to resolve, either absolute or relative to base
+ * \param abs   location to receive result
+ * \return CSS_OK on success, appropriate error otherwise.
+ */
+type css_url_resolution_fn = @extern fn (base:~str, rel:arc::RWARC<~lwc_string>) -> (css_result,Option<arc::RWARC<~lwc_string>>);
+type reserved_fn = @extern fn (strings:&mut ~css_propstrings, ident:&~css_token) -> bool;
+
 pub struct context_entry {
 	event_type:css_parser_event,        /* < Type of entry */
 	data:Option<CSS_RULE_DATA_TYPE>     //< Data for context */
@@ -36,9 +48,10 @@ pub struct css_language {
 	properties: ~css_properties,
 	default_namespace:Option<~str>, 
 	namespaces:~[~css_namespace],
+	resolve : css_url_resolution_fn // URL resolution function */
 }
 
-	fn  css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc>) -> ~css_language {
+	fn  css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc>, resolve:css_url_resolution_fn ) -> ~css_language {
 		
 	~css_language {
 		sheet:sheet,
@@ -48,7 +61,8 @@ pub struct css_language {
 		context:~[], 
 		state:CHARSET_PERMITTED,
 		default_namespace:None,   
-		namespaces:~[]
+		namespaces:~[],
+		resolve : resolve
 	}
 }
 
@@ -1834,11 +1848,7 @@ pub impl css_language {
 	pub fn css__parse_font_descriptor(&mut self, descriptor:&~css_token, vector:&~[~css_token], ctx:@mut uint, curRule:@mut css_rule_font_face) -> css_result {
 		
 		let font_face:Option<@mut css_font_face> = curRule.font_face;
-
-		// match curRule.font_face {
-		// 		None => {},
-		// 		Some(rule_font_face) => font_face = rule_font_face
-		// }
+		
 		if self.strings.lwc_string_caseless_isequal(descriptor.idata.get_ref().clone(), FONT_FAMILY as uint) {
 			return self.font_face_parse_font_family(vector, ctx, *font_face.get_ref())
 		}
@@ -1858,25 +1868,21 @@ pub impl css_language {
 	pub fn font_face_parse_font_family(&mut self, vector:&~[~css_token], ctx:@mut uint,	
 		font_face:@mut css_font_face) -> css_result	{
 		
-		let string:arc::RWARC<~lwc_string>;
-
-		// match self.css__ident_list_or_string_to_string(vector, ctx,font_rule_font_family_reserved, string)
-		// {
-		// 	CSS_OK => {
-		// 		css__font_face_set_font_family(font_face, string);
-		// 		lwc_string_unref(string);
-		// 		return CSS_OK
-		// 	},
-		// 	x => return x
-		// }
-		return CSS_OK
+		match self.css__ident_list_or_string_to_string(vector, ctx,Some(@css_language::font_rule_font_family_reserved))
+		{
+			(CSS_OK,Some(string)) => { 
+				self.css__font_face_set_font_family(font_face, string);
+				return CSS_OK
+			},
+			(error,_) => return error
+		}
+		
 	}
 
 	pub fn font_face_parse_src(&mut self, vector:&~[~css_token], ctx:@mut uint,
 		font_face:@mut css_font_face) -> css_result	{
 	
 		let orig_ctx = *ctx;
-		let mut token:&~css_token;
 		let mut srcs:~[~css_font_face_src]=~[];
 				
 		/* src             ::= spec-or-name [ ',' spec-or-name ]*
@@ -1890,45 +1896,45 @@ pub impl css_language {
 		 * [potentially] type pair in the comma-separated list
 		 */
 		loop {	
-			let mut location:Option<arc::RWARC<lwc_string>> =None;
-			let location_type:css_font_face_location_type =	CSS_FONT_FACE_LOCATION_TYPE_UNSPECIFIED;
-			let format:css_font_face_format = CSS_FONT_FACE_FORMAT_UNSPECIFIED;
-
-			// match self.font_face_src_parse_spec_or_name(vector, ctx, &location, &location_type, &format) {
-			// 	CSS_OK => {},
-			// 	error => {
-			// 		*ctx = orig_ctx;
-			// 		return error
-			// 	}	
-			// }
 			
-			
+			let location_type:@mut css_font_face_location_type =@mut CSS_FONT_FACE_LOCATION_TYPE_UNSPECIFIED;
+			let format:@mut css_font_face_format =@mut CSS_FONT_FACE_FORMAT_UNSPECIFIED;
 			let mut new_src:~css_font_face_src =~css_font_face_src{location:None, bits:~[]};			
-			new_src.location = location;
-			new_src.bits.push(format as u8 << 2 | location_type as u8 );
-			srcs.push(new_src);
-					
+
+			match self.font_face_src_parse_spec_or_name(vector, ctx, location_type, format) {
+				(CSS_OK,location) => {
+					new_src.location = location;
+					new_src.bits.push(*format as u8 << 2 | *location_type as u8 );
+					srcs.push(new_src);
+				},
+				(error,_) => {
+					*ctx = orig_ctx;
+					return error
+				}	
+			}
+			
+								
 			consumeWhitespace(vector, ctx);
 			if *ctx < vector.len() && css_language::tokenIsChar(&vector[*ctx], ',')
 			{
-				token = &vector[*ctx];
-				*ctx +=1
+				*ctx += 1 //Iterate
 			} 
 			else
 			{
+				*ctx += 1; //Iterate
 				break
 			}
 		
 		}
 
-		// match css__font_face_set_srcs(font_face, srcs) {
-		// 	CSS_OK => return CSS_OK, 
-		// 	error => {
-		// 		*ctx = orig_ctx;
-		// 		return error
-		// 	} 
-		// }
-		return CSS_OK
+		match self.css__font_face_set_srcs(font_face, srcs) {
+			CSS_OK => return CSS_OK, 
+			error => {
+				*ctx = orig_ctx;
+				return error
+			} 
+		}
+		
 	}
 
 	pub fn font_face_parse_font_style(&mut self, vector:&~[~css_token], ctx:@mut uint,
@@ -2022,5 +2028,230 @@ pub impl css_language {
 		
 		return CSS_OK;
 	}
+
+	pub fn font_face_src_parse_spec_or_name(&mut self, vector:&~[~css_token], ctx:@mut uint, 
+		location_type:@mut css_font_face_location_type, format:@mut	css_font_face_format) -> (css_result, Option<arc::RWARC<~lwc_string>>)
+	{
+		let mut token: &~css_token;
+		let location:arc::RWARC<~lwc_string>;
+	 	/* spec-or-name    ::= font-face-spec | font-face-name
+	 	 * font-face-spec  ::= URI [ 'format(' STRING [ ',' STRING ]* ')' ]?
+	 	 * font-face-name  ::= 'local(' ident-list-or-string ')'
+	 	 * ident-list-or-string ::= IDENT IDENT* | STRING
+	 	 */
+
+		consumeWhitespace(vector, ctx);
+
+		if *ctx >= vector.len() {
+			return (CSS_INVALID,None);	
+		} 
+		token = &vector[*ctx];
+		*ctx += 1;	//Iterate
+
+		match token.token_type {
+			CSS_TOKEN_URI(_) => {
+				match (*self.resolve)(copy self.sheet.url, token.idata.get_ref().clone())
+				{ 
+					(CSS_OK,Some(loc)) => location =loc,
+					(error,_) => return (error,None)
+				}	
+
+				*location_type = CSS_FONT_FACE_LOCATION_TYPE_URI;
+
+				consumeWhitespace(vector, ctx);
+
+				if *ctx < vector.len() {
+					
+					token = &vector[*ctx];
+					if match token.token_type { CSS_TOKEN_FUNCTION(_) => true, _ => false}  &&
+						self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),FORMAT as uint) {
+					
+						*ctx += 1;
+
+						match self.font_face_src_parse_format(vector, ctx, format) {
+							CSS_OK => {},
+							error => {
+								return (error,None);
+							}	
+						}
+					}
+				}		
+			},
+			CSS_TOKEN_FUNCTION(_) => {
+				if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LOCAL as uint) {
+					consumeWhitespace(vector, ctx);
+
+					match self.css__ident_list_or_string_to_string(vector, ctx, None) {
+						(CSS_OK,Some(loc)) => location = loc,
+						(error,x) => return (error,x)
+					}
+					consumeWhitespace(vector, ctx);
+
+					if *ctx >= vector.len() || !css_language::tokenIsChar(&vector[*ctx], ')') {
+						*ctx +=1; //Iterate
+						return (CSS_INVALID, None)
+					}
+
+					*ctx +=1; //Iterate
+					*location_type = CSS_FONT_FACE_LOCATION_TYPE_LOCAL
+				} 
+				else {
+					return (CSS_INVALID, None)
+				}
+			},
+			_ => return (CSS_INVALID, None)		
+		}
+
+		return (CSS_OK, Some(location))
+	}
+
+	/**
+	 * Set a font-faces array of srcs.
+	 *
+	 * \param font_face  The font-face 
+	 * \param srcs	     The array of css_font_face_srcs
+	 * \return CSS_OK
+	 */
+	pub fn css__font_face_set_srcs(&mut self, font_face:@mut css_font_face, srcs:~[~css_font_face_src]) -> css_result
+	{
+		font_face.srcs = srcs;
+				
+		CSS_OK
+	}
+
+	/**
+	 * Set a font-face's font-family name
+	 *
+	 * \param font_face    The font-face
+	 * \param font_family  Font-family name
+	 * \return CSS_OK
+	 *         
+	 */
+	pub fn css__font_face_set_font_family(&mut self, font_face: @mut css_font_face, font_family:arc::RWARC<~lwc_string>) -> css_result
+	{
+		// if (font_face.font_family != NULL)
+		// do self.lwc_instance.write |l|{
+		// 					l.lwc_string_unref(font_face.font_family)
+		// }	
+		font_face.font_family = Some(font_family.clone());
+
+		return CSS_OK
+	}
+
+	pub fn font_rule_font_family_reserved(strings:&mut ~css_propstrings, ident:&~css_token) -> bool
+	{
+		strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), SERIF as uint) ||
+		strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(),SANS_SERIF as uint) ||
+		strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), CURSIVE as uint) ||
+		strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), FANTASY as uint) ||
+		strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), MONOSPACE as uint) ||
+		strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), INHERIT as uint) ||
+		strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), INITIAL as uint) ||
+		strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), DEFAULT as uint)
+	}
+
+	pub fn font_face_src_parse_format(&mut self, vector:&~[~css_token], ctx:@mut uint, format:@mut	css_font_face_format) -> css_result	{
+		
+		let mut token:&~css_token;
+
+		*format = CSS_FONT_FACE_FORMAT_UNSPECIFIED;
+
+		/* 'format(' STRING [ ',' STRING ]* ')' 
+		 * 
+		 * 'format(' already consumed
+		 */
+
+		loop {
+			consumeWhitespace(vector, ctx);
+
+			if  *ctx > vector.len() || match vector[*ctx].token_type { CSS_TOKEN_STRING(_) => false, _ => true} {
+				return CSS_INVALID
+			} 
+				
+			token =&vector[*ctx];
+			*ctx +=1;	//Iterate
+
+			if self.strings.lwc_string_isequal(token.idata.get_ref().clone(), WOFF as uint) {
+			    *format = unsafe { cast::transmute(*format as uint | CSS_FONT_FACE_FORMAT_WOFF as uint) }
+			} 
+			else if self.strings.lwc_string_isequal(token.idata.get_ref().clone(),TRUETYPE as uint) ||
+				self.strings.lwc_string_isequal(token.idata.get_ref().clone(),OPENTYPE as uint) {
+				*format = unsafe { cast::transmute(*format as uint | CSS_FONT_FACE_FORMAT_OPENTYPE as uint) }
+			} 
+			else if self.strings.lwc_string_isequal(token.idata.get_ref().clone(), EMBEDDED_OPENTYPE as uint) {
+				*format = unsafe { cast::transmute(*format as uint | CSS_FONT_FACE_FORMAT_EMBEDDED_OPENTYPE as uint) }
+			}
+			else if self.strings.lwc_string_isequal(token.idata.get_ref().clone(),SVG as uint) {
+				*format = unsafe { cast::transmute(*format as uint | CSS_FONT_FACE_FORMAT_SVG as uint) }	
+			} 
+			else {
+				/* The spec gives a list of possible strings, which 
+				 * hints that unknown strings should be parse errors,
+				 * but it also talks about "unknown font formats",
+				 * so we treat any string we don't know not as a parse
+				 * error, but as indicating an "unknown font format".
+				 */
+				*format = unsafe { cast::transmute(*format as uint | CSS_FONT_FACE_FORMAT_UNKNOWN as uint) }		
+				
+			}
+
+			consumeWhitespace(vector, ctx);
+			if *ctx >= vector.len() {
+				*ctx += 1;
+				return CSS_INVALID
+			}
+			else{
+				token = &vector[*ctx];
+				*ctx += 1;
+				if !css_language::tokenIsChar(token, ',') {
+					break;
+				}
+			} 		
+		} 
+		
+		if !css_language::tokenIsChar(token, ')') {
+			return CSS_INVALID
+		}	
+
+		return CSS_OK
+	}
+
+	/**
+	 * Create a string from a list of IDENT/S tokens if the next token is IDENT
+	 * or references the next token's string if it is a STRING
+	 *
+	 * \param self       Parsing context
+	 * \param vector     Vector containing tokens
+	 * \param ctx        Vector iteration context
+	 * \param reserved   Callback to determine if an identifier is reserved
+	 * \param result     Location to receive resulting string
+	 * \return CSS_OK on success, appropriate error otherwise.
+	 *
+	 * Post condition: \a *ctx is updated with the next token to process
+	 *                 If the input is invalid, then \a *ctx remains unchanged.
+	 *
+	 *                 The resulting string's reference is passed to the caller
+	 */
+	pub fn css__ident_list_or_string_to_string(&mut self, vector:&~[~css_token], ctx:@mut uint,
+			reserved:Option<reserved_fn>) -> (css_result, Option<arc::RWARC<~lwc_string>>)
+	{
+		
+		//TO DO
+		if *ctx >= vector.len()	{
+			return (CSS_INVALID,None)
+		}
+		
+		let mut token = &vector[*ctx];	
+		
+		match token.token_type {
+			CSS_TOKEN_STRING(_) => {
+				*ctx += 1; //Iterate
+				return (CSS_OK,Some(token.idata.get_ref().clone()))
+			},	
+			//TO DO CSS_TOKEN_IDENT => 	return css__ident_list_to_string(c, vector, ctx, reserved, result),
+			_ => return (CSS_INVALID,None)
+		}	
+	}
+
 
 }
