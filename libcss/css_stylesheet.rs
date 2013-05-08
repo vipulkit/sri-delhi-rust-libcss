@@ -4,13 +4,40 @@
 extern mod css_bytecode;
 extern mod css_enum;
 extern mod std ;
-
+extern mod wapcaplet;
 
 use css_enum::* ;
 use css_bytecode::*;
 use core::managed::*;
+use wapcaplet::*;
+use std::arc;
 
 static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
+
+struct css_font_face_src {
+	location:Option<arc::RWARC<lwc_string>>,
+	/*
+	 * Bit allocations:
+	 *
+	 *    76543210
+	 *  1 _fffffll	format | location type
+	 */
+	bits:~[u8]
+}
+
+struct css_font_face {
+	font_family:Option< arc::RWARC<~lwc_string> >,
+	srcs:@css_font_face_src,
+	n_srcs:u32,
+	
+	/*
+	 * Bit allocations:
+	 *
+	 *    76543210
+	 *  1 __wwwwss	font-weight | font-style
+	 */
+	bits:~[u8]
+}
 
 // /**< Qualified name of selector */
 pub struct css_qname {  
@@ -98,7 +125,7 @@ pub struct css_rule_media {
 
 pub struct css_rule_font_face {
 	base:@mut css_rule,
-	//font_face:@css_font_face ;
+	font_face:Option<@mut css_font_face>
 } 
 
 pub struct css_rule_page {
@@ -403,7 +430,8 @@ impl css_stylesheet {
 
 			CSS_RULE_FONT_FACE=>{	
 				let mut ret_rule = @mut css_rule_font_face{
-					base:base_rule
+					base:base_rule,
+					font_face:None
 				};  
 				RULE_FONT_FACE(ret_rule) 
 			},

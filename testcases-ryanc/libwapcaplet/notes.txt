@@ -1,0 +1,25 @@
+libwapcaplet c version:
+maintains a copy of unique string only.
+returns a reference to the unique string.
+
+
+NOT utilizing hash values internally for comparision
+
+* why ARCRW?
+
+* isequal is incorrect:
+need to compare the hash value, not memory locations
+
+* is_caseless_equal: similar, performs unncessary string comparision
+unncessarily complicated.
+
+
+* string_intern() uses expensive string comparison.
+Need to use hash values to compare strings
+
+* minimize the use of copy and clone
+
+argument passing: use reference whenever possible. currently pass by
+value.
+
+
