@@ -1644,38 +1644,167 @@ impl css_parser {
 	} /* parse_value */
 
 	pub fn parse_any_0(parser: &mut ~css_parser) -> css_result {
+		enum parse_any_0_substates { 
+			Initial = 0, 
+			AfterAny = 1 
+		};
+
+		let mut (_,current_substate) = parser.stack.pop();
+
+		while (true) {
+			match (current_substate) {
+				0 /* Initial */ => {
+					let (token_option, parser_error) = parser.get_token();
+					if (token_option.is_none()) {
+						return parser_error;
+					}
+					let token = token_option.unwrap();
+
+					match token.token_type {
+						CSS_TOKEN_EOF => {
+							parser.push_back(token);
+							parser.done();
+							return CSS_OK;
+						}/* CSS_TOKEN_EOF */
+
+						CSS_TOKEN_CHAR(c) => { 
+							parser.push_back(token);
+
+							/* Grammar ambiguity: 
+							 * assume '{', ';', ')', ']' mark end */
+							if (c == '{' || c == ';' || c == ')' || c == ']') {
+								parser.done();
+								return CSS_OK;
+							}
+
+							let to =  (sAny as uint, Initial as uint);
+							let subsequent =  (sAny0 as uint, AfterAny as uint);
+
+							parser.transition(to,subsequent);
+							return CSS_OK;
+						}/* CSS_TOKEN_CHAR */
+
+						_ => {
+							parser.push_back(token);
+
+							let to =  (sAny as uint, Initial as uint);
+							let subsequent =  (sAny0 as uint, AfterAny as uint);
+
+							parser.transition(to,subsequent);
+							return CSS_OK;
+						}/* _ */
+					} /* match token_type */
+				} /* Initial */
+
+				1 /* AfterAny */ => {
+					if (parser.parse_error) {
+						parser.done();
+						return CSS_OK;
+					}
+
+					current_substate = Initial as uint;
+				} /* AfterAny */
+
+				_ => {
+					fail!();
+				}
+			} /* match current_substate */
+		}/* while */
+
 		CSS_OK
 	} /* parse_any_0 */
 
 	pub fn parse_any_1(parser: &mut ~css_parser) -> css_result {
+		enum parse_any_1_substates { 
+			Initial = 0, 
+			AfterAny = 1,
+			AfterAny0 = 2
+		};
+
+		let mut (_,current_substate) = parser.stack.pop();
+
 		CSS_OK
 	} /* parse_any_1 */
 
 	pub fn parse_any(parser: &mut ~css_parser) -> css_result {
+		enum parse_any_substates { 
+			Initial = 0, 
+			WS = 1,
+			AfterAny0 = 2,
+			WS2 = 3
+		};
+
+		let mut (_,current_substate) = parser.stack.pop();
+
 		CSS_OK
 	} /* parse_any */
 
 	pub fn parse_malformed_declaration(parser: &mut ~css_parser) -> css_result {
+		enum parse_malformed_declaration_substates{ 
+			Initial = 0, 
+			Go = 1 
+		};
+
+		let mut (_,current_substate) = parser.stack.pop();
+
 		CSS_OK
 	} /* parse_malformed_declaration */
 
 	pub fn parse_malformed_selector(parser: &mut ~css_parser) -> css_result {
+		enum parse_malformed_selector_substates{ 
+			Initial = 0, 
+			Go = 1 
+		};
+
+		let mut (_,current_substate) = parser.stack.pop();
+
 		CSS_OK
 	} /* parse_malformed_selector */
 
 	pub fn parse_malformed_at_rule(parser: &mut ~css_parser) -> css_result {
+		enum parse_malformed_at_rule_substates{ 
+			Initial = 0, 
+			Go = 1 
+		};
+
+		let mut (_,current_substate) = parser.stack.pop();
+
 		CSS_OK
 	} /* parse_malformed_at_rule */
 
 	pub fn parse_inline_style(parser: &mut ~css_parser) -> css_result {
+		enum parse_inline_style_substates { 
+			Initial = 0, 
+			WS = 1, 
+			AfterISBody0 = 2 
+		};
+
+		let mut (_,current_substate) = parser.stack.pop();
+
 		CSS_OK
 	} /* parse_inline_style */
 
 	pub fn parse_IS_body_0(parser: &mut ~css_parser) -> css_result {
+		enum parse_IS_body_0_substates { 
+			Initial = 0, 
+			AfterISBody = 1 
+		};
+
+		let mut (_,current_substate) = parser.stack.pop();
+
 		CSS_OK
 	} /* parse_IS_body_0 */
 
 	pub fn parse_IS_body(parser: &mut ~css_parser) -> css_result {
+		enum parse_IS_body_substates { 
+			Initial = 0, 
+			DeclList = 1, 
+			Brace = 2, 
+			WS = 3 
+		};
+
+		let mut (_,current_substate) = parser.stack.pop();
+
 		CSS_OK
 	} /* parse_IS_body */
 
