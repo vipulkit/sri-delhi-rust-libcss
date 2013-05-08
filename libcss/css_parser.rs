@@ -56,6 +56,7 @@ pub struct css_parser {
 	lwc: arc::RWARC<~lwc>,
 
 	last_was_ws : bool,
+	match_char : char,
 	parse_error : bool,
 	pushback: Option<~css_token>,
 	stack: ~[(uint,uint)], /*Parser state stack*/
@@ -104,6 +105,7 @@ impl css_parser {
 			lwc: lwc.clone(),
 
 			last_was_ws: false,
+			match_char: 0 as char,
 			parse_error: false,
 			pushback: None,
 			stack: ~[],
@@ -1723,6 +1725,64 @@ impl css_parser {
 
 		let mut (_,current_substate) = parser.stack.pop();
 
+		match (current_substate) {
+			0 /* Initial */ => {
+				let to = ( sAny as uint, Initial as uint );
+				let subsequent = ( sAny1 as uint, AfterAny as uint );
+
+				parser.transition(to, subsequent);
+				return CSS_OK;
+			} /* Initial */
+
+			1 /* AfterAny */ => {
+				let to = (sAny0 as uint, Initial as uint);
+				let subsequent = (sAny1 as uint, AfterAny0 as uint);
+
+				parser.transition(to, subsequent);
+				return CSS_OK;
+			} /* AfterAny */
+
+			2 /* AfterAny0 */ => {
+				if (parser.parse_error) {
+					parser.done();
+					return CSS_OK;
+				}
+
+				let (token_option, parser_error) = parser.get_token();
+				if (token_option.is_none()) {
+					return parser_error;
+				}
+				let token = token_option.unwrap();
+
+				match token.token_type {
+					CSS_TOKEN_CHAR(c) => {
+						parser.push_back(token);
+
+						if (c==';' || c==')' || c==']') {
+							let to = (sAny as uint, Initial as uint);
+							let subsequent = (sAny1 as uint, AfterAny as uint);
+
+							parser.transition(to,subsequent);
+							return CSS_OK;
+						}
+						else if (c=='{') {
+							parser.parse_error = true;
+						}
+					}
+
+					_ => {
+						parser.push_back(token);
+						parser.parse_error = true;
+					}
+				}
+			} /* AfterAny0 */
+
+			_ => {
+				fail!();
+			}
+		}
+
+		parser.done();
 		CSS_OK
 	} /* parse_any_1 */
 
@@ -1735,7 +1795,124 @@ impl css_parser {
 		};
 
 		let mut (_,current_substate) = parser.stack.pop();
+		
+		while (true) {
+			match (current_substate) {
+				0 /* Initial */ => {
+					let (token_option, parser_error) = parser.get_token();
+					if (token_option.is_none()) {
+						return parser_error;
+					}
+					let token = token_option.unwrap();
 
+					match token.token_type {
+						CSS_TOKEN_IDENT(_) |
+						CSS_TOKEN_NUMBER(_,_) |
+						CSS_TOKEN_PERCENTAGE(_,_) |
+						CSS_TOKEN_DIMENSION(_,_,_) |
+						CSS_TOKEN_STRING(_) |
+						CSS_TOKEN_URI(_) |
+						CSS_TOKEN_HASH(_) |
+						CSS_TOKEN_UNICODE_RANGE(_,_) => {
+
+						}
+						
+						CSS_TOKEN_CHAR(c) => {
+							match(c) {
+								'(' => { 
+									parser.match_char=')';
+									current_substate = WS as uint;
+								},
+								'[' => {
+									parser.match_char=']';
+									current_substate = WS as uint;
+								},
+								_ => {
+									current_substate = WS2 as uint;
+								}
+							}
+						}
+						CSS_TOKEN_FUNCTION(_) => {
+							parser.match_char = ')';
+							current_substate = WS as uint;
+						}
+						_ => {
+							parser.parse_error = true;
+							parser.done();
+							return CSS_OK;
+						}
+					} /* match token_type */
+				} /* Initial */
+
+				1 /* WS */ => {
+					let to =  (sAny0 as uint, Initial as uint) ;
+					let subsequent =  (sAny as uint, AfterAny0 as uint) ;
+
+					let eat_ws_result = parser.eat_ws();
+					match (eat_ws_result) {
+						CSS_OK => {
+							/* continue */
+						}
+						_ => {
+							return eat_ws_result;
+						}
+					}
+
+					parser.transition(to, subsequent);
+					return CSS_OK;
+				} /* WS */
+
+				2 /* AfterAny0 */ => {
+					let (token_option, parser_error) = parser.get_token();
+					if (token_option.is_none()) {
+						return parser_error;
+					}
+					let token = token_option.unwrap();
+
+					match token.token_type {
+						CSS_TOKEN_CHAR(c) => {
+							/* Match correct close bracket (grammar ambiguity) */
+							if (c==parser.match_char) { 
+								current_substate = WS2 as uint;
+								loop;
+							}
+
+							let to = ( sAny0 as uint, Initial as uint );
+							let subsequent = ( sAny as uint, AfterAny0 as uint );
+
+							parser.transition(to,subsequent);
+							return CSS_OK;
+						}
+						_ => {
+							let to = ( sAny0 as uint, Initial as uint );
+							let subsequent = ( sAny as uint, AfterAny0 as uint );
+
+							parser.transition(to,subsequent);
+							return CSS_OK;
+						}
+					}
+				} /* AfterAny0 */
+
+				3 /* WS2 */ => {
+					let eat_ws_result = parser.eat_ws();
+					match (eat_ws_result) {
+						CSS_OK => {
+							break;
+						}
+						_ => {
+							return eat_ws_result;
+						}
+					}
+				} /* WS2 */
+
+				_ => {
+					fail!();
+				}
+
+			} /* match current_substate */
+		} /* while */
+		
+		parser.done();
 		CSS_OK
 	} /* parse_any */
 
