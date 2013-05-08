@@ -2055,7 +2055,7 @@ pub impl css_language {
 					}
 					consumeWhitespace(vector, ctx);
 
-					if *ctx >= vector.len() || !css_language::tokenIsChar(&vector[*ctx], ')') {
+					if *ctx >= vector.len() || !tokenIsChar(&vector[*ctx], ')') {
 						*ctx +=1; //Iterate
 						return (CSS_INVALID, None)
 					}
@@ -2171,13 +2171,13 @@ pub impl css_language {
 			else{
 				token = &vector[*ctx];
 				*ctx += 1;
-				if !css_language::tokenIsChar(token, ',') {
+				if !tokenIsChar(token, ',') {
 					break;
 				}
 			} 		
 		} 
 		
-		if !css_language::tokenIsChar(token, ')') {
+		if !tokenIsChar(token, ')') {
 			return CSS_INVALID
 		}	
 
