@@ -350,7 +350,7 @@ pub struct css_computed_uncommon {
 
     cursor:~[~str],
 
-    content:Option<@mut css_computed_content_item>,
+    content:~[@mut css_computed_content_item],
 }
 
 pub struct css_computed_page {
