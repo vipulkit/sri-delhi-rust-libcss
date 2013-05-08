@@ -345,12 +345,12 @@ pub struct css_computed_uncommon {
 
     word_spacing:i32,
 
-    counter_increment:Option<@mut css_computed_counter>,
-    counter_reset:Option<@mut css_computed_counter>,
+    counter_increment:~[@mut css_computed_counter],
+    counter_reset:~[@mut css_computed_counter],
 
     cursor:~[~str],
 
-    content:Option<@mut css_computed_content_item>,
+    content:~[@mut css_computed_content_item],
 }
 
 pub struct css_computed_page {

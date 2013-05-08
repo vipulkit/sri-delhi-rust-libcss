@@ -452,9 +452,7 @@ impl css_properties {
 		let orig_ctx = *context;
 		let mut prev_ctx: uint;
 		let mut token: &~css_token;
-		let side_count: u32	= 0;
-		let mut side_color: ~[u32] = ~[0, ..3];
-		let mut side_val: ~[u32] = ~[0, ..3];
+		let mut side_count: u32	= 0;
 
 		if *context >= vector.len() {
 			return CSS_INVALID;
@@ -471,14 +469,107 @@ impl css_properties {
 		}
 
 		prev_ctx = *context;
+		let mut side_val_vec: ~[u16] = ~[]; 
+		let mut side_color_vec: ~[u32] = ~[];
 		while  ((*context != prev_ctx) && (side_count < 4)) {
 			if css_properties::is_css_inherit(strings , token) {
 				*context = orig_ctx;
 				return CSS_INVALID;
 			}
+			let (side_val,side_color , css_result) = css_properties::css__parse_color_specifier(sheet , strings , vector , context);
 
+			match css_result {
+				CSS_OK => {
+					side_count += 1;
+					consumeWhitespace(vector , context);
+					token=&vector[*context];
+					side_val_vec.push(side_val.unwrap());
+					side_color_vec.push(side_color.unwrap());
+				},
+				_ => {
+					break
+				}
+			}
 		}
 
+		match side_count {
+			1 => {
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
+				if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+				}
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[0]);
+				if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+				}
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[0]);
+				if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+				}
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[0]);
+				if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+				}
+			},
+			2 => {
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
+				if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+				}
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[1]);
+				if side_val_vec[1] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+				}
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[0]);
+				if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+				}
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[1]);
+				if side_val_vec[1] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+				}
+			},
+			3 => {
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
+				if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+				}
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[1]);
+				if side_val_vec[1] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+				}
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[2]);
+				if side_val_vec[2] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[2] as u32)
+				}
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[1]);
+				if side_val_vec[1] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+				}
+			},
+			4 => {
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
+				if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+				}
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[1]);
+				if side_val_vec[1] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+				}
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[2]);
+				if side_val_vec[2] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[2] as u32)
+				}
+				css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[3]);
+				if side_val_vec[3] == BORDER_COLOR_SET as u16 {
+					css_stylesheet::css__stylesheet_style_append(style , side_val_vec[3] as u32)
+				}
+			},
+			_ => {
+				*context = orig_ctx;
+				return CSS_INVALID;
+			}
+		}
 		CSS_OK
 	}
 
@@ -1153,10 +1244,12 @@ impl css_properties {
 	}
 
 	fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , vector: &~[~css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_result) {
-		
+		// TODO's
 		let mut token:&~css_token;
-		let mut ret_value: u16;
-		let mut ret_result: u32;
+		let mut ret_value: u16 = 0;
+		let mut ret_result: u32 = 0;
+		let mut goto_flag = false;
+		let orig_ctx = *ctx;
 
 		consumeWhitespace(vector , ctx);
 		if *ctx >= vector.len() {
@@ -1178,16 +1271,321 @@ impl css_properties {
 					return (Some(ret_value) , Some(ret_result) , CSS_OK);
 				}
 				let (color_value , error) = css_properties::css__parse_named_color(sheet , strings , token.idata.get_ref().clone());
-				// match error {
-				// 	CSS_OK => {},
-				// 	_ => {
+				match error {
+					CSS_OK => {},
+					_ => {
+						if sheet.quirks_allowed {
+							let(hash_result , error_from_hash) = css_properties::css__parse_hash_colour(token.idata.get_ref().clone());
+							match error_from_hash {
+								CSS_OK => sheet.quirks_used = true,
+								_ => {}
+							}
+						}
+						goto_flag = true;
+					}
+				}
+			},
 
-				// 	}
-				// }
+			CSS_TOKEN_HASH(_) => {
+				let(hash_result , error_from_hash) = css_properties::css__parse_hash_colour(token.idata.get_ref().clone());
+				match error_from_hash {
+					CSS_OK => {},
+					_ => {
+						goto_flag = true;
+					}
+				}
+			},
+			CSS_TOKEN_FUNCTION(_) => {
+				let mut r: u8 = 0;
+				let mut g: u8 = 0;
+				let mut b: u8 = 0;
+				let mut a: u8 = 0xff;
+				let mut colour_channels: int = 0;
+				if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RGB as uint) {
+					colour_channels = 3;
+				}
+				else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RGBA as uint) {
+					colour_channels = 4;
+				}
+				else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HSL as uint) {
+					colour_channels = 5;
+				}
+				else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HSLA as uint) {
+					colour_channels = 6;
+				}
+
+				if colour_channels ==3 || colour_channels == 4 {
+					let mut i: int =0;
+					// TODO
+					let mut valid: Option<css_token_type> = None;
+					let components: ~[u8] = ~[
+						r , g , b , a
+					];
+
+					while i < colour_channels {
+						let mut component: u8;
+						let mut consumed: uint = 0;
+						let mut intval: i32 = 0;
+						let mut int_only: bool = false;
+
+						component = components[i];
+						consumeWhitespace(vector , ctx);
+
+						token = &vector[*ctx];
+						match token.token_type {
+							CSS_TOKEN_NUMBER(_ , _) => {},
+							CSS_TOKEN_PERCENTAGE(_ , _) => {},
+							_ => {
+								goto_flag = true;
+							}
+						}
+						if i==0 {
+
+							//TODO
+							// valid = Some(copy token.token_type);
+						}
+
+						// TODO
+						// else if i<3 &&{
+						// 	int_only = false;
+						// }
+
+						if i<3 {
+							// TODO
+							// int_only = match valid.unwrap() {
+							// 	CSS_TOKEN_NUMBER(_ , _) => true,
+							// 	_=> false
+							// };
+						}
+						else {
+							int_only = false;
+						}
+						let (num , consumed_index) = css__number_from_lwc_string(token.idata.get_ref().clone() , int_only);
+
+						if consumed_index != lwc::lwc_string_length(token.idata.get_ref().clone()) {
+							goto_flag = true;
+						}
+						//TODO
+						// match valid
+
+						if intval > 255 {
+							component = 255;
+						}
+						else if intval < 0 {
+							component = 0;
+						}
+						else {
+							component = intval as u8;
+						}
+
+						*ctx = *ctx + 1;
+						consumeWhitespace(vector , ctx);
+
+						token = &vector[*ctx];
+						if (i != (colour_channels - 1) && tokenIsChar(token , ',')) {
+							*ctx = *ctx + 1;
+						}
+						else if (i == (colour_channels - 1) && tokenIsChar(token , ')')) {
+							*ctx = *ctx + 1;
+						}
+						else {
+							goto_flag = true;
+						}
+						i = i + 1;
+					}
+				}
+				else if colour_channels == 5 || colour_channels == 6 {
+					let consumed: uint = 0;
+					let mut hue: i32;
+					let mut sat: i32;
+					let mut lit: i32;
+					let mut alpha: i32 = 255;
+
+					consumeWhitespace(vector , ctx);
+
+					token = &vector[*ctx];
+					*ctx = *ctx + 1;
+					match token.token_type {
+						CSS_TOKEN_NUMBER(_ , _) => {},
+						_ => goto_flag = true
+					}
+					let mut (hue_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
+					hue = hue_res as i32;
+					if consumed_length_from_lwc_string != lwc::lwc_string_length(token.idata.get_ref().clone()) {
+						goto_flag = true;
+					}
+					while hue < 0 {
+						hue += F_360 as i32;
+					}
+					while hue >= F_360 as i32 {
+						hue -= F_360 as i32;
+					}
+
+					consumeWhitespace(vector , ctx);
+					
+					token = &vector[*ctx];
+					*ctx = *ctx + 1;
+
+					if !tokenIsChar(token , ',') {
+						goto_flag = true;
+					}
+
+					consumeWhitespace(vector , ctx);
+					
+					token = &vector[*ctx];
+					*ctx = *ctx + 1;
+
+					match token.token_type {
+						CSS_TOKEN_PERCENTAGE(_ , _) => {},
+						_ => {
+							goto_flag = true
+						}
+					}
+					let mut (sat_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
+					sat = sat_res as i32;
+					if consumed_length_from_lwc_string != lwc::lwc_string_length(token.idata.get_ref().clone()) {
+						goto_flag = true;
+					}
+
+					if sat < css_int_to_fixed(0) {
+						sat = css_int_to_fixed(0);
+					}
+					else if sat > css_int_to_fixed(100) {
+						sat = css_int_to_fixed(100);
+					}
+
+					consumeWhitespace(vector, ctx);
+
+					token = &vector[*ctx];
+					*ctx = *ctx + 1;
+
+					if !tokenIsChar(token , ',') {
+						goto_flag = true;
+					}
+
+					consumeWhitespace(vector , ctx);
+
+					token = &vector[*ctx];
+					*ctx = *ctx + 1;
+
+					match token.token_type {
+						CSS_TOKEN_PERCENTAGE(_ , _) => {},
+						_ => {
+							goto_flag = true
+						}
+					}
+					let mut (lit_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
+					lit = lit_res as i32;
+					if consumed_length_from_lwc_string != lwc::lwc_string_length(token.idata.get_ref().clone()) {
+						goto_flag = true;
+					}
+
+					if lit < css_int_to_fixed(0) {
+						lit = css_int_to_fixed(0);
+					}
+					else if lit > css_int_to_fixed(100) {
+						lit = css_int_to_fixed(100);
+					}
+
+					consumeWhitespace(vector , ctx);
+
+					token = &vector[*ctx];
+					*ctx = *ctx + 1;
+
+					if colour_channels == 6 {
+						if !tokenIsChar(token , ',') {
+							goto_flag = true;
+						}
+						consumeWhitespace(vector , ctx);
+
+						token = &vector[*ctx];
+						*ctx = *ctx + 1;
+
+						match token.token_type {
+							CSS_TOKEN_NUMBER(_ , _) => {},
+							_ => {
+								goto_flag = true
+							}
+						}
+						let mut (alpha_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
+						alpha = alpha_res as i32;
+						if consumed_length_from_lwc_string != lwc::lwc_string_length(token.idata.get_ref().clone()) {
+							goto_flag = true;
+						}
+
+						alpha = css_int_to_fixed(css_multiply_fixed(alpha as i32 , F_255 as i32) as int) as i32;
+						consumeWhitespace(vector , ctx);
+
+						token = &vector[*ctx];
+						*ctx = *ctx + 1;
+					}
+					if !tokenIsChar(token , ',') {
+						goto_flag = true;
+					}
+					let (ra , ga , ba) = HSL_to_RGB(hue as i32, sat as i32, lit as i32);
+					r = ra;
+					g = ga;
+					b = ba;
+
+					if alpha > 255 {
+						a = 255;
+					}
+					else if alpha < 0 {
+						a = 0;
+					}
+					else {
+						a = alpha as u8;
+					}
+				}
+				else {
+					goto_flag = true;
+				}
+
+				ret_result = (a << 24 | r << 16 | g << 8 | b) as u32;
+				ret_value = COLOR_SET as u16;
+			},
+			CSS_TOKEN_NUMBER(_ , _) => {
+				if sheet.quirks_allowed {
+					let(hash_result , error_from_hash) = css_properties::css__parse_hash_colour(token.idata.get_ref().clone());
+					match error_from_hash {
+						CSS_OK => {
+							sheet.quirks_used = true
+						},
+						_ => {
+							goto_flag = true;
+						}
+					}
+				}
+				else {
+					goto_flag = true;
+				}
+			},
+			CSS_TOKEN_DIMENSION(_ , _ , _) => {
+				if sheet.quirks_allowed {
+					let(hash_result , error_from_hash) = css_properties::css__parse_hash_colour(token.idata.get_ref().clone());
+					match error_from_hash {
+						CSS_OK => {
+							sheet.quirks_used = true
+						},
+						_ => {
+							goto_flag = true;
+						}
+					}
+				}
+				else {
+					goto_flag = true;
+				}
+			},
+			_ => {
+				return (None , None , CSS_INVALID);
 			}
-			_ => {}
 		}
-		return (None , None , CSS_INVALID)
+
+		if goto_flag {
+			*ctx = orig_ctx;
+			return (None , None , CSS_INVALID);	
+		}
+		(Some(ret_value) , Some(ret_result) , CSS_OK)
 	}
 
 	fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[~css_token] , ctx: @mut uint , default_unit: u32) -> (Option<int> , Option<u32>, css_result) {
@@ -1388,6 +1786,37 @@ pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<css_unit>,css_r
 	(Some(unit) , CSS_OK)
 }
 
+/**
+ * Determine if a token is a character
+ *
+ * \param token  The token to consider
+ * \param c      The character to match (lowerASCII only)
+ * \return True if the token matches, false otherwise
+ */
+pub fn tokenIsChar(token:&~css_token, c:char) -> bool {
+	let result = false;
+
+	match token.token_type {
+		CSS_TOKEN_CHAR(_) => {   
+				if lwc::lwc_string_length(token.idata.get_ref().clone()) == 1 {
+					let mut token_char = lwc::lwc_string_data(token.idata.get_ref().clone()).char_at(0);
+
+					// Ensure lowercomparison 
+					if 'A' <= token_char && token_char <= 'Z' {
+						token_char += 'a' - 'A'
+					}
+						
+					if token_char == c {
+						return true
+					}
+				}                       
+			},
+		_ => return result
+	}           
+	
+	return result
+}
+
 pub fn consumeWhitespace(vector:&~[~css_token], ctx:@mut uint) {
 	loop {
 		if *ctx < vector.len() {
@@ -1541,4 +1970,91 @@ pub fn charToHex(c: u8) -> u32 {
 		k -= ('a' as u8) - ('A' as u8);
 	}
 	return k as u32;
+}
+
+pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
+	let min_rgb: i32;
+	let max_rgb: i32;
+	let chroma: i32;
+	let relative_hue: i32;
+	let scaled_hue: i32;
+	let mid1: i32;
+	let mid2: i32;
+	let sextant: int;
+
+	/* If saturation is zero there is no hue and r = g = b = lit */
+	if (sat == css_int_to_fixed(0)) {
+		let r = (css_divide_fixed(css_multiply_fixed((lit), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+		let g = (css_divide_fixed(css_multiply_fixed((lit), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+		let b = (css_divide_fixed(css_multiply_fixed((lit), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+		return (r as u8, g as u8, b as u8);
+	}
+
+	/* Compute max(r,g,b) */
+	if (lit <= css_int_to_fixed(50)) {
+		max_rgb = css_divide_fixed(css_multiply_fixed(lit, css_add_fixed(sat, F_100 as i32)), F_100 as i32);
+	} 
+	else {
+		max_rgb = css_divide_fixed(css_subtract_fixed(css_multiply_fixed(css_add_fixed(lit, sat), F_100 as i32), css_multiply_fixed(lit, sat)), F_100 as i32);
+	}
+
+	/* Compute min(r,g,b) */
+	min_rgb = css_subtract_fixed(css_multiply_fixed(lit, css_int_to_fixed(2)), max_rgb);
+
+	/* Chroma is the difference between min and max */
+	chroma = css_subtract_fixed(max_rgb, min_rgb);
+
+	/* Compute which sextant the hue lies in (truncates result) */
+	let hue_sextant = css_divide_fixed(css_multiply_fixed(hue, css_int_to_fixed(6)), F_360 as i32);
+	sextant = (hue_sextant as int) >> CSS_RADIX_POINT;
+
+	/* Compute offset of hue from start of sextant */
+	relative_hue = css_subtract_fixed(hue, css_int_to_fixed(sextant));
+
+	/* Scale offset by chroma */
+   	scaled_hue = css_multiply_fixed(relative_hue, chroma);
+
+	/* Compute potential values of the third colour component */
+    mid1 = css_add_fixed(min_rgb, scaled_hue);
+    mid2 = css_subtract_fixed(max_rgb, scaled_hue);
+
+    match sextant {
+    	0 => {
+    		let r = (css_divide_fixed(css_multiply_fixed((max_rgb), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			let g = (css_divide_fixed(css_multiply_fixed((mid1), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			let b = (css_divide_fixed(css_multiply_fixed((min_rgb), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			return (r as u8 , g as u8 , b as u8);
+    	},
+    	1 => {
+    		let r = (css_divide_fixed(css_multiply_fixed((mid2), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			let g = (css_divide_fixed(css_multiply_fixed((max_rgb), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			let b = (css_divide_fixed(css_multiply_fixed((min_rgb), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			return (r as u8 , g as u8 , b as u8);
+    	},
+    	2 => {
+    		let r = (css_divide_fixed(css_multiply_fixed((min_rgb), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			let g = (css_divide_fixed(css_multiply_fixed((max_rgb), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			let b = (css_divide_fixed(css_multiply_fixed((mid1), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			return (r as u8 , g as u8 , b as u8);
+    	},
+    	3 => {
+    		let r = (css_divide_fixed(css_multiply_fixed((min_rgb), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			let g = (css_divide_fixed(css_multiply_fixed((mid2), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			let b = (css_divide_fixed(css_multiply_fixed((max_rgb), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			return (r as u8 , g as u8 , b as u8);
+    	},
+    	4 => {
+    		let r = (css_divide_fixed(css_multiply_fixed((mid1), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			let g = (css_divide_fixed(css_multiply_fixed((min_rgb), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			let b = (css_divide_fixed(css_multiply_fixed((max_rgb), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			return (r as u8 , g as u8 , b as u8);
+    	},
+    	5 => {
+    		let r = (css_divide_fixed(css_multiply_fixed((max_rgb), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			let g = (css_divide_fixed(css_multiply_fixed((min_rgb), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			let b = (css_divide_fixed(css_multiply_fixed((mid2), F_255 as i32), F_100 as i32	)) >> CSS_RADIX_POINT;
+			return (r as u8 , g as u8 , b as u8);
+    	}
+    	_ => { (0 , 0 , 0)}
+    }
 }

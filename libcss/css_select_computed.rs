@@ -171,9 +171,9 @@ pub fn css_computed_word_spacing(
 
 pub fn css_computed_counter_increment(
                         style : @mut css_computed_style)
-                        -> (u8,Option<@mut css_computed_counter>) {
+                        -> (u8,~[@mut css_computed_counter]) {
 
-    let mut counter :Option<@mut css_computed_counter> = None;
+    let mut counter : ~[@mut css_computed_counter] = ~[];
     match style.uncommon {
         None=>{
             (CSS_COUNTER_INCREMENT_NONE as u8,counter)
@@ -183,7 +183,7 @@ pub fn css_computed_counter_increment(
             bits = bits & (CSS_COUNTER_INCREMENT_MASK as u8);
             bits = bits >> CSS_COUNTER_INCREMENT_SHIFT;
 
-            counter = uncommon_struct.counter_increment;
+            counter = copy uncommon_struct.counter_increment;
 
             (bits,counter)
         }
@@ -192,9 +192,9 @@ pub fn css_computed_counter_increment(
 
 pub fn css_computed_counter_reset(
                         style : @mut css_computed_style)
-                        -> (u8,Option<@mut css_computed_counter>) {
+                        -> (u8,~[@mut css_computed_counter]) {
 
-    let mut counter :Option<@mut css_computed_counter> = None;
+    let mut counter : ~[@mut css_computed_counter] = ~[];
     match style.uncommon {
         None=>{
             (CSS_COUNTER_RESET_NONE as u8,counter)
@@ -204,7 +204,7 @@ pub fn css_computed_counter_reset(
             bits = bits & (CSS_COUNTER_RESET_MASK as u8);
             bits = bits >> CSS_COUNTER_RESET_SHIFT;
 
-            counter = uncommon_struct.counter_reset;
+            counter = copy uncommon_struct.counter_reset;
 
             (bits,counter)
         }
@@ -311,18 +311,18 @@ pub fn css_computed_clip(
 
 pub fn css_computed_content(
                 style : @mut css_computed_style)
-                -> (u8,Option<@mut css_computed_content_item>) {
+                -> (u8,~[@mut css_computed_content_item]) {
 
     match style.uncommon {
         None=>{
-            (CSS_CONTENT_NORMAL as u8,None)
+            (CSS_CONTENT_NORMAL as u8,~[])
         },
         Some(uncommon_struct)=>{
             let mut bits:u8= uncommon_struct.bits[CSS_CONTENT_INDEX];
             bits = bits & (CSS_CONTENT_MASK as u8);
             bits = bits >> CSS_CONTENT_SHIFT;
 
-            (bits,uncommon_struct.content)
+            (bits,copy uncommon_struct.content)
         }
     }  
 }
