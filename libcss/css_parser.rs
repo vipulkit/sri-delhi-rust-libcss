@@ -1532,6 +1532,70 @@ impl css_parser {
 	} /* parse_decl_list */
 
 	pub fn parse_decl_list_end(parser: &mut ~css_parser) -> css_result {
+		enum parse_decl_list_end_substates { 
+			Initial = 0, 
+			AfterDeclaration = 1 
+		};
+
+		let mut (_,current_substate) = parser.stack.pop();
+
+		while (true) {
+			match (current_substate) {
+				0 /* Initial */ => {
+					let (token_option, parser_error) = parser.get_token();
+					if (token_option.is_none()) {
+						return parser_error;
+					}
+					let token = token_option.unwrap();
+
+					match (token.token_type) {
+						CSS_TOKEN_CHAR(c) => {
+							let push_back_result = parser.push_back(token);
+							
+							match (push_back_result) {
+								CSS_OK => {
+									if (c!=';' && c != '}') {
+										let to = (sDeclaration as uint, Initial as uint);
+										let subsequent = (sDeclListEnd as uint, AfterDeclaration as uint);
+
+										parser.transition(to, subsequent);
+										return CSS_OK;
+									}
+								},
+								_ => {
+									return push_back_result;
+								}
+							} /* match push_back_result */
+						} /* CSS_TOKEN_CHAR */
+						_ => {
+							let push_back_result = parser.push_back(token);
+							
+							match (push_back_result) {
+								CSS_OK => {
+									/* continue */
+								},
+								_ => {
+									return push_back_result;
+								}
+							} /* match push_back_result */
+						}
+					} /* match token_type */
+					current_substate = AfterDeclaration as uint; /* fall through */
+				} /* Initial */
+
+				1 /* AfterDeclaration */ => {
+					break;
+				} /* AfterDeclaration */
+
+				_ => {
+					fail!();
+				}
+			}
+		} /* while */
+
+		let to = (sDeclList as uint, Initial as uint);
+		
+		parser.transition_no_ret(to);
 		CSS_OK
 	} /* parse_decl_list_end */
 
