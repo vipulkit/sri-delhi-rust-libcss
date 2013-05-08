@@ -14,8 +14,9 @@ use std::arc;
 
 static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
 
+
 struct css_font_face_src {
-	location:Option<arc::RWARC<lwc_string>>,
+	location:Option<arc::RWARC<~lwc_string>>,
 	/*
 	 * Bit allocations:
 	 *
@@ -27,9 +28,7 @@ struct css_font_face_src {
 
 struct css_font_face {
 	font_family:Option< arc::RWARC<~lwc_string> >,
-	srcs:@css_font_face_src,
-	n_srcs:u32,
-	
+	srcs:~[~css_font_face_src],
 	/*
 	 * Bit allocations:
 	 *
@@ -98,7 +97,7 @@ pub struct css_stylesheet {
 	quirks_used:bool,						/**< Quirks actually used */
 	inline_style:bool,						/**< Is an inline style */
 	cached_style:Option<@mut css_style>,	/**< Cache for style parsing */
-	string_vector:~[~str]
+	string_vector:~[~str],
 }
 
 pub struct css_rule {

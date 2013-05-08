@@ -1891,11 +1891,11 @@ static DEFAULT  :uint = 318 ;
 
 pub enum css_font_face_format {
 	CSS_FONT_FACE_FORMAT_UNSPECIFIED	= 	0x00,
-	CSS_FONT_FACE_FORMAT_WOFF		= 	0x01,
-	CSS_FONT_FACE_FORMAT_OPENTYPE		= 	0x02,
-	CSS_FONT_FACE_FORMAT_EMBEDDEDOPENTYPE	= 	0x04,
-	CSS_FONT_FACE_FORMAT_SVG		= 	0x08,
-	CSS_FONT_FACE_FORMAT_UNKNOWN		= 	0x10
+	CSS_FONT_FACE_FORMAT_WOFF		= 	0x01, // WOFF (Web Open Font Format); .woff */
+	CSS_FONT_FACE_FORMAT_OPENTYPE		= 	0x02, // TrueType or OpenType; .ttf, .otf */
+	CSS_FONT_FACE_FORMAT_EMBEDDED_OPENTYPE	= 	0x04, // Embedded OpenType; .eot */
+	CSS_FONT_FACE_FORMAT_SVG		= 	0x08, // SVG Font; .svg, .svgz */
+	CSS_FONT_FACE_FORMAT_UNKNOWN		= 	0x10 // Format specified, but not recognised */
 }
 
 pub enum css_font_face_location_type{
@@ -1944,5 +1944,6 @@ pub enum css_hint_data_type{
     STRING,
     STRINGS_VECTOR
 }
+
 
 // /////////////////////////////////////////////////////////////////////////////
