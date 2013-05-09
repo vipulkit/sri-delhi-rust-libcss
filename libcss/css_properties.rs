@@ -400,26 +400,18 @@ impl css_properties {
         CSS_OK
     }
 
-    // ===========================================================================================================
-    // CSS-Parse-Properties Background implementation/data-structs starts here 
-    // ===========================================================================================================
-
-
     /**
-     * Parse background
-     *
-     * \param sheet   Stylesheet 
-     * \param vector  Vector of tokens to process
-     * \param ctx     Pointer to vector iteration context
-     * \param result  location to receive resulting style
-     * \return CSS_OK on success, 
-     *     CSS_INVALID if the input is not valid
-     *
-     * Post condition: \a *ctx is updated with the next token to process
-     *         If the input is invalid, then \a *ctx remains unchanged.
-     */
-    pub fn css__parse_background(sheet:@mut css_stylesheet, strings: &mut ~css_propstrings, vector:&~[~css_token],
-     ctx:@mut uint, result:@mut css_style) -> css_result {
+    * Parse background
+    *
+    * \param sheet   Stylesheet 
+    * \param vector  Vector of tokens to process
+    * \param ctx     Pointer to vector iteration context
+    * \return CSS_OK on success, 
+    *     CSS_INVALID if the input is not valid
+    * Post condition: \a *ctx is updated with the next token to process
+    *         If the input is invalid, then \a *ctx remains unchanged.
+    */
+    pub fn css__parse_background(sheet:@mut css_stylesheet, strings: &mut ~css_propstrings, vector:&~[~css_token], ctx:@mut uint, result:@mut css_style) -> css_result {
         let orig_ctx = *ctx;
         let mut prev_ctx;
         let mut error = CSS_OK; 
@@ -553,8 +545,7 @@ impl css_properties {
                 *ctx = orig_ctx ;
                 return x 
             }
-
-         }
+        }
     }
     fn css__parse_background_attachment(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
@@ -1079,7 +1070,138 @@ impl css_properties {
         CSS_OK
     }
 
-    fn css__parse_margin(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_margin(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        let orig_ctx = *ctx;
+        let mut error: css_result= CSS_OK;
+        let mut token: &~css_token;
+        let mut side_val: ~[u16] = ~[];
+        let mut side_length: ~[i32] = ~[];
+        let mut side_unit: ~[u32] = ~[];
+        let mut side_count: u32 = 0;
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        
+        token=&vector[*ctx];
+        if css_properties::is_css_inherit(strings , token) {
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_MARGIN_TOP);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_MARGIN_RIGHT);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_MARGIN_BOTTOM);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_MARGIN_LEFT);
+            *ctx += 1;
+        }
+        let prev_ctx = *ctx;
+        while  ((*ctx != prev_ctx) && (side_count < 4)){
+            if css_properties::is_css_inherit(strings , token) {
+                *ctx = orig_ctx;
+                return CSS_INVALID;
+            }
+            match token.token_type {
+                CSS_TOKEN_IDENT(_) => {
+                    if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
+                        side_val.push(MARGIN_AUTO as u16);
+                        *ctx = *ctx + 1;
+                        error = CSS_OK;
+                    }
+                },
+                _ => {
+                    side_val.push(MARGIN_SET as u16);
+                    let (length_val , unit_val , result) = css_properties::css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
+                    match result {
+                        CSS_OK => {
+                            if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
+                                *ctx = orig_ctx;
+                                return CSS_INVALID;
+                            }
+                            if (side_unit[side_count] & (UNIT_TIME as u32)) > 0{
+                                *ctx = orig_ctx;
+                                return CSS_INVALID;
+                            }
+                            if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
+                                *ctx = orig_ctx;
+                                return CSS_INVALID;
+                            }
+                            side_count += 1;
+                            consumeWhitespace(vector , ctx);
+                            token=&vector[*ctx];
+                        },
+                        _ => {}
+                    }
+                }
+            }
+            match error {
+                CSS_OK => {
+                    side_count += 1;
+                    consumeWhitespace(vector , ctx);
+                    token=&vector[*ctx];
+                }
+                _ => {
+                    break
+                }
+            }
+        }
+        match side_count {
+            1 => {
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_TOP , 0 , side_val[0]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_RIGHT , 0 , side_val[0]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_BOTTOM , 0 , side_val[0]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_LEFT , 0 , side_val[0]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+            },
+            2 => {
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_TOP , 0 , side_val[0]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_RIGHT , 0 , side_val[1]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_BOTTOM , 0 , side_val[0]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_LEFT , 0 , side_val[1]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+            },
+            3 => {
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_TOP , 0 , side_val[0]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_RIGHT , 0 , side_val[1]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_BOTTOM , 0 , side_val[2]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_LEFT , 0 , side_val[1]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+            },
+            4 => {
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_TOP , 0 , side_val[0]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_RIGHT , 0 , side_val[1]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_BOTTOM , 0 , side_val[2]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_LEFT , 0 , side_val[3]);
+                css_stylesheet::css__stylesheet_style_append(style , side_length[3] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[3] as u32);
+            },
+            _ => {
+                *ctx = orig_ctx;
+            }
+        }
         CSS_OK
     }
     fn css__parse_margin_bottom(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
@@ -1142,7 +1264,124 @@ impl css_properties {
         CSS_OK
     }
 
-    fn css__parse_padding(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_padding(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        let mut orig_ctx = *ctx;
+        let mut side_length: ~[i32] = ~[];
+        let mut side_unit: ~[u32] = ~[];
+        let mut side_count: u32 = 0;
+        let mut token: &~css_token;
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        
+        token=&vector[*ctx];
+        if css_properties::is_css_inherit(strings , token) {
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_PADDING_TOP);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_PADDING_RIGHT);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_PADDING_BOTTOM);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_PADDING_LEFT);
+            *ctx = *ctx + 1;
+        }
+        let prev_ctx = *ctx;
+        while  ((*ctx != prev_ctx) && (side_count < 4)) {
+            if css_properties::is_css_inherit(strings , token) {
+                *ctx = orig_ctx;
+                return CSS_INVALID;
+            }
+
+            let (length_val , unit_val , result) = css_properties::css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
+            match result {
+                CSS_OK => {
+                    side_length.push(length_val.unwrap() as i32);
+                    side_unit.push(unit_val.unwrap());
+                    if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                    }
+                    if (side_unit[side_count] & (UNIT_TIME as u32)) > 0{
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                    }
+                    if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                    }
+                    if side_unit[side_count] < 0{
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                    }
+                    side_count += 1;
+                    consumeWhitespace(vector , ctx);
+                    token=&vector[*ctx];
+                },
+                _ => {
+                    break;
+                }
+            }
+            match side_count {
+                1 => {
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                },
+                2 => {
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                },
+                3 => {
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                },
+                4 => {
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[3] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[3] as u32);
+                },
+                _ => {
+                    *ctx = orig_ctx;
+                    return CSS_INVALID;
+                }
+            }
+        }
         CSS_OK
     }
 
@@ -1194,7 +1433,83 @@ impl css_properties {
         CSS_OK
     }
 
-    fn css__parse_play_during(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_play_during(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        // TODO
+        let orig_ctx = *ctx;
+        let mut token: &~css_token;
+        let mut flags: u8 = 0;
+        let mut value: u16 =0;
+        let mut uri_snumber: u32 = 0;
+        let mut uri: Option<arc::RWARC<~lwc_string>>;
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        token=&vector[*ctx];
+        *ctx += 1;
+
+        match token.token_type {
+            CSS_TOKEN_IDENT(_) => {
+                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint) {
+                    flags = flags | FLAG_INHERIT;
+                }
+                else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , NONE as uint) {
+                    value = PLAY_DURING_NONE as u16;
+                }
+                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
+                    value = PLAY_DURING_AUTO as u16;
+                }
+                else {
+                    *ctx = orig_ctx;
+                    return CSS_INVALID;
+                }
+            },
+            _ => {
+                let mut modifiers:int = 0;
+                value = PLAY_DURING_URI as u16;
+                // TODO resolve function
+
+                // uri_snumber = sheet.css__stylesheet_string_add(lwc::lwc_string_data(uri.get_ref().clone())) as u32;
+                while modifiers < 2 {
+                    consumeWhitespace(vector, ctx);
+                    token=&vector[*ctx];
+
+                    match token.token_type {
+                        CSS_TOKEN_IDENT(_) => {
+                            if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MIX as uint) {
+                                if value & (PLAY_DURING_MIX as u16) == 0 {
+                                    value |= (PLAY_DURING_MIX as u16);
+                                }
+                                else {
+                                    *ctx = orig_ctx;
+                                    return CSS_INVALID;
+                                }
+                            }
+                            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , REPEAT as uint) {
+                                if value & (PLAY_DURING_REPEAT as u16) == 0 {
+                                    value |= (PLAY_DURING_REPEAT as u16);
+                                }
+                                else {
+                                    *ctx = orig_ctx;
+                                    return CSS_INVALID;
+                                }
+                            }
+                            else {
+                                *ctx = orig_ctx;
+                                return CSS_INVALID;
+                            }
+                            *ctx = *ctx + 1;
+                        }
+                        _ => {}
+                    }
+                    modifiers += 1;
+                }
+            }
+        }
+        css_stylesheet::css__stylesheet_style_appendOPV(style ,CSS_PROP_PLAY_DURING , flags , value);
+        if ((flags & FLAG_INHERIT)==0 && (value & PLAY_DURING_TYPE_MASK as u16)==PLAY_DURING_URI as u16) {
+            css_stylesheet::css__stylesheet_style_append(style , uri_snumber);
+        }
         CSS_OK
     }
 
@@ -2518,5 +2833,56 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
             return (r as u8 , g as u8 , b as u8);
         }
         _ => { (0 , 0 , 0)}
+    }
+}
+
+pub fn css__parse_list_style_type_value(strings: &mut ~css_propstrings , token:&~css_token) -> (Option<u16> , css_result) {
+    if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , DISC as uint) {
+        return (Some(LIST_STYLE_TYPE_DISC as u16) , CSS_OK);
+    }
+    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , CIRCLE as uint) {
+        return (Some(LIST_STYLE_TYPE_CIRCLE as u16) , CSS_OK);
+    }
+    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , SQUARE as uint) {
+        return (Some(LIST_STYLE_TYPE_SQUARE as u16) , CSS_OK);
+    }
+    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , DECIMAL as uint) {
+        return (Some(LIST_STYLE_TYPE_DECIMAL as u16) , CSS_OK);
+    }
+    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , DECIMAL_LEADING_ZERO as uint) {
+        return (Some(LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO as u16) , CSS_OK);
+    }
+    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , LOWER_ROMAN as uint) {
+        return (Some(LIST_STYLE_TYPE_LOWER_ROMAN as u16) , CSS_OK);
+    }
+    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , UPPER_ROMAN as uint) {
+        return (Some(LIST_STYLE_TYPE_UPPER_ROMAN as u16) , CSS_OK);
+    }
+    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , LOWER_GREEK as uint) {
+        return (Some(LIST_STYLE_TYPE_LOWER_GREEK as u16) , CSS_OK);
+    }
+    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , LOWER_LATIN as uint) {
+        return (Some(LIST_STYLE_TYPE_LOWER_LATIN as u16) , CSS_OK);
+    }
+    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , UPPER_LATIN as uint) {
+        return (Some(LIST_STYLE_TYPE_UPPER_LATIN as u16) , CSS_OK);
+    }
+    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , ARMENIAN as uint) {
+        return (Some(LIST_STYLE_TYPE_ARMENIAN as u16) , CSS_OK);
+    }
+    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , GEORGIAN as uint) {
+        return (Some(LIST_STYLE_TYPE_GEORGIAN as u16) , CSS_OK);
+    }
+    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , LOWER_ALPHA as uint) {
+        return (Some(LIST_STYLE_TYPE_LOWER_ALPHA as u16) , CSS_OK);
+    }
+    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , UPPER_ALPHA as uint) {
+        return (Some(LIST_STYLE_TYPE_UPPER_ALPHA as u16) , CSS_OK);
+    }
+    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , NONE as uint) {
+        return (Some(LIST_STYLE_TYPE_NONE as u16) , CSS_OK);
+    }
+    else {
+        return (None , CSS_INVALID);
     }
 }
