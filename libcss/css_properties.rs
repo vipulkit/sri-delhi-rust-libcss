@@ -1517,114 +1517,84 @@ impl css_properties {
         CSS_OK
     }
 
-    fn css__parse_quotes(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_quotes(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         
-       let orig_context:uint = *context;
-        
-
-        if *context >= vector.len() {
+        let orig_ctx:uint = *ctx;
+        if *ctx >= vector.len() {
             return CSS_INVALID;
         }
+
         let mut token:&~css_token;
-         token=&vector[*context];
-         *context += 1;
-        if ( 
-            match (token.token_type) {
-                CSS_TOKEN_IDENT(_) => false,
-                _=> true  
-            }&&
-            match (token.token_type) {
-                CSS_TOKEN_STRING(_) => false,
-                _=> true  
-            }
-            )
-        {
-            *context = orig_context;
-            return CSS_INVALID;
-        }
-        if(
-            match (token.token_type) {
-                CSS_TOKEN_IDENT(_) => true,
-                _=> false  
-            }&&
-            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) 
-
-            )
-        {
-            css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_QUOTES);
-        }
-        if(
-            match (token.token_type) {
-                CSS_TOKEN_IDENT(_) => true,
-                _=> false  
-            }&&
-            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NONE as uint) 
-
-            )
-        {
-            css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_QUOTES, 0, QUOTES_NONE as u16);
-        }
-        else if (
-            match (token.token_type) {
-                CSS_TOKEN_STRING(_) => true,
-                _=> false  
-            }
-            ){
-            let mut first: bool =true;
-            while ( 
-                (*context < vector.len()) && 
-                match (token.token_type) {
-                    CSS_TOKEN_IDENT(_) => true,
-                    _=> false  
+        token=&vector[*ctx];
+        *ctx += 1;
+        
+        match (token.token_type) {
+            CSS_TOKEN_IDENT(_) => {
+                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
+                    css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_QUOTES);
                 }
-                 ){
-                let mut open_snumber:u32=0;
-                let mut close_snumber:u32=0;
-                open_snumber = sheet.css__stylesheet_string_add(lwc::lwc_string_data(token.idata.get_ref().clone())) as u32;
-                consumeWhitespace(vector, context); 
-                token=&vector[*context];
-                *context += 1;
-                match (token.token_type) {
-                    CSS_TOKEN_IDENT(_) => {
-
-                    },
-                    _=> {
-                        *context = orig_context;
-                        return CSS_INVALID;
-                    }
+                else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NONE as uint)  {
+                    css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_QUOTES, 0, QUOTES_NONE as u16);
                 }
-                close_snumber = sheet.css__stylesheet_string_add(lwc::lwc_string_data(token.idata.get_ref().clone())) as u32;
-                consumeWhitespace(vector, context); 
-                match first{
-                    true => css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_QUOTES, 0, QUOTES_STRING as u16),
-                    false=> css_stylesheet::css__stylesheet_style_append(style, QUOTES_STRING as u32)
-                }
-                // error = CSS_FIRST_APPEND(QUOTES_STRING);
-                // if (error != CSS_OK) 
-                //  break;
-                css_stylesheet::css__stylesheet_style_append(style, open_snumber);
-                css_stylesheet::css__stylesheet_style_append(style, close_snumber);
-
-                first =false;
-
-
-                token=&vector[*context];
-                *context += 1;
-                match (token.token_type) {
-                    CSS_TOKEN_IDENT(_) => {
-
-                    },
-                    _=> {
-                        break;
-                    }
-                }
+            },
+            CSS_TOKEN_STRING(_) => {
+                let mut first: bool =true;
                 
-            }
-            css_stylesheet::css__stylesheet_style_append(style, QUOTES_NONE as u32);
+                loop {
+                    match token.token_type {
+                        CSS_TOKEN_STRING(_)=>{
+                            let mut open_snumber:u32=0;
+                            let mut close_snumber:u32=0;
+                            open_snumber = sheet.css__stylesheet_string_add(lwc::lwc_string_data(token.idata.get_ref().clone())) as u32;
+                            consumeWhitespace(vector, ctx);
+                            if (*ctx < vector.len()) {
+                                break;
+                            } 
+                            token=&vector[*ctx];
+                            *ctx += 1;
+                            match token.token_type {
+                                CSS_TOKEN_STRING(_) => {},
+                                _=> {
+                                    *ctx = orig_ctx;
+                                    return CSS_INVALID;
+                                }
+                            }
+                            close_snumber = sheet.css__stylesheet_string_add(lwc::lwc_string_data(token.idata.get_ref().clone())) as u32;
+                            consumeWhitespace(vector, ctx); 
+                            match first {
+                                true => css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_QUOTES, 0, QUOTES_STRING as u16),
+                                false=> css_stylesheet::css__stylesheet_style_append(style, QUOTES_STRING as u32)
+                            }
+                            
+                            css_stylesheet::css__stylesheet_style_append(style, open_snumber);
+                            css_stylesheet::css__stylesheet_style_append(style, close_snumber);
 
-        }
-        else {
-            return CSS_INVALID;
+                            first =false;
+                            if (*ctx < vector.len()) {
+                                break;
+                            }
+                            token=&vector[*ctx];
+                            match token.token_type {
+                                CSS_TOKEN_STRING(_) => {},
+                                _=> {
+                                    break;
+                                }
+                            }
+                            if (*ctx < vector.len()) {
+                                break;
+                            } 
+                            token=&vector[*ctx];
+                            *ctx += 1;
+                        },
+                        _=>break
+                    }
+                }
+                css_stylesheet::css__stylesheet_style_append(style, QUOTES_NONE as u32);
+            },
+            _=>  {
+                *ctx = orig_ctx;
+                return CSS_INVALID;
+            }
         }
         CSS_OK
     }
