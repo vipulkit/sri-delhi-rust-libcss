@@ -411,8 +411,9 @@ impl css_properties {
      * \param sheet   Stylesheet 
      * \param vector  Vector of tokens to process
      * \param ctx     Pointer to vector iteration context
-     * \return CSS_OK,result on success,location to receive resulting style 
-     *     CSS_INVALID,None if the input is not valid
+     * \param result  location to receive resulting style
+     * \return CSS_OK on success, 
+     *     CSS_INVALID if the input is not valid
      *
      * Post condition: \a *ctx is updated with the next token to process
      *         If the input is invalid, then \a *ctx remains unchanged.
