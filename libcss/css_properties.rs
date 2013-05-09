@@ -400,10 +400,161 @@ impl css_properties {
         CSS_OK
     }
 
-    fn css__parse_background(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
-        CSS_OK
-    }
+    // ===========================================================================================================
+    // CSS-Parse-Properties Background implementation/data-structs starts here 
+    // ===========================================================================================================
 
+
+    /**
+     * Parse background
+     *
+     * \param sheet   Stylesheet 
+     * \param vector  Vector of tokens to process
+     * \param ctx     Pointer to vector iteration context
+     * \return CSS_OK,result on success,location to receive resulting style 
+     *     CSS_INVALID,None if the input is not valid
+     *
+     * Post condition: \a *ctx is updated with the next token to process
+     *         If the input is invalid, then \a *ctx remains unchanged.
+     */
+    pub fn css__parse_background(sheet:@mut css_stylesheet, strings: &mut ~css_propstrings, vector:&~[~css_token],
+     ctx:@mut uint, result:@mut css_style) -> css_result {
+        let orig_ctx = *ctx;
+        let mut prev_ctx;
+        let mut error = CSS_OK; 
+        let mut attachment = true;
+        let mut color = true;
+        let mut image = true;
+        let mut position = true;
+        let mut repeat = true;
+        let attachment_style:@mut css_style;
+        let color_style:@mut css_style;
+        let image_style:@mut css_style;
+        let position_style:@mut css_style;
+        let repeat_style:@mut css_style;
+        let mut background_cleanup = false;
+
+        /* Firstly, handle inherit */
+        if *ctx >= vector.len() {
+            return CSS_INVALID   
+        }
+            
+        let mut token = &vector[*ctx];
+            
+        if css_properties::is_css_inherit(strings, token) {
+            css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_BACKGROUND_ATTACHMENT);
+            css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_BACKGROUND_COLOR);
+            css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_BACKGROUND_IMAGE);
+            css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_BACKGROUND_POSITION);
+            css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_BACKGROUND_REPEAT);
+            if *ctx >= vector.len() {
+                return CSS_INVALID   
+            }
+            token = &vector[*ctx];
+            *ctx +=1; //Iterate
+            return CSS_OK
+        } 
+
+        /* allocate styles */
+        attachment_style = sheet.css__stylesheet_style_create();
+        color_style = sheet.css__stylesheet_style_create();
+        image_style = sheet.css__stylesheet_style_create();
+        position_style = sheet.css__stylesheet_style_create();
+        repeat_style = sheet.css__stylesheet_style_create();
+
+        /* Attempt to parse the various longhand properties */
+        loop {
+            prev_ctx = *ctx;
+            
+            if (css_properties::is_css_inherit(strings, token)) {
+                error = CSS_INVALID;
+                background_cleanup = true;
+                break
+            }
+
+            /* Try each property parser in turn, but only if we
+             * haven't already got a value for this property.
+             */
+            
+            if attachment &&  match css_properties::css__parse_background_attachment(sheet, strings, vector, ctx, 
+                attachment_style) { CSS_OK => true, x =>{ error = x; false}} {
+                attachment = false
+            } 
+            else if color &&  match css_properties::css__parse_background_color(sheet, strings, vector, ctx,
+                color_style) { CSS_OK => true, x =>{ error = x; false}} {
+                color = false
+            } 
+            else if image &&  match css_properties::css__parse_background_image(sheet, strings, vector, ctx,
+                image_style) { CSS_OK => true, x =>{ error = x; false}} {
+                image = false
+            } 
+            else if position && match css_properties::css__parse_background_position(sheet, strings, vector, ctx,
+             position_style) { CSS_OK => true, x =>{ error = x; false}} {
+                position = false
+            } else if repeat && match css_properties::css__parse_background_repeat(sheet, strings, vector, ctx,
+             repeat_style){ CSS_OK => true, x => {error = x; false}} {
+                repeat = false
+            }
+
+            match error {
+                CSS_OK => {
+                    consumeWhitespace(vector, ctx);
+                    if *ctx >= vector.len() {
+                        error = CSS_INVALID;
+                        break   
+                    }
+                    token = &vector[*ctx];
+                    *ctx +=1; //Iterate
+                },
+                _ =>  break //Forcibly cause loop to exit
+            }
+
+            if *ctx == prev_ctx {
+                break
+            }
+        } 
+
+        if !background_cleanup{
+            if attachment {
+                css_stylesheet::css__stylesheet_style_appendOPV(attachment_style, CSS_PROP_BACKGROUND_ATTACHMENT, 0, 
+                    BACKGROUND_ATTACHMENT_SCROLL as u16); 
+            }
+
+            if color {
+                css_stylesheet::css__stylesheet_style_appendOPV(color_style, CSS_PROP_BACKGROUND_COLOR, 0, 
+                    BACKGROUND_COLOR_TRANSPARENT as u16);
+            }
+
+            if image {
+                css_stylesheet::css__stylesheet_style_appendOPV(image_style, CSS_PROP_BACKGROUND_IMAGE, 0, BACKGROUND_IMAGE_NONE as u16);
+            }
+
+            if position {
+                css_stylesheet::css__stylesheet_style_appendOPV(position_style, CSS_PROP_BACKGROUND_POSITION, 0, 
+                    BACKGROUND_POSITION_HORZ_LEFT as u16 |  BACKGROUND_POSITION_VERT_TOP as u16)
+            }
+
+            if repeat {
+                css_stylesheet::css__stylesheet_style_appendOPV(repeat_style, CSS_PROP_BACKGROUND_REPEAT, 0,
+                 BACKGROUND_REPEAT_REPEAT as u16) 
+            }   
+        
+            css_stylesheet::css__stylesheet_merge_style(result, attachment_style);
+            css_stylesheet::css__stylesheet_merge_style(result, color_style);
+            css_stylesheet::css__stylesheet_merge_style(result, image_style);
+            css_stylesheet::css__stylesheet_merge_style(result, position_style);
+            css_stylesheet::css__stylesheet_merge_style(result, repeat_style);
+        }
+        
+        match error { 
+            CSS_OK => return CSS_OK,
+            x => {
+                *ctx = orig_ctx ;
+                return x 
+            }
+
+         }
+    }
     fn css__parse_background_attachment(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
@@ -2368,162 +2519,3 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
         _ => { (0 , 0 , 0)}
     }
 }
-
-
-// ===========================================================================================================
-// CSS-Parse-Properties Background implementation/data-structs starts here 
-// ===========================================================================================================
-
-
-/**
- * Parse background
- *
- * \param sheet   Stylesheet 
- * \param vector  Vector of tokens to process
- * \param ctx     Pointer to vector iteration context
- * \return CSS_OK,result on success,location to receive resulting style 
- *     CSS_INVALID,None if the input is not valid
- *
- * Post condition: \a *ctx is updated with the next token to process
- *         If the input is invalid, then \a *ctx remains unchanged.
- */
-pub fn css__parse_background(sheet:@mut css_stylesheet, strings: &mut ~css_propstrings, vector:&~[~css_token],
- ctx:@mut uint) -> (css_result,Option<@mut css_style>) {
-    let orig_ctx = *ctx;
-    let mut prev_ctx;
-    let mut error = CSS_OK; 
-    let mut attachment = true;
-    let mut color = true;
-    let mut image = true;
-    let mut position = true;
-    let mut repeat = true;
-    let attachment_style:@mut css_style;
-    let color_style:@mut css_style;
-    let image_style:@mut css_style;
-    let position_style:@mut css_style;
-    let repeat_style:@mut css_style;
-    let result:@mut css_style = @mut css_style{bytecode:~[]};
-    let mut background_cleanup = false;
-
-    /* Firstly, handle inherit */
-    if *ctx >= vector.len() {
-        return (CSS_INVALID,None)   
-    }
-        
-    let mut token = &vector[*ctx];
-        
-    if css_properties::is_css_inherit(strings, token) {
-        css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_BACKGROUND_ATTACHMENT);
-        css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_BACKGROUND_COLOR);
-        css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_BACKGROUND_IMAGE);
-        css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_BACKGROUND_POSITION);
-        css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_BACKGROUND_REPEAT);
-        if *ctx >= vector.len() {
-            return (CSS_INVALID,None)   
-        }
-        token = &vector[*ctx];
-        *ctx +=1; //Iterate
-        return (CSS_OK, Some(result))
-    } 
-
-    /* allocate styles */
-    attachment_style = sheet.css__stylesheet_style_create();
-    color_style = sheet.css__stylesheet_style_create();
-    image_style = sheet.css__stylesheet_style_create();
-    position_style = sheet.css__stylesheet_style_create();
-    repeat_style = sheet.css__stylesheet_style_create();
-
-    /* Attempt to parse the various longhand properties */
-    loop {
-        prev_ctx = *ctx;
-        
-        if (css_properties::is_css_inherit(strings, token)) {
-            error = CSS_INVALID;
-            background_cleanup = true;
-            break
-        }
-
-        /* Try each property parser in turn, but only if we
-         * haven't already got a value for this property.
-         */
-        
-        if attachment &&  match css_properties::css__parse_background_attachment(sheet, strings, vector, ctx, 
-            attachment_style) { CSS_OK => true, x =>{ error = x; false}} {
-            attachment = false
-        } 
-        else if color &&  match css_properties::css__parse_background_color(sheet, strings, vector, ctx,
-            color_style) { CSS_OK => true, x =>{ error = x; false}} {
-            color = false
-        } 
-        else if image &&  match css_properties::css__parse_background_image(sheet, strings, vector, ctx,
-            image_style) { CSS_OK => true, x =>{ error = x; false}} {
-            image = false
-        } 
-        else if position && match css_properties::css__parse_background_position(sheet, strings, vector, ctx,
-         position_style) { CSS_OK => true, x =>{ error = x; false}} {
-            position = false
-        } else if repeat && match css_properties::css__parse_background_repeat(sheet, strings, vector, ctx,
-         repeat_style){ CSS_OK => true, x => {error = x; false}} {
-            repeat = false
-        }
-
-        match error {
-            CSS_OK => {
-                consumeWhitespace(vector, ctx);
-                if *ctx >= vector.len() {
-                    error = CSS_INVALID;
-                    break   
-                }
-                token = &vector[*ctx];
-                *ctx +=1; //Iterate
-            },
-            _ =>  break //Forcibly cause loop to exit
-        }
-
-        if *ctx == prev_ctx {
-            break
-        }
-    } 
-
-    if !background_cleanup{
-        if attachment {
-            css_stylesheet::css__stylesheet_style_appendOPV(attachment_style, CSS_PROP_BACKGROUND_ATTACHMENT, 0, 
-                BACKGROUND_ATTACHMENT_SCROLL as u16); 
-        }
-
-        if color {
-            css_stylesheet::css__stylesheet_style_appendOPV(color_style, CSS_PROP_BACKGROUND_COLOR, 0, 
-                BACKGROUND_COLOR_TRANSPARENT as u16);
-        }
-
-        if image {
-            css_stylesheet::css__stylesheet_style_appendOPV(image_style, CSS_PROP_BACKGROUND_IMAGE, 0, BACKGROUND_IMAGE_NONE as u16);
-        }
-
-        if position {
-            css_stylesheet::css__stylesheet_style_appendOPV(position_style, CSS_PROP_BACKGROUND_POSITION, 0, 
-                BACKGROUND_POSITION_HORZ_LEFT as u16 |  BACKGROUND_POSITION_VERT_TOP as u16)
-        }
-
-        if repeat {
-            css_stylesheet::css__stylesheet_style_appendOPV(repeat_style, CSS_PROP_BACKGROUND_REPEAT, 0,
-             BACKGROUND_REPEAT_REPEAT as u16) 
-        }   
-    
-        css_stylesheet::css__stylesheet_merge_style(result, attachment_style);
-        css_stylesheet::css__stylesheet_merge_style(result, color_style);
-        css_stylesheet::css__stylesheet_merge_style(result, image_style);
-        css_stylesheet::css__stylesheet_merge_style(result, position_style);
-        css_stylesheet::css__stylesheet_merge_style(result, repeat_style);
-    }
-    
-    match error { 
-        CSS_OK => return (CSS_OK,Some(result)),
-        x => {
-            *ctx = orig_ctx ;
-            return (x, None) 
-        }
-
-     }
-}
-
