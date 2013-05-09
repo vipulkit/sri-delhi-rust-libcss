@@ -8,6 +8,7 @@ fn main() {
     io::println(fmt!("libwapcaplet"));
 }
 
+
 fn init() -> lwc {
     let mut l = lwc{bucketVector: ~[]};
     for uint::range(0,4091) |_i| {

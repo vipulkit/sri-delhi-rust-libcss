@@ -1,4 +1,4 @@
-SRI_HOME = ../../
+SRI_HOME = ../../..
 LIBWAPCAPLET = $(SRI_HOME)/libwapcaplet
 
 PROJ = basictest
