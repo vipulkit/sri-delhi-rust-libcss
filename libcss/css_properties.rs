@@ -1035,6 +1035,77 @@ impl css_properties {
     }
 
     fn css__parse_font_weight(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        let orig_ctx:uint = *ctx;
+        let mut flags:u8 = 0;
+        let mut value:u16= 0;
+        let mut token:&~css_token;
+        let mut isMatchExexcuted = false;
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        token=&vector[*ctx];
+        *ctx += 1;
+        
+        match token.token_type {
+            CSS_TOKEN_IDENT(_)=>{
+                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
+                    flags |= FLAG_INHERIT;
+                    isMatchExexcuted = true;
+                }
+            },
+            CSS_TOKEN_NUMBER(_, _) =>{
+                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
+                    flags |= FLAG_INHERIT;
+                }
+                else {
+                    let mut (num,consumed): (int,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), true);
+                    if (consumed !=  lwc::lwc_string_length(token.idata.get_ref().clone())){
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                    }
+                    match css_int_to_fixed(num) {
+                        100 => value = FONT_WEIGHT_100 as u16,
+                        200 => value = FONT_WEIGHT_200 as u16,
+                        300 => value = FONT_WEIGHT_300 as u16,
+                        400 => value = FONT_WEIGHT_400 as u16,
+                        500 => value = FONT_WEIGHT_500 as u16,
+                        600 => value = FONT_WEIGHT_600 as u16,
+                        700 => value = FONT_WEIGHT_700 as u16,
+                        800 => value = FONT_WEIGHT_800 as u16,
+                        900 => value = FONT_WEIGHT_900 as u16,
+                        _=>{
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                    }
+                }
+                isMatchExexcuted = true;
+            },
+            _=>{
+                *ctx = orig_ctx;
+                return CSS_INVALID;
+            }
+        }
+        if(!isMatchExexcuted ) {
+            if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NORMAL as uint) {
+                value = FONT_WEIGHT_NORMAL as u16;
+            }
+            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BOLD as uint) {
+                value = FONT_WEIGHT_BOLD as u16;
+            }
+            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BOLDER as uint) {
+                value = FONT_WEIGHT_BOLDER as u16;
+            }
+            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LIGHTER as uint) {
+                value = FONT_WEIGHT_LIGHTER as u16;
+            }
+            else  {
+                *ctx = orig_ctx;
+                return CSS_INVALID;
+            }
+        }
+        css_stylesheet::css__stylesheet_style_appendOPV(style,  CSS_PROP_FONT_WEIGHT,flags, value);
         CSS_OK
     }
 
@@ -1237,6 +1308,46 @@ impl css_properties {
     }
 
     fn css__parse_opacity(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        let orig_ctx:uint = *ctx;
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+
+        let mut token:&~css_token;
+        token=&vector[*ctx];
+        *ctx += 1;
+        
+        match token.token_type {
+            CSS_TOKEN_IDENT(_)=>{
+                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
+                    css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_OPACITY);
+                }
+            },
+            CSS_TOKEN_NUMBER(_,_)=>{
+                    let mut (num,consumed): (int,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), false);
+                    /* Invalid if there are trailing characters */
+                    if (consumed !=  lwc::lwc_string_length(token.idata.get_ref().clone())){
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                    }
+
+                    // /* Clamp to range [0,1] */
+                    if num < 0 {
+                        num = 0;
+                    }
+                    if num as i32 > css_int_to_fixed(1) {
+                        num = css_int_to_fixed(1) as int;
+                    }
+
+                    css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_OPACITY, 0, OPACITY_SET as u16);
+                    css_stylesheet::css__stylesheet_style_append(style, num as u32);
+            },
+            _=>{
+                *ctx = orig_ctx;
+                return CSS_INVALID;
+            }
+        }
         CSS_OK
     }
 
