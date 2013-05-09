@@ -357,7 +357,7 @@ impl css_properties {
 			}
 		} 
 		else{
-			let (length_val , unit_val , result) = css_properties::css__parse_unit_specifier(sheet , vector, ctx, CSS_UNIT_DEG as u32);
+			let (length_val , unit_val , result) = css_properties::css__parse_unit_specifier(sheet , vector, ctx, UNIT_DEG as u32);
 			return_length_val = length_val;
 			return_unit_val = unit_val;
 			match result {
@@ -371,19 +371,19 @@ impl css_properties {
 				*ctx = orig_context;
 				return CSS_INVALID;
 			}
-			if (unit_val.unwrap() == CSS_UNIT_DEG as u32) {
+			if (unit_val.unwrap() == UNIT_DEG as u32) {
 				if ((length_val.unwrap() < -F_400) || (length_val.unwrap() > F_360)) {
 					*ctx = orig_context;
 					return CSS_INVALID;
 				}
 			}
-			else if (unit_val.unwrap() == CSS_UNIT_GRAD as u32) {
+			else if (unit_val.unwrap() == UNIT_GRAD as u32) {
 				if ((length_val.unwrap() < -F_400) || (length_val.unwrap() > F_400)) {
 					*ctx = orig_context;
 					return CSS_INVALID;
 				}
 			} 
-			else if (unit_val.unwrap() == CSS_UNIT_RAD as u32) {
+			else if (unit_val.unwrap() == UNIT_RAD as u32) {
 				if ((length_val.unwrap() < -F_2PI) || (length_val.unwrap() > F_2PI)) {
 					*ctx = orig_context;
 					return CSS_INVALID;
@@ -476,9 +476,9 @@ impl css_properties {
 				*context = orig_ctx;
 				return CSS_INVALID;
 			}
-			let (side_val,side_color , css_result) = css_properties::css__parse_color_specifier(sheet , strings , vector , context);
+			let (side_val,side_color , result) = css_properties::css__parse_color_specifier(sheet , strings , vector , context);
 
-			match css_result {
+			match result {
 				CSS_OK => {
 					side_count += 1;
 					consumeWhitespace(vector , context);
@@ -658,6 +658,125 @@ impl css_properties {
 	}
 
 	fn css__parse_clip(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+		let orig_ctx = *context;
+		let mut token: &~css_token;
+		let mut num_lengths: int = 0;
+		let mut length: ~[i32] = ~[];
+		let mut unit: ~[u32] = ~[]; 
+
+		if *context >= vector.len() {
+			return CSS_INVALID;
+		}
+		
+		token=&vector[*context];
+		*context = *context + 1;
+
+		match token.token_type {
+			CSS_TOKEN_IDENT(_) => {
+				if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint) {
+					css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_CLIP , FLAG_INHERIT as u8 , 0);
+				}
+				else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
+					css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_CLIP , 0 , CLIP_AUTO as u16);
+				}
+			},
+			CSS_TOKEN_FUNCTION(_) => {
+				if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , RECT as uint) {
+					let mut i: int = 0;
+					let mut value: u16 = CLIP_SHAPE_RECT as u16;
+
+					while i < 4 {
+						consumeWhitespace(vector , context);
+
+						if *context >= vector.len() {
+							*context = orig_ctx;
+							return CSS_INVALID;
+						}
+
+						token=&vector[*context];
+
+						match token.token_type {
+							CSS_TOKEN_IDENT(_) => {
+								if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
+									value |= 1 << (i+3);
+								}
+								else {
+									*context = orig_ctx;
+									return CSS_INVALID;
+								}
+								*context = *context + 1;
+							}
+							_ => {
+								let (length_val , unit_val , result) = css_properties::css__parse_unit_specifier(sheet , vector, context, UNIT_PX as u32);
+								
+								match result {
+									CSS_OK => {},
+									_ => {
+										*context = orig_ctx;
+										return result;
+									}
+								}
+								length.push(length_val.unwrap() as i32);
+								unit.push(unit_val.unwrap());
+								if (unit[num_lengths] & (UNIT_ANGLE as u32)) > 0 {
+									*context = orig_ctx;
+									return CSS_INVALID;
+								}
+								if (unit[num_lengths] & (UNIT_TIME as u32)) > 0{
+									*context = orig_ctx;
+									return CSS_INVALID;
+								}
+								if (unit[num_lengths] & (UNIT_FREQ as u32)) > 0{
+									*context = orig_ctx;
+									return CSS_INVALID;
+								}
+								if (unit[num_lengths] & (UNIT_PCT as u32)) > 0{
+									*context = orig_ctx;
+									return CSS_INVALID;
+								}
+								num_lengths += 1;
+							}
+									
+						}
+						consumeWhitespace(vector , context);
+						if i<3 {
+							if *context >= vector.len() {
+								*context = orig_ctx;
+								return CSS_INVALID;
+							}
+							token=&vector[*context];
+							if tokenIsChar(token , ',') {
+								*context = *context + 1;
+							}
+						}
+						i += 1;
+					}
+					consumeWhitespace(vector , context);
+					if *context >= vector.len() {
+						*context = orig_ctx;
+						return CSS_INVALID;
+					}
+					token=&vector[*context];
+					*context = *context + 1;
+
+					if (tokenIsChar(token , ')') == false) {
+						*context = orig_ctx;
+						return CSS_INVALID;
+					}
+					css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_CLIP , 0 , value);
+
+					while i < num_lengths {
+						css_stylesheet::css__stylesheet_style_vappend(style , unit);
+						num_lengths += 1;
+					}
+				}
+			},
+			_ => {
+				*context = orig_ctx;
+				return CSS_INVALID;
+			}
+		}
+
 		CSS_OK
 	}
 
@@ -1084,6 +1203,89 @@ impl css_properties {
 	}
 
 	fn css__parse_text_decoration(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+		let mut orig_context:uint= *context;
+		let mut result:css_result= CSS_INVALID;
+		let mut token: &~css_token;
+
+		if *context >= vector.len() {
+			return CSS_INVALID;
+		}
+		token=&vector[*context];
+		*context += 1;
+
+		match token.token_type {
+			CSS_TOKEN_IDENT(_) => {
+				if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
+					css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_TEXT_DECORATION);
+				}
+				else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NONE as uint)  {
+					css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_TEXT_DECORATION, 0, TEXT_DECORATION_NONE as u16);
+				}
+				else {
+					let mut value: u16 = 0 ;
+					while (*context < vector.len()) {
+						if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), UNDERLINE as uint) {
+							if ((value & TEXT_DECORATION_UNDERLINE as u16) == 0) {
+								value |= TEXT_DECORATION_UNDERLINE as u16;
+							}
+							
+							else {
+								*context = orig_context;
+								return CSS_INVALID;
+							}
+						}
+						else if  strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), OVERLINE as uint) {
+						    if ((value & TEXT_DECORATION_OVERLINE as u16) == 0) {
+								value |= TEXT_DECORATION_OVERLINE as u16;
+							}
+							else {
+								*context = orig_context;
+								return CSS_INVALID;
+							}
+						}
+						else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LINE_THROUGH as uint) {
+							if ((value & TEXT_DECORATION_LINE_THROUGH as u16) == 0) {
+								value |= TEXT_DECORATION_LINE_THROUGH as u16;
+							}
+							else {
+								*context = orig_context;
+								return CSS_INVALID;
+
+							}
+						}
+						else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BLINK as uint) {
+							if ((value & (TEXT_DECORATION_BLINK as u16)) == 0) {
+								value |= TEXT_DECORATION_BLINK as u16;
+							}
+							else {
+								*context = orig_context;
+								return CSS_INVALID;
+							}
+						}
+						else {
+							*context = orig_context;
+							return CSS_INVALID;
+						}
+						consumeWhitespace(vector, context);
+						token=&vector[*context];
+						*context += 1;
+						match (token.token_type) {
+							CSS_TOKEN_IDENT(_) => {
+
+							},
+							_=> {
+								break;
+							}
+						}
+						css_stylesheet::css__stylesheet_style_appendOPV(style,	CSS_PROP_TEXT_DECORATION, 0, value);
+					}
+				}
+			},
+			_=> {
+		 		*context = orig_context;
+				return CSS_INVALID;
+			}
+		}
 		CSS_OK
 	}
 
@@ -1765,7 +1967,7 @@ impl css_properties {
 				if lwc::lwc_string_length(token.idata.get_ref().clone()) != consumed_index {
 					return (None , None , CSS_INVALID);
 				}
-				unit_retVal = CSS_UNIT_PCT as u32;
+				unit_retVal = UNIT_PCT as u32;
 			}
 		}
 		return(Some(num) , Some(unit_retVal) , CSS_OK);
@@ -1822,22 +2024,22 @@ impl css_properties {
 	// }
 }
 
-pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<css_unit>,css_result) {
-	let mut unit: css_unit = CSS_UNIT_GRAD;
+pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<unit>,css_result) {
+	let mut unit: unit = UNIT_GRAD;
 	let len:uint= ptr.len() - index;
 	match(len) {
 		4=>if eq(&(ptr.to_lower()),&~"grad") {
-              unit= CSS_UNIT_GRAD;    
+              unit= UNIT_GRAD;    
 			},
 		3=>{
 			if eq(&(ptr.to_lower()),&~"KHz") {
-            	unit= CSS_UNIT_KHZ;    
+            	unit= UNIT_KHZ;    
 			}
 			else if eq(&(ptr.to_lower()),&~"deg") {
-            	unit= CSS_UNIT_DEG;    
+            	unit= UNIT_DEG;    
 			}
 			else if eq(&(ptr.to_lower()),&~"rad") {
-            	unit= CSS_UNIT_RAD;    
+            	unit= UNIT_RAD;    
 			}
 			else {
 				return (None,CSS_INVALID);
@@ -1845,34 +2047,34 @@ pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<css_unit>,css_r
 		},
 		2=>{
 			if eq(&(ptr.to_lower()),&~"Hz") {
-            	unit= CSS_UNIT_HZ;    
+            	unit= UNIT_HZ;    
 			}
 			else if eq(&(ptr.to_lower()),&~"ms") {
-            	unit= CSS_UNIT_MS;    
+            	unit= UNIT_MS;    
 			}
 			else if eq(&(ptr.to_lower()),&~"px") {
-            	unit= CSS_UNIT_PX;    
+            	unit= UNIT_PX;    
 			}
 			else if eq(&(ptr.to_lower()),&~"ex") {
-            	unit= CSS_UNIT_EX;    
+            	unit= UNIT_EX;    
 			}
 			else if eq(&(ptr.to_lower()),&~"em") {
-            	unit= CSS_UNIT_EM;    
+            	unit= UNIT_EM;    
 			}
 			else if eq(&(ptr.to_lower()),&~"in") {
-            	unit= CSS_UNIT_IN;    
+            	unit= UNIT_IN;    
 			}
 			else if eq(&(ptr.to_lower()),&~"cm") {
-            	unit= CSS_UNIT_CM;    
+            	unit= UNIT_CM;    
 			}
 			else if eq(&(ptr.to_lower()),&~"mm") {
-            	unit= CSS_UNIT_MM;    
+            	unit= UNIT_MM;    
 			}
 			else if eq(&(ptr.to_lower()),&~"pt") {
-            	unit= CSS_UNIT_PT;    
+            	unit= UNIT_PT;    
 			}
 			else if eq(&(ptr.to_lower()),&~"pc") {
-            	unit= CSS_UNIT_PC;    
+            	unit= UNIT_PC;    
 			}
 			else {
 				return (None,CSS_INVALID);
@@ -1880,7 +2082,7 @@ pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<css_unit>,css_r
 		},
 		1=>{
 			if eq(&(ptr.to_lower()),&~"s") {
-            	unit= CSS_UNIT_S;    
+            	unit= UNIT_S;    
 			}
 			else {
 				return (None,CSS_INVALID);

@@ -3,6 +3,61 @@
 
 
 
+pub enum css_unit {
+	CSS_UNIT_PX                 = 0x0,
+	CSS_UNIT_EX                 = 0x1,
+	CSS_UNIT_EM                 = 0x2,
+	CSS_UNIT_IN                 = 0x3,
+	CSS_UNIT_CM                 = 0x4,
+	CSS_UNIT_MM                 = 0x5,
+	CSS_UNIT_PT                 = 0x6,
+	CSS_UNIT_PC                 = 0x7,
+
+	CSS_UNIT_PCT                = 0x8,	/* Percentage */
+
+	CSS_UNIT_DEG                = 0x9,
+	CSS_UNIT_GRAD               = 0xa,
+	CSS_UNIT_RAD                = 0xb,
+
+	CSS_UNIT_MS                 = 0xc,
+	CSS_UNIT_S                  = 0xd,
+
+	CSS_UNIT_HZ                 = 0xe,
+	CSS_UNIT_KHZ                = 0xf
+}
+
+
+pub enum unit {
+	UNIT_PX   = 0,
+	UNIT_EX   = 1,
+	UNIT_EM   = 2,
+	UNIT_IN   = 3,
+	UNIT_CM   = 4,
+	UNIT_MM   = 5,
+	UNIT_PT   = 6,
+	UNIT_PC   = 7,
+
+	UNIT_PCT  = (1 << 8),
+
+	// UNIT_ANGLE = (1 << 9),
+	UNIT_DEG  = (1 << 9) + 0,
+	UNIT_GRAD = (1 << 9) + 1,
+	UNIT_RAD  = (1 << 9) + 2,
+
+	// UNIT_TIME = (1 << 10),
+	UNIT_MS   = (1 << 10) + 0,
+	UNIT_S    = (1 << 10) + 1,
+
+	// UNIT_FREQ = (1 << 11),
+	UNIT_HZ   = (1 << 11) + 0,
+	UNIT_KHZ  = (1 << 11) + 1
+}
+
+static   UNIT_ANGLE :  unit = UNIT_DEG ;	//< Default level >
+static   UNIT_TIME  :  unit = UNIT_MS  ;	//< Default level >
+static   UNIT_FREQ  :  unit = UNIT_HZ  ;	//< Default level >
+
+
 // errors.h 
 pub enum css_result {
 	CSS_OK  ,
@@ -75,35 +130,6 @@ pub enum css_origin {
 
 /** CSS colour -- AARRGGBB */
 pub type css_color = u32;
-
-/* CSS unit */
-pub enum css_unit {
-	CSS_UNIT_PX                 = 0x0,
-	CSS_UNIT_EX                 = 0x1,
-	CSS_UNIT_EM                 = 0x2,
-	CSS_UNIT_IN                 = 0x3,
-	CSS_UNIT_CM                 = 0x4,
-	CSS_UNIT_MM                 = 0x5,
-	CSS_UNIT_PT                 = 0x6,
-	CSS_UNIT_PC                 = 0x7,
-
-	CSS_UNIT_PCT                = 0x8,	/* Percentage */
-
-	CSS_UNIT_DEG                = 0x9,
-	CSS_UNIT_GRAD               = 0xa,
-	CSS_UNIT_RAD                = 0xb,
-
-	CSS_UNIT_MS                 = 0xc,
-	CSS_UNIT_S                  = 0xd,
-
-	CSS_UNIT_HZ                 = 0xe,
-	CSS_UNIT_KHZ                = 0xf
-}
-
-
-static   UNIT_ANGLE :  css_unit = CSS_UNIT_DEG ;	//< Default level >
-static   UNIT_TIME  :  css_unit = CSS_UNIT_MS  ;	//< Default level >
-static   UNIT_FREQ  :  css_unit = CSS_UNIT_HZ  ;	//< Default level >
 
 pub enum css_stylesheet_params_version {
 	CSS_STYLESHEET_PARAMS_VERSION_1 = 1
@@ -1539,12 +1565,11 @@ pub enum op_text_align {
 
 pub enum op_text_decoration {
 	TEXT_DECORATION_NONE		= 0x0000,
-
 	TEXT_DECORATION_BLINK		= (1<<3),
 	TEXT_DECORATION_LINE_THROUGH	= (1<<2),
 	TEXT_DECORATION_OVERLINE	= (1<<1),
 	TEXT_DECORATION_UNDERLINE	= (1<<0)
-} 
+}
 
 pub enum op_text_indent {
 	TEXT_INDENT_SET			= 0x0080
