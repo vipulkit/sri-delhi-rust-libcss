@@ -462,10 +462,10 @@ fn css_stylesheet_rule_functionalities_test(css_stylesheet_instance : @mut css_s
 	let retVal = css_stylesheet_instance.css_stylesheet_rule_create(CSS_RULE_SELECTOR);
 	match(retVal){
 		RULE_SELECTOR(x)    => {
-			match(css_stylesheet::css__stylesheet_rule_add_selector(retVal, css_selector_instance)){
-				CSS_OK   =>  test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_rule_add_selector", ~"CSS_RULE_SELECTOR", ~"CSS_OK", ~"CSS_OK", ~""),							
-					 _   =>  test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_rule_add_selector", ~"CSS_RULE_SELECTOR", ~"CSS_OK", ~"Non CSS_OK", ~"")							
-			}
+			// match(css_stylesheet::css__stylesheet_rule_add_selector(retVal, css_selector_instance)){
+			// 	CSS_OK   =>  test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_rule_add_selector", ~"CSS_RULE_SELECTOR", ~"CSS_OK", ~"CSS_OK", ~""),							
+			// 		 _   =>  test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_rule_add_selector", ~"CSS_RULE_SELECTOR", ~"CSS_OK", ~"Non CSS_OK", ~"")							
+			// }
 			
 			match(css_stylesheet_instance.css__stylesheet_rule_append_style(retVal, css_style_instance)){
 				CSS_BADPARM   =>  test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_rule_append_style", ~"CSS_RULE_SELECTOR" , ~"Non CSS_BADPARM", ~"CSS_BADPARM", ~""),							
@@ -628,18 +628,18 @@ fn css_stylesheet_rule_functionalities_test(css_stylesheet_instance : @mut css_s
 					_    =>  test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_add_rule", ~"CSS_RULE_MEDIA", ~"CSS_OK", ~"Non CSS_OK", ~"")
 			}
 			
-			match(css_stylesheet::css__stylesheet_add_rule(css_stylesheet_instance, retVal, Some(retVal))){
-				CSS_OK   =>  test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_add_rule", ~"CSS_RULE_MEDIA", ~"CSS_OK", ~"CSS_OK", ~""),							
-					_    =>  test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_add_rule", ~"CSS_RULE_MEDIA", ~"CSS_OK", ~"Non CSS_OK", ~"")
-			}
+			// match(css_stylesheet::css__stylesheet_add_rule(css_stylesheet_instance, retVal, Some(retVal))){
+			// 	CSS_OK   =>  test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_add_rule", ~"CSS_RULE_MEDIA", ~"CSS_OK", ~"CSS_OK", ~""),							
+			// 		_    =>  test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_add_rule", ~"CSS_RULE_MEDIA", ~"CSS_OK", ~"Non CSS_OK", ~"")
+			// }
 			
 			// Isn't it crashing
 			// Commented, so that, it won't affect the execution flow
-			/*									
+									
 			match(css_stylesheet::css__stylesheet_remove_rule(css_stylesheet_instance, retVal)){
 				CSS_OK   =>  test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_remove_rule", ~"CSS_RULE_MEDIA", ~"CSS_OK", ~"CSS_OK", ~"_remove_rule after _add_rule"),							
 					_    =>  test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_remove_rule", ~"CSS_RULE_MEDIA", ~"CSS_OK", ~"Non CSS_OK", ~"_remove_rule after _add_rule")
-			}*/
+			}
 
 			// _add_selectors and _remove_selectors
 			match(css_stylesheet_instance._add_selectors(retVal)){
