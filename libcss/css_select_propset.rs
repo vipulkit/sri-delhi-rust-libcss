@@ -701,15 +701,73 @@ pub fn set_empty_cells(style:@mut css_computed_style,
 	style.bits[CSS_EMPTY_CELLS_INDEX] = bits ;
 }
 
+pub fn set_float(style:@mut css_computed_style,
+					ftype:u8) {
 
+	let mut bits = style.bits[CSS_FLOAT_INDEX];
+	let mask_complement = (CSS_FLOAT_MASK as u8) ^ 0xff ;
+	bits = ( bits & mask_complement ) |
+			( (ftype & 0x3)  << CSS_FLOAT_SHIFT);
+	style.bits[CSS_FLOAT_INDEX] = bits ;
+}
 
+pub fn set_font_style(style:@mut css_computed_style,
+					ftype:u8) {
 
+	let mut bits = style.bits[CSS_FONT_STYLE_INDEX];
+	let mask_complement = (CSS_FONT_STYLE_MASK as u8) ^ 0xff ;
+	bits = ( bits & mask_complement ) |
+			( (ftype & 0x3)  << CSS_FONT_STYLE_SHIFT);
+	style.bits[CSS_FONT_STYLE_INDEX] = bits ;
+}
 
+pub fn set_min_height(style:@mut css_computed_style,
+					ftype:u8,
+					length:i32,
+					unit:css_unit) {
 
+	let mut bits = style.bits[CSS_MIN_HEIGHT_INDEX];
+	let mask_complement = (CSS_MIN_HEIGHT_MASK as u8) ^ 0xff ;
+	bits = ( bits & mask_complement ) |
+			( ( (ftype & 0x1)|((unit as u8) << 1) )  << CSS_MIN_HEIGHT_SHIFT);
+	style.bits[CSS_MIN_HEIGHT_INDEX] = bits ;
 
+	style.min_height = length;
+}
 
+pub fn set_min_width(style:@mut css_computed_style,
+					ftype:u8,
+					length:i32,
+					unit:css_unit) {
 
+	let mut bits = style.bits[CSS_MIN_WIDTH_INDEX];
+	let mask_complement = (CSS_MIN_WIDTH_MASK as u8) ^ 0xff ;
+	bits = ( bits & mask_complement ) |
+			( ( (ftype & 0x1)|((unit as u8) << 1) )  << CSS_MIN_WIDTH_SHIFT);
+	style.bits[CSS_MIN_WIDTH_INDEX] = bits ;
 
+	style.min_width = length;
+}
+
+pub fn set_background_repeat(style:@mut css_computed_style,
+							ftype:u8) {
+
+	let mut bits = style.bits[CSS_BACKGROUND_REPEAT_INDEX];
+	let mask_complement = (CSS_BACKGROUND_REPEAT_MASK as u8) ^ 0xff ;
+	bits = ( bits & mask_complement ) |
+			( (ftype & 0x7)  << CSS_BACKGROUND_REPEAT_SHIFT);
+	style.bits[CSS_BACKGROUND_REPEAT_INDEX] = bits ;
+}
+
+pub fn set_clear(style:@mut css_computed_style,
+							ftype:u8) {
+
+	let mut bits = style.bits[CSS_CLEAR_INDEX];
+	let mask_complement = (CSS_CLEAR_MASK as u8) ^ 0xff ;
+	bits = ( bits & mask_complement ) |
+			( (ftype & 0x7)  << CSS_CLEAR_SHIFT);
+	style.bits[CSS_CLEAR_INDEX] = bits ;
+}
 
 
 

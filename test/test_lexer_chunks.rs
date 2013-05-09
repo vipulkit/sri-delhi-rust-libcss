@@ -70,7 +70,7 @@ fn main() {
                 LEXER_NEEDDATA => {
                     if tokOpt.is_some() {
                         tok= tokOpt.unwrap();
-                               
+                          test_logger.info( ~"test_lexer_chunks.rs" , copy external_argument, ~"lexer",~"css_lexer.rs"  , ~"get_token", ~"file read in chunks" ,~"token should be read", ~"NEED TOKEN"+fmt!("token read is %?",tok )) ;      
                     }
                     break
                 },
