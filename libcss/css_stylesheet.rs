@@ -938,6 +938,15 @@ impl css_selector_hash {
 				let mut prev = index_element ;
 				let mut first_pos : bool = true ;
 				loop {
+
+					if (mut_ptr_eq(selector,search.selector) == true ) {
+						// duplicate insert of same pointer css_selector should never occur,
+						// added , due to logical incompatibilty with "_remove_into_chain"
+						// in origical code , _remove_into_chain removes by comparing pointer values,
+						// and freeing the final result , by doing reallocation of 0 bytes ( line num : 650-671 , hash.c)
+						return CSS_SHOULD_NEVER_OCCUR;
+					}
+
 					if search.selector.specificity> selector.specificity {
 						break ;
 					}

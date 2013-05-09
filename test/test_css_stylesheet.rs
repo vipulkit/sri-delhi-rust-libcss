@@ -3,10 +3,12 @@ extern mod std;
 extern mod css_stylesheet;
 extern mod css_enum;
 extern mod test;
+extern mod wapcaplet;
 
 use css_stylesheet::*;
 use css_enum::*;
 use test::*;
+use wapcaplet::*;
 
 
 fn main() {		
@@ -75,8 +77,8 @@ fn css__selector_hash_functionalities_test_2(css_selector_instance : @mut css_se
 
 	// Without inserting a selector trying to remove function
 	match(css_selector_hash_instance.css__selector_hash_remove(css_selector_instance)){
-		CSS_OK	=>	test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_remove", ~"", ~"CSS_OK", ~"CSS_OK",  ~"Without inserting a selector trying to remove"),
-		   _    =>  test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_remove", ~"", ~"CSS_OK", ~"None CSS_OK", ~"Without inserting a selector trying to remove ")
+		CSS_OK	=>	test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_remove", ~"", ~"Non CSS_OK", ~"CSS_OK",  ~"Without inserting a selector trying to remove"),
+		   _    =>  test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_remove", ~"", ~"Non CSS_OK", ~"None CSS_OK", ~"Without inserting a selector trying to remove ")
 	}
 
 	// inserting a selector
@@ -110,8 +112,8 @@ fn css__selector_hash_functionalities_test_2(css_selector_instance : @mut css_se
 	}
 
 	match(css_selector_hash_instance.css__selector_hash_remove(css_selector_instance)){
-		CSS_OK	=>	test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_remove", ~"", ~"CSS_OK", ~"CSS_OK", ~"Removing previously inserted data"),
-		   _    =>  test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_remove", ~"", ~"CSS_OK", ~"Non CSS_OK", ~"Removing previously inserted data")
+		CSS_OK	=>	test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_remove", ~"", ~"Non CSS_OK", ~"CSS_OK", ~"Removing previously removed data"),
+		   _    =>  test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__selector_hash_remove", ~"", ~"Non CSS_OK", ~"Non CSS_OK", ~"Removing previously removed data")
 	}
 }
 
