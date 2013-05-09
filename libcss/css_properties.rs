@@ -26,7 +26,7 @@ pub struct css_token {
     // line: u32
 }
 
-pub type handle =  @extern fn(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style) ->css_result;
+pub type handle =  @extern fn(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style) ->css_result;
 
 pub struct css_properties {
     property_handlers: ~[handle],
@@ -176,7 +176,7 @@ impl css_properties {
     }
 
     fn css__parse_azimuth(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
-        let orig_context:uint = *ctx;
+        let orig_ctx:uint = *ctx;
         let mut flags:u8 = 0;
         let mut  value:u16 = 0;
         let mut unit:u32 = 0;
@@ -290,7 +290,7 @@ impl css_properties {
                 value = AZIMUTH_BEHIND;
             }
             else {
-                *ctx = orig_context;
+                *ctx = orig_ctx;
                 return CSS_INVALID;
             }
             token=&vector[*ctx];
@@ -329,7 +329,7 @@ impl css_properties {
                     value |= AZIMUTH_RIGHT_SIDE;
                 }
                 else {
-                *ctx = orig_context;
+                *ctx = orig_ctx;
                 return CSS_INVALID;
                 }
             }
@@ -343,7 +343,7 @@ impl css_properties {
                     value |= AZIMUTH_BEHIND;
                 }
                 else {
-                    *ctx = orig_context;
+                    *ctx = orig_ctx;
                     return CSS_INVALID;
                 }
             } 
@@ -363,29 +363,29 @@ impl css_properties {
             match result {
                 CSS_OK => {},
                 _ => {
-                    *ctx = orig_context;
+                    *ctx = orig_ctx;
                     return result;
                 }
             }
             if (unit_val.unwrap() & UNIT_ANGLE as u32) == 0 {
-                *ctx = orig_context;
+                *ctx = orig_ctx;
                 return CSS_INVALID;
             }
             if (unit_val.unwrap() == UNIT_DEG as u32) {
                 if ((length_val.unwrap() < -F_400) || (length_val.unwrap() > F_360)) {
-                    *ctx = orig_context;
+                    *ctx = orig_ctx;
                     return CSS_INVALID;
                 }
             }
             else if (unit_val.unwrap() == UNIT_GRAD as u32) {
                 if ((length_val.unwrap() < -F_400) || (length_val.unwrap() > F_400)) {
-                    *ctx = orig_context;
+                    *ctx = orig_ctx;
                     return CSS_INVALID;
                 }
             } 
             else if (unit_val.unwrap() == UNIT_RAD as u32) {
                 if ((length_val.unwrap() < -F_2PI) || (length_val.unwrap() > F_2PI)) {
-                    *ctx = orig_context;
+                    *ctx = orig_ctx;
                     return CSS_INVALID;
                 }
             }
@@ -405,7 +405,7 @@ impl css_properties {
     *
     * \param sheet   Stylesheet 
     * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration context
+    * \param ctx     Pointer to vector iteration ctx
     * \return CSS_OK on success, 
     *     CSS_INVALID if the input is not valid
     * Post condition: \a *ctx is updated with the next token to process
@@ -547,85 +547,85 @@ impl css_properties {
             }
         }
     }
-    fn css__parse_background_attachment(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_background_attachment(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_background_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_background_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_background_image(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_background_image(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_background_position(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_background_position(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_background_repeat(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_background_repeat(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_bottom(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_bottom(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_bottom_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_bottom_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_bottom_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_bottom_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_bottom_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_bottom_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_collapse(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_collapse(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
-        let orig_ctx = *context;
+    fn css__parse_border_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        let orig_ctx = *ctx;
         let mut prev_ctx: uint;
         let mut token: &~css_token;
         let mut side_count: u32 = 0;
 
-        if *context >= vector.len() {
+        if *ctx >= vector.len() {
             return CSS_INVALID;
         }
         
-        token=&vector[*context];
+        token=&vector[*ctx];
 
         if css_properties::is_css_inherit(strings , token) {
             css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_BORDER_TOP_COLOR);
             css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_BORDER_RIGHT_COLOR);
             css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_BORDER_BOTTOM_COLOR);
             css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_BORDER_LEFT_COLOR);
-            *context = *context + 1;
+            *ctx = *ctx + 1;
         }
 
-        prev_ctx = *context;
+        prev_ctx = *ctx;
         let mut side_val_vec: ~[u16] = ~[]; 
         let mut side_color_vec: ~[u32] = ~[];
-        while  ((*context != prev_ctx) && (side_count < 4)) {
+        while  ((*ctx != prev_ctx) && (side_count < 4)) {
             if css_properties::is_css_inherit(strings , token) {
-                *context = orig_ctx;
+                *ctx = orig_ctx;
                 return CSS_INVALID;
             }
-            let (side_val,side_color , result) = css_properties::css__parse_color_specifier(sheet , strings , vector , context);
+            let (side_val,side_color , result) = css_properties::css__parse_color_specifier(sheet , strings , vector , ctx);
 
             match result {
                 CSS_OK => {
                     side_count += 1;
-                    consumeWhitespace(vector , context);
-                    token=&vector[*context];
+                    consumeWhitespace(vector , ctx);
+                    token=&vector[*ctx];
                     side_val_vec.push(side_val.unwrap());
                     side_color_vec.push(side_color.unwrap());
                 },
@@ -709,110 +709,110 @@ impl css_properties {
                 }
             },
             _ => {
-                *context = orig_ctx;
+                *ctx = orig_ctx;
                 return CSS_INVALID;
             }
         }
         CSS_OK
     }
 
-    fn css__parse_border_left(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_left(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_left_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_left_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_left_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_left_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_left_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_left_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_right(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_right(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_right_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_right_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_right_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_right_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_right_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_right_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_spacing(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_spacing(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_top(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_top(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_top_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_top_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_top_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_top_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_top_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_top_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_border_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_border_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_bottom(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_bottom(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_break_after(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_break_after(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_break_before(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_break_before(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_break_inside(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_break_inside(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_caption_side(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_caption_side(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_clear(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_clear(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_clip(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
-        let orig_ctx = *context;
+    fn css__parse_clip(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        let orig_ctx = *ctx;
         let mut token: &~css_token;
         let mut num_lengths: int = 0;
         let mut length: ~[i32] = ~[];
         let mut unit: ~[u32] = ~[]; 
 
-        if *context >= vector.len() {
+        if *ctx >= vector.len() {
             return CSS_INVALID;
         }
         
-        token=&vector[*context];
-        *context = *context + 1;
+        token=&vector[*ctx];
+        *ctx = *ctx + 1;
 
         match token.token_type {
             CSS_TOKEN_IDENT(_) => {
@@ -829,14 +829,14 @@ impl css_properties {
                     let mut value: u16 = CLIP_SHAPE_RECT as u16;
 
                     while i < 4 {
-                        consumeWhitespace(vector , context);
+                        consumeWhitespace(vector , ctx);
 
-                        if *context >= vector.len() {
-                            *context = orig_ctx;
+                        if *ctx >= vector.len() {
+                            *ctx = orig_ctx;
                             return CSS_INVALID;
                         }
 
-                        token=&vector[*context];
+                        token=&vector[*ctx];
 
                         match token.token_type {
                             CSS_TOKEN_IDENT(_) => {
@@ -844,66 +844,66 @@ impl css_properties {
                                     value |= 1 << (i+3);
                                 }
                                 else {
-                                    *context = orig_ctx;
+                                    *ctx = orig_ctx;
                                     return CSS_INVALID;
                                 }
-                                *context = *context + 1;
+                                *ctx = *ctx + 1;
                             }
                             _ => {
-                                let (length_val , unit_val , result) = css_properties::css__parse_unit_specifier(sheet , vector, context, UNIT_PX as u32);
+                                let (length_val , unit_val , result) = css_properties::css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
                                 
                                 match result {
                                     CSS_OK => {},
                                     _ => {
-                                        *context = orig_ctx;
+                                        *ctx = orig_ctx;
                                         return result;
                                     }
                                 }
                                 length.push(length_val.unwrap() as i32);
                                 unit.push(unit_val.unwrap());
                                 if (unit[num_lengths] & (UNIT_ANGLE as u32)) > 0 {
-                                    *context = orig_ctx;
+                                    *ctx = orig_ctx;
                                     return CSS_INVALID;
                                 }
                                 if (unit[num_lengths] & (UNIT_TIME as u32)) > 0{
-                                    *context = orig_ctx;
+                                    *ctx = orig_ctx;
                                     return CSS_INVALID;
                                 }
                                 if (unit[num_lengths] & (UNIT_FREQ as u32)) > 0{
-                                    *context = orig_ctx;
+                                    *ctx = orig_ctx;
                                     return CSS_INVALID;
                                 }
                                 if (unit[num_lengths] & (UNIT_PCT as u32)) > 0{
-                                    *context = orig_ctx;
+                                    *ctx = orig_ctx;
                                     return CSS_INVALID;
                                 }
                                 num_lengths += 1;
                             }
                                     
                         }
-                        consumeWhitespace(vector , context);
+                        consumeWhitespace(vector , ctx);
                         if i<3 {
-                            if *context >= vector.len() {
-                                *context = orig_ctx;
+                            if *ctx >= vector.len() {
+                                *ctx = orig_ctx;
                                 return CSS_INVALID;
                             }
-                            token=&vector[*context];
+                            token=&vector[*ctx];
                             if tokenIsChar(token , ',') {
-                                *context = *context + 1;
+                                *ctx = *ctx + 1;
                             }
                         }
                         i += 1;
                     }
-                    consumeWhitespace(vector , context);
-                    if *context >= vector.len() {
-                        *context = orig_ctx;
+                    consumeWhitespace(vector , ctx);
+                    if *ctx >= vector.len() {
+                        *ctx = orig_ctx;
                         return CSS_INVALID;
                     }
-                    token=&vector[*context];
-                    *context = *context + 1;
+                    token=&vector[*ctx];
+                    *ctx = *ctx + 1;
 
                     if (tokenIsChar(token , ')') == false) {
-                        *context = orig_ctx;
+                        *ctx = orig_ctx;
                         return CSS_INVALID;
                     }
                     css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_CLIP , 0 , value);
@@ -915,7 +915,7 @@ impl css_properties {
                 }
             },
             _ => {
-                *context = orig_ctx;
+                *ctx = orig_ctx;
                 return CSS_INVALID;
             }
         }
@@ -923,150 +923,150 @@ impl css_properties {
         CSS_OK
     }
 
-    fn css__parse_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_columns(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_columns(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_column_count(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_column_count(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_column_fill(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_column_fill(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_column_gap(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_column_gap(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
-    fn css__parse_column_rule(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
-        CSS_OK
-    }
-
-    fn css__parse_column_rule_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_column_rule(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_column_rule_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_column_rule_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_column_rule_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_column_rule_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_column_span(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_column_rule_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_column_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_column_span(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_content(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_column_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_counter_increment(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_content(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_counter_reset(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_counter_increment(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_cue(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_counter_reset(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_cue_after(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_cue(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_cue_before(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_cue_after(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_cursor(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_cue_before(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_direction(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_cursor(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_display(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_direction(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_elevation(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_display(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_empty_cells(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_elevation(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_float(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_empty_cells(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_font(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_float(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_font_family(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_font(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_font_size(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_font_family(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_font_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_font_size(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_font_variant(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_font_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_font_weight(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_font_variant(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_height(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_font_weight(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_left(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_height(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_letter_spacing(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_left(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_line_height(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_letter_spacing(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_list_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_line_height(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_list_style_image(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_list_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_list_style_position(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_list_style_image(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_list_style_type(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_list_style_position(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        CSS_OK
+    }
+
+    fn css__parse_list_style_type(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
@@ -1204,68 +1204,162 @@ impl css_properties {
         }
         CSS_OK
     }
-    fn css__parse_margin_bottom(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_margin_bottom(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_margin_left(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_margin_left(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_margin_right(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_margin_right(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_margin_top(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_margin_top(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_max_height(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_max_height(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_max_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_max_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_min_height(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_min_height(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_min_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_min_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_opacity(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_opacity(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_orphans(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_orphans(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_outline(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_outline(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        let orig_ctx = *ctx;
+        let mut token: &~css_token;
+        let mut color =true;
+        let mut style_bool =true;
+        let mut width =true;
+        let color_style:@mut css_style;
+        let style_style:@mut css_style;
+        let width_style:@mut css_style;
+        let mut error: css_result = CSS_OK;
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        
+        token=&vector[*ctx];
+        if (css_properties::is_css_inherit(strings , token)) {
+            css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_OUTLINE_COLOR);
+            css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_OUTLINE_STYLE);
+            css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_OUTLINE_WIDTH);
+        }
+        if *ctx >= vector.len() {
+            return CSS_INVALID   
+        }
+        *ctx +=1; 
+
+        color_style = sheet.css__stylesheet_style_create();
+        style_style = sheet.css__stylesheet_style_create();
+        width_style = sheet.css__stylesheet_style_create();
+
+        let prev_ctx = *ctx;
+        while *ctx != prev_ctx {
+
+            if *ctx >= vector.len() {
+                return CSS_INVALID;
+            }
+            
+            token=&vector[*ctx];
+            if css_properties::is_css_inherit(strings , token) {
+                *ctx = orig_ctx;
+                error = CSS_INVALID;
+            }
+
+            if ((color) && 
+                (match (css_properties::css__parse_outline_color(sheet , strings , vector , ctx , color_style)) {
+                    CSS_OK => true,
+                    _ => false
+                })) {
+                color = false;
+                error = CSS_OK;
+            }
+            
+            else if (style_bool) && 
+                (match (css_properties::css__parse_outline_style(sheet , strings , vector , ctx , style_style)) {
+                    CSS_OK => true,
+                    _ => false
+                }) {
+                style_bool = false;
+                error = CSS_OK;
+            }
+            else if (width) && 
+                (match (css_properties::css__parse_outline_color(sheet , strings , vector , ctx , width_style)) {
+                    CSS_OK => true,
+                    _ => false
+                }) {
+                width = false;
+                error = CSS_OK;
+            }
+            match error {
+                CSS_OK => {
+                    consumeWhitespace(vector , ctx);
+                    if *ctx >= vector.len() {
+                        return CSS_INVALID;
+                    }
+                    token=&vector[*ctx];
+                },
+                _ => {
+                    break;
+                }
+            }
+        }
+        if color {
+            css_stylesheet::css__stylesheet_style_appendOPV(color_style , CSS_PROP_OUTLINE_COLOR , 0 , OUTLINE_COLOR_INVERT as u16);
+        }
+        if style_bool {
+            css_stylesheet::css__stylesheet_style_appendOPV(style_style , CSS_PROP_OUTLINE_STYLE , 0 , OUTLINE_STYLE_NONE as u16);   
+        }
+        if width {
+            css_stylesheet::css__stylesheet_style_appendOPV(width_style , CSS_PROP_OUTLINE_WIDTH , 0 , OUTLINE_WIDTH_MEDIUM as u16);
+        }
+
+        css_stylesheet::css__stylesheet_merge_style(style , color_style);
+        css_stylesheet::css__stylesheet_merge_style(style , style_style);
+        css_stylesheet::css__stylesheet_merge_style(style , width_style);
+
         CSS_OK
     }
 
-    fn css__parse_outline_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_outline_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_outline_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_outline_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_outline_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_outline_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_overflow(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_overflow(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
     fn css__parse_padding(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
-        let mut orig_ctx = *ctx;
+        let orig_ctx = *ctx;
         let mut side_length: ~[i32] = ~[];
         let mut side_unit: ~[u32] = ~[];
         let mut side_count: u32 = 0;
@@ -1385,51 +1479,51 @@ impl css_properties {
         CSS_OK
     }
 
-    fn css__parse_padding_bottom(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_padding_bottom(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_padding_left(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_padding_left(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_padding_right(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_padding_right(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_padding_top(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_padding_top(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_page_break_after(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_page_break_after(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_page_break_before(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_page_break_before(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_page_break_inside(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_page_break_inside(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_pause(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_pause(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_pause_after(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_pause_after(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_pause_before(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_pause_before(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_pitch_range(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_pitch_range(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_pitch(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_pitch(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
@@ -1513,7 +1607,7 @@ impl css_properties {
         CSS_OK
     }
 
-    fn css__parse_position(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_position(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
@@ -1599,56 +1693,56 @@ impl css_properties {
         CSS_OK
     }
 
-    fn css__parse_richness(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_richness(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_right(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_right(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_speak_header(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_speak_header(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_speak_numeral(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_speak_numeral(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_speak_punctuation(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_speak_punctuation(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_speak(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_speak(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_speech_rate(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_speech_rate(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_stress(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_stress(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_table_layout(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_table_layout(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_text_align(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_text_align(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_text_decoration(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
-        let mut orig_context:uint= *context;
+    fn css__parse_text_decoration(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        let orig_ctx:uint= *ctx;
         let mut result:css_result= CSS_INVALID;
         let mut token: &~css_token;
 
-        if *context >= vector.len() {
+        if *ctx >= vector.len() {
             return CSS_INVALID;
         }
-        token=&vector[*context];
-        *context += 1;
+        token=&vector[*ctx];
+        *ctx += 1;
 
         match token.token_type {
             CSS_TOKEN_IDENT(_) => {
@@ -1660,14 +1754,14 @@ impl css_properties {
                 }
                 else {
                     let mut value: u16 = 0 ;
-                    while (*context < vector.len()) {
+                    while (*ctx < vector.len()) {
                         if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), UNDERLINE as uint) {
                             if ((value & TEXT_DECORATION_UNDERLINE as u16) == 0) {
                                 value |= TEXT_DECORATION_UNDERLINE as u16;
                             }
                             
                             else {
-                                *context = orig_context;
+                                *ctx = orig_ctx;
                                 return CSS_INVALID;
                             }
                         }
@@ -1676,7 +1770,7 @@ impl css_properties {
                                 value |= TEXT_DECORATION_OVERLINE as u16;
                             }
                             else {
-                                *context = orig_context;
+                                *ctx = orig_ctx;
                                 return CSS_INVALID;
                             }
                         }
@@ -1685,7 +1779,7 @@ impl css_properties {
                                 value |= TEXT_DECORATION_LINE_THROUGH as u16;
                             }
                             else {
-                                *context = orig_context;
+                                *ctx = orig_ctx;
                                 return CSS_INVALID;
 
                             }
@@ -1695,17 +1789,17 @@ impl css_properties {
                                 value |= TEXT_DECORATION_BLINK as u16;
                             }
                             else {
-                                *context = orig_context;
+                                *ctx = orig_ctx;
                                 return CSS_INVALID;
                             }
                         }
                         else {
-                            *context = orig_context;
+                            *ctx = orig_ctx;
                             return CSS_INVALID;
                         }
-                        consumeWhitespace(vector, context);
-                        token=&vector[*context];
-                        *context += 1;
+                        consumeWhitespace(vector, ctx);
+                        token=&vector[*ctx];
+                        *ctx += 1;
                         match (token.token_type) {
                             CSS_TOKEN_IDENT(_) => {
 
@@ -1719,62 +1813,62 @@ impl css_properties {
                 }
             },
             _=> {
-                *context = orig_context;
+                *ctx = orig_ctx;
                 return CSS_INVALID;
             }
         }
         CSS_OK
     }
 
-    fn css__parse_text_indent(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_text_indent(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_text_transform(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_text_transform(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_top(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_top(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_unicode_bidi(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_unicode_bidi(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_vertical_align(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_vertical_align(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_visibility(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_visibility(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_voice_family(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_voice_family(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_volume(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_volume(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_white_space(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_white_space(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_widows(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_widows(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_word_spacing(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_word_spacing(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
-    fn css__parse_z_index(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
+    fn css__parse_z_index(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         CSS_OK
     }
 
