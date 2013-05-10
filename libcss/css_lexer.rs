@@ -3,12 +3,12 @@
 
 extern mod css_enum;
 extern mod parserutils;
-extern mod parserutils_inputstream;
+extern mod parserutils;
 extern mod std;
 
 use css_enum::* ;
 use parserutils::*;
-use parserutils_inputstream::*;
+use parserutils::input::inputstream::*;
 
 static MAX_UNICODE: char = '\U0010FFFF';
 
@@ -56,7 +56,7 @@ pub struct css_lexer {
 	internal_vector: ~[u8],
 	length: uint, // Counted in bytes, not characters
 	position: uint, // Counted in bytes, not characters
-	lpu_inputstream_instance: ~lpu_inputstream,
+	inputstream_instance: ~inputstream,
 	inputstream_eof: bool,
 	eof_token_sent: bool,
 	flagConsumeComments:bool,
@@ -64,16 +64,30 @@ pub struct css_lexer {
 
 
 impl css_lexer {
+
+	pub fn css__lexer_create( inputstream: ~inputstream ) -> ~css_lexer {
+		~css_lexer{ 
+			transform_function_whitespace: false,
+			internal_vector: ~[],
+			length: 0, 
+			position: 0, 
+			inputstream_instance: inputstream,
+			inputstream_eof: false,
+			eof_token_sent: false,
+			flagConsumeComments:false,
+		}
+	}
+
    
 	pub fn lexer_append_data(&mut self, input_data: ~[u8]) {
-		self.lpu_inputstream_instance.parserutils_inputstream_append(input_data);
+		self.inputstream_instance.parserutils_inputstream_append(input_data);
 		self.read_from_inputstream();
 	}
 
 	fn read_from_inputstream(&mut self) {
 		let mut cursor_position = 0;
 		let mut data:~[u8]=~[];
-		let opt_value_main_tuple = self.lpu_inputstream_instance.parserutils_inputstream_peek(cursor_position);
+		let opt_value_main_tuple = self.inputstream_instance.parserutils_inputstream_peek(cursor_position);
 		match opt_value_main_tuple {
 			(opt_value ,_)=> {
 				match opt_value {
@@ -97,7 +111,7 @@ impl css_lexer {
 		self.length = self.internal_vector.len();
 		// self.streamLen= data.len();
 		  
-		self.lpu_inputstream_instance.parserutils_inputstream_advance(data.len());
+		self.inputstream_instance.parserutils_inputstream_advance(data.len());
 		 
 	}
 	
@@ -1480,17 +1494,3 @@ impl css_lexer {
 	}
 }
 
-pub fn css_lexer( inputstream: ~lpu_inputstream ) -> Option<~css_lexer> {
-	let mut lexer = 
-		~css_lexer{ 
-			transform_function_whitespace: false,
-			internal_vector: ~[],
-			length: 0, 
-			position: 0, 
-			lpu_inputstream_instance: inputstream,
-			inputstream_eof: false,
-			eof_token_sent: false,
-			flagConsumeComments:false,
-		};
-	Some(lexer)
-}
