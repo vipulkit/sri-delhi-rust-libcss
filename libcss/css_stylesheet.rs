@@ -14,6 +14,15 @@ use wapcaplet::*;
 use std::arc;
 use css_propstrings::*;
 
+
+
+pub type css_fixed = i32;
+
+pub struct css_token {
+    token_type: css_token_type,
+    idata: Option<arc::RWARC<~lwc_string>>,
+}
+
 /**
  * Callback to resolve an URL
  *
@@ -24,15 +33,27 @@ use css_propstrings::*;
  * \return CSS_OK on success, appropriate error otherwise.
  */
 
-pub type css_fixed = i32;
-
-pub struct css_token {
-    token_type: css_token_type,
-    idata: Option<arc::RWARC<~lwc_string>>,
-}
-
 pub type css_url_resolution_fn = @extern fn (base:~str, rel:arc::RWARC<~lwc_string>) -> (css_result,Option<arc::RWARC<~lwc_string>>);
 pub type reserved_fn = @extern fn (strings:&mut ~css_propstrings, ident:&~css_token) -> bool;
+
+/**
+ * Callback to be notified of the need for an imported stylesheet
+ *
+ * \param pw      Client data
+ * \param parent  Stylesheet requesting the import
+ * \param url     URL of the imported sheet
+ * \param media   Applicable media for the imported sheet
+ * \return CSS_OK on success, appropriate error otherwise
+ *
+ * \note This function will be invoked for notification purposes
+ *       only. The client may use this to trigger a parallel fetch
+ *       of the imported stylesheet. The imported sheet must be
+ *       registered with its parent using the post-parse import
+ *       registration API.
+ */
+ pub type css_import_notification_fn =  @extern fn(url:~str, media:@mut u64) -> css_result;
+
+
 
 static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
 
@@ -120,7 +141,8 @@ pub struct css_stylesheet {
 	inline_style:bool,						/**< Is an inline style */
 	cached_style:Option<@mut css_style>,	/**< Cache for style parsing */
 	string_vector:~[~str],
-	resolve : css_url_resolution_fn // URL resolution function */
+	resolve : css_url_resolution_fn, // URL resolution function */
+	import : Option<css_import_notification_fn> // Import notification function */
 }
 
 pub struct css_rule {
@@ -389,7 +411,7 @@ impl css_stylesheet {
 		CSS_OK
 	}
 
-	pub fn css_stylesheet_rule_create(&mut self, rule_type : css_rule_type ) -> CSS_RULE_DATA_TYPE  {
+	pub fn css_stylesheet_rule_create(rule_type : css_rule_type ) -> CSS_RULE_DATA_TYPE  {
 		let mut base_rule = @mut css_rule{ 
 			parent_rule:None,
 			parent_stylesheet:None,
