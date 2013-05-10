@@ -48,27 +48,27 @@ pub enum parse_states {
     sISBody = 25
 }
 
-type state =  ~extern fn(parser: &mut ~css_parser) ->css_result;
+type state =  ~extern fn(parser: &mut css_parser) ->css_result;
 
 pub struct css_parser {
-    language: ~css_language,
-    lexer: ~css_lexer,
-    lwc: arc::RWARC<~lwc>,
+    priv language: ~css_language,
+    priv lexer: ~css_lexer,
+    priv lwc: arc::RWARC<~lwc>,
 
-    last_was_ws : bool,
-    match_char : char,
-    open_items : ~[char],
-    parse_error : bool,
-    pushback: Option<~css_token>,
-    stack: ~[(uint,uint)], /*Parser state stack*/
-    states: ~[state],
-    tokens: ~[~css_token],
+    priv last_was_ws : bool,
+    priv match_char : char,
+    priv open_items_stack : ~[char],
+    priv parse_error : bool,
+    priv pushback: Option<~css_token>,
+    priv state_stack: ~[(uint,uint)], /*Parser state stack*/
+    priv states: ~[state],
+    priv tokens: ~[~css_token],
 }
 
-impl css_parser {
+pub impl css_parser {
 
     /* constructor */
-    pub fn css_parser(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc> ) 
+    fn css__parser_create_internal(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>, initial:(uint, uint) ) 
         -> Option<~css_parser> {
         
         let mut states = ~[
@@ -100,21 +100,83 @@ impl css_parser {
             ~css_parser::parse_IS_body
         ];
 
-        Some(~css_parser {
+        let mut parser = ~css_parser {
             language: language,
             lexer: lexer,
             lwc: lwc.clone(),
 
             last_was_ws: false,
             match_char: 0 as char,
-            open_items : ~[],
+            open_items_stack : ~[],
             parse_error: false,
             pushback: None,
-            stack: ~[],
+            state_stack: ~[],
             states: states,
             tokens: ~[],
             
-        })
+        };
+
+        parser.state_stack.push(initial);
+
+        Some (parser)
+    }
+
+    /* public constructors */
+    pub fn css_parser_create(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>) 
+        -> Option<~css_parser> {
+        let initial = ( sStart as uint, 0u );
+
+        css_parser::css__parser_create_internal(language, lexer, lwc, initial)
+    }
+
+    pub fn css__parser_create_for_inline_style(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>) 
+        -> Option<~css_parser> {
+        let initial = (sInlineStyle as uint, 0);
+
+        css_parser::css__parser_create_internal(language, lexer, lwc, initial)
+    }
+
+
+    pub fn css__parser_parse_chunk(&mut self, data: ~[u8]) -> css_result {
+        self.lexer.lexer_append_data(data);
+
+        loop {
+            if self.state_stack.is_empty() {
+                break;
+            }
+
+            let (current_state, _) = self.state_stack[self.state_stack.len()-1];
+
+            let result = (*self.states[current_state])(self);
+
+            match(result) {
+                CSS_OK => loop,
+                _ => return result
+            }
+        }
+
+        CSS_OK
+    }
+
+    pub fn css__parser_completed(&mut self) -> css_result {
+        self.lexer.data_done();
+
+        loop {
+            if self.state_stack.is_empty() {
+                break;
+            }
+
+            let (current_state, _) = self.state_stack[self.state_stack.len()-1];
+
+            let result = (*self.states[current_state])(self);
+
+            match(result) {
+                CSS_OK => loop,
+                _ => return result
+            }
+        }
+
+        CSS_OK
     }
 
     /* Utility functions */
@@ -123,35 +185,35 @@ impl css_parser {
     /* the functionality should be implemented by each calling function */
     /* pub fn expect(&mut self, css_token_type token_type) -> css_result */
 
-    pub fn transition(&mut self, to:(uint,uint), subsequent:(uint,uint))
+    fn transition(&mut self, to:(uint,uint), subsequent:(uint,uint))
     {
         
         /* Replace current state on the stack with the subsequent one */
-        self.stack.pop();
-        self.stack.push(subsequent);
+        self.state_stack.pop();
+        self.state_stack.push(subsequent);
 
         /* Push next state on the stack */
-        self.stack.push(to);
+        self.state_stack.push(to);
 
         self.parse_error = false;
     }
 
-    pub fn transition_no_ret(&mut self, to:(uint,uint))
+    fn transition_no_ret(&mut self, to:(uint,uint))
     {
         /* Replace current state on the stack with destination */
-        self.stack.pop();
-        self.stack.push(to);
+        self.state_stack.pop();
+        self.state_stack.push(to);
 
         self.parse_error = false;
     }
 
-    pub fn done(&mut self)
+    fn done(&mut self)
     {
         /* Pop current state from stack */
-        self.stack.pop();
+        self.state_stack.pop();
     }
 
-    pub fn eat_ws(&mut self) -> css_result
+    fn eat_ws(&mut self) -> css_result
     {
         let (token_option, parser_error) = self.get_token();
         if (token_option.is_none()) {
@@ -170,7 +232,7 @@ impl css_parser {
         }
     }
 
-    pub fn push_back(&mut self, token: ~css_token) {
+    fn push_back(&mut self, token: ~css_token) {
         assert!(self.pushback.is_none());
 
         self.pushback = Some(token);
@@ -188,7 +250,7 @@ impl css_parser {
         interned_string.unwrap()
     }
 
-    pub fn get_token(&mut self) -> (Option<~css_token>, css_result) {
+    fn get_token(&mut self) -> (Option<~css_token>, css_result) {
 
         let mut token: Option<~css_token>;
 
@@ -327,14 +389,14 @@ impl css_parser {
     }
 
     /* parser states */
-    pub fn parse_start(parser:&mut ~css_parser) -> css_result {
+    fn parse_start(parser:&mut css_parser) -> css_result {
         enum parse_start_sub_states { 
             Initial = 0, 
             AfterWS = 1, 
             AfterStylesheet = 2 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while (true) {
             match (current_substate) {
@@ -382,13 +444,13 @@ impl css_parser {
     } /* parse_start */
 
 
-    pub fn parse_stylesheet(parser:&mut ~css_parser) -> css_result {
+    fn parse_stylesheet(parser:&mut css_parser) -> css_result {
         enum parse_stylesheet_sub_states { 
             Initial = 0, 
             WS = 1 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
             while (true) {
                 match (current_substate) {
@@ -446,7 +508,7 @@ impl css_parser {
         CSS_OK
     } /* parse_stylesheet */
 
-    pub fn parse_statement(parser: &mut ~css_parser) -> css_result
+    fn parse_statement(parser: &mut css_parser) -> css_result
     {
         enum parser_statement_sub_states { 
             Initial = 0 
@@ -474,14 +536,14 @@ impl css_parser {
     } /* parse statement */
 
 
-    pub fn parse_ruleset(parser: &mut ~css_parser) -> css_result {
+    fn parse_ruleset(parser: &mut css_parser) -> css_result {
         enum parse_ruleset_sub_states { 
             Initial = 0, 
             Brace = 1, 
             WS = 2 
         };
         
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while (true) {
             match (current_substate) {
@@ -601,7 +663,7 @@ impl css_parser {
     } /* parse_ruleset */
 
 
-    pub fn parse_ruleset_end(parser:&mut ~css_parser) -> css_result {
+    fn parse_ruleset_end(parser:&mut css_parser) -> css_result {
         enum parse_ruleset_end_substates { 
             Initial = 0, 
             DeclList = 1, 
@@ -609,7 +671,7 @@ impl css_parser {
             WS = 3 
         };
         
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while (true) {
             match (current_substate) {
@@ -713,7 +775,7 @@ impl css_parser {
         CSS_OK
     } /* parse_ruleset_end */
 
-    pub fn parse_at_rule(parser: &mut ~css_parser) -> css_result {
+    fn parse_at_rule(parser: &mut css_parser) -> css_result {
         
         enum parse_at_rule_substates { 
             Initial = 0, 
@@ -722,7 +784,7 @@ impl css_parser {
             AfterAny = 3 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while (true) {
             match (current_substate) {
@@ -811,7 +873,7 @@ impl css_parser {
         CSS_OK
     } /* parse_at_rule */
 
-    pub fn parse_at_rule_end(parser: &mut ~css_parser) -> css_result {
+    fn parse_at_rule_end(parser: &mut css_parser) -> css_result {
         
         enum parser_at_rule_end_substates { 
             Initial = 0, 
@@ -819,7 +881,7 @@ impl css_parser {
             AfterBlock = 2 
         };
         
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while (true) {
             match (current_substate) {
@@ -904,7 +966,7 @@ impl css_parser {
         CSS_OK
     } /* parse_at_rule_end */
 
-    pub fn parse_block(parser: &mut ~css_parser) -> css_result {
+    fn parse_block(parser: &mut css_parser) -> css_result {
         enum parse_block_substates { 
             Initial = 0, 
             WS = 1, 
@@ -913,7 +975,7 @@ impl css_parser {
             WS2 = 4 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while (true) {
             match (current_substate) {
@@ -1018,14 +1080,14 @@ impl css_parser {
         CSS_OK
     } /* parse_block */
 
-    pub fn parse_block_content(parser: &mut ~css_parser) -> css_result {
+    fn parse_block_content(parser: &mut css_parser) -> css_result {
         
             enum parse_block_content_substates { 
                 Initial = 0, 
                 WS = 1 
             };
             
-            let mut (_,current_substate) = parser.stack.pop();
+            let mut (_,current_substate) = parser.state_stack.pop();
 
             while (true) {
                 match (current_substate) {
@@ -1133,13 +1195,13 @@ impl css_parser {
         CSS_OK
     } /* parse_block_content */
 
-    pub fn parse_selector(parser: &mut ~css_parser) -> css_result {
+    fn parse_selector(parser: &mut css_parser) -> css_result {
         enum parse_selector_substates { 
             Initial = 0, 
             AfterAny1 = 1 
         };
         
-        let (_,current_substate) = parser.stack.pop();
+        let (_,current_substate) = parser.state_stack.pop();
 
         match (current_substate) {
             0 /* Initial */ => {
@@ -1165,7 +1227,7 @@ impl css_parser {
         CSS_OK
     } /* parse_selector */
 
-    pub fn parse_declaration(parser: &mut ~css_parser) -> css_result {
+    fn parse_declaration(parser: &mut css_parser) -> css_result {
         enum parser_declaration_substates { 
             Initial = 0, 
             Colon = 1, 
@@ -1173,7 +1235,7 @@ impl css_parser {
             AfterValue1 = 3 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while (true) {
             match (current_substate) {
@@ -1274,13 +1336,13 @@ impl css_parser {
         CSS_OK
     } /* parse_declaration */
 
-    pub fn parse_decl_list(parser: &mut ~css_parser) -> css_result {
+    fn parse_decl_list(parser: &mut css_parser) -> css_result {
         enum parse_decl_list_substates { 
             Initial = 0, 
             WS = 1 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while (true) {
             match (current_substate) {
@@ -1343,13 +1405,13 @@ impl css_parser {
         CSS_OK
     } /* parse_decl_list */
 
-    pub fn parse_decl_list_end(parser: &mut ~css_parser) -> css_result {
+    fn parse_decl_list_end(parser: &mut css_parser) -> css_result {
         enum parse_decl_list_end_substates { 
             Initial = 0, 
             AfterDeclaration = 1 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while (true) {
             match (current_substate) {
@@ -1396,13 +1458,13 @@ impl css_parser {
         CSS_OK
     } /* parse_decl_list_end */
 
-    pub fn parse_property(parser: &mut ~css_parser) -> css_result {
+    fn parse_property(parser: &mut css_parser) -> css_result {
         enum parse_property_substates { 
             Initial = 0, 
             WS = 1 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while (true) {
             match (current_substate) {
@@ -1456,13 +1518,13 @@ impl css_parser {
         CSS_OK
     } /* parse_property */
 
-    pub fn parse_value_0(parser: &mut ~css_parser) -> css_result {
+    fn parse_value_0(parser: &mut css_parser) -> css_result {
         enum parse_value_0_substates { 
             Initial = 0, 
             AfterValue = 1 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while(true) {
             match (current_substate) {
@@ -1519,13 +1581,13 @@ impl css_parser {
         CSS_OK
     } /* parse_value_0 */
 
-    pub fn parse_value_1(parser: &mut ~css_parser) -> css_result {
+    fn parse_value_1(parser: &mut css_parser) -> css_result {
         enum parse_value_1_substates { 
             Initial = 0, 
             AfterValue = 1 
         };
         
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         match (current_substate) {
             0 /* Initial */ => {
@@ -1581,13 +1643,13 @@ impl css_parser {
         CSS_OK
     } /* parse_value_1 */
 
-    pub fn parse_value(parser: &mut ~css_parser) -> css_result {
+    fn parse_value(parser: &mut css_parser) -> css_result {
         enum parse_value_substates { 
             Initial = 0, 
             WS = 1 
         };
         
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while (true) {
             match (current_substate) {
@@ -1647,13 +1709,13 @@ impl css_parser {
         CSS_OK
     } /* parse_value */
 
-    pub fn parse_any_0(parser: &mut ~css_parser) -> css_result {
+    fn parse_any_0(parser: &mut css_parser) -> css_result {
         enum parse_any_0_substates { 
             Initial = 0, 
             AfterAny = 1 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while (true) {
             match (current_substate) {
@@ -1718,14 +1780,14 @@ impl css_parser {
         CSS_OK
     } /* parse_any_0 */
 
-    pub fn parse_any_1(parser: &mut ~css_parser) -> css_result {
+    fn parse_any_1(parser: &mut css_parser) -> css_result {
         enum parse_any_1_substates { 
             Initial = 0, 
             AfterAny = 1,
             AfterAny0 = 2
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         match (current_substate) {
             0 /* Initial */ => {
@@ -1788,7 +1850,7 @@ impl css_parser {
         CSS_OK
     } /* parse_any_1 */
 
-    pub fn parse_any(parser: &mut ~css_parser) -> css_result {
+    fn parse_any(parser: &mut css_parser) -> css_result {
         enum parse_any_substates { 
             Initial = 0, 
             WS = 1,
@@ -1796,7 +1858,7 @@ impl css_parser {
             WS2 = 3
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
         
         while (true) {
             match (current_substate) {
@@ -1918,16 +1980,16 @@ impl css_parser {
         CSS_OK
     } /* parse_any */
 
-    pub fn parse_malformed_declaration(parser: &mut ~css_parser) -> css_result {
+    fn parse_malformed_declaration(parser: &mut css_parser) -> css_result {
         enum parse_malformed_declaration_substates{ 
             Initial = 0, 
             Go = 1 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         if (current_substate == Initial as uint) {
-            parser.open_items.clear();
+            parser.open_items_stack.clear();
 
             current_substate = Go as uint;
         }
@@ -1953,7 +2015,7 @@ impl css_parser {
                 CSS_TOKEN_CHAR(c) => {
                     match (c) {
                         '{' | '}' | '[' | ']' | '(' | ')' | ';' => {
-                            if (parser.open_items.is_empty()
+                            if (parser.open_items_stack.is_empty()
                                 && (c==';' || c=='}')) {
                                 parser.push_back(token);
                                 break;
@@ -1963,7 +2025,7 @@ impl css_parser {
                                 loop;
                             }
 
-                            let match_char = parser.open_items[parser.open_items.len()-1];
+                            let match_char = parser.open_items_stack[parser.open_items_stack.len()-1];
 
                             let want_char = match c {
                                 '}' => '{',
@@ -1973,10 +2035,10 @@ impl css_parser {
                             };
 
                             if (match_char == want_char) {
-                                parser.open_items.pop();
+                                parser.open_items_stack.pop();
                             }
                             else {
-                                parser.open_items.push(c);
+                                parser.open_items_stack.push(c);
                             }
                         }
 
@@ -1993,16 +2055,16 @@ impl css_parser {
         CSS_OK
     } /* parse_malformed_declaration */
 
-    pub fn parse_malformed_selector(parser: &mut ~css_parser) -> css_result {
+    fn parse_malformed_selector(parser: &mut css_parser) -> css_result {
         enum parse_malformed_selector_substates{ 
             Initial = 0, 
             Go = 1 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         if (current_substate == Initial as uint) {
-            parser.open_items.clear();
+            parser.open_items_stack.clear();
 
             current_substate = Go as uint;
         }
@@ -2028,8 +2090,8 @@ impl css_parser {
                     match (c) {
                         '{' | '}' | '[' | ']' | '(' | ')' => {
 
-                            if (!parser.open_items.is_empty()) {
-                                let match_char = parser.open_items[parser.open_items.len()-1];
+                            if (!parser.open_items_stack.is_empty()) {
+                                let match_char = parser.open_items_stack[parser.open_items_stack.len()-1];
                                 
                                 let want_char = match c {
                                     '}' => '{',
@@ -2039,18 +2101,18 @@ impl css_parser {
                                 };
 
                                 if (match_char == want_char) {
-                                    parser.open_items.pop();
+                                    parser.open_items_stack.pop();
                                 }
                                 else if (want_char == 0 as char) {
-                                    parser.open_items.push(c);
+                                    parser.open_items_stack.push(c);
                                 }
 
-                                if (want_char == '{' && parser.open_items.is_empty()) {
+                                if (want_char == '{' && parser.open_items_stack.is_empty()) {
                                     break;
                                 }
                             } 
                             else if (c!='}' && c!=')' && c!=']') {
-                                parser.open_items.push(c);
+                                parser.open_items_stack.push(c);
                             } 
                         }
 
@@ -2077,16 +2139,16 @@ impl css_parser {
         }
     } /* parse_malformed_selector */
 
-    pub fn parse_malformed_at_rule(parser: &mut ~css_parser) -> css_result {
+    fn parse_malformed_at_rule(parser: &mut css_parser) -> css_result {
         enum parse_malformed_at_rule_substates{ 
             Initial = 0, 
             Go = 1 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         if (current_substate == Initial as uint) {
-            parser.open_items.clear();
+            parser.open_items_stack.clear();
 
             current_substate = Go as uint;
         }
@@ -2112,15 +2174,15 @@ impl css_parser {
                     match (c) {
                         '{' | '}' | '[' | ']' | '(' | ')' | ';' => {
 
-                            if (c==';' && parser.open_items.is_empty()) {
+                            if (c==';' && parser.open_items_stack.is_empty()) {
                                 break;
                             }
                             else if (c==';') {
                                 loop;
                             }
 
-                            if (!parser.open_items.is_empty()) {
-                                let match_char = parser.open_items[parser.open_items.len()-1];
+                            if (!parser.open_items_stack.is_empty()) {
+                                let match_char = parser.open_items_stack[parser.open_items_stack.len()-1];
                                 
                                 let want_char = match c {
                                     '}' => '{',
@@ -2130,18 +2192,18 @@ impl css_parser {
                                 };
 
                                 if (match_char == want_char) {
-                                    parser.open_items.pop();
+                                    parser.open_items_stack.pop();
                                 }
                                 else if (want_char == 0 as char) {
-                                    parser.open_items.push(c);
+                                    parser.open_items_stack.push(c);
                                 }
 
-                                if (want_char == '{' && parser.open_items.is_empty()) {
+                                if (want_char == '{' && parser.open_items_stack.is_empty()) {
                                     break;
                                 }
                             }
                             else if (c!='}' && c!=')' && c!=']') {
-                                parser.open_items.push(c);
+                                parser.open_items_stack.push(c);
                             }
 
                         }
@@ -2170,14 +2232,14 @@ impl css_parser {
         }
     } /* parse_malformed_at_rule */
 
-    pub fn parse_inline_style(parser: &mut ~css_parser) -> css_result {
+    fn parse_inline_style(parser: &mut css_parser) -> css_result {
         enum parse_inline_style_substates { 
             Initial = 0, 
             WS = 1, 
             AfterISBody0 = 2 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while (true) {
             match current_substate {
@@ -2227,13 +2289,13 @@ impl css_parser {
         CSS_OK
     } /* parse_inline_style */
 
-    pub fn parse_IS_body_0(parser: &mut ~css_parser) -> css_result {
+    fn parse_IS_body_0(parser: &mut css_parser) -> css_result {
         enum parse_IS_body_0_substates { 
             Initial = 0, 
             AfterISBody = 1 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while (true) {
             match current_substate {
@@ -2283,7 +2345,7 @@ impl css_parser {
         CSS_OK
     } /* parse_IS_body_0 */
 
-    pub fn parse_IS_body(parser: &mut ~css_parser) -> css_result {
+    fn parse_IS_body(parser: &mut css_parser) -> css_result {
         enum parse_IS_body_substates { 
             Initial = 0, 
             DeclList = 1, 
@@ -2291,7 +2353,7 @@ impl css_parser {
             WS = 3 
         };
 
-        let mut (_,current_substate) = parser.stack.pop();
+        let mut (_,current_substate) = parser.state_stack.pop();
 
         while(true) {
             match current_substate {

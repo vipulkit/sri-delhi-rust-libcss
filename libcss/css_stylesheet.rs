@@ -117,9 +117,7 @@ pub struct css_rule_selector {
 
 pub struct css_rule_media {
 	base:@mut css_rule,
-	media:u64,
-	first_child:Option<CSS_RULE_DATA_TYPE>,
-	last_child:Option<CSS_RULE_DATA_TYPE>
+	media:u64
 } 
 
 pub struct css_rule_font_face {
@@ -420,9 +418,7 @@ impl css_stylesheet {
 			CSS_RULE_MEDIA=> 	{	
 				let mut ret_rule = @mut css_rule_media{ 
 					base:base_rule,
-					media:0,
-					first_child:None,
-					last_child:None
+					media:0
 				};  
 				RULE_MEDIA(ret_rule) 
 			},
@@ -601,20 +597,21 @@ impl css_stylesheet {
 				match prule {
 					RULE_MEDIA(media_prule)=>{
 						base_rule.parent_rule = parent_rule;
+						let mut base_media_prule = css_stylesheet::css__stylesheet_get_base_rule(prule);
 
-						match media_prule.last_child {
+						match base_media_prule.prev {
 							None=>{
 								base_rule.next = None;
 								base_rule.prev = None;
-								media_prule.first_child = Some(css_rule);
-								media_prule.last_child = Some(css_rule);
+								base_media_prule.next = Some(css_rule);
+								base_media_prule.prev = Some(css_rule);
 							},
 							Some(last_child)=>{
 								let mut last_child_base_rule = css_stylesheet::css__stylesheet_get_base_rule(last_child);
 								last_child_base_rule.next = Some(css_rule);
-								base_rule.prev = media_prule.last_child ;
+								base_rule.prev = base_media_prule.prev ;
 								base_rule.next = None;
-								media_prule.last_child = Some(css_rule);
+								base_media_prule.prev = Some(css_rule);
 							}
 						}
 					},
@@ -710,31 +707,40 @@ impl css_stylesheet {
 					return CSS_INVALID;
 				}
 
-				let mut ptr = x.first_child;
+				let mut ptr = x.base.next;
 				loop {
 					match ptr {
-						None=> return CSS_OK,
+						None=> {
+							return CSS_OK
+						},
 						Some(current_rule) => {
-							match(self._add_selectors(current_rule))
-							{
-								CSS_OK => {
-									ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
-									loop;
-								}
+							match current_rule {
+								RULE_SELECTOR(_)=>{
+									match(self._add_selectors(current_rule)) {
+										CSS_OK => {
+											ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+											loop;
+										}
 
-								_ => {
+										_ => {
 
-									let mut rptr = current_rule ;
-									loop {
-										match css_stylesheet::css__stylesheet_get_base_rule(rptr).prev {
-											Some(y)=> { 
-												self._remove_selectors(y);
-												rptr = y;
-												loop;
-											},
-											None=> { return CSS_INVALID },
+											let mut rptr = current_rule ;
+											loop {
+												match css_stylesheet::css__stylesheet_get_base_rule(rptr).prev {
+													Some(y)=> { 
+														self._remove_selectors(y);
+														rptr = y;
+														loop;
+													},
+													None=> { return CSS_INVALID },
+												}
+											}
 										}
 									}
+								},
+								_=>{
+									ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+									loop;
 								}
 							}
 						}
@@ -765,19 +771,27 @@ impl css_stylesheet {
 
 			RULE_MEDIA(x)=> {
 
-				let mut ptr = x.first_child;
+				let mut ptr = x.base.next;
 				loop {
 					match ptr {
-						None=> return CSS_OK,
-						Some(current_rule) => {
-							match(self._remove_selectors(current_rule))
-							{
-								CSS_OK => {
-									ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
-									loop;
+						None=> {
+							return CSS_OK ;
+						},
+						Some(base_rule)=>{
+							match base_rule {
+								RULE_SELECTOR(_)=>{
+									match self._remove_selectors(base_rule) {
+										CSS_OK => {
+											ptr = css_stylesheet::css__stylesheet_get_base_rule(base_rule).next;
+										},
+										x => { 
+											return x ;
+										}
+									}
+								},
+								_=> {
+									ptr = css_stylesheet::css__stylesheet_get_base_rule(base_rule).next;
 								}
-
-								_ => return CSS_INVALID
 							}
 						}
 					}
