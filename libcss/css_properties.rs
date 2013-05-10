@@ -18,6 +18,7 @@ use std::arc;
 use core::str::*;
 use css_fpmath::*;
 
+type css_fixed = i32;
 //use css_propstrings::*; 
 pub struct css_token {
     token_type: css_token_type,
@@ -568,8 +569,170 @@ impl css_properties {
         CSS_OK
     }
 
-    fn css__parse_background_position(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
-        CSS_OK
+    fn css__parse_background_position(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,
+        vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        
+        let mut orig_ctx = *ctx;
+        // css_error error;
+        // const css_token *token;
+        let mut flags:u8 = 0;
+        let mut value = [0,0]; //u16
+        let mut length= [0,0]; //i32
+        let mut unit = [0,0]; //u32
+        
+
+        /* [length | percentage | IDENT(left, right, top, bottom, center)]{1,2}
+         * | IDENT(inherit) */
+         if *ctx >= vector.len() {
+            return CSS_INVALID   
+        }
+            
+        let mut token = &vector[*ctx];
+
+        if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false }  
+            && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),INHERIT) {
+            
+            if *ctx >= vector.len() {
+                return CSS_INVALID   
+            }
+            
+            //token = &vector[*ctx]; Value assigned never used
+            *ctx += 1;
+            flags = FLAG_INHERIT;
+        } 
+        else {
+            let mut second_pass = false;
+            for uint::range(0,1) |i| {
+                if *ctx >= vector.len() {
+                    break   
+                }
+            
+                token = &vector[*ctx];
+
+                match token.token_type {
+                    CSS_TOKEN_IDENT(_) => {
+                        if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT as uint) {
+                            value[i] = BACKGROUND_POSITION_HORZ_LEFT as u16
+                        } 
+                        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT as uint) {
+                            value[i] = BACKGROUND_POSITION_HORZ_RIGHT as u16
+                        } 
+                        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), TOP as uint) {
+                            value[i] = BACKGROUND_POSITION_VERT_TOP as u16
+                        }
+                        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BOTTOM as uint) {
+                            value[i] = BACKGROUND_POSITION_VERT_BOTTOM as u16
+                        }
+                        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER as uint) {
+                            value[i] = BACKGROUND_POSITION_VERT_CENTER as u16
+                        }
+                        else if (i == 1) {
+                            /* Second pass, so ignore this one */
+                            break;
+                        } else {
+                            /* First pass, so invalid */
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+
+                        *ctx += 1; //Iterate
+                    },    
+                
+                    CSS_TOKEN_DIMENSION(_,_,_) | CSS_TOKEN_NUMBER(_,_) | CSS_TOKEN_PERCENTAGE(_,_) => {
+                        match css_properties::css__parse_unit_specifier(sheet, vector, ctx, UNIT_PX as u32){                               
+                            (Some(length_val), Some(unit_val), CSS_OK) => {
+                                length[i] = length_val as i32;
+                                unit[i] = unit_val
+                            },
+                            (_,_,error) => {
+                                *ctx = orig_ctx;
+                                return error;
+                            }
+                        }
+                                                
+                        if (unit[i] & UNIT_ANGLE as u32) != 0 || (unit[i] & UNIT_TIME as u32) != 0 || (unit[i] & UNIT_FREQ as u32) != 0 {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+
+                        /* We'll fix this up later, too */
+                        value[i] = BACKGROUND_POSITION_VERT_SET as u16;
+                    }, 
+                    _  => {
+                        if i == 1 {
+                            /* Second pass, so ignore */
+                            second_pass = true;
+                            break;
+                        } 
+                        else {
+                            /* First pass, so invalid */
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                    }
+                }    
+                consumeWhitespace(vector, ctx);
+            }
+
+            //assert(i != 0);
+
+            /* Now, sort out the mess we've got */
+            if second_pass {
+                //assert(BACKGROUND_POSITION_VERT_CENTER == BACKGROUND_POSITION_HORZ_CENTER);
+
+                /* Only one value, so the other is center */
+                if value[0] == BACKGROUND_POSITION_HORZ_LEFT as u16 ||
+                    value[0] == BACKGROUND_POSITION_HORZ_RIGHT as u16 || 
+                    value[0] == BACKGROUND_POSITION_VERT_CENTER as u16 ||
+                    value[0] == BACKGROUND_POSITION_VERT_TOP as u16 ||
+                    value[0] == BACKGROUND_POSITION_VERT_BOTTOM as u16 {
+
+                }
+                else if value[0] == BACKGROUND_POSITION_VERT_SET as u16 {
+                  value[0] = BACKGROUND_POSITION_HORZ_SET as u16 
+                } 
+                
+                value[1] = BACKGROUND_POSITION_VERT_CENTER as u16;
+            } 
+            else if value[0] != BACKGROUND_POSITION_VERT_SET as u16 && value[1] != BACKGROUND_POSITION_VERT_SET as u16 {
+                /* Two keywords. Verify the axes differ */
+                if (((value[0] & 0xf) != 0 && (value[1] & 0xf) != 0) || ((value[0] & 0xf0) != 0 && (value[1] & 0xf0) != 0)) {
+                    *ctx = orig_ctx;
+                    return CSS_INVALID;
+                }
+            } 
+            else {
+                /* One or two non-keywords. First is horizontal */
+                if value[0] == BACKGROUND_POSITION_VERT_SET as u16 {
+                    value[0] = BACKGROUND_POSITION_HORZ_SET as u16
+                }
+                    
+
+                /* Verify the axes differ */
+                if (((value[0] & 0xf) != 0 && (value[1] & 0xf) != 0) ||
+                        ((value[0] & 0xf0) != 0 && 
+                            (value[1] & 0xf0) != 0)) {
+                    *ctx = orig_ctx;
+                    return CSS_INVALID;
+                }
+            }
+        }
+
+        css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_BACKGROUND_POSITION, flags, value[0] | value[1]);
+        
+
+        if ((flags & FLAG_INHERIT) == 0) {
+            if value[0] == BACKGROUND_POSITION_HORZ_SET as u16 {
+                css_stylesheet::css__stylesheet_style_append(style, length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style, unit[0])
+            }
+            if (value[1] == BACKGROUND_POSITION_VERT_SET as u16) {
+                css_stylesheet::css__stylesheet_style_append(style, length[1] as u32);
+                css_stylesheet::css__stylesheet_style_append(style, unit[1])
+            }
+        }
+
+        return CSS_OK;
     }
 
     fn css__parse_background_repeat(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], context: @mut uint, style: @mut css_style)->css_result {
