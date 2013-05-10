@@ -191,7 +191,6 @@ impl css_properties {
         ) {
             *ctx += 1;
             flags = FLAG_INHERIT  ;
-
         }
         else if ( 
             match (token.token_type) {
@@ -201,9 +200,7 @@ impl css_properties {
         ) {
             *ctx += 1;
             value = AZIMUTH_LEFTWARDS;
-        }
-
-        
+        }        
         else if ( 
             match (token.token_type) {
                 CSS_TOKEN_IDENT(_) => true,
@@ -212,9 +209,7 @@ impl css_properties {
             ) {
             *ctx += 1;
             value = AZIMUTH_RIGHTWARDS;
-
         }
-
         else if ( match (token.token_type) {
                 CSS_TOKEN_IDENT(_) => true,
                 _=> false
@@ -288,6 +283,7 @@ impl css_properties {
                 *ctx = orig_ctx;
                 return CSS_INVALID;
             }
+            consumeWhitespace(vector, ctx);
             token=&vector[*ctx];
 
             if (
@@ -296,6 +292,7 @@ impl css_properties {
                     _=> false
                 }&& value == AZIMUTH_BEHIND
             ) {
+                *ctx += 1;
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT_SIDE as uint) {
                     value |= AZIMUTH_LEFT_SIDE;
                 }
@@ -334,6 +331,7 @@ impl css_properties {
                     _=> false
                 }&& value != AZIMUTH_BEHIND
             ) {
+                *ctx += 1;
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BEHIND as uint) {
                     value |= AZIMUTH_BEHIND;
                 }
@@ -1160,6 +1158,122 @@ impl css_properties {
     }
 
     fn css__parse_elevation(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        let orig_ctx:uint = *ctx;
+        let mut flags:u8 = 0;
+        let mut value:u16= 0;
+        let mut length:i32 = 0;
+        let mut unit:u32 = 0;
+        let mut token:&~css_token;
+        let mut error: css_result= CSS_OK;
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        token=&vector[*ctx];
+        
+        if (
+            match token.token_type {
+                CSS_TOKEN_IDENT(_)=>true,
+                _=>false
+            } && 
+            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) 
+        ) {
+            *ctx += 1;
+            flags = FLAG_INHERIT;
+        }
+        else if (
+            match token.token_type {
+                CSS_TOKEN_IDENT(_)=>true,
+                 _=>false
+            } &&
+            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BELOW as uint)
+            ) {
+                *ctx += 1;
+                value = ELEVATION_BELOW as u16;
+            }
+        else if (
+            match token.token_type {
+                CSS_TOKEN_IDENT(_)=>true,
+                 _=>false
+            } &&
+         strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEVEL as uint)
+         ) {
+                *ctx += 1;
+                value = ELEVATION_LEVEL as u16;
+            }
+        else if (
+            match token.token_type {
+                CSS_TOKEN_IDENT(_)=>true,
+                 _=>false
+            } &&
+            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ABOVE as uint)
+            ) {
+                *ctx += 1;
+                value = ELEVATION_ABOVE as u16;
+            }
+        else if (
+            match token.token_type {
+                CSS_TOKEN_IDENT(_)=>true,
+                 _=>false
+            } &&
+            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HIGHER as uint) 
+            ){
+                *ctx += 1;
+                value = ELEVATION_HIGHER as u16;
+            }
+        else if (
+            match token.token_type {
+                CSS_TOKEN_IDENT(_)=>true,
+                 _=>false
+            } &&
+            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LOWER as uint)
+            ) {
+                *ctx += 1;
+                value = ELEVATION_LOWER as u16;
+            }
+        else{
+            let (unit_ret,length_ret,error) = css_properties::css__parse_unit_specifier(sheet , vector, ctx, UNIT_DEG as u32);
+            length = length_ret.unwrap() as i32;
+            unit = unit_ret.unwrap() as u32;
+            match error {
+                CSS_OK=>{
+                    if ((unit & UNIT_ANGLE as u32) ==0) {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                    }
+                    /* Valid angles lie between -90 and 90 degrees */
+                    if (unit == UNIT_DEG as u32) {
+                        if (length < -F_90 as i32 || length > F_90 as i32) {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                    } 
+                    else if (unit == UNIT_GRAD as u32) {
+                        if (length < -F_100  as i32|| length > F_100 as i32) {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                    } 
+                    else if (unit == UNIT_RAD as u32) {
+                        if (length < -F_PI_2  as i32|| length > F_PI_2 as i32) {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                    }
+                    value = ELEVATION_ANGLE as u16;
+                },
+                _=>{
+                    *ctx = orig_ctx;
+                    return error; 
+                }
+            }
+        }
+           
+        css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_ELEVATION, flags, value);
+
+        if (((flags & FLAG_INHERIT) > 0) && (value == ELEVATION_ANGLE as u16)) {
+            css_stylesheet::css__stylesheet_style_vappend(style, [length as u32 , unit as u32]);
+        }
         CSS_OK
     }
 
