@@ -1283,6 +1283,96 @@ impl css_properties {
     }
 
     fn css__parse_list_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        let orig_ctx = *ctx;
+        let mut token: &~css_token;
+        let mut image = true;
+        let mut position = true;
+        let mut type_type = true;
+        let mut error: css_result= CSS_OK;
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        token=&vector[*ctx];
+
+        if css_properties::is_css_inherit(strings , token) {
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_LIST_STYLE_IMAGE);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_LIST_STYLE_POSITION);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_LIST_STYLE_TYPE);
+            *ctx = *ctx + 1;
+        }
+
+        let image_style = sheet.css__stylesheet_style_create();
+        let position_style = sheet.css__stylesheet_style_create();
+        let type_style = sheet.css__stylesheet_style_create();
+
+        let prev_ctx = *ctx;
+
+        while *ctx != prev_ctx {
+
+            if *ctx >= vector.len() {
+                return CSS_INVALID;
+            }
+            
+            token=&vector[*ctx];
+            if css_properties::is_css_inherit(strings , token) {
+                *ctx = orig_ctx;
+                error = CSS_INVALID;
+            }
+
+            if ((type_type) && 
+                (match (css_properties::css__parse_list_style_type(sheet , strings , vector , ctx , type_style)) {
+                    CSS_OK => true,
+                    _ => false
+                })) {
+                type_type = false;
+                error = CSS_OK;
+            }
+            
+            else if (position) && 
+                (match (css_properties::css__parse_list_style_position(sheet , strings , vector , ctx , position_style)) {
+                    CSS_OK => true,
+                    _ => false
+                }) {
+                position = false;
+                error = CSS_OK;
+            }
+            else if (image) && 
+                (match (css_properties::css__parse_list_style_image(sheet , strings , vector , ctx , image_style)) {
+                    CSS_OK => true,
+                    _ => false
+                }) {
+                image = false;
+                error = CSS_OK;
+            }
+            match error {
+                CSS_OK => {
+                    consumeWhitespace(vector , ctx);
+                    if *ctx >= vector.len() {
+                        return CSS_INVALID;
+                    }
+                    token=&vector[*ctx];
+                },
+                _ => {
+                    break;
+                }
+            }
+        }
+
+        if image {
+            css_stylesheet::css__stylesheet_style_appendOPV(image_style , CSS_PROP_LIST_STYLE_IMAGE , 0 , LIST_STYLE_IMAGE_NONE as u16);
+        }
+        if position {
+            css_stylesheet::css__stylesheet_style_appendOPV(position_style , CSS_PROP_LIST_STYLE_POSITION , 0 , LIST_STYLE_POSITION_OUTSIDE as u16);   
+        }
+        if type_type {
+            css_stylesheet::css__stylesheet_style_appendOPV(type_style , CSS_PROP_LIST_STYLE_TYPE , 0 , LIST_STYLE_TYPE_DISC as u16);
+        }
+
+        css_stylesheet::css__stylesheet_merge_style(style , image_style);
+        css_stylesheet::css__stylesheet_merge_style(style , position_style);
+        css_stylesheet::css__stylesheet_merge_style(style , type_style);
+
         CSS_OK
     }
 
@@ -1295,6 +1385,40 @@ impl css_properties {
     }
 
     fn css__parse_list_style_type(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        let orig_ctx = *ctx;
+        let mut token: &~css_token;
+        let mut flags: u8 = 0;
+        let mut value: u8 = 0;
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        
+        token=&vector[*ctx];
+        *ctx += 1;
+        match token.token_type {
+            CSS_TOKEN_IDENT(_) => {
+                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint) {
+                    flags |= FLAG_INHERIT as u8;
+                }
+                else {
+                    let (list_type , error) = css__parse_list_style_type_value(strings , token);
+                    match error {
+                        CSS_OK => {
+                            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_LIST_STYLE_TYPE , flags , list_type.unwrap());
+                        },
+                        _ => {
+                            *ctx = orig_ctx;
+                            return error;
+                        }
+                    }
+                }
+            }
+            _ => {
+                *ctx = orig_ctx;
+                return CSS_INVALID;
+            }
+        }
         CSS_OK
     }
 
@@ -2003,7 +2127,7 @@ impl css_properties {
 
     fn css__parse_text_decoration(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         let orig_ctx:uint= *ctx;
-        let mut result:css_result= CSS_INVALID;
+        // let mut result:css_result= CSS_INVALID;
         let mut token: &~css_token;
 
         if *ctx >= vector.len() {
@@ -2140,9 +2264,9 @@ impl css_properties {
         CSS_OK
     }
 
-    fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , data: arc::RWARC<~lwc_string>) -> (Option<index_property> , css_result){
+    fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_result){
         // static vector_length: uint = (index_property::YELLOWGREEN as uint) + 1 - (index_property::ALICEBLUE as uint);
-        let mut result_val: index_property;
+        let mut result_val: u32;
         let colourmap: ~[u32] = ~[
             0xfff0f8ff, /* ALICEBLUE */
             0xfffaebd7, /* ANTIQUEWHITE */
@@ -2306,7 +2430,7 @@ impl css_properties {
         }
 
         if index == YELLOWGREEN as uint + 1 {
-            result_val = unsafe {cast::transmute(index - (ALICEBLUE as uint))};
+            result_val = colourmap[(index - (ALICEBLUE as uint))];
             return (Some(result_val) , CSS_OK);
         }
 
@@ -2319,9 +2443,9 @@ impl css_properties {
 
     fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_result){
         let mut result_val: u32;
-        let mut r: u8 = 0;
-        let mut g: u8 = 0;
-        let mut b: u8 = 0;
+        let mut r: u8;
+        let mut g: u8;
+        let mut b: u8;
         let mut a: u8 = 0xff;
         let input_length = lwc::lwc_string_length(data.clone());
         let input_string = lwc::lwc_string_data(data.clone());
@@ -2430,10 +2554,10 @@ impl css_properties {
                     let components: ~[u8] = ~[
                         r , g , b , a
                     ];
-
+                    let mut component: u8;
                     while i < colour_channels {
-                        let mut component: u8;
-                        let mut consumed: uint = 0;
+                        
+                        // let mut consumed: uint = 0;
                         let mut intval: i32 = 0;
                         let mut int_only: bool = false;
 
@@ -2504,7 +2628,7 @@ impl css_properties {
                     }
                 }
                 else if colour_channels == 5 || colour_channels == 6 {
-                    let consumed: uint = 0;
+                    // let consumed: uint = 0;
                     let mut hue: i32;
                     let mut sat: i32;
                     let mut lit: i32;
@@ -2701,7 +2825,7 @@ impl css_properties {
 
         consumeWhitespace(vector , ctx);
         let mut token:&~css_token;
-        let mut unit_retVal:u32 = 0;
+        let mut unit_retVal:u32;
         let orig_ctx = *ctx;
 
         if *ctx >= vector.len() {
@@ -2711,22 +2835,27 @@ impl css_properties {
         *ctx = *ctx + 1;
 
         match token.token_type {
-            CSS_TOKEN_DIMENSION(_ , _ , _)|CSS_TOKEN_NUMBER(_ , _)|CSS_TOKEN_PERCENTAGE(_ , _) => {
-            },
-            _ => return(None , None , CSS_INVALID)
+            CSS_TOKEN_DIMENSION(_ , _ , _)|CSS_TOKEN_NUMBER(_ , _)|CSS_TOKEN_PERCENTAGE(_ , _) => {},
+            _ => {
+                *ctx = orig_ctx;
+                return(None , None , CSS_INVALID);
+            }
         }
 
         let (num , consumed_index) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
 
         match token.token_type {
             CSS_TOKEN_DIMENSION(_ , _ , _) => {
-                let len = lwc::lwc_string_length(token.idata.get_ref().clone());
+                // let len = lwc::lwc_string_length(token.idata.get_ref().clone());
                 let data = lwc::lwc_string_data(token.idata.get_ref().clone());
 
                 let (unit , result) = css__parse_unit_keyword(data , consumed_index);
                 match result {
                     CSS_OK => {},
-                    _ => return (None , None , result)
+                    _ => {
+                        *ctx = orig_ctx;
+                        return (None , None , result);
+                    }
                 }
                 unit_retVal = unit.unwrap() as u32;
             },
@@ -2736,7 +2865,8 @@ impl css_properties {
                         sheet.quirks_used = true;
                     }
                     else {
-                        return (None , None , CSS_INVALID)
+                        *ctx = orig_ctx;
+                        return (None , None , CSS_INVALID);
                     }
                 }
                 unit_retVal = default_unit;
@@ -2752,6 +2882,7 @@ impl css_properties {
                             match  result {
                                 CSS_OK => {
                                     sheet.quirks_used = true;
+                                    *ctx = *tmp_ctx;
                                     unit_retVal = unit.unwrap() as u32;
                                 },
                                 _=> {}
@@ -3235,10 +3366,7 @@ pub fn css__parse_list_style_type_value(strings: &mut ~css_propstrings , token:&
  *
  *                 The resulting string's reference is passed to the caller
  */
-pub fn css__ident_list_or_string_to_string(vector:&~[~css_token], ctx:@mut uint,
-        reserved:Option<reserved_fn>) -> (css_result, Option<arc::RWARC<~lwc_string>>)
-{
-    
+pub fn css__ident_list_or_string_to_string(vector:&~[~css_token], ctx:@mut uint, reserved:Option<reserved_fn>) -> (css_result, Option<arc::RWARC<~lwc_string>>) {
     //TO DO
     if *ctx >= vector.len() {
         return (CSS_INVALID,None)
@@ -3255,4 +3383,8 @@ pub fn css__ident_list_or_string_to_string(vector:&~[~css_token], ctx:@mut uint,
         _ => return (CSS_INVALID,None)
     }   
 }
+
+// pub fn parse_system_font(sheet: @mut css_stylesheet , style: @mut css_style) {
+
+// }
 
