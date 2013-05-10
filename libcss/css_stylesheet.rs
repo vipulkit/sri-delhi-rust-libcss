@@ -5,12 +5,34 @@ extern mod css_bytecode;
 extern mod css_enum;
 extern mod std ;
 extern mod wapcaplet;
+extern mod css_propstrings;
 
 use css_enum::* ;
 use css_bytecode::*;
 use core::managed::*;
 use wapcaplet::*;
 use std::arc;
+use css_propstrings::*;
+
+/**
+ * Callback to resolve an URL
+ *
+ * \param dict  String internment context
+ * \param base  Base URI (absolute)
+ * \param rel   URL to resolve, either absolute or relative to base
+ * \param abs   location to receive result
+ * \return CSS_OK on success, appropriate error otherwise.
+ */
+
+pub type css_fixed = i32;
+
+pub struct css_token {
+    token_type: css_token_type,
+    idata: Option<arc::RWARC<~lwc_string>>,
+}
+
+pub type css_url_resolution_fn = @extern fn (base:~str, rel:arc::RWARC<~lwc_string>) -> (css_result,Option<arc::RWARC<~lwc_string>>);
+pub type reserved_fn = @extern fn (strings:&mut ~css_propstrings, ident:&~css_token) -> bool;
 
 static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
 
@@ -98,6 +120,7 @@ pub struct css_stylesheet {
 	inline_style:bool,						/**< Is an inline style */
 	cached_style:Option<@mut css_style>,	/**< Cache for style parsing */
 	string_vector:~[~str],
+	resolve : css_url_resolution_fn // URL resolution function */
 }
 
 pub struct css_rule {

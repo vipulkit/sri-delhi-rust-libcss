@@ -17,17 +17,6 @@ use css_propstrings::*;
 use css_properties::*;
 use css_bytecode::*;
 
-/**
- * Callback to resolve an URL
- *
- * \param dict  String internment context
- * \param base  Base URI (absolute)
- * \param rel   URL to resolve, either absolute or relative to base
- * \param abs   location to receive result
- * \return CSS_OK on success, appropriate error otherwise.
- */
-type css_url_resolution_fn = @extern fn (base:~str, rel:arc::RWARC<~lwc_string>) -> (css_result,Option<arc::RWARC<~lwc_string>>);
-type reserved_fn = @extern fn (strings:&mut ~css_propstrings, ident:&~css_token) -> bool;
 
 pub struct context_entry {
 	event_type:css_parser_event,        /* < Type of entry */
@@ -48,10 +37,9 @@ pub struct css_language {
 	properties: ~css_properties,
 	default_namespace:Option<~str>, 
 	namespaces:~[~css_namespace],
-	resolve : css_url_resolution_fn // URL resolution function */
 }
 
-	fn  css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc>, resolve:css_url_resolution_fn ) -> ~css_language {
+	fn  css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~css_language {
 		
 	~css_language {
 		sheet:sheet,
@@ -61,8 +49,7 @@ pub struct css_language {
 		context:~[], 
 		state:CHARSET_PERMITTED,
 		default_namespace:None,   
-		namespaces:~[],
-		resolve : resolve
+		namespaces:~[]		
 	}
 }
 
@@ -1836,7 +1823,7 @@ pub impl css_language {
 	pub fn font_face_parse_font_family(&mut self, vector:&~[~css_token], ctx:@mut uint,	
 		font_face:@mut css_font_face) -> css_result	{
 		
-		match self.css__ident_list_or_string_to_string(vector, ctx,Some(@css_language::font_rule_font_family_reserved))
+		match css__ident_list_or_string_to_string(vector, ctx,Some(@css_language::font_rule_font_family_reserved))
 		{
 			(CSS_OK,Some(string)) => { 
 				self.css__font_face_set_font_family(font_face, string);
@@ -2018,7 +2005,7 @@ pub impl css_language {
 
 		match token.token_type {
 			CSS_TOKEN_URI(_) => {
-				match (*self.resolve)(copy self.sheet.url, token.idata.get_ref().clone())
+				match (*self.sheet.resolve)(copy self.sheet.url, token.idata.get_ref().clone())
 				{ 
 					(CSS_OK,Some(loc)) => location =loc,
 					(error,_) => return (error,None)
@@ -2049,7 +2036,7 @@ pub impl css_language {
 				if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LOCAL as uint) {
 					consumeWhitespace(vector, ctx);
 
-					match self.css__ident_list_or_string_to_string(vector, ctx, None) {
+					match css__ident_list_or_string_to_string(vector, ctx, None) {
 						(CSS_OK,Some(loc)) => location = loc,
 						(error,x) => return (error,x)
 					}
@@ -2183,43 +2170,5 @@ pub impl css_language {
 
 		return CSS_OK
 	}
-
-	/**
-	 * Create a string from a list of IDENT/S tokens if the next token is IDENT
-	 * or references the next token's string if it is a STRING
-	 *
-	 * \param self       Parsing context
-	 * \param vector     Vector containing tokens
-	 * \param ctx        Vector iteration context
-	 * \param reserved   Callback to determine if an identifier is reserved
-	 * \param result     Location to receive resulting string
-	 * \return CSS_OK on success, appropriate error otherwise.
-	 *
-	 * Post condition: \a *ctx is updated with the next token to process
-	 *                 If the input is invalid, then \a *ctx remains unchanged.
-	 *
-	 *                 The resulting string's reference is passed to the caller
-	 */
-	pub fn css__ident_list_or_string_to_string(&mut self, vector:&~[~css_token], ctx:@mut uint,
-			reserved:Option<reserved_fn>) -> (css_result, Option<arc::RWARC<~lwc_string>>)
-	{
-		
-		//TO DO
-		if *ctx >= vector.len()	{
-			return (CSS_INVALID,None)
-		}
-		
-		let mut token = &vector[*ctx];	
-		
-		match token.token_type {
-			CSS_TOKEN_STRING(_) => {
-				*ctx += 1; //Iterate
-				return (CSS_OK,Some(token.idata.get_ref().clone()))
-			},	
-			//TO DO CSS_TOKEN_IDENT => 	return css__ident_list_to_string(c, vector, ctx, reserved, result),
-			_ => return (CSS_INVALID,None)
-		}	
-	}
-
 
 }

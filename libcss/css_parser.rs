@@ -3,6 +3,7 @@
 
 extern mod css_properties;
 extern mod css_language;
+extern mod css_stylesheet;
 extern mod css_lexer;
 extern mod css_enum;
 extern mod wapcaplet;
@@ -10,6 +11,7 @@ extern mod std;
 
 use css_properties::*;
 use css_language::*;
+use css_stylesheet::*;
 use css_lexer::*;
 use css_enum::*;
 use wapcaplet::*;

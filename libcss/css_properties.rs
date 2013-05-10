@@ -18,14 +18,8 @@ use std::arc;
 use core::str::*;
 use css_fpmath::*;
 
-type css_fixed = i32;
+
 //use css_propstrings::*; 
-pub struct css_token {
-    token_type: css_token_type,
-    idata: Option<arc::RWARC<~lwc_string>>,
-    // col: u32,
-    // line: u32
-}
 
 pub type handle =  @extern fn(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style) ->css_result;
 
@@ -3224,3 +3218,41 @@ pub fn css__parse_list_style_type_value(strings: &mut ~css_propstrings , token:&
         return (None , CSS_INVALID);
     }
 }
+
+/**
+ * Create a string from a list of IDENT/S tokens if the next token is IDENT
+ * or references the next token's string if it is a STRING
+ *
+ * \param self       Parsing context
+ * \param vector     Vector containing tokens
+ * \param ctx        Vector iteration context
+ * \param reserved   Callback to determine if an identifier is reserved
+ * \param result     Location to receive resulting string
+ * \return CSS_OK on success, appropriate error otherwise.
+ *
+ * Post condition: \a *ctx is updated with the next token to process
+ *                 If the input is invalid, then \a *ctx remains unchanged.
+ *
+ *                 The resulting string's reference is passed to the caller
+ */
+pub fn css__ident_list_or_string_to_string(vector:&~[~css_token], ctx:@mut uint,
+        reserved:Option<reserved_fn>) -> (css_result, Option<arc::RWARC<~lwc_string>>)
+{
+    
+    //TO DO
+    if *ctx >= vector.len() {
+        return (CSS_INVALID,None)
+    }
+    
+    let mut token = &vector[*ctx];  
+    
+    match token.token_type {
+        CSS_TOKEN_STRING(_) => {
+            *ctx += 1; //Iterate
+            return (CSS_OK,Some(token.idata.get_ref().clone()))
+        },  
+        //TO DO CSS_TOKEN_IDENT =>  return css__ident_list_to_string(c, vector, ctx, reserved, result),
+        _ => return (CSS_INVALID,None)
+    }   
+}
+
