@@ -9,14 +9,12 @@ extern mod css_enum;
 extern mod wapcaplet;
 extern mod std;
 
-use css_properties::*;
 use css_language::*;
 use css_stylesheet::*;
 use css_lexer::*;
 use css_enum::*;
 use wapcaplet::*;
 use std::arc;
-
 
 /**
  * Major state numbers

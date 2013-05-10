@@ -1,0 +1,18 @@
+#[link(name = "parserutils",
+       vers = "0.2",
+       url = "https://github.com/webconvforge/sri-delhi-rust-libcss/tree/master/libparserutils")];
+
+#[crate_type = "lib"];
+
+extern mod std;
+
+pub mod charset {
+    pub mod csdetect;
+    pub mod alias;
+}
+
+pub mod input {
+    pub mod riconv;
+    pub mod filter;
+    pub mod inputstream;
+}
