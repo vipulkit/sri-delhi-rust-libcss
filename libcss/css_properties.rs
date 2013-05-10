@@ -904,6 +904,84 @@ impl css_properties {
     }
 
     fn css__parse_border_spacing(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        let orig_ctx = *ctx;
+        let mut error = CSS_OK; 
+        let mut length:~[i32] = ~[];
+        let mut unit:~[u32] = ~[];
+
+        /* Firstly, handle inherit */
+        if *ctx >= vector.len() {
+            return CSS_INVALID   
+        }
+            
+        let mut token = &vector[*ctx];
+
+        if ( 
+            match (token.token_type) {
+                CSS_TOKEN_IDENT(_) => true,
+                _=> false
+            } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) 
+        ) {
+            *ctx += 1;
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_SPACING , FLAG_INHERIT as u8 , 0);
+        }
+        else {
+            let mut num_lengths :int =0;
+            let (length_opt,unit_opt,result) =css_properties:: css__parse_unit_specifier(sheet, vector, ctx, UNIT_PX as u32);
+            length.push(length_opt.unwrap() as i32);
+            unit.push(unit_opt.unwrap());
+            error =result;
+            match error {
+                CSS_OK=> {
+                    if (unit[0] & UNIT_ANGLE as u32) > 0  || (unit[0] & UNIT_TIME as u32) > 0  || 
+                        (unit[0] & UNIT_FREQ as u32) > 0  || (unit[0] & UNIT_PCT as u32 ) > 0 {
+
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                    }
+                    num_lengths = 1;
+                    consumeWhitespace(vector, ctx);
+                    token = &vector[*ctx];
+                     if *ctx < vector.len() {
+                        let (length_opt,unit_opt,result) =css_properties:: css__parse_unit_specifier(sheet, vector, ctx, UNIT_PX as u32);
+                        length.push(length_opt.unwrap() as i32);
+                        unit.push(unit_opt.unwrap());
+                        error =result;
+                         match error {
+                            CSS_OK=> {
+                                if (unit[1] & UNIT_ANGLE as u32)>0   ||
+                                   ( unit[1] & UNIT_TIME as u32) > 0 ||
+                                   ( unit[1] & UNIT_FREQ  as u32) > 0 ||
+                                   ( unit[1] & UNIT_PCT as u32) > 0 {
+                    
+                                    *ctx = orig_ctx;
+                                    return CSS_INVALID;
+                                }
+                                num_lengths = 2;
+                            },
+                            _=>{}
+                        }
+                    }//end of *ctx < vector.len()
+                    if (num_lengths == 1) {
+                     /* Only one length specified. Use for both axes. */
+                        length[1] = length[0];
+                        unit[1] = unit[0];
+                    }
+
+                    /* Lengths must not be negative */
+                    if (length[0] < 0 || length[1] < 0) {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                    }
+                    css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_BORDER_SPACING, 0, BORDER_SPACING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_vappend(style,[ length[0] as u32, unit[0] , length[1] as u32, unit[1] ]); 
+                },
+                _=>{
+                   *ctx = orig_ctx;
+                    return error; 
+                }
+            }
+        }
         CSS_OK
     }
 
