@@ -1,8 +1,5 @@
-#[link(name = "parserutils", vers = "0.1")];
-#[crate_type = "lib"];
-
 extern mod std;
-extern mod riconv;
+
 use core::io::Reader;
 use core::io::ReaderUtil;
 use core::hashmap::linear::LinearMap;
@@ -27,7 +24,7 @@ pub enum parserutils_error {
 	PARSERUTILS_SUCCESS = 9
 }
 
-pub struct lpu {
+pub struct alias {
 	// these two data structures together can be used for mibenum->canonical name conversion
 	canonical_name_list: ~[~str],
 	mibenum_map: ~LinearMap<u16,uint>,
@@ -46,7 +43,7 @@ pub fn memcmp(str1 : &~[u8] , str2 : &[u8] , len : uint ) -> int {
 	0
 }
 
-impl lpu {
+impl alias {
 
 	fn read_aliases(&mut self) {
 		let aliases_file_reader: @Reader = (&io::file_reader(&Path(&"Aliases"))).unwrap();
@@ -138,15 +135,15 @@ impl lpu {
 		}
 	}
 	
-} //impl lpu
+} //impl alias
 
-pub fn lpu() -> arc::ARC<~lpu> {
-	let mut new_lpu = ~lpu {
+pub fn alias() -> arc::ARC<~alias> {
+	let mut new_alias = ~alias {
 		canonical_name_list : ~[],
 		mut mibenum_map : ~LinearMap::new(),
 		mut alias_map : ~LinearMap::new()
 	};
 
-	new_lpu.read_aliases();
-	arc::ARC(new_lpu)
+	new_alias.read_aliases();
+	arc::ARC(new_alias)
 }

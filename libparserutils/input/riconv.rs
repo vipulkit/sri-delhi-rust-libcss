@@ -1,6 +1,3 @@
-#[link(name = "riconv", vers = "1.0" , author = "Servo Team" )];
-#[crate_type = "lib"];
-
 extern mod std;
 use core::str::* ;
 use core::libc::size_t;
