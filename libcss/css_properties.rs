@@ -1590,7 +1590,56 @@ impl css_properties {
     }
 
     fn css__parse_cue(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
-        CSS_OK
+        // TODO: review
+        let orig_ctx = *ctx;
+        let mut error = CSS_OK;
+        let mut token:&~css_token;
+        let mut first_token:&~css_token;
+
+        first_token=&vector[*ctx];
+
+        error = css_properties::css__parse_cue_before(sheet , strings , vector , ctx , style);
+
+        match error {
+            CSS_OK => {
+                consumeWhitespace(vector , ctx);
+                token = &vector[*ctx];
+
+                if *ctx >= vector.len() {
+                    *ctx = orig_ctx;
+                    error = css_properties::css__parse_cue_after(sheet , strings , vector , ctx , style);
+                }
+                else {
+                    if css_properties::is_css_inherit(strings , token) {
+                        error = CSS_INVALID;
+                    }
+                    else {
+                        error = css_properties::css__parse_cue_after(sheet , strings , vector , ctx , style);
+                        match error {
+                            CSS_OK => {
+                                if css_properties::is_css_inherit(strings , token) {
+                                    error = CSS_INVALID;
+                                }
+                            },
+                            _ => {
+                                *ctx = orig_ctx;
+                                error = css_properties::css__parse_cue_after(sheet , strings , vector , ctx , style);
+                            }           
+                        }       
+                    }
+                }
+            },
+            _ => {}
+        }
+        match error {
+            CSS_OK => {
+                return CSS_OK;
+            },
+            _ => {
+                *ctx = orig_ctx;
+                return error
+            }
+        }
     }
 
     fn css__parse_cue_after(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
