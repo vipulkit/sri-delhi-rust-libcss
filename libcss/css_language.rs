@@ -242,7 +242,7 @@ pub impl css_language {
                     
                     let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_CHARSET);
                     
-                    match css_stylesheet::css__stylesheet_rule_set_charset(temp_rule, lwc::lwc_string_data(charset.idata.get_ref().clone())) {
+                    match css_stylesheet::css__stylesheet_rule_set_charset(temp_rule, lwc_string_data(charset.idata.get_ref().clone())) {
                         CSS_OK => {},
                         error => return error
                     }
@@ -296,7 +296,7 @@ pub impl css_language {
                 /* Resolve import URI */
                 match (*self.sheet.resolve)(copy self.sheet.url, uri.idata.get_ref().clone())
                 { 
-                    (CSS_OK,Some(ret_url)) => url = lwc::lwc_string_data(ret_url),
+                    (CSS_OK,Some(ret_url)) => url = lwc_string_data(ret_url),
                     (error,_) => return error
                 }   
 
@@ -1007,7 +1007,7 @@ pub impl css_language {
             *ctx += 1; //Iterate
 
             match self.lookupNamespace(prefix, qname) {
-                CSS_OK  => qname.name = lwc::lwc_string_data(vector[*ctx].idata.get_ref().clone()),
+                CSS_OK  => qname.name = lwc_string_data(vector[*ctx].idata.get_ref().clone()),
                 error   => return error
             }   
         } 
@@ -1020,7 +1020,7 @@ pub impl css_language {
 
 
             qname.name = match prefix {
-                            Some (x) => lwc::lwc_string_data(x),
+                            Some (x) => lwc_string_data(x),
                             None => ~""
                         }
             
@@ -1081,7 +1081,7 @@ pub impl css_language {
 
         match token.token_type {
             CSS_TOKEN_HASH(_)   => {
-                let qname:css_qname=css_qname{ns:~"", name:lwc::lwc_string_data(token.idata.get_ref().clone())};
+                let qname:css_qname=css_qname{ns:~"", name:lwc_string_data(token.idata.get_ref().clone())};
                 match css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_ID, qname, 
                                             CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false) {
                     (CSS_OK, res) => {
@@ -1127,9 +1127,12 @@ pub impl css_language {
                     match ns.prefix {
                         Some(_) => {
                             let ns_prefix = ns.prefix.get_ref().clone();
-                            if lwc::lwc_string_isequal(ns_prefix,value.clone()) {
-                                break
-                            }   
+                            if (
+                                do self.lwc_instance.clone().read |l| {
+                                    l.lwc_string_isequal(ns_prefix.clone() , value.clone())
+                            }) {
+                                break;
+                            }
                         },  
                         None => {}
                     }
@@ -1141,7 +1144,7 @@ pub impl css_language {
                 }   
 
                 match self.namespaces[idx].uri {
-                    Some(_) => qname.ns = lwc::lwc_string_data(self.namespaces[idx].uri.get_ref().clone()),
+                    Some(_) => qname.ns = lwc_string_data(self.namespaces[idx].uri.get_ref().clone()),
                     None => qname.ns = ~""
                 }
             }
@@ -1173,7 +1176,7 @@ pub impl css_language {
 
         match token.token_type {
             CSS_TOKEN_IDENT(_) => {
-                let qname:css_qname=css_qname{ns:~"", name:lwc::lwc_string_data(token.idata.get_ref().clone())};
+                let qname:css_qname=css_qname{ns:~"", name:lwc_string_data(token.idata.get_ref().clone())};
                 return css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_CLASS, qname, 
                                                     CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false)
             }
@@ -1249,7 +1252,7 @@ pub impl css_language {
         let qname:@mut css_qname=@mut css_qname{ns:~"", name:~""};
         match self.lookupNamespace(prefix, qname) { CSS_OK  => {}, error   => return (error,None)}   
 
-        qname.name = lwc::lwc_string_data(vector[*ctx].idata.get_ref().clone());
+        qname.name = lwc_string_data(vector[*ctx].idata.get_ref().clone());
 
         consumeWhitespace(vector, ctx);
 
@@ -1306,7 +1309,7 @@ pub impl css_language {
         
          
         return css_stylesheet::css__stylesheet_selector_detail_init (tkn_type,copy *qname, CSS_SELECTOR_DETAIL_VALUE_STRING,
-                            match value {Some(tkn)=>Some(lwc::lwc_string_data(tkn.idata.get_ref().clone())), None => None }, None, false)
+                            match value {Some(tkn)=>Some(lwc_string_data(tkn.idata.get_ref().clone())), None => None }, None, false)
     }
 
 
@@ -1362,7 +1365,7 @@ pub impl css_language {
             _ => return (CSS_INVALID, None)
         } 
             
-        qname.name=lwc::lwc_string_data(token.idata.get_ref().clone());
+        qname.name=lwc_string_data(token.idata.get_ref().clone());
         
         /* Search lut for selector type */
         match self.strings.is_selector_pseudo(copy qname.name) {
@@ -1404,7 +1407,7 @@ pub impl css_language {
                         _ => return (CSS_INVALID, None)
                      } 
                         
-                    detail_value_string = lwc::lwc_string_data(token.idata.get_ref().clone());
+                    detail_value_string = lwc_string_data(token.idata.get_ref().clone());
                     value_type = CSS_SELECTOR_DETAIL_VALUE_STRING;
 
                     consumeWhitespace(vector, ctx);
@@ -1560,8 +1563,8 @@ pub impl css_language {
                     let mut had_sign = false;
                     let mut had_b = false;
 
-                    let mut len = lwc::lwc_string_length(token.idata.get_ref().clone());
-                    let mut data = lwc::lwc_string_data(token.idata.get_ref().clone());
+                    let mut len = lwc_string_length(token.idata.get_ref().clone());
+                    let mut data = lwc_string_data(token.idata.get_ref().clone());
                     let mut data_index = 0;
                     /* Compute a */
                     if (match token.token_type {
@@ -1700,8 +1703,8 @@ pub impl css_language {
                             /* If we've already seen a sign, ensure one
                              * does not occur at the start of this token
                              */
-                            if had_sign && lwc::lwc_string_length(token.idata.get_ref().clone()) > 0 {
-                                data = lwc::lwc_string_data(token.idata.get_ref().clone());
+                            if had_sign && lwc_string_length(token.idata.get_ref().clone()) > 0 {
+                                data = lwc_string_data(token.idata.get_ref().clone());
                                 data_index = 0;
 
                                 if data.char_at(data_index + 0) == '-' || data.char_at(data_index + 0) == '+'
@@ -1712,7 +1715,7 @@ pub impl css_language {
 
                             let (ret_b,consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
                             b = ret_b;
-                            if consumed != lwc::lwc_string_length(token.idata.get_ref().clone())
+                            if consumed != lwc_string_length(token.idata.get_ref().clone())
                             {
                                 return (CSS_INVALID, None)
                             }
@@ -1726,7 +1729,7 @@ pub impl css_language {
             CSS_TOKEN_NUMBER(_,_)  => {
                 
                 let (ret_val,consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
-                if consumed != lwc::lwc_string_length(token.idata.get_ref().clone())
+                if consumed != lwc_string_length(token.idata.get_ref().clone())
                 {
                     return (CSS_INVALID, None)
                 }   
@@ -2324,7 +2327,7 @@ pub impl css_language {
         if match token.token_type { CSS_TOKEN_NUMBER(_,_) => true, _ => false }  {
             let (num, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
             /* Invalid if there are trailing characters */
-            if consumed != lwc::lwc_string_length(token.idata.get_ref().clone()) {
+            if consumed != lwc_string_length(token.idata.get_ref().clone()) {
                 *ctx = orig_ctx;
                 return CSS_INVALID;
             }

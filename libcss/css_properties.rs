@@ -1787,7 +1787,7 @@ impl css_properties {
                 }
                 else {
                     let mut (num,consumed): (int,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), true);
-                    if (consumed !=  lwc::lwc_string_length(token.idata.get_ref().clone())){
+                    if (consumed !=  lwc_string_length(token.idata.get_ref().clone())){
                         *ctx = orig_ctx;
                         return CSS_INVALID;
                     }
@@ -2211,7 +2211,7 @@ impl css_properties {
             CSS_TOKEN_NUMBER(_,_)=>{
                     let mut (num,consumed): (int,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), false);
                     /* Invalid if there are trailing characters */
-                    if (consumed !=  lwc::lwc_string_length(token.idata.get_ref().clone())){
+                    if (consumed !=  lwc_string_length(token.idata.get_ref().clone())){
                         *ctx = orig_ctx;
                         return CSS_INVALID;
                     }
@@ -2565,7 +2565,7 @@ impl css_properties {
                 value = PLAY_DURING_URI as u16;
                 // TODO resolve function
 
-                // uri_snumber = sheet.css__stylesheet_string_add(lwc::lwc_string_data(uri.get_ref().clone())) as u32;
+                // uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri.get_ref().clone())) as u32;
                 while modifiers < 2 {
                     consumeWhitespace(vector, ctx);
                     token=&vector[*ctx];
@@ -2641,7 +2641,7 @@ impl css_properties {
                         CSS_TOKEN_STRING(_)=>{
                             let mut open_snumber:u32;
                             let mut close_snumber:u32;
-                            open_snumber = sheet.css__stylesheet_string_add(lwc::lwc_string_data(token.idata.get_ref().clone())) as u32;
+                            open_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone())) as u32;
                             consumeWhitespace(vector, ctx);
                             if (*ctx < vector.len()) {
                                 break;
@@ -2655,7 +2655,7 @@ impl css_properties {
                                     return CSS_INVALID;
                                 }
                             }
-                            close_snumber = sheet.css__stylesheet_string_add(lwc::lwc_string_data(token.idata.get_ref().clone())) as u32;
+                            close_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone())) as u32;
                             consumeWhitespace(vector, ctx); 
                             match first {
                                 true => css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_QUOTES, 0, QUOTES_STRING as u16),
@@ -3056,8 +3056,8 @@ impl css_properties {
         let mut g: u8;
         let mut b: u8;
         let mut a: u8 = 0xff;
-        let input_length = lwc::lwc_string_length(data.clone());
-        let input_string = lwc::lwc_string_data(data.clone());
+        let input_length = lwc_string_length(data.clone());
+        let input_string = lwc_string_data(data.clone());
 
         if (input_length == 3 && isHex(input_string[0]) && isHex(input_string[1]) && isHex(input_string[2])) {
             r = charToHex(input_string[0]) as u8;
@@ -3204,7 +3204,7 @@ impl css_properties {
                         }
                         let (num , consumed_index) = css__number_from_lwc_string(token.idata.get_ref().clone() , int_only);
 
-                        if consumed_index != lwc::lwc_string_length(token.idata.get_ref().clone()) {
+                        if consumed_index != lwc_string_length(token.idata.get_ref().clone()) {
                             goto_flag = true;
                         }
                         //TODO
@@ -3253,7 +3253,7 @@ impl css_properties {
                     }
                     let mut (hue_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
                     hue = hue_res as i32;
-                    if consumed_length_from_lwc_string != lwc::lwc_string_length(token.idata.get_ref().clone()) {
+                    if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref().clone()) {
                         goto_flag = true;
                     }
                     while hue < 0 {
@@ -3285,7 +3285,7 @@ impl css_properties {
                     }
                     let mut (sat_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
                     sat = sat_res as i32;
-                    if consumed_length_from_lwc_string != lwc::lwc_string_length(token.idata.get_ref().clone()) {
+                    if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref().clone()) {
                         goto_flag = true;
                     }
 
@@ -3318,7 +3318,7 @@ impl css_properties {
                     }
                     let mut (lit_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
                     lit = lit_res as i32;
-                    if consumed_length_from_lwc_string != lwc::lwc_string_length(token.idata.get_ref().clone()) {
+                    if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref().clone()) {
                         goto_flag = true;
                     }
 
@@ -3351,7 +3351,7 @@ impl css_properties {
                         }
                         let mut (alpha_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
                         alpha = alpha_res as i32;
-                        if consumed_length_from_lwc_string != lwc::lwc_string_length(token.idata.get_ref().clone()) {
+                        if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref().clone()) {
                             goto_flag = true;
                         }
 
@@ -3455,8 +3455,8 @@ impl css_properties {
 
         match token.token_type {
             CSS_TOKEN_DIMENSION(_ , _ , _) => {
-                // let len = lwc::lwc_string_length(token.idata.get_ref().clone());
-                let data = lwc::lwc_string_data(token.idata.get_ref().clone());
+                // let len = lwc_string_length(token.idata.get_ref().clone());
+                let data = lwc_string_data(token.idata.get_ref().clone());
 
                 let (unit , result) = css__parse_unit_keyword(data , consumed_index);
                 match result {
@@ -3487,7 +3487,7 @@ impl css_properties {
 
                     match token.token_type {
                         CSS_TOKEN_IDENT(_) => {
-                            let (unit , result) = css__parse_unit_keyword(lwc::lwc_string_data(token.idata.get_ref().clone()) , 0);
+                            let (unit , result) = css__parse_unit_keyword(lwc_string_data(token.idata.get_ref().clone()) , 0);
                             match  result {
                                 CSS_OK => {
                                     sheet.quirks_used = true;
@@ -3503,7 +3503,7 @@ impl css_properties {
             },
             //CSS_TOKEN_PERCENTAGE
             _ => {
-                if lwc::lwc_string_length(token.idata.get_ref().clone()) != consumed_index {
+                if lwc_string_length(token.idata.get_ref().clone()) != consumed_index {
                     return (None , None , CSS_INVALID);
                 }
                 unit_retVal = UNIT_PCT as u32;
@@ -3647,8 +3647,8 @@ pub fn tokenIsChar(token:&~css_token, c:char) -> bool {
 
     match token.token_type {
         CSS_TOKEN_CHAR(_) => {   
-                if lwc::lwc_string_length(token.idata.get_ref().clone()) == 1 {
-                    let mut token_char = lwc::lwc_string_data(token.idata.get_ref().clone()).char_at(0);
+                if lwc_string_length(token.idata.get_ref().clone()) == 1 {
+                    let mut token_char = lwc_string_data(token.idata.get_ref().clone()).char_at(0);
 
                     // Ensure lowercomparison 
                     if 'A' <= token_char && token_char <= 'Z' {
@@ -3793,10 +3793,10 @@ pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bo
     let mut ret_value = 0;
     let mut consumed_length = 0;
 
-    if lwc::lwc_string_length(string.clone()) == 0 {
+    if lwc_string_length(string.clone()) == 0 {
         return (ret_value , consumed_length);
     }
-    css__number_from_string(lwc::lwc_string_data(string.clone()), 0, int_only)
+    css__number_from_string(lwc_string_data(string.clone()), 0, int_only)
 }
 
 pub fn isDigit(c: u8) -> bool{
