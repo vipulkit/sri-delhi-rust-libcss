@@ -290,6 +290,13 @@ pub enum css_border_collapse_e {
 	CSS_BORDER_COLLAPSE_COLLAPSE		= 0x2
 }
 
+pub enum border_side_e {
+ 	BORDER_SIDE_TOP = 0,
+  	BORDER_SIDE_RIGHT = 1, 
+  	BORDER_SIDE_BOTTOM = 2, 
+  	BORDER_SIDE_LEFT = 3 
+}
+
 pub enum css_border_spacing_e {
 	CSS_BORDER_SPACING_INHERIT		= 0x0,
 	CSS_BORDER_SPACING_SET			= 0x1

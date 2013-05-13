@@ -14,7 +14,24 @@ use wapcaplet::*;
 use std::arc;
 use css_propstrings::*;
 
+pub struct size {
+    size: i32,
+    unit: css_unit
+}
 
+pub struct line_height {
+    size: i32,
+    unit: css_unit
+}
+
+pub struct css_system_font {
+    style: css_font_style_e,
+    variant: css_font_variant_e,
+    weight: css_font_weight_e,
+    size: size,
+    line_height: line_height,
+    family: arc::RWARC<~lwc_string>
+}
 
 pub type css_fixed = i32;
 
@@ -33,8 +50,10 @@ pub struct css_token {
  * \return CSS_OK on success, appropriate error otherwise.
  */
 
+
 pub type css_url_resolution_fn = @extern fn (base:~str, rel:arc::RWARC<~lwc_string>) -> (css_result,Option<arc::RWARC<~lwc_string>>);
 pub type reserved_fn = @extern fn (strings:&mut ~css_propstrings, ident:&~css_token) -> bool;
+pub type font_resolution_fn = @extern fn (name: arc::RWARC<~lwc_string>) -> (css_result , Option<css_system_font>);
 
 /**
  * Callback to be notified of the need for an imported stylesheet
@@ -142,7 +161,8 @@ pub struct css_stylesheet {
     cached_style:Option<@mut css_style>,    /**< Cache for style parsing */
     string_vector:~[~str],
     resolve : css_url_resolution_fn, // URL resolution function */
-    import : Option<css_import_notification_fn> // Import notification function */
+    import : Option<css_import_notification_fn>, // Import notification function */
+    font : Option<font_resolution_fn>   //Import font_resolution function
 }
 
 pub struct css_rule {
