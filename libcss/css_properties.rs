@@ -4539,6 +4539,126 @@ pub fn css__ident_list_or_string_to_string(vector:&~[~css_token], ctx:@mut uint,
     }   
 }
 
+/**
+ * Determine if a given font-family ident is reserved
+ *
+ * \param strings Propstrings
+ * \param ident  IDENT to consider
+ * \return True if IDENT is reserved, false otherwise
+ */
+pub fn font_family_reserved(strings:&mut ~css_propstrings, ident:&~css_token) -> bool {
+    
+    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), SERIF as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), SANS_SERIF as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), CURSIVE as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), FANTASY as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), MONOSPACE as uint)
+}
+
+/**
+ * Convert a font-family token into a bytecode value
+ *
+ * \param strings Propstrings
+ * \param token  Token to consider
+ * \param first  Whether the token is the first
+ * \return Bytecode value
+ */
+pub fn font_family_value(strings:&mut ~css_propstrings, token:&~css_token, first:bool) -> u32 {
+    let mut value:u32;
+    
+    match token.token_type{
+        CSS_TOKEN_IDENT(_) => {
+            if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SERIF as uint) {
+                value = FONT_FAMILY_SERIF as u32
+            }    
+            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SANS_SERIF as uint) {
+                value = FONT_FAMILY_SANS_SERIF as u32
+            }    
+            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CURSIVE as uint) {
+                value = FONT_FAMILY_CURSIVE as u32
+            }    
+            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FANTASY as uint) {
+                value = FONT_FAMILY_FANTASY as u32
+            }    
+            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), MONOSPACE as uint) {
+                value = FONT_FAMILY_MONOSPACE as u32
+            }    
+            else {
+                value = FONT_FAMILY_IDENT_LIST as u32
+            }    
+        },
+        _ =>  value = FONT_FAMILY_STRING as u32
+    } 
+    
+    if first {
+      css_bytecode::buildOPV(CSS_PROP_FONT_FAMILY, 0, value as u16)  
+    }
+    else{
+        value
+    }  
+}
+
+/**
+ * Parse font-family
+ *
+ * \param strings Propstrings
+ * \param vector  Vector of tokens to process
+ * \param ctx     Pointer to vector iteration context
+ * \param result  Pointer to location to receive resulting style
+ * \return CSS_OK on success,
+ *     CSS_NOMEM on memory exhaustion,
+ *     CSS_INVALID if the input is not valid
+ *
+ * Post condition: \a *ctx is updated with the next token to process
+ *         If the input is invalid, then \a *ctx remains unchanged.
+ */
+pub fn css__parse_font_family(strings: &mut ~css_propstrings, vector:&~[~css_token],
+ ctx: @mut uint, result: @mut css_style) -> css_result {
+    
+    let orig_ctx = *ctx;
+    
+    /* [ IDENT+ | STRING ] [ ',' [ IDENT+ | STRING ] ]* | IDENT(inherit)
+     * 
+     * In the case of IDENT+, any whitespace between tokens is collapsed to
+     * a single space
+     *
+     * \todo Mozilla makes the comma optional. 
+     * Perhaps this is a quirk we should inherit?
+     */
+
+    if *ctx >= vector.len() {
+        *ctx = orig_ctx;
+        return CSS_INVALID
+    }
+
+    let token = &vector[*ctx];
+    *ctx +=1; //Iterate
+    
+    if match token.token_type { CSS_TOKEN_IDENT(_) | CSS_TOKEN_STRING(_) => false, _ => true } {
+        *ctx = orig_ctx;
+        return CSS_INVALID
+    }
+
+    if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false } && 
+    strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
+        css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_FONT_FAMILY)
+    } 
+    else {
+        *ctx = orig_ctx;
+        //TO DO
+        // error = css__comma_list_to_style(c, vector, ctx, font_family_reserved, font_family_value, result);
+        // if (error != CSS_OK) {
+        //     *ctx = orig_ctx;
+        //     return error;
+        // }
+
+        css_stylesheet::css__stylesheet_style_append(result, FONT_FAMILY_END as u32);
+    }
+
+    CSS_OK
+}
+
+
 // pub fn parse_system_font(sheet: @mut css_stylesheet , style: @mut css_style) {
 
 // }
