@@ -433,7 +433,7 @@ pub impl css_language {
             consumeWhitespace(vector, ctx);
 
             if *ctx < vector.len() {
-                let token = &vector[*ctx];
+                //token = &vector[*ctx]; Value not used later on 
                 
                 match self.parseSelector(vector, ctx) {
                     (CSS_OK, Some(selector)) => {
@@ -771,9 +771,54 @@ pub impl css_language {
      * \param uri     Namespace URI
      * \return CSS_OK on success, CSS_NOMEM on memory exhaustion.
      */
-    pub fn addNamespace(&mut self, prefix:Option<arc::RWARC<~lwc_string>>, uri:arc::RWARC<~lwc_string>) -> css_result {
-       
-        return CSS_OK;
+    pub fn addNamespace(&mut self, _prefix:Option<arc::RWARC<~lwc_string>>, uri:arc::RWARC<~lwc_string>) -> css_result {
+        match _prefix {
+            Some(prefix) => {
+                /* Replace, or add mapping */
+                let mut prefix_match = false;
+                let mut idx = 0;
+
+                for self.namespaces.each |&ns| {
+                    do self.lwc_instance.clone().read |l| {
+                        if l.lwc_string_isequal(ns.prefix.get_ref().clone(), prefix.clone()){
+                            prefix_match = true;
+                        }
+                    }
+                    if prefix_match {
+                        break
+                    }
+                    idx += 1;    
+                }
+
+                if (idx == self.namespaces.len()) {
+                    /* Not found, create a new mapping */
+                    let ns = ~css_namespace{prefix:Some(prefix),uri:None};
+
+                    self.namespaces.push(ns)
+                   
+                }
+                    
+                /* Special case: if new namespace uri is "", use NULL */
+                if (lwc_string_length(uri.clone()) == 0) {
+                    self.namespaces[idx].uri = None
+                }    
+                else {
+                    self.namespaces[idx].uri = Some(uri)
+                }    
+            },
+            None => {
+
+                /* Special case: if new namespace uri is "", use NULL */
+                if (lwc_string_length(uri.clone()) == 0){
+                    self.default_namespace = None
+                }
+                else {
+                    self.default_namespace = Some(lwc_string_data(uri))
+                }
+            } 
+        }    
+        
+        return CSS_OK
     }
 
     /******************************************************************************
