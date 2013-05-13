@@ -1,11 +1,11 @@
 SRI_HOME = ../../..
 LIBWAPCAPLET = $(SRI_HOME)/libwapcaplet
 
-PROJ = basictest
 SRC = basictests.rs
+EXEC = basictests
 
-$(PROJ): $(SRC)
-	rustc --test -L $(LIBWAPCAPLET) $(SRC)
+$(EXEC): $(SRC)
+	rustc --test -L $(LIBWAPCAPLET) $<
 
-run: $(PROJ)
-	./basictests
+run: $(SRC)
+	./$(EXEC)
