@@ -7,7 +7,7 @@ extern mod css_propstrings;
 extern mod css_enum;
 extern mod wapcaplet;
 extern mod css_fpmath;
-
+extern mod css_bytecode;
 //extern mod css_propstrings_parallel;
 
 use css_stylesheet::*;
@@ -1653,10 +1653,429 @@ impl css_properties {
     }
 
     fn css__parse_content(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token],
-     ctx: @mut uint, style: @mut css_style)->css_result {
+     ctx: @mut uint, result: @mut css_style)->css_result {
+        let mut orig_ctx = *ctx;
+        let mut error:css_result = CSS_OK;                
+        /* IDENT(normal, none, inherit) | [ ... ]+ */
+        
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        
+        let mut token=&vector[*ctx];
+        *ctx = *ctx + 1; //Iterate
+
+        let token_ident_match_res = match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false};
+
+        if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),INHERIT as uint) {
+           css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_CONTENT)        
+        }
+        else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),NORMAL as uint) {
+           css_stylesheet::css__stylesheet_style_appendOPV(result, CSS_PROP_CONTENT, 0, CONTENT_NORMAL as u16)
+        } 
+        else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NONE as uint) {
+           css_stylesheet::css__stylesheet_style_appendOPV(result, CSS_PROP_CONTENT, 0, CONTENT_NONE as u16)
+        } 
+        else {
+
+                /* Macro to output the value marker, awkward because we need to check
+                 * first to determine how the value is constructed.
+                 */
+                let CSS_APPEND = |first, CSSVAL| css_stylesheet::css__stylesheet_style_append(result, if first {css_bytecode::buildOPV(CSS_PROP_CONTENT, 0, CSSVAL)} else {CSSVAL as u32});
+
+                let mut first = true;
+                let mut prev_ctx = orig_ctx;
+
+                /* [
+                 *   IDENT(open-quote, close-quote, no-open-quote,
+                 *         no-close-quote) |
+                 *   STRING |
+                 *   URI |
+                 *   FUNCTION(attr) IDENT ')' |
+                 *   FUNCTION(counter) IDENT IDENT? ')' |
+                 *   FUNCTION(counters) IDENT STRING IDENT? ')'
+                 * ]+
+                 */
+
+            loop {
+                if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),
+                 OPEN_QUOTE as uint) {
+                    CSS_APPEND(first, CONTENT_OPEN_QUOTE as u16)
+                }
+                else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),
+                 CLOSE_QUOTE as uint) {
+                    CSS_APPEND(first, CONTENT_CLOSE_QUOTE as u16)
+                }
+                else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),
+                 NO_OPEN_QUOTE as uint) {
+                    CSS_APPEND(first, CONTENT_NO_OPEN_QUOTE as u16);
+                } 
+                else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),
+                 NO_CLOSE_QUOTE as uint) {
+                    CSS_APPEND(first, CONTENT_NO_CLOSE_QUOTE as u16);
+                } 
+                else if match token.token_type {CSS_TOKEN_STRING(_) => true, _ => false} {
+                    
+                    let snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone())) ;
+                    CSS_APPEND(first, CONTENT_STRING as u16);
+                    
+                    css_stylesheet::css__stylesheet_style_append(result, snumber as u32);
+                }
+               else if match token.token_type {CSS_TOKEN_URI(_) => true, _ => false} {
+                    
+                    match (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone()){
+                        (CSS_OK, Some(uri)) => {
+                            let uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri));
+                            CSS_APPEND(first, CONTENT_URI as u16);
+                    
+                            css_stylesheet::css__stylesheet_style_append(result, uri_snumber as u32)
+                        },
+                        (error, _ ) => {
+                            *ctx = orig_ctx;
+                            return error
+                        }
+                    }
+                } 
+                else if match token.token_type {CSS_TOKEN_FUNCTION(_) => true, _ => false} &&
+                       strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ATTR as uint) {
+                    // uint32_t snumber;
+
+                    consumeWhitespace(vector, ctx);
+
+                    /* Expect IDENT */
+                    if *ctx >= vector.len() {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID
+                    }
+                    
+                    token=&vector[*ctx];
+                    *ctx = *ctx + 1; //Iterate
+                    
+                    match token.token_type { 
+                        CSS_TOKEN_IDENT(_) => {},
+                        _ => {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID
+                        }
+                    }   
+                    
+                    let snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone()));
+                    CSS_APPEND(first, CONTENT_ATTR as u16);
+                    
+                    css_stylesheet::css__stylesheet_style_append(result, snumber as u32);
+
+                    consumeWhitespace(vector, ctx);
+
+                    /* Expect ')' */
+                    if *ctx >= vector.len() {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID
+                    }
+                    
+                    token=&vector[*ctx];
+                    *ctx = *ctx + 1; //Iterate
+                    
+                    if !tokenIsChar(token, ')') {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID
+                    }
+                }
+                else if match token.token_type {CSS_TOKEN_FUNCTION(_) => true, _ => false} &&
+                       strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), COUNTER as uint) {
+                                       
+                    let mut opv = CONTENT_COUNTER as u32;
+
+                    consumeWhitespace(vector, ctx);
+
+                    /* Expect IDENT */
+                    if *ctx >= vector.len() {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID
+                    }
+                    
+                    token=&vector[*ctx];
+                    *ctx = *ctx + 1; //Iterate
+                    
+                    match token.token_type { 
+                        CSS_TOKEN_IDENT(_) => {},
+                        _ => {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID
+                        }
+                    }   
+
+                    let name = token.idata.get_ref().clone();
+
+                    consumeWhitespace(vector, ctx);
+
+                    /* Possible ',' */
+                    if *ctx >= vector.len() {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID
+                    }
+                    
+                    token=&vector[*ctx];
+                    
+                    if !tokenIsChar(token, ',') && !tokenIsChar(token, ')') {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                    }
+
+                    if tokenIsChar(token, ',') {
+                        // uint16_t v;
+
+                        *ctx += 1;
+
+                        consumeWhitespace(vector, ctx);
+
+                        /* Expect IDENT */
+                        if *ctx >= vector.len() {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID
+                        }
+                        
+                        token=&vector[*ctx]; //peek
+                        
+                        match token.token_type { 
+                            CSS_TOKEN_IDENT(_) => {},
+                            _ => {
+                                *ctx = orig_ctx;
+                                return CSS_INVALID
+                            }
+                        }   
+                        
+                        let value:u32; 
+                        match css__parse_list_style_type_value(strings , token){
+                            (Some(val), CSS_OK) => {value = val as u32},
+                            ( _, error) => {
+                                *ctx = orig_ctx;
+                                return error;
+                            }
+                        }
+                        
+                        opv |= value << CONTENT_COUNTER_STYLE_SHIFT as uint;
+
+                        *ctx += 1;
+
+                        consumeWhitespace(vector, ctx);
+                    } 
+                    else {
+                        opv |= LIST_STYLE_TYPE_DECIMAL as u32 << CONTENT_COUNTER_STYLE_SHIFT as uint
+                    }
+
+                    /* Expect ')' */
+                    if *ctx >= vector.len() {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID
+                    }
+                    
+                    token=&vector[*ctx];
+                    
+                    if !tokenIsChar(token, ')') {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                    }
+
+                    let snumber = sheet.css__stylesheet_string_add(lwc_string_data(name));
+                    
+                    CSS_APPEND(first, opv as u16);
+                    
+                    css_stylesheet::css__stylesheet_style_append(result, snumber as u32);
+                } 
+                else if match token.token_type {CSS_TOKEN_FUNCTION(_) => true, _ => false} &&
+                       strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), COUNTERS as uint) {
+                                      
+                    let mut opv = CONTENT_COUNTERS as u32;
+
+                    consumeWhitespace(vector, ctx);
+
+                    /* Expect IDENT */
+                    if *ctx >= vector.len() {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID
+                        }
+                        
+                        token=&vector[*ctx];
+                        *ctx += 1; //Iterate
+
+                        match token.token_type { 
+                            CSS_TOKEN_IDENT(_) => {},
+                            _ => {
+                                *ctx = orig_ctx;
+                                return CSS_INVALID
+                            }
+                        }   
+                    
+                    let name = token.idata.get_ref().clone();
+
+                    consumeWhitespace(vector, ctx);
+
+                    /* Expect ',' */
+                    if *ctx >= vector.len() {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID
+                    }
+                    
+                    token=&vector[*ctx];
+                    *ctx += 1; //Iterate
+
+                    if !tokenIsChar(token, ',') {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                    }
+                    
+                    consumeWhitespace(vector, ctx);
+
+                    /* Expect STRING */
+                    if *ctx >= vector.len() {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID
+                    }
+                    
+                    token=&vector[*ctx];
+                    *ctx += 1; //Iterate
+
+                    match token.token_type{
+                        CSS_TOKEN_STRING(_) => {},
+                        _ => { 
+                            *ctx = orig_ctx;
+                            return CSS_INVALID
+                        }
+                    }    
+
+                    let sep = token.idata.get_ref().clone();
+
+                    consumeWhitespace(vector, ctx);
+
+                    /* Possible ',' */
+                    if *ctx >= vector.len() {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID
+                    }
+                    
+                    token=&vector[*ctx];
+                    *ctx += 1; //Iterate
+
+                    if !tokenIsChar(token, ',') && !tokenIsChar(token, ')') {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID
+                    }
+
+                    if tokenIsChar(token, ',') {
+                                               
+                       *ctx += 1;
+
+                        consumeWhitespace(vector, ctx);
+
+                        /* Expect IDENT */
+                         if *ctx >= vector.len() {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID
+                        }
+                    
+                        token=&vector[*ctx];
+                        
+                        match token.token_type {
+                            CSS_TOKEN_IDENT(_) => {},
+                            _ => {
+                                *ctx = orig_ctx;
+                                return CSS_INVALID;
+                            }
+                        }    
+
+                        let value:u32; 
+                        match css__parse_list_style_type_value(strings , token){
+                            (Some(val), CSS_OK) => {value = val as u32},
+                            ( _, error) => {
+                                *ctx = orig_ctx;
+                                return error;
+                            }
+                        }
+                        
+                        opv |= value as u32 << CONTENT_COUNTERS_STYLE_SHIFT as uint;
+
+                        *ctx += 1;
+
+                        consumeWhitespace(vector, ctx);
+                    } 
+                    else {
+                        opv |= LIST_STYLE_TYPE_DECIMAL as u32 << CONTENT_COUNTERS_STYLE_SHIFT as uint;
+                    }
+
+                    /* Expect ')' */
+                    
+                    if *ctx >= vector.len() {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID
+                    }
+                    
+                    token=&vector[*ctx];
+                    *ctx += 1; //Iterate
+
+                    if !tokenIsChar(token, ')') {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID
+                    }
+
+
+                    let name_snumber = sheet.css__stylesheet_string_add(lwc_string_data(name));
+                   
+                    let sep_snumber = sheet.css__stylesheet_string_add(lwc_string_data(sep));
+                    
+                    CSS_APPEND(first, opv as u16);
+                    
+                    css_stylesheet::css__stylesheet_style_append(result, name_snumber as u32);
+                    
+                    css_stylesheet::css__stylesheet_style_append(result, sep_snumber as u32)
+                }
+                else if (first) {
+                    /* Invalid if this is the first iteration */
+                    error = CSS_INVALID;
+                } 
+                else {
+                    /* Give up, ensuring current token is reprocessed */
+                    *ctx = prev_ctx;
+                    error = CSS_OK;
+                    break;
+                }
+
+                /* if there was an error bail */
+                match error {
+                    CSS_OK => {},
+                     _ => {
+                        *ctx = orig_ctx;
+                        return error;
+                    }
+                }    
+
+                first = false;
+
+                consumeWhitespace(vector, ctx);
+
+                prev_ctx = *ctx;
+                
+                if *ctx >= vector.len() {
+                    break
+                }
+                
+                token=&vector[*ctx];
+                *ctx += 1; //Iterate
+            } /* loop */
+
+            /* Write list terminator */
+            css_stylesheet::css__stylesheet_style_append(result, CONTENT_NORMAL as u32);
+        }
+
+        match error {
+            CSS_OK => {},
+             _ => {
+                *ctx = orig_ctx;
+                return error;
+            }
+        }    
+
     
         CSS_OK
-
     }
 
     fn css__parse_counter_increment(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
