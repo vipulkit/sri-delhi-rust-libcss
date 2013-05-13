@@ -723,7 +723,47 @@ impl css_properties {
     }
 
     fn css__parse_border(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
-        CSS_OK
+        let orig_ctx = *ctx;
+        let mut error: css_result = CSS_OK;
+
+        error = css_properties::css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_TOP);
+        match error {
+            CSS_OK => {},
+            _=> {
+                *ctx = orig_ctx;
+                return error;
+            }
+        }
+
+        *ctx = orig_ctx;
+        error = css_properties::css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_RIGHT);
+        match error {
+            CSS_OK => {},
+            _=> {
+                *ctx = orig_ctx;
+                return error;
+            }
+        }
+
+        *ctx = orig_ctx;
+        error = css_properties::css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_BOTTOM);
+        match error {
+            CSS_OK => {},
+            _=> {
+                *ctx = orig_ctx;
+                return error;
+            }
+        }
+
+        *ctx = orig_ctx;
+        error = css_properties::css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_LEFT);
+        match error {
+            CSS_OK => {},
+            _=> {
+                *ctx = orig_ctx;
+            }
+        }
+        return error;
     }
 
     fn css__parse_border_bottom(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
@@ -2288,6 +2328,209 @@ impl css_properties {
     }
 
     fn css__parse_font(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        let orig_ctx = *ctx;
+        let mut prev_ctx: uint;
+        let mut token: &~css_token;
+        let system_font: css_system_font;
+        let mut bool_style = true;
+        let mut variant = true;
+        let mut weight = true;
+        let mut line_height = true;
+        let mut svw: int;
+        let mut error: css_result;
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        token=&vector[*ctx];
+
+        if css_properties::is_css_inherit(strings , token) {
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_STYLE);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_VARIANT);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_WEIGHT);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_SIZE);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_LINE_HEIGHT);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_FAMILY);
+
+            *ctx = *ctx + 1;
+            return CSS_OK;
+        }
+
+        match sheet.font {
+            None => {},
+            Some(font_resolution) => {
+                let (sheet_font_error , some_sys_font) = (*font_resolution)(token.idata.get_ref().clone());
+                match token.token_type {
+                    CSS_TOKEN_IDENT(_) => {
+                        let value_from_font = match some_sys_font {
+                            None => false,
+                            _ => match sheet_font_error {
+                                 CSS_OK => true,
+                                 _ => false   
+                            }
+                        };
+                        if value_from_font {
+                            let (option_system_font , error)  = parse_system_font(sheet , style);
+                            match error {
+                                CSS_OK => {
+                                    *ctx = *ctx + 1;
+                                    return error;
+                                },
+                                _=> {
+                                    return error;
+                                }
+                            }
+                        }
+                    },
+                    _ => {}
+                }
+            }
+        }
+
+        let style_style = sheet.css__stylesheet_style_create();
+        let variant_style = sheet.css__stylesheet_style_create();
+        let weight_style = sheet.css__stylesheet_style_create();
+        let size_style = sheet.css__stylesheet_style_create();
+        let line_height_style = sheet.css__stylesheet_style_create();
+        let family_style = sheet.css__stylesheet_style_create();
+
+        svw = 0;
+        while svw < 3 {
+            prev_ctx = *ctx;
+            error =CSS_OK;
+
+            if *ctx >= vector.len() {
+               return CSS_INVALID;
+            }
+            token = &vector[*ctx];
+
+            if css_properties::is_css_inherit(strings , token) {
+                return CSS_INVALID;
+            }
+
+            let mut bool_error_style: bool = match css_properties::css__parse_font_style(sheet , strings , vector , ctx , style_style) {
+                CSS_OK => true,
+                _ => false
+            };
+            let mut bool_error_variant = match css_properties::css__parse_font_variant(sheet , strings , vector , ctx , variant_style) {
+                CSS_OK => true,
+                _ => false
+            };
+            let mut bool_error_weight = match css_properties::css__parse_font_weight(sheet , strings , vector , ctx , weight_style) {
+                CSS_OK => true,
+                _ => false
+            };
+
+            if bool_style && bool_error_style {
+                bool_style = false;
+            }
+            else if variant && bool_error_variant {
+                variant = false;
+            }
+            else if weight && bool_error_weight {
+                weight = false;
+            }
+
+            if bool_error_style||bool_error_variant||bool_error_weight {
+                consumeWhitespace(vector , ctx);
+            }
+            else {
+                break;
+            }
+            if *ctx == prev_ctx {
+                break;
+            }
+            svw += 1;
+        }
+
+        consumeWhitespace(vector , ctx);
+
+        if *ctx >= vector.len() {
+           return CSS_INVALID;
+        }
+        token = &vector[*ctx];
+
+        if css_properties::is_css_inherit(strings , token) {
+            return CSS_INVALID;
+        }
+
+        error = css_properties::css__parse_font_size(sheet , strings , vector , ctx , size_style);
+        match error {
+            CSS_OK => {},
+            _ => {
+                return error;
+            }
+        }
+
+        consumeWhitespace(vector , ctx);
+
+        if *ctx >= vector.len() {
+           return CSS_INVALID;
+        }
+        token = &vector[*ctx];
+
+        if tokenIsChar(token , '/') {
+            *ctx += 1;
+
+            consumeWhitespace(vector , ctx);
+            if *ctx >= vector.len() {
+                return CSS_INVALID;
+            }
+
+            token = &vector[*ctx];
+            if css_properties::is_css_inherit(strings , token) {
+                return CSS_INVALID;
+            }
+
+            error = css_properties::css__parse_line_height(sheet , strings , vector , ctx , line_height_style);
+            match error {
+                CSS_OK => {},
+                _ => {
+                    return error;
+                }
+            }
+            line_height = false;
+        }
+
+        consumeWhitespace(vector , ctx);
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        token = &vector[*ctx];
+
+        if css_properties::is_css_inherit(strings , token) {
+            return CSS_INVALID;
+        }
+
+        error = css_properties::css__parse_font_family(sheet , strings , vector , ctx , family_style);
+        match error {
+            CSS_OK => {},
+            _ => {
+                return error;
+            }
+        }
+
+        if bool_style {
+            css_stylesheet::css__stylesheet_style_appendOPV(style_style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_NORMAL as u16);
+        }
+        if variant {
+            css_stylesheet::css__stylesheet_style_appendOPV(variant_style , CSS_PROP_FONT_VARIANT , 0 , FONT_VARIANT_NORMAL as u16);   
+        }
+        if weight {
+            css_stylesheet::css__stylesheet_style_appendOPV(weight_style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_NORMAL as u16);
+        }
+        if line_height {
+            css_stylesheet::css__stylesheet_style_appendOPV(line_height_style , CSS_PROP_LINE_HEIGHT , 0 , LINE_HEIGHT_NORMAL as u16);
+        }
+
+        css_stylesheet::css__stylesheet_merge_style(style , style_style);
+        css_stylesheet::css__stylesheet_merge_style(style , variant_style);
+        css_stylesheet::css__stylesheet_merge_style(style , weight_style);
+        css_stylesheet::css__stylesheet_merge_style(style , size_style);
+        css_stylesheet::css__stylesheet_merge_style(style , line_height_style);
+        css_stylesheet::css__stylesheet_merge_style(style , family_style);
+
         CSS_OK
     }
 
@@ -4067,6 +4310,45 @@ impl css_properties {
         }
     }
 
+    fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[~css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_result { 
+        let orig_ctx = *ctx;
+        let mut prev_ctx: uint;
+        let color: bool = true;
+        let style: bool = true;
+        let width: bool = true;
+        let color_style: @mut css_style;
+        let style_style: @mut css_style;
+        let width_style: @mut css_style;
+        let mut token: &~css_token;
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+
+        token = &vector[*ctx];
+        
+        if (css_properties::is_css_inherit(strings , token)) {
+            css_stylesheet::css_stylesheet_style_inherit(result_style , unsafe{cast::transmute(CSS_PROP_BORDER_TOP_COLOR as uint + side as uint)});
+            css_stylesheet::css_stylesheet_style_inherit(result_style, unsafe{cast::transmute(CSS_PROP_BORDER_TOP_STYLE as uint + side as uint)});
+            css_stylesheet::css_stylesheet_style_inherit(result_style, unsafe{cast::transmute(CSS_PROP_BORDER_TOP_WIDTH as uint + side as uint)});
+        }
+        
+        *ctx = *ctx + 1;
+        color_style = sheet.css__stylesheet_style_create();
+        style_style = sheet.css__stylesheet_style_create();
+        width_style = sheet.css__stylesheet_style_create();
+
+        prev_ctx = *ctx;
+        while *ctx != prev_ctx {
+            let mut error = CSS_OK;
+            token = &vector[*ctx];
+            if css_properties::is_css_inherit(strings , token) {
+                error = CSS_INVALID;
+            }
+        }
+        CSS_OK
+    }
+
     // fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[~css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_result { 
     //  let orig_ctx = *ctx;
     //  let mut prev_ctx: int;
@@ -4659,7 +4941,8 @@ pub fn css__parse_font_family(strings: &mut ~css_propstrings, vector:&~[~css_tok
 }
 
 
-// pub fn parse_system_font(sheet: @mut css_stylesheet , style: @mut css_style) {
-
-// }
+pub fn parse_system_font(sheet: @mut css_stylesheet , style: @mut css_style) -> (Option<css_system_font> , css_result){
+    // TODO
+    (None , CSS_INVALID)
+}
 
