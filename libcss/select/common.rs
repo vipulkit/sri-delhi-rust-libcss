@@ -617,3 +617,12 @@ pub struct css_hint {
     strings:Option<~[~str]>
 }
 
+pub struct rect_result {
+    hlength:i32,
+    vlength:i32,
+    hunit:css_unit,
+    vunit:css_unit,
+    result:u8
+}
+
+/////////////////////////////////////
