@@ -2188,6 +2188,276 @@ impl css_properties {
     }
 
     fn css__parse_cursor(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+        let orig_ctx = *ctx;
+        let mut token: &~css_token;
+        let mut first: bool;
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        token = &vector[*ctx];
+        *ctx = *ctx + 1;
+
+        
+        match token.token_type {
+            CSS_TOKEN_IDENT(_) =>{},
+            CSS_TOKEN_URI(_) => {},
+            _=>{
+                *ctx = orig_ctx;
+                return CSS_INVALID;
+            }
+        }
+
+        if (
+            match token.token_type {
+                CSS_TOKEN_IDENT(_) => true,
+                _=> false
+            } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint)
+            ) {
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_CURSOR);
+        }
+        else {
+            let mut first : bool =true;
+            let mut uri_snumber:u32;
+            while (*ctx < vector.len() 
+                && match token.token_type {
+                        CSS_TOKEN_URI(_) => true,
+                        _ => false
+                   }
+                   ) {
+
+                let mut uri:arc::RWARC<~lwc_string>;
+                match (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone()) {
+                    (CSS_OK, Some(x)) => {
+                        uri =x;
+                    },
+                    (error,_) => {
+                        *ctx = orig_ctx;
+                        return error;
+                    }
+                }
+                uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri)) as u32;
+                match first{
+                    true=>{
+                         css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_URI as u16);
+                    },
+                    false=>{
+                        css_stylesheet::css__stylesheet_style_append(style,CURSOR_URI as u32);
+                    }
+                }
+                css_stylesheet::css__stylesheet_style_append(style,uri_snumber);
+
+                consumeWhitespace(vector, ctx);
+                if *ctx >= vector.len() {
+                    *ctx = orig_ctx;
+                    return CSS_INVALID;
+                }
+                token = &vector[*ctx];
+                *ctx = *ctx + 1;
+                if tokenIsChar(token, ',') == false {
+                    *ctx = orig_ctx;
+                    return CSS_INVALID;
+
+                }
+
+                consumeWhitespace(vector, ctx);
+                if *ctx >= vector.len() {
+                    *ctx = orig_ctx;
+                    return CSS_INVALID;
+                }
+                token = &vector[*ctx];
+                *ctx = *ctx + 1;
+                match token.token_type {
+                    CSS_TOKEN_IDENT(_) =>{},
+                    CSS_TOKEN_URI(_) => {},
+                    _=>{
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                    }
+                }
+                first = false;
+            }//end of while
+            match token.token_type {
+                CSS_TOKEN_IDENT(_)=>{
+                   if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), AUTO as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_AUTO as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_AUTO as u32);
+                            }
+                        }
+                    }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CROSSHAIR as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_CROSSHAIR as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_CROSSHAIR as u32);
+                            }
+                        }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), DEFAULT as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_DEFAULT as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_DEFAULT as u32);
+                            }
+                        }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), POINTER as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_POINTER as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_POINTER as u32);
+                            }
+                        }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), MOVE as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_MOVE as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_MOVE as u32);
+                            }
+                        }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), E_RESIZE as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_E_RESIZE as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_E_RESIZE as u32);
+                            }
+                        }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NE_RESIZE as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_NE_RESIZE as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_NE_RESIZE as u32);
+                            }
+                        }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NW_RESIZE as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_NW_RESIZE as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_NW_RESIZE as u32);
+                            }
+                        }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),N_RESIZE as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_N_RESIZE as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_N_RESIZE as u32);
+                            }
+                        }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SE_RESIZE as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_SE_RESIZE as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_SE_RESIZE as u32);
+                            }
+                        }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SW_RESIZE as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_SW_RESIZE as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_SW_RESIZE as u32);
+                            }
+                        }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), S_RESIZE as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_S_RESIZE as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_S_RESIZE as u32);
+                            }
+                        }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), W_RESIZE as uint) {
+                         match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_W_RESIZE as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_W_RESIZE as u32);
+                            }
+                        }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LIBCSS_TEXT as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_TEXT as u16);
+                            },
+                            false=>{
+                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_TEXT as u32);
+                            }
+                        }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), WAIT as uint) {
+                         match first{
+                                true=>{
+                                    css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_WAIT as u16);
+                                },
+                                false=>{
+                                    css_stylesheet::css__stylesheet_style_append(style,CURSOR_WAIT as u32);
+                                }
+                            }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HELP as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_HELP as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_HELP as u32);
+                            }
+                        }
+                   }
+                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), PROGRESS as uint) {
+                        match first{
+                            true=>{
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_PROGRESS as u16);
+                            },
+                            false=>{
+                                css_stylesheet::css__stylesheet_style_append(style,CURSOR_PROGRESS as u32);
+                            }
+                        }
+                   }
+                   else {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                   }
+                },
+                _=>{}
+            }
+        }//end else
+
         CSS_OK
     }
 
@@ -3299,7 +3569,55 @@ impl css_properties {
     }
 
     fn css__parse_pause(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
-        CSS_OK
+        let orig_ctx = *ctx;
+        let mut first_token: &~css_token;
+        let mut token: &~css_token;
+
+         if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        first_token = &vector[*ctx];
+        let mut error = css_properties::css__parse_pause_before(sheet,strings, vector, ctx, style);
+        match error {
+            CSS_OK=> {
+                consumeWhitespace(vector, ctx);
+
+                token = &vector[*ctx];
+                if (*ctx >= vector.len() )  {
+                    /* no second token, re-parse the first */
+                    *ctx = orig_ctx;
+                    error =  css_properties::css__parse_pause_after(sheet, strings, vector, ctx, style);
+                } 
+                else {
+                    /* second token - might be useful */
+                    if ( css_properties::is_css_inherit(strings, token)) {
+                        /* another bogus inherit */
+                        error = CSS_INVALID;
+                    } 
+                    else {
+                        error =  css_properties::css__parse_pause_after(sheet, strings, vector, ctx, style);
+                        match (error) {
+                             CSS_OK => { 
+                                /* second token parsed */
+                                if ( css_properties::is_css_inherit(strings, first_token)) {
+                                    /* valid second token after inherit */
+                                    error = CSS_INVALID;
+                                }
+                            },
+                            _=> {
+                                /* second token appears to be junk re-try with first */
+                                *ctx = orig_ctx;
+                                error =  css_properties::css__parse_pause_after(sheet, strings, vector, ctx, style);
+                            }
+                        }
+                    }
+                }
+            },
+            _=>{
+                *ctx = orig_ctx;
+            }
+        }
+       return error;
     }
 
     fn css__parse_pause_after(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
