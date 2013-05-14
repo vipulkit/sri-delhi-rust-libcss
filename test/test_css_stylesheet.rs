@@ -9,7 +9,11 @@ use css_stylesheet::*;
 use css_enum::*;
 use test::*;
 use wapcaplet::*;
+use std::arc;
 
+pub fn resolve_url(base:~str, rel:arc::RWARC<~lwc_string>) -> (css_result,Option<arc::RWARC<~lwc_string>>) {
+	return (CSS_OK,Some(rel.clone()));
+}
 
 fn main() {		
 
@@ -35,7 +39,10 @@ fn main() {
 									quirks_used:false,
 									inline_style:false,
 									cached_style:Some(css_style_instance),  	// An instance is created for verification
-									string_vector:~[]
+									string_vector:~[],
+									resolve:@resolve_url,
+									import:None,
+									font:None
 	};				
 
 	// 2.
@@ -410,7 +417,7 @@ fn css_stylesheet_rule_functionalities_test(css_stylesheet_instance : @mut css_s
 	let mut test_logger = result::unwrap(test_report(&"Unit_test_report.csv"));
 	let css_style_instance = css_stylesheet_instance.cached_style.unwrap();
 
-	let retVal = css_stylesheet_instance.css_stylesheet_rule_create(CSS_RULE_UNKNOWN);
+	let retVal = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_UNKNOWN);
 	match(retVal){
 		RULE_UNKNOWN(x)    => {																		
 			match(css_stylesheet::css__stylesheet_rule_add_selector(retVal, css_selector_instance)){
@@ -459,7 +466,7 @@ fn css_stylesheet_rule_functionalities_test(css_stylesheet_instance : @mut css_s
 
 	}
 
-	let retVal = css_stylesheet_instance.css_stylesheet_rule_create(CSS_RULE_SELECTOR);
+	let retVal = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_SELECTOR);
 	match(retVal){
 		RULE_SELECTOR(x)    => {
 			// match(css_stylesheet::css__stylesheet_rule_add_selector(retVal, css_selector_instance)){
@@ -508,7 +515,7 @@ fn css_stylesheet_rule_functionalities_test(css_stylesheet_instance : @mut css_s
 		
 	}
 
-	let retVal = css_stylesheet_instance.css_stylesheet_rule_create(CSS_RULE_CHARSET);
+	let retVal = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_CHARSET);
 	match(retVal){
 		RULE_CHARSET(x)    => {
 			match(css_stylesheet::css__stylesheet_rule_add_selector(retVal, css_selector_instance)){
@@ -557,7 +564,7 @@ fn css_stylesheet_rule_functionalities_test(css_stylesheet_instance : @mut css_s
 		
 	}
 
-	let retVal = css_stylesheet_instance.css_stylesheet_rule_create(CSS_RULE_IMPORT);
+	let retVal = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_IMPORT);
 	match(retVal){
 		RULE_IMPORT(x)    => {
 			match(css_stylesheet::css__stylesheet_rule_add_selector(retVal, css_selector_instance)){
@@ -605,7 +612,7 @@ fn css_stylesheet_rule_functionalities_test(css_stylesheet_instance : @mut css_s
 		  _  =>  test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css_stylesheet_rule_create", ~"CSS_RULE_IMPORT", ~"RULE_IMPORT(x)", ~"Non RULE_IMPORT(x)", ~"")				
 	}
 
-	let retVal = css_stylesheet_instance.css_stylesheet_rule_create(CSS_RULE_MEDIA);
+	let retVal = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_MEDIA);
 	match(retVal){
 		RULE_MEDIA(x)    => {
 			match(css_stylesheet::css__stylesheet_rule_add_selector(retVal, css_selector_instance)){
@@ -658,7 +665,7 @@ fn css_stylesheet_rule_functionalities_test(css_stylesheet_instance : @mut css_s
 		
 	}
 
-	let retVal = css_stylesheet_instance.css_stylesheet_rule_create(CSS_RULE_FONT_FACE);
+	let retVal = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_FONT_FACE);
 	match(retVal){
 		RULE_FONT_FACE(x)    => {
 			match(css_stylesheet::css__stylesheet_rule_add_selector(retVal, css_selector_instance)){
@@ -702,7 +709,7 @@ fn css_stylesheet_rule_functionalities_test(css_stylesheet_instance : @mut css_s
 		
 	}
 
-	let retVal = css_stylesheet_instance.css_stylesheet_rule_create(CSS_RULE_PAGE);
+	let retVal = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_PAGE);
 	match(retVal) {
 		RULE_PAGE(x) => {
 			match(css_stylesheet::css__stylesheet_rule_add_selector(retVal, css_selector_instance)){
