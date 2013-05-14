@@ -6,8 +6,8 @@ extern mod test;
 
 use std::arc;
 use core::vec::*;
-use parserutils::charset::alias::*;
-use parserutils::input::filter::*;
+use parserutils::charset::aliases::*;
+use parserutils::input::parserutils_filter::*;
 
 
 
@@ -18,7 +18,7 @@ fn main(){
 	let mut external_argument : ~str = ~"";
 	let mut Alias = alias();
 	
-	let mut (filterinstance,filterResult) = filter(Alias, ~"UTF-8");
+	let mut (filterinstance,filterResult) = parserutils_filter(Alias, ~"UTF-8");
 
 
 	// Log file 

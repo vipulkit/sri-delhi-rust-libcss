@@ -12,7 +12,7 @@ use parserutils::* ;
 //use parserutils_inputstream::*;
 use parserutils::input::inputstream::*;
 use parserutils::charset::csdetect::*;
-use parserutils::charset::alias::*;
+use parserutils::charset::aliases::*;
 
 fn main() {
 	let mut test1 = result::unwrap(test_report(&"Unit_test_report.csv"));

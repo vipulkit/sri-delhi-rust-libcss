@@ -4,7 +4,7 @@ extern mod parserutils;
 extern mod test;
 
 use std::arc;
-use parserutils::charset::alias::*;
+use parserutils::charset::aliases::*;
 use test::*;
 use core::str::*;
 
