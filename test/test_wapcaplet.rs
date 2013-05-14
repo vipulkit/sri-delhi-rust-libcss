@@ -141,57 +141,16 @@ fn main() {
 		}
 
 
-		// test 7: ref count increase of a interned string
-		function_name = ~"lwc_string_ref";
-		test_name = ~"ref count increase of a already interned string";
-		comment = ~"ref count increases";
-		//test_logger.pass(copy module_name , copy file_name , copy function_name , copy test_name , ~"", ~"", copy comment);
-		test_logger.info(~"test_wapcaplet.rs", copy external_argument, copy module_name , copy file_name , copy function_name , copy test_name ,  ~"", copy comment);
-		let t = l.lwc_intern_string(~"abcdef");
-		let r = l.lwc_string_ref(t);
+		
 
-		// test 8: ref count decrease of a interned string
-		function_name = ~"lwc_string_unref";
-		test_name = ~"ref count decrease of a interned string";
-		comment = ~"ref count decreases";
-		//test_logger.pass(copy module_name , copy file_name , copy function_name , copy test_name , ~"", ~"", copy comment);
-		test_logger.info(~"test_wapcaplet.rs", copy external_argument, copy module_name , copy file_name , copy function_name , copy test_name ,  ~"", copy comment);
-		let t = l.lwc_intern_string(~"abcdef");
-		let r = l.lwc_string_unref(t);
-
-		// test 9: ref count decrease of a interned string with ref count already 0
-		function_name = ~"lwc_string_unref";
-		test_name = ~"ref count decrease of a interned string with ref count already 0";
-		comment = ~"this case handled : but should return some error or warning if tried";
-		test_logger.info(~"test_wapcaplet.rs", copy external_argument, copy module_name , copy file_name , copy function_name , copy test_name ,  ~"", copy comment);
-		let t = l.lwc_intern_string(~"abcdef");
-		l.lwc_string_unref(t.clone());
-		l.lwc_string_unref(t.clone());
-
-
-
-		// test 10: ref count decrease of a interned string with ref count already 0
-		// function_name = ~"lwc_string_unref";
-		// test_name = ~"ref count decrease of a interned string with ref count already 0";
-		// comment = ~"this case handled : but should return some error or warning if tried";
-		// test_logger.info(~"test_wapcaplet.rs", copy external_argument, copy module_name , copy file_name , copy function_name , copy test_name , ~"", ~"", copy comment);
-		// let t = l.lwc_intern_string(~"abcdef");
-		// l.lwc_string_unref(t.clone());
-		// l.lwc_string_unref(t.clone());
-
-		// test 11: test for a static function
+		// test 7: test for a static function
 		function_name = ~"lwc_string_data";
 		test_name = ~"data of a lwc_string";
 		comment = ~"returns data ";
 		test_logger.info(~"test_wapcaplet.rs", copy external_argument, copy module_name , copy file_name , copy function_name , copy test_name ,  ~"", copy comment);
 		io::println(fmt!("%?" , lwc_string_data(p)));
 
-		// test 12: internment of a sub string of lenght 5 from offset 2 in null string(slice with lenght or offset greater than actual length of string)
-		// function_name = ~"lwc_intern_substring";
-		// test_name = ~"internment of a sub string of lenght 5 from offset 2 in null string(slice with lenght or offset greater than actual length of string)";
-		// comment = ~"task fails: index out of bound";
-		// test_logger.fail(~"test_wapcaplet.rs", copy external_argument, copy module_name , copy file_name , copy function_name , copy test_name , copy comment);
-		// let r = l.lwc_intern_substring(p ,2 , 5);
+		
 
 	}
 }
