@@ -1,6 +1,6 @@
 extern mod std;
 
-use charset::alias::*;
+use charset::aliases::*;
 use std::arc;
 
 pub enum css_charset_source {

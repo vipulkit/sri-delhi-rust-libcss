@@ -7,7 +7,7 @@ extern mod test;
 use test::*;
 use parserutils::* ;
 use parserutils::input::inputstream::*;
-use parserutils::charset::alias::*;
+use parserutils::charset::aliases::*;
 
  fn main() {
 	let args : ~[~str] = os::args();

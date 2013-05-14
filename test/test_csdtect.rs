@@ -7,8 +7,8 @@ extern mod test;
 
 //use csdetect::*;
 use test::*;
-use parserutils::charset::alias::*;
-use parserutils::input::filter::* ;
+use parserutils::charset::aliases::*;
+use parserutils::input::parserutils_filter::* ;
 use parserutils::input::inputstream::*;
 use parserutils::charset::csdetect::*;
 //use parserutils_inputstream::*;

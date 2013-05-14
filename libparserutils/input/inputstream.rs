@@ -4,9 +4,9 @@ use core::vec::*;
 use std::arc;
 
 
-use charset::alias::*;
+use charset::aliases::*;
 use charset::csdetect::*;
-use input::filter::*;
+use input::parserutils_filter::*;
 
 
 pub type  parserutils_charset_detect_func =  
@@ -31,7 +31,7 @@ pub fn inputstream(int_enc: ~str, csdetect_instance: Option<parserutils_charset_
     }
 
     let mut stream: ~inputstream;
-    match filter(alias() , copy int_enc) {
+    match parserutils_filter(alias() , copy int_enc) {
         (x,PARSERUTILS_OK) =>{
             let mut filter_instance = x.unwrap(); 
             stream = ~inputstream {
