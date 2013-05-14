@@ -43,7 +43,8 @@ fn main() {
 									string_vector:~[],
 									resolve:@resolve_url,
 									import:None,
-									font:None
+									font:None,
+									color:None
 	};				
 
 	// 2.
