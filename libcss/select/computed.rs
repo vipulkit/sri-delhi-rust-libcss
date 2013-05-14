@@ -91,14 +91,6 @@ pub fn css_computed_outline_width(
     }
 }
 
-pub struct rect_result {
-    hlength:i32,
-    vlength:i32,
-    hunit:css_unit,
-    vunit:css_unit,
-    result:u8
-}
-
 pub fn css_computed_border_spacing(
                     style : @mut css_computed_style) 
                     -> rect_result {
@@ -1542,6 +1534,12 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
     // ...........
     // writing inside functions first 
     // .......
+
+    compute_absolute_length_pair(style,
+            ex_size.length.get(),
+            ~css_computed_border_spacing,
+            ~set_border_spacing);
+
     CSS_OK
 }
 
@@ -1551,17 +1549,366 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
 
 // pub fn css_computed_background_color(style: @mut css_computed_style)
 //                                     -> (u8,u32) {
-// pub fn compute_absolute_color( style: @mut css_computed_style ) -> {
 
+pub fn compute_absolute_background_color( style: @mut css_computed_style ) -> css_result {
+
+    let mut (result,_) = css_computed_background_color(style); 
+    if result==(CSS_BACKGROUND_COLOR_CURRENT_COLOR as u8) {
+
+        let mut (_,computed_color) =  css_computed_color(style);
+        set_background_color(style,(CSS_BACKGROUND_COLOR_COLOR as u8),computed_color);   
+    }
+    CSS_OK
+}
+
+pub fn compute_absolute_outline_color( style: @mut css_computed_style ) -> css_result {
+
+    let mut (result,_) = css_computed_outline_color(style); 
+    if result==(CSS_BACKGROUND_COLOR_CURRENT_COLOR as u8) {
+
+        let mut (_,computed_color) =  css_computed_color(style);
+        set_outline_color(style,(CSS_BACKGROUND_COLOR_COLOR as u8),computed_color);   
+    }
+    CSS_OK
+}
+
+pub fn compute_border_colors(style: @mut css_computed_style) -> css_result {
+
+    let mut (_,computed_color) = css_computed_color(style);
+
+    //let mut (result,border_color) : (u8,u32) = (0,0);
+    let mut (result,_) = css_computed_border_top_color(style) ;
+    if ( result == (CSS_BORDER_COLOR_CURRENT_COLOR as u8) ) {
+        set_border_top_color(style, 
+                (CSS_BORDER_COLOR_COLOR as u8) ,computed_color );
+    }
+
+    let mut (result,_) = css_computed_border_right_color(style) ;
+    if ( result == (CSS_BORDER_COLOR_CURRENT_COLOR as u8) ) {
+        set_border_right_color(style, 
+                (CSS_BORDER_COLOR_COLOR as u8) ,computed_color );
+    }
+
+    let mut (result,_) = css_computed_border_bottom_color(style);
+    if ( result  == (CSS_BORDER_COLOR_CURRENT_COLOR as u8) ) {
+        set_border_bottom_color(style, 
+                (CSS_BORDER_COLOR_COLOR as u8) ,computed_color );
+    }
+
+    let mut (result,_) = css_computed_border_left_color(style) ;
+    if ( result == (CSS_BORDER_COLOR_CURRENT_COLOR as u8) ) {
+        set_border_left_color(style, 
+                (CSS_BORDER_COLOR_COLOR as u8) ,computed_color );
+    }
+
+    CSS_OK
+}
+
+// pub fn compute_absolute_border_width(style : @mut css_computed_style,
+//                                     ex_size :@mut css_hint_length) -> css_result {
+
+//     css_error error;
+
+//     error = compute_absolute_border_side_width(style, ex_size,
+//             get_border_top_width, 
+//             set_border_top_width);
+//     if (error != CSS_OK)
+//         return error;
+
+//     error = compute_absolute_border_side_width(style, ex_size,
+//             get_border_right_width, 
+//             set_border_right_width);
+//     if (error != CSS_OK)
+//         return error;
+
+//     error = compute_absolute_border_side_width(style, ex_size,
+//             get_border_bottom_width, 
+//             set_border_bottom_width);
+//     if (error != CSS_OK)
+//         return error;
+
+//     error = compute_absolute_border_side_width(style, ex_size,
+//             get_border_left_width, 
+//             set_border_left_width);
+//     if (error != CSS_OK)
+//         return error;
+
+//     return CSS_OK;
 // }
+
+pub type  compute_absolute_length_pair_get =  
+    ~extern fn(style:@mut css_computed_style) -> (rect_result);
+
+pub type  compute_absolute_length_pair_set =
+    ~extern fn(style:@mut css_computed_style,
+            ftype:u8, 
+            hlength:i32, 
+            hunit:css_unit,
+            vlength:i32,
+            vunit:css_unit) ;
+
+pub type  compute_absolute_length_normal_get =  
+    ~extern fn(style:@mut css_computed_style) -> (u8,Option<i32>,Option<css_unit>);
+
+pub type  compute_absolute_length_normal_set =
+    ~extern fn(style:@mut css_computed_style,
+            ftype:u8, 
+            length:i32, 
+            unit:css_unit) ;
+
+pub type  compute_absolute_length_none_get =  
+    ~extern fn(style:@mut css_computed_style) -> (u8,Option<i32>,Option<css_unit>);
+
+pub type  compute_absolute_length_none_set =
+    ~extern fn(style:@mut css_computed_style,
+            ftype:u8, 
+            length:i32, 
+            unit:css_unit) ;
+
+pub type  compute_absolute_length_auto_get =  
+    ~extern fn(style:@mut css_computed_style) -> (u8,Option<i32>,Option<css_unit>);
+
+pub type  compute_absolute_length_auto_set =
+    ~extern fn(style:@mut css_computed_style,
+            ftype:u8, 
+            length:i32, 
+            unit:css_unit) ;
+
+pub type  compute_absolute_length_get =  
+    ~extern fn(style:@mut css_computed_style) -> (u8,Option<i32>,Option<css_unit>);
+
+pub type  compute_absolute_length_set =
+    ~extern fn(style:@mut css_computed_style,
+            ftype:u8, 
+            length:i32, 
+            unit:css_unit) ;
+
+
+
+pub fn compute_absolute_margins(style: @mut css_computed_style,
+                    ex_size: @mut css_hint_length) -> css_result {
+
+    let mut error : css_result ;
+
+    error = compute_absolute_length_auto(style, ex_size,
+            ~css_computed_margin_top, ~set_margin_top);
+    match error {
+        CSS_OK=>{},
+        _=> return error
+    }
+
+    error = compute_absolute_length_auto(style, ex_size,
+            ~css_computed_margin_right, ~set_margin_right);
+    match error {
+        CSS_OK=>{},
+        _=> return error
+    }
+
+    error = compute_absolute_length_auto(style, ex_size,
+            ~css_computed_margin_bottom, ~set_margin_bottom);
+    match error {
+        CSS_OK=>{},
+        _=> return error
+    }
+
+    error = compute_absolute_length_auto(style, ex_size,
+            ~css_computed_margin_left, ~set_margin_left);
+    match error {
+        CSS_OK=>{},
+        _=> return error
+    }
     
+    CSS_OK
+}
 
+pub fn compute_absolute_padding(style: @mut css_computed_style,
+                            ex_size: @mut css_hint_length) -> css_result {
 
+    let mut error : css_result ;
 
+    error = compute_absolute_length(style, ex_size,
+            ~css_computed_padding_top, ~set_padding_top);
+    match error {
+        CSS_OK=>{},
+        _=> return error
+    }
 
+    error = compute_absolute_length(style, ex_size,
+            ~css_computed_padding_right, ~set_padding_right);
+    match error {
+        CSS_OK=>{},
+        _=> return error
+    }
 
+    error = compute_absolute_length(style, ex_size,
+            ~css_computed_padding_bottom, ~set_padding_bottom);
+    match error {
+        CSS_OK=>{},
+        _=> return error
+    }
 
+    error = compute_absolute_length(style, ex_size,
+            ~css_computed_padding_left, ~set_padding_left);
+    match error {
+        CSS_OK=>{},
+        _=> return error
+    }
+    
+    CSS_OK
+}
 
+pub fn compute_absolute_vertical_align(style: @mut css_computed_style,
+                            ex_size: @mut css_hint_length) -> css_result {
 
+    let mut (result,olength,ounit) = css_computed_vertical_align(style);
+    let mut length = olength.get_or_default(0);
+    let mut unit = ounit.get_or_default(CSS_UNIT_PX);
 
+    if (result == (CSS_VERTICAL_ALIGN_SET as u8) ) {
+        match unit {
+            CSS_UNIT_EX=> {
+                length = css_multiply_fixed(length, ex_size.value);
+                unit = ex_size.unit;
+            },
+            _=>{}
+        }
+
+        set_vertical_align(style, result, length, unit);
+    }
+    CSS_OK
+}
+
+pub fn compute_absolute_length(style: @mut css_computed_style,
+                                    ex_size: @mut css_hint_length,
+                                    getfn : compute_absolute_length_get,
+                                    setfn : compute_absolute_length_set
+                                    ) -> css_result {
+
+    let mut (result,olength,ounit) =  (*getfn)(style);
+    let mut length = olength.get_or_default(0);
+    let mut unit = ounit.get_or_default(CSS_UNIT_PX);
+
+    match unit {
+        CSS_UNIT_EX=>{
+            length = css_multiply_fixed(length, ex_size.value);
+            unit = ex_size.unit;
+        },
+        _=>{}
+    }
+
+    (*setfn)(style, result, length, unit);
+    CSS_OK
+}
+
+pub fn compute_absolute_length_auto(style: @mut css_computed_style,
+                                    ex_size: @mut css_hint_length,
+                                    getfn : compute_absolute_length_auto_get,
+                                    setfn : compute_absolute_length_auto_set
+                                    ) -> css_result {
+
+    let mut (result,olength,ounit) =  (*getfn)(style);
+    let mut length = olength.get_or_default(0);
+    let mut unit = ounit.get_or_default(CSS_UNIT_PX);
+
+    if (result != (CSS_BOTTOM_AUTO as u8) ) {
+        match unit {
+            CSS_UNIT_EX=> {
+                length = css_multiply_fixed(length, ex_size.value);
+                unit = ex_size.unit;
+            },
+            _=>{}
+        }
+
+        (*setfn)(style, (CSS_BOTTOM_SET as u8), length, unit);
+        CSS_OK
+    }
+    else {
+        (*setfn)(style, (CSS_BOTTOM_AUTO as u8), 0, CSS_UNIT_PX);
+        CSS_OK
+    }
+}
+
+pub fn compute_absolute_length_none(style: @mut css_computed_style,
+                                    ex_size: @mut css_hint_length,
+                                    getfn : compute_absolute_length_none_get,
+                                    setfn : compute_absolute_length_none_set
+                                    ) -> css_result {
+
+    let mut (result,olength,ounit) =  (*getfn)(style);
+    let mut length = olength.get_or_default(0);
+    let mut unit = ounit.get_or_default(CSS_UNIT_PX);
+
+    if (result != (CSS_MAX_HEIGHT_NONE as u8) ) {
+        match unit {
+            CSS_UNIT_EX=> {
+                length = css_multiply_fixed(length, ex_size.value);
+                unit = ex_size.unit;
+            },
+            _=>{}
+        }
+
+        (*setfn)(style, (CSS_MAX_HEIGHT_SET as u8), length, unit);
+        CSS_OK
+    }
+    else {
+        (*setfn)(style, (CSS_MAX_HEIGHT_NONE as u8), 0, CSS_UNIT_PX);
+        CSS_OK
+    }
+}
+
+pub fn  compute_absolute_length_normal(style: @mut css_computed_style,
+                                    ex_size: @mut css_hint_length,
+                                    getfn : compute_absolute_length_normal_get,
+                                    setfn : compute_absolute_length_normal_set
+                                    ) -> css_result {
+
+    let mut (result,olength,ounit) =  (*getfn)(style);
+    let mut length = olength.get_or_default(0);
+    let mut unit = ounit.get_or_default(CSS_UNIT_PX);
+
+    if (result != (CSS_LETTER_SPACING_NORMAL as u8) ) {
+        match unit {
+            CSS_UNIT_EX=> {
+                length = css_multiply_fixed(length, ex_size.value);
+                unit = ex_size.unit;
+            },
+            _=>{}
+        }
+
+        (*setfn)(style, (CSS_LETTER_SPACING_SET as u8), length, unit);
+        CSS_OK 
+    }
+    else {
+        (*setfn)(style, (CSS_LETTER_SPACING_NORMAL as u8), 0, CSS_UNIT_PX);
+        CSS_OK
+    }
+}
+
+pub fn compute_absolute_length_pair(style: @mut css_computed_style,
+                                    ex_size: @mut css_hint_length,
+                                    getfn : compute_absolute_length_pair_get,
+                                    setfn : compute_absolute_length_pair_set
+                                    ) -> css_result {
+
+    let mut result = (*getfn)(style) ;
+
+    match result.hunit {
+        CSS_UNIT_EX=>{
+            result.hlength = css_multiply_fixed(result.hlength, ex_size.value);
+            result.hunit = ex_size.unit;
+        },
+        _=>{}
+    }
+
+    match result.hunit {
+        CSS_UNIT_EX=>{
+            result.vlength = css_multiply_fixed(result.vlength, ex_size.value);
+            result.vunit = ex_size.unit;
+        },
+        _=>{}
+    }
+
+    (*setfn)(style, result.result , result.hlength, result.hunit, result.vlength, result.vunit);
+    CSS_OK
+}
 
