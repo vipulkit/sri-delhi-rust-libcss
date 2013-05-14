@@ -1,11 +1,11 @@
-extern mod css_propstrings;
-extern mod css_propstrings_parallel;
+extern mod css;
+//extern mod css_propstrings_parallel;
 extern mod wapcaplet;
 
 extern mod std;
 
-use css_propstrings::*;
-use css_propstrings_parallel::*;
+use css::parse::propstrings::*;
+use css::parse::propstrings_parallel::*;
 use wapcaplet::*;
 
 fn test_sequential() {

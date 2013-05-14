@@ -1,14 +1,12 @@
-extern mod std;
-//extern mod parserutils_inputstream;
+
 extern mod parserutils ; 
 extern mod test;
-extern mod css_lexer;
-//extern mod csdetect;
-extern mod css_enum;
-use css_enum::*;
+extern mod css;
+
+//use css_enum::*;
 use core::io::*;
 
-use css_lexer::*;
+use css::lex::lexer::*;
 use test::*;
 use parserutils::* ;
 use parserutils::input::inputstream::*;
