@@ -2,7 +2,7 @@ extern mod std;
 
 use std::arc;
 
-use charset::alias::*;
+use charset::aliases::*;
 use input::riconv;
 
 pub struct filter {
@@ -129,7 +129,7 @@ impl filter {
     }
 }
 
-pub fn filter(mut existing_instance: arc::ARC<~alias> , int_enc: ~str) -> (Option<~filter> , parserutils_error) {
+pub fn parserutils_filter(mut existing_instance: arc::ARC<~alias> , int_enc: ~str) -> (Option<~filter> , parserutils_error) {
 
     let mut filter = ~filter{
         int_enc: arc::get(&existing_instance).parserutils_charset_mibenum_from_name(int_enc),               // The internal encoding
