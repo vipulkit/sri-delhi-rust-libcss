@@ -18,9 +18,6 @@ use std::arc;
 use core::str::*;
 use css_fpmath::*;
 
-
-//use css_propstrings::*; 
-
 pub type handle =  @extern fn(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style) ->css_result;
 
 pub struct css_properties {
@@ -2370,7 +2367,7 @@ impl css_properties {
                             }
                         };
                         if value_from_font {
-                            let (option_system_font , error)  = parse_system_font(sheet , style);
+                            error  = parse_system_font(sheet , style , some_sys_font.unwrap());
                             match error {
                                 CSS_OK => {
                                     *ctx = *ctx + 1;
@@ -4940,9 +4937,88 @@ pub fn css__parse_font_family(strings: &mut ~css_propstrings, vector:&~[~css_tok
 }
 
 
-pub fn parse_system_font(sheet: @mut css_stylesheet , style: @mut css_style) -> (Option<css_system_font> , css_result){
-    // TODO
-    (None , CSS_INVALID)
+pub fn parse_system_font(sheet: @mut css_stylesheet , style: @mut css_style , system_font: css_system_font) -> css_result{
+    let mut error: css_result;
+
+    match system_font.style {
+        CSS_FONT_STYLE_NORMAL => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_NORMAL as u16);
+        },
+        CSS_FONT_STYLE_ITALIC => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_ITALIC as u16);  
+        },
+        CSS_FONT_STYLE_OBLIQUE => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_OBLIQUE as u16);  
+        },
+        _ => {
+            return CSS_BADPARM;
+        }
+    }
+
+    match system_font.variant {
+        CSS_FONT_VARIANT_NORMAL => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_VARIANT , 0 , FONT_VARIANT_NORMAL as u16);
+        },
+        CSS_FONT_VARIANT_SMALL_CAPS => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_VARIANT , 0 , FONT_VARIANT_SMALL_CAPS as u16);  
+        },
+        _ => {
+            return CSS_BADPARM;
+        }
+    }
+
+    match system_font.weight {
+        CSS_FONT_WEIGHT_NORMAL => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_NORMAL as u16);
+        },
+        CSS_FONT_WEIGHT_BOLD => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_BOLD as u16);  
+        },
+        CSS_FONT_WEIGHT_BOLDER => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_BOLDER as u16);  
+        },
+        CSS_FONT_WEIGHT_LIGHTER => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_LIGHTER as u16);  
+        },
+        CSS_FONT_WEIGHT_100 => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_100 as u16);  
+        },
+        CSS_FONT_WEIGHT_200 => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_200 as u16);  
+        },
+        CSS_FONT_WEIGHT_300 => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_300 as u16);  
+        },
+        CSS_FONT_WEIGHT_400 => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_400 as u16);  
+        },
+        CSS_FONT_WEIGHT_500 => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_500 as u16);  
+        },
+        CSS_FONT_WEIGHT_600 => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_600 as u16);  
+        },
+        CSS_FONT_WEIGHT_700 => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_700 as u16);  
+        },
+        CSS_FONT_WEIGHT_800 => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_800 as u16);  
+        },
+        CSS_FONT_WEIGHT_900 => {
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_900 as u16);  
+        },
+        _ => {
+            return CSS_BADPARM;
+        }
+    }
+
+    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_SIZE , 0 , FONT_SIZE_DIMENSION as u16);
+    // css_stylesheet::css__stylesheet_style_vappend(style , CSS_PROP_FONT_SIZE , 0 , FONT_SIZE_DIMENSION as u16);
+    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_LINE_HEIGHT , 0 , LINE_HEIGHT_DIMENSION as u16);
+
+
+
+    CSS_INVALID
 }
 
 /**
