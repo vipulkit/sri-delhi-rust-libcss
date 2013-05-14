@@ -4946,3 +4946,54 @@ pub fn parse_system_font(sheet: @mut css_stylesheet , style: @mut css_style) -> 
     (None , CSS_INVALID)
 }
 
+/**
+ * Determine if a given voice-family ident is reserved
+ *
+ * \param strings Propstrings
+ * \param ident  IDENT to consider
+ * \return True if IDENT is reserved, false otherwise
+ */
+pub fn voice_family_reserved(strings: &mut ~css_propstrings, ident:&~css_token) -> bool {
+    
+    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), MALE as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), FEMALE as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), CHILD as uint) 
+            
+}
+
+/**
+ * Convert a voice-family token into a bytecode value
+ *
+ * \param strings Propstrings
+ * \param token  Token to consider
+ * \return Bytecode value
+ */
+pub fn voice_family_value(strings: &mut ~css_propstrings, token:&~css_token, first:bool) -> u32
+{
+     
+    let value = match token.token_type {
+        CSS_TOKEN_IDENT(_) => {
+            if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), MALE as uint){
+                VOICE_FAMILY_MALE
+            }
+            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FEMALE as uint){
+                VOICE_FAMILY_FEMALE   
+            }
+            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CHILD as uint){
+                VOICE_FAMILY_CHILD
+            }
+            else{
+                VOICE_FAMILY_IDENT_LIST
+            }
+        },
+        _ => VOICE_FAMILY_STRING     
+    }; 
+   
+    if first {
+        css_bytecode::buildOPV(CSS_PROP_VOICE_FAMILY, 0, value as u16) 
+    }
+    else {
+        value as u32  
+    }   
+}
+
