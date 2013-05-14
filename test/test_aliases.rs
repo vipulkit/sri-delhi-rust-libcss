@@ -4,13 +4,13 @@ extern mod parserutils;
 extern mod test;
 
 use std::arc;
-use parserutils::*;
+use parserutils::charset::alias::*;
 use test::*;
 use core::str::*;
 
 fn main() {
 
-	let mut parser : arc::ARC<~lpu> = lpu();
+	let parser : arc::ARC<~alias> = alias();
 	let mut test_logger = result::unwrap(test_report(&"Unit_test_report.csv"));
 	let mut external_argument : ~str = ~"";
 	let aliasData = ~[~"moose", ~"csinvariant", ~"csinvariant\"", ~"nats-sefi-add", ~"u.t.f.8"];

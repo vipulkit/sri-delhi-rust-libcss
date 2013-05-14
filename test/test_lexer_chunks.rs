@@ -1,17 +1,18 @@
 extern mod std;
-extern mod parserutils_inputstream;
+//extern mod parserutils_inputstream;
 extern mod parserutils ; 
 extern mod test;
 extern mod css_lexer;
-extern mod csdetect;
+//extern mod csdetect;
 extern mod css_enum;
 use css_enum::*;
 use core::io::*;
-use csdetect::*;
+
 use css_lexer::*;
 use test::*;
 use parserutils::* ;
-use parserutils_inputstream::*;
+use parserutils::input::inputstream::*;
+use parserutils::charset::csdetect::*;
  
 fn main() {
 	let CHUNKSIZE:int =10;
@@ -28,7 +29,7 @@ fn main() {
     let mut exit:bool=false;
     let mut test_logger = result::unwrap(test_report(&"Unit_test_report_lexer_chunk.csv"));   
 
-    let (inputStreamOption, ParserUtilsError)= lpu_inputstream(~"UTF-8",Some(~css__charset_extract));
+    let (inputStreamOption, ParserUtilsError)= inputstream(~"UTF-8",Some(~css__charset_extract));
 
     let inputstream = 
         match(inputStreamOption) {
@@ -40,15 +41,15 @@ fn main() {
         };
 
     io::println("Creating lexer");
-    let mut lexerOption = css_lexer(inputstream);
-    let mut lexer : ~css_lexer;
+    let mut lexer = css_lexer::css__lexer_create(inputstream);
+    /*let mut lexer : ~css_lexer;
     if lexerOption.is_some(){
             lexer = lexerOption.unwrap();
     }
     else{
             io::println("Lexer is not created.");                        
                         fail!();           
-    }
+    }*/
 
 	r.seek(0,SeekEnd);
 	fileLen = r.tell() as int;
@@ -70,7 +71,7 @@ fn main() {
                 LEXER_NEEDDATA => {
                     if tokOpt.is_some() {
                         tok= tokOpt.unwrap();
-                          test_logger.info( ~"test_lexer_chunks.rs" , copy external_argument, ~"lexer",~"css_lexer.rs"  , ~"get_token", ~"file read in chunks" ,~"token should be read", ~"NEED TOKEN"+fmt!("token read is %?",tok )) ;      
+                          test_logger.info( ~"test_lexer_chunks.rs" , copy external_argument, ~"lexer",~"css_lexer.rs"  , ~"get_token", ~"file read in chunks" ,~"token should be read", ~"NEED DATA"+fmt!("token read is %?",tok )) ;      
                     }
                     break
                 },

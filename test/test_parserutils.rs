@@ -1,15 +1,18 @@
 
 extern mod std;
-extern mod parserutils_inputstream;
+//extern mod parserutils_inputstream;
 extern mod parserutils ; 
 extern mod test;
-extern mod csdetect;
-use csdetect::*;
+//extern mod csdetect;
+//use csdetect::*;
 use test::*;
 use core::str::*;
 
 use parserutils::* ;
-use parserutils_inputstream::*;
+//use parserutils_inputstream::*;
+use parserutils::input::inputstream::*;
+use parserutils::charset::csdetect::*;
+use parserutils::charset::alias::*;
 
 fn main() {
 	let mut test1 = result::unwrap(test_report(&"Unit_test_report.csv"));
@@ -20,14 +23,14 @@ fn main() {
 	let mut comment: ~str=~"";
 	let mut external_argument : ~str = ~"";
 
-	let (inputStreamOption, ParserUtilsError)= lpu_inputstream(~"US-ASCII" , None);
+	let (inputStreamOption, ParserUtilsError)= inputstream(~"US-ASCII" , None);
 
 	match(ParserUtilsError)	{
 		PARSERUTILS_OK=>{
 			function_name=~"lpu_inputstream";
 			test1.pass( ~"test_parserutils.rs",copy external_argument, copy module_name, copy file_name  , function_name, ~"inputstream with parameters US-ASCII and NONE",~"input stream should be created",~"input stream created successfully", ~"") ;
 
-			let mut stream:~lpu_inputstream = inputStreamOption.unwrap();
+			let mut stream:~inputstream = inputStreamOption.unwrap();
 			let mut data:~[u8]= ~[10,10,10,10,10,10];
 	    	let mut data2:~[u8]= ~[10,10,10,10,10,10,10];
 	    	stream.parserutils_inputstream_insert(data2);

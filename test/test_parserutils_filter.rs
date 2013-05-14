@@ -1,21 +1,25 @@
 
 extern mod std;
 extern mod parserutils;
-extern mod parserutils_filter;
+
 extern mod test;
 
 use std::arc;
-use parserutils::*;
-use parserutils_filter::*;
 use core::vec::*;
+use parserutils::charset::alias::*;
+use parserutils::input::filter::*;
+
+
+
 use test::*;
 
 fn main(){					
 
 	let mut external_argument : ~str = ~"";
-	let mut parser : arc::ARC<~lpu> = lpu();
-	let (filterInstance, filterResult) : (Option<~lpu_filter> , parserutils_error) = lpu_filter(parser, ~"UTF-8");
-	let mut filter: ~lpu_filter;
+	let mut Alias = alias();
+	
+	let mut (filterinstance,filterResult) = filter(Alias, ~"UTF-8");
+
 
 	// Log file 
 	let mut test_logger = result::unwrap(test_report(&"Unit_test_report.csv"));
@@ -24,9 +28,9 @@ fn main(){
 		PARSERUTILS_OK   => {								
 				test_logger.pass( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"lpu_filter", ~"filter creation with mibenum UTF8",~"Filter is to be created", ~"Filter is created",~"");
 
-				filter = filterInstance.unwrap();
+				let mut Filter = filterinstance.unwrap();
 
-				match(filter.filter_set_encoding(~"UTF-8"))	{
+				match(Filter.filter_set_encoding(~"UTF-8"))	{
 					   PARSERUTILS_OK  =>  test_logger.pass( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"filter_set_encoding", ~"UTF8",~"PARSERUTILS_OK", ~"PARSERUTILS_OK", ~""),
 					              _    =>  test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"filter_set_encoding", ~"UTF8",~"PARSERUTILS_OK", ~"Non PARSERUTILS_OK", ~""),			
 				}
@@ -35,7 +39,7 @@ fn main(){
 				let mut outbuf:~[u8]=~[];
 				//let mut processedLen:uint;
 
-				match(filter.parserutils__filter_process_chunk(inbuf)) { 
+				match(Filter.parserutils__filter_process_chunk(inbuf)) { 
 					(processed_chunk , PARSERUTILS_OK) => {
 						outbuf += processed_chunk.outbuf;
 						//processedLen = processed_chunk.len_processed as uint;
@@ -52,12 +56,12 @@ fn main(){
 					test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_process_chunk ", ~"hell\xc2\xa0o!", ~"hell\xc2\xa0o!", str::from_bytes(outbuf), ~"");
 				}
 
-				filter.parserutils__filter_reset();
+				Filter.parserutils__filter_reset();
 
 				 inbuf = (~"hello!").to_bytes();
 				 outbuf = ~[];
 				
-				match(filter.parserutils__filter_process_chunk(inbuf)) { 
+				match(Filter.parserutils__filter_process_chunk(inbuf)) { 
 					(processed_chunk , PARSERUTILS_OK) => {
 						outbuf += processed_chunk.outbuf;
 						//processedLen = processed_chunk.len_processed as uint;
@@ -74,13 +78,13 @@ fn main(){
 					test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_process_chunk ", ~"hello!", ~"hello!", str::from_bytes(outbuf),~"");
 				}
 
-				filter.parserutils__filter_reset();
+				Filter.parserutils__filter_reset();
 
 
 				inbuf= (~"hell\x96o!").to_bytes();
 				outbuf=~[];
 				
-				match(filter.parserutils__filter_process_chunk(inbuf)) { 
+				match(Filter.parserutils__filter_process_chunk(inbuf)) { 
 					(processed_chunk , PARSERUTILS_OK) => {
 						outbuf += processed_chunk.outbuf;
 						//processedLen = processed_chunk.len_processed as uint;
@@ -97,12 +101,12 @@ fn main(){
 					test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_process_chunk ", ~"hell\xef\xbf\xbdo!", ~"hell\xef\xbf\xbdo!", str::from_bytes(outbuf),~"");
 				}
 
-				filter.parserutils__filter_reset();
+				Filter.parserutils__filter_reset();
 
 				inbuf = (~"hell\xc2\xa0o!").to_bytes();
 				outbuf = ~[];
 				
-				match(filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
+				match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
 					(processed_chunk , PARSERUTILS_OK) => {
 						outbuf += processed_chunk.outbuf;
 						io::println(fmt!("outbuf=%?",outbuf));
@@ -112,7 +116,7 @@ fn main(){
 						test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_process_chunk", ~"test_parserUtils_filter_line4.1", ~"PARSERUTILS_OK", ~"Non PARSERUTILS_OK", ~"");
 					}
 				}
-				match(filter.parserutils__filter_process_chunk(inbuf)) { 
+				match(Filter.parserutils__filter_process_chunk(inbuf)) { 
 					(processed_chunk , PARSERUTILS_OK) => {
 						outbuf = copy processed_chunk.outbuf;
 						io::println(fmt!("outbuf=%?",outbuf));
@@ -130,7 +134,7 @@ fn main(){
 					test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_process_chunk", ~"hell\xc2\xa0o!", ~"hell\xc2\xa0o!", str::from_bytes(outbuf), ~"");	
 				}
 
-				match(filter.parserutils__filter_reset()){
+				match(Filter.parserutils__filter_reset()){
 					PARSERUTILS_OK => test_logger.pass( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_reset", ~"test_parserUtils_filter", ~"PARSERUTILS_OK", ~" PARSERUTILS_OK", ~""),																	
 					    _          => test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_reset", ~"test_parserUtils_filter",~"PARSERUTILS_OK", ~" Non PARSERUTILS_OK", ~"")
 				}
@@ -138,7 +142,7 @@ fn main(){
 				inbuf= (~"hell\xc2\xc2o!").to_bytes();
 				outbuf=~[];
 				
-				match(filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
+				match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
 					(processed_chunk , PARSERUTILS_OK) => {
 						outbuf += processed_chunk.outbuf;
 						//processedLen = processed_chunk.len_processed as uint;
@@ -149,7 +153,7 @@ fn main(){
 				}
 
 				outbuf=~[];
-				match(filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
+				match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
 					(processed_chunk , PARSERUTILS_OK) => {
 						outbuf += processed_chunk.outbuf;
 						//processedLen = processed_chunk.len_processed as uint;
@@ -166,7 +170,7 @@ fn main(){
 					test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_process_chunk", ~"hell\xef\xbf\xbd\xef\xbf\xbdo!", ~"hell\xef\xbf\xbd\xef\xbf\xbdo!", str::from_bytes(outbuf), ~"");	
 				}
 
-				match(filter.parserutils__filter_reset()){
+				match(Filter.parserutils__filter_reset()){
 					PARSERUTILS_OK => test_logger.pass( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_reset", ~"test_parserUtils_filter", ~"PARSERUTILS_OK", ~" PARSERUTILS_OK", ~""),																	
 					    _          => test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_reset", ~"test_parserUtils_filter", ~"PARSERUTILS_OK", ~" Non PARSERUTILS_OK", ~"")
 				}
@@ -174,7 +178,7 @@ fn main(){
 				inbuf= (~"hell\xc2\xa0\xc2\xa1o!").to_bytes();
 				outbuf=~[];
 				
-				match(filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-5).to_owned())) { 
+				match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-5).to_owned())) { 
 					(processed_chunk , PARSERUTILS_OK) => {
 						outbuf += processed_chunk.outbuf;
 						//processedLen = processed_chunk.len_processed as uint;
@@ -186,7 +190,7 @@ fn main(){
 
 				outbuf=~[];
 				
-				match(filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
+				match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
 					(processed_chunk , PARSERUTILS_OK) => {
 						outbuf += processed_chunk.outbuf;
 						//processedLen = processed_chunk.len_processed as uint;
@@ -198,7 +202,7 @@ fn main(){
 
 				outbuf=~[];
 				
-				match(filter.parserutils__filter_process_chunk(inbuf)) { 
+				match(Filter.parserutils__filter_process_chunk(inbuf)) { 
 					(processed_chunk , PARSERUTILS_OK) => {
 						outbuf += processed_chunk.outbuf;
 						//processedLen = processed_chunk.len_processed as uint;
@@ -215,7 +219,7 @@ fn main(){
 					test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_process_chunk", ~"hell\xc2\xa0\xc2\xa1o!", ~"hell\xc2\xa0\xc2\xa1o!", str::from_bytes(outbuf), ~"");
 				}
 
-				match(filter.parserutils__filter_reset()){
+				match(Filter.parserutils__filter_reset()){
 					PARSERUTILS_OK => test_logger.pass( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_reset", ~"test_parserUtils_filter",~"PARSERUTILS_OK", ~"PARSERUTILS_OK", ~""),																
 					    _          => test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_reset", ~"test_parserUtils_filter", ~"PARSERUTILS_OK", ~" Non PARSERUTILS_OK",~"")
 				}
@@ -224,7 +228,7 @@ fn main(){
 				inbuf= (~"hell\xe2\x80\xa2o!").to_bytes();
 				outbuf=~[];
 				
-				match(filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-4).to_owned())) { 
+				match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-4).to_owned())) { 
 					(processed_chunk , PARSERUTILS_OK) => {
 						outbuf += processed_chunk.outbuf;
 						//processedLen = processed_chunk.len_processed as uint;
@@ -235,7 +239,7 @@ fn main(){
 				}
 				outbuf=~[];
 				
-				match(filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
+				match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
 					(processed_chunk , PARSERUTILS_OK) => {
 						outbuf += processed_chunk.outbuf;
 					},
@@ -245,7 +249,7 @@ fn main(){
 				}
 				outbuf=~[];
 				
-				match(filter.parserutils__filter_process_chunk(inbuf)) { 
+				match(Filter.parserutils__filter_process_chunk(inbuf)) { 
 					(processed_chunk , PARSERUTILS_OK) => {
 						outbuf += processed_chunk.outbuf;									
 					},
@@ -261,7 +265,7 @@ fn main(){
 					test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_process_chunk", ~"hell\xe2\x80\xa2o!", ~"hell\xe2\x80\xa2o!", str::from_bytes(outbuf),~"");
 				}
 
-				match(filter.parserutils__filter_reset()){
+				match(Filter.parserutils__filter_reset()){
 					PARSERUTILS_OK => 	test_logger.pass( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_reset", ~"test_parserUtils_filter", ~"PARSERUTILS_OK", ~"PARSERUTILS_OK", ~""),																
 					    _          => 	test_logger.fail( ~"test_parserUtils_filter.rs", copy external_argument, ~"parserutils", ~"parser_utils_filter.rs", ~"parserutils__filter_reset", ~"test_parserUtils_filter",  ~"PARSERUTILS_OK", ~"Non PARSERUTILS_OK",~"")
 				}				

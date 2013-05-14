@@ -1,12 +1,13 @@
 
 extern mod std;
-extern mod parserutils_inputstream;
+//extern mod parserutils_inputstream;
 extern mod parserutils ; 
 extern mod test;
 
 use test::*;
 use parserutils::* ;
-use parserutils_inputstream::*;
+use parserutils::input::inputstream::*;
+use parserutils::charset::alias::*;
 
  fn main() {
 	let args : ~[~str] = os::args();
@@ -15,13 +16,13 @@ use parserutils_inputstream::*;
     let r:@Reader = io::file_reader(&Path(args[1])).get(); 
     let reader = io::stdin();
     let mut test1 = result::unwrap(test_report(&"Unit_test_report.csv"));
-    let (inputStreamOption, ParserUtilsError)= lpu_inputstream(~"UTF-16",None);
+    let (inputStreamOption, ParserUtilsError)= inputstream(~"UTF-16",None);
 
 	match(ParserUtilsError) {
 		PARSERUTILS_OK=>{
 			
 			test1.pass( ~"test_parserutils_inputstream.rs", copy external_argument, ~"parserutils",~"parserutils_inputStream.rs"  , ~"lpu_inputstream", ~"input stream creation with UTF-16,None" , ~"input stream should be created",~"input stream created successfully",~"") ;
-			let mut stream:~lpu_inputstream = inputStreamOption.unwrap();
+			let mut stream:~inputstream = inputStreamOption.unwrap();
 			
 			while !r.eof() {
 				io::println("line");

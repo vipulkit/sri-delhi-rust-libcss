@@ -184,7 +184,7 @@ fn main() {
 		test_name = ~"data of a lwc_string";
 		comment = ~"returns data ";
 		test_logger.info(~"test_wapcaplet.rs", copy external_argument, copy module_name , copy file_name , copy function_name , copy test_name ,  ~"", copy comment);
-		io::println(fmt!("%?" , lwc::lwc_string_data(p)));
+		io::println(fmt!("%?" , lwc_string_data(p)));
 
 		// test 12: internment of a sub string of lenght 5 from offset 2 in null string(slice with lenght or offset greater than actual length of string)
 		// function_name = ~"lwc_intern_substring";
