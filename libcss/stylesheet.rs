@@ -85,8 +85,10 @@ pub struct css_token {
 }
 
 pub type css_url_resolution_fn = @extern fn (base:~str, rel:arc::RWARC<~lwc_string>) -> (css_result,Option<arc::RWARC<~lwc_string>>);
+
 pub type font_resolution_fn = @extern fn (name: arc::RWARC<~lwc_string>) -> (css_result , Option<css_system_font>);
 pub type css_import_notification_fn =  @extern fn(url:~str, media:@mut u64) -> css_result;
+pub type css_color_resolution_fn = @extern fn (name: arc::RWARC<~lwc_string>) -> (Option<u32> , css_result);
 
 
 static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
@@ -154,7 +156,8 @@ pub struct css_stylesheet {
     string_vector:~[~str],
     resolve : css_url_resolution_fn, // URL resolution function */
     import : Option<css_import_notification_fn>, // Import notification function */
-    font : Option<font_resolution_fn>   //Import font_resolution function
+    font : Option<font_resolution_fn>,   //Import font_resolution function
+    color: Option<css_color_resolution_fn>
 }
 
 pub struct css_rule {

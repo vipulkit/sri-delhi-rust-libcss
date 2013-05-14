@@ -2798,7 +2798,47 @@ impl css_properties {
         CSS_OK
     }
 
-    fn css__parse_font_family(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+    pub fn css__parse_font_family(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[~css_token], ctx: @mut uint, result: @mut css_style) -> css_result {
+    
+        let orig_ctx = *ctx;
+        
+        /* [ IDENT+ | STRING ] [ ',' [ IDENT+ | STRING ] ]* | IDENT(inherit)
+         * 
+         * In the case of IDENT+, any whitespace between tokens is collapsed to
+         * a single space
+         *
+         * \todo Mozilla makes the comma optional. 
+         * Perhaps this is a quirk we should inherit?
+         */
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID
+        }
+
+        let token = &vector[*ctx];
+        *ctx +=1; //Iterate
+        
+        if match token.token_type { CSS_TOKEN_IDENT(_) | CSS_TOKEN_STRING(_) => false, _ => true } {
+            *ctx = orig_ctx;
+            return CSS_INVALID
+        }
+
+        if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false } && 
+        strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
+            css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_FONT_FAMILY)
+        } 
+        else {
+            *ctx = orig_ctx;
+            //TO DO
+            // error = css__comma_list_to_style(c, vector, ctx, font_family_reserved, font_family_value, result);
+            // if (error != CSS_OK) {
+            //     *ctx = orig_ctx;
+            //     return error;
+            // }
+
+            css_stylesheet::css__stylesheet_style_append(result, FONT_FAMILY_END as u32);
+        }
+
         CSS_OK
     }
 
@@ -3631,13 +3671,11 @@ impl css_properties {
     }
 
     fn css__parse_play_during(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
-        // TODO
         let orig_ctx = *ctx;
         let mut token: &~css_token;
         let mut flags: u8 = 0;
         let mut value: u16 =0;
         let mut uri_snumber: u32 = 0;
-        let mut uri: Option<arc::RWARC<~lwc_string>>;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -3651,10 +3689,10 @@ impl css_properties {
                     flags = flags | FLAG_INHERIT as u8;
                 }
                 else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , NONE as uint) {
-                    value = PLAY_DURING_NONE ;
+                    value = PLAY_DURING_NONE as u16;
                 }
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
-                    value = PLAY_DURING_AUTO ;
+                    value = PLAY_DURING_AUTO as u16;
                 }
                 else {
                     *ctx = orig_ctx;
@@ -3663,10 +3701,20 @@ impl css_properties {
             },
             _ => {
                 let mut modifiers:int = 0;
-                value = PLAY_DURING_URI ;
-                // TODO resolve function
+                value = PLAY_DURING_URI as u16;
 
-                // uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri.get_ref().clone())) as u32;
+                let mut uri:arc::RWARC<~lwc_string>;
+                match (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone()) {
+                    (CSS_OK, Some(x)) => {
+                        uri =x;
+                    },
+                    (error,_) => {
+                        *ctx = orig_ctx;
+                        return error;
+                    }
+                }
+                uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri)) as u32;
+
                 while modifiers < 2 {
                     consumeWhitespace(vector, ctx);
                     token=&vector[*ctx];
@@ -3674,8 +3722,8 @@ impl css_properties {
                     match token.token_type {
                         CSS_TOKEN_IDENT(_) => {
                             if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MIX as uint) {
-                                if value & (PLAY_DURING_MIX ) == 0 {
-                                    value |= (PLAY_DURING_MIX );
+                                if value & (PLAY_DURING_MIX as u16) == 0 {
+                                    value |= (PLAY_DURING_MIX as u16);
                                 }
                                 else {
                                     *ctx = orig_ctx;
@@ -3683,8 +3731,8 @@ impl css_properties {
                                 }
                             }
                             else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , REPEAT as uint) {
-                                if value & (PLAY_DURING_REPEAT ) == 0 {
-                                    value |= (PLAY_DURING_REPEAT );
+                                if value & (PLAY_DURING_REPEAT as u16) == 0 {
+                                    value |= (PLAY_DURING_REPEAT as u16);
                                 }
                                 else {
                                     *ctx = orig_ctx;
@@ -3704,7 +3752,7 @@ impl css_properties {
             }
         }
         css_stylesheet::css__stylesheet_style_appendOPV(style ,CSS_PROP_PLAY_DURING , flags , value);
-        if ((flags & FLAG_INHERIT as u8)==0 && (value & PLAY_DURING_TYPE_MASK )==PLAY_DURING_URI ) {
+        if ((flags & FLAG_INHERIT as u8)==0 && (value & PLAY_DURING_TYPE_MASK as u16)==PLAY_DURING_URI as u16) {
             css_stylesheet::css__stylesheet_style_append(style , uri_snumber);
         }
         CSS_OK
@@ -3946,7 +3994,41 @@ impl css_properties {
         CSS_OK
     }
 
-    fn css__parse_voice_family(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style)->css_result {
+    pub fn css__parse_voice_family(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[~css_token], ctx: @mut uint, result: @mut css_style) -> css_result {
+    
+        let orig_ctx = *ctx;
+       
+        /* [ IDENT+ | STRING ] [ ',' [ IDENT+ | STRING ] ]* | IDENT(inherit)
+         * 
+         * In the case of IDENT+, any whitespace between tokens is collapsed to
+         * a single space
+         */
+        if *ctx >= vector.len() {
+            return CSS_INVALID
+        }
+
+
+        let token = &vector[*ctx];
+        *ctx += 1;
+
+        match token.token_type {
+            CSS_TOKEN_IDENT(_) | CSS_TOKEN_STRING(_) => {}, 
+            _ => {
+                *ctx = orig_ctx;
+                return CSS_INVALID
+            }
+        } 
+
+        if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false } &&
+                strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
+            css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_VOICE_FAMILY)
+        } 
+        else {
+            *ctx = orig_ctx;
+            // let error = css__comma_list_to_style(sheet , strings , vector , ctx , Some(voice_family_reserved(strings , token)) , result);
+            css_stylesheet::css__stylesheet_style_append(result, VOICE_FAMILY_END as u32);
+        }
+
         CSS_OK
     }
 
@@ -3975,7 +4057,6 @@ impl css_properties {
     }
 
     fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_result){
-        // TODO
         let mut result_val: u32;
         let colourmap: ~[u32] = ~[
             0xfff0f8ff, /* ALICEBLUE */
@@ -4144,10 +4225,12 @@ impl css_properties {
             return (Some(result_val) , CSS_OK);
         }
 
-        //TODO----
-        // if (sheet->color != NULL)
-        // return sheet->color(sheet->color_pw, data, result);
-
+        match sheet.color {
+            None => {},
+            Some(x) => {
+                return (*x)(data.clone());
+            }
+        }
         return(None , CSS_INVALID);
     }
 
@@ -5101,40 +5184,6 @@ pub fn css__parse_list_style_type_value(strings: &mut ~css_propstrings , token:&
 }
 
 /**
- * Create a string from a list of IDENT/S tokens if the next token is IDENT
- * or references the next token's string if it is a STRING
- *
- * \param self       Parsing context
- * \param vector     Vector containing tokens
- * \param ctx        Vector iteration context
- * \param reserved   Callback to determine if an identifier is reserved
- * \param result     Location to receive resulting string
- * \return CSS_OK on success, appropriate error otherwise.
- *
- * Post condition: \a *ctx is updated with the next token to process
- *                 If the input is invalid, then \a *ctx remains unchanged.
- *
- *                 The resulting string's reference is passed to the caller
- */
-pub fn css__ident_list_or_string_to_string(vector:&~[~css_token], ctx:@mut uint, reserved:Option<reserved_fn>) -> (css_result, Option<arc::RWARC<~lwc_string>>) {
-    //TO DO
-    if *ctx >= vector.len() {
-        return (CSS_INVALID,None)
-    }
-    
-    let mut token = &vector[*ctx];  
-    
-    match token.token_type {
-        CSS_TOKEN_STRING(_) => {
-            *ctx += 1; //Iterate
-            return (CSS_OK,Some(token.idata.get_ref().clone()))
-        },  
-        //TO DO CSS_TOKEN_IDENT =>  return css__ident_list_to_string(c, vector, ctx, reserved, result),
-        _ => return (CSS_INVALID,None)
-    }   
-}
-
-/**
  * Determine if a given font-family ident is reserved
  *
  * \param strings Propstrings
@@ -5142,7 +5191,7 @@ pub fn css__ident_list_or_string_to_string(vector:&~[~css_token], ctx:@mut uint,
  * \return True if IDENT is reserved, false otherwise
  */
 pub fn font_family_reserved(strings:&mut ~css_propstrings, ident:&~css_token) -> bool {
-    
+
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), SERIF as uint) ||
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), SANS_SERIF as uint) ||
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), CURSIVE as uint) ||
@@ -5191,65 +5240,6 @@ pub fn font_family_value(strings:&mut ~css_propstrings, token:&~css_token, first
     else{
         value as u32
     }  
-}
-
-/**
- * Parse font-family
- *
- * \param strings Propstrings
- * \param vector  Vector of tokens to process
- * \param ctx     Pointer to vector iteration context
- * \param result  Pointer to location to receive resulting style
- * \return CSS_OK on success,
- *     CSS_NOMEM on memory exhaustion,
- *     CSS_INVALID if the input is not valid
- *
- * Post condition: \a *ctx is updated with the next token to process
- *         If the input is invalid, then \a *ctx remains unchanged.
- */
-pub fn css__parse_font_family(strings: &mut ~css_propstrings, vector:&~[~css_token],
- ctx: @mut uint, result: @mut css_style) -> css_result {
-    
-    let orig_ctx = *ctx;
-    
-    /* [ IDENT+ | STRING ] [ ',' [ IDENT+ | STRING ] ]* | IDENT(inherit)
-     * 
-     * In the case of IDENT+, any whitespace between tokens is collapsed to
-     * a single space
-     *
-     * \todo Mozilla makes the comma optional. 
-     * Perhaps this is a quirk we should inherit?
-     */
-
-    if *ctx >= vector.len() {
-        return CSS_INVALID
-    }
-
-    let token = &vector[*ctx];
-    *ctx +=1; //Iterate
-    
-    if match token.token_type { CSS_TOKEN_IDENT(_) | CSS_TOKEN_STRING(_) => false, _ => true } {
-        *ctx = orig_ctx;
-        return CSS_INVALID
-    }
-
-    if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false } && 
-    strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
-        css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_FONT_FAMILY)
-    } 
-    else {
-        *ctx = orig_ctx;
-        //TO DO
-        // error = css__comma_list_to_style(c, vector, ctx, font_family_reserved, font_family_value, result);
-        // if (error != CSS_OK) {
-        //     *ctx = orig_ctx;
-        //     return error;
-        // }
-
-        css_stylesheet::css__stylesheet_style_append(result, FONT_FAMILY_END as u32);
-    }
-
-    CSS_OK
 }
 
 
@@ -5349,7 +5339,6 @@ pub fn voice_family_reserved(strings: &mut ~css_propstrings, ident:&~css_token) 
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), MALE as uint) ||
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), FEMALE as uint) ||
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), CHILD as uint) 
-            
 }
 
 /**
@@ -5388,61 +5377,96 @@ pub fn voice_family_value(strings: &mut ~css_propstrings, token:&~css_token, fir
     }   
 }
 
+
 /**
- * Parse voice-family
+ * Create a string from a list of IDENT/S tokens if the next token is IDENT
+ * or references the next token's string if it is a STRING
  *
- * \param strings Propstrings
- * \param vector  Vector of tokens to process
- * \param ctx     Pointer to vector iteration context
- * \param result  location to receive resulting style
- * \return CSS_OK on success,
- *   CSS_INVALID if the input is not valid
+ * \param self       Parsing context
+ * \param vector     Vector containing tokens
+ * \param ctx        Vector iteration context
+ * \param reserved   Callback to determine if an identifier is reserved
+ * \param result     Location to receive resulting string
+ * \return CSS_OK on success, appropriate error otherwise.
  *
  * Post condition: \a *ctx is updated with the next token to process
- *       If the input is invalid, then \a *ctx remains unchanged.
+ *                 If the input is invalid, then \a *ctx remains unchanged.
+ *
+ *                 The resulting string's reference is passed to the caller
  */
-pub fn css__parse_voice_family(strings: &mut ~css_propstrings, vector:&~[~css_token],
- ctx: @mut uint, result: @mut css_style) -> css_result {
-    
-    let orig_ctx = *ctx;
-    
-   
-    /* [ IDENT+ | STRING ] [ ',' [ IDENT+ | STRING ] ]* | IDENT(inherit)
-     * 
-     * In the case of IDENT+, any whitespace between tokens is collapsed to
-     * a single space
-     */
+pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[~css_token], ctx:@mut uint, reserved:Option<reserved_fn> , lwc_instance: arc::RWARC<~lwc>) -> (css_result, Option<arc::RWARC<~lwc_string>>) {
     if *ctx >= vector.len() {
-        return CSS_INVALID
+        return (CSS_INVALID,None)
+    }
+    
+    let mut token = &vector[*ctx];  
+    
+    match token.token_type {
+        CSS_TOKEN_STRING(_) => {
+            *ctx += 1; //Iterate
+            return (CSS_OK,Some(token.idata.get_ref().clone()))
+        },  
+        CSS_TOKEN_IDENT(_) =>  return css__ident_list_to_string(sheet , strings , vector , ctx , reserved , lwc_instance),
+        _ => return (CSS_INVALID,None)
+    }   
+}
+
+pub fn css__ident_list_to_string(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[~css_token],
+    ctx: @mut uint , reserved:Option<reserved_fn> , lwc_instance: arc::RWARC<~lwc>) -> (css_result , Option<arc::RWARC<~lwc_string>>) {
+
+    let orig_ctx = *ctx;
+    let mut token: &~css_token;
+    let mut token_buffer_string: ~str = ~"";
+
+    if *ctx >= vector.len() {
+        return (CSS_INVALID , None);
     }
 
-
-    let token = &vector[*ctx];
+    token = &vector[*ctx];
     *ctx += 1;
 
-    match token.token_type {
-        CSS_TOKEN_IDENT(_) | CSS_TOKEN_STRING(_) => {}, 
-        _ => {
-            *ctx = orig_ctx;
-            return CSS_INVALID
+    loop {
+        match token.token_type {
+            CSS_TOKEN_IDENT(_) => {
+                match reserved {
+                    None => {},
+                    Some(reserved_function) => {
+                        if (*reserved_function)(strings , token) {
+                            return (CSS_INVALID , None);
+                        }
+                    }
+                }
+                token_buffer_string.push_str(lwc_string_data(token.idata.get_ref().clone()));
+            },
+            CSS_TOKEN_S => {
+                token_buffer_string.push_str(~" ");
+            },
+            _ => {
+                break;
+            }
         }
-    } 
+        if *ctx >= vector.len() {
+            break;
+        }
 
-    if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false } &&
-            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
-        css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_VOICE_FAMILY)
-    } else {
-        *ctx = orig_ctx;
-        // TO DO 
-        // error = css__comma_list_to_style(c, vector, ctx, voice_family_reserved, voice_family_value,
-        //         result);
-        // if (error != CSS_OK) {
-        //     *ctx = orig_ctx;
-        //     return error;
-        // }
-
-        css_stylesheet::css__stylesheet_style_append(result, VOICE_FAMILY_END as u32);
+        token = &vector[*ctx];
+        *ctx += 1;
     }
+    if *ctx >= vector.len() {
+        *ctx -= 1;
+    }
+    
+    token_buffer_string.trim_right();
+    // this initialisation not needed
+    let mut interned_string: arc::RWARC<~lwc_string> = token.idata.get_ref().clone();
+    do lwc_instance.write|lwc| {
+        interned_string = lwc.lwc_intern_string(copy token_buffer_string);
+    }
+    return (CSS_OK , Some(interned_string));
+}
+
+pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[~css_token], 
+    ctx: @mut uint , reserved:Option<reserved_fn> , style: @mut css_style) -> css_result {
 
     CSS_OK
 }

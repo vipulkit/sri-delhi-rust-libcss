@@ -2257,7 +2257,7 @@ pub impl css_language {
     pub fn font_face_parse_font_family(&mut self, vector:&~[~css_token], ctx:@mut uint, 
         font_face:@mut css_font_face) -> css_result {
         
-        match css__ident_list_or_string_to_string(vector, ctx,Some(@css_language::font_rule_font_family_reserved))
+        match css__ident_list_or_string_to_string(self.sheet , &mut self.strings , vector, ctx, Some(@css_language::font_rule_font_family_reserved) , self.lwc_instance.clone())
         {
             (CSS_OK,Some(string)) => { 
                 self.css__font_face_set_font_family(font_face, string);
@@ -2470,7 +2470,7 @@ pub impl css_language {
                 if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LOCAL as uint) {
                     consumeWhitespace(vector, ctx);
 
-                    match css__ident_list_or_string_to_string(vector, ctx, None) {
+                    match css__ident_list_or_string_to_string(self.sheet , &mut self.strings , vector, ctx, None , self.lwc_instance.clone()) {
                         (CSS_OK,Some(loc)) => location = loc,
                         (error,x) => return (error,x)
                     }
