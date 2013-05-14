@@ -9,7 +9,7 @@ all: $(EXEC) $(SRC)
 % : %.rs
 	rustc --test -L $(LIB) $<
 
-test : $(EXEC)
+run : $(EXEC)
 	./aliases
 	./inputstream
 
