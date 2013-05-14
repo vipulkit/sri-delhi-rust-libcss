@@ -4909,7 +4909,6 @@ pub fn css__parse_font_family(strings: &mut ~css_propstrings, vector:&~[~css_tok
      */
 
     if *ctx >= vector.len() {
-        *ctx = orig_ctx;
         return CSS_INVALID
     }
 
@@ -4997,3 +4996,61 @@ pub fn voice_family_value(strings: &mut ~css_propstrings, token:&~css_token, fir
     }   
 }
 
+/**
+ * Parse voice-family
+ *
+ * \param strings Propstrings
+ * \param vector  Vector of tokens to process
+ * \param ctx     Pointer to vector iteration context
+ * \param result  location to receive resulting style
+ * \return CSS_OK on success,
+ *   CSS_INVALID if the input is not valid
+ *
+ * Post condition: \a *ctx is updated with the next token to process
+ *       If the input is invalid, then \a *ctx remains unchanged.
+ */
+pub fn css__parse_voice_family(strings: &mut ~css_propstrings, vector:&~[~css_token],
+ ctx: @mut uint, result: @mut css_style) -> css_result {
+    
+    let orig_ctx = *ctx;
+    
+   
+    /* [ IDENT+ | STRING ] [ ',' [ IDENT+ | STRING ] ]* | IDENT(inherit)
+     * 
+     * In the case of IDENT+, any whitespace between tokens is collapsed to
+     * a single space
+     */
+    if *ctx >= vector.len() {
+        return CSS_INVALID
+    }
+
+
+    let token = &vector[*ctx];
+    *ctx += 1;
+
+    match token.token_type {
+        CSS_TOKEN_IDENT(_) | CSS_TOKEN_STRING(_) => {}, 
+        _ => {
+            *ctx = orig_ctx;
+            return CSS_INVALID
+        }
+    } 
+
+    if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false } &&
+            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
+        css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_VOICE_FAMILY)
+    } else {
+        *ctx = orig_ctx;
+        // TO DO 
+        // error = css__comma_list_to_style(c, vector, ctx, voice_family_reserved, voice_family_value,
+        //         result);
+        // if (error != CSS_OK) {
+        //     *ctx = orig_ctx;
+        //     return error;
+        // }
+
+        css_stylesheet::css__stylesheet_style_append(result, VOICE_FAMILY_END as u32);
+    }
+
+    CSS_OK
+}
