@@ -1,13 +1,7 @@
-#[link(name = "css_select_propset", vers = "0.1")];
-#[crate_type = "lib"];
+use include::properties::*;
+use include::types::*;
 
-extern mod css_enum;
-extern mod css_select_const;
-// extern mod css_fpmath;
-extern mod std ;
-
-use css_enum::* ;
-use css_select_const::*;
+use select::common::*;
 // use css_fpmath::*;
 
 pub fn ENSURE_UNCOMMON ( style:@mut css_computed_style){

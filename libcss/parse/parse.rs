@@ -1,18 +1,9 @@
-#[link(name = "css_parser", vers = "0.1")];
-#[crate_type = "lib"];
+use parse::common::*;
+use parse::language::*;
+use stylesheet::*;
+use lex::lexer::*;
+use utils::errors::*;
 
-extern mod css_properties;
-extern mod css_language;
-extern mod css_stylesheet;
-extern mod css_lexer;
-extern mod css_enum;
-extern mod wapcaplet;
-extern mod std;
-
-use css_language::*;
-use css_stylesheet::*;
-use css_lexer::*;
-use css_enum::*;
 use wapcaplet::*;
 use std::arc;
 

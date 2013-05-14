@@ -1,14 +1,6 @@
-#[link(name = "css_propstrings", vers = "0.1")];
-#[crate_type = "lib"];
-
-extern mod std;
-extern mod wapcaplet;
-extern mod css_enum;
-
 use std::arc;
 use wapcaplet::*;
-use css_enum::*;
-
+use stylesheet::*;
 
 pub enum index_property {
 	 // Universal selector 

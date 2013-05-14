@@ -1,18 +1,62 @@
-#[link(name = "css_stylesheet", vers = "0.1")];
-#[crate_type = "lib"];
-
-extern mod css_bytecode;
-extern mod css_enum;
-extern mod std ;
-extern mod wapcaplet;
-extern mod css_propstrings;
-
-use css_enum::* ;
-use css_bytecode::*;
 use core::managed::*;
 use wapcaplet::*;
 use std::arc;
-use css_propstrings::*;
+
+use bytecode::bytecode::*;
+
+use include::font_face::*;
+use include::properties::*;
+use include::types::*;
+
+use lex::lexer::*;
+
+use utils::errors::*;
+
+/**
+ * Stylesheet language level -- defines parsing rules and supported properties
+ */
+
+pub enum css_language_level {
+    CSS_LEVEL_1                 = 0,    /**< CSS 1 */
+    CSS_LEVEL_2                 = 1,    /**< CSS 2 */
+    CSS_LEVEL_21                = 2,    /**< CSS 2.1 */
+    CSS_LEVEL_3                 = 3     //< CSS 3
+}
+static  CSS_LEVEL_DEFAULT : css_language_level = CSS_LEVEL_21 ;
+
+pub enum css_selector_type {
+    CSS_SELECTOR_ELEMENT,
+    CSS_SELECTOR_CLASS,
+    CSS_SELECTOR_ID,
+    CSS_SELECTOR_PSEUDO_CLASS,
+    CSS_SELECTOR_PSEUDO_ELEMENT,
+    CSS_SELECTOR_ATTRIBUTE,
+    CSS_SELECTOR_ATTRIBUTE_EQUAL,
+    CSS_SELECTOR_ATTRIBUTE_DASHMATCH,
+    CSS_SELECTOR_ATTRIBUTE_INCLUDES,
+    CSS_SELECTOR_ATTRIBUTE_PREFIX,
+    CSS_SELECTOR_ATTRIBUTE_SUFFIX,
+    CSS_SELECTOR_ATTRIBUTE_SUBSTRING
+}
+
+pub enum css_combinator {
+    CSS_COMBINATOR_NONE,
+    CSS_COMBINATOR_ANCESTOR,
+    CSS_COMBINATOR_PARENT,
+    CSS_COMBINATOR_SIBLING,
+    CSS_COMBINATOR_GENERIC_SIBLING
+} 
+
+
+pub enum css_selector_detail_value_type {
+    CSS_SELECTOR_DETAIL_VALUE_STRING,
+    CSS_SELECTOR_DETAIL_VALUE_NTH
+} 
+
+static CSS_SPECIFICITY_A:uint=0x01000000;
+static CSS_SPECIFICITY_B:uint=0x00010000;
+static CSS_SPECIFICITY_C:uint=0x00000100;
+static CSS_SPECIFICITY_D:uint=0x00000001;
 
 pub struct size {
     size: i32,
@@ -40,65 +84,13 @@ pub struct css_token {
     idata: Option<arc::RWARC<~lwc_string>>,
 }
 
-/**
- * Callback to resolve an URL
- *
- * \param dict  String internment context
- * \param base  Base URI (absolute)
- * \param rel   URL to resolve, either absolute or relative to base
- * \param abs   location to receive result
- * \return CSS_OK on success, appropriate error otherwise.
- */
-
-
 pub type css_url_resolution_fn = @extern fn (base:~str, rel:arc::RWARC<~lwc_string>) -> (css_result,Option<arc::RWARC<~lwc_string>>);
-pub type reserved_fn = @extern fn (strings:&mut ~css_propstrings, ident:&~css_token) -> bool;
 pub type font_resolution_fn = @extern fn (name: arc::RWARC<~lwc_string>) -> (css_result , Option<css_system_font>);
-
-/**
- * Callback to be notified of the need for an imported stylesheet
- *
- * \param pw      Client data
- * \param parent  Stylesheet requesting the import
- * \param url     URL of the imported sheet
- * \param media   Applicable media for the imported sheet
- * \return CSS_OK on success, appropriate error otherwise
- *
- * \note This function will be invoked for notification purposes
- *       only. The client may use this to trigger a parallel fetch
- *       of the imported stylesheet. The imported sheet must be
- *       registered with its parent using the post-parse import
- *       registration API.
- */
- pub type css_import_notification_fn =  @extern fn(url:~str, media:@mut u64) -> css_result;
-
+pub type css_import_notification_fn =  @extern fn(url:~str, media:@mut u64) -> css_result;
 
 
 static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
 
-
-struct css_font_face_src {
-    location:Option<arc::RWARC<~lwc_string>>,
-    /*
-     * Bit allocations:
-     *
-     *    76543210
-     *  1 _fffffll  format | location type
-     */
-    bits:~[u8]
-}
-
-struct css_font_face {
-    font_family:Option< arc::RWARC<~lwc_string> >,
-    srcs:~[~css_font_face_src],
-    /*
-     * Bit allocations:
-     *
-     *    76543210
-     *  1 __wwwwss  font-weight | font-style
-     */
-    bits:~[u8]
-}
 
 // /**< Qualified name of selector */
 pub struct css_qname {  
@@ -221,6 +213,16 @@ pub enum CSS_RULE_DATA_TYPE {
 pub enum CSS_RULE_PARENT_TYPE {
     CSS_RULE_PARENT_STYLESHEET,
     CSS_RULE_PARENT_RULE
+}
+
+pub enum css_rule_type {
+    CSS_RULE_UNKNOWN,
+    CSS_RULE_SELECTOR,
+    CSS_RULE_CHARSET,
+    CSS_RULE_IMPORT,
+    CSS_RULE_MEDIA,
+    CSS_RULE_FONT_FACE,
+    CSS_RULE_PAGE
 }
 
 impl css_stylesheet {
@@ -660,7 +662,7 @@ impl css_stylesheet {
         match parent_rule {
             Some(prule)=> {
                 match prule {
-                    RULE_MEDIA(media_prule)=>{
+                    RULE_MEDIA(_)=>{
                         base_rule.parent_rule = parent_rule;
                         let mut base_media_prule = css_stylesheet::css__stylesheet_get_base_rule(prule);
 

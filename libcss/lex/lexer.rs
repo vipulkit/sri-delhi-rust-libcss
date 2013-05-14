@@ -1,14 +1,32 @@
-#[link(name = "css_lexer", vers = "0.1")];
-#[crate_type = "lib"];
-
-extern mod css_enum;
-extern mod parserutils;
-extern mod parserutils;
-extern mod std;
-
-use css_enum::* ;
-use parserutils::*;
 use parserutils::input::inputstream::*;
+
+pub enum css_token_type { 
+	CSS_TOKEN_IDENT(~str),
+	CSS_TOKEN_ATKEYWORD(~str),
+	CSS_TOKEN_HASH(~str),
+	CSS_TOKEN_FUNCTION(~str), 
+	CSS_TOKEN_STRING(~str), 
+	CSS_TOKEN_INVALID_STRING, 
+	CSS_TOKEN_URI(~str), 
+	CSS_TOKEN_UNICODE_RANGE(char , char), 
+	CSS_TOKEN_CHAR(char),
+	CSS_TOKEN_NUMBER(NumericValue , ~str), 
+	CSS_TOKEN_PERCENTAGE(NumericValue , ~str), 
+	CSS_TOKEN_DIMENSION(NumericValue , ~str, ~str),
+	CSS_TOKEN_CDO, 
+	CSS_TOKEN_CDC, 
+	CSS_TOKEN_S,
+	Delim(char),
+	// CSS_TOKEN_COMMENT, 
+	// CSS_TOKEN_INCLUDES, CSS_TOKEN_DASHMATCH, CSS_TOKEN_PREFIXMATCH, 
+	// CSS_TOKEN_SUFFIXMATCH, CSS_TOKEN_SUBSTRINGMATCH, 
+	CSS_TOKEN_EOF 
+}
+
+pub enum NumericValue {
+	Integer(int),
+	Float(float),
+}
 
 static MAX_UNICODE: char = '\U0010FFFF';
 
@@ -63,7 +81,7 @@ pub struct css_lexer {
 }
 
 
-impl css_lexer {
+pub impl css_lexer {
 
 	pub fn css__lexer_create( inputstream: ~inputstream ) -> ~css_lexer {
 		~css_lexer{ 

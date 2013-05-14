@@ -1,24 +1,21 @@
-#[link(name = "css_properties", vers = "0.1")];
-#[crate_type = "lib"];
-
-extern mod std;
-extern mod css_stylesheet;
-extern mod css_propstrings;
-extern mod css_enum;
-extern mod wapcaplet;
-extern mod css_fpmath;
-extern mod css_bytecode;
-//extern mod css_propstrings_parallel;
-
-use css_stylesheet::*;
-use css_propstrings::*;
-use css_enum::*;
 use wapcaplet::*;
 use std::arc;
-use core::str::*;
-use css_fpmath::*;
+
+use bytecode::bytecode::*;
+use bytecode::opcodes::*;
+
+use include::fpmath::*;
+use include::properties::*;
+
+use lex::lexer::*;
+use stylesheet::*;
+
+use parse::propstrings::*;
+
+use utils::errors::*;
 
 pub type handle =  @extern fn(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[~css_token], ctx: @mut uint, style: @mut css_style) ->css_result;
+pub type reserved_fn = @extern fn (strings:&mut ~css_propstrings, ident:&~css_token) -> bool;
 
 pub struct css_properties {
     property_handlers: ~[handle],
@@ -187,7 +184,7 @@ impl css_properties {
             } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) 
         ) {
             *ctx += 1;
-            flags = FLAG_INHERIT  ;
+            flags = FLAG_INHERIT as u8 ;
         }
         else if ( 
             match (token.token_type) {
@@ -196,7 +193,7 @@ impl css_properties {
             } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFTWARDS as uint)
         ) {
             *ctx += 1;
-            value = AZIMUTH_LEFTWARDS;
+            value = AZIMUTH_LEFTWARDS ;
         }        
         else if ( 
             match (token.token_type) {
@@ -205,7 +202,7 @@ impl css_properties {
              } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHTWARDS as uint) 
             ) {
             *ctx += 1;
-            value = AZIMUTH_RIGHTWARDS;
+            value = AZIMUTH_RIGHTWARDS ;
         }
         else if ( match (token.token_type) {
                 CSS_TOKEN_IDENT(_) => true,
@@ -215,7 +212,7 @@ impl css_properties {
             {
             if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT_SIDE as uint) {
                 *ctx += 1;
-                value = AZIMUTH_LEFT_SIDE;
+                value = AZIMUTH_LEFT_SIDE ;
 
             }
 
@@ -223,21 +220,21 @@ impl css_properties {
             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_LEFT as uint) 
             ) {
                 *ctx += 1;
-                value = AZIMUTH_FAR_LEFT;
+                value = AZIMUTH_FAR_LEFT ;
 
             }
             else if ( 
             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT as uint) 
             ) {
                 *ctx += 1;
-                value = AZIMUTH_LEFT;
+                value = AZIMUTH_LEFT ;
 
             }
             else if ( 
              strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER_LEFT as uint) 
             ) {
                 *ctx += 1;
-                value = AZIMUTH_CENTER_LEFT;
+                value = AZIMUTH_CENTER_LEFT ;
 
             }
             else if ( 
@@ -384,7 +381,7 @@ impl css_properties {
 
         css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_AZIMUTH, flags, value);
 
-        if (((flags & FLAG_INHERIT) == 0) && (value == AZIMUTH_ANGLE)) {
+        if (((flags & FLAG_INHERIT as u8) == 0) && (value == AZIMUTH_ANGLE)) {
             css_stylesheet::css__stylesheet_style_vappend(style, [return_length_val.unwrap() as u32 , return_unit_val.unwrap() as u32]);
         }
         CSS_OK
@@ -500,26 +497,26 @@ impl css_properties {
         if !background_cleanup{
             if attachment {
                 css_stylesheet::css__stylesheet_style_appendOPV(attachment_style, CSS_PROP_BACKGROUND_ATTACHMENT, 0, 
-                    BACKGROUND_ATTACHMENT_SCROLL as u16); 
+                    BACKGROUND_ATTACHMENT_SCROLL ); 
             }
 
             if color {
                 css_stylesheet::css__stylesheet_style_appendOPV(color_style, CSS_PROP_BACKGROUND_COLOR, 0, 
-                    BACKGROUND_COLOR_TRANSPARENT as u16);
+                    BACKGROUND_COLOR_TRANSPARENT );
             }
 
             if image {
-                css_stylesheet::css__stylesheet_style_appendOPV(image_style, CSS_PROP_BACKGROUND_IMAGE, 0, BACKGROUND_IMAGE_NONE as u16);
+                css_stylesheet::css__stylesheet_style_appendOPV(image_style, CSS_PROP_BACKGROUND_IMAGE, 0, BACKGROUND_IMAGE_NONE );
             }
 
             if position {
                 css_stylesheet::css__stylesheet_style_appendOPV(position_style, CSS_PROP_BACKGROUND_POSITION, 0, 
-                    BACKGROUND_POSITION_HORZ_LEFT as u16 |  BACKGROUND_POSITION_VERT_TOP as u16)
+                    BACKGROUND_POSITION_HORZ_LEFT  |  BACKGROUND_POSITION_VERT_TOP )
             }
 
             if repeat {
                 css_stylesheet::css__stylesheet_style_appendOPV(repeat_style, CSS_PROP_BACKGROUND_REPEAT, 0,
-                 BACKGROUND_REPEAT_REPEAT as u16) 
+                 BACKGROUND_REPEAT_REPEAT ) 
             }   
         
             css_stylesheet::css__stylesheet_merge_style(result, attachment_style);
@@ -569,7 +566,7 @@ impl css_properties {
         let mut token = &vector[*ctx];
 
         if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false }  
-            && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),INHERIT) {
+            && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),INHERIT as uint) {
             
             if *ctx >= vector.len() {
                 return CSS_INVALID   
@@ -577,7 +574,7 @@ impl css_properties {
             
             //token = &vector[*ctx]; Value assigned never used
             *ctx += 1;
-            flags = FLAG_INHERIT;
+            flags = FLAG_INHERIT as u8;
         } 
         else {
             let mut second_pass = false;
@@ -591,19 +588,19 @@ impl css_properties {
                 match token.token_type {
                     CSS_TOKEN_IDENT(_) => {
                         if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT as uint) {
-                            value[i] = BACKGROUND_POSITION_HORZ_LEFT as u16
+                            value[i] = BACKGROUND_POSITION_HORZ_LEFT 
                         } 
                         else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT as uint) {
-                            value[i] = BACKGROUND_POSITION_HORZ_RIGHT as u16
+                            value[i] = BACKGROUND_POSITION_HORZ_RIGHT 
                         } 
                         else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), TOP as uint) {
-                            value[i] = BACKGROUND_POSITION_VERT_TOP as u16
+                            value[i] = BACKGROUND_POSITION_VERT_TOP 
                         }
                         else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BOTTOM as uint) {
-                            value[i] = BACKGROUND_POSITION_VERT_BOTTOM as u16
+                            value[i] = BACKGROUND_POSITION_VERT_BOTTOM 
                         }
                         else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER as uint) {
-                            value[i] = BACKGROUND_POSITION_VERT_CENTER as u16
+                            value[i] = BACKGROUND_POSITION_VERT_CENTER 
                         }
                         else if (i == 1) {
                             /* Second pass, so ignore this one */
@@ -635,7 +632,7 @@ impl css_properties {
                         }
 
                         /* We'll fix this up later, too */
-                        value[i] = BACKGROUND_POSITION_VERT_SET as u16;
+                        value[i] = BACKGROUND_POSITION_VERT_SET ;
                     }, 
                     _  => {
                         if i == 1 {
@@ -660,20 +657,20 @@ impl css_properties {
                 //assert(BACKGROUND_POSITION_VERT_CENTER == BACKGROUND_POSITION_HORZ_CENTER);
 
                 /* Only one value, so the other is center */
-                if value[0] == BACKGROUND_POSITION_HORZ_LEFT as u16 ||
-                    value[0] == BACKGROUND_POSITION_HORZ_RIGHT as u16 || 
-                    value[0] == BACKGROUND_POSITION_VERT_CENTER as u16 ||
-                    value[0] == BACKGROUND_POSITION_VERT_TOP as u16 ||
-                    value[0] == BACKGROUND_POSITION_VERT_BOTTOM as u16 {
+                if value[0] == BACKGROUND_POSITION_HORZ_LEFT  ||
+                    value[0] == BACKGROUND_POSITION_HORZ_RIGHT  || 
+                    value[0] == BACKGROUND_POSITION_VERT_CENTER  ||
+                    value[0] == BACKGROUND_POSITION_VERT_TOP  ||
+                    value[0] == BACKGROUND_POSITION_VERT_BOTTOM  {
 
                 }
-                else if value[0] == BACKGROUND_POSITION_VERT_SET as u16 {
-                  value[0] = BACKGROUND_POSITION_HORZ_SET as u16 
+                else if value[0] == BACKGROUND_POSITION_VERT_SET  {
+                  value[0] = BACKGROUND_POSITION_HORZ_SET  
                 } 
                 
-                value[1] = BACKGROUND_POSITION_VERT_CENTER as u16;
+                value[1] = BACKGROUND_POSITION_VERT_CENTER ;
             } 
-            else if value[0] != BACKGROUND_POSITION_VERT_SET as u16 && value[1] != BACKGROUND_POSITION_VERT_SET as u16 {
+            else if value[0] != BACKGROUND_POSITION_VERT_SET  && value[1] != BACKGROUND_POSITION_VERT_SET  {
                 /* Two keywords. Verify the axes differ */
                 if (((value[0] & 0xf) != 0 && (value[1] & 0xf) != 0) || ((value[0] & 0xf0) != 0 && (value[1] & 0xf0) != 0)) {
                     *ctx = orig_ctx;
@@ -682,8 +679,8 @@ impl css_properties {
             } 
             else {
                 /* One or two non-keywords. First is horizontal */
-                if value[0] == BACKGROUND_POSITION_VERT_SET as u16 {
-                    value[0] = BACKGROUND_POSITION_HORZ_SET as u16
+                if value[0] == BACKGROUND_POSITION_VERT_SET  {
+                    value[0] = BACKGROUND_POSITION_HORZ_SET 
                 }
                     
 
@@ -700,12 +697,12 @@ impl css_properties {
         css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_BACKGROUND_POSITION, flags, value[0] | value[1]);
         
 
-        if ((flags & FLAG_INHERIT) == 0) {
-            if value[0] == BACKGROUND_POSITION_HORZ_SET as u16 {
+        if ((flags & FLAG_INHERIT as u8) == 0) {
+            if value[0] == BACKGROUND_POSITION_HORZ_SET  {
                 css_stylesheet::css__stylesheet_style_append(style, length[0] as u32);
                 css_stylesheet::css__stylesheet_style_append(style, unit[0])
             }
-            if (value[1] == BACKGROUND_POSITION_VERT_SET as u16) {
+            if (value[1] == BACKGROUND_POSITION_VERT_SET ) {
                 css_stylesheet::css__stylesheet_style_append(style, length[1] as u32);
                 css_stylesheet::css__stylesheet_style_append(style, unit[1])
             }
@@ -834,73 +831,73 @@ impl css_properties {
         match side_count {
             1 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
-                if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[0] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[0]);
-                if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[0] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[0]);
-                if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[0] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[0]);
-                if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[0] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
                 }
             },
             2 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
-                if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[0] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[1]);
-                if side_val_vec[1] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[1] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[0]);
-                if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[0] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[1]);
-                if side_val_vec[1] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[1] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
                 }
             },
             3 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
-                if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[0] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[1]);
-                if side_val_vec[1] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[1] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[2]);
-                if side_val_vec[2] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[2] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[2] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[1]);
-                if side_val_vec[1] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[1] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
                 }
             },
             4 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
-                if side_val_vec[0] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[0] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[1]);
-                if side_val_vec[1] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[1] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[2]);
-                if side_val_vec[2] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[2] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[2] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[3]);
-                if side_val_vec[3] == BORDER_COLOR_SET as u16 {
+                if side_val_vec[3] == BORDER_COLOR_SET  {
                     css_stylesheet::css__stylesheet_style_append(style , side_val_vec[3] as u32)
                 }
             },
@@ -1014,7 +1011,7 @@ impl css_properties {
                         *ctx = orig_ctx;
                         return CSS_INVALID;
                     }
-                    css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_BORDER_SPACING, 0, BORDER_SPACING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_BORDER_SPACING, 0, BORDER_SPACING_SET );
                     css_stylesheet::css__stylesheet_style_vappend(style,[ length[0] as u32, unit[0] , length[1] as u32, unit[1] ]); 
                 },
                 _=>{
@@ -1058,34 +1055,34 @@ impl css_properties {
             match token.token_type {
                 CSS_TOKEN_IDENT(_) => {
                     if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , NONE as uint) {
-                        side_val_vec.push(BORDER_STYLE_NONE as u16);
+                        side_val_vec.push(BORDER_STYLE_NONE );
                     }
                     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , HIDDEN as uint) {
-                        side_val_vec.push(BORDER_STYLE_HIDDEN as u16);
+                        side_val_vec.push(BORDER_STYLE_HIDDEN );
                     }
                     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , DOTTED as uint) {
-                        side_val_vec.push(BORDER_STYLE_DOTTED as u16);
+                        side_val_vec.push(BORDER_STYLE_DOTTED );
                     }
                     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , DASHED as uint) {
-                        side_val_vec.push(BORDER_STYLE_DASHED as u16);
+                        side_val_vec.push(BORDER_STYLE_DASHED );
                     }
                     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , SOLID as uint) {
-                        side_val_vec.push(BORDER_STYLE_SOLID as u16);
+                        side_val_vec.push(BORDER_STYLE_SOLID );
                     }
                     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , LIBCSS_DOUBLE as uint) {
-                        side_val_vec.push(BORDER_STYLE_DOUBLE as u16);
+                        side_val_vec.push(BORDER_STYLE_DOUBLE );
                     }
                     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , GROOVE as uint) {
-                        side_val_vec.push(BORDER_STYLE_GROOVE as u16);
+                        side_val_vec.push(BORDER_STYLE_GROOVE );
                     }
                     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , RIDGE as uint) {
-                        side_val_vec.push(BORDER_STYLE_RIDGE as u16);
+                        side_val_vec.push(BORDER_STYLE_RIDGE );
                     }
                     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INSET as uint) {
-                        side_val_vec.push(BORDER_STYLE_INSET as u16);
+                        side_val_vec.push(BORDER_STYLE_INSET );
                     }
                     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , OUTSET as uint) {
-                        side_val_vec.push(BORDER_STYLE_OUTSET as u16);
+                        side_val_vec.push(BORDER_STYLE_OUTSET );
                     }
                     else {
                         break;
@@ -1185,22 +1182,22 @@ impl css_properties {
             match token.token_type {
                 CSS_TOKEN_IDENT(_) => {
                     if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THIN as uint) {
-                        side_val.push(BORDER_WIDTH_THIN as u16);
+                        side_val.push(BORDER_WIDTH_THIN );
                         *ctx = *ctx + 1;
                         error = CSS_OK;
                     }
                     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MEDIUM as uint) {
-                        side_val.push(BORDER_WIDTH_MEDIUM as u16);
+                        side_val.push(BORDER_WIDTH_MEDIUM );
                         *ctx = *ctx + 1;
                         error = CSS_OK;
                     }
                     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THICK as uint) {
-                        side_val.push(BORDER_WIDTH_THICK as u16);
+                        side_val.push(BORDER_WIDTH_THICK );
                         *ctx = *ctx + 1;
                         error = CSS_OK;
                     }
                     else {
-                        side_val.push(BORDER_WIDTH_SET as u16);
+                        side_val.push(BORDER_WIDTH_SET );
                         let (length_val , unit_val , result) = css_properties::css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
                         match result {
                             CSS_OK => {
@@ -1226,7 +1223,7 @@ impl css_properties {
                     }
                 },
                 _ => {
-                    side_val.push(BORDER_WIDTH_SET as u16);
+                    side_val.push(BORDER_WIDTH_SET );
                     let (length_val , unit_val , result) = css_properties::css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
                     match result {
                         CSS_OK => {
@@ -1373,13 +1370,13 @@ impl css_properties {
                     css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_CLIP , FLAG_INHERIT as u8 , 0);
                 }
                 else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_CLIP , 0 , CLIP_AUTO as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_CLIP , 0 , CLIP_AUTO );
                 }
             },
             CSS_TOKEN_FUNCTION(_) => {
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , RECT as uint) {
                     let mut i: int = 0;
-                    let mut value: u16 = CLIP_SHAPE_RECT as u16;
+                    let mut value: u16 = CLIP_SHAPE_RECT ;
 
                     while i < 4 {
                         consumeWhitespace(vector , ctx);
@@ -1545,10 +1542,10 @@ impl css_properties {
             }
         }//end of loop
         if width {
-            css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_COLUMN_WIDTH, 0, COLUMN_WIDTH_AUTO as u16);
+            css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_COLUMN_WIDTH, 0, COLUMN_WIDTH_AUTO );
         }
         if count {
-            css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_COLUMN_COUNT, 0, COLUMN_COUNT_AUTO as u16);
+            css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_COLUMN_COUNT, 0, COLUMN_COUNT_AUTO );
         }
         css_stylesheet::css__stylesheet_merge_style(style , width_style);
         css_stylesheet::css__stylesheet_merge_style(style , count_style);
@@ -1653,14 +1650,14 @@ impl css_properties {
         }
 
         if color {
-            css_stylesheet::css__stylesheet_style_appendOPV(color_style , CSS_PROP_COLUMN_RULE_COLOR , 0 , COLUMN_RULE_COLOR_SET as u16);
+            css_stylesheet::css__stylesheet_style_appendOPV(color_style , CSS_PROP_COLUMN_RULE_COLOR , 0 , COLUMN_RULE_COLOR_SET );
             // css_stylesheet::css__stylesheet_style_append(color_style , 0x00000000);
         }
         if bool_style {
-            css_stylesheet::css__stylesheet_style_appendOPV(style_style , CSS_PROP_COLUMN_RULE_STYLE , 0 , COLUMN_RULE_STYLE_NONE as u16);   
+            css_stylesheet::css__stylesheet_style_appendOPV(style_style , CSS_PROP_COLUMN_RULE_STYLE , 0 , COLUMN_RULE_STYLE_NONE );   
         }
         if width {
-            css_stylesheet::css__stylesheet_style_appendOPV(width_style , CSS_PROP_COLUMN_RULE_WIDTH , 0 , COLUMN_RULE_WIDTH_MEDIUM as u16);
+            css_stylesheet::css__stylesheet_style_appendOPV(width_style , CSS_PROP_COLUMN_RULE_WIDTH , 0 , COLUMN_RULE_WIDTH_MEDIUM );
         }
 
         css_stylesheet::css__stylesheet_merge_style(style , color_style);
@@ -1708,17 +1705,17 @@ impl css_properties {
            css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_CONTENT)        
         }
         else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),NORMAL as uint) {
-           css_stylesheet::css__stylesheet_style_appendOPV(result, CSS_PROP_CONTENT, 0, CONTENT_NORMAL as u16)
+           css_stylesheet::css__stylesheet_style_appendOPV(result, CSS_PROP_CONTENT, 0, CONTENT_NORMAL )
         } 
         else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NONE as uint) {
-           css_stylesheet::css__stylesheet_style_appendOPV(result, CSS_PROP_CONTENT, 0, CONTENT_NONE as u16)
+           css_stylesheet::css__stylesheet_style_appendOPV(result, CSS_PROP_CONTENT, 0, CONTENT_NONE )
         } 
         else {
 
                 /* Macro to output the value marker, awkward because we need to check
                  * first to determine how the value is constructed.
                  */
-                let CSS_APPEND = |first, CSSVAL| css_stylesheet::css__stylesheet_style_append(result, if first {css_bytecode::buildOPV(CSS_PROP_CONTENT, 0, CSSVAL)} else {CSSVAL as u32});
+                let CSS_APPEND = |first, CSSVAL| css_stylesheet::css__stylesheet_style_append(result, if first {buildOPV(CSS_PROP_CONTENT, 0, CSSVAL)} else {CSSVAL as u32});
 
                 let mut first = true;
                 let mut prev_ctx = orig_ctx;
@@ -1737,24 +1734,24 @@ impl css_properties {
             loop {
                 if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),
                  OPEN_QUOTE as uint) {
-                    CSS_APPEND(first, CONTENT_OPEN_QUOTE as u16)
+                    CSS_APPEND(first, CONTENT_OPEN_QUOTE )
                 }
                 else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),
                  CLOSE_QUOTE as uint) {
-                    CSS_APPEND(first, CONTENT_CLOSE_QUOTE as u16)
+                    CSS_APPEND(first, CONTENT_CLOSE_QUOTE )
                 }
                 else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),
                  NO_OPEN_QUOTE as uint) {
-                    CSS_APPEND(first, CONTENT_NO_OPEN_QUOTE as u16);
+                    CSS_APPEND(first, CONTENT_NO_OPEN_QUOTE );
                 } 
                 else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),
                  NO_CLOSE_QUOTE as uint) {
-                    CSS_APPEND(first, CONTENT_NO_CLOSE_QUOTE as u16);
+                    CSS_APPEND(first, CONTENT_NO_CLOSE_QUOTE );
                 } 
                 else if match token.token_type {CSS_TOKEN_STRING(_) => true, _ => false} {
                     
                     let snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone())) ;
-                    CSS_APPEND(first, CONTENT_STRING as u16);
+                    CSS_APPEND(first, CONTENT_STRING );
                     
                     css_stylesheet::css__stylesheet_style_append(result, snumber as u32);
                 }
@@ -1763,7 +1760,7 @@ impl css_properties {
                     match (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone()){
                         (CSS_OK, Some(uri)) => {
                             let uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri));
-                            CSS_APPEND(first, CONTENT_URI as u16);
+                            CSS_APPEND(first, CONTENT_URI );
                     
                             css_stylesheet::css__stylesheet_style_append(result, uri_snumber as u32)
                         },
@@ -1797,7 +1794,7 @@ impl css_properties {
                     }   
                     
                     let snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone()));
-                    CSS_APPEND(first, CONTENT_ATTR as u16);
+                    CSS_APPEND(first, CONTENT_ATTR );
                     
                     css_stylesheet::css__stylesheet_style_append(result, snumber as u32);
 
@@ -2236,7 +2233,7 @@ impl css_properties {
                 uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri)) as u32;
                 match first{
                     true=>{
-                         css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_URI as u16);
+                         css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_URI );
                     },
                     false=>{
                         css_stylesheet::css__stylesheet_style_append(style,CURSOR_URI as u32);
@@ -2279,7 +2276,7 @@ impl css_properties {
                    if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), AUTO as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_AUTO as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_AUTO );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_AUTO as u32);
@@ -2289,7 +2286,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CROSSHAIR as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_CROSSHAIR as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_CROSSHAIR );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_CROSSHAIR as u32);
@@ -2299,7 +2296,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), DEFAULT as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_DEFAULT as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_DEFAULT );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_DEFAULT as u32);
@@ -2309,7 +2306,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), POINTER as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_POINTER as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_POINTER );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_POINTER as u32);
@@ -2319,7 +2316,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), MOVE as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_MOVE as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_MOVE );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_MOVE as u32);
@@ -2329,7 +2326,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), E_RESIZE as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_E_RESIZE as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_E_RESIZE );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_E_RESIZE as u32);
@@ -2339,7 +2336,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NE_RESIZE as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_NE_RESIZE as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_NE_RESIZE );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_NE_RESIZE as u32);
@@ -2349,7 +2346,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NW_RESIZE as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_NW_RESIZE as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_NW_RESIZE );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_NW_RESIZE as u32);
@@ -2359,7 +2356,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),N_RESIZE as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_N_RESIZE as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_N_RESIZE );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_N_RESIZE as u32);
@@ -2369,7 +2366,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SE_RESIZE as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_SE_RESIZE as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_SE_RESIZE );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_SE_RESIZE as u32);
@@ -2379,7 +2376,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SW_RESIZE as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_SW_RESIZE as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_SW_RESIZE );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_SW_RESIZE as u32);
@@ -2389,7 +2386,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), S_RESIZE as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_S_RESIZE as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_S_RESIZE );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_S_RESIZE as u32);
@@ -2399,7 +2396,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), W_RESIZE as uint) {
                          match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_W_RESIZE as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_W_RESIZE );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_W_RESIZE as u32);
@@ -2409,7 +2406,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LIBCSS_TEXT as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_TEXT as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_TEXT );
                             },
                             false=>{
                                  css_stylesheet::css__stylesheet_style_append(style,CURSOR_TEXT as u32);
@@ -2419,7 +2416,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), WAIT as uint) {
                          match first{
                                 true=>{
-                                    css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_WAIT as u16);
+                                    css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_WAIT );
                                 },
                                 false=>{
                                     css_stylesheet::css__stylesheet_style_append(style,CURSOR_WAIT as u32);
@@ -2429,7 +2426,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HELP as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_HELP as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_HELP );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_HELP as u32);
@@ -2439,7 +2436,7 @@ impl css_properties {
                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), PROGRESS as uint) {
                         match first{
                             true=>{
-                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_PROGRESS as u16);
+                                css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_PROGRESS );
                             },
                             false=>{
                                 css_stylesheet::css__stylesheet_style_append(style,CURSOR_PROGRESS as u32);
@@ -2488,7 +2485,7 @@ impl css_properties {
             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) 
         ) {
             *ctx += 1;
-            flags = FLAG_INHERIT;
+            flags = FLAG_INHERIT as u8;
         }
         else if (
             match token.token_type {
@@ -2498,7 +2495,7 @@ impl css_properties {
             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BELOW as uint)
             ) {
                 *ctx += 1;
-                value = ELEVATION_BELOW as u16;
+                value = ELEVATION_BELOW ;
             }
         else if (
             match token.token_type {
@@ -2508,7 +2505,7 @@ impl css_properties {
          strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEVEL as uint)
          ) {
                 *ctx += 1;
-                value = ELEVATION_LEVEL as u16;
+                value = ELEVATION_LEVEL ;
             }
         else if (
             match token.token_type {
@@ -2518,7 +2515,7 @@ impl css_properties {
             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ABOVE as uint)
             ) {
                 *ctx += 1;
-                value = ELEVATION_ABOVE as u16;
+                value = ELEVATION_ABOVE ;
             }
         else if (
             match token.token_type {
@@ -2528,7 +2525,7 @@ impl css_properties {
             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HIGHER as uint) 
             ){
                 *ctx += 1;
-                value = ELEVATION_HIGHER as u16;
+                value = ELEVATION_HIGHER ;
             }
         else if (
             match token.token_type {
@@ -2538,7 +2535,7 @@ impl css_properties {
             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LOWER as uint)
             ) {
                 *ctx += 1;
-                value = ELEVATION_LOWER as u16;
+                value = ELEVATION_LOWER ;
             }
         else{
             let (unit_ret,length_ret,error) = css_properties::css__parse_unit_specifier(sheet , vector, ctx, UNIT_DEG as u32);
@@ -2569,7 +2566,7 @@ impl css_properties {
                             return CSS_INVALID;
                         }
                     }
-                    value = ELEVATION_ANGLE as u16;
+                    value = ELEVATION_ANGLE ;
                 },
                 _=>{
                     *ctx = orig_ctx;
@@ -2580,7 +2577,7 @@ impl css_properties {
            
         css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_ELEVATION, flags, value);
 
-        if (((flags & FLAG_INHERIT) > 0) && (value == ELEVATION_ANGLE as u16)) {
+        if (((flags & FLAG_INHERIT as u8) > 0) && (value == ELEVATION_ANGLE )) {
             css_stylesheet::css__stylesheet_style_vappend(style, [length as u32 , unit as u32]);
         }
         CSS_OK
@@ -2779,16 +2776,16 @@ impl css_properties {
         }
 
         if bool_style {
-            css_stylesheet::css__stylesheet_style_appendOPV(style_style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_NORMAL as u16);
+            css_stylesheet::css__stylesheet_style_appendOPV(style_style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_NORMAL );
         }
         if variant {
-            css_stylesheet::css__stylesheet_style_appendOPV(variant_style , CSS_PROP_FONT_VARIANT , 0 , FONT_VARIANT_NORMAL as u16);   
+            css_stylesheet::css__stylesheet_style_appendOPV(variant_style , CSS_PROP_FONT_VARIANT , 0 , FONT_VARIANT_NORMAL );   
         }
         if weight {
-            css_stylesheet::css__stylesheet_style_appendOPV(weight_style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_NORMAL as u16);
+            css_stylesheet::css__stylesheet_style_appendOPV(weight_style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_NORMAL );
         }
         if line_height {
-            css_stylesheet::css__stylesheet_style_appendOPV(line_height_style , CSS_PROP_LINE_HEIGHT , 0 , LINE_HEIGHT_NORMAL as u16);
+            css_stylesheet::css__stylesheet_style_appendOPV(line_height_style , CSS_PROP_LINE_HEIGHT , 0 , LINE_HEIGHT_NORMAL );
         }
 
         css_stylesheet::css__stylesheet_merge_style(style , style_style);
@@ -2833,13 +2830,13 @@ impl css_properties {
         match token.token_type {
             CSS_TOKEN_IDENT(_)=>{
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
-                    flags |= FLAG_INHERIT;
+                    flags |= FLAG_INHERIT as u8;
                     isMatchExexcuted = true;
                 }
             },
             CSS_TOKEN_NUMBER(_, _) =>{
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
-                    flags |= FLAG_INHERIT;
+                    flags |= FLAG_INHERIT as u8;
                 }
                 else {
                     let mut (num,consumed): (int,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), true);
@@ -2848,15 +2845,15 @@ impl css_properties {
                         return CSS_INVALID;
                     }
                     match css_int_to_fixed(num) {
-                        100 => value = FONT_WEIGHT_100 as u16,
-                        200 => value = FONT_WEIGHT_200 as u16,
-                        300 => value = FONT_WEIGHT_300 as u16,
-                        400 => value = FONT_WEIGHT_400 as u16,
-                        500 => value = FONT_WEIGHT_500 as u16,
-                        600 => value = FONT_WEIGHT_600 as u16,
-                        700 => value = FONT_WEIGHT_700 as u16,
-                        800 => value = FONT_WEIGHT_800 as u16,
-                        900 => value = FONT_WEIGHT_900 as u16,
+                        100 => value = FONT_WEIGHT_100 ,
+                        200 => value = FONT_WEIGHT_200 ,
+                        300 => value = FONT_WEIGHT_300 ,
+                        400 => value = FONT_WEIGHT_400 ,
+                        500 => value = FONT_WEIGHT_500 ,
+                        600 => value = FONT_WEIGHT_600 ,
+                        700 => value = FONT_WEIGHT_700 ,
+                        800 => value = FONT_WEIGHT_800 ,
+                        900 => value = FONT_WEIGHT_900 ,
                         _=>{
                             *ctx = orig_ctx;
                             return CSS_INVALID;
@@ -2872,16 +2869,16 @@ impl css_properties {
         }
         if(!isMatchExexcuted ) {
             if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NORMAL as uint) {
-                value = FONT_WEIGHT_NORMAL as u16;
+                value = FONT_WEIGHT_NORMAL ;
             }
             else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BOLD as uint) {
-                value = FONT_WEIGHT_BOLD as u16;
+                value = FONT_WEIGHT_BOLD ;
             }
             else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BOLDER as uint) {
-                value = FONT_WEIGHT_BOLDER as u16;
+                value = FONT_WEIGHT_BOLDER ;
             }
             else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LIGHTER as uint) {
-                value = FONT_WEIGHT_LIGHTER as u16;
+                value = FONT_WEIGHT_LIGHTER ;
             }
             else  {
                 *ctx = orig_ctx;
@@ -2989,13 +2986,13 @@ impl css_properties {
         }
 
         if image {
-            css_stylesheet::css__stylesheet_style_appendOPV(image_style , CSS_PROP_LIST_STYLE_IMAGE , 0 , LIST_STYLE_IMAGE_NONE as u16);
+            css_stylesheet::css__stylesheet_style_appendOPV(image_style , CSS_PROP_LIST_STYLE_IMAGE , 0 , LIST_STYLE_IMAGE_NONE );
         }
         if position {
-            css_stylesheet::css__stylesheet_style_appendOPV(position_style , CSS_PROP_LIST_STYLE_POSITION , 0 , LIST_STYLE_POSITION_OUTSIDE as u16);   
+            css_stylesheet::css__stylesheet_style_appendOPV(position_style , CSS_PROP_LIST_STYLE_POSITION , 0 , LIST_STYLE_POSITION_OUTSIDE );   
         }
         if type_type {
-            css_stylesheet::css__stylesheet_style_appendOPV(type_style , CSS_PROP_LIST_STYLE_TYPE , 0 , LIST_STYLE_TYPE_DISC as u16);
+            css_stylesheet::css__stylesheet_style_appendOPV(type_style , CSS_PROP_LIST_STYLE_TYPE , 0 , LIST_STYLE_TYPE_DISC );
         }
 
         css_stylesheet::css__stylesheet_merge_style(style , image_style);
@@ -3083,12 +3080,12 @@ impl css_properties {
             match token.token_type {
                 CSS_TOKEN_IDENT(_) => {
                     if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
-                        side_val.push(MARGIN_AUTO as u16);
+                        side_val.push(MARGIN_AUTO );
                         *ctx = *ctx + 1;
                         error = CSS_OK;
                     }
                     else {
-                        side_val.push(MARGIN_SET as u16);
+                        side_val.push(MARGIN_SET );
                         let (length_val , unit_val , result) = css_properties::css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
                         match result {
                             CSS_OK => {
@@ -3113,7 +3110,7 @@ impl css_properties {
                     }
                 },
                 _ => {
-                    side_val.push(MARGIN_SET as u16);
+                    side_val.push(MARGIN_SET );
                     let (length_val , unit_val , result) = css_properties::css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
                     match result {
                         CSS_OK => {
@@ -3280,7 +3277,7 @@ impl css_properties {
                         num = css_int_to_fixed(1) as int;
                     }
 
-                    css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_OPACITY, 0, OPACITY_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_OPACITY, 0, OPACITY_SET );
                     css_stylesheet::css__stylesheet_style_append(style, num as u32);
             },
             _=>{
@@ -3378,13 +3375,13 @@ impl css_properties {
             }
         }
         if color {
-            css_stylesheet::css__stylesheet_style_appendOPV(color_style , CSS_PROP_OUTLINE_COLOR , 0 , OUTLINE_COLOR_INVERT as u16);
+            css_stylesheet::css__stylesheet_style_appendOPV(color_style , CSS_PROP_OUTLINE_COLOR , 0 , OUTLINE_COLOR_INVERT );
         }
         if style_bool {
-            css_stylesheet::css__stylesheet_style_appendOPV(style_style , CSS_PROP_OUTLINE_STYLE , 0 , OUTLINE_STYLE_NONE as u16);   
+            css_stylesheet::css__stylesheet_style_appendOPV(style_style , CSS_PROP_OUTLINE_STYLE , 0 , OUTLINE_STYLE_NONE );   
         }
         if width {
-            css_stylesheet::css__stylesheet_style_appendOPV(width_style , CSS_PROP_OUTLINE_WIDTH , 0 , OUTLINE_WIDTH_MEDIUM as u16);
+            css_stylesheet::css__stylesheet_style_appendOPV(width_style , CSS_PROP_OUTLINE_WIDTH , 0 , OUTLINE_WIDTH_MEDIUM );
         }
 
         css_stylesheet::css__stylesheet_merge_style(style , color_style);
@@ -3470,58 +3467,58 @@ impl css_properties {
             }
             match side_count {
                 1 => {
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
                 },
                 2 => {
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
                 },
                 3 => {
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
                 },
                 4 => {
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET );
                     css_stylesheet::css__stylesheet_style_append(style , side_length[3] as u32);
                     css_stylesheet::css__stylesheet_style_append(style , side_unit[3] as u32);
                 },
@@ -3651,13 +3648,13 @@ impl css_properties {
         match token.token_type {
             CSS_TOKEN_IDENT(_) => {
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint) {
-                    flags = flags | FLAG_INHERIT;
+                    flags = flags | FLAG_INHERIT as u8;
                 }
                 else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , NONE as uint) {
-                    value = PLAY_DURING_NONE as u16;
+                    value = PLAY_DURING_NONE ;
                 }
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
-                    value = PLAY_DURING_AUTO as u16;
+                    value = PLAY_DURING_AUTO ;
                 }
                 else {
                     *ctx = orig_ctx;
@@ -3666,7 +3663,7 @@ impl css_properties {
             },
             _ => {
                 let mut modifiers:int = 0;
-                value = PLAY_DURING_URI as u16;
+                value = PLAY_DURING_URI ;
                 // TODO resolve function
 
                 // uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri.get_ref().clone())) as u32;
@@ -3677,8 +3674,8 @@ impl css_properties {
                     match token.token_type {
                         CSS_TOKEN_IDENT(_) => {
                             if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MIX as uint) {
-                                if value & (PLAY_DURING_MIX as u16) == 0 {
-                                    value |= (PLAY_DURING_MIX as u16);
+                                if value & (PLAY_DURING_MIX ) == 0 {
+                                    value |= (PLAY_DURING_MIX );
                                 }
                                 else {
                                     *ctx = orig_ctx;
@@ -3686,8 +3683,8 @@ impl css_properties {
                                 }
                             }
                             else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , REPEAT as uint) {
-                                if value & (PLAY_DURING_REPEAT as u16) == 0 {
-                                    value |= (PLAY_DURING_REPEAT as u16);
+                                if value & (PLAY_DURING_REPEAT ) == 0 {
+                                    value |= (PLAY_DURING_REPEAT );
                                 }
                                 else {
                                     *ctx = orig_ctx;
@@ -3707,7 +3704,7 @@ impl css_properties {
             }
         }
         css_stylesheet::css__stylesheet_style_appendOPV(style ,CSS_PROP_PLAY_DURING , flags , value);
-        if ((flags & FLAG_INHERIT)==0 && (value & PLAY_DURING_TYPE_MASK as u16)==PLAY_DURING_URI as u16) {
+        if ((flags & FLAG_INHERIT as u8)==0 && (value & PLAY_DURING_TYPE_MASK )==PLAY_DURING_URI ) {
             css_stylesheet::css__stylesheet_style_append(style , uri_snumber);
         }
         CSS_OK
@@ -3734,7 +3731,7 @@ impl css_properties {
                     css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_QUOTES);
                 }
                 else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NONE as uint)  {
-                    css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_QUOTES, 0, QUOTES_NONE as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_QUOTES, 0, QUOTES_NONE );
                 }
             },
             CSS_TOKEN_STRING(_) => {
@@ -3762,7 +3759,7 @@ impl css_properties {
                             close_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone())) as u32;
                             consumeWhitespace(vector, ctx); 
                             match first {
-                                true => css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_QUOTES, 0, QUOTES_STRING as u16),
+                                true => css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_QUOTES, 0, QUOTES_STRING ),
                                 false=> css_stylesheet::css__stylesheet_style_append(style, QUOTES_STRING as u32)
                             }
                             
@@ -3855,14 +3852,14 @@ impl css_properties {
                     css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_TEXT_DECORATION);
                 }
                 else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NONE as uint)  {
-                    css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_TEXT_DECORATION, 0, TEXT_DECORATION_NONE as u16);
+                    css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_TEXT_DECORATION, 0, TEXT_DECORATION_NONE );
                 }
                 else {
                     let mut value: u16 = 0 ;
                     while (*ctx < vector.len()) {
                         if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), UNDERLINE as uint) {
-                            if ((value & TEXT_DECORATION_UNDERLINE as u16) == 0) {
-                                value |= TEXT_DECORATION_UNDERLINE as u16;
+                            if ((value & TEXT_DECORATION_UNDERLINE ) == 0) {
+                                value |= TEXT_DECORATION_UNDERLINE ;
                             }
                             
                             else {
@@ -3871,8 +3868,8 @@ impl css_properties {
                             }
                         }
                         else if  strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), OVERLINE as uint) {
-                            if ((value & TEXT_DECORATION_OVERLINE as u16) == 0) {
-                                value |= TEXT_DECORATION_OVERLINE as u16;
+                            if ((value & TEXT_DECORATION_OVERLINE ) == 0) {
+                                value |= TEXT_DECORATION_OVERLINE ;
                             }
                             else {
                                 *ctx = orig_ctx;
@@ -3880,8 +3877,8 @@ impl css_properties {
                             }
                         }
                         else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LINE_THROUGH as uint) {
-                            if ((value & TEXT_DECORATION_LINE_THROUGH as u16) == 0) {
-                                value |= TEXT_DECORATION_LINE_THROUGH as u16;
+                            if ((value & TEXT_DECORATION_LINE_THROUGH ) == 0) {
+                                value |= TEXT_DECORATION_LINE_THROUGH ;
                             }
                             else {
                                 *ctx = orig_ctx;
@@ -3890,8 +3887,8 @@ impl css_properties {
                             }
                         }
                         else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BLINK as uint) {
-                            if ((value & (TEXT_DECORATION_BLINK as u16)) == 0) {
-                                value |= TEXT_DECORATION_BLINK as u16;
+                            if ((value & (TEXT_DECORATION_BLINK )) == 0) {
+                                value |= TEXT_DECORATION_BLINK ;
                             }
                             else {
                                 *ctx = orig_ctx;
@@ -4207,12 +4204,12 @@ impl css_properties {
         match token.token_type {
             CSS_TOKEN_IDENT(_) => {
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , TRANSPARENT as uint) {
-                    ret_value = COLOR_TRANSPARENT as u16;
+                    ret_value = COLOR_TRANSPARENT ;
                     ret_result = 0;
                     return (Some(ret_value) , Some(ret_result) , CSS_OK);
                 }
                 else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , CURRENTCOLOR as uint) {
-                    ret_value = COLOR_CURRENT_COLOR as u16;
+                    ret_value = COLOR_CURRENT_COLOR ;
                     ret_result = 0;
                     return (Some(ret_value) , Some(ret_result) , CSS_OK);
                 }
@@ -4488,7 +4485,7 @@ impl css_properties {
                 }
 
                 ret_result = (a << 24 | r << 16 | g << 8 | b) as u32;
-                ret_value = COLOR_SET as u16;
+                ret_value = COLOR_SET ;
             },
             CSS_TOKEN_NUMBER(_ , _) => {
                 if sheet.quirks_allowed {
@@ -4709,18 +4706,19 @@ impl css_properties {
 pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<unit>,css_result) {
     let mut unit: unit = UNIT_GRAD;
     let len:uint= ptr.len() - index;
+    let ptr_lower = ptr.to_lower();
     match(len) {
-        4=>if eq(&(ptr.to_lower()),&~"grad") {
+        4=>if (ptr_lower == ~"grad") {
               unit= UNIT_GRAD;    
             },
         3=>{
-            if eq(&(ptr.to_lower()),&~"KHz") {
+            if (ptr_lower == ~"KHz") {
                 unit= UNIT_KHZ;    
             }
-            else if eq(&(ptr.to_lower()),&~"deg") {
+            else if (ptr_lower == ~"deg") {
                 unit= UNIT_DEG;    
             }
-            else if eq(&(ptr.to_lower()),&~"rad") {
+            else if (ptr_lower == ~"rad") {
                 unit= UNIT_RAD;    
             }
             else {
@@ -4728,34 +4726,34 @@ pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<unit>,css_resul
             }
         },
         2=>{
-            if eq(&(ptr.to_lower()),&~"Hz") {
+            if (ptr_lower == ~"Hz") {
                 unit= UNIT_HZ;    
             }
-            else if eq(&(ptr.to_lower()),&~"ms") {
+            else if (ptr_lower == ~"ms") {
                 unit= UNIT_MS;    
             }
-            else if eq(&(ptr.to_lower()),&~"px") {
+            else if (ptr_lower == ~"px") {
                 unit= UNIT_PX;    
             }
-            else if eq(&(ptr.to_lower()),&~"ex") {
+            else if (ptr_lower == ~"ex") {
                 unit= UNIT_EX;    
             }
-            else if eq(&(ptr.to_lower()),&~"em") {
+            else if (ptr_lower == ~"em") {
                 unit= UNIT_EM;    
             }
-            else if eq(&(ptr.to_lower()),&~"in") {
+            else if (ptr_lower == ~"in") {
                 unit= UNIT_IN;    
             }
-            else if eq(&(ptr.to_lower()),&~"cm") {
+            else if (ptr_lower == ~"cm") {
                 unit= UNIT_CM;    
             }
-            else if eq(&(ptr.to_lower()),&~"mm") {
+            else if (ptr_lower == ~"mm") {
                 unit= UNIT_MM;    
             }
-            else if eq(&(ptr.to_lower()),&~"pt") {
+            else if (ptr_lower == ~"pt") {
                 unit= UNIT_PT;    
             }
-            else if eq(&(ptr.to_lower()),&~"pc") {
+            else if (ptr_lower == ~"pc") {
                 unit= UNIT_PC;    
             }
             else {
@@ -4763,7 +4761,7 @@ pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<unit>,css_resul
             }
         },
         1=>{
-            if eq(&(ptr.to_lower()),&~"s") {
+            if (ptr_lower == ~"s") {
                 unit= UNIT_S;    
             }
             else {
@@ -5053,49 +5051,49 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 
 pub fn css__parse_list_style_type_value(strings: &mut ~css_propstrings , token:&~css_token) -> (Option<u16> , css_result) {
     if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , DISC as uint) {
-        return (Some(LIST_STYLE_TYPE_DISC as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_DISC ) , CSS_OK);
     }
     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , CIRCLE as uint) {
-        return (Some(LIST_STYLE_TYPE_CIRCLE as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_CIRCLE ) , CSS_OK);
     }
     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , SQUARE as uint) {
-        return (Some(LIST_STYLE_TYPE_SQUARE as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_SQUARE ) , CSS_OK);
     }
     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , DECIMAL as uint) {
-        return (Some(LIST_STYLE_TYPE_DECIMAL as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_DECIMAL ) , CSS_OK);
     }
     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , DECIMAL_LEADING_ZERO as uint) {
-        return (Some(LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO ) , CSS_OK);
     }
     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , LOWER_ROMAN as uint) {
-        return (Some(LIST_STYLE_TYPE_LOWER_ROMAN as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_LOWER_ROMAN ) , CSS_OK);
     }
     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , UPPER_ROMAN as uint) {
-        return (Some(LIST_STYLE_TYPE_UPPER_ROMAN as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_UPPER_ROMAN ) , CSS_OK);
     }
     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , LOWER_GREEK as uint) {
-        return (Some(LIST_STYLE_TYPE_LOWER_GREEK as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_LOWER_GREEK ) , CSS_OK);
     }
     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , LOWER_LATIN as uint) {
-        return (Some(LIST_STYLE_TYPE_LOWER_LATIN as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_LOWER_LATIN ) , CSS_OK);
     }
     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , UPPER_LATIN as uint) {
-        return (Some(LIST_STYLE_TYPE_UPPER_LATIN as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_UPPER_LATIN ) , CSS_OK);
     }
     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , ARMENIAN as uint) {
-        return (Some(LIST_STYLE_TYPE_ARMENIAN as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_ARMENIAN ) , CSS_OK);
     }
     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , GEORGIAN as uint) {
-        return (Some(LIST_STYLE_TYPE_GEORGIAN as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_GEORGIAN ) , CSS_OK);
     }
     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , LOWER_ALPHA as uint) {
-        return (Some(LIST_STYLE_TYPE_LOWER_ALPHA as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_LOWER_ALPHA ) , CSS_OK);
     }
     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , UPPER_ALPHA as uint) {
-        return (Some(LIST_STYLE_TYPE_UPPER_ALPHA as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_UPPER_ALPHA ) , CSS_OK);
     }
     else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , NONE as uint) {
-        return (Some(LIST_STYLE_TYPE_NONE as u16) , CSS_OK);
+        return (Some(LIST_STYLE_TYPE_NONE ) , CSS_OK);
     }
     else {
         return (None , CSS_INVALID);
@@ -5161,37 +5159,37 @@ pub fn font_family_reserved(strings:&mut ~css_propstrings, ident:&~css_token) ->
  * \return Bytecode value
  */
 pub fn font_family_value(strings:&mut ~css_propstrings, token:&~css_token, first:bool) -> u32 {
-    let mut value:u32;
+    let mut value:u16;
     
     match token.token_type{
         CSS_TOKEN_IDENT(_) => {
             if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SERIF as uint) {
-                value = FONT_FAMILY_SERIF as u32
+                value = FONT_FAMILY_SERIF
             }    
             else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SANS_SERIF as uint) {
-                value = FONT_FAMILY_SANS_SERIF as u32
+                value = FONT_FAMILY_SANS_SERIF 
             }    
             else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CURSIVE as uint) {
-                value = FONT_FAMILY_CURSIVE as u32
+                value = FONT_FAMILY_CURSIVE
             }    
             else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FANTASY as uint) {
-                value = FONT_FAMILY_FANTASY as u32
+                value = FONT_FAMILY_FANTASY
             }    
             else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), MONOSPACE as uint) {
-                value = FONT_FAMILY_MONOSPACE as u32
+                value = FONT_FAMILY_MONOSPACE
             }    
             else {
-                value = FONT_FAMILY_IDENT_LIST as u32
+                value = FONT_FAMILY_IDENT_LIST 
             }    
         },
-        _ =>  value = FONT_FAMILY_STRING as u32
+        _ =>  value = FONT_FAMILY_STRING 
     } 
     
     if first {
-      css_bytecode::buildOPV(CSS_PROP_FONT_FAMILY, 0, value as u16)  
+      buildOPV(CSS_PROP_FONT_FAMILY, 0, value )  as u32
     }
     else{
-        value
+        value as u32
     }  
 }
 
@@ -5260,13 +5258,13 @@ pub fn parse_system_font(sheet: @mut css_stylesheet , style: @mut css_style , sy
 
     match system_font.style {
         CSS_FONT_STYLE_NORMAL => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_NORMAL as u16);
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_NORMAL );
         },
         CSS_FONT_STYLE_ITALIC => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_ITALIC as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_ITALIC );  
         },
         CSS_FONT_STYLE_OBLIQUE => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_OBLIQUE as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_OBLIQUE );  
         },
         _ => {
             return CSS_BADPARM;
@@ -5275,10 +5273,10 @@ pub fn parse_system_font(sheet: @mut css_stylesheet , style: @mut css_style , sy
 
     match system_font.variant {
         CSS_FONT_VARIANT_NORMAL => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_VARIANT , 0 , FONT_VARIANT_NORMAL as u16);
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_VARIANT , 0 , FONT_VARIANT_NORMAL );
         },
         CSS_FONT_VARIANT_SMALL_CAPS => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_VARIANT , 0 , FONT_VARIANT_SMALL_CAPS as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_VARIANT , 0 , FONT_VARIANT_SMALL_CAPS );  
         },
         _ => {
             return CSS_BADPARM;
@@ -5287,52 +5285,52 @@ pub fn parse_system_font(sheet: @mut css_stylesheet , style: @mut css_style , sy
 
     match system_font.weight {
         CSS_FONT_WEIGHT_NORMAL => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_NORMAL as u16);
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_NORMAL );
         },
         CSS_FONT_WEIGHT_BOLD => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_BOLD as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_BOLD );  
         },
         CSS_FONT_WEIGHT_BOLDER => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_BOLDER as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_BOLDER );  
         },
         CSS_FONT_WEIGHT_LIGHTER => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_LIGHTER as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_LIGHTER );  
         },
         CSS_FONT_WEIGHT_100 => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_100 as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_100 );  
         },
         CSS_FONT_WEIGHT_200 => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_200 as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_200 );  
         },
         CSS_FONT_WEIGHT_300 => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_300 as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_300 );  
         },
         CSS_FONT_WEIGHT_400 => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_400 as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_400 );  
         },
         CSS_FONT_WEIGHT_500 => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_500 as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_500 );  
         },
         CSS_FONT_WEIGHT_600 => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_600 as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_600 );  
         },
         CSS_FONT_WEIGHT_700 => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_700 as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_700 );  
         },
         CSS_FONT_WEIGHT_800 => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_800 as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_800 );  
         },
         CSS_FONT_WEIGHT_900 => {
-            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_900 as u16);  
+            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_900 );  
         },
         _ => {
             return CSS_BADPARM;
         }
     }
 
-    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_SIZE , 0 , FONT_SIZE_DIMENSION as u16);
-    // css_stylesheet::css__stylesheet_style_vappend(style , CSS_PROP_FONT_SIZE , 0 , FONT_SIZE_DIMENSION as u16);
-    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_LINE_HEIGHT , 0 , LINE_HEIGHT_DIMENSION as u16);
+    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_SIZE , 0 , FONT_SIZE_DIMENSION );
+    // css_stylesheet::css__stylesheet_style_vappend(style , CSS_PROP_FONT_SIZE , 0 , FONT_SIZE_DIMENSION );
+    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_LINE_HEIGHT , 0 , LINE_HEIGHT_DIMENSION );
 
 
 
@@ -5383,7 +5381,7 @@ pub fn voice_family_value(strings: &mut ~css_propstrings, token:&~css_token, fir
     }; 
    
     if first {
-        css_bytecode::buildOPV(CSS_PROP_VOICE_FAMILY, 0, value as u16) 
+        buildOPV(CSS_PROP_VOICE_FAMILY, 0, value ) 
     }
     else {
         value as u32  

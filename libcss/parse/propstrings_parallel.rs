@@ -1,9 +1,3 @@
-#[link(name = "css_propstrings_parallel", vers = "0.1")];
-#[crate_type = "lib"];
-
-extern mod std;
-extern mod wapcaplet;
-
 use std::arc;
 use wapcaplet::*;
 

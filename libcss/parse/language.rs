@@ -1,22 +1,32 @@
-#[link(name = "css_language", vers = "0.1")];
-#[crate_type = "lib"];
-
-extern mod css_enum;
-extern mod css_stylesheet;
-extern mod std;
-extern mod wapcaplet;
-extern mod css_propstrings;
-extern mod css_properties;
-extern mod css_bytecode;
-
-use css_enum::* ;
-use css_stylesheet::*;
 use std::arc;
 use wapcaplet::*;
-use css_propstrings::*;
-use css_properties::*;
-use css_bytecode::*;
 
+use bytecode::opcodes::*;
+use bytecode::bytecode::*;
+
+use include::font_face::*;
+use include::properties::*;
+use include::types::*;
+
+use stylesheet::*;
+
+use lex::lexer::*;
+
+use parse::common::*;
+use parse::propstrings::*;
+use parse::properties::properties::*;
+
+use utils::errors::*;
+
+
+enum language_state {
+
+    CHARSET_PERMITTED,
+    IMPORT_PERMITTED,
+    NAMESPACE_PERMITTED,
+    HAD_RULE
+    
+}
 
 pub struct context_entry {
     event_type:css_parser_event,        /* < Type of entry */
@@ -39,8 +49,8 @@ pub struct css_language {
     namespaces:~[~css_namespace],
 }
 
-    fn  css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~css_language {
-        
+fn  css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~css_language {
+    
     ~css_language {
         sheet:sheet,
         lwc_instance: lwc_inst.clone(),

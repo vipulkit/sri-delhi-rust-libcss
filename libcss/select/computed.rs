@@ -1,16 +1,12 @@
-#[link(name = "css_select_computed", vers = "0.1")];
-#[crate_type = "lib"];
+use select::common::*;
+use select::propset::*;
 
-extern mod css_enum;
-extern mod css_select_const;
-extern mod css_fpmath;
-extern mod css_select_propset;
-extern mod std ;
+use include::fpmath::*;
+use include::types::*;
+use include::properties::*;
 
-use css_enum::* ;
-use css_select_const::*;
-use css_fpmath::*;
-use css_select_propset::*;
+use utils::errors::*;
+
 
 // function pointer : used in "css__compute_absolute_values" function 
 pub type css_fnptr_compute_font_size =  ~extern fn(parent:Option<@mut css_hint>,
