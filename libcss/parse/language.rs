@@ -49,7 +49,7 @@ pub struct css_language {
     namespaces:~[~css_namespace],
 }
 
-fn  css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~css_language {
+pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~css_language {
     
     ~css_language {
         sheet:sheet,
