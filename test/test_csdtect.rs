@@ -53,7 +53,7 @@ fn main() {
 
 
 	// Test 1: Header of input file is  being skipped	
-	let (inputStreamOption, ParserUtilsError) = inputstream(copy encoding, Some(~css__charset_extract));
+	let (inputStreamOption, ParserUtilsError) = inputstream(Some(copy encoding),Some(encsrcVal), Some(~css__charset_extract));
 	let r2 : @Reader = io::file_reader(&Path(copy args[1])).get();	    
 	let mut test1 = result::unwrap(test_report(&"Unit_test_report.csv"));
 	//test1.info( ~"csdetect", ~"csdetect.rs", ~"css__charset_extract", copy args[1] , ~"") ;	
@@ -140,7 +140,7 @@ fn main() {
 	}
 
 	// Test 2: Header of input file is not being skipped
-	let (inputStreamOption, ParserUtilsError) = inputstream(copy encoding, Some(~css__charset_extract));		
+	let (inputStreamOption, ParserUtilsError) = inputstream(Some(copy encoding),Some(encsrcVal), Some(~css__charset_extract));		
 	let r : @Reader = io::file_reader(&Path(copy args[1])).get();	    
 	let mut test1 = result::unwrap(test_report(&"Unit_test_report.csv"));
 	//test1.info( ~"csdetect", ~"csdetect.rs", ~"css__charset_extract", copy args[1] , ~"") ;

@@ -8,6 +8,7 @@ use test::*;
 use parserutils::* ;
 use parserutils::input::inputstream::*;
 use parserutils::charset::aliases::*;
+use parserutils::charset::csdetect::*;
 
  fn main() {
 	let args : ~[~str] = os::args();
@@ -16,7 +17,7 @@ use parserutils::charset::aliases::*;
     let r:@Reader = io::file_reader(&Path(args[1])).get(); 
     let reader = io::stdin();
     let mut test1 = result::unwrap(test_report(&"Unit_test_report.csv"));
-    let (inputStreamOption, ParserUtilsError)= inputstream(~"UTF-16",None);
+    let (inputStreamOption, ParserUtilsError)= inputstream(Some(~"UTF-16"),Some(CSS_CHARSET_DEFAULT),None);
 
 	match(ParserUtilsError) {
 		PARSERUTILS_OK=>{
