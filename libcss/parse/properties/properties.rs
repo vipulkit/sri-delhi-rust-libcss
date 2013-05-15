@@ -720,7 +720,7 @@ impl css_properties {
         let orig_ctx = *ctx;
         let mut error: css_result = CSS_OK;
 
-        error = css_properties::css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_TOP);
+        error = css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_TOP);
         match error {
             CSS_OK => {},
             _=> {
@@ -730,7 +730,7 @@ impl css_properties {
         }
 
         *ctx = orig_ctx;
-        error = css_properties::css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_RIGHT);
+        error = css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_RIGHT);
         match error {
             CSS_OK => {},
             _=> {
@@ -740,7 +740,7 @@ impl css_properties {
         }
 
         *ctx = orig_ctx;
-        error = css_properties::css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_BOTTOM);
+        error = css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_BOTTOM);
         match error {
             CSS_OK => {},
             _=> {
@@ -750,7 +750,7 @@ impl css_properties {
         }
 
         *ctx = orig_ctx;
-        error = css_properties::css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_LEFT);
+        error = css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_LEFT);
         match error {
             CSS_OK => {},
             _=> {
@@ -4705,45 +4705,7 @@ impl css_properties {
         }
     }
 
-    fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[~css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_result { 
-        let orig_ctx = *ctx;
-        let mut prev_ctx: uint;
-        let color: bool = true;
-        let style: bool = true;
-        let width: bool = true;
-        let color_style: @mut css_style;
-        let style_style: @mut css_style;
-        let width_style: @mut css_style;
-        let mut token: &~css_token;
-
-        if *ctx >= vector.len() {
-            return CSS_INVALID;
-        }
-
-        token = &vector[*ctx];
-        
-        if (css_properties::is_css_inherit(strings , token)) {
-            css_stylesheet::css_stylesheet_style_inherit(result_style , unsafe{cast::transmute(CSS_PROP_BORDER_TOP_COLOR as uint + side as uint)});
-            css_stylesheet::css_stylesheet_style_inherit(result_style, unsafe{cast::transmute(CSS_PROP_BORDER_TOP_STYLE as uint + side as uint)});
-            css_stylesheet::css_stylesheet_style_inherit(result_style, unsafe{cast::transmute(CSS_PROP_BORDER_TOP_WIDTH as uint + side as uint)});
-        }
-        
-        *ctx = *ctx + 1;
-        color_style = sheet.css__stylesheet_style_create();
-        style_style = sheet.css__stylesheet_style_create();
-        width_style = sheet.css__stylesheet_style_create();
-
-        prev_ctx = *ctx;
-        while *ctx != prev_ctx {
-            let mut error = CSS_OK;
-            token = &vector[*ctx];
-            if css_properties::is_css_inherit(strings , token) {
-                error = CSS_INVALID;
-            }
-        }
-        CSS_OK
-    }
-
+    
     // fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[~css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_result { 
     //  let orig_ctx = *ctx;
     //  let mut prev_ctx: int;
@@ -5468,5 +5430,44 @@ pub fn css__ident_list_to_string(sheet: @mut css_stylesheet , strings: &mut ~css
 pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[~css_token], 
     ctx: @mut uint , reserved:Option<reserved_fn> , style: @mut css_style) -> css_result {
 
+    CSS_OK
+}
+
+pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[~css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_result { 
+    let orig_ctx = *ctx;
+    let mut prev_ctx: uint;
+    let color: bool = true;
+    let style: bool = true;
+    let width: bool = true;
+    let color_style: @mut css_style;
+    let style_style: @mut css_style;
+    let width_style: @mut css_style;
+    let mut token: &~css_token;
+
+    if *ctx >= vector.len() {
+        return CSS_INVALID;
+    }
+
+    token = &vector[*ctx];
+    
+    if (css_properties::is_css_inherit(strings , token)) {
+        css_stylesheet::css_stylesheet_style_inherit(result_style , unsafe{cast::transmute(CSS_PROP_BORDER_TOP_COLOR as uint + side as uint)});
+        css_stylesheet::css_stylesheet_style_inherit(result_style, unsafe{cast::transmute(CSS_PROP_BORDER_TOP_STYLE as uint + side as uint)});
+        css_stylesheet::css_stylesheet_style_inherit(result_style, unsafe{cast::transmute(CSS_PROP_BORDER_TOP_WIDTH as uint + side as uint)});
+    }
+    
+    *ctx = *ctx + 1;
+    color_style = sheet.css__stylesheet_style_create();
+    style_style = sheet.css__stylesheet_style_create();
+    width_style = sheet.css__stylesheet_style_create();
+
+    prev_ctx = *ctx;
+    while *ctx != prev_ctx {
+        let mut error = CSS_OK;
+        token = &vector[*ctx];
+        if css_properties::is_css_inherit(strings , token) {
+            error = CSS_INVALID;
+        }
+    }
     CSS_OK
 }
