@@ -1,12 +1,13 @@
 
 extern mod std;
-extern mod css_stylesheet;
-extern mod css_enum;
+
 extern mod test;
+extern mod css;
 extern mod wapcaplet;
 
-use css_stylesheet::*;
-use css_enum::*;
+use css::stylesheet::*;
+use css::include::types::*;
+use css::utils::errors::*;
 use test::*;
 use wapcaplet::*;
 use std::arc;
@@ -42,7 +43,8 @@ fn main() {
 									string_vector:~[],
 									resolve:@resolve_url,
 									import:None,
-									font:None
+									font:None,
+									color:None
 	};				
 
 	// 2.
