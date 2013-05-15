@@ -49,7 +49,7 @@ pub struct css_language {
     namespaces:~[~css_namespace],
 }
 
-fn  css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~css_language {
+pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~css_language {
     
     ~css_language {
         sheet:sheet,
@@ -1624,7 +1624,7 @@ pub impl css_language {
                     /* Compute a */
                     if (match token.token_type {
                         CSS_TOKEN_IDENT(_) => true, 
-                        _ => false    //TODO check this condition
+                        _ => false   
                     }) {
                         if len < 2 {
                             if (data[data_index + 0] != 'n' as u8) && (data[data_index + 0] != 'N' as u8)   {
@@ -2257,8 +2257,7 @@ pub impl css_language {
     pub fn font_face_parse_font_family(&mut self, vector:&~[~css_token], ctx:@mut uint, 
         font_face:@mut css_font_face) -> css_result {
         
-        match css__ident_list_or_string_to_string(self.sheet , &mut self.strings , vector, ctx, Some(@css_language::font_rule_font_family_reserved) , self.lwc_instance.clone())
-        {
+        match css__ident_list_or_string_to_string(self.sheet , &mut self.strings , vector, ctx, Some(@css_language::font_rule_font_family_reserved)) {
             (CSS_OK,Some(string)) => { 
                 self.css__font_face_set_font_family(font_face, string);
                 return CSS_OK
@@ -2419,10 +2418,9 @@ pub impl css_language {
     }
 
     pub fn font_face_src_parse_spec_or_name(&mut self, vector:&~[~css_token], ctx:@mut uint, 
-        location_type:@mut css_font_face_location_type, format:@mut css_font_face_format) -> (css_result, Option<arc::RWARC<~lwc_string>>)
-    {
+        location_type:@mut css_font_face_location_type, format:@mut css_font_face_format) -> (css_result, Option<arc::RWARC<~lwc_string>>) {
         let mut token: &~css_token;
-        let location:arc::RWARC<~lwc_string>;
+        let mut location:Option<arc::RWARC<~lwc_string>> = None;
         /* spec-or-name    ::= font-face-spec | font-face-name
          * font-face-spec  ::= URI [ 'format(' STRING [ ',' STRING ]* ')' ]?
          * font-face-name  ::= 'local(' ident-list-or-string ')'
@@ -2441,7 +2439,7 @@ pub impl css_language {
             CSS_TOKEN_URI(_) => {
                 match (*self.sheet.resolve)(copy self.sheet.url, token.idata.get_ref().clone())
                 { 
-                    (CSS_OK,Some(loc)) => location =loc,
+                    (CSS_OK,loc) => location =loc,
                     (error,_) => return (error,None)
                 }   
 
@@ -2470,9 +2468,13 @@ pub impl css_language {
                 if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LOCAL as uint) {
                     consumeWhitespace(vector, ctx);
 
-                    match css__ident_list_or_string_to_string(self.sheet , &mut self.strings , vector, ctx, None , self.lwc_instance.clone()) {
-                        (CSS_OK,Some(loc)) => location = loc,
-                        (error,x) => return (error,x)
+                    match css__ident_list_or_string_to_string(self.sheet , &mut self.strings , vector, ctx, None) {
+                        (CSS_OK,Some(loc)) => {
+                            do self.lwc_instance.clone().write |lwc| {
+                                location = Some(lwc.lwc_intern_string(copy loc));
+                            }
+                        },
+                        (error,_) => return (error,None)
                     }
                     consumeWhitespace(vector, ctx);
 
@@ -2491,7 +2493,7 @@ pub impl css_language {
             _ => return (CSS_INVALID, None)     
         }
 
-        return (CSS_OK, Some(location))
+        return (CSS_OK, location)
     }
 
     /**
@@ -2501,8 +2503,7 @@ pub impl css_language {
      * \param srcs       The array of css_font_face_srcs
      * \return CSS_OK
      */
-    pub fn css__font_face_set_srcs(&mut self, font_face:@mut css_font_face, srcs:~[~css_font_face_src]) -> css_result
-    {
+    pub fn css__font_face_set_srcs(&mut self, font_face:@mut css_font_face, srcs:~[~css_font_face_src]) -> css_result {
         font_face.srcs = srcs;
                 
         CSS_OK
@@ -2516,19 +2517,17 @@ pub impl css_language {
      * \return CSS_OK
      *         
      */
-    pub fn css__font_face_set_font_family(&mut self, font_face: @mut css_font_face, font_family:arc::RWARC<~lwc_string>) -> css_result
-    {
+    pub fn css__font_face_set_font_family(&mut self, font_face: @mut css_font_face, font_family:~str) -> css_result {
         // if (font_face.font_family != NULL)
-        // do self.lwc_instance.write |l|{
-        //                  l.lwc_string_unref(font_face.font_family)
-        // }    
-        font_face.font_family = Some(font_family.clone());
+        do self.lwc_instance.write |l|{
+            font_face.font_family = Some(l.lwc_intern_string(copy font_family))
+        }    
+        // font_face.font_family = Some(font_family.clone());
 
         return CSS_OK
     }
 
-    pub fn font_rule_font_family_reserved(strings:&mut ~css_propstrings, ident:&~css_token) -> bool
-    {
+    pub fn font_rule_font_family_reserved(strings:&mut ~css_propstrings, ident:&~css_token) -> bool {
         strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), SERIF as uint) ||
         strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(),SANS_SERIF as uint) ||
         strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), CURSIVE as uint) ||
