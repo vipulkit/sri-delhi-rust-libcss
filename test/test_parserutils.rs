@@ -23,7 +23,7 @@ fn main() {
 	let mut comment: ~str=~"";
 	let mut external_argument : ~str = ~"";
 
-	let (inputStreamOption, ParserUtilsError)= inputstream(~"US-ASCII" , None);
+	let (inputStreamOption, ParserUtilsError)= inputstream(Some(~"US-ASCII") ,Some(CSS_CHARSET_DEFAULT), None);
 
 	match(ParserUtilsError)	{
 		PARSERUTILS_OK=>{
