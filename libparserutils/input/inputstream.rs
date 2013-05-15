@@ -1,13 +1,9 @@
-extern mod std;
-
 use core::vec::*;
 use std::arc;
-
 
 use charset::aliases::*;
 use charset::csdetect::*;
 use input::parserutils_filter::*;
-
 
 pub type  parserutils_charset_detect_func =  
     ~extern fn(data: &~[u8], mibenum:u16, source:css_charset_source, arc:arc::ARC<~alias>) -> (Option<u16>, Option<css_charset_source>, parserutils_error);
@@ -21,17 +17,24 @@ pub struct inputstream {
     mibenum: u16,       // MIB enum for charset, or 0
     encsrc: css_charset_source,     // Charset source
     input: ~filter, // Charset conversion filter
-    csdetect_instance: Option<parserutils_charset_detect_func>
+    csdetect: Option<parserutils_charset_detect_func>
 }
 
-pub fn inputstream(int_enc: ~str, csdetect_instance: Option<parserutils_charset_detect_func>) ->  (Option<~inputstream> , parserutils_error) {
-
-    if int_enc.len()==0 {
-        return (None,PARSERUTILS_BADPARAM);
-    }
+pub fn inputstream(encoding: Option<~str>, charset_src: Option<css_charset_source>, csdetect_instance: Option<parserutils_charset_detect_func>) ->  (Option<~inputstream> , parserutils_error) {
 
     let mut stream: ~inputstream;
-    match parserutils_filter(alias() , copy int_enc) {
+    let mut stream_encoding : ~str;
+    let mut stream_charset_src : css_charset_source;
+
+    if (encoding.is_some() && charset_src.is_some()) {
+        stream_encoding = encoding.unwrap();
+        stream_charset_src = charset_src.unwrap();
+    }
+    else {
+        stream_encoding = ~"UTF-8";
+        stream_charset_src = CSS_CHARSET_DEFAULT;
+    }
+    match parserutils_filter(alias() , copy stream_encoding) {
         (x,PARSERUTILS_OK) =>{
             let mut filter_instance = x.unwrap(); 
             stream = ~inputstream {
@@ -40,10 +43,10 @@ pub fn inputstream(int_enc: ~str, csdetect_instance: Option<parserutils_charset_
                 had_eof: false,
                 raw: ~[],
                 done_first_chunk: false,
-                mibenum: arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(copy int_enc),
-                encsrc: CSS_CHARSET_DEFAULT,
+                mibenum: arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(copy stream_encoding),
+                encsrc: stream_charset_src,
                 input: filter_instance,
-                csdetect_instance: csdetect_instance
+                csdetect: csdetect_instance
             };
         },
         
@@ -67,7 +70,7 @@ impl inputstream {
         self.done_first_chunk = false ;
         self.mibenum = 0 ;
         self.encsrc =CSS_CHARSET_DEFAULT ;
-        self.csdetect_instance = None;
+        self.csdetect = None;
         PARSERUTILS_OK
     }
 
@@ -247,7 +250,7 @@ impl inputstream {
         
         if (self.done_first_chunk == false) {
 
-            match(self.csdetect_instance) {
+            match(self.csdetect) {
                 Some(copy f) => {
                     let (charsetOption,srcOption,error)= (*f)(&self.raw, self.mibenum, self.encsrc, self.input.instance.clone());
 
