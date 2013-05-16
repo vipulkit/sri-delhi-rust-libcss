@@ -51,6 +51,10 @@ pub mod select {
 	pub mod common;
 	pub mod propset;
 	pub mod computed;
+	pub mod select;
+	pub mod properties {
+		pub mod properties;
+	}
 }
 
 pub mod css;
