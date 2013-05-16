@@ -1,0 +1,11 @@
+encoding   |	encsrc |	csdetect   |	enc	   |	encsrc     |
+-----------|-----------|-------------------|---------------|---------------|
+NULL	   |	NULL   |	NULL       |	UTF-8	   |	0=>Default |
+NULL	   |	NULL   |	VALUE	   |	csdetect   |	csdetect   |
+NULL	   |	VALUE1 |	NULL	   |	UTF-8	   |	0=>Default |
+NULL	   |	VALUE1 |	VALUE2	   |	csdetect   |	csdetect   |
+VALUE1	   |	NULL   |	NULL	   |	VALUE1	   |	NULL       |
+VALUE1	   |	NULL   |	VALUE2	   |	csdetect   |	csdetect   |
+VALUE1	   |	VALUE2 |	NULL	   |	VALUE1	   |	VALUE2     |
+VALUE1	   |	VALUE2 |	VALUE3	   |	csdetect   |	csdetect   |
+---------------------------------------------------------------------------'
