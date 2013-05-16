@@ -1,4 +1,5 @@
 use include::types::*;
+use stylesheet::*;
 
 pub enum css_computed_content_item_type {
     TYPE_STRING,
@@ -624,5 +625,77 @@ pub struct rect_result {
     vunit:css_unit,
     result:u8
 }
+
+pub enum css_pseudo_element {
+    CSS_PSEUDO_ELEMENT_NONE         = 0,
+    CSS_PSEUDO_ELEMENT_FIRST_LINE   = 1,
+    CSS_PSEUDO_ELEMENT_FIRST_LETTER = 2,
+    CSS_PSEUDO_ELEMENT_BEFORE       = 3,
+    CSS_PSEUDO_ELEMENT_AFTER        = 4,
+    CSS_PSEUDO_ELEMENT_COUNT    = 5 
+}
+
+pub struct css_select_results {
+    /**
+     * Array of pointers to computed styles, 
+     * indexed by css_pseudo_element. If there
+     * was no styling for a given pseudo element, 
+     * then no computed style will be created and
+     * the corresponding pointer will be set to NULL
+     */
+
+     // for corresponding pointer to be null , then that index
+     // item must be option , for setting that index location as null
+
+     // taking style as "@mut" type everywhere , because we need to pass
+     // pointer everywhere, and modification will occour every-where.
+     // size of this array to be preallocated is CSS_PSEUDO_ELEMENT_COUNT
+    style:~[Option<@mut css_computed_style>]
+}
+
+pub struct reject_item {
+    value:~str,
+    sel_type:css_selector_type 
+} 
+
+pub struct prop_state {
+    specificity:u32,       /* Specificity of property in result */
+    set       : bool,         /* Whether property is set in result */
+    origin    : u8,         /* Origin of property in result */
+    important : bool,         /* Importance of property in result */
+    inherit   : bool         /* Property is set to inherit */
+}
+
+pub struct css_select_handler {
+    handler_version:u32
+}
+
+pub struct css_select_state {
+    //TODO : void *node;        
+    node:Option<@mut css_selector>,
+    media:u64,         
+    results:Option<css_select_results>,
+    current_pseudo:css_pseudo_element,  
+    computed:@mut css_computed_style,  
+
+    handler:Option<@mut css_select_handler>,    
+
+    sheet:Option<@mut css_stylesheet>,   
+
+    current_origin:css_origin, 
+    current_specificity:u32,  
+
+    element:css_qname,       
+     //TODO :lwc_string *id;         /* Node id, if any */
+    id:~str,
+     //TODO :lwc_string **classes;       /* Node classes, if any */
+    classes:~[~str],
+    n_classes:u32,           
+
+    reject_cache: ~[Option<reject_item>],       
+    next_reject:int,            
+
+    props: ~[~[@mut prop_state]] 
+} 
 
 /////////////////////////////////////

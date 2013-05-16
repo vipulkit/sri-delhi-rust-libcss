@@ -37,3 +37,9 @@ pub enum css_media_type {
 	CSS_MEDIA_TV                = (1 << 9),
 	CSS_MEDIA_ALL		    = (1 << 0) |(1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5) | (1 << 6) | (1 << 7) | (1 << 8) |(1 << 9)		
 } 
+
+pub enum css_origin {
+	CSS_ORIGIN_UA               = 0,
+	CSS_ORIGIN_USER             = 1,	
+	CSS_ORIGIN_AUTHOR           = 2		
+}
