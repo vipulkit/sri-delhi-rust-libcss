@@ -60,7 +60,7 @@ pub fn file_header(fp:@Writer) -> () {
     fp.write_line("use stylesheet::*;");
     fp.write_line("use parse::propstrings::*;");
     fp.write_line("use include::properties::*;");
-    fp.write_line("use parse::properties::properties::*;");
+    fp.write_line("use parse::properties::properties_common::*;");
     fp.write_line("use utils::errors::*;");
     fp.write_line("use lex::lexer::*;");
     fp.write_line("use wapcaplet::*;");
@@ -221,7 +221,7 @@ pub fn output_color(fp:@Writer, parseid:&keyval) {
     str::push_str(&mut output,"\t\t*ctx = orig_ctx;\n\n");
     str::push_str(&mut output,"\t\tlet mut value:u16;\n\n");
     str::push_str(&mut output,"\t\tlet mut color:u32;\n\n");
-    str::push_str(&mut output,"\t\tlet (value_option, color_option, res)= css_properties::css__parse_color_specifier(sheet, strings, vector, ctx);\n");
+    str::push_str(&mut output,"\t\tlet (value_option, color_option, res)= css__parse_color_specifier(sheet, strings, vector, ctx);\n");
     str::push_str(&mut output,"\t\tmatch res {\n");
     str::push_str(&mut output,"\t\t\tCSS_OK => {\n");
     str::push_str(&mut output,"\t\t\t\tvalue = value_option.unwrap();\n");
@@ -246,7 +246,7 @@ pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     str::push_str(&mut output,"\t\tlet length:u32;\n");
     str::push_str(&mut output,"\t\t*ctx = orig_ctx;\n\n");
     str::push_str(&mut output,"\t\tlet mut unit:u32;\n\n");
-    str::push_str(&mut output,fmt!("\t\tlet (length_option, unit_option, res) =css_properties::css__parse_unit_specifier(sheet, vector, ctx, %s as u32);\n",kvlist[0].key));
+    str::push_str(&mut output,fmt!("\t\tlet (length_option, unit_option, res) =css__parse_unit_specifier(sheet, vector, ctx, %s as u32);\n",kvlist[0].key));
     str::push_str(&mut output,"\t\tmatch res {\n");
     str::push_str(&mut output,"\t\t\tCSS_OK => {\n");
     str::push_str(&mut output,"\t\t\t\tunit = unit_option.unwrap();\n");
