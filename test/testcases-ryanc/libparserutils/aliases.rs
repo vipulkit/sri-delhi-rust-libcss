@@ -22,7 +22,7 @@ fn main() {
 
 #[test]
 fn canonicalise_moose() {
-    let mut parser = alias::alias();
+    let mut parser = aliases::alias();
 
     let mut canon = arc::get(&parser).parserutils__charset_alias_canonicalise(~"moose");
     match(canon) {
@@ -37,7 +37,7 @@ fn canonicalise_moose() {
 
 #[test]
 fn canonicalise_csinvariant() {
-    let mut parser = alias::alias();
+    let mut parser = aliases::alias();
 
     let mut canon = arc::get(&parser).parserutils__charset_alias_canonicalise(~"csinvariant");
     match(canon) {
@@ -53,7 +53,7 @@ fn canonicalise_csinvariant() {
 
 #[test]
 fn canonicalise_csinvariant_quote() {
-    let mut parser = alias::alias();
+    let mut parser = aliases::alias();
 
     let mut canon = arc::get(&parser).parserutils__charset_alias_canonicalise(~"csinvariant\"");
     match(canon) {
@@ -69,7 +69,7 @@ fn canonicalise_csinvariant_quote() {
 
 #[test]
 fn canonicalise_nats_sefi_add() {
-    let mut parser = alias::alias();
+    let mut parser = aliases::alias();
 
     let mut canon = arc::get(&parser).parserutils__charset_alias_canonicalise(~"nats-sefi-add");
     match(canon) {
@@ -95,7 +95,7 @@ fn canonicalise_nats_sefi_add() {
 
 #[test]
 fn canonicalise_utf8() {
-    let mut parser = alias::alias();
+    let mut parser = aliases::alias();
 
     let mut canon = arc::get(&parser).parserutils__charset_alias_canonicalise(~"u.t.f.8");
     match(canon) {

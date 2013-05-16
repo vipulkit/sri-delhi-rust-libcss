@@ -28,7 +28,7 @@ extern mod parserutils;
 
 use core::io::*;
 use parserutils::input::*;
-use parserutils::charset::alias::*; // FIXME: to be removed
+use parserutils::charset::aliases::*; // FIXME: to be removed
 
 
 fn main() {

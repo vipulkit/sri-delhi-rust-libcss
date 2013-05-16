@@ -5,36 +5,36 @@ pub enum flag {
 	FLAG_INHERIT			= (1<<1)
 }
 
-pub enum unit {
-	UNIT_PX   = 0,
-	UNIT_EX   = 1,
-	UNIT_EM   = 2,
-	UNIT_IN   = 3,
-	UNIT_CM   = 4,
-	UNIT_MM   = 5,
-	UNIT_PT   = 6,
-	UNIT_PC   = 7,
+pub static	UNIT_PX : u32  = 0;
+pub static	UNIT_EX : u32  = 1;
+pub static	UNIT_EM : u32  = 2;
+pub static	UNIT_IN : u32  = 3;
+pub static	UNIT_CM : u32  = 4;
+pub static	UNIT_MM : u32  = 5;
+pub static	UNIT_PT : u32  = 6;
+pub static	UNIT_PC : u32  = 7;
 
-	UNIT_PCT  = (1 << 8),
+pub static	UNIT_PCT : u32 = (1 << 8);
 
-	UNIT_DEG  = (1 << 9) + 0,
-	UNIT_GRAD = (1 << 9) + 1,
-	UNIT_RAD  = (1 << 9) + 2,
+pub static	UNIT_DEG : u32 = (1 << 9) + 0;
+pub static	UNIT_GRAD: u32 = (1 << 9) + 1;
+pub static	UNIT_RAD : u32 = (1 << 9) + 2;
 
-	UNIT_MS   = (1 << 10) + 0,
-	UNIT_S    = (1 << 10) + 1,
+pub static	UNIT_MS  : u32 = (1 << 10) + 0;
+pub static	UNIT_S   : u32 = (1 << 10) + 1;
 
-	UNIT_HZ   = (1 << 11) + 0,
-	UNIT_KHZ  = (1 << 11) + 1
-} 
+pub static	UNIT_HZ  : u32 = (1 << 11) + 0;
+pub static	UNIT_KHZ : u32 = (1 << 11) + 1;
+
+pub static   UNIT_ANGLE :  u32 = UNIT_DEG ;	//< Default level >
+pub static   UNIT_TIME  :  u32 = UNIT_MS  ;	//< Default level >
+pub static   UNIT_FREQ  :  u32 = UNIT_HZ  ;	//< Default level >
 
 pub enum shape {
 	SHAPE_RECT = 0
 } 
 
-pub static   UNIT_ANGLE :  unit = UNIT_DEG ;	//< Default level >
-pub static   UNIT_TIME  :  unit = UNIT_MS  ;	//< Default level >
-pub static   UNIT_FREQ  :  unit = UNIT_HZ  ;	//< Default level >
+
 
 
 

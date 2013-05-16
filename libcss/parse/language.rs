@@ -14,6 +14,7 @@ use lex::lexer::*;
 
 use parse::common::*;
 use parse::propstrings::*;
+use parse::properties::properties_common::*;
 use parse::properties::properties::*;
 
 use utils::errors::*;
