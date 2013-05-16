@@ -9,3 +9,6 @@ $(EXEC): $(SRC)
 
 run: $(SRC)
 	./$(EXEC)
+
+clean:
+	rm -f $(EXEC)
