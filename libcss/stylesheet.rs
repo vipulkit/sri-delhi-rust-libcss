@@ -123,8 +123,8 @@ pub struct css_selector {
 
 pub struct css_style {
     bytecode:~[u32],
-    used:uint                
-    //sheet:Option<@css_stylesheet>
+    used:uint,                
+    sheet:Option<@mut css_stylesheet>
 }
 pub struct hash_entry {
     selector:@mut css_selector,
@@ -284,7 +284,8 @@ impl css_stylesheet {
         if self.cached_style.is_none() {
             @mut css_style{ 
                 bytecode:~[],
-                used:0
+                used:0,
+                sheet:None
             } 
         }
         else {
