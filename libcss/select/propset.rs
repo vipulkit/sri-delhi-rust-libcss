@@ -195,7 +195,7 @@ pub fn set_cursor(style:@mut css_computed_style,
 
 pub fn set_clip(style: @mut css_computed_style,
 				ftype:u8, 
-				rect:css_computed_clip_rect){
+				rect:@mut css_computed_clip_rect){
 
 	ENSURE_UNCOMMON(style);
 

@@ -2,6 +2,8 @@ use include::properties::*;
 
 use stylesheet::*;
 
+use core::managed::*;
+
 use include::types::*;
 use include::fpmath::*;
 use bytecode::bytecode::*;
@@ -106,7 +108,7 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 
 
 pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_select_state, 
-	fun:@extern fn (@mut css_computed_style, u8) -> css_result) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8) ) -> css_result {
 	
 	let mut value = CSS_BORDER_STYLE_INHERIT;
 
@@ -127,7 +129,7 @@ pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_selec
 	}
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
-		return (*fun)(state.computed, value as u8)
+		(*fun)(state.computed, value as u8)
 	}
 
 	CSS_OK
@@ -135,7 +137,7 @@ pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_selec
 
 
 pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_select_state, 
-	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit)) -> css_result {
 	
 	let mut value = CSS_BORDER_WIDTH_INHERIT;
 	let mut length = 0;
@@ -160,7 +162,7 @@ pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_s
 	unit = css__to_css_unit(unit) as u32;
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
-		return (*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+		(*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
 	}
 
 	CSS_OK
@@ -456,7 +458,7 @@ pub fn css__compose_azimuth(_:@mut css_computed_style,
 // background_attachment.c
 ///////////////////////////////////////////////////////////////////
 
-pub fn css__cascade_background_attachment(opv:u32, style:@mut css_style, 
+pub fn css__cascade_background_attachment(opv:u32, _:@mut css_style, 
 										state:@mut css_select_state
 										) -> css_result {
 
@@ -526,6 +528,7 @@ pub fn css__cascade_background_color(opv:u32, style:@mut css_style,
 pub fn css__set_background_color_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
 										) -> css_result {
+
 	match hint.hint_type {
 		COLOR=>{
 			set_background_color(style, hint.status, hint.color.get_or_default(0));
@@ -577,6 +580,7 @@ pub fn css__cascade_background_image(opv:u32, style:@mut css_style,
 pub fn css__set_background_image_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
 										) -> css_result {
+
 	match hint.hint_type {
 		STRING=>{
 			match hint.string {
@@ -611,7 +615,7 @@ pub fn css__compose_background_image(parent:@mut css_computed_style,
 
 	if (ftype == (CSS_BACKGROUND_IMAGE_INHERIT as u8) ) {
 		let mut (ftype2,url2) = css_computed_background_image(parent);
-		set_background_image(result, ftype, url2);
+		set_background_image(result, ftype2, url2);
 		CSS_OK
 	}
 	else {
@@ -698,6 +702,7 @@ pub fn css__cascade_background_position(opv:u32, style:@mut css_style,
 pub fn css__set_background_position_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
 										) -> css_result {
+
 	match hint.hint_type {
 		HINT_LENGTH_H_V=>{
 			match hint.position {
@@ -782,6 +787,7 @@ pub fn css__cascade_background_repeat(opv:u32, _:@mut css_style,
 pub fn css__set_background_repeat_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
 										) -> css_result {
+
 	set_background_repeat(style, hint.status);
 	CSS_OK
 }
@@ -813,6 +819,63 @@ pub fn css__compose_background_repeat(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
+// border_bottom_color.c
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_bottom_color(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_bg_border_color(opv, style, state,
+			@set_border_bottom_color);
+}
+
+pub fn css__set_border_bottom_color_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		COLOR=>{
+			match hint.color {
+				Some(copy x)=>{
+					set_border_bottom_color(style, hint.status, x);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_border_bottom_color(state:@mut css_select_state) -> css_result {
+
+	set_border_bottom_color(state.computed, 
+			(CSS_BORDER_COLOR_CURRENT_COLOR as u8), 0);
+	CSS_OK
+}
+
+pub fn css__compose_border_bottom_color(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,color) = css_computed_border_bottom_color(child);
+
+	if (ftype == (CSS_BORDER_COLOR_INHERIT as u8) ) {
+		let mut (ftype2,color2) = css_computed_border_bottom_color(parent);
+		set_border_bottom_color(result, ftype2, color2 );
+		CSS_OK
+	}
+	else {
+		set_border_bottom_color(result, ftype, color );
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
 // caption_side
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_caption_side(opv:u32, _:@mut css_style, state:@mut css_select_state) -> css_result {
@@ -856,7 +919,6 @@ pub fn css__compose_caption_side(parent:@mut css_computed_style, child:@mut css_
 }
 
 ///////////////////////////////////////////////////////////////////
-
 // clear
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_clear(opv:u32, _:@mut css_style, state:@mut css_select_state) -> css_result {
@@ -900,3 +962,633 @@ pub fn css__compose_clear(parent:@mut css_computed_style, child:@mut css_compute
 
 	set_clear(result, clear_type)
 }
+
+///////////////////////////////////////////////////////////////////
+// clip
+///////////////////////////////////////////////////////////////////
+
+pub fn css__cascade_clip(opv:u32, style:@mut css_style, state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_CLIP_INHERIT;
+	let rect = 
+        @mut css_computed_clip_rect{
+            top:0,
+            right:0,
+            bottom:0,
+            left:0,
+            tunit:CSS_UNIT_PX,
+            runit:CSS_UNIT_PX,
+            bunit:CSS_UNIT_PX,
+            lunit:CSS_UNIT_PX,
+            top_auto:false,
+            right_auto:false,
+            bottom_auto:false,
+            left_auto:false
+    } ;
+
+	if !isInherit(opv) {
+		match getValue(opv) & CLIP_SHAPE_MASK {
+			CLIP_SHAPE_RECT => {
+				if (getValue(opv) & CLIP_RECT_TOP_AUTO) != 0 {
+					rect.top_auto = true;
+				} 
+				else {
+					rect.top = peek_bytecode(style) as i32;
+					advance_bytecode(style);
+					rect.tunit = css__to_css_unit(peek_bytecode(style));
+					advance_bytecode(style);
+				}
+				
+				if (getValue(opv) & CLIP_RECT_RIGHT_AUTO) != 0 {
+					rect.right_auto = true;
+				}
+				else {
+					rect.right = peek_bytecode(style) as i32;
+					advance_bytecode(style);
+					rect.runit = css__to_css_unit(peek_bytecode(style));
+					advance_bytecode(style);
+				}
+
+				if (getValue(opv) & CLIP_RECT_BOTTOM_AUTO) != 0 {
+					rect.bottom_auto = true;
+				}
+				else {
+					rect.bottom = peek_bytecode(style) as i32;
+					advance_bytecode(style);
+					rect.bunit = css__to_css_unit(peek_bytecode(style));
+					advance_bytecode(style);
+				}
+
+				if (getValue(opv) & CLIP_RECT_LEFT_AUTO) != 0 {
+					rect.left_auto = true;
+				}
+				else {
+					rect.left = peek_bytecode(style) as i32;
+					advance_bytecode(style);
+					rect.lunit = css__to_css_unit(peek_bytecode(style));
+					advance_bytecode(style);
+				}
+				value = CSS_CLIP_RECT;
+			},	
+			CLIP_AUTO => value = CSS_CLIP_AUTO,
+			_ => fail!(~"Invalid css__cascade_length_none match code")
+		}
+	}
+
+	rect.tunit = css__to_css_unit(rect.tunit as u32);
+	rect.runit = css__to_css_unit(rect.runit as u32);
+	rect.bunit = css__to_css_unit(rect.bunit as u32);
+	rect.lunit = css__to_css_unit(rect.lunit as u32);
+
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+			set_clip(state.computed, value as u8, rect)
+	}
+
+	CSS_OK
+}	
+			
+pub fn css__set_clip_from_hint(hint:@mut css_hint, style:@mut css_computed_style) {
+	set_clip(style, hint.status, hint.clip.unwrap())
+}
+
+pub fn css__initial_clip(state:@mut css_select_state) {
+
+	let rect = @mut css_computed_clip_rect{
+        top:0,
+        right:0,
+        bottom:0,
+        left:0,
+        tunit:CSS_UNIT_PX,
+        runit:CSS_UNIT_PX,
+        bunit:CSS_UNIT_PX,
+        lunit:CSS_UNIT_PX,
+        top_auto:false,
+        right_auto:false,
+        bottom_auto:false,
+        left_auto:false
+    };
+
+	set_clip(state.computed, CSS_CLIP_AUTO as u8, rect)
+}
+
+pub fn css__compose_clip(parent:@mut css_computed_style, child:@mut css_computed_style,
+		result:@mut css_computed_style) {
+
+	
+	let mut (clip_type, rect) = css_computed_clip(child);
+
+	if (match child.uncommon { None => true, _ => false} && match parent.uncommon { Some(_) => true,  None => false }) 
+		|| clip_type == CSS_CLIP_INHERIT as u8 || ( match child.uncommon {Some(_) => true, None => false} && 
+			!mut_ptr_eq(result,child)) {
+		
+		if (match child.uncommon { None => true, _ => false} && match parent.uncommon { Some(_) => true,  None => false }) || 
+		   clip_type == CSS_CLIP_INHERIT as u8 {
+			let (clip_type_ret, rect_ret) = css_computed_clip(parent);
+			clip_type = clip_type_ret;
+			rect = rect_ret
+		}
+
+		set_clip(result, clip_type, rect.unwrap())
+	}
+
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// border_bottom_style
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_bottom_style(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_border_style(opv, style, state, @set_border_bottom_style);
+}
+
+pub fn css__set_border_bottom_style_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_border_bottom_style(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_border_bottom_style(state:@mut css_select_state) -> css_result {
+
+	set_border_bottom_style(state.computed, (CSS_BORDER_STYLE_NONE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_border_bottom_style(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_border_bottom_style(child);
+
+	if (ftype == (CSS_BORDER_STYLE_INHERIT as u8) ) {
+		ftype = css_computed_border_bottom_style(parent);
+		set_border_bottom_style(result, ftype );
+		CSS_OK
+	}
+	else {
+		set_border_bottom_style(result, ftype );
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+// border_bottom_width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_bottom_width(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_border_width(opv, style, state, @set_border_bottom_width);
+}
+
+pub fn css__set_border_bottom_width_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(copy x)=>{
+					set_border_bottom_width(style, hint.status, x.value , x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_border_bottom_width(state:@mut css_select_state) -> css_result {
+
+	set_border_bottom_width(state.computed, 
+						(CSS_BORDER_WIDTH_MEDIUM as u8),
+						0, 
+						CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_border_bottom_width(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_border_bottom_width(child);
+
+	if (ftype == (CSS_BORDER_WIDTH_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_border_bottom_width(parent);
+		set_border_bottom_width(result, 
+								ftype2, 
+								olength2.get_or_default( olength.get_or_default(0) ), 
+								ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_border_bottom_width(result, ftype, 
+							olength.get_or_default(0), 
+							ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// border_collapse
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_collapse(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value : u16 = CSS_BORDER_COLLAPSE_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		let mut match_val = getValue(opv) ; 
+		if ( match_val == (BORDER_COLLAPSE_SEPARATE as u16) ){ 
+			value = CSS_BORDER_COLLAPSE_SEPARATE as u16;
+		}
+		if ( match_val == (BORDER_COLLAPSE_COLLAPSE as u16) ){ 
+			value = CSS_BORDER_COLLAPSE_COLLAPSE as u16;
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), 
+								isImportant(opv), 
+								state,
+								isInherit(opv))) {
+		set_border_collapse(state.computed, (value as u8) );
+		CSS_OK
+	}
+	else {
+		CSS_OK
+	}
+}
+
+pub fn css__set_border_collapse_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_border_collapse(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_border_collapse(state:@mut css_select_state) -> css_result {
+
+
+	set_border_collapse(state.computed, (CSS_BORDER_COLLAPSE_SEPARATE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_border_collapse(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_border_collapse(child);
+
+	if (ftype == (CSS_BORDER_COLLAPSE_INHERIT as u8) ) {
+		ftype = css_computed_border_collapse(parent);
+		set_border_collapse(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_border_collapse(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// border_left_color
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_left_color(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_bg_border_color(opv, style, state, 
+			@set_border_left_color);
+}
+
+pub fn css__set_border_left_color_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		COLOR=>{
+			match hint.color {
+				Some(x)=>{
+					set_border_left_color(style, hint.status, x);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_border_left_color(state:@mut css_select_state) -> css_result {
+
+
+	set_border_left_color(state.computed, 
+			(CSS_BORDER_COLOR_CURRENT_COLOR as u8), 0);
+	CSS_OK
+}
+
+pub fn css__compose_border_left_color(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,color) = css_computed_border_left_color(child);
+
+	if (ftype == (CSS_BORDER_COLOR_INHERIT as u8) ) {
+		let mut (ftype2,color2) = css_computed_border_left_color(parent);
+		set_border_left_color(result, ftype2, color2);
+		CSS_OK
+	}
+	else {
+		set_border_left_color(result, ftype, color);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// border_left_style
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_left_style(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_border_style(opv, style, state, @set_border_left_style);
+}
+
+pub fn css__set_border_left_style_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_border_left_style(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_border_left_style(state:@mut css_select_state) -> css_result {
+
+
+	set_border_left_style(state.computed, (CSS_BORDER_STYLE_NONE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_border_left_style(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_border_left_style(child);
+
+	if (ftype == (CSS_BORDER_STYLE_INHERIT as u8) ) {
+		ftype = css_computed_border_left_style(parent);
+	}
+
+	set_border_left_style(result, ftype);
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// border_left_width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_left_width(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_border_width(opv, style, state, @set_border_left_width);
+}
+
+pub fn css__set_border_left_width_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(copy x)=>{
+					set_border_left_width(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_border_left_width(state:@mut css_select_state) -> css_result {
+
+
+	set_border_left_width(state.computed, 
+						(CSS_BORDER_WIDTH_MEDIUM as u8),
+						0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_border_left_width(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_border_left_width(child);
+
+	if (ftype == (CSS_BORDER_WIDTH_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_border_left_width(parent);
+		set_border_left_width(result, 
+							ftype2, 
+							olength2.get_or_default( olength.get_or_default(0) ), 
+							ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_border_left_width(result, ftype, 
+			olength.get_or_default(0), 
+			ounit.get_or_default(CSS_UNIT_PX) );
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// border_right_color
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_right_color(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_bg_border_color(opv, style, state, 
+			@set_border_right_color);
+}
+
+pub fn css__set_border_right_color_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		COLOR=>{
+			match hint.color {
+				Some(x)=>{
+					set_border_right_color(style, hint.status, x);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_border_right_color(state:@mut css_select_state) -> css_result {
+
+
+	set_border_right_color(state.computed, 
+			(CSS_BORDER_COLOR_CURRENT_COLOR as u8), 0);
+	CSS_OK
+}
+
+pub fn css__compose_border_right_color(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,color) = css_computed_border_right_color(child);
+
+	if (ftype == (CSS_BORDER_COLOR_INHERIT as u8) ) {
+		let mut (ftype2,color2) = css_computed_border_right_color(parent);
+		set_border_right_color(result, ftype2, color2);
+		CSS_OK
+	}
+	else {
+		set_border_right_color(result, ftype, color);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// border_right_style
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_right_style(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_border_style(opv, style, state, @set_border_right_style);
+}
+
+pub fn css__set_border_right_style_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_border_right_style(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_border_right_style(state:@mut css_select_state) -> css_result {
+
+
+	set_border_right_style(state.computed, (CSS_BORDER_STYLE_NONE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_border_right_style(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_border_right_style(child);
+
+	if (ftype == (CSS_BORDER_STYLE_INHERIT as u8) ) {
+		ftype = css_computed_border_right_style(parent);
+	}
+
+	set_border_right_style(result, ftype);
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+// border_right_width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_right_width(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_border_width(opv, style, state, @set_border_right_width);
+}
+
+pub fn css__set_border_right_width_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(copy x)=>{
+					set_border_right_width(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_border_right_width(state:@mut css_select_state) -> css_result {
+
+
+	set_border_right_width(state.computed, 
+				(CSS_BORDER_WIDTH_MEDIUM as u8),
+				0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_border_right_width(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_border_right_width(child);
+
+	if (ftype == (CSS_BORDER_WIDTH_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_border_right_width(parent);
+		set_border_right_width(result, 
+							ftype2, 
+							olength2.get_or_default( olength.get_or_default(0) ), 
+							ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_border_right_width(result, ftype, 
+			olength.get_or_default(0), 
+			ounit.get_or_default(CSS_UNIT_PX) );
+		CSS_OK
+	}
+}	
+
+///////////////////////////////////////////////////////////////////
