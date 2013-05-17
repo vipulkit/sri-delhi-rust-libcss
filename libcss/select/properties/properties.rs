@@ -813,7 +813,7 @@ pub fn css__compose_background_repeat(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
-// caption_side.c
+// caption_side
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_caption_side(opv:u32, _:@mut css_style, state:@mut css_select_state) -> css_result {
 	
@@ -853,4 +853,50 @@ pub fn css__compose_caption_side(parent:@mut css_computed_style, child:@mut css_
 	}
 		
 	set_caption_side(result, cap_type);
+}
+
+///////////////////////////////////////////////////////////////////
+
+// clear
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_clear(opv:u32, _:@mut css_style, state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_CLEAR_INHERIT;
+
+	if !isInherit(opv) {
+		match getValue(opv) {
+			CLEAR_NONE => value = CSS_CLEAR_NONE,	
+			CLEAR_LEFT => value = CSS_CLEAR_LEFT,
+			CLEAR_RIGHT => value = CSS_CLEAR_RIGHT,	
+			CLEAR_BOTH => value = CSS_CLEAR_BOTH,
+			_ => fail!(~"Invalid css__cascade_length_none match code")
+		}
+	}
+
+	// \todo lose fun != None */
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+			set_clear(state.computed, value as u8)
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_clear_from_hint(hint:@css_hint, style:@mut css_computed_style) {
+	set_clear(style, hint.status);
+}
+
+pub fn css__initial_clear(state:@mut css_select_state ) {
+	set_clear(state.computed, CSS_CLEAR_NONE as u8);
+}
+
+pub fn css__compose_clear(parent:@mut css_computed_style, child:@mut css_computed_style,
+		result:@mut css_computed_style) {
+
+	let mut clear_type = css_computed_clear(child);
+
+	if clear_type == CSS_CLEAR_INHERIT as u8 {
+		clear_type = css_computed_clear(parent);
+	}
+
+	set_clear(result, clear_type)
 }
