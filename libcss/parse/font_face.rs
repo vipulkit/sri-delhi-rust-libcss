@@ -11,7 +11,7 @@ use include::properties::*;
 use lex::lexer::*;
 
 use parse::propstrings::*;
-use parse::properties::properties_common::*;
+use parse::properties::common::*;
 use parse::properties::properties::*;
 
 use stylesheet::*;
