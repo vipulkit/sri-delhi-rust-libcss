@@ -1592,3 +1592,102 @@ pub fn css__compose_border_right_width(parent:@mut css_computed_style,
 }	
 
 ///////////////////////////////////////////////////////////////////
+
+// border_spacing
+///////////////////////////////////////////////////////////////////
+
+
+pub fn css__cascade_border_spacing(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value : u16 = CSS_BORDER_SPACING_INHERIT as u16;
+	let mut hlength :i32 = 0;
+	let mut vlength :i32 = 0;
+	let mut hunit : u32 = UNIT_PX as u32;
+	let mut vunit : u32 = UNIT_PX as u32;
+
+	if (isInherit(opv) == false) {
+		value = CSS_BORDER_SPACING_SET as u16;
+		hlength = peek_bytecode(style) as i32;
+		advance_bytecode(style);
+		hunit = peek_bytecode(style) ;
+		advance_bytecode(style);
+
+		vlength = peek_bytecode(style) as i32;
+		advance_bytecode(style);
+		vunit = peek_bytecode(style) ;
+		advance_bytecode(style);
+	}
+
+	hunit = css__to_css_unit(hunit) as u32;
+	vunit = css__to_css_unit(vunit) as u32;
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), 
+								isImportant(opv), state,
+								isInherit(opv))) {
+		set_border_spacing(state.computed, 
+							(value as u8),
+							hlength, 
+							unsafe { cast::transmute(hunit as uint) }, 
+							vlength, 
+							unsafe { cast::transmute(vunit as uint) });
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_border_spacing_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH_H_V=>{
+			match hint.position {
+				Some(copy x)=>{
+					set_border_spacing(style, hint.status,
+										x.h.value, x.h.unit,
+										x.v.value, x.v.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_border_spacing(state:@mut css_select_state) -> css_result {
+
+	set_border_spacing(state.computed, (CSS_BORDER_SPACING_SET as u8),
+			0, CSS_UNIT_PX, 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_border_spacing(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut rect = css_computed_border_spacing(child);
+
+	if ( (child.uncommon.is_none() && parent.uncommon.is_some() ) || 
+			rect.result == (CSS_BORDER_SPACING_INHERIT as u8) ||
+			(child.uncommon.is_some() && !mut_ptr_eq(result,child) )) {
+		
+		if ((child.uncommon.is_none() && parent.uncommon.is_some() ) || 
+				rect.result == (CSS_BORDER_SPACING_INHERIT as u8) ) {
+			rect = css_computed_border_spacing(parent);
+		}
+
+		set_border_spacing(result, rect.result , rect.hlength, rect.hunit, 
+				rect.vlength, rect.vunit);
+	}
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
