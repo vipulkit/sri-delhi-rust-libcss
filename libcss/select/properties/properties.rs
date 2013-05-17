@@ -1,7 +1,7 @@
-// use wapcaplet::*;
-// use std::arc;
-
 use include::properties::*;
+
+use stylesheet::*;
+
 use include::types::*;
 use include::fpmath::*;
 use bytecode::bytecode::*;
@@ -12,14 +12,6 @@ use select::select::*;
 use select::common::*;
 use select::propset::*;
 use select::computed::*;
-
-
-type border_color_fn = @extern fn (@mut css_computed_style, u8, css_color) -> css_result;
-type uri_none_fn= @extern fn (@mut css_computed_style, u8, ~str) -> css_result;
-type border_style_fn =  @extern fn (@mut css_computed_style, u8) -> css_result;
-type helper_fn =  @extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result;
-type number_fn= @extern fn (@mut css_computed_style, u8, css_fixed) -> css_result;
-type css_color = u32;
 
 /* HELPERS --- Useful helpers */
 ///////////////////////////////////////////////////////////////////
@@ -51,7 +43,7 @@ pub fn css__to_css_unit(u:u32) -> css_unit {
  * Utilities below here							      *
  ******************************************************************************/
 pub fn css__cascade_bg_border_color(opv:u32, style:@mut css_style, state:@mut css_select_state, 
-		 fun:border_color_fn) -> css_result {
+		 fun:@extern fn (@mut css_computed_style, u8, css_color) -> css_result) -> css_result {
 	
 	let mut value = CSS_BACKGROUND_COLOR_INHERIT;
 	let mut color:css_color= 0;
@@ -81,7 +73,8 @@ pub fn css__cascade_bg_border_color(opv:u32, style:@mut css_style, state:@mut cs
 }
 
 
-pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_select_state, fun:Option<uri_none_fn>) -> css_result {
+pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_select_state, 
+	fun:Option<@extern fn (@mut css_computed_style, u8, ~str) -> css_result>) -> css_result {
 	
 	let mut value = CSS_BACKGROUND_IMAGE_INHERIT;
 	let mut uri: Option<~str> = None;
@@ -92,7 +85,7 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 			BACKGROUND_IMAGE_NONE => value = CSS_BACKGROUND_IMAGE_NONE,
 			BACKGROUND_IMAGE_URI => {
 				value = CSS_BACKGROUND_IMAGE_IMAGE;
-				let (error_ret, ret_uri) = style.sheet.unwrap().css__stylesheet_string_get(style.bytecode[style.used] as uint);
+				let (_, ret_uri) = style.sheet.unwrap().css__stylesheet_string_get(style.bytecode[style.used] as uint);
 				uri = ret_uri;
 				advance_bytecode(style)	
 			},
@@ -112,7 +105,8 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 }
 
 
-pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_select_state, fun:border_style_fn) -> css_result {
+pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_select_state, 
+	fun:@extern fn (@mut css_computed_style, u8) -> css_result) -> css_result {
 	
 	let mut value = CSS_BORDER_STYLE_INHERIT;
 
@@ -140,7 +134,8 @@ pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_selec
 }
 
 
-pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_select_state, fun:helper_fn) -> css_result {
+pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_select_state, 
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result) -> css_result {
 	
 	let mut value = CSS_BORDER_WIDTH_INHERIT;
 	let mut length = 0;
@@ -172,7 +167,8 @@ pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_s
 }
 
 
-pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_select_state,fun:helper_fn) -> css_result {
+pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_select_state,
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result) -> css_result {
 	
 	let mut value = CSS_BOTTOM_INHERIT;
 	let mut length = 0;
@@ -203,7 +199,8 @@ pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_se
 }
 
 
-pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_select_state,fun:helper_fn) -> css_result {
+pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_select_state,
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result) -> css_result {
 	
 	let mut value = CSS_LETTER_SPACING_INHERIT;
 	let mut length = 0;
@@ -233,7 +230,8 @@ pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_
 }
 
 
-pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_select_state,fun:helper_fn) -> css_result {
+pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_select_state,
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result) -> css_result {
 
 	let mut value = CSS_MAX_HEIGHT_INHERIT;
 	let mut length = 0;
@@ -249,7 +247,7 @@ pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_se
 				advance_bytecode(style)				
 			},	
 			MAX_HEIGHT_NONE => value = CSS_MAX_HEIGHT_NONE,				
-			_ => fail!(~"Invalid css__cascade_length_normal match code")
+			_ => fail!(~"Invalid css__cascade_length_none match code")
 		}
 	}
 
@@ -263,7 +261,8 @@ pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_se
 }
 
 
-pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_state,fun:Option<helper_fn>) -> css_result {
+pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_state,
+	fun:Option<@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result>) -> css_result {
 
 	let mut value = CSS_MIN_HEIGHT_INHERIT;
 	let mut length = 0;
@@ -291,7 +290,9 @@ pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_
 }
 
 
-pub fn css__cascade_number(opv:u32, style:@mut css_style, state:@mut css_select_state,fun:Option<number_fn>) -> css_result {
+pub fn css__cascade_number(opv:u32, style:@mut css_style, state:@mut css_select_state,
+	fun:Option<@extern fn (@mut css_computed_style, u8, css_fixed) -> css_result>) -> css_result {
+
 	let mut value = 0;
 	let mut length = 0;
 	
@@ -314,6 +315,85 @@ pub fn css__cascade_number(opv:u32, style:@mut css_style, state:@mut css_select_
 
 	CSS_OK
 }
+
+pub fn css__cascade_page_break_after_before_inside(opv:u32, _:@mut css_style, state:@mut css_select_state,
+		fun:Option<@extern fn (@mut css_computed_style, u8)-> css_result>) -> css_result {
+	
+	let mut value = CSS_PAGE_BREAK_AFTER_INHERIT;
+
+	if !isInherit(opv) {
+		match getValue(opv) {
+			PAGE_BREAK_AFTER_AUTO => value = CSS_PAGE_BREAK_AFTER_AUTO,	
+			PAGE_BREAK_AFTER_ALWAYS => value = CSS_PAGE_BREAK_AFTER_ALWAYS,
+			PAGE_BREAK_AFTER_AVOID => value = CSS_PAGE_BREAK_AFTER_AVOID,
+			PAGE_BREAK_AFTER_LEFT => value = CSS_PAGE_BREAK_AFTER_LEFT,
+			PAGE_BREAK_AFTER_RIGHT => value = CSS_PAGE_BREAK_AFTER_RIGHT,				
+			_ => fail!(~"Invalid css__cascade_length_none match code")
+		}
+	}
+
+	// \todo lose fun != None */
+	match fun {
+		Some(fun_fn) => if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+			return (*fun_fn)(state.computed, value as u8)
+		},
+		None => {}
+	}
+
+	CSS_OK
+	
+}
+
+pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state:@mut css_select_state,
+	fun:@extern fn (@mut css_computed_style, u8, ~[~css_computed_counter]) -> css_result) -> css_result {
+
+	let mut value = CSS_COUNTER_INCREMENT_INHERIT;
+	let mut counters:~[~css_computed_counter] = ~[];
+	
+	if !isInherit(opv) {
+		match getValue(opv) {
+			COUNTER_INCREMENT_NAMED => {
+				let mut v = getValue(opv) as u32;
+
+				while v != COUNTER_INCREMENT_NONE as u32{
+					
+					let (result, name_option) = style.sheet.unwrap().css__stylesheet_string_get((copy style.bytecode[style.used]) as uint);
+					advance_bytecode(style);
+					match result {
+						CSS_OK => {
+							let val = copy style.bytecode[style.used];
+							advance_bytecode(style);
+
+							let temp = ~css_computed_counter{name:name_option.unwrap(),value:val as i32};
+							counters.push(temp);
+
+							v = copy style.bytecode[style.used];
+							advance_bytecode(style);
+						}
+						_ => return result
+					}
+						
+				}
+			},	
+			COUNTER_INCREMENT_NONE => value = CSS_COUNTER_INCREMENT_NONE,
+			_ => fail!(~"Invalid css__cascade_counter_increment_reset match code")
+		}
+	}
+
+	
+	/* If we have some counters, terminate the array with a blank entry */
+	if !counters.is_empty() {
+		let temp = ~css_computed_counter{name:~"",value:0};
+		counters.push(temp);
+	}
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
+		return (*fun)(state.computed, value as u8, counters)
+	}
+	
+	CSS_OK
+}
+
 
 ///////////////////////////////////////////////////////////////////
 
