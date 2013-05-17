@@ -275,6 +275,28 @@ impl css_stylesheet {
     }
 
     /**
+     * Create a style, with sheet pointer set into the style
+     * original function as in C code 
+     * need to change to this function everywhere where css__stylesheet_style_create
+     * is used
+     *
+     * \param self css_stylesheet
+     * \return css_style 
+     */
+    pub fn css__stylesheet_style_create_orig(sheet : @mut css_stylesheet) -> @mut css_style {
+        if sheet.cached_style.is_none() {
+            @mut css_style{ 
+                bytecode:~[],
+                used:0,
+                sheet:Some(sheet)
+            } 
+        }
+        else {
+            sheet.cached_style.swap_unwrap()
+        }
+    }
+
+    /**
      * Create a style
      *
      * \param self css_stylesheet

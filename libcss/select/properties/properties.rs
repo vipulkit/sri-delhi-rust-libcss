@@ -2,14 +2,17 @@
 // use std::arc;
 
 use include::properties::*;
-
 use include::types::*;
+use include::fpmath::*;
 use bytecode::bytecode::*;
 use bytecode::opcodes::*;
 use stylesheet::*;
 use utils::errors::*;
 use select::select::*;
 use select::common::*;
+use select::propset::*;
+use select::computed::*;
+
 
 type border_color_fn = @extern fn (@mut css_computed_style, u8, css_color) -> css_result;
 type uri_none_fn= @extern fn (@mut css_computed_style, u8, ~str) -> css_result;
@@ -17,61 +20,6 @@ type border_style_fn =  @extern fn (@mut css_computed_style, u8) -> css_result;
 type helper_fn =  @extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result;
 type number_fn= @extern fn (@mut css_computed_style, u8, css_fixed) -> css_result;
 type css_color = u32;
-
-// Azimuth.c
-///////////////////////////////////////////////////////////////////
-pub fn css__cascade_azimuth(opv:u32 , 
-							style:@mut css_style ,
-							state: @mut css_select_state 
-							) -> css_result
-{
-	let mut val : i32 = 0;
-	let mut unit : u32 = UNIT_DEG ;
-	let mut az : u16 ;
-
-	if( isInherit(opv) == false  ) {
-		let mut azimuth_mask = (AZIMUTH_BEHIND as u16) ^ 0xFFFF ; 
-		az = (getValue(opv) & azimuth_mask) ;
-			if ( az == AZIMUTH_ANGLE) {
-				val = style.bytecode[style.used+1] as i32 ;
-				style.used += 1;
-				unit = style.bytecode[style.used+1] as u32;
-				style.used += 1;
-			}
-		/* * \todo azimuth behind */
-	}
-
-	// todo : unit = css__to_css_unit(unit); 
-	if ( css__outranks_existing( (getOpcode(opv) as u16),
-								isImportant(opv),
-								state,
-								isInherit(opv) ) ) {
-		return CSS_OK ;
-	}
-	
-	CSS_OK
-}
-
-pub fn css__set_azimuth_from_hint(hint: @mut css_hint, 
-		style:@mut css_computed_style) -> css_result {
-
-	CSS_OK
-}
-
-pub fn css__initial_azimuth(state:@mut css_select_state) -> css_result {
-
-	CSS_OK
-}
-
-pub fn css__compose_azimuth(parent:@mut css_computed_style,
-							child:@mut css_computed_style,
-							result:@mut css_computed_style) -> css_result {
-
-	CSS_OK
-}
-
-///////////////////////////////////////////////////////////////////
-
 
 /* HELPERS --- Useful helpers */
 ///////////////////////////////////////////////////////////////////
@@ -365,6 +313,398 @@ pub fn css__cascade_number(opv:u32, style:@mut css_style, state:@mut css_select_
 	}
 
 	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// Azimuth.c
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_azimuth(opv:u32 , 
+							style:@mut css_style ,
+							state: @mut css_select_state 
+							) -> css_result
+{
+	let mut val : i32 = 0;
+	let mut unit : u32 = UNIT_DEG ;
+	let mut az : u16 ;
+
+	if( isInherit(opv) == false  ) {
+		let mut azimuth_mask = (AZIMUTH_BEHIND as u16) ^ 0xFFFF ; 
+		az = (getValue(opv) & azimuth_mask) ;
+			if ( az == AZIMUTH_ANGLE) {
+				val = style.bytecode[style.used+1] as i32 ;
+				style.used += 1;
+				unit = style.bytecode[style.used+1] as u32;
+				style.used += 1;
+			}
+		/* * \todo azimuth behind */
+	}
+
+	// todo : unit = css__to_css_unit(unit); 
+	if ( css__outranks_existing( (getOpcode(opv) as u16),
+								isImportant(opv),
+								state,
+								isInherit(opv) ) ) {
+		return CSS_OK ;
+	}
+	
+	CSS_OK
+}
+
+pub fn css__set_azimuth_from_hint(hint: @mut css_hint, 
+		style:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_azimuth(state:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_azimuth(parent:@mut css_computed_style,
+							child:@mut css_computed_style,
+							result:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// background_attachment.c
+///////////////////////////////////////////////////////////////////
+
+pub fn css__cascade_background_attachment(opv:u32, style:@mut css_style, 
+										state:@mut css_select_state
+										) -> css_result {
+
+	let mut value : u16 = (CSS_BACKGROUND_ATTACHMENT_INHERIT as u16);
+
+	if (isInherit(opv) == false) {
+		let mut attachment = getValue(opv) ;
+		if ( attachment == BACKGROUND_ATTACHMENT_FIXED ) {
+			value = (CSS_BACKGROUND_ATTACHMENT_FIXED as u16);
+		}
+		else if ( attachment == BACKGROUND_ATTACHMENT_SCROLL ) {
+			value = (CSS_BACKGROUND_ATTACHMENT_SCROLL as u16);
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16),
+							isImportant(opv), 
+							state,
+							isInherit(opv) ) ) {
+		set_background_attachment(state.computed, (value as u8) );
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_background_attachment_from_hint(hint:@mut css_hint, 
+												style:@mut css_computed_style
+												) -> css_result {
+
+	set_background_attachment(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_background_attachment(state:@mut css_select_state) -> css_result {
+
+	set_background_attachment(state.computed, 
+		(CSS_BACKGROUND_ATTACHMENT_SCROLL as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_background_attachment(parent:@mut css_computed_style,
+										child:@mut css_computed_style,
+										result:@mut css_computed_style
+										) -> css_result {
+
+	let mut ftype : u8 = css_computed_background_attachment(child);
+
+	if (ftype == (CSS_BACKGROUND_ATTACHMENT_INHERIT as u8) ) {
+		ftype = css_computed_background_attachment(parent);
+	}
+
+	set_background_attachment(result, (ftype as u8) );
+	CSS_OK
+}
+
+
+///////////////////////////////////////////////////////////////////
+
+// background_color.c
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_background_color(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	//return css__cascade_bg_border_color(opv, style, state, set_background_color);
+	CSS_OK
+}
+
+pub fn css__set_background_color_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+	match hint.hint_type {
+		COLOR=>{
+			set_background_color(style, hint.status, hint.color.get_or_default(0));
+			CSS_OK
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_background_color(state:@mut css_select_state) -> css_result {
+
+	set_background_color(state.computed, 
+		(CSS_BACKGROUND_COLOR_COLOR as u8), 0);
+	CSS_OK
+}
+
+pub fn css__compose_background_color(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,ocolor) = css_computed_background_color(child);
+
+	if (ftype == (CSS_BACKGROUND_COLOR_INHERIT as u8) ) {
+		let mut (ftype2,ocolor2) = css_computed_background_color(parent);
+		let mut color = ocolor2.get_or_default( ocolor.get_or_default(0) );
+		set_background_color(result, ftype2, color);
+		CSS_OK
+	}
+	else {
+		let mut color = ocolor.get_or_default(0);
+		set_background_color(result, ftype, color);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// background_image.c
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_background_image(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	//return css__cascade_uri_none(opv, style, state, set_background_image);
+	CSS_OK
+}
+
+pub fn css__set_background_image_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+	match hint.hint_type {
+		STRING=>{
+			match hint.string {
+				Some(copy x)=>{
+					set_background_image(style, hint.status, x);
+				}
+				None=>{
+					set_background_image(style, hint.status, ~"");
+				}
+			}
+			CSS_OK
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_background_image(state:@mut css_select_state) -> css_result {
+
+	set_background_image(state.computed, 
+		(CSS_BACKGROUND_IMAGE_NONE as u8), ~"");
+	CSS_OK
+}
+
+pub fn css__compose_background_image(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,url) = css_computed_background_image(child);
+
+	if (ftype == (CSS_BACKGROUND_IMAGE_INHERIT as u8) ) {
+		let mut (ftype2,url2) = css_computed_background_image(parent);
+		set_background_image(result, ftype, url2);
+		CSS_OK
+	}
+	else {
+		set_background_image(result, ftype, url);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// background_position.c
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_background_position(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut  value : u16 = CSS_BACKGROUND_POSITION_INHERIT as u16;
+	let mut hlength : i32 = 0;
+	let mut vlength : i32  = 0;
+	let mut hunit : u32 = UNIT_PX as u32;
+	let mut vunit : u32 = UNIT_PX as u32;
+
+	if ( isInherit(opv) == false) {
+		value = CSS_BACKGROUND_POSITION_SET as u16;
+
+		let mut compare = getValue(opv) & 0xf0 ;
+		if( compare == (BACKGROUND_POSITION_HORZ_SET as u16) ) {
+			hlength = style.bytecode[style.used] as i32 ;
+			//advance_bytecode(style, sizeof(hlength));
+			hunit = style.bytecode[style.used] as u32 ;
+			//advance_bytecode(style, sizeof(hunit));
+		}
+		else if( compare == (BACKGROUND_POSITION_HORZ_CENTER as u16) ) {
+			hlength = css_int_to_fixed(50);
+			hunit = UNIT_PCT as u32;
+		}
+		else if( compare == (BACKGROUND_POSITION_HORZ_RIGHT as u16) ) {
+			hlength = css_int_to_fixed(100);
+			hunit = UNIT_PCT as u32;
+		}
+		else if( compare == (BACKGROUND_POSITION_HORZ_LEFT as u16) ) {
+			hlength = css_int_to_fixed(0);
+			hunit = UNIT_PCT as u32;
+		}
+
+		compare = getValue(opv) & 0x0f ;
+		if( compare == (BACKGROUND_POSITION_VERT_SET as u16) ) {
+			vlength = style.bytecode[style.used] as i32 ;
+			//advance_bytecode(style, sizeof(vlength));
+			vunit = style.bytecode[style.used] as u32 ;
+			//advance_bytecode(style, sizeof(vunit));
+		}
+		else if( compare == (BACKGROUND_POSITION_VERT_CENTER as u16) ) {
+			vlength = css_int_to_fixed(50);
+			vunit = UNIT_PCT as u32;
+		}
+		else if( compare == (BACKGROUND_POSITION_VERT_BOTTOM as u16) ) {
+			vlength = css_int_to_fixed(100);
+			vunit = UNIT_PCT as u32;
+		}
+		else if( compare == (BACKGROUND_POSITION_VERT_TOP as u16) ) {
+			vlength = css_int_to_fixed(0);
+			vunit = UNIT_PCT as u32;
+		}
+	}
+
+	//hunit = css__to_css_unit(hunit);
+	//vunit = css__to_css_unit(vunit);
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), 
+								isImportant(opv), 
+								state,
+								isInherit(opv) ) ) {
+		//set_background_position(state.computed, (value as u8),
+		//		hlength, hunit, vlength, vunit);
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_background_position_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+	match hint.hint_type {
+		HINT_LENGTH_H_V=>{
+			match hint.position {
+				Some(copy x)=>{
+					set_background_position(style, hint.status, 
+						x.h.value, x.h.unit,
+						x.v.value, x.v.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_background_position(state:@mut css_select_state) -> css_result {
+
+	set_background_position(state.computed, 
+		(CSS_BACKGROUND_POSITION_SET as u8), 0,CSS_UNIT_PCT , 0, CSS_UNIT_PCT);
+	CSS_OK
+}
+
+pub fn css__compose_background_position(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									final:@mut css_computed_style
+									) -> css_result {
+
+	let mut result = css_computed_background_position(child);
+
+	if (result.result == (CSS_BACKGROUND_POSITION_INHERIT as u8) ) {
+		result = css_computed_background_position(parent);
+		
+		set_background_position(final, result.result, result.hlength,result.hunit,
+								result.vlength, result.vunit);
+		CSS_OK
+	}
+	else {
+		set_background_position(final, result.result, result.hlength,result.hunit,
+								result.vlength, result.vunit);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// background_repeat.c
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_background_repeat(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	//return css__cascade_uri_none(opv, style, state, set_background_image);
+	CSS_OK
+}
+
+pub fn css__set_background_repeat_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+	set_background_repeat(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_background_repeat(state:@mut css_select_state) -> css_result {
+
+	set_background_repeat(state.computed, 
+			(CSS_BACKGROUND_REPEAT_REPEAT as u8));
+	CSS_OK
+}
+
+pub fn css__compose_background_repeat(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_background_repeat(child);
+
+	if (ftype == (CSS_BACKGROUND_REPEAT_INHERIT as u8) ) {
+		ftype = css_computed_background_repeat(parent);
+		set_background_repeat(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_background_repeat(result, ftype);
+		CSS_OK
+	}
 }
 
 ///////////////////////////////////////////////////////////////////
