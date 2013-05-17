@@ -135,7 +135,7 @@ pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_selec
 
 
 pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_select_state, 
-	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit)) -> css_result {
 	
 	let mut value = CSS_BORDER_WIDTH_INHERIT;
 	let mut length = 0;
@@ -160,7 +160,7 @@ pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_s
 	unit = css__to_css_unit(unit) as u32;
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
-		return (*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+		(*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
 	}
 
 	CSS_OK
@@ -987,6 +987,66 @@ pub fn css__initial_border_bottom_style(state:@mut css_select_state) -> css_resu
 }
 
 pub fn css__compose_border_bottom_style(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_border_bottom_style(child);
+
+	if (ftype == (CSS_BORDER_STYLE_INHERIT as u8) ) {
+		ftype = css_computed_border_bottom_style(parent);
+		set_border_bottom_style(result, ftype );
+		CSS_OK
+	}
+	else {
+		set_border_bottom_style(result, ftype );
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// border_bottom_width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_bottom_width(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_border_width(opv, style, state, @set_border_bottom_width);
+}
+
+pub fn css__set_border_bottom_width_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(copy x)=>{
+					set_border_bottom_width(style, hint.status, x.value , x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_border_bottom_width(state:@mut css_select_state) -> css_result {
+
+	set_border_bottom_width(state.computed, 
+						(CSS_BORDER_WIDTH_MEDIUM as u8),
+						0, 
+						CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_border_bottom_width(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
 									) -> css_result {
