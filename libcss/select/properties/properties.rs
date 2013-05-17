@@ -456,7 +456,7 @@ pub fn css__compose_azimuth(_:@mut css_computed_style,
 // background_attachment.c
 ///////////////////////////////////////////////////////////////////
 
-pub fn css__cascade_background_attachment(opv:u32, style:@mut css_style, 
+pub fn css__cascade_background_attachment(opv:u32, _:@mut css_style, 
 										state:@mut css_select_state
 										) -> css_result {
 
@@ -526,6 +526,7 @@ pub fn css__cascade_background_color(opv:u32, style:@mut css_style,
 pub fn css__set_background_color_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
 										) -> css_result {
+
 	match hint.hint_type {
 		COLOR=>{
 			set_background_color(style, hint.status, hint.color.get_or_default(0));
@@ -577,6 +578,7 @@ pub fn css__cascade_background_image(opv:u32, style:@mut css_style,
 pub fn css__set_background_image_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
 										) -> css_result {
+
 	match hint.hint_type {
 		STRING=>{
 			match hint.string {
@@ -610,7 +612,7 @@ pub fn css__compose_background_image(parent:@mut css_computed_style,
 	let mut (ftype,url) = css_computed_background_image(child);
 
 	if (ftype == (CSS_BACKGROUND_IMAGE_INHERIT as u8) ) {
-		let mut (ftype2,url2) = css_computed_background_image(parent);
+		let mut (_,url2) = css_computed_background_image(parent);
 		set_background_image(result, ftype, url2);
 		CSS_OK
 	}
@@ -698,6 +700,7 @@ pub fn css__cascade_background_position(opv:u32, style:@mut css_style,
 pub fn css__set_background_position_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
 										) -> css_result {
+
 	match hint.hint_type {
 		HINT_LENGTH_H_V=>{
 			match hint.position {
@@ -782,6 +785,7 @@ pub fn css__cascade_background_repeat(opv:u32, _:@mut css_style,
 pub fn css__set_background_repeat_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
 										) -> css_result {
+
 	set_background_repeat(style, hint.status);
 	CSS_OK
 }
@@ -807,6 +811,64 @@ pub fn css__compose_background_repeat(parent:@mut css_computed_style,
 	}
 	else {
 		set_background_repeat(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// border_bottom_color.c
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_bottom_color(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_bg_border_color(opv, style, state,
+			@set_border_bottom_color);
+}
+
+pub fn css__set_border_bottom_color_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		COLOR=>{
+			match hint.color {
+				Some(copy x)=>{
+					set_border_bottom_color(style, hint.status, x);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_border_bottom_color(state:@mut css_select_state) -> css_result {
+
+	set_border_bottom_color(state.computed, 
+			(CSS_BORDER_COLOR_CURRENT_COLOR as u8), 0);
+	CSS_OK
+}
+
+pub fn css__compose_border_bottom_color(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,color) = css_computed_border_bottom_color(child);
+
+	if (ftype == (CSS_BORDER_COLOR_INHERIT as u8) ) {
+		let mut (_,color2) = css_computed_border_bottom_color(parent);
+		set_border_bottom_color(result, ftype, color2 );
+		CSS_OK
+	}
+	else {
+		set_border_bottom_color(result, ftype, color );
 		CSS_OK
 	}
 }
@@ -854,3 +916,4 @@ pub fn css__compose_caption_side(parent:@mut css_computed_style, child:@mut css_
 		
 	set_caption_side(result, cap_type);
 }
+///////////////////////////////////////////////////////////////////
