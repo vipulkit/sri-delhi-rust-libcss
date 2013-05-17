@@ -106,7 +106,7 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 
 
 pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_select_state, 
-	fun:@extern fn (@mut css_computed_style, u8) -> css_result) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8) ) -> css_result {
 	
 	let mut value = CSS_BORDER_STYLE_INHERIT;
 
@@ -127,7 +127,7 @@ pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_selec
 	}
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
-		return (*fun)(state.computed, value as u8)
+		(*fun)(state.computed, value as u8)
 	}
 
 	CSS_OK
@@ -959,6 +959,49 @@ pub fn css__compose_clear(parent:@mut css_computed_style, child:@mut css_compute
 	}
 
 	set_clear(result, clear_type)
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// border_bottom_style
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_bottom_style(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_border_style(opv, style, state, @set_border_bottom_style);
+}
+
+pub fn css__set_border_bottom_style_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_border_bottom_style(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_border_bottom_style(state:@mut css_select_state) -> css_result {
+
+	set_border_bottom_style(state.computed, (CSS_BORDER_STYLE_NONE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_border_bottom_style(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_border_bottom_style(child);
+
+	if (ftype == (CSS_BORDER_STYLE_INHERIT as u8) ) {
+		ftype = css_computed_border_bottom_style(parent);
+		set_border_bottom_style(result, ftype );
+		CSS_OK
+	}
+	else {
+		set_border_bottom_style(result, ftype );
+		CSS_OK
+	}
 }
 
 ///////////////////////////////////////////////////////////////////
