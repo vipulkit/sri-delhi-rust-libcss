@@ -1299,3 +1299,62 @@ pub fn css__compose_border_left_width(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// border_right_color
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_right_color(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_bg_border_color(opv, style, state, 
+			@set_border_right_color);
+}
+
+pub fn css__set_border_right_color_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		COLOR=>{
+			match hint.color {
+				Some(x)=>{
+					set_border_right_color(style, hint.status, x);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_border_right_color(state:@mut css_select_state) -> css_result {
+
+
+	set_border_right_color(state.computed, 
+			(CSS_BORDER_COLOR_CURRENT_COLOR as u8), 0);
+	CSS_OK
+}
+
+pub fn css__compose_border_right_color(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,color) = css_computed_border_right_color(child);
+
+	if (ftype == (CSS_BORDER_COLOR_INHERIT as u8) ) {
+		let mut (ftype2,color2) = css_computed_border_right_color(parent);
+		set_border_right_color(result, ftype2, color2);
+		CSS_OK
+	}
+	else {
+		set_border_right_color(result, ftype, color);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
