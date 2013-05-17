@@ -1051,15 +1051,85 @@ pub fn css__compose_border_bottom_width(parent:@mut css_computed_style,
 									result:@mut css_computed_style
 									) -> css_result {
 
-	let mut ftype = css_computed_border_bottom_style(child);
+	let mut (ftype,olength,ounit) = css_computed_border_bottom_width(child);
 
-	if (ftype == (CSS_BORDER_STYLE_INHERIT as u8) ) {
-		ftype = css_computed_border_bottom_style(parent);
-		set_border_bottom_style(result, ftype );
+	if (ftype == (CSS_BORDER_WIDTH_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_border_bottom_width(parent);
+		set_border_bottom_width(result, 
+								ftype2, 
+								olength2.get_or_default( olength.get_or_default(0) ), 
+								ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
-		set_border_bottom_style(result, ftype );
+		set_border_bottom_width(result, ftype, 
+							olength.get_or_default(0), 
+							ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// border_collapse
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_collapse(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value : u16 = CSS_BORDER_COLLAPSE_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		let mut match_val = getValue(opv) ; 
+		if ( match_val == (BORDER_COLLAPSE_SEPARATE as u16) ){ 
+			value = CSS_BORDER_COLLAPSE_SEPARATE as u16;
+		}
+		if ( match_val == (BORDER_COLLAPSE_COLLAPSE as u16) ){ 
+			value = CSS_BORDER_COLLAPSE_COLLAPSE as u16;
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), 
+								isImportant(opv), 
+								state,
+								isInherit(opv))) {
+		set_border_collapse(state.computed, (value as u8) );
+		CSS_OK
+	}
+	else {
+		CSS_OK
+	}
+}
+
+pub fn css__set_border_collapse_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_border_collapse(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_border_collapse(state:@mut css_select_state) -> css_result {
+
+
+	set_border_collapse(state.computed, (CSS_BORDER_COLLAPSE_SEPARATE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_border_collapse(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_border_collapse(child);
+
+	if (ftype == (CSS_BORDER_COLLAPSE_INHERIT as u8) ) {
+		ftype = css_computed_border_collapse(parent);
+		set_border_collapse(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_border_collapse(result, ftype);
 		CSS_OK
 	}
 }
