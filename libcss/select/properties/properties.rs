@@ -788,3 +788,45 @@ pub fn css__compose_background_repeat(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// caption_side.c
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_caption_side(opv:u32, _:@mut css_style, state:@mut css_select_state) -> css_result {
+	
+	let mut value = CSS_CAPTION_SIDE_INHERIT;
+
+	if !isInherit(opv) {
+		match getValue(opv) {
+			CAPTION_SIDE_TOP => value = CSS_CAPTION_SIDE_TOP,	
+			CAPTION_SIDE_BOTTOM => value = CSS_CAPTION_SIDE_BOTTOM,
+			_ => fail!(~"Invalid css__cascade_length_none match code")
+		}
+	}
+
+	// \todo lose fun != None */
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+			set_caption_side(state.computed, value as u8)
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_caption_side_from_hint(hint:@css_hint, style:@mut css_computed_style) {
+	set_caption_side(style, hint.status);
+}
+
+pub fn css__initial_caption_side(state:@mut css_select_state) {
+	set_caption_side(state.computed, CSS_CAPTION_SIDE_TOP as u8)
+}
+
+pub fn css__compose_caption_side(parent:@mut css_computed_style, child:@mut css_computed_style,
+		result:@mut css_computed_style) {
+
+	let mut cap_type = css_computed_caption_side(child);
+
+	if cap_type ==	CSS_CAPTION_SIDE_INHERIT as u8 {
+		cap_type = css_computed_caption_side(parent)
+	}
+		
+	set_caption_side(result, cap_type);
+}
