@@ -2,6 +2,8 @@ use include::properties::*;
 
 use stylesheet::*;
 
+use core::managed::*;
+
 use include::types::*;
 use include::fpmath::*;
 use bytecode::bytecode::*;
@@ -959,6 +961,137 @@ pub fn css__compose_clear(parent:@mut css_computed_style, child:@mut css_compute
 	}
 
 	set_clear(result, clear_type)
+}
+
+///////////////////////////////////////////////////////////////////
+// clip
+///////////////////////////////////////////////////////////////////
+
+pub fn css__cascade_clip(opv:u32, style:@mut css_style, state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_CLIP_INHERIT;
+	let rect = 
+        @mut css_computed_clip_rect{
+            top:0,
+            right:0,
+            bottom:0,
+            left:0,
+            tunit:CSS_UNIT_PX,
+            runit:CSS_UNIT_PX,
+            bunit:CSS_UNIT_PX,
+            lunit:CSS_UNIT_PX,
+            top_auto:false,
+            right_auto:false,
+            bottom_auto:false,
+            left_auto:false
+    } ;
+
+	if !isInherit(opv) {
+		match getValue(opv) & CLIP_SHAPE_MASK {
+			CLIP_SHAPE_RECT => {
+				if (getValue(opv) & CLIP_RECT_TOP_AUTO) != 0 {
+					rect.top_auto = true;
+				} 
+				else {
+					rect.top = peek_bytecode(style) as i32;
+					advance_bytecode(style);
+					rect.tunit = css__to_css_unit(peek_bytecode(style));
+					advance_bytecode(style);
+				}
+				
+				if (getValue(opv) & CLIP_RECT_RIGHT_AUTO) != 0 {
+					rect.right_auto = true;
+				}
+				else {
+					rect.right = peek_bytecode(style) as i32;
+					advance_bytecode(style);
+					rect.runit = css__to_css_unit(peek_bytecode(style));
+					advance_bytecode(style);
+				}
+
+				if (getValue(opv) & CLIP_RECT_BOTTOM_AUTO) != 0 {
+					rect.bottom_auto = true;
+				}
+				else {
+					rect.bottom = peek_bytecode(style) as i32;
+					advance_bytecode(style);
+					rect.bunit = css__to_css_unit(peek_bytecode(style));
+					advance_bytecode(style);
+				}
+
+				if (getValue(opv) & CLIP_RECT_LEFT_AUTO) != 0 {
+					rect.left_auto = true;
+				}
+				else {
+					rect.left = peek_bytecode(style) as i32;
+					advance_bytecode(style);
+					rect.lunit = css__to_css_unit(peek_bytecode(style));
+					advance_bytecode(style);
+				}
+				value = CSS_CLIP_RECT;
+			},	
+			CLIP_AUTO => value = CSS_CLIP_AUTO,
+			_ => fail!(~"Invalid css__cascade_length_none match code")
+		}
+	}
+
+	rect.tunit = css__to_css_unit(rect.tunit as u32);
+	rect.runit = css__to_css_unit(rect.runit as u32);
+	rect.bunit = css__to_css_unit(rect.bunit as u32);
+	rect.lunit = css__to_css_unit(rect.lunit as u32);
+
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+			set_clip(state.computed, value as u8, rect)
+	}
+
+	CSS_OK
+}	
+			
+pub fn css__set_clip_from_hint(hint:@mut css_hint, style:@mut css_computed_style) {
+	set_clip(style, hint.status, hint.clip.unwrap())
+}
+
+pub fn css__initial_clip(state:@mut css_select_state) {
+
+	let rect = @mut css_computed_clip_rect{
+        top:0,
+        right:0,
+        bottom:0,
+        left:0,
+        tunit:CSS_UNIT_PX,
+        runit:CSS_UNIT_PX,
+        bunit:CSS_UNIT_PX,
+        lunit:CSS_UNIT_PX,
+        top_auto:false,
+        right_auto:false,
+        bottom_auto:false,
+        left_auto:false
+    };
+
+	set_clip(state.computed, CSS_CLIP_AUTO as u8, rect)
+}
+
+pub fn css__compose_clip(parent:@mut css_computed_style, child:@mut css_computed_style,
+		result:@mut css_computed_style) {
+
+	
+	let mut (clip_type, rect) = css_computed_clip(child);
+
+	if (match child.uncommon { None => true, _ => false} && match parent.uncommon { Some(_) => true,  None => false }) 
+		|| clip_type == CSS_CLIP_INHERIT as u8 || ( match child.uncommon {Some(_) => true, None => false} && 
+			!mut_ptr_eq(result,child)) {
+		
+		if (match child.uncommon { None => true, _ => false} && match parent.uncommon { Some(_) => true,  None => false }) || 
+		   clip_type == CSS_CLIP_INHERIT as u8 {
+			let (clip_type_ret, rect_ret) = css_computed_clip(parent);
+			clip_type = clip_type_ret;
+			rect = rect_ret
+		}
+
+		set_clip(result, clip_type, rect.unwrap())
+	}
+
 }
 
 ///////////////////////////////////////////////////////////////////
