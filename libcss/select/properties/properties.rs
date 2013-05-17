@@ -14,7 +14,8 @@ use select::common::*;
 type border_color_fn = @extern fn (@mut css_computed_style, u8, css_color) -> css_result;
 type uri_none_fn= @extern fn (@mut css_computed_style, u8, ~str) -> css_result;
 type border_style_fn =  @extern fn (@mut css_computed_style, u8) -> css_result;
-type border_width_fn =  @extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result;
+type helper_fn =  @extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result;
+type number_fn= @extern fn (@mut css_computed_style, u8, css_fixed) -> css_result;
 type css_color = u32;
 
 // Azimuth.c
@@ -71,6 +72,7 @@ pub fn css__compose_azimuth(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
+
 /* HELPERS --- Useful helpers */
 ///////////////////////////////////////////////////////////////////
 
@@ -95,6 +97,7 @@ pub fn css__to_css_unit(u:u32) -> css_unit {
 		_ => CSS_UNIT_PX
 	}
 }
+
 
 /******************************************************************************
  * Utilities below here							      *
@@ -128,6 +131,7 @@ pub fn css__cascade_bg_border_color(opv:u32, style:@mut css_style, state:@mut cs
 
 	CSS_OK
 }
+
 
 pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_select_state, fun:Option<uri_none_fn>) -> css_result {
 	
@@ -187,7 +191,8 @@ pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_selec
 	CSS_OK
 }
 
-pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_select_state, fun:border_width_fn) -> css_result {
+
+pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_select_state, fun:helper_fn) -> css_result {
 	
 	let mut value = CSS_BORDER_WIDTH_INHERIT;
 	let mut length = 0;
@@ -213,6 +218,150 @@ pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_s
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
 		return (*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+	}
+
+	CSS_OK
+}
+
+
+pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_select_state,fun:helper_fn) -> css_result {
+	
+	let mut value = CSS_BOTTOM_INHERIT;
+	let mut length = 0;
+	let mut unit = UNIT_PX;
+	
+	if !isInherit(opv) {
+		match getValue(opv) {
+			BOTTOM_SET => {
+				value = CSS_BOTTOM_SET;
+				length = copy style.bytecode[style.used];
+				advance_bytecode(style);
+				unit =  style.bytecode[style.used];
+				advance_bytecode(style)				
+			},	
+			BOTTOM_AUTO => value = CSS_BOTTOM_AUTO,				
+			_ => fail!(~"Invalid css__cascade_length_auto match code")
+		}
+	}
+
+	unit = css__to_css_unit(unit) as u32;
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
+		return (*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+	}
+
+	CSS_OK
+
+}
+
+
+pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_select_state,fun:helper_fn) -> css_result {
+	
+	let mut value = CSS_LETTER_SPACING_INHERIT;
+	let mut length = 0;
+	let mut unit = UNIT_PX;
+	
+	if !isInherit(opv) {
+		match getValue(opv) {
+			LETTER_SPACING_SET => {
+				value = CSS_LETTER_SPACING_SET;
+				length = copy style.bytecode[style.used];
+				advance_bytecode(style);
+				unit =  style.bytecode[style.used];
+				advance_bytecode(style)				
+			},	
+			LETTER_SPACING_NORMAL => value = CSS_LETTER_SPACING_NORMAL,				
+			_ => fail!(~"Invalid css__cascade_length_normal match code")
+		}
+	}
+
+	unit = css__to_css_unit(unit) as u32;
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
+		return (*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+	}
+
+	CSS_OK
+}
+
+
+pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_select_state,fun:helper_fn) -> css_result {
+
+	let mut value = CSS_MAX_HEIGHT_INHERIT;
+	let mut length = 0;
+	let mut unit = UNIT_PX;
+	
+	if !isInherit(opv) {
+		match getValue(opv) {
+			MAX_HEIGHT_SET => {
+				value = CSS_MAX_HEIGHT_SET;
+				length = copy style.bytecode[style.used];
+				advance_bytecode(style);
+				unit =  style.bytecode[style.used];
+				advance_bytecode(style)				
+			},	
+			MAX_HEIGHT_NONE => value = CSS_MAX_HEIGHT_NONE,				
+			_ => fail!(~"Invalid css__cascade_length_normal match code")
+		}
+	}
+
+	unit = css__to_css_unit(unit) as u32;
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
+		return (*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+	}
+
+	CSS_OK
+}
+
+
+pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_state,fun:Option<helper_fn>) -> css_result {
+
+	let mut value = CSS_MIN_HEIGHT_INHERIT;
+	let mut length = 0;
+	let mut unit = UNIT_PX;
+	
+	if !isInherit(opv) {
+		value = CSS_MIN_HEIGHT_SET;
+		length = copy style.bytecode[style.used];
+		advance_bytecode(style);
+		unit =  style.bytecode[style.used];
+		advance_bytecode(style)				
+	}
+
+	unit = css__to_css_unit(unit) as u32;
+
+	// \todo lose fun != NULL once all properties have set routines */
+	match fun {
+		Some(fun_fn) => if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+			return (*fun_fn)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+		},
+		None => {}
+	}
+
+	CSS_OK
+}
+
+
+pub fn css__cascade_number(opv:u32, style:@mut css_style, state:@mut css_select_state,fun:Option<number_fn>) -> css_result {
+	let mut value = 0;
+	let mut length = 0;
+	
+	// \todo values */
+
+	if !isInherit(opv) {
+		value = 0;
+		length = copy style.bytecode[style.used];
+		advance_bytecode(style);
+	}
+	
+
+	// \todo lose fun != NULL once all properties have set routines */
+	match fun {
+		Some(fun_fn) => if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+			return (*fun_fn)(state.computed, value, length as i32)
+		},
+		None => {}
 	}
 
 	CSS_OK
