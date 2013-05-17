@@ -1358,3 +1358,107 @@ pub fn css__compose_border_right_color(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// border_right_style
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_right_style(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_border_style(opv, style, state, @set_border_right_style);
+}
+
+pub fn css__set_border_right_style_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_border_right_style(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_border_right_style(state:@mut css_select_state) -> css_result {
+
+
+	set_border_right_style(state.computed, (CSS_BORDER_STYLE_NONE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_border_right_style(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_border_right_style(child);
+
+	if (ftype == (CSS_BORDER_STYLE_INHERIT as u8) ) {
+		ftype = css_computed_border_right_style(parent);
+	}
+
+	set_border_right_style(result, ftype);
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// border_right_width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_right_width(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_border_width(opv, style, state, @set_border_right_width);
+}
+
+pub fn css__set_border_right_width_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(copy x)=>{
+					set_border_right_width(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_border_right_width(state:@mut css_select_state) -> css_result {
+
+
+	set_border_right_width(state.computed, 
+				(CSS_BORDER_WIDTH_MEDIUM as u8),
+				0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_border_right_width(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_border_right_width(child);
+
+	if (ftype == (CSS_BORDER_WIDTH_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_border_right_width(parent);
+		set_border_right_width(result, 
+							ftype2, 
+							olength2.get_or_default( olength.get_or_default(0) ), 
+							ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_border_right_width(result, ftype, 
+			olength.get_or_default(0), 
+			ounit.get_or_default(CSS_UNIT_PX) );
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
