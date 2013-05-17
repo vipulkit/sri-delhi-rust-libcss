@@ -612,8 +612,8 @@ pub fn css__compose_background_image(parent:@mut css_computed_style,
 	let mut (ftype,url) = css_computed_background_image(child);
 
 	if (ftype == (CSS_BACKGROUND_IMAGE_INHERIT as u8) ) {
-		let mut (_,url2) = css_computed_background_image(parent);
-		set_background_image(result, ftype, url2);
+		let mut (ftype2,url2) = css_computed_background_image(parent);
+		set_background_image(result, ftype2, url2);
 		CSS_OK
 	}
 	else {
@@ -863,8 +863,8 @@ pub fn css__compose_border_bottom_color(parent:@mut css_computed_style,
 	let mut (ftype,color) = css_computed_border_bottom_color(child);
 
 	if (ftype == (CSS_BORDER_COLOR_INHERIT as u8) ) {
-		let mut (_,color2) = css_computed_border_bottom_color(parent);
-		set_border_bottom_color(result, ftype, color2 );
+		let mut (ftype2,color2) = css_computed_border_bottom_color(parent);
+		set_border_bottom_color(result, ftype2, color2 );
 		CSS_OK
 	}
 	else {
