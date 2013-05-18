@@ -1691,3 +1691,164 @@ pub fn css__compose_border_spacing(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// border_top_color
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_top_color(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_bg_border_color(opv, style, state, @set_border_top_color);
+}
+
+pub fn css__set_border_top_color_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		COLOR=>{
+			match hint.color {
+				Some(x)=>{
+					set_border_top_color(style, hint.status, x);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_border_top_color(state:@mut css_select_state) -> css_result {
+
+
+	set_border_top_color(state.computed, 
+		(CSS_BORDER_COLOR_CURRENT_COLOR as u8), 0);
+	CSS_OK
+}
+
+pub fn css__compose_border_top_color(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,color) = css_computed_border_top_color(child);
+
+	if (ftype == (CSS_BORDER_COLOR_INHERIT as u8) ) {
+		let mut (ftype2,color2) = css_computed_border_top_color(parent);
+		set_border_top_color(result, ftype2, color2);
+		CSS_OK
+	}
+	else {
+		set_border_top_color(result, ftype, color);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// border_top_style
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_top_style(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_border_style(opv, style, state, @set_border_top_style);
+}
+
+pub fn css__set_border_top_style_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_border_top_style(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_border_top_style(state:@mut css_select_state) -> css_result {
+
+
+	set_border_top_style(state.computed, (CSS_BORDER_STYLE_NONE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_border_top_style(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_border_top_style(child);
+
+	if (ftype == (CSS_BORDER_STYLE_INHERIT as u8) ) {
+		ftype = css_computed_border_top_style(parent);
+	}
+
+	set_border_top_style(result, ftype);
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+// border_top_width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_border_top_width(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_border_width(opv, style, state, @set_border_top_width);
+}
+
+pub fn css__set_border_top_width_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(copy x)=>{
+					set_border_top_width(style, hint.status,x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_border_top_width(state:@mut css_select_state) -> css_result {
+
+
+	set_border_top_width(state.computed, 
+			(CSS_BORDER_WIDTH_MEDIUM as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_border_top_width(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_border_top_width(child);
+
+	if (ftype == (CSS_BORDER_WIDTH_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_border_top_width(parent);
+		set_border_top_width(result, 
+							ftype2, 
+							olength2.get_or_default( olength.get_or_default(0) ), 
+							ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_border_top_width(result, ftype, 
+			olength.get_or_default(0), 
+			ounit.get_or_default(CSS_UNIT_PX) );
+		CSS_OK
+	}
+}	
+
+///////////////////////////////////////////////////////////////////
