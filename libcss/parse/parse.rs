@@ -113,7 +113,7 @@ pub impl css_parser {
     }
 
     /* public constructors */
-    pub fn css_parser_create(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>) 
+    pub fn css__parser_create(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>) 
         -> Option<~css_parser> {
         let initial = ( sStart as uint, 0u );
 
