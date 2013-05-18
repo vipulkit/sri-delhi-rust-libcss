@@ -90,8 +90,11 @@ pub impl css {
 		let language = css_language(stylesheet, lwc.clone());
 
 		// create parser
-		// TODO <Abhijeet> : Handle Inline Styles
-		let parser = css_parser::css_parser_create(language, lexer, lwc.clone());
+		// create parser
+		let parser = match params.inline_style {
+		    false => css_parser::css__parser_create(language, lexer, lwc.clone()),
+		    true => css_parser::css__parser_create_for_inline_style(language, lexer, lwc.clone())
+		}; 
 
 		~ css {
 			lwc:lwc.clone(),
@@ -104,13 +107,13 @@ pub impl css {
 		self.parser.css__parser_parse_chunk(data)
 	}
 
-	pub fn css_stylesheet_data_done(&mut self) -> @mut css_stylesheet {
-		self.parser.css__parser_completed();
+	pub fn css_stylesheet_data_done(&mut self) -> (css_result , Option<@mut css_stylesheet>) {
+		let error = self.parser.css__parser_completed();
 
 		self.stylesheet.cached_style = None;
 
 		// TODO <Abhijeet>: Handle pending imports
 
-		self.stylesheet
+		(error , Some(self.stylesheet))
 	}
 }
