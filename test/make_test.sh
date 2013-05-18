@@ -16,4 +16,7 @@ rustc -L ../libwapcaplet test_wapcaplet.rs -L .
 rustc -L ../libparserutils test_csdtect.rs -L .
 rustc -L ../libcss -L ../libwapcaplet -L ../libparserutils/ test_css_stylesheet.rs -L .
 rustc -L ../libwapcaplet -L ../libcss -L ../libparserutils/ propstrings_perf.rs -L .
-rustc -L ../libparserutils -L ../libcss test_lexer_chunks.rs -L . -L ../libwapcaplet/
+rustc -L ../libparserutils -L ../libcss -L ../libwapcaplet test_lexer_chunks.rs -L .
+cd libcss
+./make-test.sh
+cd ..
