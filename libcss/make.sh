@@ -6,4 +6,4 @@ rustc css_property_parser_gen.rs -o css_properties_parser_gen
 ./css_properties_parser_gen
 rm -f css_properties_parser_gen
 cd -
-rustc -L ../libwapcaplet -L ../libparserutils css.rc
+rustc -Z debug-info -Z no-opt -Z no-monomorphic-collapse -L ../libwapcaplet -L ../libparserutils css.rc
