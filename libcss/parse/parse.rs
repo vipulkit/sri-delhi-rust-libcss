@@ -403,7 +403,8 @@ pub impl css_parser {
         };
 
         io::println(fmt!("parse_start: state_stack (1) == %?", parser.state_stack));
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state,current_substate) = parser.state_stack.pop();
+        assert!(current_state == sStart as uint);
         io::println(fmt!("parse_start: state_stack (2) == %?", parser.state_stack));
 
         while (true) {
@@ -458,7 +459,8 @@ pub impl css_parser {
             WS = 1 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sStylesheet as uint);
 
             while (true) {
                 match (current_substate) {
@@ -522,6 +524,9 @@ pub impl css_parser {
             Initial = 0 
         };
 
+        let mut (current_state, _) = parser.state_stack.pop();
+        assert!(current_state == sStatement as uint);
+
         let mut to = (sRuleset as uint, Initial as uint);
 
         let (token_option, parser_error) = parser.get_token();
@@ -551,7 +556,8 @@ pub impl css_parser {
             WS = 2 
         };
         
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sRuleset as uint);
 
         while (true) {
             match (current_substate) {
@@ -679,7 +685,8 @@ pub impl css_parser {
             WS = 3 
         };
         
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sRulesetEnd as uint);
 
         while (true) {
             match (current_substate) {
@@ -792,7 +799,8 @@ pub impl css_parser {
             AfterAny = 3 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sAtRule as uint);
 
         while (true) {
             match (current_substate) {
@@ -889,7 +897,8 @@ pub impl css_parser {
             AfterBlock = 2 
         };
         
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sAtRuleEnd as uint);
 
         while (true) {
             match (current_substate) {
@@ -983,7 +992,8 @@ pub impl css_parser {
             WS2 = 4 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sBlock as uint);
 
         while (true) {
             match (current_substate) {
@@ -1095,7 +1105,8 @@ pub impl css_parser {
                 WS = 1 
             };
             
-            let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sBlockContent as uint);
 
             while (true) {
                 match (current_substate) {
@@ -1209,7 +1220,8 @@ pub impl css_parser {
             AfterAny1 = 1 
         };
         
-        let (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sSelector as uint);
 
         match (current_substate) {
             0 /* Initial */ => {
@@ -1243,7 +1255,8 @@ pub impl css_parser {
             AfterValue1 = 3 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sDeclaration as uint);
 
         while (true) {
             match (current_substate) {
@@ -1350,7 +1363,8 @@ pub impl css_parser {
             WS = 1 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sDeclList as uint);
 
         while (true) {
             match (current_substate) {
@@ -1419,7 +1433,8 @@ pub impl css_parser {
             AfterDeclaration = 1 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sDeclListEnd as uint);
 
         while (true) {
             match (current_substate) {
@@ -1472,7 +1487,8 @@ pub impl css_parser {
             WS = 1 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sProperty as uint);
 
         while (true) {
             match (current_substate) {
@@ -1532,7 +1548,8 @@ pub impl css_parser {
             AfterValue = 1 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sValue0 as uint);
 
         while(true) {
             match (current_substate) {
@@ -1595,7 +1612,8 @@ pub impl css_parser {
             AfterValue = 1 
         };
         
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sValue1 as uint);
 
         match (current_substate) {
             0 /* Initial */ => {
@@ -1657,7 +1675,8 @@ pub impl css_parser {
             WS = 1 
         };
         
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sValue as uint);
 
         while (true) {
             match (current_substate) {
@@ -1723,7 +1742,8 @@ pub impl css_parser {
             AfterAny = 1 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sAny0 as uint);
 
         while (true) {
             match (current_substate) {
@@ -1795,7 +1815,8 @@ pub impl css_parser {
             AfterAny0 = 2
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sAny1 as uint);
 
         match (current_substate) {
             0 /* Initial */ => {
@@ -1866,7 +1887,8 @@ pub impl css_parser {
             WS2 = 3
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sAny as uint);
         
         while (true) {
             match (current_substate) {
@@ -1994,7 +2016,8 @@ pub impl css_parser {
             Go = 1 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sMalformedDecl as uint);
 
         if (current_substate == Initial as uint) {
             parser.open_items_stack.clear();
@@ -2069,7 +2092,8 @@ pub impl css_parser {
             Go = 1 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sMalformedSelector as uint);
 
         if (current_substate == Initial as uint) {
             parser.open_items_stack.clear();
@@ -2153,7 +2177,8 @@ pub impl css_parser {
             Go = 1 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sMalformedAtRule as uint);
 
         if (current_substate == Initial as uint) {
             parser.open_items_stack.clear();
@@ -2247,7 +2272,8 @@ pub impl css_parser {
             AfterISBody0 = 2 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sInlineStyle as uint);
 
         while (true) {
             match current_substate {
@@ -2303,7 +2329,8 @@ pub impl css_parser {
             AfterISBody = 1 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sISBody0 as uint);
 
         while (true) {
             match current_substate {
@@ -2361,7 +2388,8 @@ pub impl css_parser {
             WS = 3 
         };
 
-        let mut (_,current_substate) = parser.state_stack.pop();
+        let mut (current_state, current_substate) = parser.state_stack.pop();
+        assert!(current_state == sISBody as uint);
 
         while(true) {
             match current_substate {
