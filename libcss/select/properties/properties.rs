@@ -170,7 +170,7 @@ pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_s
 
 
 pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_result {
 	
 	let mut value = CSS_BOTTOM_INHERIT;
 	let mut length = 0;
@@ -193,7 +193,7 @@ pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_se
 	unit = css__to_css_unit(unit) as u32;
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
-		return (*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+		(*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
 	}
 
 	CSS_OK
@@ -1849,6 +1849,135 @@ pub fn css__compose_border_top_width(parent:@mut css_computed_style,
 			ounit.get_or_default(CSS_UNIT_PX) );
 		CSS_OK
 	}
+}	
+
+///////////////////////////////////////////////////////////////////
+
+// bottom
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_bottom(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_auto(opv, style, state, @set_bottom);
+}
+
+pub fn css__set_bottom_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(copy x)=>{
+					set_bottom(style, hint.status,x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_bottom(state:@mut css_select_state) -> css_result {
+
+	set_bottom(state.computed, (CSS_BOTTOM_AUTO as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_bottom(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_bottom(child);
+
+	if (ftype == (CSS_BOTTOM_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_bottom(parent);
+		set_bottom(result, 
+				ftype2, 
+				olength2.get_or_default( olength.get_or_default(0) ), 
+				ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_bottom(result, ftype, 
+			olength.get_or_default(0), 
+			ounit.get_or_default(CSS_UNIT_PX) );
+		CSS_OK
+	}
+}	
+
+///////////////////////////////////////////////////////////////////
+
+
+// break_after
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_break_after(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	if (isInherit(opv) == false) {
+		let mut match_val = getValue(opv) ;
+		if ( match_val == (BREAK_AFTER_AUTO as u16) ) {
+			// todo convert to public values
+		}
+		else if ( match_val == (CSS_BREAK_AFTER_ALWAYS as u16) ) {
+			// todo convert to public values
+		}
+		else if ( match_val == (CSS_BREAK_AFTER_AVOID as u16) ) {
+			// todo convert to public values
+		}
+		else if ( match_val == (CSS_BREAK_AFTER_LEFT as u16) ) {
+			// todo convert to public values
+		}
+		else if ( match_val == (CSS_BREAK_AFTER_RIGHT as u16) ) {
+			// todo convert to public values
+		}
+		else if ( match_val == (CSS_BREAK_AFTER_PAGE as u16) ) {
+			// todo convert to public values
+		}
+		else if ( match_val == (CSS_BREAK_AFTER_COLUMN as u16) ) {
+			// todo convert to public values
+		}
+		else if ( match_val == (CSS_BREAK_AFTER_AVOID_PAGE as u16) ) {
+			// todo convert to public values
+		}
+		else if ( match_val == (CSS_BREAK_AFTER_AVOID_COLUMN as u16) ) {
+			// todo convert to public values
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		// todo set computed elevation
+		return CSS_OK ;
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_break_after_from_hint(_:@mut  css_hint, 
+										_:@mut css_computed_style
+										) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_break_after(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_break_after(_:@mut css_computed_style,
+									_:@mut css_computed_style,
+									_:@mut css_computed_style
+									) -> css_result {
+
+	CSS_OK
 }	
 
 ///////////////////////////////////////////////////////////////////
