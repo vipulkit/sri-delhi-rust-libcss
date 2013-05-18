@@ -39,7 +39,6 @@ fn css_create_fn() -> ~css{
 
 fn main() {
 	io::println("css21");	
-	css(~"../data/css/Allzengarden.css");
 }
 
 fn css(file_name: ~str) {
@@ -86,35 +85,35 @@ fn css(file_name: ~str) {
 
 #[test]
 fn allzengarden() {
-	css(~"../data/css/Allzengarden.css");
+	css(~"data/css/allzengarden.css");
 }
 
 #[test]
 fn badcomment() {
-	css(~"../data/css/Badcomment.css");
+	css(~"data/css/adcomment.css");
 }
 
 #[test]
 fn Blocks() {
-	css(~"../data/css/Blocks.css");
+	css(~"data/css/blocks.css");
 }
 
 #[test]
 fn Color() {
-	css(~"../data/css/Color.css");
+	css(~"data/css/color.css");
 }
 
 #[test]
 fn Fontface() {
-	css(~"../data/css/Fontface.css");
+	css(~"data/css/fontface.css");
 }
 
 #[test]
 fn Malformed() {
-	css(~"../data/css/Malformed.css");
+	css(~"data/css/malformed.css");
 }
 
 #[test]
 fn Simple() {
-	css(~"../data/css/Simple.css");
+	css(~"data/css/simple.css");
 }
