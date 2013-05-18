@@ -14,7 +14,7 @@ use parse::propstrings::*;
 
 use utils::errors::*;
 
-pub fn consumeWhitespace(vector:&~[~css_token], ctx:@mut uint) {
+pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
     loop {
         if *ctx < vector.len() {
             match vector[*ctx].token_type {
@@ -30,10 +30,10 @@ pub fn consumeWhitespace(vector:&~[~css_token], ctx:@mut uint) {
     }
 }
 
-pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[~css_token] , ctx: @mut uint , default_unit: u32) -> (Option<int> , Option<u32>, css_result) {
+pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_token] , ctx: @mut uint , default_unit: u32) -> (Option<int> , Option<u32>, css_result) {
 
     consumeWhitespace(vector , ctx);
-    let mut token:&~css_token;
+    let mut token:&@css_token;
     let mut unit_retVal:u32;
     let orig_ctx = *ctx;
 
@@ -122,7 +122,7 @@ pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bo
     css__number_from_string(lwc_string_data(string.clone()), 0, int_only)
 }
 
-pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[~css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_result { 
+pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_result { 
     let orig_ctx = *ctx;
     let mut prev_ctx: uint;
     let color: bool = true;
@@ -131,7 +131,7 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
     let color_style: @mut css_style;
     let style_style: @mut css_style;
     let width_style: @mut css_style;
-    let mut token: &~css_token;
+    let mut token: &@css_token;
 
     if *ctx >= vector.len() {
         return CSS_INVALID;
@@ -341,7 +341,7 @@ pub fn css__number_from_string(data: ~str, data_index: uint, int_only: bool) -> 
 
 }
 
-pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &~css_token) ->bool {
+pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->bool {
     match token.token_type {
         CSS_TOKEN_IDENT(_) => {
              return strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint);
@@ -350,8 +350,8 @@ pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &~css_token) ->boo
     }
 }
 
-pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , vector: &~[~css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_result) {
-    let mut token:&~css_token;
+pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_result) {
+    let mut token:&@css_token;
     let mut ret_value: u16 = 0;
     let mut ret_result: u32 = 0;
     let mut goto_flag = false;
@@ -771,7 +771,7 @@ pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , c
  * \param c      The character to match (lowerASCII only)
  * \return True if the token matches, false otherwise
  */
-pub fn tokenIsChar(token:&~css_token, c:char) -> bool {
+pub fn tokenIsChar(token:&@css_token, c:char) -> bool {
     let result = false;
 
     match token.token_type {

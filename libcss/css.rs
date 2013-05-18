@@ -90,7 +90,6 @@ pub impl css {
 		let language = css_language(stylesheet, lwc.clone());
 
 		// create parser
-		// create parser
 		let parser = match params.inline_style {
 		    false => css_parser::css__parser_create(language, lexer, lwc.clone()),
 		    true => css_parser::css__parser_create_for_inline_style(language, lexer, lwc.clone())

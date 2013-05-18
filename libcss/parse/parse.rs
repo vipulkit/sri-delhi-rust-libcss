@@ -50,10 +50,10 @@ pub struct css_parser {
     priv match_char : char,
     priv open_items_stack : ~[char],
     priv parse_error : bool,
-    priv pushback: Option<~css_token>,
+    priv pushback: Option<@css_token>,
     priv state_stack: ~[(uint,uint)], /*Parser state stack*/
     priv states: ~[state],
-    priv tokens: ~[~css_token],
+    priv tokens: ~[@css_token],
 }
 
 pub impl css_parser {
@@ -230,7 +230,7 @@ pub impl css_parser {
         }
     }
 
-    fn push_back(&mut self, token: ~css_token) {
+    fn push_back(&mut self, token: @css_token) {
         io::println("Entering: push_back");
         io::println(fmt!("token == %?", token));
         io::println(fmt!("self.tokens == %?", self.tokens));
@@ -238,9 +238,7 @@ pub impl css_parser {
         assert!(self.pushback.is_none());
 
         self.pushback = Some(token);
-        //if (!self.tokens.is_empty()) {
-            self.tokens.pop();
-        //}
+        self.tokens.pop();
         io::println("Exiting: push_back");
     }
 
@@ -255,13 +253,13 @@ pub impl css_parser {
         interned_string.unwrap()
     }
 
-    fn get_token(&mut self) -> (Option<~css_token>, css_result) {
+    fn get_token(&mut self) -> (Option<@css_token>, css_result) {
 
-        let mut token: Option<~css_token>;
+        let mut token_option: Option<@css_token>;
 
         /* Use pushback, if it exists */
         if self.pushback.is_some() {
-            token = Some(self.pushback.swap_unwrap());
+            token_option = Some(self.pushback.swap_unwrap());
         }
         else {
             /* Otherwise, ask the lexer */
@@ -274,103 +272,104 @@ pub impl css_parser {
                     
                     match (lexer_token) {
                         CSS_TOKEN_IDENT(copy value) => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : Some(self.intern_string(value)),
                             })
                         },
                         CSS_TOKEN_ATKEYWORD(copy value) => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : Some(self.intern_string(value)),
                             })
                         },
                         CSS_TOKEN_HASH(copy value) => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : Some(self.intern_string(value)),
                             })
                         },
                         CSS_TOKEN_FUNCTION(copy value) => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : Some(self.intern_string(value)),
                             })
                         }, 
                         CSS_TOKEN_STRING(copy value) => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : Some(self.intern_string(value)),
                             })
                         }, 
                         CSS_TOKEN_INVALID_STRING => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : None,
                             })
                         }, 
                         CSS_TOKEN_URI(copy value) => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : Some(self.intern_string(value)),
                             })
                         }, 
                         CSS_TOKEN_UNICODE_RANGE(_ , _) => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : None,
                             })
                         }, 
                         CSS_TOKEN_CHAR(_) => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : None,
                             })
                         },
                         CSS_TOKEN_NUMBER(_ , copy value) => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : Some(self.intern_string(value)),
                             })
                         }, 
                         CSS_TOKEN_PERCENTAGE(_ , copy value) => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : Some(self.intern_string(value)),
                             })
                         }, 
                         CSS_TOKEN_DIMENSION(_ , _ , copy value2) => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : Some(self.intern_string(value2)),
                             })
                         },
                         CSS_TOKEN_CDO => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : None,
                             })
                         }, 
                         CSS_TOKEN_CDC => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : None,
                             })
                         }, 
                         CSS_TOKEN_S => {
-                            token = Some (~css_token {
+                            self.last_was_ws = true;
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : None,
                             })
                         },
                         Delim(_) => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : None,
                             })
                         },
                         CSS_TOKEN_EOF => {
-                            token = Some (~css_token {
+                            token_option = Some (@css_token {
                                 token_type : lexer_token,
                                 idata : None,
                             })
@@ -390,7 +389,9 @@ pub impl css_parser {
             }
         }
 
-        (token, CSS_OK)
+        self.tokens.push(token_option.get());
+
+        (token_option, CSS_OK)
     }
 
     /* parser states */

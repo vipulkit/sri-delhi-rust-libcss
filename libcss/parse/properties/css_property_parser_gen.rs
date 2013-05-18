@@ -92,7 +92,7 @@ pub fn function_header(fp:@Writer, descriptor:~str, parser_id:&keyval, is_generi
     fp.write_line(" *          If the input is invalid, then \\a @ctx remains unchanged.");
     fp.write_line(" */");
     fp.write_line(fmt!("pub fn css__parse_%s(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings,",parser_id.key));
-    fp.write_str("      vector:&~[~css_token], ctx:@mut uint,");
+    fp.write_str("      vector:&~[@css_token], ctx:@mut uint,");
     fp.write_line(fmt!(" result:@mut css_style%s) -> css_result", if is_generic {", op:css_properties_e" } else {""}    ));
     fp.write_line("{");
 }
@@ -101,7 +101,7 @@ pub fn function_header(fp:@Writer, descriptor:~str, parser_id:&keyval, is_generi
 pub fn output_token_type_check(fp:@Writer, do_token_check:bool, IDENT:~[keyval], URI:~[keyval], NUMBER:~[keyval]) {
     let mut output : ~str = ~"\tlet orig_ctx = *ctx;\n";
     str::push_str(&mut output, "\tlet mut error:css_result=CSS_OK;\n");
-    str::push_str(&mut output, "\tlet mut token:&~css_token;\n\n");
+    str::push_str(&mut output, "\tlet mut token:&@css_token;\n\n");
     
     str::push_str(&mut output, "\tif *ctx >= vector.len() {\n");
     str::push_str(&mut output, "\t\treturn CSS_INVALID\n");

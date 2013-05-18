@@ -67,59 +67,63 @@ pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~c
 
 pub impl css_language {
     
-    pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:&~[~css_token])-> css_result {
-            match event_type {
-                
-                CSS_PARSER_START_STYLESHEET => {
-                    self.handleStartStylesheet()
-                }
-                
-                CSS_PARSER_END_STYLESHEET=>{
-                    self.handleEndStylesheet()
-                }
-                
-                CSS_PARSER_START_RULESET=>{
-                    self.handleStartRuleset(tokens)
-                }
-                
-                CSS_PARSER_END_RULESET=>{
-                    self.handleEndRuleset()
-                }
-                
-                CSS_PARSER_START_ATRULE=>{
-                    self.handleStartAtRule(tokens)
-                }
-                
-                CSS_PARSER_END_ATRULE=>{
-                    self.handleEndAtRule()
-                }
-                
-                CSS_PARSER_START_BLOCK=>{
-                    self.handleStartBlock()
-                }
-                
-                CSS_PARSER_END_BLOCK=>{
-                    self.handleEndBlock()
-                }
-                
-                CSS_PARSER_BLOCK_CONTENT=>{
-                    self.handleBlockContent(tokens)
-                }
-                
-                CSS_PARSER_DECLARATION=>{
-                    self.handleDeclaration(tokens)
-                }
+    pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:&~[@css_token])
+        -> css_result {
+        io::println("Entering: language_handle_event");
+        match event_type {
+            
+            CSS_PARSER_START_STYLESHEET => {
+                self.handleStartStylesheet()
+            }
+            
+            CSS_PARSER_END_STYLESHEET=>{
+                self.handleEndStylesheet()
+            }
+            
+            CSS_PARSER_START_RULESET=>{
+                self.handleStartRuleset(tokens)
+            }
+            
+            CSS_PARSER_END_RULESET=>{
+                self.handleEndRuleset()
+            }
+            
+            CSS_PARSER_START_ATRULE=>{
+                self.handleStartAtRule(tokens)
+            }
+            
+            CSS_PARSER_END_ATRULE=>{
+                self.handleEndAtRule()
+            }
+            
+            CSS_PARSER_START_BLOCK=>{
+                self.handleStartBlock()
+            }
+            
+            CSS_PARSER_END_BLOCK=>{
+                self.handleEndBlock()
+            }
+            
+            CSS_PARSER_BLOCK_CONTENT=>{
+                self.handleBlockContent(tokens)
+            }
+            
+            CSS_PARSER_DECLARATION=>{
+                self.handleDeclaration(tokens)
             }
         }
+    }
 
 
     pub fn handleStartStylesheet(&mut self ) -> css_result {
+            io::println("Entering: handleStartStylesheet");
             let entry:context_entry = context_entry {
                 event_type: CSS_PARSER_START_STYLESHEET, 
                 data:None                                       
             };
-                    
+            
             self.context.push(entry);
+            io::println("Exiting: handleStartStylesheet");
             CSS_OK
         }
 
@@ -136,7 +140,7 @@ pub impl css_language {
             CSS_OK
         }
 
-        pub fn handleStartRuleset(&mut self, tokens:&~[~css_token]) ->css_result    {
+        pub fn handleStartRuleset(&mut self, tokens:&~[@css_token]) ->css_result    {
             
             let mut cur:context_entry ;
             let mut parent_rule :Option<CSS_RULE_DATA_TYPE> = None ;
@@ -203,12 +207,12 @@ pub impl css_language {
             }
     }
 
-    pub fn handleStartAtRule(&mut self, vector:&~[~css_token])->css_result {
+    pub fn handleStartAtRule(&mut self, vector:&~[@css_token])->css_result {
        // context_entry entry = { CSS_PARSER_START_ATRULE, NULL };
             
         let ctx: @mut uint =@mut 0;
         let mut curRule:Option<CSS_RULE_DATA_TYPE> = None;
-        let mut token: &~css_token; 
+        let mut token: &@css_token; 
 
         /* vector contains: ATKEYWORD ws any0 */
 
@@ -562,7 +566,7 @@ pub impl css_language {
     }
 
 
-    pub fn handleBlockContent(&mut self, tokens:&~[~css_token])-> css_result {
+    pub fn handleBlockContent(&mut self, tokens:&~[@css_token])-> css_result {
         // * Block content comprises either declarations (if the current block is
         // * associated with @page, @font-face or a selector), or rulesets (if the
         // * current block is associated with @media). 
@@ -592,7 +596,7 @@ pub impl css_language {
         }       
     }
 
-    pub fn handleDeclaration(&mut self, tokens:&~[~css_token])->css_result {
+    pub fn handleDeclaration(&mut self, tokens:&~[@css_token])->css_result {
         let ctx: @mut uint = @mut 0u;   
          // Locations where declarations are permitted:
          // *
@@ -654,7 +658,7 @@ pub impl css_language {
         }       
     }
 
-    pub fn parseSelectorList(&mut self, tokens:&~[~css_token], curRule: CSS_RULE_DATA_TYPE) -> css_result {
+    pub fn parseSelectorList(&mut self, tokens:&~[@css_token], curRule: CSS_RULE_DATA_TYPE) -> css_result {
         let ctx: @mut uint = @mut 0u;
         
         loop {
@@ -691,7 +695,7 @@ pub impl css_language {
      * At-rule parsing functions                              *
      ******************************************************************************/
 
-    pub fn parseMediaList(&mut self, vector:&~[~css_token], ctx:@mut uint, media:@mut u64) -> css_result
+    pub fn parseMediaList(&mut self, vector:&~[@css_token], ctx:@mut uint, media:@mut u64) -> css_result
     {
         let mut ret:u64 = 0;
 
@@ -836,7 +840,7 @@ pub impl css_language {
      * Property parsing functions                             *
      ******************************************************************************/
 
-    pub fn parseProperty(&mut self , property: &~css_token , vector: &~[~css_token], ctx:@mut uint, curRule: CSS_RULE_DATA_TYPE) -> css_result {
+    pub fn parseProperty(&mut self , property: &@css_token , vector: &~[@css_token], ctx:@mut uint, curRule: CSS_RULE_DATA_TYPE) -> css_result {
         
         let mut style: @mut css_style;
         let mut index = AZIMUTH as uint;
@@ -877,7 +881,7 @@ pub impl css_language {
         }
     }
 
-    pub fn parseSelector(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result, Option<@mut css_selector>) {
+    pub fn parseSelector(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_result, Option<@mut css_selector>) {
         
         /* selector -> simple_selector [ combinator simple_selector ]* ws
          * 
@@ -933,7 +937,7 @@ pub impl css_language {
         } // End of outer match parseSimpleSelector
     }
 
-    pub fn parseSimpleSelector(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result, Option<@mut css_selector>) {
+    pub fn parseSimpleSelector(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_result, Option<@mut css_selector>) {
         let orig_ctx = *ctx;
         /* simple_selector  -> type_selector specifics
          *          -> specific specifics
@@ -984,9 +988,9 @@ pub impl css_language {
         
     }
 
-    pub fn parseCombinator(&mut self, vector:&~[~css_token], ctx:@mut uint, comb:@mut css_combinator) -> css_result {
+    pub fn parseCombinator(&mut self, vector:&~[@css_token], ctx:@mut uint, comb:@mut css_combinator) -> css_result {
         
-        let mut token:&~css_token;
+        let mut token:&@css_token;
         /* combinator      -> ws '+' ws | ws '>' ws | ws '~' ws | ws1 */
         *comb = CSS_COMBINATOR_NONE;
 
@@ -1032,8 +1036,8 @@ pub impl css_language {
         } 
     }   
 
-    pub fn parseTypeSelector(&mut self, vector:&~[~css_token], ctx:@mut uint, qname:@mut css_qname) -> css_result {
-        let mut token:&~css_token;
+    pub fn parseTypeSelector(&mut self, vector:&~[@css_token], ctx:@mut uint, qname:@mut css_qname) -> css_result {
+        let mut token:&@css_token;
         let mut prefix:Option<arc::RWARC<~lwc_string>> =None;
 
         /* type_selector    -> namespace_prefix? element_name
@@ -1085,8 +1089,8 @@ pub impl css_language {
         return CSS_OK
     }   
 
-    pub fn parseSelectorSpecifics(&mut self, vector:&~[~css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_result {
-        let mut token:&~css_token;
+    pub fn parseSelectorSpecifics(&mut self, vector:&~[@css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_result {
+        let mut token:&@css_token;
 
         /* specifics -> specific* */
         loop {
@@ -1114,7 +1118,7 @@ pub impl css_language {
     }  
 
 
-    pub fn parseAppendSpecific(&mut self, vector:&~[~css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_result{
+    pub fn parseAppendSpecific(&mut self, vector:&~[@css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_result{
         
         match self.parseSpecific(vector, ctx, false) {
             (CSS_OK,Some(specific)) => return css_stylesheet::css__stylesheet_selector_append_specific(parent,specific),
@@ -1123,11 +1127,11 @@ pub impl css_language {
     }   
 
 
-    pub fn parseSpecific(&mut self, vector:&~[~css_token], ctx:@mut uint, in_not:bool) -> (css_result,Option<@mut css_selector_detail>) {
+    pub fn parseSpecific(&mut self, vector:&~[@css_token], ctx:@mut uint, in_not:bool) -> (css_result,Option<@mut css_selector_detail>) {
         
         /* specific  -> [ HASH | class | attrib | pseudo ] */
 
-        let mut token:&~css_token;
+        let mut token:&@css_token;
         
         if *ctx >= vector.len() {
             return (CSS_INVALID, None)
@@ -1211,9 +1215,9 @@ pub impl css_language {
     /******************************************************************************
     * Selector list parsing functions                         *
     ******************************************************************************/
-    pub fn  parseClass(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result,Option<@mut css_selector_detail>) {
+    pub fn  parseClass(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_result,Option<@mut css_selector_detail>) {
         
-        let mut token:&~css_token;
+        let mut token:&@css_token;
         
         /* class     -> '.' IDENT */
         if *ctx >= vector.len() {
@@ -1240,8 +1244,8 @@ pub impl css_language {
         }
     }
 
-    pub fn  parseAttrib(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result,Option<@mut css_selector_detail>) {
-        let mut token:&~css_token;
+    pub fn  parseAttrib(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_result,Option<@mut css_selector_detail>) {
+        let mut token:&@css_token;
         
         /* attrib    -> '[' ws namespace_prefix? IDENT ws [
          *             [ '=' | 
@@ -1320,7 +1324,7 @@ pub impl css_language {
         *ctx +=1; //Iterate
 
         let mut tkn_type = CSS_SELECTOR_ATTRIBUTE;
-        let mut value:Option<&~css_token> = None;
+        let mut value:Option<&@css_token> = None;
 
         if !tokenIsChar(token, ']') {
             if tokenIsChar(token, '=') {
@@ -1369,8 +1373,8 @@ pub impl css_language {
     }
 
 
-    pub fn  parsePseudo(&mut self, vector:&~[~css_token], ctx:@mut uint, in_not:bool) -> (css_result,Option<@mut css_selector_detail>) {
-        let mut token:&~css_token;
+    pub fn  parsePseudo(&mut self, vector:&~[@css_token], ctx:@mut uint, in_not:bool) -> (css_result,Option<@mut css_selector_detail>) {
+        let mut token:&@css_token;
         //let mut tkn_type = CSS_SELECTOR_PSEUDO_CLASS;
         let mut value_type = CSS_SELECTOR_DETAIL_VALUE_STRING;
         let mut require_element:bool = false;
@@ -1560,9 +1564,9 @@ pub impl css_language {
         return css_stylesheet::css__stylesheet_selector_detail_init(selector_type,copy *qname, value_type, Some(detail_value_string), None, negate);
     }
 
-    pub fn  parseNth(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result,Option<@mut css_selector_detail>) {
+    pub fn  parseNth(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_result,Option<@mut css_selector_detail>) {
     
-        let mut token:&~css_token;
+        let mut token:&@css_token;
         let mut negate:bool = false;
         let qname:css_qname = css_qname{ name:~"", ns:~""};
         let mut value: @mut css_selector_detail = @mut css_selector_detail{
@@ -1820,7 +1824,7 @@ pub impl css_language {
     * Post condition: \a *ctx is updated with the next token to process
     *                 If the input is invalid, then \a *ctx remains unchanged.
     */
-    pub fn css__parse_important(&mut self, vector:&~[~css_token], ctx:@mut uint) -> (css_result,u8){
+    pub fn css__parse_important(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_result,u8){
         
         let orig_ctx = *ctx;
         let mut flags :u8 =0;
