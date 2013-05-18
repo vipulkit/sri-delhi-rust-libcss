@@ -90,8 +90,11 @@ pub impl css {
 		let language = css_language(stylesheet, lwc.clone());
 
 		// create parser
-		// TODO <Abhijeet> : Handle Inline Styles
-		let parser = css_parser::css_parser_create(language, lexer, lwc.clone());
+		// create parser
+		let parser = match params.inline_style {
+		    false => css_parser::css__parser_create(language, lexer, lwc.clone()),
+		    true => css_parser::css__parser_create_for_inline_style(language, lexer, lwc.clone())
+		}; 
 
 		~ css {
 			lwc:lwc.clone(),
