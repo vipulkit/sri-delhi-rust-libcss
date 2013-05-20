@@ -2223,7 +2223,7 @@ pub fn css__cascade_column_rule_style(opv:u32, _:@mut css_style,
 			COLUMN_RULE_STYLE_INSET | COLUMN_RULE_STYLE_OUTSET => {
 				//** \todo convert to public values */	
 			},	
-			_ => fail!(~"Invalid css__cascade_column_rule_color match code")
+			_ => fail!(~"Invalid css__cascade_column_rule_style match code")
 		}
 	}
 
@@ -2249,7 +2249,7 @@ pub fn css__compose_column_rule_style(_:@mut css_computed_style, _:@mut css_comp
 }
 
 ///////////////////////////////////////////////////////////////////
-// column_rule_style
+// column_rule_width
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_column_rule_width(opv:u32, style:@mut css_style, 
 		state:@mut css_select_state ) -> css_result {
@@ -2270,7 +2270,7 @@ pub fn css__cascade_column_rule_width(opv:u32, style:@mut css_style,
 			COLUMN_RULE_WIDTH_THICK => {
 				//** \todo convert to public values */	
 			},	
-			_ => fail!(~"Invalid css__cascade_column_rule_color match code")
+			_ => fail!(~"Invalid css__cascade_column_rule_width match code")
 		}
 	}
 
@@ -2291,6 +2291,43 @@ pub fn css__initial_column_rule_width(_:@mut css_select_state) -> css_result {
 }
 
 pub fn css__compose_column_rule_width(_:@mut css_computed_style, _:@mut css_computed_style,
+	_:@mut css_computed_style) {
+	//DO NOTHING
+}
+
+///////////////////////////////////////////////////////////////////
+// column_span
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_column_span(opv:u32, _:@mut css_style, 
+		state:@mut css_select_state ) -> css_result {
+	
+	if !isInherit(opv) {
+		match getValue(opv) {
+			COLUMN_SPAN_NONE |
+			COLUMN_SPAN_ALL  => {
+				//** \todo convert to public values */	
+			},	
+			_ => fail!(~"Invalid css__cascade_column_span match code")
+		}
+	}
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+		// \todo set computed elevation */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_column_span_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
+	// DO NOTHING
+}
+
+pub fn css__initial_column_span(_:@mut css_select_state) -> css_result {
+	
+	CSS_OK
+}
+
+pub fn css__compose_column_span(_:@mut css_computed_style, _:@mut css_computed_style,
 	_:@mut css_computed_style) {
 	//DO NOTHING
 }
