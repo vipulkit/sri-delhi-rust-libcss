@@ -2001,7 +2001,7 @@ pub fn  css__cascade_color(opv:u32, style:@mut css_style, state:@mut css_select_
 				color = peek_bytecode(style);
 				advance_bytecode(style);
 			},
-			_ => fail!(~"Invalid css__cascade_length_none match code")
+			_ => fail!(~"Invalid css__cascade_color match code")
 		}
 	}
 
@@ -2043,3 +2043,43 @@ pub fn css__compose_color(parent:@mut css_computed_style, child:@mut css_compute
 	
 }
 ///////////////////////////////////////////////////////////////////
+// column_count
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_column_count(opv:u32, style:@mut css_style, 
+		state:@mut css_select_state ) -> css_result {
+
+	let mut count = 0;
+
+	if !isInherit(opv) {
+		match getValue(opv) {
+			COLUMN_COUNT_SET => {
+				count = peek_bytecode(style);
+				advance_bytecode(style);
+			},	
+			COLUMN_COUNT_AUTO => {
+				// \todo convert to public values */
+			},
+			_ => fail!(~"Invalid css__cascade_column_count match code")
+		}
+	}
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+		// \todo set computed elevation */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_column_count_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
+	// DO NOTHING
+}
+
+pub fn css__initial_column_count(_:@mut css_select_state) -> css_result {
+	
+	CSS_OK
+}
+
+pub fn css__compose_column_count(_:@mut css_computed_style, _:@mut css_computed_style,
+	_:@mut css_computed_style) {
+	//DO NOTHING
+}
