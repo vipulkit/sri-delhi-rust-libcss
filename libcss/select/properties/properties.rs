@@ -1981,3 +1981,65 @@ pub fn css__compose_break_after(_:@mut css_computed_style,
 }	
 
 ///////////////////////////////////////////////////////////////////
+// color
+///////////////////////////////////////////////////////////////////
+pub fn  css__cascade_color(opv:u32, style:@mut css_style, state:@mut css_select_state) -> css_result {
+	
+	let mut inherit = isInherit(opv);
+	let mut value = CSS_COLOR_INHERIT;
+	let mut color = 0;
+
+	if !inherit {
+		match getValue(opv) {
+			COLOR_TRANSPARENT => value = CSS_COLOR_COLOR,	
+			COLOR_CURRENT_COLOR => {
+				value = CSS_COLOR_INHERIT; //color: currentColor always computes to inherit 
+				inherit = true
+			}, 
+			COLOR_SET => {
+				value = CSS_COLOR_COLOR;
+				color = peek_bytecode(style);
+				advance_bytecode(style);
+			},
+			_ => fail!(~"Invalid css__cascade_length_none match code")
+		}
+	}
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, inherit) {
+		set_color(state.computed, value as u8, color)
+	}
+
+	CSS_OK
+
+}
+
+pub fn css__set_color_from_hint(hint:@mut css_hint, style:@mut css_computed_style) {
+	set_color(style, hint.status, hint.color.unwrap())
+}
+
+pub fn css__initial_color(state:@mut css_select_state) -> css_result {
+		
+	// TO DO
+	// match state.handler.ua_default_for_property(CSS_PROP_COLOR) {
+	// 	(CSS_OK,hint) => css__set_color_from_hint(hint, state.computed),
+	// 	(error, _) => return error
+	// }
+
+	CSS_OK	
+}
+
+pub fn css__compose_color(parent:@mut css_computed_style, child:@mut css_computed_style,
+	result:@mut css_computed_style) {
+	
+	let (color_type, color) = css_computed_color(child);
+	
+	if color_type == CSS_COLOR_INHERIT as u8{
+		let (p_color_type, p_color) = css_computed_color(parent);
+		set_color(result, p_color_type, p_color.unwrap())
+	}
+	else {
+		set_color(result, color_type, color.unwrap())
+	}
+	
+}
+///////////////////////////////////////////////////////////////////
