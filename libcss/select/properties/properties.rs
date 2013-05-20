@@ -1921,33 +1921,18 @@ pub fn css__cascade_break_after(opv:u32, _:@mut css_style,
 									state:@mut css_select_state) -> css_result {
 
 	if (isInherit(opv) == false) {
-		let mut match_val = getValue(opv) ;
-		if ( match_val == (BREAK_AFTER_AUTO as u16) ) {
-			// todo convert to public values
-		}
-		else if ( match_val == (CSS_BREAK_AFTER_ALWAYS as u16) ) {
-			// todo convert to public values
-		}
-		else if ( match_val == (CSS_BREAK_AFTER_AVOID as u16) ) {
-			// todo convert to public values
-		}
-		else if ( match_val == (CSS_BREAK_AFTER_LEFT as u16) ) {
-			// todo convert to public values
-		}
-		else if ( match_val == (CSS_BREAK_AFTER_RIGHT as u16) ) {
-			// todo convert to public values
-		}
-		else if ( match_val == (CSS_BREAK_AFTER_PAGE as u16) ) {
-			// todo convert to public values
-		}
-		else if ( match_val == (CSS_BREAK_AFTER_COLUMN as u16) ) {
-			// todo convert to public values
-		}
-		else if ( match_val == (CSS_BREAK_AFTER_AVOID_PAGE as u16) ) {
-			// todo convert to public values
-		}
-		else if ( match_val == (CSS_BREAK_AFTER_AVOID_COLUMN as u16) ) {
-			// todo convert to public values
+		match (getValue(opv)) {
+		BREAK_AFTER_AUTO => {}
+		BREAK_AFTER_ALWAYS => {}
+		BREAK_AFTER_AVOID => {}
+		BREAK_AFTER_LEFT => {}
+		BREAK_AFTER_RIGHT => {}
+		BREAK_AFTER_PAGE => {}
+		BREAK_AFTER_COLUMN => {}
+		BREAK_AFTER_AVOID_PAGE => {}
+		BREAK_AFTER_AVOID_COLUMN => {}
+			/* \todo convert to public values */
+		_=>{}
 		}
 	}
 
@@ -2017,7 +2002,7 @@ pub fn css__set_color_from_hint(hint:@mut css_hint, style:@mut css_computed_styl
 	set_color(style, hint.status, hint.color.unwrap())
 }
 
-pub fn css__initial_color(state:@mut css_select_state) -> css_result {
+pub fn css__initial_color(_:@mut css_select_state) -> css_result {
 		
 	// TO DO
 	// match state.handler.ua_default_for_property(CSS_PROP_COLOR) {
@@ -2223,7 +2208,7 @@ pub fn css__cascade_column_rule_style(opv:u32, _:@mut css_style,
 			COLUMN_RULE_STYLE_INSET | COLUMN_RULE_STYLE_OUTSET => {
 				//** \todo convert to public values */	
 			},	
-			_ => fail!(~"Invalid css__cascade_column_rule_style match code")
+			_ => fail!(~"Invalid css__cascade_column_rule_color match code")
 		}
 	}
 
@@ -2249,7 +2234,7 @@ pub fn css__compose_column_rule_style(_:@mut css_computed_style, _:@mut css_comp
 }
 
 ///////////////////////////////////////////////////////////////////
-// column_rule_width
+// column_rule_style
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_column_rule_width(opv:u32, style:@mut css_style, 
 		state:@mut css_select_state ) -> css_result {
@@ -2270,7 +2255,7 @@ pub fn css__cascade_column_rule_width(opv:u32, style:@mut css_style,
 			COLUMN_RULE_WIDTH_THICK => {
 				//** \todo convert to public values */	
 			},	
-			_ => fail!(~"Invalid css__cascade_column_rule_width match code")
+			_ => fail!(~"Invalid css__cascade_column_rule_color match code")
 		}
 	}
 
@@ -2296,75 +2281,40 @@ pub fn css__compose_column_rule_width(_:@mut css_computed_style, _:@mut css_comp
 }
 
 ///////////////////////////////////////////////////////////////////
-// column_span
-///////////////////////////////////////////////////////////////////
-pub fn css__cascade_column_span(opv:u32, _:@mut css_style, 
-		state:@mut css_select_state ) -> css_result {
-	
-	if !isInherit(opv) {
-		match getValue(opv) {
-			COLUMN_SPAN_NONE |
-			COLUMN_SPAN_ALL  => {
-				//** \todo convert to public values */	
-			},	
-			_ => fail!(~"Invalid css__cascade_column_span match code")
-		}
-	}
 
-	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
-		// \todo set computed elevation */
-	}
 
-	CSS_OK
-}
-
-pub fn css__set_column_span_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
-	// DO NOTHING
-}
-
-pub fn css__initial_column_span(_:@mut css_select_state) -> css_result {
-	
-	CSS_OK
-}
-
-pub fn css__compose_column_span(_:@mut css_computed_style, _:@mut css_computed_style,
-	_:@mut css_computed_style) {
-	//DO NOTHING
-}
-
-///////////////////////////////////////////////////////////////////
 // break_before
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_break_before(opv:u32, _:@mut css_style, 
 									state:@mut css_select_state) -> css_result {
 
 	if (isInherit(opv) == false) {
-		getValue(opv) ; // let mut val = getValue(opv) ;
-		// if (val == (BREAK_BEFORE_AUTO as u8) ){}
-		// else if (val == (BREAK_BEFORE_ALWAYS as u8) ){}
-		// else if (val == (BREAK_BEFORE_AVOID as u8) ){}
-		// else if (val == (BREAK_BEFORE_LEFT as u8) ){}
-		// else if (val == (BREAK_BEFORE_RIGHT as u8) ){}
-		// else if (val == (BREAK_BEFORE_PAGE as u8) ){}
-		// else if (val == (BREAK_BEFORE_COLUMN as u8) ){}
-		// else if (val == (BREAK_BEFORE_AVOID_PAGE as u8) ){}
-		// else if (val == (BREAK_BEFORE_AVOID_COLUMN as u8) ){}
-		// 	/** \todo convert to public values */
+		match getValue(opv) {
+		BREAK_BEFORE_AUTO => {}
+		BREAK_BEFORE_ALWAYS => {}
+		BREAK_BEFORE_AVOID => {}
+		BREAK_BEFORE_LEFT => {}
+		BREAK_BEFORE_RIGHT => {}
+		BREAK_BEFORE_PAGE => {}
+		BREAK_BEFORE_COLUMN => {}
+		BREAK_BEFORE_AVOID_PAGE => {}
+		BREAK_BEFORE_AVOID_COLUMN => {}
+			/* \todo convert to public values */
+		_=>{}
+		}
 	}
 
 	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
 			isInherit(opv))) {
 		/* \todo set computed elevation */
-		CSS_OK
 	}
-	else {
-		CSS_OK
-	}
+	CSS_OK
 }
 
 pub fn css__set_break_before_from_hint(_:@mut  css_hint, 
 										_:@mut css_computed_style
 										) -> css_result {
+
 	CSS_OK
 }
 
@@ -2380,30 +2330,29 @@ pub fn css__compose_break_before(_:@mut css_computed_style,
 
 	CSS_OK
 }	
-
 ///////////////////////////////////////////////////////////////////
+
 // break_inside
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_break_inside(opv:u32, _:@mut css_style, 
 									state:@mut css_select_state) -> css_result {
 
 	if (isInherit(opv) == false) {
-		getValue(opv) ; // let mut val = getValue(opv) ;
-		// if ( val == (BREAK_INSIDE_AUTO as u16) ){}
-		// else if ( val == (BREAK_INSIDE_AVOID as u16) ){}
-		// else if ( val == (BREAK_INSIDE_AVOID_PAGE as u16) ){}
-		// else if ( val == (BREAK_INSIDE_AVOID_COLUMN as u16) ){}
-		// 	/** \todo convert to public values */
+		match getValue(opv) {
+		BREAK_INSIDE_AUTO => {}
+		BREAK_INSIDE_AVOID => {}
+		BREAK_INSIDE_AVOID_PAGE => {}
+		BREAK_INSIDE_AVOID_COLUMN => {}
+			/*  \todo convert to public values */
+		_=>{}
+		}
 	}
 
 	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
 			isInherit(opv))) {
 		/* \todo set computed elevation */
-		CSS_OK
 	}
-	else {
-		CSS_OK
-	}
+	CSS_OK
 }
 
 pub fn css__set_break_inside_from_hint(_:@mut  css_hint, 
@@ -2425,50 +2374,164 @@ pub fn css__compose_break_inside(_:@mut css_computed_style,
 
 	CSS_OK
 }	
-
 ///////////////////////////////////////////////////////////////////
-// column_width
+
+// direction
 ///////////////////////////////////////////////////////////////////
-pub fn css__cascade_column_width(opv:u32, style:@mut css_style, 
-		state:@mut css_select_state ) -> css_result {
+pub fn css__cascade_direction(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
 
-	let mut length = 0;
-	let mut unit = UNIT_PX;
+	let mut value = (CSS_DIRECTION_INHERIT as u16);
 
-	if !isInherit(opv) {
-		match getValue(opv) {
-			COLUMN_WIDTH_SET => {
-				length = peek_bytecode(style);
-				advance_bytecode(style);
-				unit = peek_bytecode(style);
-				advance_bytecode(style);
-			},
-			COLUMN_WIDTH_AUTO => {
-				//** \todo convert to public values */	
-			},	
-			_ => fail!(~"Invalid css__cascade_column_width match code")
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+		DIRECTION_LTR => {
+			value = (CSS_DIRECTION_LTR as u16);
+		}
+		DIRECTION_RTL => {
+			value = (CSS_DIRECTION_RTL as u16);
+		}
+		_=>{}
 		}
 	}
 
-	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
-		// \todo set computed elevation */
+	if (css__outranks_existing( (getOpcode(opv) as u16) , isImportant(opv), state,
+			isInherit(opv))) {
+		set_direction(state.computed, (value as u8) );
+	}
+	CSS_OK
+}
+
+pub fn css__set_direction_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_direction(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_direction(state:@mut css_select_state) -> css_result {
+
+
+	set_direction(state.computed, (CSS_DIRECTION_LTR as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_direction(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_direction(child);
+
+	if (ftype == (CSS_DIRECTION_INHERIT as u8) ) {
+		ftype = css_computed_direction(parent);
+	}
+
+	set_direction(result, ftype);
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// display
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_display(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value : u16 = CSS_DISPLAY_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match getValue(opv) {
+			DISPLAY_INLINE => {
+				value = (CSS_DISPLAY_INLINE as u16);
+			},
+			DISPLAY_BLOCK => {
+				value = (CSS_DISPLAY_BLOCK as u16);
+			},
+			DISPLAY_LIST_ITEM => {
+				value = (CSS_DISPLAY_LIST_ITEM as u16);
+			},
+			DISPLAY_RUN_IN => {
+				value = (CSS_DISPLAY_RUN_IN as u16);
+			},
+			DISPLAY_INLINE_BLOCK => {
+				value = (CSS_DISPLAY_INLINE_BLOCK as u16);
+			},
+			DISPLAY_TABLE => {
+				value = (CSS_DISPLAY_TABLE as u16);
+			},
+			DISPLAY_INLINE_TABLE => {
+				value = (CSS_DISPLAY_INLINE_TABLE as u16);
+			},
+			DISPLAY_TABLE_ROW_GROUP => {
+				value = (CSS_DISPLAY_TABLE_ROW_GROUP as u16);
+			},
+			DISPLAY_TABLE_HEADER_GROUP => {
+				value = (CSS_DISPLAY_TABLE_HEADER_GROUP as u16);
+			},
+			DISPLAY_TABLE_FOOTER_GROUP => {
+				value = (CSS_DISPLAY_TABLE_FOOTER_GROUP as u16);
+			},
+			DISPLAY_TABLE_ROW => {
+				value = (CSS_DISPLAY_TABLE_ROW as u16);
+			},
+			DISPLAY_TABLE_COLUMN_GROUP => {
+				value = (CSS_DISPLAY_TABLE_COLUMN_GROUP as u16);
+			},
+			DISPLAY_TABLE_COLUMN => {
+				value = (CSS_DISPLAY_TABLE_COLUMN as u16);
+			},
+			DISPLAY_TABLE_CELL => {
+				value = (CSS_DISPLAY_TABLE_CELL as u16);
+			},
+			DISPLAY_TABLE_CAPTION => {
+				value = (CSS_DISPLAY_TABLE_CAPTION as u16);
+			},
+			DISPLAY_NONE => {
+				value = (CSS_DISPLAY_NONE as u16);
+			}
+			_=>{}
+		}
+	}
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_display(state.computed, (value as u8) );
 	}
 
 	CSS_OK
 }
 
-pub fn css__set_column_width_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
-	// DO NOTHING
-}
+pub fn css__set_display_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
 
-pub fn css__initial_column_width(_:@mut css_select_state) -> css_result {
-	
+	set_display(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__compose_column_width(_:@mut css_computed_style, _:@mut css_computed_style,
-	_:@mut css_computed_style) {
-	//DO NOTHING
+pub fn css__initial_display(state:@mut css_select_state) -> css_result {
+
+
+	set_display(state.computed, (CSS_DISPLAY_INLINE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_display(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_display_static(child);
+
+	if (ftype == (CSS_DISPLAY_INHERIT as u8) ) {
+		ftype = css_computed_display_static(parent);
+	}
+
+	set_display(result, ftype);
+	CSS_OK
 }
 
 ///////////////////////////////////////////////////////////////////
+
+
