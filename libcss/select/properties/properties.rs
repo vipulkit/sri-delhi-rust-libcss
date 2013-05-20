@@ -3268,3 +3268,65 @@ pub fn css__compose_font_weight(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// height
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_height(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_auto(opv, style, state, @set_height);
+}
+
+pub fn css__set_height_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_height(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_height(state:@mut css_select_state) -> css_result {
+
+	set_height(state.computed, (CSS_HEIGHT_AUTO as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_height(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_height(child);
+
+	if (ftype == (CSS_HEIGHT_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_height(parent);
+		set_height(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_height(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
