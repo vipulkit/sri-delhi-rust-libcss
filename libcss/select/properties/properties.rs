@@ -706,7 +706,7 @@ pub fn css__set_background_position_from_hint(hint:@mut  css_hint,
 	match hint.hint_type {
 		HINT_LENGTH_H_V=>{
 			match hint.position {
-				Some(copy x)=>{
+				Some(x)=>{
 					set_background_position(style, hint.status, 
 						x.h.value, x.h.unit,
 						x.v.value, x.v.unit);
@@ -835,7 +835,7 @@ pub fn css__set_border_bottom_color_from_hint(hint:@mut  css_hint,
 	match hint.hint_type {
 		COLOR=>{
 			match hint.color {
-				Some(copy x)=>{
+				Some(x)=>{
 					set_border_bottom_color(style, hint.status, x);
 					CSS_OK
 				},
@@ -1153,7 +1153,7 @@ pub fn css__set_border_bottom_width_from_hint(hint:@mut  css_hint,
 	match hint.hint_type {
 		HINT_LENGTH=>{
 			match hint.length {
-				Some(copy x)=>{
+				Some(x)=>{
 					set_border_bottom_width(style, hint.status, x.value , x.unit);
 					CSS_OK
 				},
@@ -1382,7 +1382,7 @@ pub fn css__set_border_left_width_from_hint(hint:@mut  css_hint,
 	match hint.hint_type {
 		HINT_LENGTH=>{
 			match hint.length {
-				Some(copy x)=>{
+				Some(x)=>{
 					set_border_left_width(style, hint.status, x.value, x.unit);
 					CSS_OK
 				},
@@ -1544,7 +1544,7 @@ pub fn css__set_border_right_width_from_hint(hint:@mut  css_hint,
 	match hint.hint_type {
 		HINT_LENGTH=>{
 			match hint.length {
-				Some(copy x)=>{
+				Some(x)=>{
 					set_border_right_width(style, hint.status, x.value, x.unit);
 					CSS_OK
 				},
@@ -1643,7 +1643,7 @@ pub fn css__set_border_spacing_from_hint(hint:@mut  css_hint,
 	match hint.hint_type {
 		HINT_LENGTH_H_V=>{
 			match hint.position {
-				Some(copy x)=>{
+				Some(x)=>{
 					set_border_spacing(style, hint.status,
 										x.h.value, x.h.unit,
 										x.v.value, x.v.unit);
@@ -1804,7 +1804,7 @@ pub fn css__set_border_top_width_from_hint(hint:@mut  css_hint,
 	match hint.hint_type {
 		HINT_LENGTH=>{
 			match hint.length {
-				Some(copy x)=>{
+				Some(x)=>{
 					set_border_top_width(style, hint.status,x.value, x.unit);
 					CSS_OK
 				},
@@ -1868,7 +1868,7 @@ pub fn css__set_bottom_from_hint(hint:@mut  css_hint,
 	match hint.hint_type {
 		HINT_LENGTH=>{
 			match hint.length {
-				Some(copy x)=>{
+				Some(x)=>{
 					set_bottom(style, hint.status,x.value, x.unit);
 					CSS_OK
 				},
@@ -2936,6 +2936,120 @@ pub fn css__compose_font_family(parent:@mut css_computed_style,
 	}
 
 	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// font_size
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_font_size(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_FONT_SIZE_INHERIT as u16;
+	let mut size : i32 = 0;
+	let mut unit : u32 = UNIT_PX as u32;
+
+	if (isInherit(opv) == false) {
+		match getValue(opv) {
+			FONT_SIZE_DIMENSION => {
+				value = (CSS_FONT_SIZE_DIMENSION as u16);
+
+				size = peek_bytecode(style) as i32;
+				advance_bytecode(style);
+
+				unit = peek_bytecode(style);
+				advance_bytecode(style);
+			},
+			FONT_SIZE_XX_SMALL => {
+				value = (CSS_FONT_SIZE_XX_SMALL as u16);
+			},
+			FONT_SIZE_X_SMALL => {
+				value = (CSS_FONT_SIZE_X_SMALL as u16);
+			},
+			FONT_SIZE_SMALL => {
+				value = (CSS_FONT_SIZE_SMALL as u16);
+			},
+			FONT_SIZE_MEDIUM => {
+				value = (CSS_FONT_SIZE_MEDIUM as u16);
+			},
+			FONT_SIZE_LARGE => {
+				value = (CSS_FONT_SIZE_LARGE as u16);
+			},
+			FONT_SIZE_X_LARGE => {
+				value = (CSS_FONT_SIZE_X_LARGE as u16);
+			},
+			FONT_SIZE_XX_LARGE => {
+				value = (CSS_FONT_SIZE_XX_LARGE as u16);
+			},
+			FONT_SIZE_LARGER => {
+				value = (CSS_FONT_SIZE_LARGER as u16);
+			},
+			FONT_SIZE_SMALLER => {
+				value = (CSS_FONT_SIZE_SMALLER as u16);
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		set_font_size(state.computed, (value as u8), size, css__to_css_unit(unit) );
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_font_size_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_font_size(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_font_size(state:@mut css_select_state) -> css_result {
+
+	set_font_size(state.computed, (CSS_FONT_SIZE_MEDIUM as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_font_size(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_font_size(child);
+
+	if (ftype == (CSS_FONT_SIZE_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_font_size(parent);
+		set_font_size(result,
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_font_size(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
 }
 
 ///////////////////////////////////////////////////////////////////
