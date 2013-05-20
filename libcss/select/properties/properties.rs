@@ -2712,3 +2712,230 @@ pub fn css__compose_float(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// font_family
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_font_family(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_FONT_FAMILY_INHERIT as u16;
+	let mut fonts : ~[~str] = ~[] ;
+
+	if (isInherit(opv) == false) {
+		let mut v : u32 = getValue(opv) as u32;
+
+		while (v != (FONT_FAMILY_END as u32) ) {
+			let mut font : Option<~str> = None  ;
+
+			match (v as u16) {
+				FONT_FAMILY_STRING | 
+				FONT_FAMILY_IDENT_LIST => {
+					match style.sheet {
+						None =>{
+							return CSS_SHOULD_NEVER_OCCUR ;
+						},
+						Some(css_sheet) => {
+							let mut (res,ofont) = css_sheet.css__stylesheet_string_get(
+																peek_bytecode(style) as uint ) ;
+							match res {
+				        		CSS_OK=>{ 
+				        			font = ofont ;
+				        		},
+				        		x => {
+				        			return x ;
+				        		}
+		    				}
+							advance_bytecode(style);
+						}
+					}
+				},
+				FONT_FAMILY_SERIF => {
+					if (value == (CSS_FONT_FAMILY_INHERIT as u16) ) {
+						value = (CSS_FONT_FAMILY_SERIF as u16);
+					}
+				},
+				FONT_FAMILY_SANS_SERIF => {
+					if (value == (CSS_FONT_FAMILY_INHERIT as u16) ) {
+						value = (CSS_FONT_FAMILY_SANS_SERIF as u16);
+					}
+				},
+				FONT_FAMILY_CURSIVE => {
+					if (value == (CSS_FONT_FAMILY_INHERIT as u16) ) {
+						value = (CSS_FONT_FAMILY_CURSIVE as u16);
+					}
+				},
+				FONT_FAMILY_FANTASY => {
+					if (value == (CSS_FONT_FAMILY_INHERIT as u16) ) {
+						value = (CSS_FONT_FAMILY_FANTASY as u16);
+					}
+				},
+				FONT_FAMILY_MONOSPACE => {
+					if (value == (CSS_FONT_FAMILY_INHERIT as u16) ) {
+						value = (CSS_FONT_FAMILY_MONOSPACE as u16);
+					}
+				},
+				_=>{}
+			}
+
+			/* Only use family-names which occur before the first
+			 * generic-family. Any values which occur after the
+			 * first generic-family are ignored. */
+			/* \todo Do this at bytecode generation time? */
+			if ( (value == (CSS_FONT_FAMILY_INHERIT as u16)) 
+						&& (font.is_some() )  ) {
+				
+				fonts.push(font.get()) ;
+			}
+
+			v = peek_bytecode(style);
+			advance_bytecode(style);
+		}
+	}
+
+	/* Terminate array with blank entry, if needed */
+	if (fonts.len() > 0 ) {
+		
+		if (value == (CSS_FONT_FAMILY_INHERIT as u16) ) {
+			/* The stylesheet doesn't specify a generic family,
+			 * but it has specified named fonts.
+			 * Fall back to the user agent's default family.
+			 * We don't want to inherit, because that will 
+			 * incorrectly overwrite the named fonts list too.
+			 */
+			let mut hint = @mut css_hint{
+		        hint_type:HINT_LENGTH,
+		        status:0,
+		        clip:None,
+		        content:None,
+		        counter:None,
+		        length:None,
+		        position:None,
+		        color:None,
+		        fixed:None,
+		        integer:None,
+		        string:None,
+		        strings:None
+		    };
+			let mut error : css_result;
+
+			match state.handler {
+				None=> {
+					return CSS_SHOULD_NEVER_OCCUR ;
+				},
+				Some(fnhandler) => {
+					error = (*(fnhandler.ua_default_for_property))(
+						(CSS_PROP_FONT_FAMILY as u32), hint);
+				    match error {
+				        CSS_OK=>{
+				        	value = hint.status as u16 ;
+				        },
+				        x => { 
+				        	return x ;
+				        }
+				    }
+				}
+			}
+
+			if (value == (CSS_FONT_FAMILY_INHERIT as u16) ) {
+				/* No sane UA default: assume sans-serif */
+				value = (CSS_FONT_FAMILY_SANS_SERIF as u16);
+			}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), 
+							state, isInherit(opv))) {
+
+		set_font_family(state.computed, (value as u8) , fonts);
+	} 
+
+	CSS_OK
+}
+
+pub fn css__set_font_family_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	let mut error : css_result;
+
+	match hint.hint_type {
+		STRINGS_VECTOR=>{
+			match hint.strings {
+				Some(copy x)=>{
+					set_font_family(style, hint.status, x);
+				},
+				None=>{
+					set_font_family(style, hint.status, ~[]);
+				}
+			}
+			hint.strings = Some(~[]);
+		}
+		_=>{
+			return CSS_INVALID ;
+		}
+	}
+
+	CSS_OK
+}
+
+pub fn css__initial_font_family(state:@mut css_select_state) -> css_result {
+
+
+	let mut hint = @mut css_hint{
+        hint_type:HINT_LENGTH,
+        status:0,
+        clip:None,
+        content:None,
+        counter:None,
+        length:None,
+        position:None,
+        color:None,
+        fixed:None,
+        integer:None,
+        string:None,
+        strings:None
+    };
+	let mut error : css_result;
+
+	match state.handler {
+		None=> {
+			return CSS_SHOULD_NEVER_OCCUR ;
+		},
+		Some(fnhandler) => {
+			error = (*(fnhandler.ua_default_for_property))(
+				(CSS_PROP_FONT_FAMILY as u32), hint);
+		    match error {
+		        CSS_OK=>{},
+		        _=> return error
+		    }
+		}
+	}
+
+	css__set_font_family_from_hint(hint, state.computed);
+	CSS_OK
+}
+
+pub fn css__compose_font_family(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut error : css_result;
+	//lwc_string **names = NULL;
+	let mut (ftype,ffamily) = css_computed_font_family(child);
+
+	if (ftype == (CSS_FONT_FAMILY_INHERIT as u8) || !mut_ptr_eq(result,child)) {
+
+		if ( ftype == (CSS_FONT_FAMILY_INHERIT as u8) ) {
+			let mut (ftype2,ffamily2) = css_computed_font_family(parent);
+			set_font_family(result, ftype2, ffamily2);
+		}
+		else {
+			set_font_family(result, ftype, ffamily);
+		}
+	}
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////

@@ -1,5 +1,6 @@
 use include::types::*;
 use stylesheet::*;
+use utils::errors::*;
 
 pub enum css_computed_content_item_type {
     TYPE_STRING,
@@ -667,6 +668,7 @@ pub struct prop_state {
 }
 
 pub struct css_select_handler {
+    ua_default_for_property: @extern fn(property:u32, hint:@mut css_hint ) -> css_result,
     handler_version:u32
 }
 
