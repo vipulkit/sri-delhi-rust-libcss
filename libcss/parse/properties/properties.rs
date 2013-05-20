@@ -443,11 +443,11 @@ pub impl css_properties {
         } 
 
         /* allocate styles */
-        attachment_style = sheet.css__stylesheet_style_create();
-        color_style = sheet.css__stylesheet_style_create();
-        image_style = sheet.css__stylesheet_style_create();
-        position_style = sheet.css__stylesheet_style_create();
-        repeat_style = sheet.css__stylesheet_style_create();
+        attachment_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        color_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        image_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        position_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        repeat_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         /* Attempt to parse the various longhand properties */
         loop {
@@ -1401,8 +1401,8 @@ pub impl css_properties {
             return CSS_OK;
         }
 
-        let mut width_style = sheet.css__stylesheet_style_create();
-        let mut count_style = sheet.css__stylesheet_style_create();
+        let mut width_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let mut count_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         loop {
             prev_ctx = *ctx;
@@ -1480,9 +1480,9 @@ pub impl css_properties {
             return CSS_OK;
         }
 
-        let mut color_style = sheet.css__stylesheet_style_create();
-        let mut style_style = sheet.css__stylesheet_style_create();
-        let mut width_style = sheet.css__stylesheet_style_create();
+        let mut color_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let mut style_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let mut width_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         let mut prev_ctx: uint;
 
@@ -2495,12 +2495,12 @@ pub impl css_properties {
             }
         }
 
-        let style_style = sheet.css__stylesheet_style_create();
-        let variant_style = sheet.css__stylesheet_style_create();
-        let weight_style = sheet.css__stylesheet_style_create();
-        let size_style = sheet.css__stylesheet_style_create();
-        let line_height_style = sheet.css__stylesheet_style_create();
-        let family_style = sheet.css__stylesheet_style_create();
+        let style_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let variant_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let weight_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let size_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let line_height_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let family_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         svw = 0;
         while svw < 3 {
@@ -2787,9 +2787,9 @@ pub impl css_properties {
             return CSS_OK;
         }
 
-        let mut image_style = sheet.css__stylesheet_style_create();
-        let mut position_style = sheet.css__stylesheet_style_create();
-        let mut type_style = sheet.css__stylesheet_style_create();
+        let mut image_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let mut position_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let mut type_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         let mut prev_ctx: uint;
         loop {
@@ -3137,9 +3137,9 @@ pub impl css_properties {
             return CSS_INVALID   
         }
         
-        let mut color_style = sheet.css__stylesheet_style_create();
-        let mut style_style = sheet.css__stylesheet_style_create();
-        let mut width_style = sheet.css__stylesheet_style_create();
+        let mut color_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let mut style_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let mut width_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         let mut prev_ctx: uint;
         loop {

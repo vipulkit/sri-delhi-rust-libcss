@@ -146,9 +146,9 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
     }
     
     *ctx = *ctx + 1;
-    color_style = sheet.css__stylesheet_style_create();
-    style_style = sheet.css__stylesheet_style_create();
-    width_style = sheet.css__stylesheet_style_create();
+    color_style = css_stylesheet::css__stylesheet_style_create(sheet);
+    style_style = css_stylesheet::css__stylesheet_style_create(sheet);
+    width_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
     prev_ctx = *ctx;
     while *ctx != prev_ctx {

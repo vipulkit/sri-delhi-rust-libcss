@@ -276,14 +276,14 @@ impl css_stylesheet {
 
     /**
      * Create a style, with sheet pointer set into the style
-     * original function as in C code 
-     * need to change to this function everywhere where css__stylesheet_style_create
-     * is used
+     *
+     * function css__stylesheet_style_create is changed , now style contains
+     * pointer to the sheet.
      *
      * \param self css_stylesheet
      * \return css_style 
      */
-    pub fn css__stylesheet_style_create_orig(sheet : @mut css_stylesheet) -> @mut css_style {
+    pub fn css__stylesheet_style_create(sheet : @mut css_stylesheet) -> @mut css_style {
         if sheet.cached_style.is_none() {
             @mut css_style{ 
                 bytecode:~[],
@@ -295,26 +295,6 @@ impl css_stylesheet {
             sheet.cached_style.swap_unwrap()
         }
     }
-
-    /**
-     * Create a style
-     *
-     * \param self css_stylesheet
-     * \return css_style 
-     */
-    pub fn css__stylesheet_style_create(&mut self ) -> @mut css_style {
-        if self.cached_style.is_none() {
-            @mut css_style{ 
-                bytecode:~[],
-                used:0,
-                sheet:None
-            } 
-        }
-        else {
-            self.cached_style.swap_unwrap()
-        }
-    }
-
 
     /**
      * Merge a style to a CSS style

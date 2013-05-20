@@ -47,7 +47,7 @@ fn main() {
 									color:None
 	};				
 
-	let mut css_style_instance = css_stylesheet::css__stylesheet_style_create_orig(css_stylesheet_instance);
+	let mut css_style_instance = css_stylesheet::css__stylesheet_style_create(css_stylesheet_instance);
 	css_stylesheet_instance.cached_style = Some(css_style_instance) ;
 
 	// 2.
@@ -134,14 +134,14 @@ fn css__selector_hash_functionalities_test_2(css_selector_instance : @mut css_se
 fn css__stylesheet_style_functionalities_test(css_stylesheet_instance : @mut css_stylesheet) -> @mut css_stylesheet {
 
 	let mut test_logger = result::unwrap(test_report(&"Unit_test_report.csv"));
-	let mut css_style_instance = css_stylesheet::css__stylesheet_style_create_orig(css_stylesheet_instance); // value is initialised					
+	let mut css_style_instance = css_stylesheet::css__stylesheet_style_create(css_stylesheet_instance); // value is initialised					
 
 	if (!css_stylesheet_instance.cached_style.is_none()){			
 		css_style_instance = css_stylesheet_instance.cached_style.unwrap();			
 	}
 					 
 	// A.			
-	let css_style_value = css_stylesheet_instance.css__stylesheet_style_create();
+	let css_style_value = css_stylesheet::css__stylesheet_style_create(css_stylesheet_instance);
 
 	// Appending string data for proper formatting.
 	let mut string_a : ~str = ~"";			
@@ -166,7 +166,7 @@ fn css__stylesheet_style_functionalities_test(css_stylesheet_instance : @mut css
 	
 
 	// B.
-	let css_style_source = css_stylesheet::css__stylesheet_style_create_orig(css_stylesheet_instance);
+	let css_style_source = css_stylesheet::css__stylesheet_style_create(css_stylesheet_instance);
 	
     let mut b4Value : ~[u32] = copy css_style_value.bytecode + copy css_style_source.bytecode;
 

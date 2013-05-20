@@ -856,7 +856,7 @@ pub impl css_language {
             return CSS_INVALID;
         }
 
-        style = self.sheet.css__stylesheet_style_create();
+        style = css_stylesheet::css__stylesheet_style_create(self.sheet) ;
 
         (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , &mut self.strings , vector , ctx , style);
 
