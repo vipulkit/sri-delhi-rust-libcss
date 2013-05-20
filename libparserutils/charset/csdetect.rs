@@ -348,7 +348,7 @@ pub fn css__charset_extract(data : &~[u8] , mibenum : u16 , source : css_charset
     let mut charset : u16 = 0;
     let mut src :css_charset_source;
 
-    if (data.len()==(0 as uint))  || mibenum==0u16 {
+    if (data.len()==(0 as uint))  /*|| mibenum==0u16*/ {
         return (None, None, PARSERUTILS_BADPARAM);
     }
 
