@@ -2427,3 +2427,48 @@ pub fn css__compose_break_inside(_:@mut css_computed_style,
 }	
 
 ///////////////////////////////////////////////////////////////////
+// column_width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_column_width(opv:u32, style:@mut css_style, 
+		state:@mut css_select_state ) -> css_result {
+
+	let mut length = 0;
+	let mut unit = UNIT_PX;
+
+	if !isInherit(opv) {
+		match getValue(opv) {
+			COLUMN_WIDTH_SET => {
+				length = peek_bytecode(style);
+				advance_bytecode(style);
+				unit = peek_bytecode(style);
+				advance_bytecode(style);
+			},
+			COLUMN_WIDTH_AUTO => {
+				//** \todo convert to public values */	
+			},	
+			_ => fail!(~"Invalid css__cascade_column_width match code")
+		}
+	}
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+		// \todo set computed elevation */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_column_width_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
+	// DO NOTHING
+}
+
+pub fn css__initial_column_width(_:@mut css_select_state) -> css_result {
+	
+	CSS_OK
+}
+
+pub fn css__compose_column_width(_:@mut css_computed_style, _:@mut css_computed_style,
+	_:@mut css_computed_style) {
+	//DO NOTHING
+}
+
+///////////////////////////////////////////////////////////////////
