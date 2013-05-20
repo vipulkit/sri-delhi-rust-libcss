@@ -60,7 +60,7 @@ pub fn css__cascade_bg_border_color(opv:u32, style:@mut css_style, state:@mut cs
 			BACKGROUND_COLOR_CURRENT_COLOR => value = CSS_BACKGROUND_COLOR_CURRENT_COLOR,
 			BACKGROUND_COLOR_SET => {
 				value = CSS_BACKGROUND_COLOR_COLOR;
-				color = copy style.bytecode[style.used];
+				color = peek_bytecode(style);
 				advance_bytecode(style)
 			}
 			_ => fail!(~"Invalid css__cascade_bg_border_color match code")
@@ -87,7 +87,7 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 			BACKGROUND_IMAGE_NONE => value = CSS_BACKGROUND_IMAGE_NONE,
 			BACKGROUND_IMAGE_URI => {
 				value = CSS_BACKGROUND_IMAGE_IMAGE;
-				let (_, ret_uri) = style.sheet.unwrap().css__stylesheet_string_get(style.bytecode[style.used] as uint);
+				let (_, ret_uri) = style.sheet.unwrap().css__stylesheet_string_get(peek_bytecode(style) as uint);
 				uri = ret_uri;
 				advance_bytecode(style)	
 			},
@@ -147,9 +147,9 @@ pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_s
 		match getValue(opv) {
 			BORDER_WIDTH_SET => {
 				value = CSS_BORDER_WIDTH_WIDTH;
-				length = copy style.bytecode[style.used];
+				length = peek_bytecode(style);
 				advance_bytecode(style);
-				unit =  style.bytecode[style.used];
+				unit =  peek_bytecode(style);
 				advance_bytecode(style)				
 			},	
 			BORDER_WIDTH_THIN => value = CSS_BORDER_WIDTH_THIN,				
@@ -180,9 +180,9 @@ pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_se
 		match getValue(opv) {
 			BOTTOM_SET => {
 				value = CSS_BOTTOM_SET;
-				length = copy style.bytecode[style.used];
+				length = peek_bytecode(style);
 				advance_bytecode(style);
-				unit =  style.bytecode[style.used];
+				unit =  peek_bytecode(style);
 				advance_bytecode(style)				
 			},	
 			BOTTOM_AUTO => value = CSS_BOTTOM_AUTO,				
@@ -212,9 +212,9 @@ pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_
 		match getValue(opv) {
 			LETTER_SPACING_SET => {
 				value = CSS_LETTER_SPACING_SET;
-				length = copy style.bytecode[style.used];
+				length = peek_bytecode(style);
 				advance_bytecode(style);
-				unit =  style.bytecode[style.used];
+				unit =  peek_bytecode(style);
 				advance_bytecode(style)				
 			},	
 			LETTER_SPACING_NORMAL => value = CSS_LETTER_SPACING_NORMAL,				
@@ -243,9 +243,9 @@ pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_se
 		match getValue(opv) {
 			MAX_HEIGHT_SET => {
 				value = CSS_MAX_HEIGHT_SET;
-				length = copy style.bytecode[style.used];
+				length = peek_bytecode(style);
 				advance_bytecode(style);
-				unit =  style.bytecode[style.used];
+				unit =  peek_bytecode(style);
 				advance_bytecode(style)				
 			},	
 			MAX_HEIGHT_NONE => value = CSS_MAX_HEIGHT_NONE,				
@@ -272,9 +272,9 @@ pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_
 	
 	if !isInherit(opv) {
 		value = CSS_MIN_HEIGHT_SET;
-		length = copy style.bytecode[style.used];
+		length = peek_bytecode(style);
 		advance_bytecode(style);
-		unit =  style.bytecode[style.used];
+		unit =  peek_bytecode(style);
 		advance_bytecode(style)				
 	}
 
@@ -302,7 +302,7 @@ pub fn css__cascade_number(opv:u32, style:@mut css_style, state:@mut css_select_
 
 	if !isInherit(opv) {
 		value = 0;
-		length = copy style.bytecode[style.used];
+		length = peek_bytecode(style);
 		advance_bytecode(style);
 	}
 	
@@ -359,17 +359,17 @@ pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state
 
 				while v != COUNTER_INCREMENT_NONE as u32{
 					
-					let (result, name_option) = style.sheet.unwrap().css__stylesheet_string_get((copy style.bytecode[style.used]) as uint);
+					let (result, name_option) = style.sheet.unwrap().css__stylesheet_string_get((peek_bytecode(style)) as uint);
 					advance_bytecode(style);
 					match result {
 						CSS_OK => {
-							let val = copy style.bytecode[style.used];
+							let val = peek_bytecode(style);
 							advance_bytecode(style);
 
 							let temp = ~css_computed_counter{name:name_option.unwrap(),value:val as i32};
 							counters.push(temp);
 
-							v = copy style.bytecode[style.used];
+							v = peek_bytecode(style);
 							advance_bytecode(style);
 						}
 						_ => return result
@@ -2248,4 +2248,147 @@ pub fn css__compose_column_rule_style(_:@mut css_computed_style, _:@mut css_comp
 	//DO NOTHING
 }
 
+///////////////////////////////////////////////////////////////////
+// column_rule_style
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_column_rule_width(opv:u32, style:@mut css_style, 
+		state:@mut css_select_state ) -> css_result {
+
+	let mut length = 0;
+	let mut unit = UNIT_PX;
+
+	if !isInherit(opv) {
+		match getValue(opv) {
+			COLUMN_RULE_WIDTH_SET => {
+				length = peek_bytecode(style);
+				advance_bytecode(style);
+				unit = peek_bytecode(style);
+				advance_bytecode(style);
+			},
+			COLUMN_RULE_WIDTH_THIN |
+			COLUMN_RULE_WIDTH_MEDIUM | 
+			COLUMN_RULE_WIDTH_THICK => {
+				//** \todo convert to public values */	
+			},	
+			_ => fail!(~"Invalid css__cascade_column_rule_color match code")
+		}
+	}
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+		// \todo set computed elevation */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_column_rule_width_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
+	// DO NOTHING
+}
+
+pub fn css__initial_column_rule_width(_:@mut css_select_state) -> css_result {
+	
+	CSS_OK
+}
+
+pub fn css__compose_column_rule_width(_:@mut css_computed_style, _:@mut css_computed_style,
+	_:@mut css_computed_style) {
+	//DO NOTHING
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// break_before
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_break_before(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	if (isInherit(opv) == false) {
+		getValue(opv) ; // let mut val = getValue(opv) ;
+		// if (val == (BREAK_BEFORE_AUTO as u8) ){}
+		// else if (val == (BREAK_BEFORE_ALWAYS as u8) ){}
+		// else if (val == (BREAK_BEFORE_AVOID as u8) ){}
+		// else if (val == (BREAK_BEFORE_LEFT as u8) ){}
+		// else if (val == (BREAK_BEFORE_RIGHT as u8) ){}
+		// else if (val == (BREAK_BEFORE_PAGE as u8) ){}
+		// else if (val == (BREAK_BEFORE_COLUMN as u8) ){}
+		// else if (val == (BREAK_BEFORE_AVOID_PAGE as u8) ){}
+		// else if (val == (BREAK_BEFORE_AVOID_COLUMN as u8) ){}
+		// 	/** \todo convert to public values */
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo set computed elevation */
+		CSS_OK
+	}
+	else {
+		CSS_OK
+	}
+}
+
+pub fn css__set_break_before_from_hint(_:@mut  css_hint, 
+										_:@mut css_computed_style
+										) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_break_before(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_break_before(_:@mut css_computed_style,
+									_:@mut css_computed_style,
+									_:@mut css_computed_style
+									) -> css_result {
+
+	CSS_OK
+}	
+///////////////////////////////////////////////////////////////////
+
+// break_inside
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_break_inside(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	if (isInherit(opv) == false) {
+		getValue(opv) ; // let mut val = getValue(opv) ;
+		// if ( val == (BREAK_INSIDE_AUTO as u16) ){}
+		// else if ( val == (BREAK_INSIDE_AVOID as u16) ){}
+		// else if ( val == (BREAK_INSIDE_AVOID_PAGE as u16) ){}
+		// else if ( val == (BREAK_INSIDE_AVOID_COLUMN as u16) ){}
+		// 	/** \todo convert to public values */
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo set computed elevation */
+		CSS_OK
+	}
+	else {
+		CSS_OK
+	}
+}
+
+pub fn css__set_break_inside_from_hint(_:@mut  css_hint, 
+										_:@mut css_computed_style
+										) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_break_inside(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_break_inside(_:@mut css_computed_style,
+									_:@mut css_computed_style,
+									_:@mut css_computed_style
+									) -> css_result {
+
+	CSS_OK
+}	
 ///////////////////////////////////////////////////////////////////
