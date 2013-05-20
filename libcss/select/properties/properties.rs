@@ -2296,3 +2296,99 @@ pub fn css__compose_column_rule_width(_:@mut css_computed_style, _:@mut css_comp
 }
 
 ///////////////////////////////////////////////////////////////////
+
+
+// break_before
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_break_before(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	if (isInherit(opv) == false) {
+		getValue(opv) ; // let mut val = getValue(opv) ;
+		// if (val == (BREAK_BEFORE_AUTO as u8) ){}
+		// else if (val == (BREAK_BEFORE_ALWAYS as u8) ){}
+		// else if (val == (BREAK_BEFORE_AVOID as u8) ){}
+		// else if (val == (BREAK_BEFORE_LEFT as u8) ){}
+		// else if (val == (BREAK_BEFORE_RIGHT as u8) ){}
+		// else if (val == (BREAK_BEFORE_PAGE as u8) ){}
+		// else if (val == (BREAK_BEFORE_COLUMN as u8) ){}
+		// else if (val == (BREAK_BEFORE_AVOID_PAGE as u8) ){}
+		// else if (val == (BREAK_BEFORE_AVOID_COLUMN as u8) ){}
+		// 	/** \todo convert to public values */
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo set computed elevation */
+		CSS_OK
+	}
+	else {
+		CSS_OK
+	}
+}
+
+pub fn css__set_break_before_from_hint(_:@mut  css_hint, 
+										_:@mut css_computed_style
+										) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_break_before(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_break_before(_:@mut css_computed_style,
+									_:@mut css_computed_style,
+									_:@mut css_computed_style
+									) -> css_result {
+
+	CSS_OK
+}	
+///////////////////////////////////////////////////////////////////
+
+// break_inside
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_break_inside(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	if (isInherit(opv) == false) {
+		getValue(opv) ; // let mut val = getValue(opv) ;
+		// if ( val == (BREAK_INSIDE_AUTO as u16) ){}
+		// else if ( val == (BREAK_INSIDE_AVOID as u16) ){}
+		// else if ( val == (BREAK_INSIDE_AVOID_PAGE as u16) ){}
+		// else if ( val == (BREAK_INSIDE_AVOID_COLUMN as u16) ){}
+		// 	/** \todo convert to public values */
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo set computed elevation */
+		CSS_OK
+	}
+	else {
+		CSS_OK
+	}
+}
+
+pub fn css__set_break_inside_from_hint(_:@mut  css_hint, 
+										_:@mut css_computed_style
+										) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_break_inside(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_break_inside(_:@mut css_computed_style,
+									_:@mut css_computed_style,
+									_:@mut css_computed_style
+									) -> css_result {
+
+	CSS_OK
+}	
+///////////////////////////////////////////////////////////////////
