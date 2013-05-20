@@ -2,7 +2,6 @@ extern mod std;
 extern mod css;
 extern mod wapcaplet;
 
-use core::io::*;
 use std::arc;
 use css::css::*;
 use css::css::css::*;
@@ -275,35 +274,35 @@ pub fn validate_rule_import(s:@mut css_rule_import, e:@mut exp_entry) -> bool {
 
 #[test]
 fn parse_tests1() {
-	parse(~"../data/parse/tests1.dat");
+	parse(~"data/parse/tests1.dat");
 }
 
 #[test]
 fn parse_atrules() {
-	parse(~"../data/parse/atrules.dat");
+	parse(~"data/parse/atrules.dat");
 }
 
 #[test]
 fn parse_colours() {
-	parse(~"../data/parse/colours.dat");
+	parse(~"data/parse/colours.dat");
 }
 
 #[test]
 fn parse_colours_hsl() {
-	parse(~"../data/parse/colours-hsl.dat");
+	parse(~"data/parse/colours-hsl.dat");
 }
 
 #[test]
 fn parse_nth() {
-	parse(~"../data/parse/nth.dat");
+	parse(~"data/parse/nth.dat");
 }
 
 #[test]
 fn parse_properties() {
-	parse(~"../data/parse/properties.dat");
+	parse(~"data/parse/properties.dat");
 }
 
 #[test]
 fn parse_selectors() {
-	parse(~"../data/parse/selectors.dat");
+	parse(~"data/parse/selectors.dat");
 }

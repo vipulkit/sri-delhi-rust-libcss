@@ -8,7 +8,6 @@ use css::css::*;
 use css::css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
-use css::parse::properties::*;
 use wapcaplet::*;
 
 pub fn resolve_url(_:~str, rel:arc::RWARC<~lwc_string>) -> (css_result,Option<arc::RWARC<~lwc_string>>) {
@@ -67,7 +66,7 @@ fn css(file_name: ~str) {
         _ => {assert!(false);}
     }
 
-    let (error , css_stylesheet) = css.css_stylesheet_data_done();
+    let (error , _) = css.css_stylesheet_data_done();
 
     match error {
 		CSS_OK | CSS_IMPORTS_PENDING => {},

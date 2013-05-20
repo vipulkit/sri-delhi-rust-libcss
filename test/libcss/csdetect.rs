@@ -3,18 +3,13 @@ extern mod std;
 extern mod parserutils ; 
 use parserutils::charset::aliases::*;
 use parserutils::input::parserutils_filter::* ;
-use parserutils::input::inputstream::*;
 use parserutils::charset::csdetect::*;
 
 //use test_utils::*;
 use core::str::*;
 use std::arc;
-use core::vec::*;
 use core::io::*;
 
-/*fn main() {
-
-}*/
 struct line_ctx {
 	buflen:uint,
 	bufused:uint,
@@ -26,6 +21,9 @@ struct line_ctx {
 pub type  line_func =  
     ~extern fn(data:~str , pw:&mut line_ctx) -> bool;
 
+fn main() {
+	io::println("csdetect");
+}
 
 pub fn css__parse_filesize( fileName:~str)->uint {
 	let r:@Reader = io::file_reader(&Path(fileName)).get(); 
@@ -125,15 +123,12 @@ pub fn handle_line(data:~str,  /*datalen:uint,*/ pw:&mut line_ctx)-> bool {
 	return true;
 }
 
-pub fn run_test(data:&~[u8],  len:uint, expectedEncoding:~str) {
+pub fn run_test(data:&~[u8],  _:uint, expectedEncoding:~str) {
 	io::println("inside csdetect run_test");
     io::println(~"data = "+ from_bytes(*data));
     io::println(~"expectedEncoding = "+expectedEncoding);
 	
 	let mut mibenum:u16 = 4;
-	let source: css_charset_source = CSS_CHARSET_DEFAULT;
-	let testnum:int;
-	let Alias = alias();
 
 	match parserutils_filter(alias() ,to_upper(copy expectedEncoding)) {
         (x,PARSERUTILS_OK) =>{
@@ -156,10 +151,10 @@ pub fn run_test(data:&~[u8],  len:uint, expectedEncoding:~str) {
     }
 }
 
-// #[test]
-// fn bom() {
-// 	testMain(~"bom.dat");
-// }
+#[test]
+fn bom() {
+	testMain(~"bom.dat");
+}
 
 #[test]
 fn bom_charset() {
