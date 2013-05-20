@@ -3053,3 +3053,125 @@ pub fn css__compose_font_size(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// font_style
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_font_style(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_FONT_STYLE_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			FONT_STYLE_NORMAL => {
+				value = ( CSS_FONT_STYLE_NORMAL as u16);
+			},
+			FONT_STYLE_ITALIC => {
+				value = ( CSS_FONT_STYLE_ITALIC as u16);
+			},
+			FONT_STYLE_OBLIQUE => {
+				value = ( CSS_FONT_STYLE_OBLIQUE as u16);
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_font_style(state.computed, (value as u8) );
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_font_style_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_font_style(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_font_style(state:@mut css_select_state) -> css_result {
+
+
+	set_font_style(state.computed, (CSS_FONT_STYLE_NORMAL as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_font_style(parent:@mut css_computed_style,
+							child:@mut css_computed_style,
+							result:@mut css_computed_style
+							) -> css_result {
+
+	let mut ftype = css_computed_font_style(child);
+
+	if (ftype == (CSS_FONT_STYLE_INHERIT as u8) ) {
+		ftype = css_computed_font_style(parent);
+	}
+
+	set_font_style(result, ftype);
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// font_variant
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_font_variant(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value = (CSS_FONT_VARIANT_INHERIT as u16);
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			FONT_VARIANT_NORMAL => {
+				value = ( CSS_FONT_VARIANT_NORMAL as u16);
+			},
+			FONT_VARIANT_SMALL_CAPS => {
+				value = ( CSS_FONT_VARIANT_SMALL_CAPS as u16);
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		set_font_variant(state.computed, (value as u8) );
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_font_variant_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_font_variant(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_font_variant(state:@mut css_select_state) -> css_result {
+
+
+	set_font_variant(state.computed, (CSS_FONT_VARIANT_NORMAL as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_font_variant(parent:@mut css_computed_style,
+							child:@mut css_computed_style,
+							result:@mut css_computed_style
+							) -> css_result {
+
+	let mut ftype = css_computed_font_variant(child);
+
+	if (ftype == (CSS_FONT_VARIANT_INHERIT as u8) ) {
+		ftype = css_computed_font_variant(parent);
+	}
+
+	set_font_variant(result, ftype);
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
