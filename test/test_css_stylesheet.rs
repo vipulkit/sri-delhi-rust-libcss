@@ -23,9 +23,9 @@ fn main() {
 	let css_selector_hash_instance = css__selector_hash_functionalities_test();	
 
 	// Instatitiated as it is required for css_stylesheet
-	let css_style_instance : @mut css_style = @mut css_style {					
-							bytecode:~[9898]
-	};  // random value
+	// let css_style_instance : @mut css_style = @mut css_style {					
+	// 						bytecode:~[9898]
+	// };  // random value
 
 	let css_stylesheet_instance : @mut css_stylesheet = @mut css_stylesheet {
 									selectors:css_selector_hash_instance,	// returned from: css__selector_hash_functionalities_test
@@ -39,13 +39,16 @@ fn main() {
 									quirks_allowed:false,
 									quirks_used:false,
 									inline_style:false,
-									cached_style:Some(css_style_instance),  	// An instance is created for verification
+									cached_style:None,  	// An instance is created for verification
 									string_vector:~[],
 									resolve:@resolve_url,
 									import:None,
 									font:None,
 									color:None
 	};				
+
+	let mut css_style_instance = css_stylesheet::css__stylesheet_style_create_orig(css_stylesheet_instance);
+	css_stylesheet_instance.cached_style = Some(css_style_instance) ;
 
 	// 2.
 	let css_stylesheet_instance_1 = css__stylesheet_style_functionalities_test(css_stylesheet_instance);
@@ -131,7 +134,7 @@ fn css__selector_hash_functionalities_test_2(css_selector_instance : @mut css_se
 fn css__stylesheet_style_functionalities_test(css_stylesheet_instance : @mut css_stylesheet) -> @mut css_stylesheet {
 
 	let mut test_logger = result::unwrap(test_report(&"Unit_test_report.csv"));
-	let mut css_style_instance = @mut css_style {bytecode : ~[]};  // value is initialised					
+	let mut css_style_instance = css_stylesheet::css__stylesheet_style_create_orig(css_stylesheet_instance); // value is initialised					
 
 	if (!css_stylesheet_instance.cached_style.is_none()){			
 		css_style_instance = css_stylesheet_instance.cached_style.unwrap();			
@@ -163,8 +166,7 @@ fn css__stylesheet_style_functionalities_test(css_stylesheet_instance : @mut css
 	
 
 	// B.
-	let css_style_source = @mut css_style {
-									bytecode:~[11]};
+	let css_style_source = css_stylesheet::css__stylesheet_style_create_orig(css_stylesheet_instance);
 	
     let mut b4Value : ~[u32] = copy css_style_value.bytecode + copy css_style_source.bytecode;
 
