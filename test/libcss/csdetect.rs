@@ -36,7 +36,7 @@ pub fn css__parse_testfile(filename:~str,  callback:line_func, pw:&mut line_ctx)
 	let mut string:~str;
 	while(!r.eof()) {				
        data= r.read_line();
-       //io::println(data);
+       io::println(data);
        let numOfbuffers= data.len()/300 + 1 ;
        //let mut v =~[];
        let mut iter = 0;
@@ -151,10 +151,10 @@ pub fn run_test(data:&~[u8],  _:uint, expectedEncoding:~str) {
     }
 }
 
-#[test]
+/*#[test]
 fn bom() {
 	testMain(~"data/csdetect/bom.dat");
-}
+}*/
 
 #[test]
 fn bom_charset() {
