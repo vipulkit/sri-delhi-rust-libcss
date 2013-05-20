@@ -3175,3 +3175,96 @@ pub fn css__compose_font_variant(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+
+// font_weight
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_font_weight(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_FONT_WEIGHT_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			FONT_WEIGHT_NORMAL => {
+				value = (CSS_FONT_WEIGHT_NORMAL as u16);
+			},
+			FONT_WEIGHT_BOLD => {
+				value = (CSS_FONT_WEIGHT_BOLD as u16);
+			},
+			FONT_WEIGHT_BOLDER => {
+				value = (CSS_FONT_WEIGHT_BOLDER as u16);
+			},
+			FONT_WEIGHT_LIGHTER => {
+				value = (CSS_FONT_WEIGHT_LIGHTER as u16);
+			},
+			FONT_WEIGHT_100 => {
+				value = (CSS_FONT_WEIGHT_100 as u16);
+			},
+			FONT_WEIGHT_200 => {
+				value = (CSS_FONT_WEIGHT_200 as u16);
+			},
+			FONT_WEIGHT_300 => {
+				value = (CSS_FONT_WEIGHT_300 as u16);
+			},
+			FONT_WEIGHT_400 => {
+				value = (CSS_FONT_WEIGHT_400 as u16);
+			},
+			FONT_WEIGHT_500 => {
+				value = (CSS_FONT_WEIGHT_500 as u16);
+			},
+			FONT_WEIGHT_600 => {
+				value = (CSS_FONT_WEIGHT_600 as u16);
+			},
+			FONT_WEIGHT_700 => {
+				value = (CSS_FONT_WEIGHT_700 as u16);
+			},
+			FONT_WEIGHT_800 => {
+				value = (CSS_FONT_WEIGHT_800 as u16);
+			},
+			FONT_WEIGHT_900 => {
+				value = (CSS_FONT_WEIGHT_900 as u16);
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		set_font_weight(state.computed, (value as u8) );
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_font_weight_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_font_weight(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_font_weight(state:@mut css_select_state) -> css_result {
+
+
+	set_font_weight(state.computed, (CSS_FONT_WEIGHT_NORMAL as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_font_weight(parent:@mut css_computed_style,
+							child:@mut css_computed_style,
+							result:@mut css_computed_style
+							) -> css_result {
+
+	let mut ftype = css_computed_font_weight(child);
+
+	if (ftype == (CSS_FONT_WEIGHT_INHERIT as u8) ) {
+		ftype = css_computed_font_weight(parent);
+	}
+
+	set_font_weight(result, ftype);
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
