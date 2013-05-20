@@ -128,9 +128,9 @@ pub fn run_test(data:&~[u8],  _:uint, expectedEncoding:~str) {
     io::println(~"data = "+ from_bytes(*data));
     io::println(~"expectedEncoding = "+expectedEncoding);
 	
-	let mut mibenum:u16 = 4;
+	let mut mibenum:u16 = 0;
 
-	match parserutils_filter(alias() ,to_upper(copy expectedEncoding)) {
+	match parserutils_filter(alias() ,copy expectedEncoding) {
         (x,PARSERUTILS_OK) =>{
             let mut filter_instance = x.unwrap();
             let (charsetOption,srcOption,error)= css__charset_extract(data, mibenum, CSS_CHARSET_DEFAULT, filter_instance.instance.clone());
@@ -153,10 +153,10 @@ pub fn run_test(data:&~[u8],  _:uint, expectedEncoding:~str) {
 
 #[test]
 fn bom() {
-	testMain(~"bom.dat");
+	testMain(~"data/csdetect/bom.dat");
 }
 
 #[test]
 fn bom_charset() {
-	testMain(~"data/bom-charset.dat");
+	testMain(~"data/csdetect/bom-charset.dat");
 }
