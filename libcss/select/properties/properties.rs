@@ -2122,7 +2122,7 @@ pub fn css__compose_column_fill(_:@mut css_computed_style, _:@mut css_computed_s
 }
 
 ///////////////////////////////////////////////////////////////////
-// column_count
+// column_gap
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_column_gap(opv:u32, style:@mut css_style, 
 		state:@mut css_select_state ) -> css_result {
@@ -2141,7 +2141,7 @@ pub fn css__cascade_column_gap(opv:u32, style:@mut css_style,
 			COLUMN_GAP_NORMAL => {
 				//** \todo convert to public values */	
 			},	
-			_ => fail!(~"Invalid css__cascade_column_fill match code")
+			_ => fail!(~"Invalid css__cascade_column_gap match code")
 		}
 	}
 
@@ -2167,3 +2167,46 @@ pub fn css__compose_column_gap(_:@mut css_computed_style, _:@mut css_computed_st
 }
 
 ///////////////////////////////////////////////////////////////////
+// column_rule_color
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_column_rule_color(opv:u32, style:@mut css_style, 
+		state:@mut css_select_state ) -> css_result {
+
+	let mut color = 0;
+	
+	if !isInherit(opv) {
+		match getValue(opv) {
+			COLUMN_RULE_COLOR_SET => {
+				color = peek_bytecode(style);
+				advance_bytecode(style)
+			},
+			COLUMN_RULE_COLOR_TRANSPARENT | COLUMN_RULE_COLOR_CURRENT_COLOR => {
+				//** \todo convert to public values */	
+			},	
+			_ => fail!(~"Invalid css__cascade_column_rule_color match code")
+		}
+	}
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+		// \todo set computed elevation */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_column_rule_color_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
+	// DO NOTHING
+}
+
+pub fn css__initial_column_rule_color(_:@mut css_select_state) -> css_result {
+	
+	CSS_OK
+}
+
+pub fn css__compose_column_rule_color(_:@mut css_computed_style, _:@mut css_computed_style,
+	_:@mut css_computed_style) {
+	//DO NOTHING
+}
+
+///////////////////////////////////////////////////////////////////
+
