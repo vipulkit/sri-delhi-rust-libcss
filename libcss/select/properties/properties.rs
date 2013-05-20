@@ -2534,4 +2534,181 @@ pub fn css__compose_display(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
+// elevation
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_elevation(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
 
+	let mut val :i32  = 0;
+	let mut unit : u32 = UNIT_DEG ;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			ELEVATION_ANGLE =>{
+				val = peek_bytecode(style) as i32 ;
+				advance_bytecode(style);
+
+				unit = peek_bytecode(style);
+				advance_bytecode(style);
+			},
+			ELEVATION_BELOW |
+			ELEVATION_LEVEL |
+			ELEVATION_ABOVE |
+			ELEVATION_HIGHER |
+			ELEVATION_LOWER => {},
+				/* \todo convert to public values */
+			_=>{}
+		}
+	}
+
+	//unit = css__to_css_unit(unit);
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		
+	}
+	CSS_OK
+}
+
+pub fn css__set_elevation_from_hint(_:@mut  css_hint, 
+										_:@mut css_computed_style
+										) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_elevation(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_elevation(_:@mut css_computed_style,
+									_:@mut css_computed_style,
+									_:@mut css_computed_style
+									) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// empty_cells
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_empty_cells(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_EMPTY_CELLS_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			EMPTY_CELLS_SHOW => {
+				value = CSS_EMPTY_CELLS_SHOW as u16;
+			},
+			EMPTY_CELLS_HIDE => {
+				value = CSS_EMPTY_CELLS_HIDE as u16;
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_empty_cells(state.computed, value as u8);
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_empty_cells_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_empty_cells(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_empty_cells(state:@mut css_select_state) -> css_result {
+
+
+	set_empty_cells(state.computed, (CSS_EMPTY_CELLS_SHOW as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_empty_cells(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_empty_cells(child);
+
+	if (ftype == (CSS_EMPTY_CELLS_INHERIT as u8) ) {
+		ftype = css_computed_empty_cells(parent);
+	}
+
+	set_empty_cells(result, ftype);
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// float
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_float(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_FLOAT_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			FLOAT_LEFT => {
+				value = CSS_FLOAT_LEFT as u16;
+			},
+			FLOAT_RIGHT => {
+				value = CSS_FLOAT_RIGHT as u16;
+			},
+			FLOAT_NONE => {
+				value = CSS_FLOAT_NONE as u16;
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_float(state.computed, value as u8);
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_float_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_float(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_float(state:@mut css_select_state) -> css_result {
+
+
+	set_float(state.computed, (CSS_FLOAT_NONE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_float(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_float(child);
+
+	if (ftype == (CSS_FLOAT_INHERIT as u8) ) {
+		ftype = css_computed_float(parent);
+	}
+
+	set_float(result, ftype);
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
