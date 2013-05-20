@@ -2209,4 +2209,43 @@ pub fn css__compose_column_rule_color(_:@mut css_computed_style, _:@mut css_comp
 }
 
 ///////////////////////////////////////////////////////////////////
+// column_rule_style
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_column_rule_style(opv:u32, _:@mut css_style, 
+		state:@mut css_select_state ) -> css_result {
 
+	if !isInherit(opv) {
+		match getValue(opv) {
+			COLUMN_RULE_STYLE_NONE | COLUMN_RULE_STYLE_HIDDEN |
+			COLUMN_RULE_STYLE_DOTTED | COLUMN_RULE_STYLE_DASHED |
+			COLUMN_RULE_STYLE_SOLID | COLUMN_RULE_STYLE_DOUBLE | 
+			COLUMN_RULE_STYLE_GROOVE | COLUMN_RULE_STYLE_RIDGE | 
+			COLUMN_RULE_STYLE_INSET | COLUMN_RULE_STYLE_OUTSET => {
+				//** \todo convert to public values */	
+			},	
+			_ => fail!(~"Invalid css__cascade_column_rule_color match code")
+		}
+	}
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+		// \todo set computed elevation */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_column_rule_style_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
+	// DO NOTHING
+}
+
+pub fn css__initial_column_rule_style(_:@mut css_select_state) -> css_result {
+	
+	CSS_OK
+}
+
+pub fn css__compose_column_rule_style(_:@mut css_computed_style, _:@mut css_computed_style,
+	_:@mut css_computed_style) {
+	//DO NOTHING
+}
+
+///////////////////////////////////////////////////////////////////
