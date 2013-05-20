@@ -2042,6 +2042,7 @@ pub fn css__compose_color(parent:@mut css_computed_style, child:@mut css_compute
 	}
 	
 }
+
 ///////////////////////////////////////////////////////////////////
 // column_count
 ///////////////////////////////////////////////////////////////////
@@ -2083,3 +2084,41 @@ pub fn css__compose_column_count(_:@mut css_computed_style, _:@mut css_computed_
 	_:@mut css_computed_style) {
 	//DO NOTHING
 }
+
+///////////////////////////////////////////////////////////////////
+// column_count
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_column_fill(opv:u32, _:@mut css_style, 
+		state:@mut css_select_state ) -> css_result {
+
+	if !isInherit(opv) {
+		match getValue(opv) {
+			COLUMN_FILL_BALANCE | COLUMN_FILL_AUTO => {
+				// \todo convert to public values */
+			},	
+			_ => fail!(~"Invalid css__cascade_column_fill match code")
+		}
+	}
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+		// \todo set computed elevation */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_column_fill_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
+	// DO NOTHING
+}
+
+pub fn css__initial_column_fill(_:@mut css_select_state) -> css_result {
+	
+	CSS_OK
+}
+
+pub fn css__compose_column_fill(_:@mut css_computed_style, _:@mut css_computed_style,
+	_:@mut css_computed_style) {
+	//DO NOTHING
+}
+
+///////////////////////////////////////////////////////////////////
