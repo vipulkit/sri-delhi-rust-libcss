@@ -5199,3 +5199,65 @@ pub fn css__compose_pitch_range(_:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// play_during
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_play_during(opv:u32 , 
+							style:@mut css_style ,
+							state: @mut css_select_state 
+							) -> css_result {
+
+	let mut uri : ~str = ~"" ;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			PLAY_DURING_URI => {
+				let (result, str_option) = style.sheet.get().css__stylesheet_string_get(peek_bytecode(style) as uint);
+				match result {
+					CSS_OK => {
+						uri = str_option.unwrap();
+					},
+					x => { 
+						return x ;
+					}
+				}
+				advance_bytecode(style);
+			}
+			PLAY_DURING_AUTO |
+			PLAY_DURING_NONE => {
+				/* \todo convert to public values */
+			},
+			_=>{}
+		}
+
+		/* \todo mix & repeat */
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo play-during */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_play_during_from_hint(_: @mut css_hint, 
+									_:@mut css_computed_style) 
+									-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_play_during(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_play_during(_:@mut css_computed_style,
+								_:@mut css_computed_style,
+								_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
