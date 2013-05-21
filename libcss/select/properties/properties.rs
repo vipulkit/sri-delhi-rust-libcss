@@ -264,7 +264,7 @@ pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_se
 
 
 pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:Option<@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result>) -> css_result {
+	fun:Option<@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) >) -> css_result {
 
 	let mut value = CSS_MIN_HEIGHT_INHERIT;
 	let mut length = 0;
@@ -283,7 +283,7 @@ pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_
 	// \todo lose fun != NULL once all properties have set routines */
 	match fun {
 		Some(fun_fn) => if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
-			return (*fun_fn)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+			(*fun_fn)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
 		},
 		None => {}
 	}
@@ -4150,6 +4150,131 @@ pub fn css__compose_max_width(parent:@mut css_computed_style,
 	}
 	else {
 		set_max_width(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// min-height
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_min_height(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length(opv, style, state, Some(@set_min_height) );
+}
+
+pub fn css__set_min_height_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_min_height(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_min_height(state:@mut css_select_state) -> css_result {
+
+	set_min_height(state.computed, (CSS_MIN_HEIGHT_SET as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_min_height(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_min_height(child);
+
+	if (ftype == (CSS_MIN_HEIGHT_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_min_height(parent);
+		set_min_height(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_min_height(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// min-width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_min_width(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length(opv, style, state, Some(@set_min_width) );
+}
+
+pub fn css__set_min_width_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_min_width(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_min_width(state:@mut css_select_state) -> css_result {
+
+	set_min_width(state.computed, (CSS_MIN_WIDTH_SET as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_min_width(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_min_width(child);
+
+	if (ftype == (CSS_MIN_WIDTH_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_min_width(parent);
+		set_min_width(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_min_width(result, 
 					ftype, 
 					olength.get_or_default(0), 
 					ounit.get_or_default(CSS_UNIT_PX));
