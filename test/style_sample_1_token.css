@@ -1,0 +1,5718 @@
+IDENT html
+S 
+CHAR {
+S 
+IDENT font-size
+CHAR :
+PERCENTAGE 62.5 62.5
+CHAR ;
+S 
+CHAR }
+S 
+IDENT body
+HASH body
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT white
+S 
+IDENT none
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT color
+CHAR :
+HASH 333333 333333
+CHAR ;
+S 
+IDENT font-family
+CHAR :
+IDENT Verdana
+Delim ,
+IDENT Arial
+Delim ,
+IDENT Helvetica
+Delim ,
+IDENT sans-serif
+Delim ,
+IDENT Verdana
+CHAR ;
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT padding
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT center
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+S 
+CHAR {
+S 
+IDENT float
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+S 
+IDENT auto
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT left
+CHAR ;
+S 
+CHAR }
+S 
+HASH search_box
+S 
+IDENT a
+CHAR :
+IDENT link
+Delim ,
+S 
+HASH search_box
+S 
+IDENT a
+CHAR :
+IDENT visited
+S 
+CHAR {
+S 
+S 
+S 
+S 
+S 
+S 
+IDENT color
+CHAR :
+DIMENSION 66 0066 A7
+CHAR ;
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+HASH header_strip
+S 
+CHAR {
+S 
+IDENT height
+CHAR :
+DIMENSION 15 15 px
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT margin
+CHAR :
+IDENT auto
+CHAR ;
+S 
+IDENT padding-right
+CHAR :
+DIMENSION 10 10 px
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT right
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 890 890 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+HASH header_search
+S 
+CHAR {
+S 
+IDENT width
+CHAR :
+DIMENSION 300 300 px
+CHAR ;
+S 
+IDENT border
+CHAR :
+NUMBER 0 0
+S 
+IDENT solid
+S 
+IDENT gray
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT right
+CHAR ;
+S 
+IDENT margin-right
+CHAR :
+DIMENSION 15 15 px
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT margin-top
+CHAR :
+DIMENSION 50 50 px
+CHAR ;
+S 
+CHAR }
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+IDENT div
+HASH container
+S 
+CHAR {
+S 
+IDENT margin
+CHAR :
+IDENT auto
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+HASH header
+S 
+CHAR {
+S 
+IDENT clear
+CHAR :
+IDENT both
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT inline
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 90 90 px
+CHAR ;
+S 
+IDENT margin
+CHAR :
+IDENT auto
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+CHAR }
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+S 
+IDENT div
+IDENT header_tree
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI images/logo_name.jpg
+S 
+IDENT no-repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 90 90 px
+CHAR ;
+S 
+IDENT margin-left
+CHAR :
+DIMENSION 15 15 px
+CHAR ;
+S 
+IDENT margin-top
+CHAR :
+DIMENSION 25 25 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 280 280 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT text_logo
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT font-family
+CHAR :
+IDENT britannic
+S 
+IDENT bold
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 40 40 px
+CHAR ;
+S 
+IDENT font-weight
+CHAR :
+IDENT bold
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 90 90 px
+CHAR ;
+S 
+IDENT opacity
+CHAR :
+NUMBER 0.7 0.7
+S 
+CHAR }
+S 
+IDENT div
+IDENT search_box
+S 
+CHAR {
+S 
+IDENT height
+CHAR :
+DIMENSION 26 26 px
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT right
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT search_box
+S 
+IDENT box
+CHAR :
+IDENT focus
+S 
+CHAR {
+S 
+IDENT border
+CHAR :
+DIMENSION 2 2 px
+S 
+IDENT solid
+S 
+IDENT lightblue
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 180 180 px
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 14 14 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT search_box
+S 
+HASH box
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+IDENT none
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT border
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT solid
+S 
+HASH dfdfdf
+CHAR ;
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT font-family
+CHAR :
+IDENT Lucida
+S 
+IDENT Grande
+STRING ,
+IDENT Lucida
+S 
+IDENT Sans
+S 
+IDENT Unicode
+Delim ,
+IDENT Verdana
+Delim ,
+IDENT Arial
+Delim ,
+IDENT Helvetica
+Delim ,
+IDENT sans-serif
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 12 12 px
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 16 16 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 2 2 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 180 180 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT search_box
+S 
+IDENT go_image
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT white
+S 
+IDENT none
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT border-color
+CHAR :
+HASH dfdfdf
+CHAR ;
+S 
+IDENT border-width
+CHAR :
+DIMENSION 1 1 px
+CHAR ;
+S 
+IDENT color
+CHAR :
+DIMENSION 66 0066 A7
+CHAR ;
+S 
+IDENT cursor
+CHAR :
+IDENT pointer
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT font-family
+CHAR :
+IDENT verdana
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 11 11 px
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 22 22 px
+CHAR ;
+S 
+IDENT line-height
+CHAR :
+NUMBER 1.2 1.2
+S 
+IDENT margin-left
+CHAR :
+DIMENSION 5 5 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 60 60 px
+CHAR ;
+S 
+IDENT border-style
+CHAR :
+IDENT solid
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT full_name
+S 
+CHAR {
+S 
+IDENT height
+CHAR :
+DIMENSION 29 29 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT span
+IDENT full_text
+S 
+CHAR {
+S 
+IDENT padding
+CHAR :
+DIMENSION 2 2 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT full_name_right
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI ../menu_header/images/menu_middle_hover.jpg
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT clear
+CHAR :
+IDENT both
+CHAR ;
+S 
+IDENT color
+CHAR :
+IDENT white
+CHAR ;
+S 
+IDENT font-family
+CHAR :
+IDENT trebuchet
+S 
+IDENT MS
+Delim ,
+IDENT arial
+Delim ,
+IDENT sans-serif
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 12 12 px
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT center
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT menu_main
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+URI images/lblue.jpg
+CHAR ;
+S 
+IDENT border-top
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT solid
+S 
+IDENT EFEFEF
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 30 30 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT top_menu_left
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI ../menu_header/images/menu_left.jpg
+S 
+IDENT no-repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 33 33 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 5 5 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT menu_divider
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI images/top_menu_divider.jpg
+S 
+IDENT repeat-y
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+PERCENTAGE 50 50
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 33 33 px
+CHAR ;
+S 
+IDENT position
+CHAR :
+IDENT relative
+CHAR ;
+S 
+IDENT top
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 1 1 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT top_menu
+S 
+CHAR {
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT menu_list
+S 
+CHAR {
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_bar
+S 
+CHAR {
+S 
+IDENT background-color
+CHAR :
+HASH EFF5FF
+CHAR ;
+S 
+IDENT clear
+CHAR :
+IDENT both
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 28 28 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu
+S 
+CHAR {
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT padding-left
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT padding-top
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT width
+CHAR :
+PERCENTAGE 100 100
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu
+S 
+IDENT ul
+S 
+CHAR {
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT margin
+CHAR :
+DIMENSION 5 5 px
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+S 
+DIMENSION 28 28 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_bar
+S 
+IDENT li
+S 
+IDENT a
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 11 11 px
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 2 2 px
+S 
+DIMENSION 10 10 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_bar
+S 
+IDENT li
+S 
+IDENT a
+CHAR :
+IDENT hover
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+HASH F0F3F7
+S 
+IDENT none
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT underline
+CHAR ;
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 2 2 px
+S 
+DIMENSION 10 10 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_institute
+S 
+CHAR {
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT padding-left
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT padding-top
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT width
+CHAR :
+PERCENTAGE 100 100
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_acads
+S 
+CHAR {
+S 
+IDENT display
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT padding-left
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT padding-top
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT width
+CHAR :
+PERCENTAGE 100 100
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_admissions
+S 
+CHAR {
+S 
+IDENT display
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT padding-left
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT padding-top
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT width
+CHAR :
+PERCENTAGE 100 100
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_research
+S 
+CHAR {
+S 
+IDENT display
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT padding-left
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT padding-top
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT width
+CHAR :
+PERCENTAGE 100 100
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_people
+S 
+CHAR {
+S 
+IDENT display
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT padding-left
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT padding-top
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT width
+CHAR :
+PERCENTAGE 100 100
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_campuslife
+S 
+CHAR {
+S 
+IDENT display
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT padding-left
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT padding-top
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT width
+CHAR :
+PERCENTAGE 100 100
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_institute
+S 
+IDENT ul
+S 
+CHAR {
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT margin-top
+CHAR :
+DIMENSION 2 2 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 3 3 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_acads
+S 
+IDENT ul
+S 
+CHAR {
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+S 
+DIMENSION 30 30 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 3 3 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_admissions
+S 
+IDENT ul
+S 
+CHAR {
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+S 
+DIMENSION 163 163 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 3 3 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_research
+S 
+IDENT ul
+S 
+CHAR {
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+S 
+DIMENSION 300 300 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 3 3 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_people
+S 
+IDENT ul
+S 
+CHAR {
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+S 
+DIMENSION 480 480 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 3 3 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_campuslife
+S 
+IDENT ul
+S 
+CHAR {
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+S 
+DIMENSION 635 635 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 3 3 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT ul
+S 
+CHAR {
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT padding
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT ul
+S 
+IDENT li
+S 
+CHAR {
+S 
+IDENT line-height
+CHAR :
+NUMBER 1.5 1.5
+S 
+IDENT margin-left
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT padding
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+IDENT sub
+S 
+CHAR {
+S 
+IDENT border-bottom
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT none
+CHAR ;
+S 
+IDENT color
+CHAR :
+IDENT F3F5F5
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+HASH main
+Delim ,
+S 
+IDENT div
+HASH top_menu
+S 
+IDENT a
+IDENT main_acads
+Delim ,
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+IDENT main_admissions
+Delim ,
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+IDENT main_research
+Delim ,
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+IDENT main_people
+Delim ,
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+IDENT main_campuslife
+Delim ,
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+IDENT main_media
+CHAR {
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 12 12 px
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 30 30 px
+CHAR ;
+S 
+IDENT line-height
+CHAR :
+NUMBER 2.4 2.4
+S 
+IDENT margin-left
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT center
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 129 129 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+IDENT main_institute
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT EFF5FF
+CHAR ;
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 12 12 px
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 30 30 px
+CHAR ;
+S 
+IDENT line-height
+CHAR :
+NUMBER 2.4 2.4
+S 
+IDENT text-align
+CHAR :
+IDENT center
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 126 126 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+IDENT sub
+CHAR :
+IDENT hover
+S 
+CHAR {
+S 
+IDENT border-bottom
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT solid
+S 
+IDENT white
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+IDENT main_acads
+CHAR :
+IDENT hover
+Delim ,
+S 
+IDENT div
+HASH top_menu
+S 
+IDENT a
+IDENT main_institute
+CHAR :
+IDENT hover
+Delim ,
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+IDENT main_admissions
+CHAR :
+IDENT hover
+Delim ,
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+IDENT main_research
+CHAR :
+IDENT hover
+Delim ,
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+IDENT main_people
+CHAR :
+IDENT hover
+Delim ,
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+IDENT main_campuslife
+CHAR :
+IDENT hover
+Delim ,
+S 
+IDENT div
+IDENT top_menu
+S 
+IDENT a
+HASH main
+CHAR :
+IDENT hover
+Delim ,
+S 
+IDENT div
+HASH top_menu
+S 
+IDENT a
+IDENT main_media
+CHAR :
+IDENT hover
+S 
+CHAR {
+S 
+IDENT border-bottom
+CHAR :
+NUMBER 0 0
+S 
+IDENT solid
+S 
+IDENT white
+CHAR ;
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT underline
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_institute
+S 
+IDENT ul
+S 
+IDENT li
+Delim ,
+S 
+IDENT div
+IDENT sub_menu_acads
+S 
+IDENT ul
+S 
+IDENT li
+Delim ,
+S 
+IDENT div
+IDENT sub_menu_research
+S 
+IDENT ul
+S 
+IDENT li
+Delim ,
+S 
+IDENT div
+IDENT sub_menu_campuslife
+S 
+IDENT ul
+S 
+IDENT li
+Delim ,
+S 
+IDENT div
+IDENT sub_menu_admissions
+S 
+IDENT ul
+S 
+IDENT li
+Delim ,
+S 
+IDENT div
+IDENT sub_menu_people
+S 
+IDENT ul
+S 
+IDENT li
+S 
+CHAR {
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT line-height
+CHAR :
+NUMBER 1.5 1.5
+S 
+IDENT margin-left
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu_list
+S 
+CHAR {
+S 
+IDENT display
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu
+S 
+IDENT a
+HASH sub
+S 
+CHAR {
+S 
+IDENT border-bottom
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT none
+CHAR ;
+S 
+IDENT color
+CHAR :
+HASH F3F5F5
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu
+S 
+IDENT a
+IDENT main
+S 
+CHAR {
+S 
+IDENT border-bottom
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT none
+CHAR ;
+S 
+IDENT color
+CHAR :
+IDENT FFFFFF
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 15 15 px
+CHAR ;
+S 
+IDENT letter-spacing
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT margin-bottom
+CHAR :
+DIMENSION 10 10 px
+CHAR ;
+S 
+IDENT margin-left
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu
+S 
+IDENT a
+HASH sub
+CHAR :
+IDENT hover
+S 
+CHAR {
+S 
+IDENT border-bottom
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT solid
+S 
+IDENT white
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT sub_menu
+S 
+IDENT a
+HASH main
+CHAR :
+IDENT hover
+S 
+CHAR {
+S 
+IDENT border-bottom
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT solid
+S 
+IDENT white
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT top_menu_right
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI ../menu_header/images/menu_right.jpg
+S 
+IDENT no-repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 33 33 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 5 5 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT slide
+S 
+CHAR {
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT padding
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT btn_slide
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+DIMENSION 83 83 BAD1
+S 
+URI images/slider_btn.gif
+S 
+IDENT no-repeat
+S 
+IDENT scroll
+S 
+IDENT right
+S 
+DIMENSION 6 6 px
+CHAR ;
+S 
+IDENT color
+CHAR :
+IDENT FFFFFF
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT right
+CHAR ;
+S 
+IDENT font-weight
+CHAR :
+IDENT bold
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT line-height
+CHAR :
+PERCENTAGE 100 100
+CHAR ;
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+S 
+IDENT auto
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 5 5 px
+S 
+DIMENSION 10 10 px
+S 
+NUMBER 0 0
+S 
+DIMENSION 8 8 px
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 60 60 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT expanded
+S 
+CHAR {
+S 
+IDENT background-position
+CHAR :
+IDENT right
+S 
+DIMENSION -22 -22 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT featured_main
+S 
+CHAR {
+S 
+IDENT clear
+CHAR :
+IDENT both
+CHAR ;
+S 
+IDENT margin
+CHAR :
+IDENT auto
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT featured_main_text
+S 
+CHAR {
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT margin-top
+CHAR :
+DIMENSION 60 60 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 400 400 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT featured_main_text
+S 
+IDENT blockquote
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 2.4 2.4 m
+CHAR ;
+S 
+IDENT line-height
+CHAR :
+DIMENSION 1.6 1.6 m
+CHAR ;
+S 
+IDENT margin
+CHAR :
+DIMENSION 10 10 px
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 15 15 px
+S 
+DIMENSION 20 20 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT bqstart
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+IDENT E0ECED
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+PERCENTAGE 700 700
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 45 45 px
+CHAR ;
+S 
+IDENT margin-bottom
+CHAR :
+DIMENSION -50 -50 px
+CHAR ;
+S 
+IDENT margin-top
+CHAR :
+DIMENSION -20 -20 px
+CHAR ;
+S 
+IDENT padding-top
+CHAR :
+DIMENSION 45 45 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT bqend
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+HASH E0ECED
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT right
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+PERCENTAGE 700 700
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 25 25 px
+CHAR ;
+S 
+IDENT margin-top
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT padding-top
+CHAR :
+DIMENSION 12 12 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT img
+IDENT mImg
+S 
+CHAR {
+S 
+IDENT height
+CHAR :
+DIMENSION 250 250 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT featured_main_image
+S 
+CHAR {
+S 
+IDENT clear
+CHAR :
+IDENT both
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 250 250 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT ul
+Delim .
+IDENT navigation
+S 
+CHAR {
+S 
+IDENT list-style-image
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT position
+CHAR :
+IDENT relative
+CHAR ;
+S 
+IDENT right
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT z-index
+CHAR :
+NUMBER 2 2
+CHAR ;
+S 
+CHAR }
+S 
+IDENT ul
+Delim .
+IDENT navigation
+S 
+IDENT li
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI images/slider_nav.gif
+S 
+IDENT no-repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT list-style-image
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT list-style-position
+CHAR :
+IDENT outside
+CHAR ;
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT padding-left
+CHAR :
+DIMENSION 8 8 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT ul
+Delim .
+IDENT navigation
+S 
+IDENT li
+S 
+IDENT a
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+IDENT FFFFFF
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+IDENT ul
+Delim .
+IDENT navigation
+S 
+IDENT li
+S 
+IDENT a
+S 
+IDENT span
+S 
+CHAR {
+S 
+IDENT display
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+IDENT ul
+Delim .
+IDENT navigation
+S 
+IDENT li
+HASH prev
+S 
+CHAR {
+S 
+IDENT background-position
+CHAR :
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT ul
+Delim .
+IDENT navigation
+S 
+IDENT li
+HASH pane
+S 
+CHAR {
+S 
+IDENT background-position
+CHAR :
+NUMBER 0 0
+S 
+DIMENSION -40 -40 px
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT ul
+Delim .
+IDENT navigation
+S 
+IDENT li
+HASH pane
+Delim .
+IDENT selected
+S 
+CHAR {
+S 
+IDENT background-position
+CHAR :
+NUMBER 0 0
+S 
+DIMENSION -60 -60 px
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT ul
+Delim .
+IDENT navigation
+S 
+IDENT li
+IDENT next
+S 
+CHAR {
+S 
+IDENT background-position
+CHAR :
+NUMBER 0 0
+S 
+DIMENSION -20 -20 px
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT scroll
+S 
+CHAR {
+S 
+IDENT clear
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 250 250 px
+CHAR ;
+S 
+IDENT overflow
+CHAR :
+IDENT auto
+CHAR ;
+S 
+IDENT position
+CHAR :
+IDENT relative
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT scrollContainer
+S 
+IDENT div
+Delim .
+IDENT panel
+S 
+CHAR {
+S 
+IDENT height
+CHAR :
+DIMENSION 210 210 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 580 580 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT scrollButtons
+S 
+CHAR {
+S 
+IDENT cursor
+CHAR :
+IDENT pointer
+CHAR ;
+S 
+IDENT position
+CHAR :
+IDENT absolute
+CHAR ;
+S 
+IDENT top
+CHAR :
+DIMENSION 150 150 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT scrollButtons
+Delim .
+IDENT left
+S 
+CHAR {
+S 
+IDENT left
+CHAR :
+DIMENSION 10 10 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT scrollButtons
+Delim .
+IDENT right
+S 
+CHAR {
+S 
+IDENT right
+CHAR :
+DIMENSION 10 10 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT featured
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI images/spotlight.gif
+S 
+IDENT no-repeat
+S 
+IDENT scroll
+S 
+DIMENSION 10 10 px
+S 
+DIMENSION 3 3 px
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 40 40 px
+CHAR ;
+S 
+IDENT line-height
+CHAR :
+NUMBER 2 2
+CHAR ;
+S 
+IDENT text-indent
+CHAR :
+DIMENSION 30 30 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT featured_content
+S 
+CHAR {
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 1.3 1.3 m
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 235 235 px
+CHAR ;
+S 
+IDENT margin-left
+CHAR :
+DIMENSION 10 10 px
+CHAR ;
+S 
+IDENT margin-right
+CHAR :
+DIMENSION 10 10 px
+CHAR ;
+S 
+IDENT margin-top
+CHAR :
+DIMENSION 30 30 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 330 330 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT featured_image
+S 
+CHAR {
+S 
+IDENT float
+CHAR :
+IDENT right
+CHAR ;
+S 
+IDENT margin-top
+CHAR :
+DIMENSION 50 50 px
+CHAR ;
+S 
+IDENT padding-right
+CHAR :
+DIMENSION 30 30 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT photo_bg
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT F7F7F7
+S 
+URI images/photo_bg.jpg
+S 
+IDENT no-repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT content_below
+S 
+CHAR {
+S 
+IDENT clear
+CHAR :
+IDENT both
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 250 250 px
+CHAR ;
+S 
+IDENT margin
+CHAR :
+DIMENSION 40 40 px
+S 
+IDENT auto
+S 
+DIMENSION 20 20 px
+S 
+IDENT auto
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 898 898 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT quick_links
+S 
+CHAR {
+S 
+IDENT display
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 220 220 px
+CHAR ;
+S 
+IDENT margin-left
+CHAR :
+DIMENSION 5 5 px
+CHAR ;
+S 
+IDENT margin-right
+CHAR :
+DIMENSION 5 5 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 5 5 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 165 165 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT quick_links
+S 
+IDENT ul
+S 
+CHAR {
+S 
+IDENT border-right
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT dashed
+S 
+IDENT gray
+CHAR ;
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT margin
+CHAR :
+DIMENSION 10 10 px
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+S 
+DIMENSION 10 10 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT quick_links
+S 
+IDENT li
+S 
+CHAR {
+S 
+IDENT margin
+CHAR :
+DIMENSION 5 5 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT quick_links
+S 
+IDENT ul
+S 
+IDENT li
+S 
+IDENT a
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 12 12 px
+CHAR ;
+S 
+IDENT letter-spacing
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT quick_links
+S 
+IDENT ul
+S 
+IDENT li
+S 
+IDENT a
+CHAR :
+IDENT hover
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT list-style-image
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT list-style-position
+CHAR :
+IDENT outside
+CHAR ;
+S 
+IDENT list-style-type
+CHAR :
+IDENT circle
+CHAR ;
+S 
+CHAR }
+S 
+IDENT span
+IDENT quick_links_title
+S 
+CHAR {
+S 
+IDENT background-color
+CHAR :
+IDENT blue
+CHAR ;
+S 
+IDENT color
+CHAR :
+DIMENSION 66 0066 A7
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 15 15 px
+CHAR ;
+S 
+IDENT font-weight
+CHAR :
+IDENT bold
+CHAR ;
+S 
+IDENT letter-spacing
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT margin-top
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT featured_research
+S 
+CHAR {
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 1.2 1.2 m
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 290 290 px
+CHAR ;
+S 
+IDENT margin-right
+CHAR :
+DIMENSION 15 15 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 5 5 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 485 485 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT featured_research_content
+S 
+CHAR {
+S 
+IDENT border-right
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT dashed
+S 
+IDENT D2D2D2
+CHAR ;
+S 
+IDENT padding-top
+CHAR :
+DIMENSION 8 8 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT featured_research_text
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT padding-right
+CHAR :
+DIMENSION 10 10 px
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT justify
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT featured_research_text
+S 
+IDENT td
+S 
+IDENT p
+CHAR {
+S 
+IDENT font-size
+CHAR :
+DIMENSION 11 11 px
+CHAR ;
+S 
+S 
+IDENT text-align
+CHAR :
+IDENT justify
+CHAR ;
+S 
+CHAR }
+S 
+IDENT span
+IDENT featured_research_text_faculty
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+DIMENSION 66 0066 A7
+CHAR ;
+S 
+IDENT font-family
+CHAR :
+IDENT Lucida
+S 
+IDENT Grande
+STRING ,
+IDENT Lucida
+S 
+IDENT Sans
+S 
+IDENT Unicode
+Delim ,
+IDENT Verdana
+Delim ,
+IDENT Arial
+Delim ,
+IDENT Helvetica
+Delim ,
+IDENT sans-serif
+CHAR ;
+S 
+IDENT font-weight
+CHAR :
+IDENT normal
+CHAR ;
+S 
+IDENT margin-top
+CHAR :
+DIMENSION 5 5 px
+CHAR ;
+S 
+IDENT padding-bottom
+CHAR :
+DIMENSION 10 10 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT img
+IDENT featured_research_image
+S 
+CHAR {
+S 
+IDENT border-color
+CHAR :
+NUMBER 333333 333333
+S 
+NUMBER 333333 333333
+S 
+HASH 333333
+S 
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT border-style
+CHAR :
+IDENT solid
+CHAR ;
+S 
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+S 
+IDENT margin-right
+CHAR :
+DIMENSION 5 5 px
+CHAR ;
+S 
+IDENT margin-top
+CHAR :
+DIMENSION 5 5 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 85 85 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT featured_research_more
+S 
+CHAR {
+S 
+IDENT margin-right
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT left
+CHAR ;
+S 
+CHAR }
+S 
+IDENT img
+IDENT arrow
+S 
+CHAR {
+S 
+IDENT border-left
+CHAR :
+DIMENSION 10 10 px
+S 
+IDENT none
+CHAR ;
+S 
+IDENT border-right
+CHAR :
+DIMENSION 10 10 px
+S 
+IDENT none
+CHAR ;
+S 
+IDENT padding-bottom
+CHAR :
+DIMENSION 2 2 px
+CHAR ;
+S 
+IDENT padding-right
+CHAR :
+DIMENSION 2 2 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT a
+HASH more
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+DIMENSION 66 0066 A7
+CHAR ;
+S 
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+IDENT a
+HASH more
+CHAR :
+IDENT hover
+S 
+CHAR {
+S 
+IDENT text-decoration
+CHAR :
+IDENT underline
+CHAR ;
+S 
+CHAR }
+S 
+IDENT span
+IDENT featured_research_title
+S 
+IDENT a
+CHAR {
+S 
+IDENT color
+CHAR :
+HASH 0066A7
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT font-weight
+CHAR :
+IDENT bold
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 1.1 1.1 m
+CHAR ;
+S 
+IDENT letter-spacing
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+IDENT span
+IDENT featured_research_title
+S 
+IDENT a
+CHAR :
+IDENT hover
+S 
+CHAR {
+S 
+IDENT text-decoration
+CHAR :
+IDENT underline
+CHAR ;
+S 
+CHAR }
+S 
+IDENT table
+S 
+IDENT td
+S 
+CHAR {
+S 
+IDENT font-size
+CHAR :
+DIMENSION 11 11 px
+CHAR ;
+S 
+IDENT line-height
+CHAR :
+NUMBER 1.2 1.2
+S 
+IDENT padding
+CHAR :
+DIMENSION 3 3 px
+CHAR ;
+S 
+IDENT vertical-align
+CHAR :
+IDENT top
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+HASH news
+S 
+CHAR {
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 220 220 px
+CHAR ;
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+S 
+IDENT auto
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 375 375 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT tabs
+S 
+IDENT ul
+Delim ,
+S 
+IDENT li
+S 
+CHAR {
+S 
+IDENT border
+CHAR :
+NUMBER 0 0
+S 
+IDENT none
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 11 11 px
+CHAR ;
+S 
+IDENT list-style-image
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT list-style-position
+CHAR :
+IDENT outside
+CHAR ;
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT padding
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT tabs
+S 
+IDENT li
+S 
+CHAR {
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT margin-right
+CHAR :
+DIMENSION 2 2 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 65 65 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT tabs
+S 
+IDENT li
+IDENT fop_tab
+S 
+CHAR {
+S 
+IDENT font-size
+CHAR :
+DIMENSION 0.85 0.85 m
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 65 65 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT tabs
+S 
+CHAR {
+S 
+IDENT height
+CHAR :
+DIMENSION 25 25 px
+CHAR ;
+S 
+IDENT list-style-image
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT list-style-position
+CHAR :
+IDENT outside
+CHAR ;
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT margin-left
+CHAR :
+DIMENSION 8 8 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT tabs
+S 
+IDENT a
+CHAR :
+IDENT link
+Delim ,
+S 
+Delim .
+IDENT tabs
+S 
+IDENT a
+CHAR :
+IDENT visited
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI images/tab-round.gif
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+IDENT right
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT color
+CHAR :
+HASH 0066A7
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 25 25 px
+CHAR ;
+S 
+IDENT line-height
+CHAR :
+DIMENSION 25 25 px
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT tabs
+S 
+IDENT a
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI images/tab-round.gif
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+IDENT right
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT tabs
+S 
+IDENT a
+S 
+IDENT span
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI images/tab-round.gif
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+IDENT left
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 25 25 px
+CHAR ;
+S 
+IDENT margin-right
+CHAR :
+DIMENSION 14 14 px
+CHAR ;
+S 
+IDENT padding-left
+CHAR :
+DIMENSION 14 14 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT tabs
+S 
+IDENT a
+CHAR :
+IDENT hover
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI images/tab-round.gif
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+IDENT right
+S 
+DIMENSION -30 -30 px
+CHAR ;
+S 
+IDENT color
+CHAR :
+HASH FEFEFE
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT tabs
+S 
+IDENT a
+CHAR :
+IDENT hover
+S 
+IDENT span
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI images/tab-round.gif
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+IDENT left
+S 
+DIMENSION -30 -30 px
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT active
+S 
+IDENT a
+CHAR :
+IDENT link
+Delim ,
+S 
+Delim .
+IDENT active
+S 
+IDENT a
+CHAR :
+IDENT visited
+Delim ,
+S 
+Delim .
+IDENT active
+S 
+IDENT a
+CHAR :
+IDENT visited
+Delim ,
+S 
+Delim .
+IDENT active
+S 
+IDENT a
+CHAR :
+IDENT hover
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI images/tab-round.gif
+S 
+IDENT no-repeat
+S 
+IDENT scroll
+S 
+IDENT right
+S 
+DIMENSION -60 -60 px
+CHAR ;
+S 
+IDENT color
+CHAR :
+IDENT DFDFDF
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT active
+S 
+IDENT a
+S 
+IDENT span
+Delim ,
+S 
+Delim .
+IDENT active
+S 
+IDENT a
+CHAR :
+IDENT hover
+S 
+IDENT span
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI images/tab-round.gif
+S 
+IDENT no-repeat
+S 
+IDENT scroll
+S 
+IDENT left
+S 
+DIMENSION -60 -60 px
+CHAR ;
+S 
+IDENT color
+CHAR :
+IDENT DFDFDF
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+CHAR }
+S 
+IDENT a
+IDENT tab1_click
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT white
+S 
+IDENT none
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT border
+CHAR :
+NUMBER 0 0
+S 
+IDENT solid
+S 
+IDENT gray
+CHAR ;
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 1.4 1.4 m
+CHAR ;
+S 
+IDENT font-weight
+CHAR :
+IDENT bold
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 90 90 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT a
+IDENT empty_tab
+S 
+CHAR {
+S 
+IDENT background-color
+CHAR :
+IDENT F7F7F7
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 1 1 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT tab_content_inner
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+IDENT none
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT border-left
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT solid
+S 
+HASH 333333
+CHAR ;
+S 
+IDENT border-right
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT solid
+S 
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 190 190 px
+CHAR ;
+S 
+IDENT margin-top
+CHAR :
+DIMENSION 1 1 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 373 373 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT tab_content
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+IDENT none
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT border-top
+CHAR :
+DIMENSION 2 2 px
+S 
+IDENT solid
+S 
+IDENT lightblue
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 11 11 px
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 190 190 px
+CHAR ;
+S 
+IDENT margin-bottom
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 10 10 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 355 355 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT tab_content
+S 
+IDENT ul
+S 
+IDENT li
+S 
+CHAR {
+S 
+IDENT padding
+CHAR :
+DIMENSION 2 2 px
+S 
+DIMENSION 5 5 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT tab_content
+S 
+IDENT ul
+S 
+IDENT li
+S 
+IDENT a
+S 
+CHAR {
+S 
+IDENT border-bottom
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT solid
+S 
+IDENT white
+CHAR ;
+S 
+IDENT border-top
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT solid
+S 
+IDENT white
+CHAR ;
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 11 11 px
+CHAR ;
+S 
+IDENT line-height
+CHAR :
+NUMBER 1.2 1.2
+S 
+IDENT padding
+CHAR :
+DIMENSION 3 3 px
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT justify
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT tab_content
+S 
+IDENT ul
+S 
+IDENT li
+S 
+IDENT a
+CHAR :
+IDENT hover
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT white
+S 
+IDENT none
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT border-bottom
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT solid
+S 
+IDENT lightblue
+CHAR ;
+S 
+IDENT border-top
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT solid
+S 
+IDENT lightblue
+CHAR ;
+S 
+IDENT color
+CHAR :
+DIMENSION 66 0066 A7
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT tab_content
+S 
+IDENT ul
+S 
+IDENT li
+S 
+IDENT span
+S 
+CHAR {
+S 
+IDENT clear
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 0.85 0.85 m
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 30 30 px
+CHAR ;
+S 
+IDENT padding-left
+CHAR :
+DIMENSION 3 3 px
+CHAR ;
+S 
+IDENT padding-right
+CHAR :
+DIMENSION 12 12 px
+CHAR ;
+S 
+IDENT padding-top
+CHAR :
+DIMENSION 3 3 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT tab_content
+S 
+IDENT a
+IDENT more-items-link
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+DIMENSION 66 0066 A7
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT right
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 11 11 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 2 2 px
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+IDENT a
+IDENT more-items-link
+CHAR :
+IDENT visited
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+DIMENSION 3399 3399 CC
+CHAR ;
+S 
+CHAR }
+S 
+IDENT a
+IDENT more-items-link
+CHAR :
+IDENT hover
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+HASH 0066A7
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT footer
+S 
+CHAR {
+S 
+S 
+IDENT margin
+CHAR :
+IDENT auto
+S 
+IDENT auto
+S 
+DIMENSION 50 50 px
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT center
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+IDENT clear
+CHAR :
+IDENT both
+CHAR ;
+S 
+IDENT margin
+CHAR :
+IDENT auto
+CHAR ;
+S 
+IDENT width
+CHAR :
+PERCENTAGE 100 100
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT footer_address
+S 
+CHAR {
+S 
+IDENT clear
+CHAR :
+IDENT both
+CHAR ;
+S 
+IDENT margin
+CHAR :
+IDENT auto
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT center
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT footer_address
+S 
+IDENT p
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 1.1 1.1 m
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT footer_menu
+S 
+CHAR {
+S 
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI ../menu_header/images/menu_middle.jpg
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT color
+CHAR :
+IDENT FFFFFF
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 1 1 em
+CHAR ;
+S 
+IDENT font-weight
+CHAR :
+IDENT bold
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT margin
+CHAR :
+IDENT auto
+CHAR ;
+S 
+IDENT padding-top
+CHAR :
+DIMENSION 5 5 px
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT center
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT footer_menu
+S 
+IDENT a
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+IDENT FFFFFF
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT footer_menu
+S 
+IDENT a
+CHAR :
+IDENT hover
+S 
+CHAR {
+S 
+IDENT text-decoration
+CHAR :
+IDENT underline
+CHAR ;
+S 
+CHAR }
+S 
+IDENT p
+S 
+CHAR {
+S 
+IDENT margin
+CHAR :
+DIMENSION 15 15 px
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT left
+CHAR ;
+S 
+CHAR }
+S 
+IDENT p
+Delim ,
+S 
+IDENT ul
+S 
+CHAR {
+S 
+S 
+IDENT line-height
+CHAR :
+DIMENSION 1.4 1.4 m
+CHAR ;
+S 
+CHAR }
+S 
+IDENT p
+S 
+IDENT a
+Delim ,
+S 
+IDENT li
+S 
+IDENT a
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+HASH 3399CC
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+IDENT p
+Delim .
+IDENT intro
+S 
+CHAR {
+S 
+IDENT border-bottom
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT solid
+S 
+IDENT CCCCCC
+CHAR ;
+S 
+IDENT margin-bottom
+CHAR :
+DIMENSION 20 20 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+DIMENSION 20 20 px
+S 
+NUMBER 0 0
+S 
+DIMENSION 30 30 px
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT center
+CHAR ;
+S 
+IDENT width
+CHAR :
+PERCENTAGE 100 100
+CHAR ;
+S 
+CHAR }
+S 
+IDENT p
+IDENT cross-links
+S 
+CHAR {
+S 
+IDENT text-align
+CHAR :
+IDENT center
+CHAR ;
+S 
+CHAR }
+S 
+IDENT p
+IDENT cross-links
+S 
+CHAR {
+S 
+IDENT border-bottom
+CHAR :
+DIMENSION 1 1 px
+S 
+IDENT solid
+S 
+IDENT CCCCCC
+CHAR ;
+S 
+IDENT margin-bottom
+CHAR :
+DIMENSION 30 30 px
+CHAR ;
+S 
+IDENT padding-bottom
+CHAR :
+DIMENSION 30 30 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT noscript
+S 
+IDENT p
+Delim ,
+S 
+IDENT noscript
+S 
+IDENT ol
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+HASH AA0000
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 1.3 1.3 m
+CHAR ;
+S 
+IDENT line-height
+CHAR :
+DIMENSION 1.4 1.4 m
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT left
+CHAR ;
+S 
+CHAR }
+S 
+IDENT noscript
+S 
+IDENT a
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+IDENT AA0000
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT underline
+CHAR ;
+S 
+CHAR }
+S 
+IDENT noscript
+S 
+IDENT ol
+S 
+CHAR {
+S 
+IDENT margin-left
+CHAR :
+DIMENSION 25 25 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripViewer
+S 
+Delim .
+IDENT tainer
+S 
+Delim .
+IDENT panel
+S 
+IDENT ul
+S 
+CHAR {
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+S 
+DIMENSION 15 15 px
+S 
+NUMBER 0 0
+S 
+DIMENSION 30 30 px
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT left
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT slider-wrap
+S 
+CHAR {
+S 
+IDENT height
+CHAR :
+DIMENSION 200 200 px
+CHAR ;
+S 
+IDENT margin
+CHAR :
+DIMENSION -25 -25 px
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT position
+CHAR :
+IDENT relative
+CHAR ;
+S 
+IDENT width
+CHAR :
+PERCENTAGE 100 100
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT csw
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT FFFFFF
+S 
+IDENT none
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 260 260 px
+CHAR ;
+S 
+IDENT overflow
+CHAR :
+IDENT scroll
+CHAR ;
+S 
+IDENT width
+CHAR :
+PERCENTAGE 100 100
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT csw
+S 
+Delim .
+IDENT loading
+S 
+CHAR {
+S 
+IDENT margin
+CHAR :
+DIMENSION 200 200 px
+S 
+NUMBER 0 0
+S 
+DIMENSION 300 300 px
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT center
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripViewer
+S 
+CHAR {
+S 
+IDENT clear
+CHAR :
+IDENT both
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 225 225 px
+CHAR ;
+S 
+IDENT margin
+CHAR :
+IDENT auto
+CHAR ;
+S 
+IDENT overflow
+CHAR :
+IDENT hidden
+CHAR ;
+S 
+IDENT position
+CHAR :
+IDENT relative
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 800 800 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripViewer
+S 
+Delim .
+IDENT panelContainer
+S 
+CHAR {
+S 
+IDENT left
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT position
+CHAR :
+IDENT relative
+CHAR ;
+S 
+IDENT top
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT width
+CHAR :
+PERCENTAGE 100 100
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripViewer
+S 
+Delim .
+IDENT panelContainer
+S 
+Delim .
+IDENT panel
+S 
+CHAR {
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT height
+CHAR :
+PERCENTAGE 100 100
+CHAR ;
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+IDENT position
+CHAR :
+IDENT relative
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 800 800 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripViewer
+S 
+Delim .
+IDENT panelContainer
+S 
+Delim .
+IDENT panel
+S 
+Delim .
+IDENT wrapper
+S 
+CHAR {
+S 
+IDENT padding
+CHAR :
+DIMENSION 10 10 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripNav
+S 
+CHAR {
+S 
+IDENT float
+CHAR :
+IDENT right
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 35 35 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripNav
+S 
+IDENT ul
+S 
+CHAR {
+S 
+IDENT height
+CHAR :
+DIMENSION 35 35 px
+CHAR ;
+S 
+IDENT list-style-image
+CHAR :
+IDENT none
+CHAR ;
+S 
+IDENT list-style-position
+CHAR :
+IDENT outside
+CHAR ;
+S 
+IDENT list-style-type
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripNav
+S 
+IDENT ul
+S 
+IDENT li
+S 
+CHAR {
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT margin-right
+CHAR :
+DIMENSION 2 2 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripNav
+S 
+IDENT a
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT C6E3FF
+S 
+IDENT none
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT color
+CHAR :
+NUMBER 0 000000
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 1 1 em
+CHAR ;
+S 
+IDENT line-height
+CHAR :
+DIMENSION 32 32 px
+CHAR ;
+S 
+IDENT padding
+CHAR :
+NUMBER 0 0
+S 
+DIMENSION 15 15 px
+CHAR ;
+S 
+IDENT text-align
+CHAR :
+IDENT center
+CHAR ;
+S 
+IDENT text-decoration
+CHAR :
+IDENT none
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripNav
+S 
+IDENT a
+CHAR :
+IDENT hover
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+DIMENSION 83 83 BAD1
+S 
+IDENT none
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripNav
+S 
+IDENT a
+Delim .
+IDENT current
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+HASH 0066A7
+S 
+IDENT none
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+IDENT color
+CHAR :
+IDENT FFFFFF
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripNavL
+Delim ,
+S 
+Delim .
+IDENT stripNavR
+S 
+CHAR {
+S 
+IDENT position
+CHAR :
+IDENT absolute
+CHAR ;
+S 
+IDENT text-indent
+CHAR :
+DIMENSION -9000 -9000 em
+CHAR ;
+S 
+IDENT top
+CHAR :
+DIMENSION 230 230 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripNavL
+S 
+IDENT a
+Delim ,
+S 
+Delim .
+IDENT stripNavR
+S 
+IDENT a
+S 
+CHAR {
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 40 40 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 40 40 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripNavL
+S 
+CHAR {
+S 
+IDENT left
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripNavR
+S 
+CHAR {
+S 
+IDENT right
+CHAR :
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripNavL
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI images/arrow-left.gif
+S 
+IDENT no-repeat
+S 
+IDENT scroll
+S 
+IDENT center
+S 
+IDENT center
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT stripNavR
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+IDENT transparent
+S 
+URI images/arrow-right.gif
+S 
+IDENT no-repeat
+S 
+IDENT scroll
+S 
+IDENT center
+S 
+IDENT center
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT wrapper
+S 
+IDENT h1
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+HASH 333333
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 17 17 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT wrapper
+S 
+IDENT h3
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+IDENT white
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 15 15 px
+CHAR ;
+S 
+IDENT font-weight
+CHAR :
+IDENT bold
+CHAR ;
+S 
+CHAR }
+S 
+IDENT span
+IDENT heading
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+HASH 0066A7
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 15 15 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT left-content
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT font-family
+CHAR :
+IDENT Lucida
+S 
+IDENT Grande
+STRING ,
+IDENT Lucida
+S 
+IDENT Sans
+S 
+IDENT Unicode
+Delim ,
+IDENT Verdana
+Delim ,
+IDENT Arial
+Delim ,
+IDENT Helvetica
+Delim ,
+IDENT sans-serif
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 13 13 px
+CHAR ;
+S 
+IDENT margin-top
+CHAR :
+DIMENSION 10 10 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT mid-content
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+HASH 333333
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT left
+CHAR ;
+S 
+IDENT font-family
+CHAR :
+IDENT Lucida
+S 
+IDENT Grande
+STRING ,
+IDENT Lucida
+S 
+IDENT Sans
+S 
+IDENT Unicode
+Delim ,
+IDENT Verdana
+Delim ,
+IDENT Arial
+Delim ,
+IDENT Helvetica
+Delim ,
+IDENT sans-serif
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 13 13 px
+CHAR ;
+S 
+IDENT line-height
+CHAR :
+DIMENSION 1.4 1.4 m
+CHAR ;
+S 
+IDENT margin-left
+CHAR :
+DIMENSION 100 100 px
+CHAR ;
+S 
+IDENT margin-top
+CHAR :
+DIMENSION 10 10 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 150 150 px
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT right-content
+S 
+CHAR {
+S 
+IDENT color
+CHAR :
+NUMBER 333333 333333
+CHAR ;
+S 
+IDENT float
+CHAR :
+IDENT right
+CHAR ;
+S 
+IDENT font-family
+CHAR :
+IDENT Lucida
+S 
+IDENT Grande
+STRING ,
+IDENT Lucida
+S 
+IDENT Sans
+S 
+IDENT Unicode
+Delim ,
+IDENT Verdana
+Delim ,
+IDENT Arial
+Delim ,
+IDENT Helvetica
+Delim ,
+IDENT sans-serif
+CHAR ;
+S 
+IDENT font-size
+CHAR :
+DIMENSION 13 13 px
+CHAR ;
+S 
+IDENT margin
+CHAR :
+DIMENSION 10 10 px
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 309 309 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT details-link-1
+S 
+CHAR {
+S 
+IDENT margin-top
+CHAR :
+DIMENSION 160 160 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT details-link-2
+S 
+CHAR {
+S 
+IDENT margin-top
+CHAR :
+DIMENSION 160 160 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT rtop
+S 
+CHAR {
+S 
+IDENT background-color
+CHAR :
+IDENT white
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT rbottom
+S 
+CHAR {
+S 
+IDENT background-color
+CHAR :
+IDENT white
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT margin
+CHAR :
+IDENT auto
+CHAR ;
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT rtop
+S 
+Delim *
+Delim ,
+S 
+Delim .
+IDENT rbottom
+S 
+Delim *
+S 
+CHAR {
+S 
+IDENT background-color
+CHAR :
+IDENT white
+CHAR ;
+S 
+IDENT display
+CHAR :
+IDENT block
+CHAR ;
+S 
+IDENT height
+CHAR :
+DIMENSION 1 1 px
+CHAR ;
+S 
+IDENT overflow
+CHAR :
+IDENT hidden
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT r1
+S 
+CHAR {
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+S 
+DIMENSION 5 5 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT r2
+S 
+CHAR {
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+S 
+DIMENSION 3 3 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT r3
+S 
+CHAR {
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+S 
+DIMENSION 2 2 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT r4
+S 
+CHAR {
+S 
+IDENT height
+CHAR :
+DIMENSION 1 1 px
+CHAR ;
+S 
+IDENT margin
+CHAR :
+NUMBER 0 0
+S 
+DIMENSION 1 1 px
+CHAR ;
+S 
+CHAR }
+S 
+Delim .
+IDENT r1
+Delim ,
+S 
+Delim .
+IDENT r2
+Delim ,
+S 
+Delim .
+IDENT r3
+Delim ,
+S 
+Delim .
+IDENT r4
+S 
+CHAR {
+S 
+IDENT background
+CHAR :
+HASH 0066A7
+S 
+IDENT none
+S 
+IDENT repeat
+S 
+IDENT scroll
+S 
+NUMBER 0 0
+S 
+NUMBER 0 0
+CHAR ;
+S 
+CHAR }
+S 
+IDENT div
+IDENT footer
+S 
+CHAR {
+S 
+S 
+IDENT margin
+CHAR :
+IDENT auto
+S 
+IDENT auto
+S 
+DIMENSION 80 80 px
+CHAR ;
+S 
+S 
+IDENT width
+CHAR :
+DIMENSION 900 900 px
+CHAR ;
+S 
+CHAR }
+S 
+EOF 

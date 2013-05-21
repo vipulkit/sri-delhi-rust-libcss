@@ -15,8 +15,8 @@ margin:0 auto;
 text-align:left;
 }
 
-#search_box a:link, #search_box a:visited {
-  color:#0066A7;
+#search_box a:link, #search_box a:visited {              /*TODO*/
+  color:#0066A7;                                         /*TODO*/
   text-decoration:none;
 }
 
@@ -35,7 +35,7 @@ float:right;
 margin-right:15px;
 display:block;
 margin-top:50px;
-}
+}                                                         /*checked*/
 div#container {
 margin:auto;
 width:900px;
@@ -46,7 +46,7 @@ display:inline;
 height:90px;
 margin:auto;
 width:900px;
-}
+}                                                   /*checked*/
 div#header_tree {
 background:transparent url(images/logo_name.jpg) no-repeat scroll 0 0;
 float:left;
