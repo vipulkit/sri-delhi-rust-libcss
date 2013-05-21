@@ -907,7 +907,7 @@ pub impl css_properties {
             css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_SPACING , FLAG_INHERIT as u8 , 0);
         }
         else {
-            let mut num_lengths :int =0;
+            let mut num_lengths :int;
             let (length_opt,unit_opt,result) = css__parse_unit_specifier(sheet, vector, ctx, UNIT_PX as u32);
             length.push(length_opt.unwrap() as i32);
             unit.push(unit_opt.unwrap());
@@ -922,18 +922,17 @@ pub impl css_properties {
                     }
                     num_lengths = 1;
                     consumeWhitespace(vector, ctx);
-                    token = &vector[*ctx];
-                     if *ctx < vector.len() {
+                    if *ctx < vector.len() {
                         let (length_opt,unit_opt,result) = css__parse_unit_specifier(sheet, vector, ctx, UNIT_PX as u32);
                         length.push(length_opt.unwrap() as i32);
                         unit.push(unit_opt.unwrap());
                         error =result;
                          match error {
                             CSS_OK=> {
-                                if (unit[1] & UNIT_ANGLE as u32)>0   ||
-                                   ( unit[1] & UNIT_TIME as u32) > 0 ||
-                                   ( unit[1] & UNIT_FREQ  as u32) > 0 ||
-                                   ( unit[1] & UNIT_PCT as u32) > 0 {
+                                if (unit[1] & UNIT_ANGLE as u32) > 0 ||
+                                   (unit[1] & UNIT_TIME as u32) > 0 ||
+                                   (unit[1] & UNIT_FREQ  as u32) > 0 ||
+                                   (unit[1] & UNIT_PCT as u32) > 0 {
                     
                                     *ctx = orig_ctx;
                                     return CSS_INVALID;
@@ -1108,73 +1107,56 @@ pub impl css_properties {
                 *ctx = orig_ctx;
                 return CSS_INVALID;
             }
-            match token.token_type {
-                CSS_TOKEN_IDENT(_) => {
-                    if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THIN as uint) {
-                        side_val.push(BORDER_WIDTH_THIN );
-                        *ctx = *ctx + 1;
-                        error = CSS_OK;
-                    }
-                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MEDIUM as uint) {
-                        side_val.push(BORDER_WIDTH_MEDIUM );
-                        *ctx = *ctx + 1;
-                        error = CSS_OK;
-                    }
-                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THICK as uint) {
-                        side_val.push(BORDER_WIDTH_THICK );
-                        *ctx = *ctx + 1;
-                        error = CSS_OK;
-                    }
-                    else {
-                        side_val.push(BORDER_WIDTH_SET );
-                        let (length_val , unit_val , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
-                        match result {
-                            CSS_OK => {
-                                if (side_unit[side_count] == (UNIT_PCT as u32)) {
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                                if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                                if (side_unit[side_count] & (UNIT_TIME as u32)) > 0{
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                                if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                            },
-                            _ => {}
+            if (match token.token_type {
+                CSS_TOKEN_IDENT(_) => true,
+                _ => false
+            }) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THIN as uint) {
+
+                side_val.push(BORDER_WIDTH_THIN );
+                *ctx = *ctx + 1;
+                error = CSS_OK;
+            }
+            else if (match token.token_type {
+                CSS_TOKEN_IDENT(_) => true,
+                _ => false
+            }) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MEDIUM as uint) {
+                
+                side_val.push(BORDER_WIDTH_MEDIUM);
+                *ctx = *ctx + 1;
+                error = CSS_OK;
+            }
+            else if (match token.token_type {
+                CSS_TOKEN_IDENT(_) => true,
+                _ => false
+            }) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THICK as uint) {
+                
+                side_val.push(BORDER_WIDTH_THICK);
+                *ctx = *ctx + 1;
+                error = CSS_OK;
+            }
+            else {
+                side_val.push(BORDER_WIDTH_SET);
+                let (length_val , unit_val , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
+                match result {
+                    CSS_OK => {
+                        if (side_unit[side_count] == (UNIT_PCT as u32)) {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
                         }
-                    }
-                },
-                _ => {
-                    side_val.push(BORDER_WIDTH_SET );
-                    let (length_val , unit_val , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
-                    match result {
-                        CSS_OK => {
-                            if (side_unit[side_count] == (UNIT_PCT as u32)) {
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                            if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                            if (side_unit[side_count] & (UNIT_TIME as u32)) > 0{
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                            if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                        },
-                        _ => {}
-                    }
+                        if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                        if (side_unit[side_count] & (UNIT_TIME as u32)) > 0{
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                        if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                    },
+                    _ => {}
                 }
             }
             match error {

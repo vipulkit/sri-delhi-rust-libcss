@@ -19,11 +19,11 @@ fn lex(fileName: ~str) {
         PARSERUTILS_OK=>{}
         _ => {assert!(false);} // when inputstream is not created
     }
-    let inputstream = 
+    let inputstream =
         match(inputStreamOption) {
-            Some(x)   => x,
+            Some(x) => x,
             None => {
-                // io::println("InputStream is not created, hence lexer can't be initialised");                        
+                // io::println("InputStream is not created, hence lexer can't be initialised");
                 fail!(~"inputstream is None");
             }
         };
@@ -32,7 +32,7 @@ fn lex(fileName: ~str) {
 
     let r: @Reader = io::file_reader(&Path(file)).get();
     let mut dataFlag = false;
-    // let mut expectedFlag = false;
+    let mut expectedFlag = false;
     let mut resetFlag = false;
     let mut finalstr: ~str = ~"";
     let mut final_buf: ~[u8] = ~[];
@@ -43,24 +43,29 @@ fn lex(fileName: ~str) {
         if buf == ~"#data" {
             // io::println(buf);
             dataFlag = true;
-            // expectedFlag = false;
-            resetFlag = false; 
+            expectedFlag = false;
+            resetFlag = false;
         }
         else if buf == ~"#errors" {
             dataFlag = false;
-            // expectedFlag = false;
+            expectedFlag = false;
             resetFlag = false;
         }
         else if buf == ~"#expected" {
-            // expectedFlag = true;
+            expectedFlag = true;
             dataFlag = false;
             resetFlag = false;
 
         }
         else if buf == ~"#reset" {
             dataFlag = false;
-            // expectedFlag = false;
+            expectedFlag = false;
             resetFlag = true;
+        }
+        else if buf == ~"" {
+            dataFlag = false;
+            expectedFlag = false;
+            resetFlag = false;
         }
         
         else if dataFlag {
@@ -69,7 +74,7 @@ fn lex(fileName: ~str) {
             // io::println(finalstr);
         }
 
-        if resetFlag {
+        if resetFlag && !dataFlag && !expectedFlag {
             for str::each_char(finalstr) |i| {
                 final_buf.push(i as u8);
             }
