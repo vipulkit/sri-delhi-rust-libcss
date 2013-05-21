@@ -3908,3 +3908,128 @@ pub fn css__compose_margin_left(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+
+// margin-right
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_margin_right(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_auto(opv, style, state, @set_margin_right);
+}
+
+pub fn css__set_margin_right_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_margin_right(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_margin_right(state:@mut css_select_state) -> css_result {
+
+	set_margin_right(state.computed, (CSS_MARGIN_SET as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_margin_right(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_margin_right(child);
+
+	if (ftype == (CSS_MARGIN_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_margin_right(parent);
+		set_margin_right(result, 
+						ftype2, 
+						olength2.get_or_default( olength.get_or_default(0) ), 
+						ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_margin_right(result, 
+						ftype, 
+						olength.get_or_default(0), 
+						ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// margin-top
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_margin_top(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_auto(opv, style, state, @set_margin_top);
+}
+
+pub fn css__set_margin_top_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_margin_top(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_margin_top(state:@mut css_select_state) -> css_result {
+
+	set_margin_top(state.computed, (CSS_MARGIN_SET as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_margin_top(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_margin_top(child);
+
+	if (ftype == (CSS_MARGIN_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_margin_top(parent);
+		set_margin_top(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_margin_top(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
