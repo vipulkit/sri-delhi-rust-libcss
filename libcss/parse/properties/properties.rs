@@ -1136,7 +1136,7 @@ pub impl css_properties {
             }
             else {
                 side_val.push(BORDER_WIDTH_SET);
-                let (length_val , unit_val , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
+                let (_ , _ , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
                 match result {
                     CSS_OK => {
                         if (side_unit[side_count] == (UNIT_PCT as u32)) {
@@ -1362,13 +1362,12 @@ pub impl css_properties {
 
 
     fn css__parse_columns(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_result {
-        let orig_ctx:uint = *ctx;
         let mut prev_ctx:uint;
         let mut token:&@css_token;
         let mut width = true;
         let mut count = true;
-        let mut error_width: css_result= CSS_OK;
-        let mut error_count: css_result= CSS_OK;
+        let mut error_width: css_result;
+        let mut error_count: css_result;
         let mut error =true;
 
         if *ctx >= vector.len() {
@@ -1512,7 +1511,7 @@ pub impl css_properties {
                     if *ctx >= vector.len() {
                         return CSS_INVALID;
                     }
-                    token=&vector[*ctx];
+                    // token=&vector[*ctx];
                 },
                 _ => {
                     break;
@@ -2025,7 +2024,6 @@ pub impl css_properties {
     fn css__parse_cursor(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         let orig_ctx = *ctx;
         let mut token: &@css_token;
-        let mut first: bool;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -2418,10 +2416,8 @@ pub impl css_properties {
 
 
     fn css__parse_font(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_result {
-        let orig_ctx = *ctx;
         let mut prev_ctx: uint;
         let mut token: &@css_token;
-        let system_font: css_system_font;
         let mut bool_style = true;
         let mut variant = true;
         let mut weight = true;
@@ -2487,7 +2483,6 @@ pub impl css_properties {
         svw = 0;
         while svw < 3 {
             prev_ctx = *ctx;
-            error =CSS_OK;
 
             if *ctx >= vector.len() {
                return CSS_INVALID;
@@ -2817,7 +2812,7 @@ pub impl css_properties {
                     if *ctx >= vector.len() {
                         return CSS_INVALID;
                     }
-                    token=&vector[*ctx];
+                    // token=&vector[*ctx];
                 },
                 _ => {
                     break;
@@ -2850,7 +2845,6 @@ pub impl css_properties {
         let orig_ctx = *ctx;
         let mut token: &@css_token;
         let mut flags: u8 = 0;
-        let mut value: u8 = 0;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -2864,11 +2858,9 @@ pub impl css_properties {
                     flags |= FLAG_INHERIT as u8;
                 }
                 else {
-                    let (list_type , error) = css__parse_list_style_type_value(strings , token);
+                    let (_ , error) = css__parse_list_style_type_value(strings , token);
                     match error {
-                        CSS_OK => {
-                            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_LIST_STYLE_TYPE , flags , list_type.unwrap());
-                        },
+                        CSS_OK => {},
                         _ => {
                             *ctx = orig_ctx;
                             return error;
@@ -2881,6 +2873,8 @@ pub impl css_properties {
                 return CSS_INVALID;
             }
         }
+        let (list_type , _) = css__parse_list_style_type_value(strings , token);
+        css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_LIST_STYLE_TYPE , flags , list_type.unwrap());
         CSS_OK
     }
 
@@ -2914,61 +2908,34 @@ pub impl css_properties {
                 *ctx = orig_ctx;
                 return CSS_INVALID;
             }
-            match token.token_type {
-                CSS_TOKEN_IDENT(_) => {
-                    if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
-                        side_val.push(MARGIN_AUTO );
-                        *ctx = *ctx + 1;
-                        error = CSS_OK;
-                    }
-                    else {
-                        side_val.push(MARGIN_SET );
-                        let (length_val , unit_val , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
-                        match result {
-                            CSS_OK => {
-                                if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                                if (side_unit[side_count] & (UNIT_TIME as u32)) > 0{
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                                if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                                side_count += 1;
-                                consumeWhitespace(vector , ctx);
-                                token=&vector[*ctx];
-                            },
-                            _ => {}
+            if (match token.token_type {
+                CSS_TOKEN_IDENT(_) => true,
+                _ => false
+            }) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
+
+                side_val.push(MARGIN_AUTO);
+                *ctx = *ctx + 1;
+                error = CSS_OK;
+            }
+            else {
+                side_val.push(MARGIN_SET );
+                let (_ , _ , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
+                match result {
+                    CSS_OK => {
+                        if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
                         }
-                    }
-                },
-                _ => {
-                    side_val.push(MARGIN_SET );
-                    let (length_val , unit_val , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
-                    match result {
-                        CSS_OK => {
-                            if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                            if (side_unit[side_count] & (UNIT_TIME as u32)) > 0{
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                            if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                            side_count += 1;
-                            consumeWhitespace(vector , ctx);
-                            token=&vector[*ctx];
-                        },
-                        _ => {}
-                    }
+                        if (side_unit[side_count] & (UNIT_TIME as u32)) > 0{
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                        if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                    },
+                    _ => {}
                 }
             }
             match error {
@@ -3167,7 +3134,7 @@ pub impl css_properties {
                     if *ctx >= vector.len() {
                         return CSS_INVALID;
                     }
-                    token=&vector[*ctx];
+                    // token=&vector[*ctx];
                 },
                 _ => {
                     break;
