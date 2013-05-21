@@ -202,7 +202,7 @@ pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_se
 
 
 pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_result {
 	
 	let mut value = CSS_LETTER_SPACING_INHERIT;
 	let mut length = 0;
@@ -225,7 +225,7 @@ pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_
 	unit = css__to_css_unit(unit) as u32;
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
-		return (*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+		(*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
 	}
 
 	CSS_OK
@@ -233,7 +233,7 @@ pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_
 
 
 pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_result {
 
 	let mut value = CSS_MAX_HEIGHT_INHERIT;
 	let mut length = 0;
@@ -256,7 +256,7 @@ pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_se
 	unit = css__to_css_unit(unit) as u32;
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
-		return (*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+		(*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
 	}
 
 	CSS_OK
@@ -264,7 +264,7 @@ pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_se
 
 
 pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:Option<@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result>) -> css_result {
+	fun:Option<@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) >) -> css_result {
 
 	let mut value = CSS_MIN_HEIGHT_INHERIT;
 	let mut length = 0;
@@ -283,7 +283,7 @@ pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_
 	// \todo lose fun != NULL once all properties have set routines */
 	match fun {
 		Some(fun_fn) => if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
-			return (*fun_fn)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+			(*fun_fn)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
 		},
 		None => {}
 	}
@@ -400,7 +400,7 @@ pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state
 ///////////////////////////////////////////////////////////////////
 
 
-// Azimuth.c
+// Azimuth
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_azimuth(opv:u32 , 
 							style:@mut css_style ,
@@ -455,7 +455,7 @@ pub fn css__compose_azimuth(_:@mut css_computed_style,
 ///////////////////////////////////////////////////////////////////
 
 
-// background_attachment.c
+// background_attachment
 ///////////////////////////////////////////////////////////////////
 
 pub fn css__cascade_background_attachment(opv:u32, _:@mut css_style, 
@@ -517,7 +517,7 @@ pub fn css__compose_background_attachment(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
-// background_color.c
+// background_color
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_background_color(opv:u32, style:@mut css_style, 
 									state:@mut css_select_state) -> css_result {
@@ -569,7 +569,7 @@ pub fn css__compose_background_color(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
-// background_image.c
+// background_image
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_background_image(opv:u32, style:@mut css_style, 
 									state:@mut css_select_state) -> css_result {
@@ -626,7 +626,7 @@ pub fn css__compose_background_image(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
-// background_position.c
+// background_position
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_background_position(opv:u32, style:@mut css_style, 
 									state:@mut css_select_state) -> css_result {
@@ -753,7 +753,7 @@ pub fn css__compose_background_position(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
-// background_repeat.c
+// background_repeat
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_background_repeat(opv:u32, _:@mut css_style, 
 									state:@mut css_select_state) -> css_result {
@@ -819,7 +819,7 @@ pub fn css__compose_background_repeat(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
-// border_bottom_color.c
+// border_bottom_color
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_bottom_color(opv:u32, style:@mut css_style, 
 									state:@mut css_select_state) -> css_result {
@@ -3322,6 +3322,959 @@ pub fn css__compose_height(parent:@mut css_computed_style,
 	}
 	else {
 		set_height(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// left
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_left(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_auto(opv, style, state, @set_left);
+}
+
+pub fn css__set_left_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_left(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_left(state:@mut css_select_state) -> css_result {
+
+	set_left(state.computed, (CSS_LEFT_AUTO as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_left(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_left(child);
+
+	if (ftype == (CSS_LEFT_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_left(parent);
+		set_left(result, 
+				ftype2, 
+				olength2.get_or_default( olength.get_or_default(0) ), 
+				ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_left(result, 
+				ftype, 
+				olength.get_or_default(0), 
+				ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// letter-spacing
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_letter_spacing(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_normal(opv, style, state, @set_letter_spacing);
+}
+
+pub fn css__set_letter_spacing_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_letter_spacing(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_letter_spacing(state:@mut css_select_state) -> css_result {
+
+	set_letter_spacing(state.computed, (CSS_LETTER_SPACING_NORMAL as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_letter_spacing(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_letter_spacing(child);
+
+	if (  (child.uncommon.is_none() && parent.uncommon.is_some() ) || 
+			ftype == (CSS_LETTER_SPACING_INHERIT as u8) || 
+			(child.uncommon.is_some() && !mut_ptr_eq(result,child) ) ) {
+
+			if ( ( child.uncommon.is_none() && parent.uncommon.is_some() ) ||
+					ftype == (CSS_LETTER_SPACING_INHERIT as u8) ) {
+
+				let mut (ftype2,olength2,ounit2) = css_computed_letter_spacing(parent);
+				set_letter_spacing(result, 
+								ftype2, 
+								olength2.get_or_default( olength.get_or_default(0) ), 
+								ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+			}
+			else {
+
+				set_letter_spacing(result, 
+									ftype, 
+									olength.get_or_default(0), 
+									ounit.get_or_default(CSS_UNIT_PX));
+			}
+	}
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// line-height
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_line_height(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value : u16 = CSS_LINE_HEIGHT_INHERIT as u16;
+	let mut val : i32 = 0;
+	let mut unit : u32 = UNIT_PX as u32;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			LINE_HEIGHT_NUMBER => {
+				value = CSS_LINE_HEIGHT_NUMBER as u16;
+				val = peek_bytecode(style) as i32;
+				advance_bytecode(style);
+			},
+			LINE_HEIGHT_DIMENSION => {
+				value = CSS_LINE_HEIGHT_DIMENSION as u16;
+				val = peek_bytecode(style) as i32;
+				advance_bytecode(style);
+				unit = peek_bytecode(style);
+				advance_bytecode(style);
+			},
+			LINE_HEIGHT_NORMAL => {
+				value = CSS_LINE_HEIGHT_NORMAL as u16;
+			},
+			_=>{} 
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		set_line_height(state.computed, (value as u8) , val, css__to_css_unit(unit) );
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_line_height_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_line_height(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_line_height(state:@mut css_select_state) -> css_result {
+
+	set_line_height(state.computed, (CSS_LINE_HEIGHT_NORMAL as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_line_height(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_line_height(child);
+
+	if (ftype == (CSS_LINE_HEIGHT_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_line_height(parent);
+		set_line_height(result, 
+						ftype2, 
+						olength2.get_or_default( olength.get_or_default(0) ), 
+						ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_line_height(result, 
+						ftype, 
+						olength.get_or_default(0), 
+						ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// line_style_image
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_list_style_image(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return  css__cascade_uri_none(opv, style, state, Some(@set_list_style_image) );
+}
+
+pub fn css__set_list_style_image_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		STRING=>{
+			match hint.string {
+				Some(copy x)=>{
+					set_list_style_image(style, hint.status, x);
+				}
+				None=>{
+					set_list_style_image(style, hint.status, ~"");
+				}
+			}
+			hint.string = None ;
+			CSS_OK
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_list_style_image(state:@mut css_select_state) -> css_result {
+
+	set_list_style_image(state.computed, 
+			(CSS_LIST_STYLE_IMAGE_NONE as u8) , ~"" );
+	CSS_OK
+}
+
+pub fn css__compose_list_style_image(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,url) = css_computed_list_style_image(child);
+
+	if (ftype == (CSS_LIST_STYLE_IMAGE_INHERIT as u8) ) {
+		let mut (ftype2,url2) = css_computed_list_style_image(parent);
+		set_list_style_image(result, ftype2, url2);
+		CSS_OK
+	}
+	else {
+		set_list_style_image(result, ftype, url);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// list_style_position
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_list_style_position(opv:u32, _:@mut css_style, 
+										state:@mut css_select_state) -> css_result {
+
+	
+	let mut value = CSS_LIST_STYLE_POSITION_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			LIST_STYLE_POSITION_INSIDE => {
+				value = CSS_LIST_STYLE_POSITION_INSIDE as u16;
+			}
+			LIST_STYLE_POSITION_OUTSIDE => {
+				value = CSS_LIST_STYLE_POSITION_OUTSIDE as u16;
+			}
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		set_list_style_position(state.computed, (value as u8) );
+	}
+	CSS_OK
+}
+
+pub fn css__set_list_style_position_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_list_style_position(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_list_style_position(state:@mut css_select_state) -> css_result {
+
+	set_list_style_position(state.computed, 
+			(CSS_LIST_STYLE_POSITION_OUTSIDE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_list_style_position(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_list_style_position(child);
+
+	if (ftype == (CSS_LIST_STYLE_POSITION_INHERIT as u8) ) {
+		ftype = css_computed_list_style_position(parent);
+		
+		set_list_style_position(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_list_style_position(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+
+// list_style_type
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_list_style_type(opv:u32, _:@mut css_style, 
+										state:@mut css_select_state) -> css_result {
+
+	
+	let mut value = CSS_LIST_STYLE_TYPE_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			LIST_STYLE_TYPE_DISC => {
+				value = ( CSS_LIST_STYLE_TYPE_DISC as u16) ;
+			}
+			LIST_STYLE_TYPE_CIRCLE => {
+				value = ( CSS_LIST_STYLE_TYPE_CIRCLE as u16) ;
+			}
+			LIST_STYLE_TYPE_SQUARE => {
+				value = ( CSS_LIST_STYLE_TYPE_SQUARE as u16) ;
+			}
+			LIST_STYLE_TYPE_DECIMAL => {
+				value = ( CSS_LIST_STYLE_TYPE_DECIMAL as u16) ;
+			}
+			LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO => {
+				value = ( CSS_LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO as u16) ;
+			}
+			LIST_STYLE_TYPE_LOWER_ROMAN => {
+				value = ( CSS_LIST_STYLE_TYPE_LOWER_ROMAN as u16) ;
+			}
+			LIST_STYLE_TYPE_UPPER_ROMAN => {
+				value = ( CSS_LIST_STYLE_TYPE_UPPER_ROMAN as u16) ;
+			}
+			LIST_STYLE_TYPE_LOWER_GREEK => {
+				value = ( CSS_LIST_STYLE_TYPE_LOWER_GREEK as u16) ;
+			}
+			LIST_STYLE_TYPE_LOWER_LATIN => {
+				value = ( CSS_LIST_STYLE_TYPE_LOWER_LATIN as u16) ;
+			}
+			LIST_STYLE_TYPE_UPPER_LATIN => {
+				value = ( CSS_LIST_STYLE_TYPE_UPPER_LATIN as u16) ;
+			}
+			LIST_STYLE_TYPE_ARMENIAN => {
+				value = ( CSS_LIST_STYLE_TYPE_ARMENIAN as u16) ;
+			}
+			LIST_STYLE_TYPE_GEORGIAN => {
+				value = ( CSS_LIST_STYLE_TYPE_GEORGIAN as u16) ;
+			}
+			LIST_STYLE_TYPE_LOWER_ALPHA => {
+				value = ( CSS_LIST_STYLE_TYPE_LOWER_ALPHA as u16) ;
+			}
+			LIST_STYLE_TYPE_UPPER_ALPHA => {
+				value = ( CSS_LIST_STYLE_TYPE_UPPER_ALPHA as u16) ;
+			}
+			LIST_STYLE_TYPE_NONE => {
+				value = ( CSS_LIST_STYLE_TYPE_NONE as u16) ;
+			}
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16) , isImportant(opv), state,
+			isInherit(opv))) {
+		set_list_style_type(state.computed, (value as u8) );
+	}
+	CSS_OK
+}
+
+pub fn css__set_list_style_type_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_list_style_type(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_list_style_type(state:@mut css_select_state) -> css_result {
+
+	set_list_style_type(state.computed, (CSS_LIST_STYLE_TYPE_DISC as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_list_style_type(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_list_style_type(child);
+
+	if (ftype == (CSS_LIST_STYLE_TYPE_INHERIT as u8) ) {
+		ftype = css_computed_list_style_type(parent);
+		
+		set_list_style_type(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_list_style_type(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// margin-bottom
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_margin_bottom(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_auto(opv, style, state, @set_margin_bottom);
+}
+
+pub fn css__set_margin_bottom_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_margin_bottom(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_margin_bottom(state:@mut css_select_state) -> css_result {
+
+	set_margin_bottom(state.computed, (CSS_MARGIN_SET as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_margin_bottom(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_margin_bottom(child);
+
+	if (ftype == (CSS_MARGIN_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_margin_bottom(parent);
+		set_margin_bottom(result, 
+						ftype2, 
+						olength2.get_or_default( olength.get_or_default(0) ), 
+						ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_margin_bottom(result, 
+						ftype, 
+						olength.get_or_default(0), 
+						ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// margin-left
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_margin_left(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_auto(opv, style, state, @set_margin_left);
+}
+
+pub fn css__set_margin_left_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_margin_left(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_margin_left(state:@mut css_select_state) -> css_result {
+
+	set_margin_left(state.computed, (CSS_MARGIN_SET as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_margin_left(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_margin_left(child);
+
+	if (ftype == (CSS_MARGIN_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_margin_left(parent);
+		set_margin_left(result, 
+						ftype2, 
+						olength2.get_or_default( olength.get_or_default(0) ), 
+						ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_margin_left(result, 
+						ftype, 
+						olength.get_or_default(0), 
+						ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// margin-right
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_margin_right(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_auto(opv, style, state, @set_margin_right);
+}
+
+pub fn css__set_margin_right_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_margin_right(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_margin_right(state:@mut css_select_state) -> css_result {
+
+	set_margin_right(state.computed, (CSS_MARGIN_SET as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_margin_right(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_margin_right(child);
+
+	if (ftype == (CSS_MARGIN_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_margin_right(parent);
+		set_margin_right(result, 
+						ftype2, 
+						olength2.get_or_default( olength.get_or_default(0) ), 
+						ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_margin_right(result, 
+						ftype, 
+						olength.get_or_default(0), 
+						ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// margin-top
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_margin_top(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_auto(opv, style, state, @set_margin_top);
+}
+
+pub fn css__set_margin_top_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_margin_top(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_margin_top(state:@mut css_select_state) -> css_result {
+
+	set_margin_top(state.computed, (CSS_MARGIN_SET as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_margin_top(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_margin_top(child);
+
+	if (ftype == (CSS_MARGIN_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_margin_top(parent);
+		set_margin_top(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_margin_top(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// max_height
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_max_height(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_none(opv, style, state, @set_max_height);
+}
+
+pub fn css__set_max_height_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_max_height(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_max_height(state:@mut css_select_state) -> css_result {
+
+	set_max_height(state.computed, (CSS_MAX_HEIGHT_NONE as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_max_height(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_max_height(child);
+
+	if (ftype == (CSS_MAX_HEIGHT_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_max_height(parent);
+		set_max_height(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_max_height(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// max_width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_max_width(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_none(opv, style, state, @set_max_width);
+}
+
+pub fn css__set_max_width_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_max_width(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_max_width(state:@mut css_select_state) -> css_result {
+
+	set_max_width(state.computed, (CSS_MAX_WIDTH_NONE as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_max_width(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_max_width(child);
+
+	if (ftype == (CSS_MAX_WIDTH_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_max_width(parent);
+		set_max_width(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_max_width(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// min-height
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_min_height(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length(opv, style, state, Some(@set_min_height) );
+}
+
+pub fn css__set_min_height_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_min_height(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_min_height(state:@mut css_select_state) -> css_result {
+
+	set_min_height(state.computed, (CSS_MIN_HEIGHT_SET as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_min_height(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_min_height(child);
+
+	if (ftype == (CSS_MIN_HEIGHT_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_min_height(parent);
+		set_min_height(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_min_height(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// min-width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_min_width(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length(opv, style, state, Some(@set_min_width) );
+}
+
+pub fn css__set_min_width_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_min_width(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_min_width(state:@mut css_select_state) -> css_result {
+
+	set_min_width(state.computed, (CSS_MIN_WIDTH_SET as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_min_width(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_min_width(child);
+
+	if (ftype == (CSS_MIN_WIDTH_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_min_width(parent);
+		set_min_width(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_min_width(result, 
 					ftype, 
 					olength.get_or_default(0), 
 					ounit.get_or_default(CSS_UNIT_PX));
