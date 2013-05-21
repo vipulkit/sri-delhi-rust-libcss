@@ -5059,7 +5059,8 @@ pub fn css__cascade_pause_after(opv:u32 ,
 }
 
 pub fn css__set_pause_after_from_hint(_: @mut css_hint, 
-		_:@mut css_computed_style) -> css_result {
+									_:@mut css_computed_style) 
+									-> css_result {
 
 	CSS_OK
 }
@@ -5070,8 +5071,8 @@ pub fn css__initial_pause_after(_:@mut css_select_state) -> css_result {
 }
 
 pub fn css__compose_pause_after(_:@mut css_computed_style,
-							_:@mut css_computed_style,
-							_:@mut css_computed_style) -> css_result {
+								_:@mut css_computed_style,
+								_:@mut css_computed_style) -> css_result {
 
 	CSS_OK
 }
@@ -5089,7 +5090,8 @@ pub fn css__cascade_pause_before(opv:u32 ,
 }
 
 pub fn css__set_pause_before_from_hint(_: @mut css_hint, 
-		_:@mut css_computed_style) -> css_result {
+									_:@mut css_computed_style) 
+									-> css_result {
 
 	CSS_OK
 }
@@ -5100,8 +5102,98 @@ pub fn css__initial_pause_before(_:@mut css_select_state) -> css_result {
 }
 
 pub fn css__compose_pause_before(_:@mut css_computed_style,
-							_:@mut css_computed_style,
-							_:@mut css_computed_style) -> css_result {
+								_:@mut css_computed_style,
+								_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// pitch
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_pitch(opv:u32 , 
+							style:@mut css_style ,
+							state: @mut css_select_state 
+							) -> css_result {
+
+	let mut freq : i32 = 0;
+	let mut unit : u32 = UNIT_HZ as u32;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			PITCH_FREQUENCY  => {
+				freq = peek_bytecode(style) as i32 ;
+				advance_bytecode(style);
+				unit = peek_bytecode(style);
+				advance_bytecode(style);
+			},
+			PITCH_X_LOW  |
+			PITCH_LOW  |
+			PITCH_MEDIUM  |
+			PITCH_HIGH  |
+			PITCH_X_HIGH  => {
+				/* \todo convert to public values */
+			},
+			_ =>{}
+		}
+	}
+
+	//unit = css__to_css_unit(unit);
+
+	if (css__outranks_existing( (getOpcode(opv) as u16) , isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo pitch */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_pitch_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_pitch(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_pitch(_:@mut css_computed_style,
+						_:@mut css_computed_style,
+						_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// pitch_range
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_pitch_range(opv:u32 , 
+							style:@mut css_style ,
+							state: @mut css_select_state 
+							) -> css_result {
+
+	css__cascade_number(opv, style, state, None)
+}
+
+pub fn css__set_pitch_range_from_hint(_: @mut css_hint, 
+									_:@mut css_computed_style) 
+									-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_pitch_range(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_pitch_range(_:@mut css_computed_style,
+								_:@mut css_computed_style,
+								_:@mut css_computed_style) -> css_result {
 
 	CSS_OK
 }
