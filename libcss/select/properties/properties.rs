@@ -400,7 +400,7 @@ pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state
 ///////////////////////////////////////////////////////////////////
 
 
-// Azimuth.c
+// Azimuth
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_azimuth(opv:u32 , 
 							style:@mut css_style ,
@@ -455,7 +455,7 @@ pub fn css__compose_azimuth(_:@mut css_computed_style,
 ///////////////////////////////////////////////////////////////////
 
 
-// background_attachment.c
+// background_attachment
 ///////////////////////////////////////////////////////////////////
 
 pub fn css__cascade_background_attachment(opv:u32, _:@mut css_style, 
@@ -517,7 +517,7 @@ pub fn css__compose_background_attachment(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
-// background_color.c
+// background_color
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_background_color(opv:u32, style:@mut css_style, 
 									state:@mut css_select_state) -> css_result {
@@ -569,7 +569,7 @@ pub fn css__compose_background_color(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
-// background_image.c
+// background_image
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_background_image(opv:u32, style:@mut css_style, 
 									state:@mut css_select_state) -> css_result {
@@ -626,7 +626,7 @@ pub fn css__compose_background_image(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
-// background_position.c
+// background_position
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_background_position(opv:u32, style:@mut css_style, 
 									state:@mut css_select_state) -> css_result {
@@ -753,7 +753,7 @@ pub fn css__compose_background_position(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
-// background_repeat.c
+// background_repeat
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_background_repeat(opv:u32, _:@mut css_style, 
 									state:@mut css_select_state) -> css_result {
@@ -819,7 +819,7 @@ pub fn css__compose_background_repeat(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
-// border_bottom_color.c
+// border_bottom_color
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_bottom_color(opv:u32, style:@mut css_style, 
 									state:@mut css_select_state) -> css_result {
@@ -3460,6 +3460,158 @@ pub fn css__compose_letter_spacing(parent:@mut css_computed_style,
 			}
 	}
 	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// line-height
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_line_height(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value : u16 = CSS_LINE_HEIGHT_INHERIT as u16;
+	let mut val : i32 = 0;
+	let mut unit : u32 = UNIT_PX as u32;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			LINE_HEIGHT_NUMBER => {
+				value = CSS_LINE_HEIGHT_NUMBER as u16;
+				val = peek_bytecode(style) as i32;
+				advance_bytecode(style);
+			},
+			LINE_HEIGHT_DIMENSION => {
+				value = CSS_LINE_HEIGHT_DIMENSION as u16;
+				val = peek_bytecode(style) as i32;
+				advance_bytecode(style);
+				unit = peek_bytecode(style);
+				advance_bytecode(style);
+			},
+			LINE_HEIGHT_NORMAL => {
+				value = CSS_LINE_HEIGHT_NORMAL as u16;
+			},
+			_=>{} 
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		set_line_height(state.computed, (value as u8) , val, css__to_css_unit(unit) );
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_line_height_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_line_height(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_line_height(state:@mut css_select_state) -> css_result {
+
+	set_line_height(state.computed, (CSS_LINE_HEIGHT_NORMAL as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_line_height(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_line_height(child);
+
+	if (ftype == (CSS_LINE_HEIGHT_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_line_height(parent);
+		set_line_height(result, 
+						ftype2, 
+						olength2.get_or_default( olength.get_or_default(0) ), 
+						ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_line_height(result, 
+						ftype, 
+						olength.get_or_default(0), 
+						ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// line_style_image
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_list_style_image(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return  css__cascade_uri_none(opv, style, state, Some(@set_list_style_image) );
+}
+
+pub fn css__set_list_style_image_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		STRING=>{
+			match hint.string {
+				Some(copy x)=>{
+					set_list_style_image(style, hint.status, x);
+				}
+				None=>{
+					set_list_style_image(style, hint.status, ~"");
+				}
+			}
+			hint.string = None ;
+			CSS_OK
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_list_style_image(state:@mut css_select_state) -> css_result {
+
+	set_list_style_image(state.computed, 
+			(CSS_LIST_STYLE_IMAGE_NONE as u8) , ~"" );
+	CSS_OK
+}
+
+pub fn css__compose_list_style_image(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,url) = css_computed_list_style_image(child);
+
+	if (ftype == (CSS_LIST_STYLE_IMAGE_INHERIT as u8) ) {
+		let mut (ftype2,url2) = css_computed_list_style_image(parent);
+		set_list_style_image(result, ftype2, url2);
+		CSS_OK
+	}
+	else {
+		set_list_style_image(result, ftype, url);
+		CSS_OK
+	}
 }
 
 ///////////////////////////////////////////////////////////////////
