@@ -4283,3 +4283,199 @@ pub fn css__compose_min_width(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// opacity
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_opacity(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value : u16 = CSS_OPACITY_INHERIT as u16;
+	let mut opacity : i32 = 0;
+
+	if (isInherit(opv) == false) {
+		value = CSS_Z_INDEX_SET as u16;
+
+		opacity = peek_bytecode(style) as i32;
+		advance_bytecode(style);
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		set_opacity(state.computed, (value as u8), opacity);
+	}
+	CSS_OK
+}
+
+pub fn css__set_opacity_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		FIXED=>{
+			match hint.fixed {
+				Some(x)=>{
+					set_opacity(style, hint.status, x);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_opacity(state:@mut css_select_state) -> css_result {
+
+	set_opacity(state.computed, (CSS_OPACITY_SET as u8), css_int_to_fixed(1));
+	CSS_OK
+}
+
+pub fn css__compose_opacity(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength) = css_computed_opacity(child);
+
+	if (ftype == (CSS_OPACITY_INHERIT as u8) ) {
+		let mut (ftype2,olength2) = css_computed_opacity(parent);
+		set_opacity(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ) );
+		CSS_OK
+	}
+	else {
+		set_opacity(result, 
+					ftype, 
+					olength.get_or_default(0) );
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// Orphans
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_orphans(opv:u32 , 
+							style:@mut css_style ,
+							state: @mut css_select_state 
+							) -> css_result
+{
+	return css__cascade_number(opv, style, state, None );
+}
+
+pub fn css__set_orphans_from_hint(_: @mut css_hint, 
+		_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_orphans(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_orphans(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// outline_color
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_outline_color(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value : u16 = CSS_OUTLINE_COLOR_INHERIT as u16;
+	let mut color : u32 = 0;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			OUTLINE_COLOR_TRANSPARENT => {
+				value = ( CSS_OUTLINE_COLOR_COLOR as u16);
+			}
+			OUTLINE_COLOR_CURRENT_COLOR => {
+				value = ( CSS_OUTLINE_COLOR_CURRENT_COLOR as u16);
+			}
+			OUTLINE_COLOR_SET => {
+				value = ( CSS_OUTLINE_COLOR_COLOR as u16);
+				color = peek_bytecode(style);
+				advance_bytecode(style);
+			}
+			OUTLINE_COLOR_INVERT => {
+				value = ( CSS_OUTLINE_COLOR_INVERT as u16);
+			}
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing((getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		set_outline_color(state.computed, (value as u8), color);
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_outline_color_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		COLOR=>{
+			match hint.color {
+				Some(x)=>{
+					set_outline_color(style, hint.status, x);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_outline_color(state:@mut css_select_state) -> css_result {
+
+	set_outline_color(state.computed, (CSS_OUTLINE_COLOR_INVERT as u8), 0);
+	CSS_OK
+}
+
+pub fn css__compose_outline_color(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,ocolor) = css_computed_outline_color(child);
+
+	if (  (child.uncommon.is_none() && parent.uncommon.is_some() ) || 
+			ftype == (CSS_OUTLINE_COLOR_INHERIT as u8) || 
+			(child.uncommon.is_some() && !mut_ptr_eq(result,child) ) ) {
+
+			if ( ( child.uncommon.is_none() && parent.uncommon.is_some() ) ||
+					ftype == (CSS_OUTLINE_COLOR_INHERIT as u8) ) {
+
+				let mut (ftype2,ocolor2) = css_computed_outline_color(parent);
+				set_outline_color(result, 
+								ftype2, 
+								ocolor2.get_or_default( ocolor.get_or_default(0) ) );
+			}
+			else {
+				set_outline_color(result, ftype, ocolor.get_or_default(0));
+			}
+	}
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
