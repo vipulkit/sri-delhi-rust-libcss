@@ -319,7 +319,7 @@ pub fn css__cascade_number(opv:u32, style:@mut css_style, state:@mut css_select_
 }
 
 pub fn css__cascade_page_break_after_before_inside(opv:u32, _:@mut css_style, state:@mut css_select_state,
-		fun:Option<@extern fn (@mut css_computed_style, u8)-> css_result>) -> css_result {
+		fun:Option<@extern fn (@mut css_computed_style, u8)>) -> css_result {
 	
 	let mut value = CSS_PAGE_BREAK_AFTER_INHERIT;
 
@@ -337,7 +337,7 @@ pub fn css__cascade_page_break_after_before_inside(opv:u32, _:@mut css_style, st
 	// \todo lose fun != None */
 	match fun {
 		Some(fun_fn) => if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
-			return (*fun_fn)(state.computed, value as u8)
+			(*fun_fn)(state.computed, value as u8)
 		},
 		None => {}
 	}
@@ -4788,4 +4788,262 @@ pub fn css__compose_padding_left(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
+// padding_right
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_padding_right(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
 
+	return css__cascade_length(opv, style, state, Some(@set_padding_right) );
+}
+
+pub fn css__set_padding_right_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_padding_right(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_padding_right(state:@mut css_select_state) -> css_result {
+
+	set_padding_right(state.computed, (CSS_PADDING_SET as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_padding_right(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_padding_right(child);
+
+	if (ftype == (CSS_PADDING_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_padding_right(parent);
+		set_padding_right(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_padding_right(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// padding_top
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_padding_top(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length(opv, style, state, Some(@set_padding_top) );
+}
+
+pub fn css__set_padding_top_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_padding_top(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_padding_top(state:@mut css_select_state) -> css_result {
+
+	set_padding_top(state.computed, (CSS_PADDING_SET as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_padding_top(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_padding_top(child);
+
+	if (ftype == (CSS_PADDING_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_padding_top(parent);
+		set_padding_top(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_padding_top(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// page_break_after
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_page_break_after(opv:u32, style:@mut css_style, 
+										state:@mut css_select_state) -> css_result {
+
+	
+	return css__cascade_page_break_after_before_inside(opv, style, state,
+			Some(@set_page_break_after) );
+}
+
+pub fn css__set_page_break_after_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_page_break_after(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_page_break_after(state:@mut css_select_state) -> css_result {
+
+	set_page_break_after(state.computed, (CSS_PAGE_BREAK_AFTER_AUTO as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_page_break_after(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_page_break_after(child);
+
+	if (ftype == (CSS_PAGE_BREAK_AFTER_INHERIT as u8) ) {
+		ftype = css_computed_page_break_after(parent);
+		
+		set_page_break_after(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_page_break_after(result, ftype);
+		CSS_OK
+	}
+}
+///////////////////////////////////////////////////////////////////
+
+// page_break_before
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_page_break_before(opv:u32, style:@mut css_style, 
+										state:@mut css_select_state) -> css_result {
+
+	
+	return css__cascade_page_break_after_before_inside(opv, style, state, 
+			Some(@set_page_break_before) );
+}
+
+pub fn css__set_page_break_before_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_page_break_before(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_page_break_before(state:@mut css_select_state) -> css_result {
+
+	set_page_break_before(state.computed, (CSS_PAGE_BREAK_BEFORE_AUTO as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_page_break_before(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_page_break_before(child);
+
+	if (ftype == (CSS_PAGE_BREAK_BEFORE_INHERIT as u8) ) {
+		ftype = css_computed_page_break_before(parent);
+		
+		set_page_break_before(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_page_break_before(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// page_break_inside
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_page_break_inside(opv:u32, style:@mut css_style, 
+										state:@mut css_select_state) -> css_result {
+
+	
+	return css__cascade_page_break_after_before_inside(opv, style, state, 
+			Some(@set_page_break_inside) );
+}
+
+pub fn css__set_page_break_inside_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_page_break_inside(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_page_break_inside(state:@mut css_select_state) -> css_result {
+
+	set_page_break_inside(state.computed, (CSS_PAGE_BREAK_INSIDE_AUTO as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_page_break_inside(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_page_break_inside(child);
+
+	if (ftype == (CSS_PAGE_BREAK_INSIDE_INHERIT as u8) ) {
+		ftype = css_computed_page_break_inside(parent);
+		
+		set_page_break_inside(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_page_break_inside(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
