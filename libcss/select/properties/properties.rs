@@ -202,7 +202,7 @@ pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_se
 
 
 pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_result {
 	
 	let mut value = CSS_LETTER_SPACING_INHERIT;
 	let mut length = 0;
@@ -225,7 +225,7 @@ pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_
 	unit = css__to_css_unit(unit) as u32;
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
-		return (*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+		(*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
 	}
 
 	CSS_OK
@@ -3327,6 +3327,139 @@ pub fn css__compose_height(parent:@mut css_computed_style,
 					ounit.get_or_default(CSS_UNIT_PX));
 		CSS_OK
 	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// left
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_left(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_auto(opv, style, state, @set_left);
+}
+
+pub fn css__set_left_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_left(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_left(state:@mut css_select_state) -> css_result {
+
+	set_left(state.computed, (CSS_LEFT_AUTO as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_left(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_left(child);
+
+	if (ftype == (CSS_LEFT_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_left(parent);
+		set_left(result, 
+				ftype2, 
+				olength2.get_or_default( olength.get_or_default(0) ), 
+				ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_left(result, 
+				ftype, 
+				olength.get_or_default(0), 
+				ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// letter-spacing
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_letter_spacing(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_normal(opv, style, state, @set_letter_spacing);
+}
+
+pub fn css__set_letter_spacing_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_letter_spacing(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_letter_spacing(state:@mut css_select_state) -> css_result {
+
+	set_letter_spacing(state.computed, (CSS_LETTER_SPACING_NORMAL as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_letter_spacing(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_letter_spacing(child);
+
+	if (  (child.uncommon.is_none() && parent.uncommon.is_some() ) || 
+			ftype == (CSS_LETTER_SPACING_INHERIT as u8) || 
+			(child.uncommon.is_some() && !mut_ptr_eq(result,child) ) ) {
+
+			if ( ( child.uncommon.is_none() && parent.uncommon.is_some() ) ||
+					ftype == (CSS_LETTER_SPACING_INHERIT as u8) ) {
+
+				let mut (ftype2,olength2,ounit2) = css_computed_letter_spacing(parent);
+				set_letter_spacing(result, 
+								ftype2, 
+								olength2.get_or_default( olength.get_or_default(0) ), 
+								ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+			}
+			else {
+
+				set_letter_spacing(result, 
+									ftype, 
+									olength.get_or_default(0), 
+									ounit.get_or_default(CSS_UNIT_PX));
+			}
+	}
+	CSS_OK
 }
 
 ///////////////////////////////////////////////////////////////////
