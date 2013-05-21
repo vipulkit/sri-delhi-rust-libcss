@@ -233,7 +233,7 @@ pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_
 
 
 pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) -> css_result) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_result {
 
 	let mut value = CSS_MAX_HEIGHT_INHERIT;
 	let mut length = 0;
@@ -256,7 +256,7 @@ pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_se
 	unit = css__to_css_unit(unit) as u32;
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
-		return (*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+		(*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
 	}
 
 	CSS_OK
@@ -4025,6 +4025,131 @@ pub fn css__compose_margin_top(parent:@mut css_computed_style,
 	}
 	else {
 		set_margin_top(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// max_height
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_max_height(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_none(opv, style, state, @set_max_height);
+}
+
+pub fn css__set_max_height_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_max_height(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_max_height(state:@mut css_select_state) -> css_result {
+
+	set_max_height(state.computed, (CSS_MAX_HEIGHT_NONE as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_max_height(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_max_height(child);
+
+	if (ftype == (CSS_MAX_HEIGHT_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_max_height(parent);
+		set_max_height(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_max_height(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// max_width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_max_width(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_none(opv, style, state, @set_max_width);
+}
+
+pub fn css__set_max_width_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_max_width(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_max_width(state:@mut css_select_state) -> css_result {
+
+	set_max_width(state.computed, (CSS_MAX_WIDTH_NONE as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_max_width(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_max_width(child);
+
+	if (ftype == (CSS_MAX_WIDTH_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_max_width(parent);
+		set_max_width(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_max_width(result, 
 					ftype, 
 					olength.get_or_default(0), 
 					ounit.get_or_default(CSS_UNIT_PX));
