@@ -4479,3 +4479,186 @@ pub fn css__compose_outline_color(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// outline_style
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_outline_style(opv:u32, style:@mut css_style, 
+										state:@mut css_select_state) -> css_result {
+
+	
+	return css__cascade_border_style(opv, style, state, @set_outline_style);
+}
+
+pub fn css__set_outline_style_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_outline_style(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_outline_style(state:@mut css_select_state) -> css_result {
+
+	set_outline_style(state.computed, (CSS_OUTLINE_STYLE_NONE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_outline_style(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_outline_style(child);
+
+	if (ftype == (CSS_OUTLINE_STYLE_INHERIT as u8) ) {
+		ftype = css_computed_outline_style(parent);
+		
+		set_outline_style(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_outline_style(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// outline-width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_outline_width(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_border_width(opv, style, state, @set_outline_width);
+}
+
+pub fn css__set_outline_width_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_outline_width(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_outline_width(state:@mut css_select_state) -> css_result {
+
+	set_outline_width(state.computed, (CSS_OUTLINE_WIDTH_MEDIUM as u8),
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_outline_width(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_outline_width(child);
+
+	if ( (child.uncommon.is_none() && parent.uncommon.is_some() ) || 
+			ftype == (CSS_OUTLINE_WIDTH_INHERIT as u8) || 
+			(child.uncommon.is_some() && !mut_ptr_eq(result,child) ) ) {
+
+		if( ( child.uncommon.is_none() && parent.uncommon.is_some() ) ||
+					ftype == (CSS_OUTLINE_WIDTH_INHERIT as u8) ) {
+
+			let mut (ftype2,olength2,ounit2) = css_computed_outline_width(parent);
+			set_outline_width(result, 
+							ftype2, 
+							olength2.get_or_default( olength.get_or_default(0) ), 
+							ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		}
+		else {
+			set_outline_width(result, 
+							ftype, 
+							olength.get_or_default(0), 
+							ounit.get_or_default(CSS_UNIT_PX));
+		}
+	}
+	CSS_OK	
+}
+
+///////////////////////////////////////////////////////////////////
+
+// overflow
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_overflow(opv:u32, _:@mut css_style, 
+										state:@mut css_select_state) -> css_result {
+
+	
+	let mut value = CSS_OVERFLOW_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			OVERFLOW_VISIBLE => {
+				value = (CSS_OVERFLOW_VISIBLE as u16);
+			}
+			OVERFLOW_HIDDEN => {
+				value = (CSS_OVERFLOW_HIDDEN as u16);
+			}
+			OVERFLOW_SCROLL => {
+				value = (CSS_OVERFLOW_SCROLL as u16);
+			}
+			OVERFLOW_AUTO => {
+				value = (CSS_OVERFLOW_AUTO as u16);
+			}
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16) , isImportant(opv), state,
+			isInherit(opv))) {
+		set_overflow(state.computed, (value as u8) );
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_overflow_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_overflow(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_overflow(state:@mut css_select_state) -> css_result {
+
+	set_overflow(state.computed, (CSS_OVERFLOW_VISIBLE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_overflow(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_overflow(child);
+
+	if (ftype == (CSS_OVERFLOW_INHERIT as u8) ) {
+		ftype = css_computed_overflow(parent);
+		
+		set_overflow(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_overflow(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
