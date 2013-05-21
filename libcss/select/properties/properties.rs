@@ -3615,3 +3615,170 @@ pub fn css__compose_list_style_image(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+
+// list_style_position
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_list_style_position(opv:u32, _:@mut css_style, 
+										state:@mut css_select_state) -> css_result {
+
+	
+	let mut value = CSS_LIST_STYLE_POSITION_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			LIST_STYLE_POSITION_INSIDE => {
+				value = CSS_LIST_STYLE_POSITION_INSIDE as u16;
+			}
+			LIST_STYLE_POSITION_OUTSIDE => {
+				value = CSS_LIST_STYLE_POSITION_OUTSIDE as u16;
+			}
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		set_list_style_position(state.computed, (value as u8) );
+	}
+	CSS_OK
+}
+
+pub fn css__set_list_style_position_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_list_style_position(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_list_style_position(state:@mut css_select_state) -> css_result {
+
+	set_list_style_position(state.computed, 
+			(CSS_LIST_STYLE_POSITION_OUTSIDE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_list_style_position(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_list_style_position(child);
+
+	if (ftype == (CSS_LIST_STYLE_POSITION_INHERIT as u8) ) {
+		ftype = css_computed_list_style_position(parent);
+		
+		set_list_style_position(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_list_style_position(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+
+// list_style_type
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_list_style_type(opv:u32, _:@mut css_style, 
+										state:@mut css_select_state) -> css_result {
+
+	
+	let mut value = CSS_LIST_STYLE_TYPE_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			LIST_STYLE_TYPE_DISC => {
+				value = ( CSS_LIST_STYLE_TYPE_DISC as u16) ;
+			}
+			LIST_STYLE_TYPE_CIRCLE => {
+				value = ( CSS_LIST_STYLE_TYPE_CIRCLE as u16) ;
+			}
+			LIST_STYLE_TYPE_SQUARE => {
+				value = ( CSS_LIST_STYLE_TYPE_SQUARE as u16) ;
+			}
+			LIST_STYLE_TYPE_DECIMAL => {
+				value = ( CSS_LIST_STYLE_TYPE_DECIMAL as u16) ;
+			}
+			LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO => {
+				value = ( CSS_LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO as u16) ;
+			}
+			LIST_STYLE_TYPE_LOWER_ROMAN => {
+				value = ( CSS_LIST_STYLE_TYPE_LOWER_ROMAN as u16) ;
+			}
+			LIST_STYLE_TYPE_UPPER_ROMAN => {
+				value = ( CSS_LIST_STYLE_TYPE_UPPER_ROMAN as u16) ;
+			}
+			LIST_STYLE_TYPE_LOWER_GREEK => {
+				value = ( CSS_LIST_STYLE_TYPE_LOWER_GREEK as u16) ;
+			}
+			LIST_STYLE_TYPE_LOWER_LATIN => {
+				value = ( CSS_LIST_STYLE_TYPE_LOWER_LATIN as u16) ;
+			}
+			LIST_STYLE_TYPE_UPPER_LATIN => {
+				value = ( CSS_LIST_STYLE_TYPE_UPPER_LATIN as u16) ;
+			}
+			LIST_STYLE_TYPE_ARMENIAN => {
+				value = ( CSS_LIST_STYLE_TYPE_ARMENIAN as u16) ;
+			}
+			LIST_STYLE_TYPE_GEORGIAN => {
+				value = ( CSS_LIST_STYLE_TYPE_GEORGIAN as u16) ;
+			}
+			LIST_STYLE_TYPE_LOWER_ALPHA => {
+				value = ( CSS_LIST_STYLE_TYPE_LOWER_ALPHA as u16) ;
+			}
+			LIST_STYLE_TYPE_UPPER_ALPHA => {
+				value = ( CSS_LIST_STYLE_TYPE_UPPER_ALPHA as u16) ;
+			}
+			LIST_STYLE_TYPE_NONE => {
+				value = ( CSS_LIST_STYLE_TYPE_NONE as u16) ;
+			}
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16) , isImportant(opv), state,
+			isInherit(opv))) {
+		set_list_style_type(state.computed, (value as u8) );
+	}
+	CSS_OK
+}
+
+pub fn css__set_list_style_type_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_list_style_type(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_list_style_type(state:@mut css_select_state) -> css_result {
+
+	set_list_style_type(state.computed, (CSS_LIST_STYLE_TYPE_DISC as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_list_style_type(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_list_style_type(child);
+
+	if (ftype == (CSS_LIST_STYLE_TYPE_INHERIT as u8) ) {
+		ftype = css_computed_list_style_type(parent);
+		
+		set_list_style_type(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_list_style_type(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
