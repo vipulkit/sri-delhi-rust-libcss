@@ -5047,3 +5047,63 @@ pub fn css__compose_page_break_inside(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// pause_after
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_pause_after(opv:u32 , 
+							style:@mut css_style ,
+							state: @mut css_select_state 
+							) -> css_result {
+
+	css__cascade_length(opv, style, state, None)
+}
+
+pub fn css__set_pause_after_from_hint(_: @mut css_hint, 
+		_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_pause_after(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_pause_after(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// pause_before
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_pause_before(opv:u32 , 
+							style:@mut css_style ,
+							state: @mut css_select_state 
+							) -> css_result {
+
+	css__cascade_length(opv, style, state, None)
+}
+
+pub fn css__set_pause_before_from_hint(_: @mut css_hint, 
+		_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_pause_before(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_pause_before(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
