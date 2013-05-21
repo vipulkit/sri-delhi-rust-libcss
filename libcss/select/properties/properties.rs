@@ -4662,3 +4662,130 @@ pub fn css__compose_overflow(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
+// padding_bottom
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_padding_bottom(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length(opv, style, state, Some(@set_padding_bottom) );
+}
+
+pub fn css__set_padding_bottom_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_padding_bottom(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_padding_bottom(state:@mut css_select_state) -> css_result {
+
+	set_padding_bottom(state.computed, (CSS_PADDING_SET as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_padding_bottom(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_padding_bottom(child);
+
+	if (ftype == (CSS_PADDING_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_padding_bottom(parent);
+		set_padding_bottom(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_padding_bottom(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// padding_left
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_padding_left(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length(opv, style, state, Some(@set_padding_left) );
+}
+
+pub fn css__set_padding_left_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_padding_left(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		}
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_padding_left(state:@mut css_select_state) -> css_result {
+
+	set_padding_left(state.computed, (CSS_PADDING_SET as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_padding_left(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_padding_left(child);
+
+	if (ftype == (CSS_PADDING_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_padding_left(parent);
+		set_padding_left(result, 
+					ftype2, 
+					olength2.get_or_default( olength.get_or_default(0) ), 
+					ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_padding_left(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+
