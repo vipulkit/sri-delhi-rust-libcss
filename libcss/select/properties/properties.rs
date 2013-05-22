@@ -586,13 +586,13 @@ pub fn css__set_background_image_from_hint(hint:@mut  css_hint,
 			match hint.string {
 				Some(copy x)=>{
 					set_background_image(style, hint.status, x);
-				}
+				},
 				None=>{
 					set_background_image(style, hint.status, ~"");
 				}
 			}
 			CSS_OK
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -2869,7 +2869,7 @@ pub fn css__set_font_family_from_hint(hint:@mut  css_hint,
 				}
 			}
 			hint.strings = Some(~[]);
-		}
+		},
 		_=>{
 			return CSS_INVALID ;
 		}
@@ -3575,14 +3575,14 @@ pub fn css__set_list_style_image_from_hint(hint:@mut  css_hint,
 			match hint.string {
 				Some(copy x)=>{
 					set_list_style_image(style, hint.status, x);
-				}
+				},
 				None=>{
 					set_list_style_image(style, hint.status, ~"");
 				}
 			}
 			hint.string = None ;
 			CSS_OK
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -5327,6 +5327,148 @@ pub fn css__compose_position(parent:@mut css_computed_style,
 		set_position(result, ftype);
 		CSS_OK
 	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// quotes
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_quotes(opv:u32, style:@mut css_style, 
+						state:@mut css_select_state) -> css_result {
+
+	
+	let mut value : u16 = CSS_QUOTES_INHERIT as u16;
+	let mut quotes : ~[~str] = ~[] ;
+
+	if (isInherit(opv) == false) {
+		let mut v : u32 = getValue(opv) as u32 ;
+
+		value = CSS_QUOTES_STRING as u16;
+
+		while (v != (QUOTES_NONE as u32) ) {
+
+			if style.sheet.is_none() {
+				return CSS_BADPARM ;
+			}
+
+			let mut (result1,o_open)  = style.sheet.get().css__stylesheet_string_get( 
+														peek_bytecode(style) as uint );
+			advance_bytecode(style);
+
+			let mut (result2,o_close) = style.sheet.get().css__stylesheet_string_get( 
+														peek_bytecode(style) as uint );
+			advance_bytecode(style);
+
+			match result1 {
+				CSS_OK=>{} ,
+				x => { return x ; }
+			}
+
+			match result2 {
+				CSS_OK=>{} ,
+				x => { return x ; }
+			}
+
+			if o_open.is_none()  { return CSS_BADPARM ;}
+			if o_close.is_none() { return CSS_BADPARM ;}
+
+			quotes.push( o_open.unwrap()  );
+			quotes.push( o_close.unwrap() );
+
+			v = peek_bytecode(style);
+			advance_bytecode(style);
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+
+		set_quotes(state.computed, (value as u8), quotes);
+	} 
+
+	CSS_OK
+}
+
+pub fn css__set_quotes_from_hint(hint:@mut  css_hint, 
+								style:@mut css_computed_style
+								) -> css_result {
+
+	match hint.hint_type {
+		STRINGS_VECTOR => {
+			match hint.strings {
+				Some(copy x)=>{
+					set_quotes(style, hint.status, x);
+				},
+				None=>{
+					set_quotes(style, hint.status, ~[] );
+				}
+			} 
+			hint.strings= None ;
+			CSS_OK 
+		},
+		_ => {
+			CSS_INVALID
+		}
+	}
+}
+
+pub fn css__initial_quotes(state:@mut css_select_state) -> css_result {
+
+	let mut hint = @mut css_hint{
+        hint_type:HINT_LENGTH,
+        status:0,
+        clip:None,
+        content:None,
+        counter:None,
+        length:None,
+        position:None,
+        color:None,
+        fixed:None,
+        integer:None,
+        string:None,
+        strings:None
+    };
+	let mut error : css_result;
+
+	match state.handler {
+		None=> {
+			return CSS_SHOULD_NEVER_OCCUR ;
+		},
+		Some(fnhandler) => {
+			error = (*(fnhandler.ua_default_for_property))(
+				(CSS_PROP_QUOTES as u32), hint);
+		    match error {
+		        CSS_OK=>{},
+		        _=> return error
+		    }
+		}
+	}
+
+	css__set_quotes_from_hint(hint, state.computed);
+	CSS_OK
+}
+
+pub fn css__compose_quotes(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,quotes) = css_computed_quotes(child) ;
+
+	if( (ftype == (CSS_QUOTES_INHERIT as u8) ) ||  !mut_ptr_eq(result,child) ) { 
+
+		if ( ftype == (CSS_QUOTES_INHERIT as u8) ) {
+			let mut (ftype2,quotes2) = css_computed_quotes(parent) ;
+
+			set_quotes(result,ftype2,quotes2);
+		}
+		else {
+			set_quotes(result,ftype,quotes) ;
+		}
+
+	}
+
+	CSS_OK
 }
 
 ///////////////////////////////////////////////////////////////////
