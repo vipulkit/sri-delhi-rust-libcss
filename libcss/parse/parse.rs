@@ -365,12 +365,12 @@ pub impl css_parser {
                                 idata : None,
                             })
                         },
-                        Delim(_) => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : None,
-                            })
-                        },
+                        // Delim(_) => {
+                        //     token_option = Some (@css_token {
+                        //         token_type : lexer_token,
+                        //         idata : None,
+                        //     })
+                        // },
                         CSS_TOKEN_EOF => {
                             token_option = Some (@css_token {
                                 token_type : lexer_token,
