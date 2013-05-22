@@ -220,7 +220,7 @@ fn matchtokens(token1:css_token_type,token2:css_token_type)->bool {
                         },
                         _=> return false
                     }
-                },
+                },/*
                 Delim(x1)=>{
                     match token2 {
                         Delim(x2)=>{
@@ -233,7 +233,7 @@ fn matchtokens(token1:css_token_type,token2:css_token_type)->bool {
                         },
                         _=> return false
                     }
-                },
+                },*/
                 // CSS_TOKEN_COMMENT, 
                 // CSS_TOKEN_INCLUDES, CSS_TOKEN_DASHMATCH, CSS_TOKEN_PREFIXMATCH, 
                 // CSS_TOKEN_SUFFIXMATCH, CSS_TOKEN_SUBSTRINGMATCH, 
@@ -326,9 +326,9 @@ fn tokenToString(token:css_token_type)-> ~str {
         CSS_TOKEN_S=>{
             returnString += ~"S ";
         },
-        Delim(ch)=>{
+        /*Delim(ch)=>{
             returnString += ~"Delim " + from_char(ch);
-        },
+        },*/
         // CSS_TOKEN_COMMENT, 
         // CSS_TOKEN_INCLUDES, CSS_TOKEN_DASHMATCH, CSS_TOKEN_PREFIXMATCH, 
         // CSS_TOKEN_SUFFIXMATCH, CSS_TOKEN_SUBSTRINGMATCH, 
@@ -439,13 +439,13 @@ fn stringToToken(string:~str)->(css_token_type) {
         ~"S"=> {
             
             return CSS_TOKEN_S;
-        },
+        },/*
         ~"Delim"=> {
             if data.len() < 1 {
                 fail!();
             }
             return Delim(copy data[0].char_at(0));//char error
-        },
+        },*/
         ~"EOF"=> {
             
             return CSS_TOKEN_EOF;
@@ -458,6 +458,7 @@ fn stringToToken(string:~str)->(css_token_type) {
 } 
 fn testMain(fileName:~str,RWmode:~str) {
 	let CHUNKSIZE:int =10;
+    let mut failCount:int = 0;
 	//let args : ~[~str] = os::args();
     // io::println(args[1]);
     let mut external_argument : ~str = copy fileName;
@@ -479,7 +480,7 @@ fn testMain(fileName:~str,RWmode:~str) {
     }
     
     verification_file= verification_file.slice(0,verification_file.len()-4).to_owned();
-    verification_file += ~"_token.css";
+    verification_file += ~"_token.dat";
     let writer_tokens:@core::io::Writer = io::file_writer(&Path(verification_file), ~[io::Create/*, io::NoFlag*/]).get();  ;
     let r_tokens:@Reader =  io::file_reader(&Path(verification_file)).get();
     let r:@Reader = io::file_reader(&Path(fileName)).get(); 
@@ -542,6 +543,7 @@ fn testMain(fileName:~str,RWmode:~str) {
                                let ExpectedToken = stringToToken(copy ExpectedTokenString);
                                 let result = matchtokens(copy tok, copy ExpectedToken);
                                 if !result {
+                                    failCount+=1;
                                     io::println(fmt!("fail::Expected Token String = %?(%?) , Found = %?",ExpectedTokenString,ExpectedToken, tok));
                                     //reader.read_byte();
                                     //reader.read_byte();
@@ -576,6 +578,7 @@ fn testMain(fileName:~str,RWmode:~str) {
                 let ExpectedToken = stringToToken(copy ExpectedTokenString);
                 let result = matchtokens(copy tok, copy ExpectedToken);
                 if !result {
+                    failCount+=1;
                     io::println(fmt!("fail::Expected Token String = %?(%?) , Found = %?",ExpectedTokenString,ExpectedToken, tok));
                     //reader.read_byte();
                     //reader.read_byte();
@@ -610,6 +613,7 @@ fn testMain(fileName:~str,RWmode:~str) {
                     let ExpectedToken = stringToToken(copy ExpectedTokenString);
                     let result = matchtokens(copy tok, copy ExpectedToken);
                     if !result {
+                        failCount+=1;
                         io::println(fmt!("fail::Expected Token String = %?(%?) , Found = %?",ExpectedTokenString,ExpectedToken, tok));
                         //reader.read_byte();
                         //reader.read_byte();
@@ -622,7 +626,7 @@ fn testMain(fileName:~str,RWmode:~str) {
                 }
                 match tok {
                     CSS_TOKEN_EOF => {
-                        test_logger.pass( ~"test_lexer_chunks.rs" ,copy external_argument  ,~"lexer",~"css_lexer.rs"  , ~"get_token", ~"end of file reached" ,~"CSS_TOKEN_EOF",~"end of file reached", ~"CSS_LEXER_PASSED");
+                        test_logger.info( ~"test_lexer_chunks.rs" ,copy external_argument  ,~"lexer",~"css_lexer.rs"  , ~"get_token", ~"end of file reached" ,~"CSS_TOKEN_EOF",~"end of file reached"/*, ~"CSS_LEXER_PASSED"*/);
                         break;
                     },
                     _=>{ 
@@ -637,6 +641,7 @@ fn testMain(fileName:~str,RWmode:~str) {
             }
         };
     }
+    assert!(failCount==0);
 } 
 
 #[test]
