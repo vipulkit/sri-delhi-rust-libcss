@@ -1,7 +1,5 @@
 extern mod std;
 
-use core::io::Reader;
-use core::io::ReaderUtil;
 use core::hashmap::linear::LinearMap;
 use core::vec::*;
 use std::arc;

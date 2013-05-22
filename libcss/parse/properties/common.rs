@@ -376,12 +376,12 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                 ret_result = 0;
                 return (Some(ret_value) , Some(ret_result) , CSS_OK);
             }
-            let (color_value , error) = css__parse_named_color(sheet , strings , token.idata.get_ref().clone());
+            let (_ , error) = css__parse_named_color(sheet , strings , token.idata.get_ref().clone());
             match error {
                 CSS_OK => {},
                 _ => {
                     if sheet.quirks_allowed {
-                        let(hash_result , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
+                        let(_ , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
                         match error_from_hash {
                             CSS_OK => sheet.quirks_used = true,
                             _ => {
@@ -397,7 +397,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
         },
 
         CSS_TOKEN_HASH(_) => {
-            let(hash_result , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
+            let(_ , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
             match error_from_hash {
                 CSS_OK => {},
                 _ => {
@@ -692,7 +692,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
     if sheet.quirks_allowed {
         match token.token_type {
             CSS_TOKEN_NUMBER(_ , _) => {
-                let(hash_result , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
+                let(_ , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
                 match error_from_hash {
                     CSS_OK => {
                         sheet.quirks_used = true
@@ -703,7 +703,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                 }
             },
             CSS_TOKEN_DIMENSION(_,_,_) => {
-                let(hash_result , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
+                let(_ , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
                 match error_from_hash {
                     CSS_OK => {
                         sheet.quirks_used = true

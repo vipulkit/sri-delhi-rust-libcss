@@ -56,7 +56,7 @@ pub impl css {
 		let lwc = lwc();
 
 		// create inputstream
-		let (inputstream_option, inputstream_error) =  
+		let (inputstream_option, _) =  
 			match copy params.charset {
 				None => inputstream(None, None ,Some(~css__charset_extract)),
 				Some(charset) => inputstream(Some(charset), Some(CSS_CHARSET_DICTATED), Some(~css__charset_extract))

@@ -1410,7 +1410,6 @@ pub impl css_lexer {
 		// io::println(fmt!("consume_numeric_fraction: here string is %?" , string));
 		let head_position = self.position;
 		let mut string: ~str = string;
-		let mut error_condition:lexer_error= LEXER_OK;
 		while !self.is_eof() {
 			let ch:char=  match self.consume_char() {
 				(Some(c),_)=>c,
@@ -1561,7 +1560,9 @@ pub impl css_lexer {
 				}
 			}, '0'..'9') {
 			let c= match(self.consume_char()) {
-					(Some(ch),x)=>{error_condition=x;ch},
+					(Some(ch),_)=>{
+						ch
+					},
 					(None,_)=> {
 						self.position = head_position;
 						return (Err(string),LEXER_NEEDDATA);
