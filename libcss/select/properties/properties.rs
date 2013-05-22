@@ -6498,3 +6498,159 @@ pub fn css__compose_visibility(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// voice_family
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_voice_family(opv:u32 , 
+								style:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	let mut value : u16 = 0;
+	let mut voices : ~[~str] = ~[];
+
+	if (isInherit(opv) == false) {
+		let mut v : u32 = getValue(opv) as u32;
+
+		while (v != (VOICE_FAMILY_END as u32) ) {
+
+			match (v as u16) {
+				VOICE_FAMILY_STRING 	|
+				VOICE_FAMILY_IDENT_LIST => {
+
+					if style.sheet.is_none() {
+						return CSS_BADPARM ;
+					}
+					let mut (result,o_voice)  = style.sheet.get().css__stylesheet_string_get( 
+																peek_bytecode(style) as uint );
+					match result {
+						CSS_OK=>{} ,
+						x => { return x ; }
+					}
+					if o_voice.is_none()  { return CSS_BADPARM ;}
+
+					voices.push( o_voice.unwrap() );
+					advance_bytecode(style);
+				},
+				VOICE_FAMILY_MALE => {
+					if (value == 0) {
+						value = 1;
+					}
+				},
+				VOICE_FAMILY_FEMALE => {
+					if (value == 0) {
+						value = 1;
+					}
+				},
+				VOICE_FAMILY_CHILD => {
+					if (value == 0) {
+						value = 1;
+					}
+				},
+				_ => {}
+			}
+
+			/* Only use family-names which occur before the first
+			 * generic-family. Any values which occur after the
+			 * first generic-family are ignored. */
+			/* \todo Do this at bytecode generation time? */
+
+			v = peek_bytecode(style);
+			advance_bytecode(style);
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo voice-family */
+		// set voice family in propset
+	} 
+
+	CSS_OK
+}
+
+pub fn css__set_voice_family_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) 
+								-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_voice_family(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_voice_family(_:@mut css_computed_style,
+								_:@mut css_computed_style,
+								_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// volume
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_volume(opv:u32 , 
+								style:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	let mut val : i32 = 0;
+	let mut unit : u32 = UNIT_PCT as u32;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			VOLUME_NUMBER => {
+				val = peek_bytecode(style) as i32;
+				advance_bytecode(style);
+			},
+			VOLUME_DIMENSION => {
+				val = peek_bytecode(style) as i32;
+				advance_bytecode(style);
+				unit = peek_bytecode(style);
+				advance_bytecode(style);
+			},
+			VOLUME_SILENT 	|
+			VOLUME_X_SOFT 	|
+			VOLUME_SOFT 	|
+			VOLUME_MEDIUM 	|
+			VOLUME_LOUD 	|
+			VOLUME_X_LOUD => {
+				/* \todo convert to public values */
+			},
+			_ => {}
+		}
+	}
+
+	unit = css__to_css_unit(unit) as u32;
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo volume */
+	}
+	CSS_OK
+}
+
+pub fn css__set_volume_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) 
+								-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_volume(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_volume(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
