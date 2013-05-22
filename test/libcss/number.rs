@@ -4,7 +4,6 @@ extern mod wapcaplet;
 
 use css::parse::properties::common::*;
 use wapcaplet::*;
-use std::arc;
 
 fn main() {
     io::println("number");
@@ -57,14 +56,13 @@ fn number(file_name: ~str) {
         }
 
         if (resetFlag && !dataFlag && !expectedFlag) {
-            let lwc_string: Option<arc::RWARC<~lwc_string>> = None;
             // io::println(fmt!("data_string = %?" , data_string));
             // io::println(fmt!("expected_str = %?" , expected_str));
             do lwc.write |l| {
                 let lwc_string= Some(l.lwc_intern_string(copy data_string));
                 // io::println(fmt!("lwc string = %?" , lwc_string.get_ref().clone()));
                 let (a , _) = css__number_from_lwc_string(lwc_string.unwrap() , false);
-                io::println(fmt!("a = %?" , a));
+                // io::println(fmt!("a = %?" , a));
                 // io::println(fmt!("b = %?" , b));
                 assert!(fmt!("%?" , a)==expected_str);
             }

@@ -61,7 +61,7 @@ pub fn css__parse_testfile(filename:~str,  callback:line_func, pw:&mut line_ctx)
 	true
 }
 fn testMain(fileName: ~str) {
-	io::println(~"testMain : "+ fileName);
+	// io::println(~"testMain : "+ fileName);
 	let len = css__parse_filesize(copy fileName);
 	if len ==0 {
 		return;
@@ -124,9 +124,9 @@ pub fn handle_line(data:~str,  /*datalen:uint,*/ pw:&mut line_ctx)-> bool {
 }
 
 pub fn run_test(data:&~[u8],  _:uint, expectedEncoding:~str) {
-	io::println("inside csdetect run_test");
-    io::println(~"data = "+ from_bytes(*data));
-    io::println(~"expectedEncoding = "+expectedEncoding);
+	// io::println("inside csdetect run_test");
+    // io::println(~"data = "+ from_bytes(*data));
+    // io::println(~"expectedEncoding = "+expectedEncoding);
 	
 	let mut mibenum:u16 = 0;
 
@@ -147,7 +147,7 @@ pub fn run_test(data:&~[u8],  _:uint, expectedEncoding:~str) {
            
         },
         
-        (_ , y) => fail!() 
+        (_ , _) => fail!() 
     }
 }
 

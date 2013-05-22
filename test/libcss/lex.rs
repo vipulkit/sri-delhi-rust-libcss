@@ -7,7 +7,6 @@ use parserutils::charset::aliases::*;
 use parserutils::input::inputstream::*;
 use css::lex::lexer::*;
 use core::str::*;
-use core::float::*;
 
 fn main() {
     io::println("lex");
@@ -81,7 +80,6 @@ fn lex(fileName: ~str) {
                 final_buf.push(i as u8);
             }
             finalstr = ~"";
-            io::println(fmt!("final_buf is %s",str::from_bytes(final_buf)));
             lexer.lexer_append_data(final_buf);
             lexer.data_done();
             final_buf = ~[];
@@ -105,9 +103,7 @@ fn lex(fileName: ~str) {
                         break
                     }
                 };
-                let ExpectedToken = stringToToken(copy expectedstr);
-                let result = matchtokens(copy tok, copy ExpectedToken);
-                assert!(result);
+                io::println(fmt!("token is %?" , tokenToString(copy tok)));
                 match tok {
                     CSS_TOKEN_EOF => break,
                     _ => {}
@@ -117,241 +113,64 @@ fn lex(fileName: ~str) {
     }
 }
 
-fn matchNumericValue(NumVal1:NumericValue,NumVal2:NumericValue)-> bool {
-    match NumVal1 {
-        Integer(x1)=>{
-           match NumVal2 {
-                Integer(x2)=>{
-                    if x1==x2 {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                },
-                _=> return false
-           }
+fn tokenToString(token:css_token_type)-> ~str {
+    let mut returnString =~"";
+    match token {
+        CSS_TOKEN_IDENT(x)=>{
+            returnString += ~"IDENT " + x;
         },
-        Float(x1)=>{
-            match NumVal2 {
-                Float(x2)=>{
-                    if (x1==x2) {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                },
-                _=> return false
-           }
-        }
-    }
-}
-fn matchtokens(token1:css_token_type,token2:css_token_type)->bool {
-     match token1 {
-        CSS_TOKEN_IDENT(x1)=>{
-            match token2 {
-                CSS_TOKEN_IDENT(x2)=>{
-                    if str::eq(&x1,&x2) {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                },
-                _=> return false
-            }
+        CSS_TOKEN_ATKEYWORD(x)=>{
+            returnString += ~"ATKEYWORD " + x;
         },
-        CSS_TOKEN_ATKEYWORD(x1)=>{
-            match token2 {
-                CSS_TOKEN_ATKEYWORD(x2)=>{
-                    if str::eq(&x1,&x2) {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                },
-                _=> return false
-            }
+        CSS_TOKEN_HASH(x)=>{
+            returnString += ~"HASH " + x;
         },
-        CSS_TOKEN_HASH(x1)=>{
-            match token2 {
-                CSS_TOKEN_HASH(x2)=>{
-                    if str::eq(&x1,&x2) {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                },
-                _=> return false
-            }
-        },
-        CSS_TOKEN_FUNCTION(x1)=>{
-            match token2 {
-                CSS_TOKEN_FUNCTION(x2)=>{
-                    if str::eq(&x1,&x2) {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                },
-                _=> return false
-            }
+        CSS_TOKEN_FUNCTION(x)=>{
+            returnString += ~"FUNCTION " + x;
         }, 
-        CSS_TOKEN_STRING(x1)=>{
-            match token2 {
-                CSS_TOKEN_STRING(x2)=>{
-                    if str::eq(&x1,&x2) {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                },
-                _=> return false
-            }
+        CSS_TOKEN_STRING(x)=>{
+            returnString += ~"STRING " + x;
         }, 
         CSS_TOKEN_INVALID_STRING=>{
-            match token2 {
-                CSS_TOKEN_INVALID_STRING=>{
-                    return true;
-                },
-                _=> return false
-            }
+            returnString += ~"INVALID_STRING ";
         }, 
-        CSS_TOKEN_URI(x1)=>{
-            match token2 {
-                CSS_TOKEN_URI(x2)=>{
-                    if str::eq(&x1,&x2) {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                },
-                _=> return false
-            }
+        CSS_TOKEN_URI(x)=>{
+            returnString += ~"URI " + x;
         }, 
-        CSS_TOKEN_UNICODE_RANGE(x1 , y1)=>{
-            match token2 {
-                CSS_TOKEN_UNICODE_RANGE(x2,y2)=>{
-                    if x1==x2 && y1==y2{
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                },
-                _=> return false
-            }
+        CSS_TOKEN_UNICODE_RANGE(ch1 , ch2)=>{
+            returnString += ~"UNICODE_RANGE " + from_char(ch1)+~" "+from_char(ch2);
         }, 
-        CSS_TOKEN_CHAR(x1)=>{
-            match token2 {
-                CSS_TOKEN_CHAR(x2)=>{
-                    if x1==x2 {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                },
-                _=> return false
-            }
+        CSS_TOKEN_CHAR(ch)=>{
+            returnString += ~"CHAR " + from_char(ch);
         },
-        CSS_TOKEN_NUMBER(x1 , y1)=>{
-            match token2 {
-                CSS_TOKEN_NUMBER(x2,y2)=>{
-                    if str::eq(&y1,&y2) && matchNumericValue(x1,x2) {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                },
-                _=> return false
-            }
+        CSS_TOKEN_NUMBER(NumVal , x)=>{
+            returnString += ~"NUMBER " + NumValToString(NumVal)+~" "+x;
         }, 
-        CSS_TOKEN_PERCENTAGE(x1 , y1)=>{
-            match token2 {
-                CSS_TOKEN_PERCENTAGE(x2 , y2)=>{
-                    if str::eq(&y1,&y2) && matchNumericValue(x1,x2) {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                },
-                _=> return false
-            }
+        CSS_TOKEN_PERCENTAGE(NumVal , x)=>{
+            returnString += ~"PERCENTAGE "+NumValToString(NumVal)+~" "+x;
         }, 
-        CSS_TOKEN_DIMENSION(x1 , y1, z1)=>{
-            match token2 {
-                CSS_TOKEN_DIMENSION(x2 , y2, z2)=>{
-                    if str::eq(&y1,&y2) &&  str::eq(&z1,&z2) && matchNumericValue(x1,x2) {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                },
-                _=> return false
-            }
+        CSS_TOKEN_DIMENSION(NumVal , x1, x2)=>{
+            returnString += ~"DIMENSION "+NumValToString(NumVal)+~" "+x1+~" "+x2;
         },
         CSS_TOKEN_CDO=>{
-            match token2 {
-                CSS_TOKEN_CDO=>{
-                    return true;
-                },
-                _=> return false
-            }
+            returnString += ~"CDO ";
         }, 
         CSS_TOKEN_CDC=>{
-            match token2 {
-                CSS_TOKEN_CDC=>{
-                        return true;
-                },
-                _=> return false
-            }
+            returnString += ~"CDC ";
         }, 
         CSS_TOKEN_S=>{
-            match token2 {
-                CSS_TOKEN_S=>{
-                        return true;
-                },
-                _=> return false
-            }
+            returnString += ~"S ";
         },
-        CSS_TOKEN_EOF=>{
-            match token2 {
-                CSS_TOKEN_EOF=>{
-                        return true;
-                },
-                _=> return false
-            }
-        } 
-    }
-}
-fn NumericValue(string:~str) -> NumericValue {
-
-    let NumVal:NumericValue;
-    let mut isFloat= false;
-    for string.each() |i| {
-        if i=='.' as u8 {
-            isFloat= true;
+        // CSS_TOKEN_COMMENT, 
+        // CSS_TOKEN_INCLUDES, CSS_TOKEN_DASHMATCH, CSS_TOKEN_PREFIXMATCH, 
+        // CSS_TOKEN_SUFFIXMATCH, CSS_TOKEN_SUBSTRINGMATCH, 
+        CSS_TOKEN_EOF =>{
+            returnString += ~"EOF ";
         }
     }
-    if !isFloat {
-         NumVal=Integer(int::from_str(string).unwrap());
-    }
-    else {
-        NumVal=Float(float::from_str(string).unwrap());
-    }
-       
-    return NumVal;
+    return returnString;   
 }
+
 fn NumValToString(NumVal:NumericValue)-> ~str {
     match NumVal {
         Integer(x)=>{
@@ -360,118 +179,6 @@ fn NumValToString(NumVal:NumericValue)-> ~str {
         Float(x)=>{
             return fmt!("%?",x);
         },
-    }
-}
-fn stringToToken(string:~str)->(css_token_type) {
-    //io::println(~"string = "+string);
-    let mut isToken:bool =true;
-    let mut token:~str=~"";
-    let mut data:~[~str]=~[];
-    for each_word(string) |ww| {
-        if isToken {
-            token = ww.to_owned();
-            //io::println(~"ww = "+ww);
-            isToken =false;
-        }
-        else {
-            //io::println(~"ww = "+ww);
-            data.push(ww.to_owned());
-        }
-    }
-
-    match token {
-        ~"IDENT"=> {
-            if data.len() < 1 {
-                fail!();
-            }
-            return CSS_TOKEN_IDENT( copy data[0]);
-        },
-        ~"ATKEYWORD"=> {
-            if data.len() < 1 {
-                fail!();
-            }
-            return CSS_TOKEN_ATKEYWORD(copy data[0]);
-        },
-        ~"HASH"=> {
-            if data.len() < 1 {
-                fail!();
-            }
-            return CSS_TOKEN_HASH(copy data[0]);
-        },
-        ~"FUNCTION"=> {
-            if data.len() < 1 {
-                fail!();
-            }
-            return CSS_TOKEN_FUNCTION(copy data[0]);
-        },
-        ~"STRING"=> {
-            if data.len() < 1 {
-                fail!();
-            }
-            return CSS_TOKEN_STRING(copy data[0]);
-        },
-        ~"INVALID_STRING"=> {
-            /*if data.len() ==0 {
-                fail!();
-            }*/
-            return CSS_TOKEN_INVALID_STRING;
-        },
-        ~"URI"=> {
-            if data.len() < 1 {
-                fail!();
-            }
-            return CSS_TOKEN_URI(copy data[0]);
-        },
-        ~"UNICODE_RANGE"=> {
-            if data.len() < 2 {
-                fail!();
-            }
-            return CSS_TOKEN_UNICODE_RANGE(copy data[0].char_at(0),copy data[1].char_at(0));//char,char error
-        },
-        ~"CHAR"=> {
-            if data.len() < 1 {
-                fail!();
-            }
-            return CSS_TOKEN_CHAR(data[0].char_at(0));//char  error
-        },
-        ~"NUMBER"=> {
-            if data.len() < 2 {
-                fail!();
-            }
-            return CSS_TOKEN_NUMBER(NumericValue(copy data[0]),copy data[1]);
-        },
-        ~"PERCENTAGE"=> {
-            if data.len() < 2 {
-                fail!();
-            }
-            return CSS_TOKEN_PERCENTAGE(NumericValue(copy data[0]),copy data[1]);
-        },
-        ~"DIMENSION"=> {
-            if data.len() < 3 {
-                fail!();
-            }
-            return CSS_TOKEN_DIMENSION(NumericValue(copy data[0]),copy data[1],copy data[2]);
-        },
-        ~"CDO"=> {
-            
-            return CSS_TOKEN_CDO;
-        },
-        ~"CDC"=> {
-            
-            return CSS_TOKEN_CDC;
-        },
-        ~"S"=> {
-            
-            return CSS_TOKEN_S;
-        },
-        ~"EOF"=> {
-            
-            return CSS_TOKEN_EOF;
-        },
-        _=>{
-            //io::println(token);
-            return CSS_TOKEN_INVALID_STRING;
-        }
     }
 }
 
