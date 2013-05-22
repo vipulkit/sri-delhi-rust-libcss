@@ -5990,3 +5990,209 @@ pub fn css__compose_text_align(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// text_decoration
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_text_decoration(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_TEXT_DECORATION_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		if (getValue(opv) == TEXT_DECORATION_NONE) {
+			value = ( CSS_TEXT_DECORATION_NONE as u16);
+		} 
+		else {
+			if(value == 0) {
+				return CSS_SHOULD_NEVER_OCCUR ;
+			}
+
+			if ( (getValue(opv) & TEXT_DECORATION_UNDERLINE) == 0 ) {
+				value |= ( CSS_TEXT_DECORATION_UNDERLINE as u16);
+			}
+			if ( (getValue(opv) & TEXT_DECORATION_OVERLINE) == 0 ) {
+				value |= ( CSS_TEXT_DECORATION_OVERLINE as u16);
+			}
+			if ( (getValue(opv) & TEXT_DECORATION_LINE_THROUGH) == 0 ) {
+				value |= ( CSS_TEXT_DECORATION_LINE_THROUGH as u16);
+			}
+			if ( (getValue(opv) & TEXT_DECORATION_BLINK) == 0 ) {
+				value |= ( CSS_TEXT_DECORATION_BLINK as u16);
+			}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		set_text_decoration(state.computed, value as u8);
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_text_decoration_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_text_decoration(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_text_decoration(state:@mut css_select_state) -> css_result {
+
+	set_text_decoration(state.computed, (CSS_TEXT_DECORATION_NONE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_text_decoration(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_text_decoration(child);
+
+	if (ftype == (CSS_TEXT_DECORATION_INHERIT as u8) ) {
+		ftype = css_computed_text_decoration(parent);
+		
+		set_text_decoration(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_text_decoration(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// text_indent
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_text_indent(opv:u32, style:@mut css_style, 
+										state:@mut css_select_state) -> css_result {
+
+	
+	return css__cascade_length(opv, style, state, Some(@set_text_indent) );
+}
+
+pub fn css__set_text_indent_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_text_indent(style, hint.status, x.value , x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		},
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_text_indent(state:@mut css_select_state) -> css_result {
+
+	set_text_indent(state.computed, (CSS_TEXT_INDENT_SET as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_text_indent(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_text_indent(child);
+
+	if (ftype == (CSS_TEXT_INDENT_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_text_indent(parent);
+		set_text_indent(result, 
+						ftype2, 
+						olength2.get_or_default( olength.get_or_default(0) ), 
+						ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_text_indent(result, 
+					ftype, 
+					olength.get_or_default(0), 
+					ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// text_transform
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_text_transform(opv:u32, _:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_TEXT_TRANSFORM_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			TEXT_TRANSFORM_CAPITALIZE => {
+				value = (CSS_TEXT_TRANSFORM_CAPITALIZE as u16);
+			},
+			TEXT_TRANSFORM_UPPERCASE => {
+				value = (CSS_TEXT_TRANSFORM_UPPERCASE as u16);
+			},
+			TEXT_TRANSFORM_LOWERCASE => {
+				value = (CSS_TEXT_TRANSFORM_LOWERCASE as u16);
+			},
+			TEXT_TRANSFORM_NONE => {
+				value = (CSS_TEXT_TRANSFORM_NONE as u16);
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_text_transform(state.computed, value as u8);
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_text_transform_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_text_transform(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_text_transform(state:@mut css_select_state) -> css_result {
+
+	set_text_transform(state.computed, (CSS_TEXT_TRANSFORM_NONE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_text_transform(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_text_transform(child);
+
+	if (ftype == (CSS_TEXT_TRANSFORM_INHERIT as u8) ) {
+		ftype = css_computed_text_transform(parent);
+		
+		set_text_transform(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_text_transform(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
