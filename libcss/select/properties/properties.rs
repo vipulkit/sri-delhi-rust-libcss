@@ -6323,3 +6323,178 @@ pub fn css__compose_unicode_bidi(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// vertical_align
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_vertical_align(opv:u32, style:@mut css_style, 
+								state:@mut css_select_state) -> css_result {
+
+	let mut value : u16 = CSS_VERTICAL_ALIGN_INHERIT as u16;
+	let mut length : i32 = 0;
+	let mut unit : u32 = UNIT_PX as u32;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			VERTICAL_ALIGN_SET => {
+				value = (CSS_VERTICAL_ALIGN_SET as u16) ;
+
+				length = peek_bytecode(style) as i32 ;
+				advance_bytecode(style);
+				unit = peek_bytecode(style);
+				advance_bytecode(style);
+			},
+			VERTICAL_ALIGN_BASELINE => {
+				value = (CSS_VERTICAL_ALIGN_BASELINE as u16) ;
+			},
+			VERTICAL_ALIGN_SUB => {
+				value = (CSS_VERTICAL_ALIGN_SUB as u16) ;
+			},
+			VERTICAL_ALIGN_SUPER => {
+				value = (CSS_VERTICAL_ALIGN_SUPER as u16) ;
+			},
+			VERTICAL_ALIGN_TOP => {
+				value = (CSS_VERTICAL_ALIGN_TOP as u16) ;
+			},
+			VERTICAL_ALIGN_TEXT_TOP => {
+				value = (CSS_VERTICAL_ALIGN_TEXT_TOP as u16) ;
+			},
+			VERTICAL_ALIGN_MIDDLE => {
+				value = (CSS_VERTICAL_ALIGN_MIDDLE as u16) ;
+			},
+			VERTICAL_ALIGN_BOTTOM => {
+				value = (CSS_VERTICAL_ALIGN_BOTTOM as u16) ;
+			},
+			VERTICAL_ALIGN_TEXT_BOTTOM => {
+				value = (CSS_VERTICAL_ALIGN_TEXT_BOTTOM as u16) ;
+			},
+			_ =>{}
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_vertical_align(state.computed, value as u8, length, css__to_css_unit(unit) );
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_vertical_align_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_vertical_align(style, hint.status, x.value , x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		},
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_vertical_align(state:@mut css_select_state) -> css_result {
+
+	set_vertical_align(state.computed, (CSS_VERTICAL_ALIGN_BASELINE as u8),
+					 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_vertical_align(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_vertical_align(child);
+
+	if (ftype == (CSS_VERTICAL_ALIGN_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_vertical_align(parent);
+		set_vertical_align(result, 
+						ftype2, 
+						olength2.get_or_default( olength.get_or_default(0) ), 
+						ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_vertical_align(result, 
+						ftype, 
+						olength.get_or_default(0), 
+						ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// visibility
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_visibility(opv:u32, _:@mut css_style, 
+								state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_VISIBILITY_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			VISIBILITY_VISIBLE => {
+				value = (CSS_VISIBILITY_VISIBLE as u16) ;
+			},
+			VISIBILITY_HIDDEN => {
+				value = (CSS_VISIBILITY_HIDDEN as u16) ;
+			},
+			VISIBILITY_COLLAPSE => {
+				value = (CSS_VISIBILITY_COLLAPSE as u16) ;
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_visibility(state.computed, value as u8);
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_visibility_from_hint(hint:@mut  css_hint, 
+									style:@mut css_computed_style
+									) -> css_result {
+
+	set_visibility(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_visibility(state:@mut css_select_state) -> css_result {
+
+	set_visibility(state.computed, (CSS_VISIBILITY_VISIBLE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_visibility(parent:@mut css_computed_style,
+								child:@mut css_computed_style,
+								result:@mut css_computed_style
+								) -> css_result {
+
+	let mut ftype = css_computed_visibility(child);
+
+	if (ftype == (CSS_VISIBILITY_INHERIT as u8) ) {
+		ftype = css_computed_visibility(parent);
+		
+		set_visibility(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_visibility(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
