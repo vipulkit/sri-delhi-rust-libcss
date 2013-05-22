@@ -6323,3 +6323,708 @@ pub fn css__compose_unicode_bidi(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// vertical_align
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_vertical_align(opv:u32, style:@mut css_style, 
+								state:@mut css_select_state) -> css_result {
+
+	let mut value : u16 = CSS_VERTICAL_ALIGN_INHERIT as u16;
+	let mut length : i32 = 0;
+	let mut unit : u32 = UNIT_PX as u32;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			VERTICAL_ALIGN_SET => {
+				value = (CSS_VERTICAL_ALIGN_SET as u16) ;
+
+				length = peek_bytecode(style) as i32 ;
+				advance_bytecode(style);
+				unit = peek_bytecode(style);
+				advance_bytecode(style);
+			},
+			VERTICAL_ALIGN_BASELINE => {
+				value = (CSS_VERTICAL_ALIGN_BASELINE as u16) ;
+			},
+			VERTICAL_ALIGN_SUB => {
+				value = (CSS_VERTICAL_ALIGN_SUB as u16) ;
+			},
+			VERTICAL_ALIGN_SUPER => {
+				value = (CSS_VERTICAL_ALIGN_SUPER as u16) ;
+			},
+			VERTICAL_ALIGN_TOP => {
+				value = (CSS_VERTICAL_ALIGN_TOP as u16) ;
+			},
+			VERTICAL_ALIGN_TEXT_TOP => {
+				value = (CSS_VERTICAL_ALIGN_TEXT_TOP as u16) ;
+			},
+			VERTICAL_ALIGN_MIDDLE => {
+				value = (CSS_VERTICAL_ALIGN_MIDDLE as u16) ;
+			},
+			VERTICAL_ALIGN_BOTTOM => {
+				value = (CSS_VERTICAL_ALIGN_BOTTOM as u16) ;
+			},
+			VERTICAL_ALIGN_TEXT_BOTTOM => {
+				value = (CSS_VERTICAL_ALIGN_TEXT_BOTTOM as u16) ;
+			},
+			_ =>{}
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_vertical_align(state.computed, value as u8, length, css__to_css_unit(unit) );
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_vertical_align_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_vertical_align(style, hint.status, x.value , x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		},
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_vertical_align(state:@mut css_select_state) -> css_result {
+
+	set_vertical_align(state.computed, (CSS_VERTICAL_ALIGN_BASELINE as u8),
+					 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_vertical_align(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_vertical_align(child);
+
+	if (ftype == (CSS_VERTICAL_ALIGN_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_vertical_align(parent);
+		set_vertical_align(result, 
+						ftype2, 
+						olength2.get_or_default( olength.get_or_default(0) ), 
+						ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_vertical_align(result, 
+						ftype, 
+						olength.get_or_default(0), 
+						ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// visibility
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_visibility(opv:u32, _:@mut css_style, 
+								state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_VISIBILITY_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			VISIBILITY_VISIBLE => {
+				value = (CSS_VISIBILITY_VISIBLE as u16) ;
+			},
+			VISIBILITY_HIDDEN => {
+				value = (CSS_VISIBILITY_HIDDEN as u16) ;
+			},
+			VISIBILITY_COLLAPSE => {
+				value = (CSS_VISIBILITY_COLLAPSE as u16) ;
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_visibility(state.computed, value as u8);
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_visibility_from_hint(hint:@mut  css_hint, 
+									style:@mut css_computed_style
+									) -> css_result {
+
+	set_visibility(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_visibility(state:@mut css_select_state) -> css_result {
+
+	set_visibility(state.computed, (CSS_VISIBILITY_VISIBLE as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_visibility(parent:@mut css_computed_style,
+								child:@mut css_computed_style,
+								result:@mut css_computed_style
+								) -> css_result {
+
+	let mut ftype = css_computed_visibility(child);
+
+	if (ftype == (CSS_VISIBILITY_INHERIT as u8) ) {
+		ftype = css_computed_visibility(parent);
+		
+		set_visibility(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_visibility(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// voice_family
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_voice_family(opv:u32 , 
+								style:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	let mut value : u16 = 0;
+	let mut voices : ~[~str] = ~[];
+
+	if (isInherit(opv) == false) {
+		let mut v : u32 = getValue(opv) as u32;
+
+		while (v != (VOICE_FAMILY_END as u32) ) {
+
+			match (v as u16) {
+				VOICE_FAMILY_STRING 	|
+				VOICE_FAMILY_IDENT_LIST => {
+
+					if style.sheet.is_none() {
+						return CSS_BADPARM ;
+					}
+					let mut (result,o_voice)  = style.sheet.get().css__stylesheet_string_get( 
+																peek_bytecode(style) as uint );
+					match result {
+						CSS_OK=>{} ,
+						x => { return x ; }
+					}
+					if o_voice.is_none()  { return CSS_BADPARM ;}
+
+					voices.push( o_voice.unwrap() );
+					advance_bytecode(style);
+				},
+				VOICE_FAMILY_MALE => {
+					if (value == 0) {
+						value = 1;
+					}
+				},
+				VOICE_FAMILY_FEMALE => {
+					if (value == 0) {
+						value = 1;
+					}
+				},
+				VOICE_FAMILY_CHILD => {
+					if (value == 0) {
+						value = 1;
+					}
+				},
+				_ => {}
+			}
+
+			/* Only use family-names which occur before the first
+			 * generic-family. Any values which occur after the
+			 * first generic-family are ignored. */
+			/* \todo Do this at bytecode generation time? */
+
+			v = peek_bytecode(style);
+			advance_bytecode(style);
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo voice-family */
+		// set voice family in propset
+	} 
+
+	CSS_OK
+}
+
+pub fn css__set_voice_family_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) 
+								-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_voice_family(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_voice_family(_:@mut css_computed_style,
+								_:@mut css_computed_style,
+								_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// volume
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_volume(opv:u32 , 
+								style:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	let mut val : i32 = 0;
+	let mut unit : u32 = UNIT_PCT as u32;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			VOLUME_NUMBER => {
+				val = peek_bytecode(style) as i32;
+				advance_bytecode(style);
+			},
+			VOLUME_DIMENSION => {
+				val = peek_bytecode(style) as i32;
+				advance_bytecode(style);
+				unit = peek_bytecode(style);
+				advance_bytecode(style);
+			},
+			VOLUME_SILENT 	|
+			VOLUME_X_SOFT 	|
+			VOLUME_SOFT 	|
+			VOLUME_MEDIUM 	|
+			VOLUME_LOUD 	|
+			VOLUME_X_LOUD => {
+				/* \todo convert to public values */
+			},
+			_ => {}
+		}
+	}
+
+	unit = css__to_css_unit(unit) as u32;
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo volume */
+	}
+	CSS_OK
+}
+
+pub fn css__set_volume_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) 
+								-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_volume(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_volume(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// white_space
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_white_space(opv:u32, _:@mut css_style, 
+								state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_WHITE_SPACE_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			WHITE_SPACE_NORMAL => {
+				value = ( CSS_WHITE_SPACE_NORMAL as u16) ;
+			},
+			WHITE_SPACE_PRE => {
+				value = ( CSS_WHITE_SPACE_PRE as u16) ;
+			},
+			WHITE_SPACE_NOWRAP => {
+				value = ( CSS_WHITE_SPACE_NOWRAP as u16) ;
+			},
+			WHITE_SPACE_PRE_WRAP => {
+				value = ( CSS_WHITE_SPACE_PRE_WRAP as u16) ;
+			},
+			WHITE_SPACE_PRE_LINE => {
+				value = ( CSS_WHITE_SPACE_PRE_LINE as u16) ;
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_white_space(state.computed, value as u8);
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_white_space_from_hint(hint:@mut  css_hint, 
+									style:@mut css_computed_style
+									) -> css_result {
+
+	set_white_space(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_white_space(state:@mut css_select_state) -> css_result {
+
+	set_white_space(state.computed, (CSS_WHITE_SPACE_NORMAL as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_white_space(parent:@mut css_computed_style,
+								child:@mut css_computed_style,
+								result:@mut css_computed_style
+								) -> css_result {
+
+	let mut ftype = css_computed_white_space(child);
+
+	if (ftype == (CSS_WHITE_SPACE_INHERIT as u8) ) {
+		ftype = css_computed_white_space(parent);
+		
+		set_white_space(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_white_space(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_width(opv:u32, style:@mut css_style, 
+						state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_auto(opv, style, state, @set_width);	
+}
+
+pub fn css__set_width_from_hint(hint:@mut  css_hint, 
+								style:@mut css_computed_style
+								) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_width(style, hint.status, x.value , x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		},
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_width(state:@mut css_select_state) -> css_result {
+
+	set_width(state.computed, (CSS_WIDTH_AUTO as u8) , 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_width(parent:@mut css_computed_style,
+							child:@mut css_computed_style,
+							result:@mut css_computed_style
+							) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_width(child);
+
+	if (ftype == (CSS_WIDTH_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_width(parent);
+		set_width(result, 
+				ftype2, 
+				olength2.get_or_default( olength.get_or_default(0) ), 
+				ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_width(result, ftype, 
+				olength.get_or_default(0), 
+				ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// windows
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_windows(opv:u32 , 
+								style:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	return css__cascade_number(opv, style, state, None);
+}
+
+pub fn css__set_windows_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) 
+								-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_windows(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_windows(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// word_spacing
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_word_spacing(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_normal(opv, style, state, @set_word_spacing);
+}
+
+pub fn css__set_word_spacing_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_word_spacing(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		},
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_word_spacing(state:@mut css_select_state) -> css_result {
+
+	set_word_spacing(state.computed, (CSS_WORD_SPACING_NORMAL as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_word_spacing(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_word_spacing(child);
+
+	if (  (child.uncommon.is_none() && parent.uncommon.is_some() ) || 
+			ftype == (CSS_WORD_SPACING_INHERIT as u8) || 
+			(child.uncommon.is_some() && !mut_ptr_eq(result,child) ) ) {
+
+			if ( ( child.uncommon.is_none() && parent.uncommon.is_some() ) ||
+					ftype == (CSS_WORD_SPACING_INHERIT as u8) ) {
+
+				let mut (ftype2,olength2,ounit2) = css_computed_word_spacing(parent);
+				set_word_spacing(result, 
+								ftype2, 
+								olength2.get_or_default( olength.get_or_default(0) ), 
+								ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+			}
+			else {
+				set_word_spacing(result, 
+								ftype, 
+								olength.get_or_default(0), 
+								ounit.get_or_default(CSS_UNIT_PX));
+			}
+	}
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// cue_after
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_cue_after(opv:u32 , 
+								style:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	return css__cascade_uri_none(opv, style, state, None);
+}
+
+pub fn css__set_cue_after_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) 
+								-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_cue_after(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_cue_after(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// cue_before
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_cue_before(opv:u32 , 
+								style:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	return css__cascade_uri_none(opv, style, state, None);
+}
+
+pub fn css__set_cue_before_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) 
+								-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_cue_before(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_cue_before(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// z_index
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_z_index(opv:u32, style:@mut css_style, 
+							state:@mut css_select_state) -> css_result {
+
+	let mut value : u16= CSS_Z_INDEX_INHERIT as u16;
+	let mut index : i32 = 0;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			Z_INDEX_SET =>  {
+				value = (CSS_Z_INDEX_SET  as u16) ;
+
+				index = peek_bytecode(style) as i32;
+				advance_bytecode(style);
+			},
+			Z_INDEX_AUTO =>  {
+				value = (CSS_Z_INDEX_AUTO  as u16) ;
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing( getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_z_index(state.computed, value as u8, index);
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_z_index_from_hint(hint:@mut  css_hint, 
+								style:@mut css_computed_style
+								) -> css_result {
+
+	match hint.hint_type {
+		INTEGER_TYPE=>{
+			match hint.integer {
+				Some(x)=>{
+					set_z_index(style, hint.status, x );
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		},
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_z_index(state:@mut css_select_state) -> css_result {
+
+	set_z_index(state.computed, (CSS_Z_INDEX_AUTO as u8) , 0);
+	CSS_OK
+}
+
+pub fn css__compose_z_index(parent:@mut css_computed_style,
+							child:@mut css_computed_style,
+							result:@mut css_computed_style
+							) -> css_result {
+
+	let mut (ftype,index) = css_computed_z_index(child);
+
+	if (ftype == (CSS_Z_INDEX_INHERIT as u8) ) {
+		let mut (ftype2,index2) = css_computed_z_index(parent);
+		
+		set_z_index(result, ftype2,index2);
+		CSS_OK
+	}
+	else {
+		set_z_index(result, ftype, index);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
