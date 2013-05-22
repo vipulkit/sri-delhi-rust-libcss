@@ -13,7 +13,7 @@ pub enum css_token_type {
 	CSS_TOKEN_NUMBER(NumericValue , ~str), 
 	CSS_TOKEN_PERCENTAGE(NumericValue , ~str), 
 	CSS_TOKEN_DIMENSION(NumericValue , ~str, ~str),
-	CSS_TOKEN_CDO, 
+	CSS_TOKEN_CDO,
 	CSS_TOKEN_CDC, 
 	CSS_TOKEN_S,
 	// F(char),
@@ -1375,15 +1375,16 @@ pub impl css_lexer {
 				},
 				_ => {
 					match self.consume_scientific_number(string) {
-						(Some(Ok(token)),x)=> return (Some(token), x),
-						(Some(Err(s)),_) => { 
-							string = s;
-							break 
-						},
-						(None,_) =>{
+						(Ok(token),x)=> return (Some(token), x),
+						(Err(_),LEXER_NEEDDATA) =>{
 							self.position = head_position;
 							return (None,LEXER_NEEDDATA)
 						}
+						(Err(s),_) => { 
+							string = s;
+							break 
+						},
+						
 					}
 				}
 			}
@@ -1409,7 +1410,6 @@ pub impl css_lexer {
 		// io::println(fmt!("consume_numeric_fraction: here string is %?" , string));
 		let head_position = self.position;
 		let mut string: ~str = string;
-		let mut error_condition:lexer_error= LEXER_OK;
 		while !self.is_eof() {
 			let ch:char=  match self.consume_char() {
 				(Some(c),_)=>c,
@@ -1418,33 +1418,33 @@ pub impl css_lexer {
 					return (None,LEXER_NEEDDATA);
 				}
 			};
-			// io::println(fmt!("consume_numeric_fraction: here char is %?" , ch));
+			
 			match ch {
 
-				'0'..'9' => push_char!(string,ch ),
-				_ => match self.consume_scientific_number(string) {
-						(Some(Ok(token)),x) => return (Some(token), match(error_condition) {
-																		LEXER_NEEDDATA=>{
-																			self.position = head_position;
-																			LEXER_NEEDDATA
-																		},
-																		_=>x
-																	}
-						),
-						(Some(Err(s)),_) => { 
-									string = s; 
-									break 
-						},
-						(None,_)=> {
+				'0'..'9' => push_char!(string,ch),
+				'%' => {
+					self.position -= 1;
+					break
+				},
+				_ =>  {
+					match self.consume_scientific_number(string) {
+						(Ok(token),x) => return (Some(token), x),
+						(Err(_),LEXER_NEEDDATA)=> {
 							self.position = head_position;
-							return (None, LEXER_NEEDDATA)
+							return (None, LEXER_NEEDDATA);
 						}
+						(Err(s),_) => {
+							self.position -= 1; 
+							string = s; 
+							break 
+						},
+					}
 				}
 			}
 		}
 
-		// io::println(fmt!("consume_numeric_fraction: here number is %?" , string));
 		let value = Float(float::from_str(string).unwrap()); // XXX handle overflow
+		
 		let (some_token , error) = self.consume_numeric_end(string, value);
 		match error {
 			LEXER_NEEDDATA => {
@@ -1463,19 +1463,50 @@ pub impl css_lexer {
 			return (Some(CSS_TOKEN_NUMBER(value, string)), LEXER_OK) 
 		}
 		let c:char= match self.current_char() {
-				(Some(ch),_)=>ch,
-				_=> return (None,LEXER_NEEDDATA)
+			(Some(ch),_)=>ch,
+			_=> return (None,LEXER_NEEDDATA)
 		};
 		match c {
-			'%' => { 
+			'%' => {
 				if  self.position+1 <= self.length {
-					self.position += 1
+					self.position += 1;
+					let c: char = match self.current_char() {
+						(Some(ch) , _)=> ch,
+						_ => return(None , LEXER_NEEDDATA)
+					};
+					match c {
+						'\t' | '\n' | '\x0C' | ' '|';' => {
+							(Some(CSS_TOKEN_PERCENTAGE(value, string)),LEXER_OK)	
+						},
+						_ => {
+							loop {
+								let c: char = match self.current_char() {
+									(Some(ch) , _)=> ch,
+									_ => return(None , LEXER_NEEDDATA)
+								};
+								match c {
+									'\t' | '\n' | '\x0C' | ' '|';' => {
+										break
+									},
+									_ => {
+										if self.position <= self.length {
+											self.position += 1;
+										}
+										else {
+											self.position = head_position;
+											return (None , LEXER_NEEDDATA)
+										}
+									}
+								}
+							}
+							(Some(CSS_TOKEN_INVALID_STRING) , LEXER_OK)
+						}
+					}
 				} 
 				else {
 					self.position = head_position;
 					return (None , LEXER_NEEDDATA)
-				}; 
-				(Some(CSS_TOKEN_PERCENTAGE(value, string)),LEXER_OK) 
+				} 
 			},
 			_ => {
 				match self.consume_ident_string() {
@@ -1493,8 +1524,7 @@ pub impl css_lexer {
 	}
 
 
-	fn consume_scientific_number(&mut self, string: ~str) -> (Option<Result<css_token_type, ~str>>,lexer_error) {
-		// io::println("consume_scientific_number: inside fn");
+	fn consume_scientific_number(&mut self, string: ~str) -> (Result<css_token_type, ~str>,lexer_error) {
 		let head_position = self.position;
 		let next_3 = self.next_n_chars(3);
 		let mut error_condition:lexer_error= LEXER_OK;
@@ -1519,28 +1549,36 @@ pub impl css_lexer {
 			self.position += 3;
 		} 
 		else {
-			return (Some(Err(string)),error_condition)
+			return (Err(string),error_condition)
 		}
 		while !self.is_eof() && is_match!(
 			match self.current_char() {
 				(Some(ch),_)=>ch,
 				_=> {
 					self.position = head_position;
-					return (None,LEXER_NEEDDATA);
+					return (Err(string),LEXER_NEEDDATA);
 				}
 			}, '0'..'9') {
 			let c= match(self.consume_char()) {
-					(Some(ch),x)=>{error_condition=x;ch},
+					(Some(ch),_)=>{
+						ch
+					},
 					(None,_)=> {
 						self.position = head_position;
-						return (None,LEXER_NEEDDATA);
+						return (Err(string),LEXER_NEEDDATA);
 					}
 			};
 			push_char!(string,c)
 		}
 		let value = Float(float::from_str(string).unwrap());
 		// io::println(fmt!("consume_scientific_number: here number is %?" , string));
-		(Some(Ok(CSS_TOKEN_NUMBER(value, string))),error_condition)
+		let (some_token , error) = self.consume_numeric_end(copy string, value);
+		match error {
+			LEXER_NEEDDATA => {
+				self.position = head_position;
+				return(Ok(some_token.unwrap()) , error);
+			},
+			_=> return(Err(string) , error),
+		}
 	}
 }
-

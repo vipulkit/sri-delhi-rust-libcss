@@ -48,21 +48,19 @@ fn css(file_name: ~str) {
     r.seek(0 , SeekEnd);
     let mut len = r.tell();
     r.seek(0 , SeekSet);
-    while len>0 {
+    while len>CHUNK_SIZE {
         buf = r.read_bytes(CHUNK_SIZE as uint);
-        len -= buf.len();
+        len -= CHUNK_SIZE;
         let error = css.css_stylesheet_append_data(buf);
         match error {
-        	CSS_OK => {},
-        	CSS_NEEDDATA => {},
+        	CSS_OK | CSS_NEEDDATA => {},
         	_ => {assert!(false);}
         }
     }
     buf = r.read_bytes(len as uint);
     let error = css.css_stylesheet_append_data(buf);
     match error {
-    	CSS_OK => {},
-        CSS_NEEDDATA => {},
+    	CSS_OK | CSS_NEEDDATA => {},
         _ => {assert!(false);}
     }
 

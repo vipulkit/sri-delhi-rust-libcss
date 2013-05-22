@@ -196,7 +196,7 @@ pub impl css_parser {
         self.parse_error = false;
     }
 
-    fn transition_no_ret(&mut self, to:(uint,uint))
+    fn transition_no_ret(&mut self, _:(uint,uint))
     {
         /* Replace current state on the stack with destination */
         if (!self.state_stack.is_empty()) {
