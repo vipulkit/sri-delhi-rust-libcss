@@ -37,13 +37,13 @@ S
 IDENT font-family
 CHAR :
 IDENT Verdana
-Delim ,
+CHAR ,
 IDENT Arial
-Delim ,
+CHAR ,
 IDENT Helvetica
-Delim ,
+CHAR ,
 IDENT sans-serif
-Delim ,
+CHAR ,
 IDENT Verdana
 CHAR ;
 S 
@@ -92,7 +92,7 @@ S
 IDENT a
 CHAR :
 IDENT link
-Delim ,
+CHAR ,
 S 
 HASH search_box
 S 
@@ -166,7 +166,7 @@ S
 CHAR }
 S 
 IDENT div
-HASH header_search
+IDENT header_search
 S 
 CHAR {
 S 
@@ -220,7 +220,7 @@ S
 S 
 S 
 IDENT div
-HASH container
+IDENT container
 S 
 CHAR {
 S 
@@ -468,13 +468,13 @@ S
 IDENT Sans
 S 
 IDENT Unicode
-Delim ,
+CHAR ,
 IDENT Verdana
-Delim ,
+CHAR ,
 IDENT Arial
-Delim ,
+CHAR ,
 IDENT Helvetica
-Delim ,
+CHAR ,
 IDENT sans-serif
 CHAR ;
 S 
@@ -652,9 +652,9 @@ CHAR :
 IDENT trebuchet
 S 
 IDENT MS
-Delim ,
+CHAR ,
 IDENT arial
-Delim ,
+CHAR ,
 IDENT sans-serif
 CHAR ;
 S 
@@ -1472,42 +1472,42 @@ IDENT top_menu
 S 
 IDENT a
 HASH main
-Delim ,
+CHAR ,
 S 
 IDENT div
 HASH top_menu
 S 
 IDENT a
 IDENT main_acads
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT top_menu
 S 
 IDENT a
 IDENT main_admissions
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT top_menu
 S 
 IDENT a
 IDENT main_research
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT top_menu
 S 
 IDENT a
 IDENT main_people
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT top_menu
 S 
 IDENT a
 IDENT main_campuslife
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT top_menu
@@ -1644,7 +1644,7 @@ IDENT a
 IDENT main_acads
 CHAR :
 IDENT hover
-Delim ,
+CHAR ,
 S 
 IDENT div
 HASH top_menu
@@ -1653,7 +1653,7 @@ IDENT a
 IDENT main_institute
 CHAR :
 IDENT hover
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT top_menu
@@ -1662,7 +1662,7 @@ IDENT a
 IDENT main_admissions
 CHAR :
 IDENT hover
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT top_menu
@@ -1671,7 +1671,7 @@ IDENT a
 IDENT main_research
 CHAR :
 IDENT hover
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT top_menu
@@ -1680,7 +1680,7 @@ IDENT a
 IDENT main_people
 CHAR :
 IDENT hover
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT top_menu
@@ -1689,7 +1689,7 @@ IDENT a
 IDENT main_campuslife
 CHAR :
 IDENT hover
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT top_menu
@@ -1698,7 +1698,7 @@ IDENT a
 HASH main
 CHAR :
 IDENT hover
-Delim ,
+CHAR ,
 S 
 IDENT div
 HASH top_menu
@@ -1737,7 +1737,7 @@ S
 IDENT ul
 S 
 IDENT li
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT sub_menu_acads
@@ -1745,7 +1745,7 @@ S
 IDENT ul
 S 
 IDENT li
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT sub_menu_research
@@ -1753,7 +1753,7 @@ S
 IDENT ul
 S 
 IDENT li
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT sub_menu_campuslife
@@ -1761,7 +1761,7 @@ S
 IDENT ul
 S 
 IDENT li
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT sub_menu_admissions
@@ -1769,7 +1769,7 @@ S
 IDENT ul
 S 
 IDENT li
-Delim ,
+CHAR ,
 S 
 IDENT div
 IDENT sub_menu_people
@@ -1971,7 +1971,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT slide
 S 
 CHAR {
@@ -1988,7 +1988,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT btn_slide
 S 
 CHAR {
@@ -2073,7 +2073,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT expanded
 S 
 CHAR {
@@ -2168,7 +2168,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT bqstart
 S 
 CHAR {
@@ -2210,7 +2210,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT bqend
 S 
 CHAR {
@@ -2292,7 +2292,7 @@ S
 CHAR }
 S 
 IDENT ul
-Delim .
+CHAR .
 IDENT navigation
 S 
 CHAR {
@@ -2325,7 +2325,7 @@ S
 CHAR }
 S 
 IDENT ul
-Delim .
+CHAR .
 IDENT navigation
 S 
 IDENT li
@@ -2380,7 +2380,7 @@ S
 CHAR }
 S 
 IDENT ul
-Delim .
+CHAR .
 IDENT navigation
 S 
 IDENT li
@@ -2407,7 +2407,7 @@ S
 CHAR }
 S 
 IDENT ul
-Delim .
+CHAR .
 IDENT navigation
 S 
 IDENT li
@@ -2426,7 +2426,7 @@ S
 CHAR }
 S 
 IDENT ul
-Delim .
+CHAR .
 IDENT navigation
 S 
 IDENT li
@@ -2454,7 +2454,7 @@ S
 CHAR }
 S 
 IDENT ul
-Delim .
+CHAR .
 IDENT navigation
 S 
 IDENT li
@@ -2482,12 +2482,12 @@ S
 CHAR }
 S 
 IDENT ul
-Delim .
+CHAR .
 IDENT navigation
 S 
 IDENT li
 HASH pane
-Delim .
+CHAR .
 IDENT selected
 S 
 CHAR {
@@ -2512,7 +2512,7 @@ S
 CHAR }
 S 
 IDENT ul
-Delim .
+CHAR .
 IDENT navigation
 S 
 IDENT li
@@ -2539,7 +2539,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT scroll
 S 
 CHAR {
@@ -2566,11 +2566,11 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT scrollContainer
 S 
 IDENT div
-Delim .
+CHAR .
 IDENT panel
 S 
 CHAR {
@@ -2592,7 +2592,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT scrollButtons
 S 
 CHAR {
@@ -2614,9 +2614,9 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT scrollButtons
-Delim .
+CHAR .
 IDENT left
 S 
 CHAR {
@@ -2628,9 +2628,9 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT scrollButtons
-Delim .
+CHAR .
 IDENT right
 S 
 CHAR {
@@ -2642,7 +2642,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT featured
 S 
 CHAR {
@@ -2748,7 +2748,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT photo_bg
 S 
 CHAR {
@@ -3135,13 +3135,13 @@ S
 IDENT Sans
 S 
 IDENT Unicode
-Delim ,
+CHAR ,
 IDENT Verdana
-Delim ,
+CHAR ,
 IDENT Arial
-Delim ,
+CHAR ,
 IDENT Helvetica
-Delim ,
+CHAR ,
 IDENT sans-serif
 CHAR ;
 S 
@@ -3397,11 +3397,11 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT tabs
 S 
 IDENT ul
-Delim ,
+CHAR ,
 S 
 IDENT li
 S 
@@ -3446,7 +3446,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT tabs
 S 
 IDENT li
@@ -3470,7 +3470,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT tabs
 S 
 IDENT li
@@ -3490,7 +3490,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT tabs
 S 
 CHAR {
@@ -3527,15 +3527,15 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT tabs
 S 
 IDENT a
 CHAR :
 IDENT link
-Delim ,
+CHAR ,
 S 
-Delim .
+CHAR .
 IDENT tabs
 S 
 IDENT a
@@ -3586,7 +3586,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT tabs
 S 
 IDENT a
@@ -3615,7 +3615,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT tabs
 S 
 IDENT a
@@ -3661,7 +3661,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT tabs
 S 
 IDENT a
@@ -3697,7 +3697,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT tabs
 S 
 IDENT a
@@ -3730,31 +3730,31 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT active
 S 
 IDENT a
 CHAR :
 IDENT link
-Delim ,
+CHAR ,
 S 
-Delim .
+CHAR .
 IDENT active
 S 
 IDENT a
 CHAR :
 IDENT visited
-Delim ,
+CHAR ,
 S 
-Delim .
+CHAR .
 IDENT active
 S 
 IDENT a
 CHAR :
 IDENT visited
-Delim ,
+CHAR ,
 S 
-Delim .
+CHAR .
 IDENT active
 S 
 IDENT a
@@ -3790,15 +3790,15 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT active
 S 
 IDENT a
 S 
 IDENT span
-Delim ,
+CHAR ,
 S 
-Delim .
+CHAR .
 IDENT active
 S 
 IDENT a
@@ -4522,7 +4522,7 @@ S
 CHAR }
 S 
 IDENT p
-Delim ,
+CHAR ,
 S 
 IDENT ul
 S 
@@ -4539,7 +4539,7 @@ S
 IDENT p
 S 
 IDENT a
-Delim ,
+CHAR ,
 S 
 IDENT li
 S 
@@ -4560,7 +4560,7 @@ S
 CHAR }
 S 
 IDENT p
-Delim .
+CHAR .
 IDENT intro
 S 
 CHAR {
@@ -4641,7 +4641,7 @@ S
 IDENT noscript
 S 
 IDENT p
-Delim ,
+CHAR ,
 S 
 IDENT noscript
 S 
@@ -4702,13 +4702,13 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripViewer
 S 
-Delim .
+CHAR .
 IDENT tainer
 S 
-Delim .
+CHAR .
 IDENT panel
 S 
 IDENT ul
@@ -4733,7 +4733,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT slider-wrap
 S 
 CHAR {
@@ -4764,7 +4764,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT csw
 S 
 CHAR {
@@ -4801,10 +4801,10 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT csw
 S 
-Delim .
+CHAR .
 IDENT loading
 S 
 CHAR {
@@ -4825,7 +4825,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripViewer
 S 
 CHAR {
@@ -4862,10 +4862,10 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripViewer
 S 
-Delim .
+CHAR .
 IDENT panelContainer
 S 
 CHAR {
@@ -4897,13 +4897,13 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripViewer
 S 
-Delim .
+CHAR .
 IDENT panelContainer
 S 
-Delim .
+CHAR .
 IDENT panel
 S 
 CHAR {
@@ -4935,16 +4935,16 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripViewer
 S 
-Delim .
+CHAR .
 IDENT panelContainer
 S 
-Delim .
+CHAR .
 IDENT panel
 S 
-Delim .
+CHAR .
 IDENT wrapper
 S 
 CHAR {
@@ -4956,7 +4956,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripNav
 S 
 CHAR {
@@ -4973,7 +4973,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripNav
 S 
 IDENT ul
@@ -5002,7 +5002,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripNav
 S 
 IDENT ul
@@ -5023,7 +5023,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripNav
 S 
 IDENT a
@@ -5084,7 +5084,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripNav
 S 
 IDENT a
@@ -5110,11 +5110,11 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripNav
 S 
 IDENT a
-Delim .
+CHAR .
 IDENT current
 S 
 CHAR {
@@ -5141,11 +5141,11 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripNavL
-Delim ,
+CHAR ,
 S 
-Delim .
+CHAR .
 IDENT stripNavR
 S 
 CHAR {
@@ -5167,13 +5167,13 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripNavL
 S 
 IDENT a
-Delim ,
+CHAR ,
 S 
-Delim .
+CHAR .
 IDENT stripNavR
 S 
 IDENT a
@@ -5197,7 +5197,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripNavL
 S 
 CHAR {
@@ -5209,7 +5209,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripNavR
 S 
 CHAR {
@@ -5221,7 +5221,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripNavL
 S 
 CHAR {
@@ -5243,7 +5243,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT stripNavR
 S 
 CHAR {
@@ -5265,7 +5265,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT wrapper
 S 
 IDENT h1
@@ -5284,7 +5284,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT wrapper
 S 
 IDENT h3
@@ -5351,13 +5351,13 @@ S
 IDENT Sans
 S 
 IDENT Unicode
-Delim ,
+CHAR ,
 IDENT Verdana
-Delim ,
+CHAR ,
 IDENT Arial
-Delim ,
+CHAR ,
 IDENT Helvetica
-Delim ,
+CHAR ,
 IDENT sans-serif
 CHAR ;
 S 
@@ -5399,13 +5399,13 @@ S
 IDENT Sans
 S 
 IDENT Unicode
-Delim ,
+CHAR ,
 IDENT Verdana
-Delim ,
+CHAR ,
 IDENT Arial
-Delim ,
+CHAR ,
 IDENT Helvetica
-Delim ,
+CHAR ,
 IDENT sans-serif
 CHAR ;
 S 
@@ -5462,13 +5462,13 @@ S
 IDENT Sans
 S 
 IDENT Unicode
-Delim ,
+CHAR ,
 IDENT Verdana
-Delim ,
+CHAR ,
 IDENT Arial
-Delim ,
+CHAR ,
 IDENT Helvetica
-Delim ,
+CHAR ,
 IDENT sans-serif
 CHAR ;
 S 
@@ -5489,7 +5489,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT details-link-1
 S 
 CHAR {
@@ -5501,7 +5501,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT details-link-2
 S 
 CHAR {
@@ -5513,7 +5513,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT rtop
 S 
 CHAR {
@@ -5535,7 +5535,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT rbottom
 S 
 CHAR {
@@ -5562,16 +5562,16 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT rtop
 S 
-Delim *
-Delim ,
+CHAR *
+CHAR ,
 S 
-Delim .
+CHAR .
 IDENT rbottom
 S 
-Delim *
+CHAR *
 S 
 CHAR {
 S 
@@ -5597,7 +5597,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT r1
 S 
 CHAR {
@@ -5611,7 +5611,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT r2
 S 
 CHAR {
@@ -5625,7 +5625,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT r3
 S 
 CHAR {
@@ -5639,7 +5639,7 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT r4
 S 
 CHAR {
@@ -5658,19 +5658,19 @@ CHAR ;
 S 
 CHAR }
 S 
-Delim .
+CHAR .
 IDENT r1
-Delim ,
+CHAR ,
 S 
-Delim .
+CHAR .
 IDENT r2
-Delim ,
+CHAR ,
 S 
-Delim .
+CHAR .
 IDENT r3
-Delim ,
+CHAR ,
 S 
-Delim .
+CHAR .
 IDENT r4
 S 
 CHAR {

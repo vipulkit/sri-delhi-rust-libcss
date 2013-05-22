@@ -371,7 +371,7 @@ pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state
 
 							v = peek_bytecode(style);
 							advance_bytecode(style);
-						}
+						},
 						_ => return result
 					}
 						
@@ -533,7 +533,7 @@ pub fn css__set_background_color_from_hint(hint:@mut  css_hint,
 		COLOR=>{
 			set_background_color(style, hint.status, hint.color.get_or_default(0));
 			CSS_OK
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -716,7 +716,7 @@ pub fn css__set_background_position_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -843,7 +843,7 @@ pub fn css__set_border_bottom_color_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -1161,7 +1161,7 @@ pub fn css__set_border_bottom_width_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -1291,7 +1291,7 @@ pub fn css__set_border_left_color_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -1390,7 +1390,7 @@ pub fn css__set_border_left_width_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -1455,7 +1455,7 @@ pub fn css__set_border_right_color_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -1552,7 +1552,7 @@ pub fn css__set_border_right_width_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -1653,7 +1653,7 @@ pub fn css__set_border_spacing_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -1715,7 +1715,7 @@ pub fn css__set_border_top_color_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -1812,7 +1812,7 @@ pub fn css__set_border_top_width_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -1876,7 +1876,7 @@ pub fn css__set_bottom_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -1922,15 +1922,15 @@ pub fn css__cascade_break_after(opv:u32, _:@mut css_style,
 
 	if (isInherit(opv) == false) {
 		match (getValue(opv)) {
-		BREAK_AFTER_AUTO => {}
-		BREAK_AFTER_ALWAYS => {}
-		BREAK_AFTER_AVOID => {}
-		BREAK_AFTER_LEFT => {}
-		BREAK_AFTER_RIGHT => {}
-		BREAK_AFTER_PAGE => {}
-		BREAK_AFTER_COLUMN => {}
-		BREAK_AFTER_AVOID_PAGE => {}
-		BREAK_AFTER_AVOID_COLUMN => {}
+			BREAK_AFTER_AUTO => {},
+			BREAK_AFTER_ALWAYS => {},
+			BREAK_AFTER_AVOID => {},
+			BREAK_AFTER_LEFT => {},
+			BREAK_AFTER_RIGHT => {},
+			BREAK_AFTER_PAGE => {},
+			BREAK_AFTER_COLUMN => {},
+			BREAK_AFTER_AVOID_PAGE => {},
+			BREAK_AFTER_AVOID_COLUMN => {},
 			/* \todo convert to public values */
 		_=>{}
 		}
@@ -2290,15 +2290,15 @@ pub fn css__cascade_break_before(opv:u32, _:@mut css_style,
 
 	if (isInherit(opv) == false) {
 		match getValue(opv) {
-		BREAK_BEFORE_AUTO => {}
-		BREAK_BEFORE_ALWAYS => {}
-		BREAK_BEFORE_AVOID => {}
-		BREAK_BEFORE_LEFT => {}
-		BREAK_BEFORE_RIGHT => {}
-		BREAK_BEFORE_PAGE => {}
-		BREAK_BEFORE_COLUMN => {}
-		BREAK_BEFORE_AVOID_PAGE => {}
-		BREAK_BEFORE_AVOID_COLUMN => {}
+			BREAK_BEFORE_AUTO => {},
+			BREAK_BEFORE_ALWAYS => {},
+			BREAK_BEFORE_AVOID => {},
+			BREAK_BEFORE_LEFT => {},
+			BREAK_BEFORE_RIGHT => {},
+			BREAK_BEFORE_PAGE => {},
+			BREAK_BEFORE_COLUMN => {},
+			BREAK_BEFORE_AVOID_PAGE => {},
+			BREAK_BEFORE_AVOID_COLUMN => {},
 			/* \todo convert to public values */
 		_=>{}
 		}
@@ -2339,10 +2339,10 @@ pub fn css__cascade_break_inside(opv:u32, _:@mut css_style,
 
 	if (isInherit(opv) == false) {
 		match getValue(opv) {
-		BREAK_INSIDE_AUTO => {}
-		BREAK_INSIDE_AVOID => {}
-		BREAK_INSIDE_AVOID_PAGE => {}
-		BREAK_INSIDE_AVOID_COLUMN => {}
+			BREAK_INSIDE_AUTO => {},
+			BREAK_INSIDE_AVOID => {},
+			BREAK_INSIDE_AVOID_PAGE => {},
+			BREAK_INSIDE_AVOID_COLUMN => {},
 			/*  \todo convert to public values */
 		_=>{}
 		}
@@ -2385,13 +2385,13 @@ pub fn css__cascade_direction(opv:u32, _:@mut css_style,
 
 	if (isInherit(opv) == false) {
 		match (getValue(opv)) {
-		DIRECTION_LTR => {
-			value = (CSS_DIRECTION_LTR as u16);
-		}
-		DIRECTION_RTL => {
-			value = (CSS_DIRECTION_RTL as u16);
-		}
-		_=>{}
+			DIRECTION_LTR => {
+				value = (CSS_DIRECTION_LTR as u16);
+			},
+			DIRECTION_RTL => {
+				value = (CSS_DIRECTION_RTL as u16);
+			}
+			_=>{}
 		}
 	}
 
@@ -3014,7 +3014,7 @@ pub fn css__set_font_size_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -3292,7 +3292,7 @@ pub fn css__set_height_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -3355,7 +3355,7 @@ pub fn css__set_left_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -3417,7 +3417,7 @@ pub fn css__set_letter_spacing_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -3517,7 +3517,7 @@ pub fn css__set_line_height_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -3629,10 +3629,10 @@ pub fn css__cascade_list_style_position(opv:u32, _:@mut css_style,
 		match (getValue(opv)) {
 			LIST_STYLE_POSITION_INSIDE => {
 				value = CSS_LIST_STYLE_POSITION_INSIDE as u16;
-			}
+			},
 			LIST_STYLE_POSITION_OUTSIDE => {
 				value = CSS_LIST_STYLE_POSITION_OUTSIDE as u16;
-			}
+			},
 			_=>{}
 		}
 	}
@@ -3694,49 +3694,49 @@ pub fn css__cascade_list_style_type(opv:u32, _:@mut css_style,
 		match (getValue(opv)) {
 			LIST_STYLE_TYPE_DISC => {
 				value = ( CSS_LIST_STYLE_TYPE_DISC as u16) ;
-			}
+			},
 			LIST_STYLE_TYPE_CIRCLE => {
 				value = ( CSS_LIST_STYLE_TYPE_CIRCLE as u16) ;
-			}
+			},
 			LIST_STYLE_TYPE_SQUARE => {
 				value = ( CSS_LIST_STYLE_TYPE_SQUARE as u16) ;
-			}
+			},
 			LIST_STYLE_TYPE_DECIMAL => {
 				value = ( CSS_LIST_STYLE_TYPE_DECIMAL as u16) ;
-			}
+			},
 			LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO => {
 				value = ( CSS_LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO as u16) ;
-			}
+			},
 			LIST_STYLE_TYPE_LOWER_ROMAN => {
 				value = ( CSS_LIST_STYLE_TYPE_LOWER_ROMAN as u16) ;
-			}
+			},
 			LIST_STYLE_TYPE_UPPER_ROMAN => {
 				value = ( CSS_LIST_STYLE_TYPE_UPPER_ROMAN as u16) ;
-			}
+			},
 			LIST_STYLE_TYPE_LOWER_GREEK => {
 				value = ( CSS_LIST_STYLE_TYPE_LOWER_GREEK as u16) ;
-			}
+			},
 			LIST_STYLE_TYPE_LOWER_LATIN => {
 				value = ( CSS_LIST_STYLE_TYPE_LOWER_LATIN as u16) ;
-			}
+			},
 			LIST_STYLE_TYPE_UPPER_LATIN => {
 				value = ( CSS_LIST_STYLE_TYPE_UPPER_LATIN as u16) ;
-			}
+			},
 			LIST_STYLE_TYPE_ARMENIAN => {
 				value = ( CSS_LIST_STYLE_TYPE_ARMENIAN as u16) ;
-			}
+			},
 			LIST_STYLE_TYPE_GEORGIAN => {
 				value = ( CSS_LIST_STYLE_TYPE_GEORGIAN as u16) ;
-			}
+			},
 			LIST_STYLE_TYPE_LOWER_ALPHA => {
 				value = ( CSS_LIST_STYLE_TYPE_LOWER_ALPHA as u16) ;
-			}
+			},
 			LIST_STYLE_TYPE_UPPER_ALPHA => {
 				value = ( CSS_LIST_STYLE_TYPE_UPPER_ALPHA as u16) ;
-			}
+			},
 			LIST_STYLE_TYPE_NONE => {
 				value = ( CSS_LIST_STYLE_TYPE_NONE as u16) ;
-			}
+			},
 			_=>{}
 		}
 	}
@@ -3807,7 +3807,7 @@ pub fn css__set_margin_bottom_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -3870,7 +3870,7 @@ pub fn css__set_margin_left_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -3933,7 +3933,7 @@ pub fn css__set_margin_right_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -3995,7 +3995,7 @@ pub fn css__set_margin_top_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -4057,7 +4057,7 @@ pub fn css__set_max_height_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -4120,7 +4120,7 @@ pub fn css__set_max_width_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -4182,7 +4182,7 @@ pub fn css__set_min_height_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -4245,7 +4245,7 @@ pub fn css__set_min_width_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -4321,7 +4321,7 @@ pub fn css__set_opacity_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -4400,18 +4400,18 @@ pub fn css__cascade_outline_color(opv:u32, style:@mut css_style,
 		match (getValue(opv)) {
 			OUTLINE_COLOR_TRANSPARENT => {
 				value = ( CSS_OUTLINE_COLOR_COLOR as u16);
-			}
+			},
 			OUTLINE_COLOR_CURRENT_COLOR => {
 				value = ( CSS_OUTLINE_COLOR_CURRENT_COLOR as u16);
-			}
+			},
 			OUTLINE_COLOR_SET => {
 				value = ( CSS_OUTLINE_COLOR_COLOR as u16);
 				color = peek_bytecode(style);
 				advance_bytecode(style);
-			}
+			},
 			OUTLINE_COLOR_INVERT => {
 				value = ( CSS_OUTLINE_COLOR_INVERT as u16);
-			}
+			},
 			_=>{}
 		}
 	}
@@ -4439,7 +4439,7 @@ pub fn css__set_outline_color_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -4547,7 +4547,7 @@ pub fn css__set_outline_width_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -4605,16 +4605,16 @@ pub fn css__cascade_overflow(opv:u32, _:@mut css_style,
 		match (getValue(opv)) {
 			OVERFLOW_VISIBLE => {
 				value = (CSS_OVERFLOW_VISIBLE as u16);
-			}
+			},
 			OVERFLOW_HIDDEN => {
 				value = (CSS_OVERFLOW_HIDDEN as u16);
-			}
+			},
 			OVERFLOW_SCROLL => {
 				value = (CSS_OVERFLOW_SCROLL as u16);
-			}
+			},
 			OVERFLOW_AUTO => {
 				value = (CSS_OVERFLOW_AUTO as u16);
-			}
+			},
 			_=>{}
 		}
 	}
@@ -4685,7 +4685,7 @@ pub fn css__set_padding_bottom_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -4748,7 +4748,7 @@ pub fn css__set_padding_left_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -4811,7 +4811,7 @@ pub fn css__set_padding_right_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -4874,7 +4874,7 @@ pub fn css__set_padding_top_from_hint(hint:@mut  css_hint,
 					CSS_BADPARM
 				}
 			}
-		}
+		},
 		_=>{
 			CSS_INVALID 
 		}
@@ -5222,7 +5222,7 @@ pub fn css__cascade_play_during(opv:u32 ,
 					}
 				}
 				advance_bytecode(style);
-			}
+			},
 			PLAY_DURING_AUTO |
 			PLAY_DURING_NONE => {
 				/* \todo convert to public values */
@@ -5274,16 +5274,16 @@ pub fn css__cascade_position(opv:u32, _:@mut css_style,
 		match (getValue(opv)) {
 			POSITION_STATIC => {
 				value = ( CSS_POSITION_STATIC as u16) ;
-			}
+			},
 			POSITION_RELATIVE => {
 				value = ( CSS_POSITION_RELATIVE as u16) ;
-			}
+			},
 			POSITION_ABSOLUTE => {
 				value = ( CSS_POSITION_ABSOLUTE as u16) ;
-			}
+			},
 			POSITION_FIXED => {
 				value = ( CSS_POSITION_FIXED as u16) ;
-			}
+			},
 			_=>{}
 		}
 	}
@@ -5467,6 +5467,374 @@ pub fn css__compose_quotes(parent:@mut css_computed_style,
 		}
 
 	}
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// richness
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_richness(opv:u32 , 
+							style:@mut css_style ,
+							state: @mut css_select_state 
+							) -> css_result {
+
+	return css__cascade_number(opv, style, state, None);
+}
+
+pub fn css__set_richness_from_hint(_: @mut css_hint, 
+									_:@mut css_computed_style) 
+									-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_richness(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_richness(_:@mut css_computed_style,
+								_:@mut css_computed_style,
+								_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// right
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_right(opv:u32, style:@mut css_style, 
+										state:@mut css_select_state) -> css_result {
+
+	
+	return css__cascade_length_auto(opv, style, state, @set_right);
+}
+
+pub fn css__set_right_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_right(style, hint.status, x.value , x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		},
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_right(state:@mut css_select_state) -> css_result {
+
+	set_right(state.computed, (CSS_RIGHT_AUTO as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_right(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_right(child);
+
+	if (ftype == (CSS_RIGHT_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_right(parent);
+		set_right(result, 
+				ftype2, 
+				olength2.get_or_default( olength.get_or_default(0) ), 
+				ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_right(result, 
+				ftype, 
+				olength.get_or_default(0), 
+				ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// speak
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_speak(opv:u32 , 
+							_:@mut css_style ,
+							state: @mut css_select_state 
+							) -> css_result {
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+				SPEAK_NORMAL	|
+				SPEAK_NONE		|
+				SPEAK_SPELL_OUT => {
+				/* \todo convert to public values */
+				},
+			_ => {}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16) , isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo speak */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_speak_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) 
+								-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_speak(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_speak(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// speak_header
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_speak_header(opv:u32 , 
+								_:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			SPEAK_HEADER_ONCE |
+			SPEAK_HEADER_ALWAYS => {
+				/* \todo convert to public values */
+			},
+			_=>{} 
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo speak-header */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_speak_header_from_hint(_: @mut css_hint, 
+									_:@mut css_computed_style) 
+									-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_speak_header(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_speak_header(_:@mut css_computed_style,
+								_:@mut css_computed_style,
+								_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// speak_numeral
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_speak_numeral(opv:u32 , 
+								_:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			SPEAK_NUMERAL_DIGITS |
+			SPEAK_NUMERAL_CONTINUOUS => {
+				/* \todo convert to public values */
+			},
+			_=>{} 
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo speak-numeral */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_speak_numeral_from_hint(_: @mut css_hint, 
+									_:@mut css_computed_style) 
+									-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_speak_numeral(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_speak_numeral(_:@mut css_computed_style,
+								_:@mut css_computed_style,
+								_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// speak_punctuation
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_speak_punctuation(opv:u32 , 
+									_:@mut css_style ,
+									state: @mut css_select_state 
+									) -> css_result {
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			SPEAK_PUNCTUATION_CODE |
+			SPEAK_PUNCTUATION_NONE => {
+				/* \todo convert to public values */
+			},
+			_=>{} 
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo speak-punctuation */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_speak_punctuation_from_hint(_: @mut css_hint, 
+											_:@mut css_computed_style) 
+											-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_speak_punctuation(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_speak_punctuation(_:@mut css_computed_style,
+									_:@mut css_computed_style,
+									_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// speech_rate
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_speech_rate(opv:u32 , 
+								style:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	let mut rate : i32 = 0;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			SPEECH_RATE_SET => {
+				rate = peek_bytecode(style) as i32;
+				advance_bytecode(style);
+			},
+			SPEECH_RATE_X_SLOW 	|
+			SPEECH_RATE_SLOW 	|
+			SPEECH_RATE_MEDIUM 	|
+			SPEECH_RATE_FAST  	|
+			SPEECH_RATE_X_FAST 	|
+			SPEECH_RATE_FASTER 	|
+			SPEECH_RATE_SLOWER => {
+				/* \todo convert to public values */
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16) , isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo speech-rate */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_speech_rate_from_hint(_: @mut css_hint, 
+									_:@mut css_computed_style) 
+									-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_speech_rate(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_speech_rate(_:@mut css_computed_style,
+								_:@mut css_computed_style,
+								_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// stress
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_stress(opv:u32 , 
+							style:@mut css_style ,
+							state: @mut css_select_state 
+							) -> css_result {
+
+	return css__cascade_number(opv, style, state, None);
+}
+
+pub fn css__set_stress_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) 
+								-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_stress(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_stress(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
 
 	CSS_OK
 }
