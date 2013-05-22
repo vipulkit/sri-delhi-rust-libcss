@@ -6654,3 +6654,135 @@ pub fn css__compose_volume(_:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
+// white_space
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_white_space(opv:u32, _:@mut css_style, 
+								state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_WHITE_SPACE_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			WHITE_SPACE_NORMAL => {
+				value = ( CSS_WHITE_SPACE_NORMAL as u16) ;
+			},
+			WHITE_SPACE_PRE => {
+				value = ( CSS_WHITE_SPACE_PRE as u16) ;
+			},
+			WHITE_SPACE_NOWRAP => {
+				value = ( CSS_WHITE_SPACE_NOWRAP as u16) ;
+			},
+			WHITE_SPACE_PRE_WRAP => {
+				value = ( CSS_WHITE_SPACE_PRE_WRAP as u16) ;
+			},
+			WHITE_SPACE_PRE_LINE => {
+				value = ( CSS_WHITE_SPACE_PRE_LINE as u16) ;
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_white_space(state.computed, value as u8);
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_white_space_from_hint(hint:@mut  css_hint, 
+									style:@mut css_computed_style
+									) -> css_result {
+
+	set_white_space(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_white_space(state:@mut css_select_state) -> css_result {
+
+	set_white_space(state.computed, (CSS_WHITE_SPACE_NORMAL as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_white_space(parent:@mut css_computed_style,
+								child:@mut css_computed_style,
+								result:@mut css_computed_style
+								) -> css_result {
+
+	let mut ftype = css_computed_white_space(child);
+
+	if (ftype == (CSS_WHITE_SPACE_INHERIT as u8) ) {
+		ftype = css_computed_white_space(parent);
+		
+		set_white_space(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_white_space(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_width(opv:u32, style:@mut css_style, 
+						state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_auto(opv, style, state, @set_width);	
+}
+
+pub fn css__set_width_from_hint(hint:@mut  css_hint, 
+								style:@mut css_computed_style
+								) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_width(style, hint.status, x.value , x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		},
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_width(state:@mut css_select_state) -> css_result {
+
+	set_width(state.computed, (CSS_WIDTH_AUTO as u8) , 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_width(parent:@mut css_computed_style,
+							child:@mut css_computed_style,
+							result:@mut css_computed_style
+							) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_width(child);
+
+	if (ftype == (CSS_WIDTH_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_width(parent);
+		set_width(result, 
+				ftype2, 
+				olength2.get_or_default( olength.get_or_default(0) ), 
+				ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_width(result, ftype, 
+				olength.get_or_default(0), 
+				ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
