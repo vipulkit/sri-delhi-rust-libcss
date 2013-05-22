@@ -13,7 +13,7 @@ pub enum css_token_type {
 	CSS_TOKEN_NUMBER(NumericValue , ~str), 
 	CSS_TOKEN_PERCENTAGE(NumericValue , ~str), 
 	CSS_TOKEN_DIMENSION(NumericValue , ~str, ~str),
-	CSS_TOKEN_CDO, 
+	CSS_TOKEN_CDO,
 	CSS_TOKEN_CDC, 
 	CSS_TOKEN_S,
 	// F(char),
@@ -1419,7 +1419,7 @@ pub impl css_lexer {
 					return (None,LEXER_NEEDDATA);
 				}
 			};
-			// io::println(fmt!("consume_numeric_fraction: here char is %?" , ch));
+			
 			match ch {
 
 				'0'..'9' => push_char!(string,ch),
@@ -1427,21 +1427,23 @@ pub impl css_lexer {
 					self.position -= 1;
 					break
 				},
-				_ => match self.consume_scientific_number(string) {
+				_ =>  {
+					match self.consume_scientific_number(string) {
 						(Ok(token),x) => return (Some(token), x),
 						(Err(_),LEXER_NEEDDATA)=> {
 							self.position = head_position;
 							return (None, LEXER_NEEDDATA);
 						}
-						(Err(s),_) => { 
+						(Err(s),_) => {
+							self.position -= 1; 
 							string = s; 
 							break 
 						},
+					}
 				}
 			}
 		}
 
-		// io::println(fmt!("consume_numeric_fraction: here number is %?" , string));
 		let value = Float(float::from_str(string).unwrap()); // XXX handle overflow
 		
 		let (some_token , error) = self.consume_numeric_end(string, value);
@@ -1524,7 +1526,6 @@ pub impl css_lexer {
 
 
 	fn consume_scientific_number(&mut self, string: ~str) -> (Result<css_token_type, ~str>,lexer_error) {
-		// io::println("consume_scientific_number: inside fn");
 		let head_position = self.position;
 		let next_3 = self.next_n_chars(3);
 		let mut error_condition:lexer_error= LEXER_OK;
