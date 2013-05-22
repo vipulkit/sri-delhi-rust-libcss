@@ -456,16 +456,16 @@ fn stringToToken(string:~str)->(css_token_type) {
         }
     }
 } 
-fn main() {
+fn testMain(fileName:~str,RWmode:~str) {
 	let CHUNKSIZE:int =10;
-	let args : ~[~str] = os::args();
+	//let args : ~[~str] = os::args();
     // io::println(args[1]);
-    let mut external_argument : ~str = copy args[1];
-    let mut verification_file:~str =   copy args[1]; 
-    let mut read_write_mode = copy args[2];
+    let mut external_argument : ~str = copy fileName;
+    let mut verification_file:~str =   copy fileName; 
+    //let mut read_write_mode = copy args[2];
     let mut isReadMode = true;
       
-    match read_write_mode {
+    match RWmode {
         ~"read"=>{
             isReadMode = true;
         },
@@ -482,7 +482,7 @@ fn main() {
     verification_file += ~"_token.css";
     let writer_tokens:@core::io::Writer = io::file_writer(&Path(verification_file), ~[io::Create/*, io::NoFlag*/]).get();  ;
     let r_tokens:@Reader =  io::file_reader(&Path(verification_file)).get();
-    let r:@Reader = io::file_reader(&Path(args[1])).get(); 
+    let r:@Reader = io::file_reader(&Path(fileName)).get(); 
     let mut expectedTokenString:~str;
     
     //io::println(data);
@@ -638,3 +638,13 @@ fn main() {
         };
     }
 } 
+
+#[test]
+fn testRead() {
+   testMain(~"style_sample_1.css",~"read");
+
+}
+/*#[test]
+fn generateTokenFile() {
+    testMain(~"style_sample_1.css",~"write");
+}*/
