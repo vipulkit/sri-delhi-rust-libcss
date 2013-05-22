@@ -5261,3 +5261,72 @@ pub fn css__compose_play_during(_:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// position
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_position(opv:u32, _:@mut css_style, 
+										state:@mut css_select_state) -> css_result {
+
+	
+	let mut value = (CSS_POSITION_INHERIT  as u16) ;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			POSITION_STATIC => {
+				value = ( CSS_POSITION_STATIC as u16) ;
+			}
+			POSITION_RELATIVE => {
+				value = ( CSS_POSITION_RELATIVE as u16) ;
+			}
+			POSITION_ABSOLUTE => {
+				value = ( CSS_POSITION_ABSOLUTE as u16) ;
+			}
+			POSITION_FIXED => {
+				value = ( CSS_POSITION_FIXED as u16) ;
+			}
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		set_position(state.computed, (value as u8) );
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_position_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_position(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_position(state:@mut css_select_state) -> css_result {
+
+	set_position(state.computed, (CSS_POSITION_STATIC as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_position(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut ftype = css_computed_position(child);
+
+	if (ftype == (CSS_POSITION_INHERIT as u8) ) {
+		ftype = css_computed_position(parent);
+		
+		set_position(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_position(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
