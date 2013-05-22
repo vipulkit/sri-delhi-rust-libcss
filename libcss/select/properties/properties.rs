@@ -6786,3 +6786,102 @@ pub fn css__compose_width(parent:@mut css_computed_style,
 
 ///////////////////////////////////////////////////////////////////
 
+// windows
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_windows(opv:u32 , 
+								style:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	return css__cascade_number(opv, style, state, None);
+}
+
+pub fn css__set_windows_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) 
+								-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_windows(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_windows(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// word_spacing
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_word_spacing(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_normal(opv, style, state, @set_word_spacing);
+}
+
+pub fn css__set_word_spacing_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_word_spacing(style, hint.status, x.value, x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		},
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_word_spacing(state:@mut css_select_state) -> css_result {
+
+	set_word_spacing(state.computed, (CSS_WORD_SPACING_NORMAL as u8), 
+			0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_word_spacing(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_word_spacing(child);
+
+	if (  (child.uncommon.is_none() && parent.uncommon.is_some() ) || 
+			ftype == (CSS_WORD_SPACING_INHERIT as u8) || 
+			(child.uncommon.is_some() && !mut_ptr_eq(result,child) ) ) {
+
+			if ( ( child.uncommon.is_none() && parent.uncommon.is_some() ) ||
+					ftype == (CSS_WORD_SPACING_INHERIT as u8) ) {
+
+				let mut (ftype2,olength2,ounit2) = css_computed_word_spacing(parent);
+				set_word_spacing(result, 
+								ftype2, 
+								olength2.get_or_default( olength.get_or_default(0) ), 
+								ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+			}
+			else {
+				set_word_spacing(result, 
+								ftype, 
+								olength.get_or_default(0), 
+								ounit.get_or_default(CSS_UNIT_PX));
+			}
+	}
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
