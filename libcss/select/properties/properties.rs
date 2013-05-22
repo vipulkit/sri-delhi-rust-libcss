@@ -6196,3 +6196,130 @@ pub fn css__compose_text_transform(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// top
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_top(opv:u32, style:@mut css_style, 
+						state:@mut css_select_state) -> css_result {
+
+	return css__cascade_length_auto(opv, style, state, @set_top) ;
+}
+
+pub fn css__set_top_from_hint(hint:@mut  css_hint, 
+							style:@mut css_computed_style
+							) -> css_result {
+
+	match hint.hint_type {
+		HINT_LENGTH=>{
+			match hint.length {
+				Some(x)=>{
+					set_top(style, hint.status, x.value , x.unit);
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		},
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_top(state:@mut css_select_state) -> css_result {
+
+	set_top(state.computed, (CSS_TOP_AUTO as u8), 0, CSS_UNIT_PX);
+	CSS_OK
+}
+
+pub fn css__compose_top(parent:@mut css_computed_style,
+						child:@mut css_computed_style,
+						result:@mut css_computed_style
+						) -> css_result {
+
+	let mut (ftype,olength,ounit) = css_computed_top(child);
+
+	if (ftype == (CSS_TOP_INHERIT as u8) ) {
+		let mut (ftype2,olength2,ounit2) = css_computed_top(parent);
+		set_top(result, 
+				ftype2, 
+				olength2.get_or_default( olength.get_or_default(0) ), 
+				ounit2.get_or_default( ounit.get_or_default(CSS_UNIT_PX) ));
+		CSS_OK
+	}
+	else {
+		set_top(result, 
+				ftype, 
+				olength.get_or_default(0), 
+				ounit.get_or_default(CSS_UNIT_PX));
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// unicode_bidi
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_unicode_bidi(opv:u32, _:@mut css_style, 
+								state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_UNICODE_BIDI_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			UNICODE_BIDI_NORMAL => {
+				value = (CSS_UNICODE_BIDI_NORMAL as u16);
+			},
+			UNICODE_BIDI_EMBED => {
+				value = (CSS_UNICODE_BIDI_EMBED as u16);
+			},
+			UNICODE_BIDI_BIDI_OVERRIDE => {
+				value = (CSS_UNICODE_BIDI_BIDI_OVERRIDE as u16);
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_unicode_bidi(state.computed, value as u8);
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_unicode_bidi_from_hint(hint:@mut  css_hint, 
+									style:@mut css_computed_style
+									) -> css_result {
+
+	set_unicode_bidi(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_unicode_bidi(state:@mut css_select_state) -> css_result {
+
+	set_unicode_bidi(state.computed, (CSS_UNICODE_BIDI_NORMAL as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_unicode_bidi(parent:@mut css_computed_style,
+								child:@mut css_computed_style,
+								result:@mut css_computed_style
+								) -> css_result {
+
+	let mut ftype = css_computed_unicode_bidi(child);
+
+	if (ftype == (CSS_UNICODE_BIDI_INHERIT as u8) ) {
+		ftype = css_computed_unicode_bidi(parent);
+		
+		set_unicode_bidi(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_unicode_bidi(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
