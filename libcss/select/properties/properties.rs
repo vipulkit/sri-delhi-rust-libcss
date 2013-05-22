@@ -6885,3 +6885,146 @@ pub fn css__compose_word_spacing(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// cue_after
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_cue_after(opv:u32 , 
+								style:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	return css__cascade_uri_none(opv, style, state, None);
+}
+
+pub fn css__set_cue_after_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) 
+								-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_cue_after(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_cue_after(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+
+// cue_before
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_cue_before(opv:u32 , 
+								style:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	return css__cascade_uri_none(opv, style, state, None);
+}
+
+pub fn css__set_cue_before_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) 
+								-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_cue_before(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_cue_before(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// z_index
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_z_index(opv:u32, style:@mut css_style, 
+							state:@mut css_select_state) -> css_result {
+
+	let mut value : u16= CSS_Z_INDEX_INHERIT as u16;
+	let mut index : i32 = 0;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			Z_INDEX_SET =>  {
+				value = (CSS_Z_INDEX_SET  as u16) ;
+
+				index = peek_bytecode(style) as i32;
+				advance_bytecode(style);
+			},
+			Z_INDEX_AUTO =>  {
+				value = (CSS_Z_INDEX_AUTO  as u16) ;
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing( getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_z_index(state.computed, value as u8, index);
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_z_index_from_hint(hint:@mut  css_hint, 
+								style:@mut css_computed_style
+								) -> css_result {
+
+	match hint.hint_type {
+		INTEGER_TYPE=>{
+			match hint.integer {
+				Some(x)=>{
+					set_z_index(style, hint.status, x );
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		},
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_z_index(state:@mut css_select_state) -> css_result {
+
+	set_z_index(state.computed, (CSS_Z_INDEX_AUTO as u8) , 0);
+	CSS_OK
+}
+
+pub fn css__compose_z_index(parent:@mut css_computed_style,
+							child:@mut css_computed_style,
+							result:@mut css_computed_style
+							) -> css_result {
+
+	let mut (ftype,index) = css_computed_z_index(child);
+
+	if (ftype == (CSS_Z_INDEX_INHERIT as u8) ) {
+		let mut (ftype2,index2) = css_computed_z_index(parent);
+		
+		set_z_index(result, ftype2,index2);
+		CSS_OK
+	}
+	else {
+		set_z_index(result, ftype, index);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
