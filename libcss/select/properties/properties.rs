@@ -5840,3 +5840,153 @@ pub fn css__compose_stress(_:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// table_layout
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_table_layout(opv:u32, _:@mut css_style, 
+								state:@mut css_select_state) -> css_result {
+
+	
+	let mut value = CSS_TABLE_LAYOUT_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			TABLE_LAYOUT_AUTO => {
+				value = CSS_TABLE_LAYOUT_AUTO as u16;
+			},
+			TABLE_LAYOUT_FIXED => {
+				value = CSS_TABLE_LAYOUT_FIXED as u16;
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		set_table_layout(state.computed, (value as u8) );
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_table_layout_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	set_table_layout(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_table_layout(state:@mut css_select_state) -> css_result {
+
+	set_table_layout(state.computed, (CSS_TABLE_LAYOUT_AUTO as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_table_layout(parent:@mut css_computed_style,
+								child:@mut css_computed_style,
+								result:@mut css_computed_style
+								) -> css_result {
+
+	let mut ftype = css_computed_table_layout(child);
+
+	if (ftype == (CSS_TABLE_LAYOUT_INHERIT as u8) ) {
+		ftype = css_computed_table_layout(parent);
+		
+		set_table_layout(result, ftype);
+		CSS_OK
+	}
+	else {
+		set_table_layout(result, ftype);
+		CSS_OK
+	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// text-align
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_text_align(opv:u32, _:@mut css_style, 
+								state:@mut css_select_state) -> css_result {
+
+	let mut value = CSS_TEXT_ALIGN_INHERIT as u16;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			TEXT_ALIGN_LEFT => {
+				value = (CSS_TEXT_ALIGN_LEFT as u16);
+			},
+			TEXT_ALIGN_RIGHT => {
+				value = (CSS_TEXT_ALIGN_RIGHT as u16);
+			},
+			TEXT_ALIGN_CENTER => {
+				value = (CSS_TEXT_ALIGN_CENTER as u16);
+			},
+			TEXT_ALIGN_JUSTIFY => {
+				value = (CSS_TEXT_ALIGN_JUSTIFY as u16);
+			},
+			TEXT_ALIGN_LIBCSS_LEFT => {
+				value = (CSS_TEXT_ALIGN_LIBCSS_LEFT as u16);
+			},
+			TEXT_ALIGN_LIBCSS_CENTER => {
+				value = (CSS_TEXT_ALIGN_LIBCSS_CENTER as u16);
+			},
+			TEXT_ALIGN_LIBCSS_RIGHT => {
+				value = (CSS_TEXT_ALIGN_LIBCSS_RIGHT as u16);
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+		set_text_align(state.computed, value as u8);
+	}
+
+
+	CSS_OK
+}
+
+pub fn css__set_text_align_from_hint(hint:@mut  css_hint, 
+									style:@mut css_computed_style
+									) -> css_result {
+
+	set_text_align(style, hint.status);
+	CSS_OK
+}
+
+pub fn css__initial_text_align(state:@mut css_select_state) -> css_result {
+
+	set_text_align(state.computed, (CSS_TEXT_ALIGN_DEFAULT as u8) );
+	CSS_OK
+}
+
+pub fn css__compose_text_align(parent:@mut css_computed_style,
+								child:@mut css_computed_style,
+								result:@mut css_computed_style
+								) -> css_result {
+
+	let mut ftype = css_computed_text_align(child);
+
+	if (ftype == (CSS_TEXT_ALIGN_INHERIT as u8) ) {
+		ftype = css_computed_text_align(parent);
+	}
+	else if(ftype == (CSS_TEXT_ALIGN_INHERIT_IF_NON_MAGIC as u8) ) {
+		/* This is purely for the benefit of HTML tables */
+		ftype = css_computed_text_align(parent);
+
+		/* If the parent's text-align is a magical one, 
+		 * then reset to the default value. Otherwise, 
+		 * inherit as normal. */
+		if (ftype == (CSS_TEXT_ALIGN_LIBCSS_LEFT as u8) ||
+				ftype == (CSS_TEXT_ALIGN_LIBCSS_CENTER as u8) ||
+				ftype == (CSS_TEXT_ALIGN_LIBCSS_RIGHT as u8)) {
+			ftype = CSS_TEXT_ALIGN_DEFAULT as u8 ;
+		}
+	}
+		
+	set_text_align(result, ftype);
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
