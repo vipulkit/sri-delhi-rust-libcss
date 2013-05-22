@@ -316,14 +316,46 @@ pub impl css_lexer {
 								}
 								(Some(CSS_TOKEN_S), error_condition)
 							},
-							'"' => self.consume_quoted_string(false),
-							'#' => self.consume_hash(),
-							'\'' => self.consume_quoted_string(true),
+							'"' => match (self.consume_quoted_string(false)) {
+										(_, LEXER_NEEDDATA) => {
+											self.position -= 1; // undo consume-char
+											return (None, LEXER_NEEDDATA);
+										}
+										(x, y) => {
+											return(x, y);
+										}
+									},
+							'#' => match (self.consume_hash()) {
+										(_, LEXER_NEEDDATA) => {
+											self.position -= 1; // undo consume-char
+											return (None, LEXER_NEEDDATA);
+										}
+										(x, y) => {
+											return(x, y);
+										}
+									},
+							'\'' => match (self.consume_quoted_string(true)) {
+										(_, LEXER_NEEDDATA) => {
+											self.position -= 1; // undo consume-char
+											return (None, LEXER_NEEDDATA);
+										}
+										(x, y) => {
+											return(x, y);
+										}
+									},
 							'(' => (Some(CSS_TOKEN_CHAR(c)), error_condition),
 							')' => (Some(CSS_TOKEN_CHAR(c)), error_condition),
 							':' => (Some(CSS_TOKEN_CHAR(c)), error_condition),
 							';' => (Some(CSS_TOKEN_CHAR(c)), error_condition),
-							'@' => self.consume_at_keyword(),
+							'@' => match (self.consume_at_keyword()) {
+										(_, LEXER_NEEDDATA) => {
+											self.position -= 1; // undo consume-char
+											return (None, LEXER_NEEDDATA);
+										}
+										(x, y) => {
+											return(x, y);
+										}
+									},
 							'[' => (Some(CSS_TOKEN_CHAR(c)), error_condition),
 							']' => (Some(CSS_TOKEN_CHAR(c)), error_condition),
 							'{' => (Some(CSS_TOKEN_CHAR(c)), error_condition),

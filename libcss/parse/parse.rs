@@ -136,10 +136,13 @@ pub impl css_parser {
                 break;
             }
 
-            io::println(fmt!("css__parser_parse_chunk, state_stack (1) == %?", self.state_stack));
+            io::println(fmt!("css__parser_parse_chunk:: state_stack (1) == %?", self.state_stack));
             let (current_state, _) = self.state_stack[self.state_stack.len()-1];
-            io::println(fmt!("css__parser_parse_chunk, state_stack (2) == %?", self.state_stack));
 
+            unsafe {
+                let current_state_enum : parse_states = cast::transmute(current_state);
+                io::println(fmt!("css__parser_parse_chunk:: current state == %?", current_state_enum));
+            }
             let result = (*self.states[current_state])(self);
 
             match(result) {
@@ -232,8 +235,8 @@ pub impl css_parser {
 
     fn push_back(&mut self, token: @css_token) {
         io::println("Entering: push_back");
-        io::println(fmt!("token == %?", token));
-        io::println(fmt!("self.tokens == %?", self.tokens));
+        /*io::println(fmt!("token == %?", token));
+        io::println(fmt!("self.tokens == %?", self.tokens));*/
 
         assert!(self.pushback.is_none());
 
