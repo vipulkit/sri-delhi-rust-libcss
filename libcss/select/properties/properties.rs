@@ -5567,3 +5567,276 @@ pub fn css__compose_right(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+// speak
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_speak(opv:u32 , 
+							_:@mut css_style ,
+							state: @mut css_select_state 
+							) -> css_result {
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+				SPEAK_NORMAL	|
+				SPEAK_NONE		|
+				SPEAK_SPELL_OUT => {
+				/* \todo convert to public values */
+				},
+			_ => {}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16) , isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo speak */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_speak_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) 
+								-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_speak(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_speak(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// speak_header
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_speak_header(opv:u32 , 
+								_:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			SPEAK_HEADER_ONCE |
+			SPEAK_HEADER_ALWAYS => {
+				/* \todo convert to public values */
+			},
+			_=>{} 
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo speak-header */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_speak_header_from_hint(_: @mut css_hint, 
+									_:@mut css_computed_style) 
+									-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_speak_header(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_speak_header(_:@mut css_computed_style,
+								_:@mut css_computed_style,
+								_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// speak_numeral
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_speak_numeral(opv:u32 , 
+								_:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			SPEAK_NUMERAL_DIGITS |
+			SPEAK_NUMERAL_CONTINUOUS => {
+				/* \todo convert to public values */
+			},
+			_=>{} 
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo speak-numeral */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_speak_numeral_from_hint(_: @mut css_hint, 
+									_:@mut css_computed_style) 
+									-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_speak_numeral(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_speak_numeral(_:@mut css_computed_style,
+								_:@mut css_computed_style,
+								_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// speak_punctuation
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_speak_punctuation(opv:u32 , 
+									_:@mut css_style ,
+									state: @mut css_select_state 
+									) -> css_result {
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			SPEAK_PUNCTUATION_CODE |
+			SPEAK_PUNCTUATION_NONE => {
+				/* \todo convert to public values */
+			},
+			_=>{} 
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo speak-punctuation */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_speak_punctuation_from_hint(_: @mut css_hint, 
+											_:@mut css_computed_style) 
+											-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_speak_punctuation(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_speak_punctuation(_:@mut css_computed_style,
+									_:@mut css_computed_style,
+									_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// speech_rate
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_speech_rate(opv:u32 , 
+								style:@mut css_style ,
+								state: @mut css_select_state 
+								) -> css_result {
+
+	let mut rate : i32 = 0;
+
+	if (isInherit(opv) == false) {
+		match (getValue(opv)) {
+			SPEECH_RATE_SET => {
+				rate = peek_bytecode(style) as i32;
+				advance_bytecode(style);
+			},
+			SPEECH_RATE_X_SLOW 	|
+			SPEECH_RATE_SLOW 	|
+			SPEECH_RATE_MEDIUM 	|
+			SPEECH_RATE_FAST  	|
+			SPEECH_RATE_X_FAST 	|
+			SPEECH_RATE_FASTER 	|
+			SPEECH_RATE_SLOWER => {
+				/* \todo convert to public values */
+			},
+			_=>{}
+		}
+	}
+
+	if (css__outranks_existing( (getOpcode(opv) as u16) , isImportant(opv), state,
+			isInherit(opv))) {
+		/* \todo speech-rate */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_speech_rate_from_hint(_: @mut css_hint, 
+									_:@mut css_computed_style) 
+									-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_speech_rate(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_speech_rate(_:@mut css_computed_style,
+								_:@mut css_computed_style,
+								_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// stress
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_stress(opv:u32 , 
+							style:@mut css_style ,
+							state: @mut css_select_state 
+							) -> css_result {
+
+	return css__cascade_number(opv, style, state, None);
+}
+
+pub fn css__set_stress_from_hint(_: @mut css_hint, 
+								_:@mut css_computed_style) 
+								-> css_result {
+
+	CSS_OK
+}
+
+pub fn css__initial_stress(_:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__compose_stress(_:@mut css_computed_style,
+							_:@mut css_computed_style,
+							_:@mut css_computed_style) -> css_result {
+
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
