@@ -378,13 +378,23 @@ fn stringToToken(string:~str)->(css_token_type) {
             if data.len() < 1 {
                 fail!();
             }
+           
             return CSS_TOKEN_FUNCTION(copy data[0]);
         },
         ~"STRING"=> {
             if data.len() < 1 {
                 fail!();
             }
-            return CSS_TOKEN_STRING(copy data[0]);
+            let mut len:int  = data.len() as int;
+            let mut iter:int = 0;
+            let mut stringData =~"";
+            while iter < len -1 {
+                stringData += data[iter];
+                stringData += ~" ";
+                iter+=1;
+            }
+            stringData += data[iter];
+            return CSS_TOKEN_STRING(stringData);
         },
         ~"INVALID_STRING"=> {
             /*if data.len() ==0 {
@@ -459,6 +469,7 @@ fn stringToToken(string:~str)->(css_token_type) {
 fn testMain(fileName:~str,RWmode:~str) {
 	let CHUNKSIZE:int =10;
     let mut failCount:int = 0;
+    let mut lineNum:int = 0;
 	//let args : ~[~str] = os::args();
     // io::println(args[1]);
     let mut external_argument : ~str = copy fileName;
@@ -540,10 +551,12 @@ fn testMain(fileName:~str,RWmode:~str) {
                         tok= tokOpt.unwrap();
                         if isReadMode {
                                let ExpectedTokenString = (r_tokens.read_line());
+                               lineNum+=1;
                                let ExpectedToken = stringToToken(copy ExpectedTokenString);
                                 let result = matchtokens(copy tok, copy ExpectedToken);
                                 if !result {
                                     failCount+=1;
+                                    io::println(fmt!("In %? at line num %?",verification_file,lineNum));
                                     io::println(fmt!("fail::Expected Token String = %?(%?) , Found = %?",ExpectedTokenString,ExpectedToken, tok));
                                     //reader.read_byte();
                                     //reader.read_byte();
@@ -575,10 +588,12 @@ fn testMain(fileName:~str,RWmode:~str) {
            
             if isReadMode {
                 let ExpectedTokenString = (r_tokens.read_line());
+                lineNum+=1;
                 let ExpectedToken = stringToToken(copy ExpectedTokenString);
                 let result = matchtokens(copy tok, copy ExpectedToken);
                 if !result {
                     failCount+=1;
+                    io::println(fmt!("In %? at line num %?",verification_file,lineNum));
                     io::println(fmt!("fail::Expected Token String = %?(%?) , Found = %?",ExpectedTokenString,ExpectedToken, tok));
                     //reader.read_byte();
                     //reader.read_byte();
@@ -610,10 +625,12 @@ fn testMain(fileName:~str,RWmode:~str) {
                 //test_logger.info(~"test_lexer_chunks.rs" ,  copy external_argument, ~"lexer",~"css_lexer.rs"  , ~"get_token", ~"file read in chunks" , ~"token should be read",fmt!("token read is %?",tok ));
                 if isReadMode {
                     let ExpectedTokenString = (r_tokens.read_line());
+                    lineNum+=1;
                     let ExpectedToken = stringToToken(copy ExpectedTokenString);
                     let result = matchtokens(copy tok, copy ExpectedToken);
                     if !result {
                         failCount+=1;
+                        io::println(fmt!("In %? at line num %?",verification_file,lineNum));
                         io::println(fmt!("fail::Expected Token String = %?(%?) , Found = %?",ExpectedTokenString,ExpectedToken, tok));
                         //reader.read_byte();
                         //reader.read_byte();

@@ -31,7 +31,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-HASH 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT font-family
@@ -109,7 +109,7 @@ S
 S 
 IDENT color
 CHAR :
-DIMENSION 66 0066 A7
+HASH 0066A7
 CHAR ;
 S 
 S 
@@ -166,7 +166,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT header_search
+HASH header_search
 S 
 CHAR {
 S 
@@ -220,7 +220,7 @@ S
 S 
 S 
 IDENT div
-IDENT container
+HASH container
 S 
 CHAR {
 S 
@@ -280,7 +280,7 @@ S
 S 
 S 
 IDENT div
-IDENT header_tree
+HASH header_tree
 S 
 CHAR {
 S 
@@ -327,13 +327,13 @@ S
 CHAR }
 S 
 IDENT div
-IDENT text_logo
+HASH text_logo
 S 
 CHAR {
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT float
@@ -370,7 +370,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT search_box
+HASH search_box
 S 
 CHAR {
 S 
@@ -387,9 +387,9 @@ S
 CHAR }
 S 
 IDENT div
-IDENT search_box
+HASH search_box
 S 
-IDENT box
+HASH box
 CHAR :
 IDENT focus
 S 
@@ -417,7 +417,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT search_box
+HASH search_box
 S 
 HASH box
 S 
@@ -449,7 +449,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT float
@@ -459,15 +459,9 @@ CHAR ;
 S 
 IDENT font-family
 CHAR :
-IDENT Lucida
-S 
-IDENT Grande
-STRING ,
-IDENT Lucida
-S 
-IDENT Sans
-S 
-IDENT Unicode
+STRING Lucida Grande
+CHAR ,
+STRING Lucida Sans Unicode
 CHAR ,
 IDENT Verdana
 CHAR ,
@@ -501,9 +495,9 @@ S
 CHAR }
 S 
 IDENT div
-IDENT search_box
+HASH search_box
 S 
-IDENT go_image
+HASH go_image
 S 
 CHAR {
 S 
@@ -534,7 +528,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-DIMENSION 66 0066 A7
+HASH 0066A7
 CHAR ;
 S 
 IDENT cursor
@@ -589,7 +583,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT full_name
+HASH full_name
 S 
 CHAR {
 S 
@@ -606,7 +600,7 @@ S
 CHAR }
 S 
 IDENT span
-IDENT full_text
+HASH full_text
 S 
 CHAR {
 S 
@@ -618,7 +612,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT full_name_right
+HASH full_name_right
 S 
 CHAR {
 S 
@@ -681,7 +675,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT menu_main
+HASH menu_main
 S 
 CHAR {
 S 
@@ -696,7 +690,7 @@ DIMENSION 1 1 px
 S 
 IDENT solid
 S 
-IDENT EFEFEF
+HASH EFEFEF
 CHAR ;
 S 
 IDENT float
@@ -717,7 +711,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT top_menu_left
+HASH top_menu_left
 S 
 CHAR {
 S 
@@ -759,7 +753,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT menu_divider
+HASH menu_divider
 S 
 CHAR {
 S 
@@ -811,7 +805,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 CHAR {
 S 
@@ -823,9 +817,9 @@ S
 CHAR }
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
-IDENT menu_list
+HASH menu_list
 S 
 CHAR {
 S 
@@ -837,7 +831,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_bar
+HASH sub_menu_bar
 S 
 CHAR {
 S 
@@ -869,7 +863,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu
+HASH sub_menu
 S 
 CHAR {
 S 
@@ -906,7 +900,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu
+HASH sub_menu
 S 
 IDENT ul
 S 
@@ -936,7 +930,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_bar
+HASH sub_menu_bar
 S 
 IDENT li
 S 
@@ -946,7 +940,7 @@ CHAR {
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT font-size
@@ -969,7 +963,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_bar
+HASH sub_menu_bar
 S 
 IDENT li
 S 
@@ -1001,7 +995,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT padding
@@ -1014,7 +1008,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_institute
+HASH sub_menu_institute
 S 
 CHAR {
 S 
@@ -1051,7 +1045,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_acads
+HASH sub_menu_acads
 S 
 CHAR {
 S 
@@ -1088,7 +1082,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_admissions
+HASH sub_menu_admissions
 S 
 CHAR {
 S 
@@ -1125,7 +1119,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_research
+HASH sub_menu_research
 S 
 CHAR {
 S 
@@ -1162,7 +1156,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_people
+HASH sub_menu_people
 S 
 CHAR {
 S 
@@ -1194,7 +1188,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_campuslife
+HASH sub_menu_campuslife
 S 
 CHAR {
 S 
@@ -1226,7 +1220,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_institute
+HASH sub_menu_institute
 S 
 IDENT ul
 S 
@@ -1250,7 +1244,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_acads
+HASH sub_menu_acads
 S 
 IDENT ul
 S 
@@ -1276,7 +1270,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_admissions
+HASH sub_menu_admissions
 S 
 IDENT ul
 S 
@@ -1302,7 +1296,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_research
+HASH sub_menu_research
 S 
 IDENT ul
 S 
@@ -1332,7 +1326,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_people
+HASH sub_menu_people
 S 
 IDENT ul
 S 
@@ -1362,7 +1356,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_campuslife
+HASH sub_menu_campuslife
 S 
 IDENT ul
 S 
@@ -1392,7 +1386,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT ul
 S 
@@ -1411,7 +1405,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT ul
 S 
@@ -1436,10 +1430,10 @@ S
 CHAR }
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
-IDENT sub
+HASH sub
 S 
 CHAR {
 S 
@@ -1452,7 +1446,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-IDENT F3F5F5
+HASH F3F5F5
 CHAR ;
 S 
 IDENT text-align
@@ -1468,7 +1462,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
 HASH main
@@ -1478,47 +1472,47 @@ IDENT div
 HASH top_menu
 S 
 IDENT a
-IDENT main_acads
+HASH main_acads
 CHAR ,
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
-IDENT main_admissions
+HASH main_admissions
 CHAR ,
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
-IDENT main_research
+HASH main_research
 CHAR ,
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
-IDENT main_people
+HASH main_people
 CHAR ,
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
-IDENT main_campuslife
+HASH main_campuslife
 CHAR ,
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
-IDENT main_media
+HASH main_media
 CHAR {
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT display
@@ -1563,21 +1557,21 @@ S
 CHAR }
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
-IDENT main_institute
+HASH main_institute
 S 
 CHAR {
 S 
 IDENT background
 CHAR :
-IDENT EFF5FF
+HASH EFF5FF
 CHAR ;
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT display
@@ -1617,10 +1611,10 @@ S
 CHAR }
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
-IDENT sub
+HASH sub
 CHAR :
 IDENT hover
 S 
@@ -1638,10 +1632,10 @@ S
 CHAR }
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
-IDENT main_acads
+HASH main_acads
 CHAR :
 IDENT hover
 CHAR ,
@@ -1650,49 +1644,49 @@ IDENT div
 HASH top_menu
 S 
 IDENT a
-IDENT main_institute
+HASH main_institute
 CHAR :
 IDENT hover
 CHAR ,
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
-IDENT main_admissions
+HASH main_admissions
 CHAR :
 IDENT hover
 CHAR ,
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
-IDENT main_research
+HASH main_research
 CHAR :
 IDENT hover
 CHAR ,
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
-IDENT main_people
+HASH main_people
 CHAR :
 IDENT hover
 CHAR ,
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
-IDENT main_campuslife
+HASH main_campuslife
 CHAR :
 IDENT hover
 CHAR ,
 S 
 IDENT div
-IDENT top_menu
+HASH top_menu
 S 
 IDENT a
 HASH main
@@ -1704,7 +1698,7 @@ IDENT div
 HASH top_menu
 S 
 IDENT a
-IDENT main_media
+HASH main_media
 CHAR :
 IDENT hover
 S 
@@ -1721,7 +1715,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT text-decoration
@@ -1732,7 +1726,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_institute
+HASH sub_menu_institute
 S 
 IDENT ul
 S 
@@ -1740,7 +1734,7 @@ IDENT li
 CHAR ,
 S 
 IDENT div
-IDENT sub_menu_acads
+HASH sub_menu_acads
 S 
 IDENT ul
 S 
@@ -1748,7 +1742,7 @@ IDENT li
 CHAR ,
 S 
 IDENT div
-IDENT sub_menu_research
+HASH sub_menu_research
 S 
 IDENT ul
 S 
@@ -1756,7 +1750,7 @@ IDENT li
 CHAR ,
 S 
 IDENT div
-IDENT sub_menu_campuslife
+HASH sub_menu_campuslife
 S 
 IDENT ul
 S 
@@ -1764,7 +1758,7 @@ IDENT li
 CHAR ,
 S 
 IDENT div
-IDENT sub_menu_admissions
+HASH sub_menu_admissions
 S 
 IDENT ul
 S 
@@ -1772,7 +1766,7 @@ IDENT li
 CHAR ,
 S 
 IDENT div
-IDENT sub_menu_people
+HASH sub_menu_people
 S 
 IDENT ul
 S 
@@ -1797,7 +1791,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu_list
+HASH sub_menu_list
 S 
 CHAR {
 S 
@@ -1809,7 +1803,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu
+HASH sub_menu
 S 
 IDENT a
 HASH sub
@@ -1841,10 +1835,10 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu
+HASH sub_menu
 S 
 IDENT a
-IDENT main
+HASH main
 S 
 CHAR {
 S 
@@ -1857,7 +1851,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-IDENT FFFFFF
+HASH FFFFFF
 CHAR ;
 S 
 IDENT font-size
@@ -1888,7 +1882,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu
+HASH sub_menu
 S 
 IDENT a
 HASH sub
@@ -1909,7 +1903,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT sub_menu
+HASH sub_menu
 S 
 IDENT a
 HASH main
@@ -1930,7 +1924,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT top_menu_right
+HASH top_menu_right
 S 
 CHAR {
 S 
@@ -1995,7 +1989,7 @@ CHAR {
 S 
 IDENT background
 CHAR :
-DIMENSION 83 83 BAD1
+HASH 83BAD1
 S 
 URI images/slider_btn.gif
 S 
@@ -2010,7 +2004,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-IDENT FFFFFF
+HASH FFFFFF
 CHAR ;
 S 
 IDENT display
@@ -2088,7 +2082,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT featured_main
+HASH featured_main
 S 
 CHAR {
 S 
@@ -2110,7 +2104,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT featured_main_text
+HASH featured_main_text
 S 
 CHAR {
 S 
@@ -2131,7 +2125,7 @@ CHAR ;
 S 
 CHAR }
 S 
-IDENT featured_main_text
+HASH featured_main_text
 S 
 IDENT blockquote
 S 
@@ -2139,7 +2133,7 @@ CHAR {
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT font-size
@@ -2175,7 +2169,7 @@ CHAR {
 S 
 IDENT color
 CHAR :
-IDENT E0ECED
+HASH E0ECED
 CHAR ;
 S 
 IDENT float
@@ -2248,7 +2242,7 @@ S
 CHAR }
 S 
 IDENT img
-IDENT mImg
+HASH mImg
 S 
 CHAR {
 S 
@@ -2265,7 +2259,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT featured_main_image
+HASH featured_main_image
 S 
 CHAR {
 S 
@@ -2391,7 +2385,7 @@ CHAR {
 S 
 IDENT color
 CHAR :
-IDENT FFFFFF
+HASH FFFFFF
 CHAR ;
 S 
 IDENT display
@@ -2516,7 +2510,7 @@ CHAR .
 IDENT navigation
 S 
 IDENT li
-IDENT next
+HASH next
 S 
 CHAR {
 S 
@@ -2685,7 +2679,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT featured_content
+HASH featured_content
 S 
 CHAR {
 S 
@@ -2727,7 +2721,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT featured_image
+HASH featured_image
 S 
 CHAR {
 S 
@@ -2755,7 +2749,7 @@ CHAR {
 S 
 IDENT background
 CHAR :
-IDENT F7F7F7
+HASH F7F7F7
 S 
 URI images/photo_bg.jpg
 S 
@@ -2771,7 +2765,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT content_below
+HASH content_below
 S 
 CHAR {
 S 
@@ -2804,7 +2798,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT quick_links
+HASH quick_links
 S 
 CHAR {
 S 
@@ -2846,7 +2840,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT quick_links
+HASH quick_links
 S 
 IDENT ul
 S 
@@ -2885,7 +2879,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT quick_links
+HASH quick_links
 S 
 IDENT li
 S 
@@ -2904,7 +2898,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT quick_links
+HASH quick_links
 S 
 IDENT ul
 S 
@@ -2916,7 +2910,7 @@ CHAR {
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT font-size
@@ -2937,7 +2931,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT quick_links
+HASH quick_links
 S 
 IDENT ul
 S 
@@ -2951,7 +2945,7 @@ CHAR {
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT height
@@ -2977,7 +2971,7 @@ S
 CHAR }
 S 
 IDENT span
-IDENT quick_links_title
+HASH quick_links_title
 S 
 CHAR {
 S 
@@ -2988,7 +2982,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-DIMENSION 66 0066 A7
+HASH 0066A7
 CHAR ;
 S 
 IDENT font-size
@@ -3014,7 +3008,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT featured_research
+HASH featured_research
 S 
 CHAR {
 S 
@@ -3051,7 +3045,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT featured_research_content
+HASH featured_research_content
 S 
 CHAR {
 S 
@@ -3061,7 +3055,7 @@ DIMENSION 1 1 px
 S 
 IDENT dashed
 S 
-IDENT D2D2D2
+HASH D2D2D2
 CHAR ;
 S 
 IDENT padding-top
@@ -3072,13 +3066,13 @@ S
 CHAR }
 S 
 IDENT div
-IDENT featured_research_text
+HASH featured_research_text
 S 
 CHAR {
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT padding-right
@@ -3094,7 +3088,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT featured_research_text
+HASH featured_research_text
 S 
 IDENT td
 S 
@@ -3115,26 +3109,20 @@ S
 CHAR }
 S 
 IDENT span
-IDENT featured_research_text_faculty
+HASH featured_research_text_faculty
 S 
 CHAR {
 S 
 IDENT color
 CHAR :
-DIMENSION 66 0066 A7
+HASH 0066A7
 CHAR ;
 S 
 IDENT font-family
 CHAR :
-IDENT Lucida
-S 
-IDENT Grande
-STRING ,
-IDENT Lucida
-S 
-IDENT Sans
-S 
-IDENT Unicode
+STRING Lucida Grande
+CHAR ,
+STRING Lucida Sans Unicode
 CHAR ,
 IDENT Verdana
 CHAR ,
@@ -3163,19 +3151,19 @@ S
 CHAR }
 S 
 IDENT img
-IDENT featured_research_image
+HASH featured_research_image
 S 
 CHAR {
 S 
 IDENT border-color
 CHAR :
-NUMBER 333333 333333
-S 
-NUMBER 333333 333333
+HASH 333333
 S 
 HASH 333333
 S 
-NUMBER 333333 333333
+HASH 333333
+S 
+HASH 333333
 CHAR ;
 S 
 IDENT border-style
@@ -3208,7 +3196,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT featured_research_more
+HASH featured_research_more
 S 
 CHAR {
 S 
@@ -3225,7 +3213,7 @@ S
 CHAR }
 S 
 IDENT img
-IDENT arrow
+HASH arrow
 S 
 CHAR {
 S 
@@ -3262,7 +3250,7 @@ CHAR {
 S 
 IDENT color
 CHAR :
-DIMENSION 66 0066 A7
+HASH 0066A7
 CHAR ;
 S 
 S 
@@ -3288,7 +3276,7 @@ S
 CHAR }
 S 
 IDENT span
-IDENT featured_research_title
+HASH featured_research_title
 S 
 IDENT a
 CHAR {
@@ -3326,7 +3314,7 @@ S
 CHAR }
 S 
 IDENT span
-IDENT featured_research_title
+HASH featured_research_title
 S 
 IDENT a
 CHAR :
@@ -3474,7 +3462,7 @@ CHAR .
 IDENT tabs
 S 
 IDENT li
-IDENT fop_tab
+HASH fop_tab
 S 
 CHAR {
 S 
@@ -3780,7 +3768,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-IDENT DFDFDF
+HASH DFDFDF
 CHAR ;
 S 
 IDENT display
@@ -3826,7 +3814,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-IDENT DFDFDF
+HASH DFDFDF
 CHAR ;
 S 
 IDENT display
@@ -3837,7 +3825,7 @@ S
 CHAR }
 S 
 IDENT a
-IDENT tab1_click
+HASH tab1_click
 S 
 CHAR {
 S 
@@ -3867,7 +3855,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT display
@@ -3908,13 +3896,13 @@ S
 CHAR }
 S 
 IDENT a
-IDENT empty_tab
+HASH empty_tab
 S 
 CHAR {
 S 
 IDENT background-color
 CHAR :
-IDENT F7F7F7
+HASH F7F7F7
 CHAR ;
 S 
 IDENT display
@@ -3940,7 +3928,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT tab_content_inner
+HASH tab_content_inner
 S 
 CHAR {
 S 
@@ -3974,7 +3962,7 @@ DIMENSION 1 1 px
 S 
 IDENT solid
 S 
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT height
@@ -4000,7 +3988,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT tab_content
+HASH tab_content
 S 
 CHAR {
 S 
@@ -4056,7 +4044,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT tab_content
+HASH tab_content
 S 
 IDENT ul
 S 
@@ -4074,7 +4062,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT tab_content
+HASH tab_content
 S 
 IDENT ul
 S 
@@ -4104,7 +4092,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT display
@@ -4134,7 +4122,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT tab_content
+HASH tab_content
 S 
 IDENT ul
 S 
@@ -4181,13 +4169,13 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-DIMENSION 66 0066 A7
+HASH 0066A7
 CHAR ;
 S 
 CHAR }
 S 
 IDENT div
-IDENT tab_content
+HASH tab_content
 S 
 IDENT ul
 S 
@@ -4240,16 +4228,16 @@ S
 CHAR }
 S 
 IDENT div
-IDENT tab_content
+HASH tab_content
 S 
 IDENT a
-IDENT more-items-link
+HASH more-items-link
 S 
 CHAR {
 S 
 IDENT color
 CHAR :
-DIMENSION 66 0066 A7
+HASH 0066A7
 CHAR ;
 S 
 IDENT display
@@ -4280,7 +4268,7 @@ S
 CHAR }
 S 
 IDENT a
-IDENT more-items-link
+HASH more-items-link
 CHAR :
 IDENT visited
 S 
@@ -4288,13 +4276,13 @@ CHAR {
 S 
 IDENT color
 CHAR :
-DIMENSION 3399 3399 CC
+HASH 3399CC
 CHAR ;
 S 
 CHAR }
 S 
 IDENT a
-IDENT more-items-link
+HASH more-items-link
 CHAR :
 IDENT hover
 S 
@@ -4308,7 +4296,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT footer
+HASH footer
 S 
 CHAR {
 S 
@@ -4350,7 +4338,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT footer_address
+HASH footer_address
 S 
 CHAR {
 S 
@@ -4377,7 +4365,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT footer_address
+HASH footer_address
 S 
 IDENT p
 S 
@@ -4385,7 +4373,7 @@ CHAR {
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT font-size
@@ -4396,7 +4384,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT footer_menu
+HASH footer_menu
 S 
 CHAR {
 S 
@@ -4418,7 +4406,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-IDENT FFFFFF
+HASH FFFFFF
 CHAR ;
 S 
 IDENT display
@@ -4469,7 +4457,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT footer_menu
+HASH footer_menu
 S 
 IDENT a
 S 
@@ -4477,7 +4465,7 @@ CHAR {
 S 
 IDENT color
 CHAR :
-IDENT FFFFFF
+HASH FFFFFF
 CHAR ;
 S 
 IDENT text-decoration
@@ -4488,7 +4476,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT footer_menu
+HASH footer_menu
 S 
 IDENT a
 CHAR :
@@ -4571,7 +4559,7 @@ DIMENSION 1 1 px
 S 
 IDENT solid
 S 
-IDENT CCCCCC
+HASH CCCCCC
 CHAR ;
 S 
 IDENT margin-bottom
@@ -4601,7 +4589,7 @@ S
 CHAR }
 S 
 IDENT p
-IDENT cross-links
+HASH cross-links
 S 
 CHAR {
 S 
@@ -4613,7 +4601,7 @@ S
 CHAR }
 S 
 IDENT p
-IDENT cross-links
+HASH cross-links
 S 
 CHAR {
 S 
@@ -4623,7 +4611,7 @@ DIMENSION 1 1 px
 S 
 IDENT solid
 S 
-IDENT CCCCCC
+HASH CCCCCC
 CHAR ;
 S 
 IDENT margin-bottom
@@ -4679,7 +4667,7 @@ CHAR {
 S 
 IDENT color
 CHAR :
-IDENT AA0000
+HASH AA0000
 CHAR ;
 S 
 IDENT text-decoration
@@ -4771,7 +4759,7 @@ CHAR {
 S 
 IDENT background
 CHAR :
-IDENT FFFFFF
+HASH FFFFFF
 S 
 IDENT none
 S 
@@ -5032,7 +5020,7 @@ CHAR {
 S 
 IDENT background
 CHAR :
-IDENT C6E3FF
+HASH C6E3FF
 S 
 IDENT none
 S 
@@ -5047,7 +5035,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-NUMBER 0 000000
+HASH 000000
 CHAR ;
 S 
 IDENT display
@@ -5095,7 +5083,7 @@ CHAR {
 S 
 IDENT background
 CHAR :
-DIMENSION 83 83 BAD1
+HASH 83BAD1
 S 
 IDENT none
 S 
@@ -5136,7 +5124,7 @@ CHAR ;
 S 
 IDENT color
 CHAR :
-IDENT FFFFFF
+HASH FFFFFF
 CHAR ;
 S 
 CHAR }
@@ -5309,7 +5297,7 @@ S
 CHAR }
 S 
 IDENT span
-IDENT heading
+HASH heading
 S 
 CHAR {
 S 
@@ -5326,13 +5314,13 @@ S
 CHAR }
 S 
 IDENT div
-IDENT left-content
+HASH left-content
 S 
 CHAR {
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT float
@@ -5342,15 +5330,9 @@ CHAR ;
 S 
 IDENT font-family
 CHAR :
-IDENT Lucida
-S 
-IDENT Grande
-STRING ,
-IDENT Lucida
-S 
-IDENT Sans
-S 
-IDENT Unicode
+STRING Lucida Grande
+CHAR ,
+STRING Lucida Sans Unicode
 CHAR ,
 IDENT Verdana
 CHAR ,
@@ -5374,7 +5356,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT mid-content
+HASH mid-content
 S 
 CHAR {
 S 
@@ -5390,25 +5372,9 @@ CHAR ;
 S 
 IDENT font-family
 CHAR :
-IDENT Lucida
-S 
-IDENT Grande
-STRING ,
-IDENT Lucida
-S 
-IDENT Sans
-S 
-IDENT Unicode
+STRING Lucida Grande
 CHAR ,
-IDENT Verdana
-CHAR ,
-IDENT Arial
-CHAR ,
-IDENT Helvetica
-CHAR ,
-IDENT sans-serif
-CHAR ;
-S 
+INVALID_STRING 
 IDENT font-size
 CHAR :
 DIMENSION 13 13 px
@@ -5437,13 +5403,13 @@ S
 CHAR }
 S 
 IDENT div
-IDENT right-content
+HASH right-content
 S 
 CHAR {
 S 
 IDENT color
 CHAR :
-NUMBER 333333 333333
+HASH 333333
 CHAR ;
 S 
 IDENT float
@@ -5453,25 +5419,9 @@ CHAR ;
 S 
 IDENT font-family
 CHAR :
-IDENT Lucida
-S 
-IDENT Grande
-STRING ,
-IDENT Lucida
-S 
-IDENT Sans
-S 
-IDENT Unicode
+STRING Lucida Grande
 CHAR ,
-IDENT Verdana
-CHAR ,
-IDENT Arial
-CHAR ,
-IDENT Helvetica
-CHAR ,
-IDENT sans-serif
-CHAR ;
-S 
+INVALID_STRING 
 IDENT font-size
 CHAR :
 DIMENSION 13 13 px
@@ -5693,7 +5643,7 @@ S
 CHAR }
 S 
 IDENT div
-IDENT footer
+HASH footer
 S 
 CHAR {
 S 
