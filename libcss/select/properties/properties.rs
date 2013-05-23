@@ -347,10 +347,10 @@ pub fn css__cascade_page_break_after_before_inside(opv:u32, _:@mut css_style, st
 }
 
 pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@extern fn (@mut css_computed_style, u8, ~[~css_computed_counter]) -> css_result) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8, ~[@mut css_computed_counter]) ) -> css_result {
 
 	let mut value = CSS_COUNTER_INCREMENT_INHERIT;
-	let mut counters:~[~css_computed_counter] = ~[];
+	let mut counters:~[@mut css_computed_counter] = ~[];
 	
 	if !isInherit(opv) {
 		match getValue(opv) {
@@ -366,7 +366,7 @@ pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state
 							let val = peek_bytecode(style);
 							advance_bytecode(style);
 
-							let temp = ~css_computed_counter{name:name_option.unwrap(),value:val as i32};
+							let temp = @mut css_computed_counter{name:name_option.unwrap(),value:val as i32};
 							counters.push(temp);
 
 							v = peek_bytecode(style);
@@ -384,13 +384,13 @@ pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state
 
 	
 	/* If we have some counters, terminate the array with a blank entry */
-	if !counters.is_empty() {
-		let temp = ~css_computed_counter{name:~"",value:0};
-		counters.push(temp);
-	}
+	// if !counters.is_empty() {
+	// 	let temp = @mut css_computed_counter{name:~"",value:0};
+	// 	counters.push(temp);
+	// }
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
-		return (*fun)(state.computed, value as u8, counters)
+		(*fun)(state.computed, value as u8, counters)
 	}
 	
 	CSS_OK
@@ -2807,7 +2807,7 @@ pub fn css__cascade_font_family(opv:u32, style:@mut css_style,
 		        status:0,
 		        clip:None,
 		        content:None,
-		        counter:None,
+		        counters:None,
 		        length:None,
 		        position:None,
 		        color:None,
@@ -2886,7 +2886,7 @@ pub fn css__initial_font_family(state:@mut css_select_state) -> css_result {
         status:0,
         clip:None,
         content:None,
-        counter:None,
+        counters:None,
         length:None,
         position:None,
         color:None,
@@ -5419,7 +5419,7 @@ pub fn css__initial_quotes(state:@mut css_select_state) -> css_result {
         status:0,
         clip:None,
         content:None,
-        counter:None,
+        counters:None,
         length:None,
         position:None,
         color:None,
@@ -7025,6 +7025,141 @@ pub fn css__compose_z_index(parent:@mut css_computed_style,
 		set_z_index(result, ftype, index);
 		CSS_OK
 	}
+}
+
+///////////////////////////////////////////////////////////////////
+
+// counter_increment
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_counter_increment(opv:u32, style:@mut css_style, 
+									state:@mut css_select_state) -> css_result {
+
+	return css__cascade_counter_increment_reset(opv, style, state, 
+			@set_counter_increment);
+}
+
+pub fn css__set_counter_increment_from_hint(hint:@mut  css_hint, 
+											style:@mut css_computed_style
+											) -> css_result {
+
+	match hint.hint_type {
+		COUNTER=>{
+			match hint.counters {
+				Some(copy x)=>{
+					set_counter_increment(style, hint.status, x);
+					if hint.status == (CSS_COUNTER_INCREMENT_NAMED as u8) {
+						hint.counters = None ;
+					}
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		},
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_counter_increment(state:@mut css_select_state) -> css_result {
+
+	set_counter_increment(state.computed, 
+			(CSS_COUNTER_INCREMENT_NONE as u8), ~[]);
+	CSS_OK
+}
+
+pub fn css__compose_counter_increment(parent:@mut css_computed_style,
+									child:@mut css_computed_style,
+									result:@mut css_computed_style
+									) -> css_result {
+
+	let mut (ftype,ocounters) = css_computed_counter_increment(child);
+
+	if (  (child.uncommon.is_none() && parent.uncommon.is_some() ) || 
+			ftype == (CSS_COUNTER_INCREMENT_INHERIT as u8) || 
+			(child.uncommon.is_some() && !mut_ptr_eq(result,child) ) ) {
+
+			if ( ( child.uncommon.is_none() && parent.uncommon.is_some() ) ||
+					ftype == (CSS_COUNTER_INCREMENT_INHERIT as u8) ) {
+
+				let mut (ftype2,ocounters2) = css_computed_counter_increment(parent);
+				set_counter_increment(result, ftype2, ocounters2 );
+			}
+			else {
+
+				set_counter_increment(result, ftype, ocounters );
+			}
+	}
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
+
+// counter_reset
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_counter_reset(opv:u32, style:@mut css_style, 
+								state:@mut css_select_state) -> css_result {
+
+	return css__cascade_counter_increment_reset(opv, style, state,
+			@set_counter_reset);
+}
+
+pub fn css__set_counter_reset_from_hint(hint:@mut  css_hint, 
+										style:@mut css_computed_style
+										) -> css_result {
+
+	match hint.hint_type {
+		COUNTER=>{
+			match hint.counters {
+				Some(copy x)=>{
+					set_counter_reset(style, hint.status, x);
+					if hint.status == (CSS_COUNTER_INCREMENT_NAMED as u8) {
+						hint.counters = None ;
+					}
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		},
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_counter_reset(state:@mut css_select_state) -> css_result {
+
+	set_counter_reset(state.computed, 
+			(CSS_COUNTER_RESET_NONE as u8), ~[]);
+	CSS_OK
+}
+
+pub fn css__compose_counter_reset(parent:@mut css_computed_style,
+								child:@mut css_computed_style,
+								result:@mut css_computed_style
+								) -> css_result {
+
+	let mut (ftype,ocounters) = css_computed_counter_reset(child);
+
+	if (  (child.uncommon.is_none() && parent.uncommon.is_some() ) || 
+			ftype == (CSS_COUNTER_RESET_INHERIT as u8) || 
+			(child.uncommon.is_some() && !mut_ptr_eq(result,child) ) ) {
+
+			if ( ( child.uncommon.is_none() && parent.uncommon.is_some() ) ||
+					ftype == (CSS_COUNTER_RESET_INHERIT as u8) ) {
+
+				let mut (ftype2,ocounters2) = css_computed_counter_reset(parent);
+				set_counter_reset(result, ftype2, ocounters2 );
+			}
+			else {
+				set_counter_reset(result, ftype, ocounters );
+			}
+	}
+	CSS_OK
 }
 
 ///////////////////////////////////////////////////////////////////
