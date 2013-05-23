@@ -281,9 +281,15 @@ pub impl lwc {
         }
     }
     
-    pub fn lwc_intern_substring(&mut self , substring_to_intern: arc::RWARC<~lwc_string> , ssoffset: u32, sslen: u32) -> arc::RWARC<~lwc_string> {
+    pub fn lwc_intern_substring(&mut self , substring_to_intern: arc::RWARC<~lwc_string> , ssoffset: u32, sslen: u32) -> Option<arc::RWARC<~lwc_string>> {
+        io::println("Inside lwc_intern_substring");
         do substring_to_intern.read |l| {
-            self.lwc_intern_string((str::slice(l.string , ssoffset as uint , (ssoffset+sslen) as uint)).to_owned())
+            if (l.string.len() <= ssoffset as uint) || (l.string.len() <= (ssoffset+sslen) as uint) {
+                None
+            }
+            else{
+                Some(self.lwc_intern_string((str::slice(l.string , ssoffset as uint , (ssoffset+sslen) as uint)).to_owned()))
+            }
         }
     }
 
