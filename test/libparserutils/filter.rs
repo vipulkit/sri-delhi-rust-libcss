@@ -5,6 +5,7 @@ use core::vec::*;
 use parserutils::charset::aliases::*;
 use parserutils::input::parserutils_filter::*;
 
+#[test]
 fn main(){                  
 
     let mut Alias = alias();
@@ -82,7 +83,6 @@ fn main(){
                 }
                 io::println(fmt!("outbuf=%?",outbuf));
                 let mut tempbuf = ~[ 104, 101, 108 , 108 , 239, 191 , 189 , 111 , 33];
-                //if !eq(outbuf,"hell\xef\xbf\xbdo!".to_bytes()){                  
                 if !eq(outbuf,tempbuf){         
                     assert!(false);
                 }
@@ -147,8 +147,8 @@ fn main(){
                         assert!(false);  
                     }
                 }
-
-                if !eq(outbuf,"hell\xef\xbf\xbd\xef\xbf\xbdo!".to_bytes()){                  
+                let mut tempbuf = ~[ 104, 101, 108 , 108 , 239, 191 , 189 , 239 , 191 , 189 , 111 , 33];
+                if !eq(outbuf,tempbuf){                  
                     assert!(false)  
                 }
 
