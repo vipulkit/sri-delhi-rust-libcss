@@ -48,7 +48,7 @@ fn inputstream() {
     }
 
     let CHUNK_SIZE = 4096;
-    let mut buf: ~[u8] = ~[];
+    //let mut buf: ~[u8] = ~[];
     let r: @Reader = io::file_reader(&Path(file)).get();
     let mut stream = streamOption.unwrap();
 
@@ -90,6 +90,7 @@ fn inputstream() {
     }
 
     if len > 0 {
+        let mut buf: ~[u8] = vec::from_elem(len, 0);
         let read_size = r.read(buf, len);
         assert!(read_size == len);
         match(stream.parserutils_inputstream_append(buf)) {
