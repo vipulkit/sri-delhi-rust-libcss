@@ -28,10 +28,9 @@ extern mod parserutils;
 extern mod css;
 
 use core::io::*;
-//use std::arc;
 use parserutils::input::*;
+use parserutils::charset::csdetect::*;
 use css::lex::*;
-//use css::parse::*;
 
 fn main() {
     io::println("parse");
@@ -43,7 +42,7 @@ fn lex() {
     let file=~"../data/lex/test1.dat";
 
     for int::range(0, ITERATIONS) |i| {
-        let (streamOption, PARSERUTILS_STATUS) = inputstream::inputstream(~"UTF-8", None);
+        let (streamOption, PARSERUTILS_STATUS) = inputstream::inputstream(Some(~"UTF-8"), Some(CSS_CHARSET_DEFAULT), None);
         match(PARSERUTILS_STATUS) {
             PARSERUTILS_OK=>{}
             //_ => {assert!(false);} // FIXME: unreachable pattern
@@ -66,10 +65,10 @@ fn lex() {
         while len >= CHUNK_SIZE {
             let buf = r.read_bytes(CHUNK_SIZE);
 
-            // match(stream.parserutils_inputstream_append(buf)) {
-                // PARSERUTILS_OK => {}
-                // //_ => {assert!(false);}
-            // }
+             //match(stream.parserutils_inputstream_append(buf)) {
+             //    PARSERUTILS_OK => {}
+                 //_ => {assert!(false);}
+             //}
 
             len -= CHUNK_SIZE;
 

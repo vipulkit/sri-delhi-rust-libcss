@@ -29,6 +29,7 @@ extern mod parserutils;
 use core::io::*;
 use parserutils::input::*;
 use parserutils::charset::aliases::*; // FIXME: to be removed
+use parserutils::charset::csdetect::*; // FIXME: to be removed
 
 
 fn main() {
@@ -39,7 +40,8 @@ fn main() {
 fn inputstream() {
     let file=~"../data/input/UTF-8-test.txt";
 
-    let (streamOption, PARSERUTILS_STATUS) = inputstream::inputstream(~"UTF-8", None);
+    let (streamOption, PARSERUTILS_STATUS) = inputstream::inputstream(Some(~"UTF-8"), Some(CSS_CHARSET_DEFAULT), None);
+    //let (streamOption, PARSERUTILS_STATUS) = inputstream::inputstream(~"UTF-8", None);
     match(PARSERUTILS_STATUS) {
         PARSERUTILS_OK=>{}
         _=>{assert!(false);}
