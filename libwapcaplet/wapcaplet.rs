@@ -370,7 +370,7 @@ pub impl lwc {
         }
         else if (is_case_insensitive) {
             // is_case_insensitive = false;
-            s1_c = Some(str2.clone());
+            s2_c = Some(str2.clone());
         }
         else {
             do str2.write |s|  {
