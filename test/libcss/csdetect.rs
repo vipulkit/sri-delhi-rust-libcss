@@ -129,6 +129,7 @@ pub fn run_test(data:&~[u8],  _:uint, expectedEncoding:~str) {
     // io::println(~"expectedEncoding = "+expectedEncoding);
 	
 	let mut mibenum:u16 = 0;
+	let mut failCount:uint = 0;
 
 	match parserutils_filter(alias() ,copy expectedEncoding) {
         (x,PARSERUTILS_OK) =>{
@@ -141,14 +142,19 @@ pub fn run_test(data:&~[u8],  _:uint, expectedEncoding:~str) {
             mibenum = charsetOption.unwrap();
             //io::println(arc::get(&filter_instance.instance).parserutils_charset_mibenum_to_name(mibenum).unwrap());
 			assert!(mibenum != 0);
+			if !(mibenum == arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(to_upper(copy expectedEncoding))) {
+				io::print("fail::");
+				failCount += 1;
+			}   
 			io::println(fmt!(" Detected mibenum %?   Expected %? ",mibenum,arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(to_upper(copy expectedEncoding))));
-			//assert!(mibenum == arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(to_upper(copy expectedEncoding)));    
+
 			io::println(fmt!(" Detected charset=( %?) mibenum=(%?) Source %? Expected charset=(%?) mibenum=(%?)",arc::get(&filter_instance.instance).parserutils_charset_mibenum_to_name(mibenum).unwrap(),mibenum,srcOption.unwrap(),expectedEncoding,arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(to_upper(copy expectedEncoding))));
            
         },
         
         (_ , _) => fail!() 
     }
+    assert!(failCount == 0);
 }
 
 /*#[test]
