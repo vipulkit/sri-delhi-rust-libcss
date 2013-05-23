@@ -1,7 +1,7 @@
 extern mod css;
 extern mod parserutils ; 
 extern mod css;
-
+extern mod testutils;
 
 use css::lex::lexer::*;
 use parserutils::input::inputstream::*;
@@ -9,6 +9,8 @@ use parserutils::charset::csdetect::*;
 use core::str::*;
 use core::float::*;
 use core::io::*;
+use testutils::*;
+
 static EXP_ENTRY_TEXT_LEN:int = (128);
 
 pub type  line_func =  
@@ -474,57 +476,17 @@ fn stringToToken(string:&~str)->(css_token_type) {
         }
     }
 } 
-pub fn css__parse_filesize( fileName:~str)->uint {
-	let r:@Reader = io::file_reader(&Path(fileName)).get(); 
-	r.seek(0,SeekEnd);
-	r.tell()
-}
 
-pub fn css__parse_strnchr(string:&~str, chr:char)-> (~str,uint) {
-	let length = string.len();
-	for (*string).each_chari |i, ch| {
-		if ch == chr {
-			return (string.slice(i,length).to_owned(),i);
-		}
-	}
-	return (~"",string.len());
-}
-pub fn css__parse_testfile(filename:~str,  callback:line_func, pw:&mut line_ctx)->bool {
-	let r:@Reader = io::file_reader(&Path(filename)).get();
-	let mut data:~str;
-	let mut string:~str;
-	while(!r.eof()) {				
-       data= r.read_line();
-       //io::println(data);
-       let numOfbuffers= data.len()/300 + 1 ;
-       //let mut v =~[];
-       let mut iter = 0;
-       while iter < (numOfbuffers-1) {
-       		string = data.slice(iter * 300 ,(iter +1) * 300).to_owned();
-       		if string.len() == 0 {
-       			loop;
-       		}
-       		if !(*callback)(string, pw) {
-       	 		return false;
-       		}
-       		iter += 1;
-       }
-       string = data.slice(iter * 300, data.len()).to_owned();
-       if string.len() > 0 {
-       		if !(*callback)(string,pw) {
-       	 		return false;
-       		}	
-       }
-       
-	}
-	true
-}
-pub fn handle_line(mut data:~str,  pw:&mut line_ctx)->bool
+pub fn handle_line(mut data:~str,  pw:LINE_CTX_DATA_TYPE)->bool
 {
 	//io::println("handle_line");
 	//io::println(~"STRING="+data);
-	let mut ctx:&mut line_ctx =  pw;
-	if data.len() <= 0 {
+	
+    let ctx :@mut line_ctx_lex;
+
+    match pw { CSDETECT(_) => fail!(~"In File lex-auto.rs, Function handle_line, argument LINE_CTX_DATA_TYPE contains incorrect struct line_ctx_csdetect"), LEX(x) => ctx = x }
+
+    if data.len() <= 0 {
 		io::println("error");
 		return true;
 	}
@@ -533,7 +495,7 @@ pub fn handle_line(mut data:~str,  pw:&mut line_ctx)->bool
 		if (ctx.inexp) {
 			/* This marks end of testcase, so run it */
 
-			run_test(&ctx.buf , & ctx.exp);
+			run_test(copy ctx.buf , copy ctx.exp);
 
 			//ctx.buf[0] = 0;//
 			ctx.exp= ~[];
@@ -550,14 +512,14 @@ pub fn handle_line(mut data:~str,  pw:&mut line_ctx)->bool
 			ctx.indata = str::eq(&data.slice(1,data.len()).to_owned().to_lower(),&~"data");
 			ctx.inexp  = str::eq(&data.slice(1,data.len()).to_owned().to_lower(),&~"expected")
 		} else {
-			ctx.buf = ctx.buf.slice(0,ctx.bufused).to_owned();
+			ctx.buf = unsafe { ctx.buf.slice(0,ctx.bufused).to_owned() };
 			ctx.buf += data.to_bytes();
 			ctx.bufused += data.len();
 		}
 	}
 	else {
 		if ctx.indata {
-			ctx.buf = ctx.buf.slice(0,ctx.bufused).to_owned();
+			ctx.buf = unsafe { ctx.buf.slice(0,ctx.bufused).to_owned() };
 			ctx.buf += data.to_bytes();
 			ctx.bufused += data.len();
 		}
@@ -580,8 +542,8 @@ fn testMain(fileName: ~str) {
 	if len ==0 {
 		return;
 	}
-	let mut ctx: line_ctx = line_ctx
-	{
+	let ctx: @mut line_ctx_lex = @mut line_ctx_lex
+    {
 		mut buflen:len,
 		mut bufused:0,
 		mut buf:~[],
@@ -592,14 +554,14 @@ fn testMain(fileName: ~str) {
 		mut inexp:false
 	};
 	//ctx.buf.push(0);//why?
-	assert!(css__parse_testfile(copy fileName, ~handle_line, &mut ctx) == true);
+	assert!(css__parse_testfile(copy fileName, ~handle_line, LEX(ctx)) == true);
 	if ctx.bufused > 0 {
-		run_test(&ctx.buf, & ctx.exp);
+		run_test(copy ctx.buf,copy ctx.exp);
 	}
 }
 
 
-pub fn css__parse_expected(ctx:&mut line_ctx, mut data:&~str) {
+pub fn css__parse_expected(ctx:@mut line_ctx_lex, mut data:&~str) {
 	
 	let mut token_type:css_token_type ;
 	token_type = stringToToken(data);
@@ -618,7 +580,7 @@ pub fn css__parse_expected(ctx:&mut line_ctx, mut data:&~str) {
 	
 }
 
-pub fn run_test(data:&~[u8], exp:&~[css_token_type]) {
+pub fn run_test(data:~[u8], exp:~[css_token_type]) {
 	// io::println("run test");
 	// io::println(~"run test data="+ from_bytes(*data));
 	let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT), Some(~css__charset_extract));
@@ -635,7 +597,7 @@ pub fn run_test(data:&~[u8], exp:&~[css_token_type]) {
     // io::println("Creating lexer");
     let mut lexer = css_lexer::css__lexer_create(inputstream);
 
-    lexer.lexer_append_data(copy *data);
+    lexer.lexer_append_data(data);
     //lexer.data_done();
     // io::println(~"after append data="+ from_bytes(*data));
     let mut tok:css_token_type;
