@@ -609,7 +609,7 @@ pub struct css_hint {
     // types specifies , which data type is used from 10 types defined below
     clip:Option<@mut css_computed_clip_rect>,
     content:Option<@mut css_computed_content_item>,
-    counter:Option<@mut css_computed_counter>,
+    counters:Option<~[@mut css_computed_counter]>,
     length:Option<@mut css_hint_length>,
     position:Option<@mut css_hint_length_hv>,
     color:Option<u32>,
