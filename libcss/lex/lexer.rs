@@ -316,15 +316,18 @@ pub impl css_lexer {
 								}
 								(Some(CSS_TOKEN_S), error_condition)
 							},
-							'"' => match (self.consume_quoted_string(false)) {
-										(_, LEXER_NEEDDATA) => {
+							'"' => {
+								// self.position -= 1;
+								match (self.consume_quoted_string(false)) {
+										(None, LEXER_NEEDDATA) => {
 											self.position -= 1; // undo consume-char
 											return (None, LEXER_NEEDDATA);
 										}
 										(x, y) => {
 											return(x, y);
 										}
-									},
+									}
+								},
 							'#' => match (self.consume_hash()) {
 										(_, LEXER_NEEDDATA) => {
 											self.position -= 1; // undo consume-char
@@ -373,14 +376,27 @@ pub impl css_lexer {
 	}
 
 	fn consume_quoted_string(&mut self, single_quote: bool) -> (Option<css_token_type> , lexer_error) {
-
-		// io::println("consume_quoted_string : inside function");
 		let head_position = self.position;
 		let mut string: ~str = ~"";
 		while !self.is_eof() {
 			match self.consume_char() {
-				(Some(ch),x)=>match(ch) {
-					'"' if !single_quote => return (Some(CSS_TOKEN_STRING(string)), x),
+				(Some(ch),x)=>{
+					match(ch) {
+					'"' if !single_quote => { 
+												match(x){
+													LEXER_NEEDDATA => {
+														self.position = head_position;	
+														return (None , LEXER_NEEDDATA);
+
+													},
+													_=> {
+															str::unshift_char(&mut string, '"');
+															push_char!(string, '"');
+															return (Some(CSS_TOKEN_STRING(string)), x);
+														},
+												}
+											}
+												
 					'\'' if single_quote => return (Some(CSS_TOKEN_STRING(string)), x),
 					'\n' | '\x0C' => {
 						return (Some(CSS_TOKEN_INVALID_STRING), LEXER_INVALID);
@@ -408,10 +424,11 @@ pub impl css_lexer {
 						}
 					}
 					c => push_char!(string, c),
-				},
+				}
+			},
 				(None,_)=>{
-					self.position = head_position;
-					return (None,LEXER_NEEDDATA);
+					self.position = head_position;	
+					return (None , LEXER_NEEDDATA)
 				}
 			}
 		}
@@ -913,7 +930,7 @@ pub impl css_lexer {
 	}
 
 	fn consume_quoted_url(&mut self, single_quote: bool) -> (Option<css_token_type>, lexer_error) {
-		// io::println("consume_quoted_url : inside function");
+		io::println("consume_quoted_url : inside function");
 		let head_position = self.position;
 		if  self.position+1 <= self.length {
 			self.position += 1

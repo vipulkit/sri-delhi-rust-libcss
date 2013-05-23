@@ -21,3 +21,6 @@ rustc --test test_lexer_chunks_file.rs -L . -L ../libparserutils -L ../libcss -L
 cd libcss
 ./make_test.sh
 cd ..
+cd libparserutils
+./make_test.sh
+cd ..

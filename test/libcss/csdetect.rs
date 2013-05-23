@@ -1,3 +1,4 @@
+
 extern mod std;	
 extern mod testutils;
 extern mod parserutils ; 
@@ -10,10 +11,8 @@ use core::str::*;
 use std::arc;
 use core::io::*;
 
-
-
 fn main() {
-	io::println("csdetect");
+    io::println("csdetect");
 }
 
 
@@ -82,35 +81,36 @@ pub fn handle_line(data:~str, pw:LINE_CTX_DATA_TYPE)-> bool {
 		}
 	}
 
-	return true;
+    return true;
 }
+
 
 pub fn run_test(data:~[u8],  _:uint, expectedEncoding:~str) {
 	// io::println("inside csdetect run_test");
     // io::println(~"data = "+ from_bytes(*data));
     // io::println(~"expectedEncoding = "+expectedEncoding);
-	
-	let mut mibenum:u16 = 0;
-	let mut failCount:uint = 0;
+    
+    let mut mibenum:u16 = 0;
+    let mut failCount:uint = 0;
 
-	match parserutils_filter(alias() ,copy expectedEncoding) {
+    match parserutils_filter(alias() ,copy expectedEncoding) {
         (x,PARSERUTILS_OK) =>{
             let mut filter_instance = x.unwrap();
             let (charsetOption,srcOption,error)= css__charset_extract(&data, mibenum, CSS_CHARSET_DEFAULT, filter_instance.instance.clone());
             assert!(match error {
-            	PARSERUTILS_OK=>true,
-            	_=>false
+                PARSERUTILS_OK=>true,
+                _=>false
             }==true);
             mibenum = charsetOption.unwrap();
             //io::println(arc::get(&filter_instance.instance).parserutils_charset_mibenum_to_name(mibenum).unwrap());
-			assert!(mibenum != 0);
-			if !(mibenum == arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(to_upper(copy expectedEncoding))) {
-				io::print("fail::");
-				failCount += 1;
-			}   
-			io::println(fmt!(" Detected mibenum %?   Expected %? ",mibenum,arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(to_upper(copy expectedEncoding))));
+            assert!(mibenum != 0);
+            if !(mibenum == arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(to_upper(copy expectedEncoding))) {
+                io::print("fail::");
+                failCount += 1;
+            }   
+            io::println(fmt!(" Detected mibenum %?   Expected %? ",mibenum,arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(to_upper(copy expectedEncoding))));
 
-			io::println(fmt!(" Detected charset=( %?) mibenum=(%?) Source %? Expected charset=(%?) mibenum=(%?)",arc::get(&filter_instance.instance).parserutils_charset_mibenum_to_name(mibenum).unwrap(),mibenum,srcOption.unwrap(),expectedEncoding,arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(to_upper(copy expectedEncoding))));
+            io::println(fmt!(" Detected charset=( %?) mibenum=(%?) Source %? Expected charset=(%?) mibenum=(%?)",arc::get(&filter_instance.instance).parserutils_charset_mibenum_to_name(mibenum).unwrap(),mibenum,srcOption.unwrap(),expectedEncoding,arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(to_upper(copy expectedEncoding))));
            
         },
         
@@ -121,10 +121,10 @@ pub fn run_test(data:~[u8],  _:uint, expectedEncoding:~str) {
 
 /*#[test]
 fn bom() {
-	testMain(~"data/csdetect/bom.dat");
+    testMain(~"data/csdetect/bom.dat");
 }*/
 
 #[test]
 fn bom_charset() {
-	testMain(~"data/csdetect/bom-charset.dat");
+    testMain(~"data/csdetect/bom-charset.dat");
 }
