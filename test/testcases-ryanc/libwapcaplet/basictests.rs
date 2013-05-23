@@ -116,8 +116,13 @@ fn ops_with_a_filled_context() {
 
         // lwc_intern_substring
         let new_hre = l.lwc_intern_string(~"hre");
-        let sub_hre = l.lwc_intern_substring(new_hre.clone(), 1, 3);
-        assert!(l.lwc_string_isequal(new_hre.clone(), sub_hre.clone()));
+        let sub_hre_option = l.lwc_intern_substring(new_hre.clone(), 1, 3);
+        match sub_hre_option {
+            Some(sub_hre) => {
+                assert!(l.lwc_string_isequal(new_hre.clone(), sub_hre.clone()));
+            }
+            None => {}
+        } 
 
         // lwc_string_ref_ok
         // FIXME: needed but not implemented!!!
