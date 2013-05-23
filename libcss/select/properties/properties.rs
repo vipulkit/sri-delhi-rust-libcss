@@ -7170,6 +7170,93 @@ pub fn css__compose_counter_reset(parent:@mut css_computed_style,
 pub fn css__cascade_cursor(opv:u32, style:@mut css_style, 
 							state:@mut css_select_state) -> css_result {
 
+	let mut value : u16= CSS_CURSOR_INHERIT as u16;
+	let mut uris : ~[~str] = ~[] ;
+
+	if (isInherit(opv) == false) {
+		let mut v : u32 = getValue(opv) as u32;
+
+		while (v == (CURSOR_URI as u32) ) {
+
+			if style.sheet.is_none() {
+				return CSS_SHOULD_NEVER_OCCUR ;
+			}
+			let mut (result,o_url)  = style.sheet.get().css__stylesheet_string_get( 
+														peek_bytecode(style) as uint );
+			advance_bytecode(style);
+			match result {
+				CSS_OK=>{} ,
+				x => { return x ; }
+			}
+			if o_url.is_none()  { return CSS_BADPARM ;}
+			uris.push( o_url.unwrap()  );
+
+			v = peek_bytecode(style);
+			advance_bytecode(style);
+		}
+
+		match (v as u16) {
+			CURSOR_AUTO => {
+				value = ( CSS_CURSOR_AUTO as u16) ;
+			},
+			CURSOR_CROSSHAIR => {
+				value = ( CSS_CURSOR_CROSSHAIR as u16) ;
+			},
+			CURSOR_DEFAULT => {
+				value = ( CSS_CURSOR_DEFAULT as u16) ;
+			},
+			CURSOR_POINTER => {
+				value = ( CSS_CURSOR_POINTER as u16) ;
+			},
+			CURSOR_MOVE => {
+				value = ( CSS_CURSOR_MOVE as u16) ;
+			},
+			CURSOR_E_RESIZE => {
+				value = ( CSS_CURSOR_E_RESIZE as u16) ;
+			},
+			CURSOR_NE_RESIZE => {
+				value = ( CSS_CURSOR_NE_RESIZE as u16) ;
+			},
+			CURSOR_NW_RESIZE => {
+				value = ( CSS_CURSOR_NW_RESIZE as u16) ;
+			},
+			CURSOR_N_RESIZE => {
+				value = ( CSS_CURSOR_N_RESIZE as u16) ;
+			},
+			CURSOR_SE_RESIZE => {
+				value = ( CSS_CURSOR_SE_RESIZE as u16) ;
+			},
+			CURSOR_SW_RESIZE => {
+				value = ( CSS_CURSOR_SW_RESIZE as u16) ;
+			},
+			CURSOR_S_RESIZE => {
+				value = ( CSS_CURSOR_S_RESIZE as u16) ;
+			},
+			CURSOR_W_RESIZE => {
+				value = ( CSS_CURSOR_W_RESIZE as u16) ;
+			},
+			CURSOR_TEXT => {
+				value = ( CSS_CURSOR_TEXT as u16) ;
+			},
+			CURSOR_WAIT => {
+				value = ( CSS_CURSOR_WAIT as u16) ;
+			},
+			CURSOR_HELP => {
+				value = ( CSS_CURSOR_HELP as u16) ;
+			},
+			CURSOR_PROGRESS => {
+				value = ( CSS_CURSOR_PROGRESS as u16) ;
+			},
+			_ => {}
+		}
+	}
+
+	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
+			isInherit(opv))) {
+
+		set_cursor(state.computed, value as u8, uris);
+	} 
+
 	CSS_OK
 }
 
