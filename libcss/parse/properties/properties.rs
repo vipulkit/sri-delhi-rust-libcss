@@ -443,11 +443,11 @@ pub impl css_properties {
         } 
 
         /* allocate styles */
-        attachment_style = sheet.css__stylesheet_style_create();
-        color_style = sheet.css__stylesheet_style_create();
-        image_style = sheet.css__stylesheet_style_create();
-        position_style = sheet.css__stylesheet_style_create();
-        repeat_style = sheet.css__stylesheet_style_create();
+        attachment_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        color_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        image_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        position_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        repeat_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         /* Attempt to parse the various longhand properties */
         loop {
@@ -907,7 +907,7 @@ pub impl css_properties {
             css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_SPACING , FLAG_INHERIT as u8 , 0);
         }
         else {
-            let mut num_lengths :int =0;
+            let mut num_lengths :int;
             let (length_opt,unit_opt,result) = css__parse_unit_specifier(sheet, vector, ctx, UNIT_PX as u32);
             length.push(length_opt.unwrap() as i32);
             unit.push(unit_opt.unwrap());
@@ -922,18 +922,17 @@ pub impl css_properties {
                     }
                     num_lengths = 1;
                     consumeWhitespace(vector, ctx);
-                    token = &vector[*ctx];
-                     if *ctx < vector.len() {
+                    if *ctx < vector.len() {
                         let (length_opt,unit_opt,result) = css__parse_unit_specifier(sheet, vector, ctx, UNIT_PX as u32);
                         length.push(length_opt.unwrap() as i32);
                         unit.push(unit_opt.unwrap());
                         error =result;
                          match error {
                             CSS_OK=> {
-                                if (unit[1] & UNIT_ANGLE as u32)>0   ||
-                                   ( unit[1] & UNIT_TIME as u32) > 0 ||
-                                   ( unit[1] & UNIT_FREQ  as u32) > 0 ||
-                                   ( unit[1] & UNIT_PCT as u32) > 0 {
+                                if (unit[1] & UNIT_ANGLE as u32) > 0 ||
+                                   (unit[1] & UNIT_TIME as u32) > 0 ||
+                                   (unit[1] & UNIT_FREQ  as u32) > 0 ||
+                                   (unit[1] & UNIT_PCT as u32) > 0 {
                     
                                     *ctx = orig_ctx;
                                     return CSS_INVALID;
@@ -1108,73 +1107,56 @@ pub impl css_properties {
                 *ctx = orig_ctx;
                 return CSS_INVALID;
             }
-            match token.token_type {
-                CSS_TOKEN_IDENT(_) => {
-                    if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THIN as uint) {
-                        side_val.push(BORDER_WIDTH_THIN );
-                        *ctx = *ctx + 1;
-                        error = CSS_OK;
-                    }
-                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MEDIUM as uint) {
-                        side_val.push(BORDER_WIDTH_MEDIUM );
-                        *ctx = *ctx + 1;
-                        error = CSS_OK;
-                    }
-                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THICK as uint) {
-                        side_val.push(BORDER_WIDTH_THICK );
-                        *ctx = *ctx + 1;
-                        error = CSS_OK;
-                    }
-                    else {
-                        side_val.push(BORDER_WIDTH_SET );
-                        let (length_val , unit_val , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
-                        match result {
-                            CSS_OK => {
-                                if (side_unit[side_count] == (UNIT_PCT as u32)) {
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                                if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                                if (side_unit[side_count] & (UNIT_TIME as u32)) > 0{
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                                if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                            },
-                            _ => {}
+            if (match token.token_type {
+                CSS_TOKEN_IDENT(_) => true,
+                _ => false
+            }) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THIN as uint) {
+
+                side_val.push(BORDER_WIDTH_THIN );
+                *ctx = *ctx + 1;
+                error = CSS_OK;
+            }
+            else if (match token.token_type {
+                CSS_TOKEN_IDENT(_) => true,
+                _ => false
+            }) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MEDIUM as uint) {
+                
+                side_val.push(BORDER_WIDTH_MEDIUM);
+                *ctx = *ctx + 1;
+                error = CSS_OK;
+            }
+            else if (match token.token_type {
+                CSS_TOKEN_IDENT(_) => true,
+                _ => false
+            }) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THICK as uint) {
+                
+                side_val.push(BORDER_WIDTH_THICK);
+                *ctx = *ctx + 1;
+                error = CSS_OK;
+            }
+            else {
+                side_val.push(BORDER_WIDTH_SET);
+                let (_ , _ , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
+                match result {
+                    CSS_OK => {
+                        if (side_unit[side_count] == (UNIT_PCT as u32)) {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
                         }
-                    }
-                },
-                _ => {
-                    side_val.push(BORDER_WIDTH_SET );
-                    let (length_val , unit_val , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
-                    match result {
-                        CSS_OK => {
-                            if (side_unit[side_count] == (UNIT_PCT as u32)) {
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                            if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                            if (side_unit[side_count] & (UNIT_TIME as u32)) > 0{
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                            if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                        },
-                        _ => {}
-                    }
+                        if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                        if (side_unit[side_count] & (UNIT_TIME as u32)) > 0{
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                        if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                    },
+                    _ => {}
                 }
             }
             match error {
@@ -1380,13 +1362,12 @@ pub impl css_properties {
 
 
     fn css__parse_columns(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_result {
-        let orig_ctx:uint = *ctx;
         let mut prev_ctx:uint;
         let mut token:&@css_token;
         let mut width = true;
         let mut count = true;
-        let mut error_width: css_result= CSS_OK;
-        let mut error_count: css_result= CSS_OK;
+        let mut error_width: css_result;
+        let mut error_count: css_result;
         let mut error =true;
 
         if *ctx >= vector.len() {
@@ -1401,8 +1382,8 @@ pub impl css_properties {
             return CSS_OK;
         }
 
-        let mut width_style = sheet.css__stylesheet_style_create();
-        let mut count_style = sheet.css__stylesheet_style_create();
+        let mut width_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let mut count_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         loop {
             prev_ctx = *ctx;
@@ -1480,9 +1461,9 @@ pub impl css_properties {
             return CSS_OK;
         }
 
-        let mut color_style = sheet.css__stylesheet_style_create();
-        let mut style_style = sheet.css__stylesheet_style_create();
-        let mut width_style = sheet.css__stylesheet_style_create();
+        let mut color_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let mut style_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let mut width_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         let mut prev_ctx: uint;
 
@@ -1530,7 +1511,7 @@ pub impl css_properties {
                     if *ctx >= vector.len() {
                         return CSS_INVALID;
                     }
-                    token=&vector[*ctx];
+                    // token=&vector[*ctx];
                 },
                 _ => {
                     break;
@@ -2043,7 +2024,6 @@ pub impl css_properties {
     fn css__parse_cursor(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_result {
         let orig_ctx = *ctx;
         let mut token: &@css_token;
-        let mut first: bool;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -2436,10 +2416,8 @@ pub impl css_properties {
 
 
     fn css__parse_font(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_result {
-        let orig_ctx = *ctx;
         let mut prev_ctx: uint;
         let mut token: &@css_token;
-        let system_font: css_system_font;
         let mut bool_style = true;
         let mut variant = true;
         let mut weight = true;
@@ -2495,17 +2473,16 @@ pub impl css_properties {
             }
         }
 
-        let style_style = sheet.css__stylesheet_style_create();
-        let variant_style = sheet.css__stylesheet_style_create();
-        let weight_style = sheet.css__stylesheet_style_create();
-        let size_style = sheet.css__stylesheet_style_create();
-        let line_height_style = sheet.css__stylesheet_style_create();
-        let family_style = sheet.css__stylesheet_style_create();
+        let style_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let variant_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let weight_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let size_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let line_height_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let family_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         svw = 0;
         while svw < 3 {
             prev_ctx = *ctx;
-            error =CSS_OK;
 
             if *ctx >= vector.len() {
                return CSS_INVALID;
@@ -2787,9 +2764,9 @@ pub impl css_properties {
             return CSS_OK;
         }
 
-        let mut image_style = sheet.css__stylesheet_style_create();
-        let mut position_style = sheet.css__stylesheet_style_create();
-        let mut type_style = sheet.css__stylesheet_style_create();
+        let mut image_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let mut position_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let mut type_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         let mut prev_ctx: uint;
         loop {
@@ -2835,7 +2812,7 @@ pub impl css_properties {
                     if *ctx >= vector.len() {
                         return CSS_INVALID;
                     }
-                    token=&vector[*ctx];
+                    // token=&vector[*ctx];
                 },
                 _ => {
                     break;
@@ -2868,7 +2845,6 @@ pub impl css_properties {
         let orig_ctx = *ctx;
         let mut token: &@css_token;
         let mut flags: u8 = 0;
-        let mut value: u8 = 0;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -2882,11 +2858,9 @@ pub impl css_properties {
                     flags |= FLAG_INHERIT as u8;
                 }
                 else {
-                    let (list_type , error) = css__parse_list_style_type_value(strings , token);
+                    let (_ , error) = css__parse_list_style_type_value(strings , token);
                     match error {
-                        CSS_OK => {
-                            css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_LIST_STYLE_TYPE , flags , list_type.unwrap());
-                        },
+                        CSS_OK => {},
                         _ => {
                             *ctx = orig_ctx;
                             return error;
@@ -2899,6 +2873,8 @@ pub impl css_properties {
                 return CSS_INVALID;
             }
         }
+        let (list_type , _) = css__parse_list_style_type_value(strings , token);
+        css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_LIST_STYLE_TYPE , flags , list_type.unwrap());
         CSS_OK
     }
 
@@ -2932,61 +2908,34 @@ pub impl css_properties {
                 *ctx = orig_ctx;
                 return CSS_INVALID;
             }
-            match token.token_type {
-                CSS_TOKEN_IDENT(_) => {
-                    if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
-                        side_val.push(MARGIN_AUTO );
-                        *ctx = *ctx + 1;
-                        error = CSS_OK;
-                    }
-                    else {
-                        side_val.push(MARGIN_SET );
-                        let (length_val , unit_val , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
-                        match result {
-                            CSS_OK => {
-                                if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                                if (side_unit[side_count] & (UNIT_TIME as u32)) > 0{
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                                if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                                side_count += 1;
-                                consumeWhitespace(vector , ctx);
-                                token=&vector[*ctx];
-                            },
-                            _ => {}
+            if (match token.token_type {
+                CSS_TOKEN_IDENT(_) => true,
+                _ => false
+            }) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
+
+                side_val.push(MARGIN_AUTO);
+                *ctx = *ctx + 1;
+                error = CSS_OK;
+            }
+            else {
+                side_val.push(MARGIN_SET );
+                let (_ , _ , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
+                match result {
+                    CSS_OK => {
+                        if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
                         }
-                    }
-                },
-                _ => {
-                    side_val.push(MARGIN_SET );
-                    let (length_val , unit_val , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
-                    match result {
-                        CSS_OK => {
-                            if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                            if (side_unit[side_count] & (UNIT_TIME as u32)) > 0{
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                            if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                            side_count += 1;
-                            consumeWhitespace(vector , ctx);
-                            token=&vector[*ctx];
-                        },
-                        _ => {}
-                    }
+                        if (side_unit[side_count] & (UNIT_TIME as u32)) > 0{
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                        if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                    },
+                    _ => {}
                 }
             }
             match error {
@@ -3137,9 +3086,9 @@ pub impl css_properties {
             return CSS_INVALID   
         }
         
-        let mut color_style = sheet.css__stylesheet_style_create();
-        let mut style_style = sheet.css__stylesheet_style_create();
-        let mut width_style = sheet.css__stylesheet_style_create();
+        let mut color_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let mut style_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let mut width_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         let mut prev_ctx: uint;
         loop {
@@ -3185,7 +3134,7 @@ pub impl css_properties {
                     if *ctx >= vector.len() {
                         return CSS_INVALID;
                     }
-                    token=&vector[*ctx];
+                    // token=&vector[*ctx];
                 },
                 _ => {
                     break;

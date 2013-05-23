@@ -1,6 +1,6 @@
 use parserutils::input::inputstream::*;
 
-pub enum css_token_type { 
+pub enum css_token_type {
 	CSS_TOKEN_IDENT(~str),
 	CSS_TOKEN_ATKEYWORD(~str),
 	CSS_TOKEN_HASH(~str),
@@ -13,10 +13,10 @@ pub enum css_token_type {
 	CSS_TOKEN_NUMBER(NumericValue , ~str), 
 	CSS_TOKEN_PERCENTAGE(NumericValue , ~str), 
 	CSS_TOKEN_DIMENSION(NumericValue , ~str, ~str),
-	CSS_TOKEN_CDO, 
+	CSS_TOKEN_CDO,
 	CSS_TOKEN_CDC, 
 	CSS_TOKEN_S,
-	Delim(char),
+	// F(char),
 	// CSS_TOKEN_COMMENT, 
 	// CSS_TOKEN_INCLUDES, CSS_TOKEN_DASHMATCH, CSS_TOKEN_PREFIXMATCH, 
 	// CSS_TOKEN_SUFFIXMATCH, CSS_TOKEN_SUBSTRINGMATCH, 
@@ -167,7 +167,7 @@ pub impl css_lexer {
 		while !self.is_eof() {
 			let c:char=
 			match self.current_char() {
-				(Some(ch),err)=>ch,
+				(Some(ch),_)=>ch,
 				_=> return (None,LEXER_NEEDDATA)
 			};
 			match c {
@@ -218,7 +218,7 @@ pub impl css_lexer {
 		let mut error_condition:lexer_error= LEXER_OK;
 		
 		let c:char= match self.current_char() {
-				(Some(ch),err)=>ch,
+				(Some(ch),_)=>ch,
 				_=> return (None,LEXER_NEEDDATA)
 		};
 		
@@ -269,7 +269,7 @@ pub impl css_lexer {
 							self.position += 1;
 							error_condition= LEXER_NEEDDATA;
 						}  
-						(Some(Delim('<')), error_condition)
+						(Some(CSS_TOKEN_CHAR('<')), error_condition)
 					}
 				}
 				else {
@@ -297,7 +297,7 @@ pub impl css_lexer {
 								while !self.is_eof() && self.position+1 < self.length {
 									let c:char=
 										match self.current_char() {
-											(Some(ch),err)=>ch,
+											(Some(ch),_)=>ch,
 											_=> {
 												self.position = head_position;
 												return (None,LEXER_NEEDDATA);
@@ -316,19 +316,51 @@ pub impl css_lexer {
 								}
 								(Some(CSS_TOKEN_S), error_condition)
 							},
-							'"' => self.consume_quoted_string(false),
-							'#' => self.consume_hash(),
-							'\'' => self.consume_quoted_string(true),
+							'"' => match (self.consume_quoted_string(false)) {
+										(_, LEXER_NEEDDATA) => {
+											self.position -= 1; // undo consume-char
+											return (None, LEXER_NEEDDATA);
+										}
+										(x, y) => {
+											return(x, y);
+										}
+									},
+							'#' => match (self.consume_hash()) {
+										(_, LEXER_NEEDDATA) => {
+											self.position -= 1; // undo consume-char
+											return (None, LEXER_NEEDDATA);
+										}
+										(x, y) => {
+											return(x, y);
+										}
+									},
+							'\'' => match (self.consume_quoted_string(true)) {
+										(_, LEXER_NEEDDATA) => {
+											self.position -= 1; // undo consume-char
+											return (None, LEXER_NEEDDATA);
+										}
+										(x, y) => {
+											return(x, y);
+										}
+									},
 							'(' => (Some(CSS_TOKEN_CHAR(c)), error_condition),
 							')' => (Some(CSS_TOKEN_CHAR(c)), error_condition),
 							':' => (Some(CSS_TOKEN_CHAR(c)), error_condition),
 							';' => (Some(CSS_TOKEN_CHAR(c)), error_condition),
-							'@' => self.consume_at_keyword(),
+							'@' => match (self.consume_at_keyword()) {
+										(_, LEXER_NEEDDATA) => {
+											self.position -= 1; // undo consume-char
+											return (None, LEXER_NEEDDATA);
+										}
+										(x, y) => {
+											return(x, y);
+										}
+									},
 							'[' => (Some(CSS_TOKEN_CHAR(c)), error_condition),
 							']' => (Some(CSS_TOKEN_CHAR(c)), error_condition),
 							'{' => (Some(CSS_TOKEN_CHAR(c)), error_condition),
 							'}' => (Some(CSS_TOKEN_CHAR(c)), error_condition),
-							_ => (Some(Delim(c)), error_condition)
+							_ => (Some(CSS_TOKEN_CHAR(c)), error_condition)
 						}
 					},
 					(None,_)=>{
@@ -367,11 +399,11 @@ pub impl css_lexer {
 							[] =>
 								return (Some(CSS_TOKEN_INVALID_STRING), LEXER_INVALID),
 							_ => match self.consume_escape() {
-								(None,x)=> {
+								(None,_)=> {
 									self.position = head_position;
 									return (None,LEXER_NEEDDATA);
 								},
-								(Some(ch),x)=> push_char!(string,ch) 
+								(Some(ch),_)=> push_char!(string,ch) 
 							}
 						}
 					}
@@ -403,7 +435,7 @@ pub impl css_lexer {
 			_=>()
 		}
 		(if string == ~"" {
-			Some(Delim('#')) 
+			Some(CSS_TOKEN_CHAR('#')) 
 		} 
 		else { 
 			Some(CSS_TOKEN_HASH(string)) 
@@ -481,7 +513,7 @@ pub impl css_lexer {
 			(Some(string),x) => (Some(CSS_TOKEN_ATKEYWORD(string)),x),
 			(None,x) => match(x) {
 				LEXER_NEEDDATA =>(None,LEXER_NEEDDATA),
-				_=>(Some(Delim('@')),LEXER_OK)
+				_=>(Some(CSS_TOKEN_CHAR('@')),LEXER_OK)
 			}
 		})
 	}
@@ -538,7 +570,7 @@ pub impl css_lexer {
 	fn is_namestart_or_escape(&mut self) -> Option<bool> {
 		// io::println("is_namestart_or_escape : inside function");
 		let c:char= match self.current_char() {
-				(Some(ch),err)=>ch,
+				(Some(ch),_)=>ch,
 				_=> return None
 		};
 		match c {
@@ -559,7 +591,7 @@ pub impl css_lexer {
 					return (Some(CSS_TOKEN_IDENT(string)), LEXER_OK);
 				}
 				let c:char= match self.current_char() {
-						(Some(ch),err)=>ch,
+						(Some(ch),_)=>ch,
 						_=> return (None,LEXER_NEEDDATA)
 				};            
 				// io::println(fmt!("consume_ident: value of c is %?" , c));
@@ -609,7 +641,7 @@ pub impl css_lexer {
 					LEXER_NEEDDATA=> return (None,LEXER_NEEDDATA) ,
 					_=> { 
 						c= match self.current_char() {
-							(Some(ch),err)=>ch,
+							(Some(ch),_)=>ch,
 							_=> return (None,LEXER_NEEDDATA)
 						};
 						match c {
@@ -620,7 +652,7 @@ pub impl css_lexer {
 								else {
 									return (None , LEXER_NEEDDATA)
 								}
-								(Some(Delim('-')), LEXER_OK)
+								(Some(CSS_TOKEN_CHAR('-')), LEXER_OK)
 							},
 							'\\' => {
 								if  self.position+1 <= self.length {
@@ -629,7 +661,7 @@ pub impl css_lexer {
 								else {
 									return (None , LEXER_NEEDDATA)
 								}
-								(Some(Delim('\\')), LEXER_INVALID)
+								(Some(CSS_TOKEN_CHAR('\\')), LEXER_INVALID)
 							},
 							_ => {
 								(None , LEXER_INVALID) 
@@ -644,13 +676,13 @@ pub impl css_lexer {
 	fn consume_ident_string(&mut self) -> (Option<~str>,lexer_error) {
 		// io::println("consume_ident_string : inside function");
 		let c:char= match self.current_char() {
-			(Some(ch),err)=>ch,
+			(Some(ch),_)=>ch,
 			_=> return (None,LEXER_NEEDDATA)
 		};
 		match c {
 			'-' => {
 				if  match self.next_is_namestart_or_escape() {
-						(None ,x) => return (None , LEXER_NEEDDATA),
+						(None ,_) => return (None , LEXER_NEEDDATA),
 						(Some(x),_) =>  x 
 					} {
 					(None,LEXER_OK) 
@@ -680,11 +712,11 @@ pub impl css_lexer {
 		let mut string = ~"";
 		let mut head_position = self.position;
 		let mut error_condition:lexer_error= LEXER_OK;
-		let mut i = 0;
+		// let mut i = 0;   // check why is used?
 		while !self.is_eof() {
-			i +=1;
+			// i +=1;
 			let c:char= match self.current_char() {
-				(Some(ch),err)=>ch,
+				(Some(ch),_)=>ch,
 				_=>  {
 					self.position = head_position;
 					return (None,LEXER_NEEDDATA);
@@ -725,11 +757,11 @@ pub impl css_lexer {
 						return (None , LEXER_NEEDDATA);
 					}
 					match(self.consume_escape()) {
-						(None,x) =>  {
+						(None,_) =>  {
 							self.position = head_position;
 							return (None,LEXER_NEEDDATA);
 						},
-						(Some(ch),x)=>ch
+						(Some(ch),_)=>ch
 					}
 				},
 				_ => break
@@ -749,7 +781,7 @@ pub impl css_lexer {
 	fn consume_escape(&mut self) -> (Option<char>,lexer_error) {
 		// io::println("consume_escape : inside function");
 		let head_position = self.position;
-		let mut error_condition:lexer_error= LEXER_OK;
+		let mut error_condition:lexer_error;
 		let c = match(self.consume_char()) {
 			(Some(ch),x)=>{
 				error_condition=x;
@@ -765,7 +797,7 @@ pub impl css_lexer {
 				let mut hex = ~[c];
 				while hex.len() < 6 && !self.is_eof() {
 					let c:char= match self.current_char() {
-						(Some(ch),err)=>ch,
+						(Some(ch),_)=>ch,
 						_=> return (None,LEXER_NEEDDATA)
 					};
 					match c {
@@ -784,7 +816,7 @@ pub impl css_lexer {
 				}
 				if !self.is_eof() {
 					let c:char= match self.current_char() {
-						(Some(ch),err)=>ch,
+						(Some(ch),_)=>ch,
 						_=> {
 							self.position = head_position;
 							return (None,LEXER_NEEDDATA);
@@ -821,7 +853,7 @@ pub impl css_lexer {
 		let head_position = self.position;
 		while !self.is_eof() {
 			let c:char= match self.current_char() {
-				(Some(ch),err)=>ch,
+				(Some(ch),_)=>ch,
 				_=> {
 					self.position = head_position;
 					return (None,LEXER_NEEDDATA);
@@ -913,7 +945,7 @@ pub impl css_lexer {
 		// io::println("consume_unquoted_url : inside function");
 		let head_position = self.position;
 		let mut string = ~"";
-		let mut error_condition:lexer_error= LEXER_OK;
+		let mut error_condition:lexer_error;
 		while !self.is_eof() {
 			let next_char = match self.consume_char() {
 				(Some(ch),x)=>{
@@ -951,7 +983,7 @@ pub impl css_lexer {
 	fn consume_url_end(&mut self, string: ~str) -> (Option<css_token_type>, lexer_error) {
 		// io::println("consume_url_end : inside function");
 		let head_position = self.position;
-		let mut error_condition:lexer_error= LEXER_OK;
+		let mut error_condition:lexer_error;
 		while !self.is_eof() {
 			match self.consume_char() {
 				(Some(ch),x)=>{
@@ -984,11 +1016,11 @@ pub impl css_lexer {
 		// io::println("consume_bad_url : inside function");
 		// Consume up to the closing )
 		let head_position = self.position;
-		let mut error_condition:lexer_error= LEXER_OK;
+		// let mut error_condition:lexer_error;
 		while !self.is_eof() {
 			match self.consume_char() {
-				(Some(ch),x)=>{
-					error_condition=x;
+				(Some(ch),_)=>{
+					// error_condition=x;
 					match(ch) {
 						')' => break,
 						'\\' => if  self.position+1 <= self.length {
@@ -1057,7 +1089,7 @@ pub impl css_lexer {
 		while hex.len() < 6 && !self.is_eof() {
 			let c:char=
 			match self.current_char() {
-				(Some(ch),err)=>ch,
+				(Some(ch),_)=>ch,
 				_=> {
 					self.position = head_position;
 					return (None,LEXER_NEEDDATA)
@@ -1082,7 +1114,7 @@ pub impl css_lexer {
 		let mut question_marks = 0u;
 		while question_marks < max_question_marks && !self.is_eof() 
 				&& match self.current_char() {
-						(Some(ch),err)=>ch=='?',
+						(Some(ch),_)=>ch=='?',
 						_=> {
 							self.position = head_position;
 							return (None,LEXER_NEEDDATA)
@@ -1106,7 +1138,7 @@ pub impl css_lexer {
 			start = self.char_from_hex(hex);
 			hex = ~[];
 			if !self.is_eof() && match self.current_char() {
-				(Some(ch),err)=>ch== '-',
+				(Some(ch),_)=>ch== '-',
 				_=> {
 					self.position = head_position;
 					return (None,LEXER_NEEDDATA)
@@ -1121,7 +1153,7 @@ pub impl css_lexer {
 				};
 				while hex.len() < 6 && !self.is_eof() {
 					let c:char= match self.current_char() {
-						(Some(ch),err)=>ch,
+						(Some(ch),_)=>ch,
 						_=> {
 							self.position = head_position;
 							return (None,LEXER_NEEDDATA)
@@ -1166,7 +1198,7 @@ pub impl css_lexer {
 		let head_position = self.position;
 		// io::println(fmt!("consume_numeric: head position is %?" , head_position));
 		// io::println("consume_numeric: inside function");
-		let mut error_condition:lexer_error= LEXER_OK;
+		let mut error_condition:lexer_error;
 		let c = match(self.consume_char()) {
 			(Some(ch),x)=>{
 				error_condition=x;
@@ -1192,10 +1224,10 @@ pub impl css_lexer {
 			},
 			'.' => {
 				if self.is_eof() { 
-					return (Some(Delim('.')), error_condition) 
+					return (Some(CSS_TOKEN_CHAR('.')), error_condition) 
 				}
 				let c:char= match self.current_char() {
-					(Some(ch),err)=>ch,
+					(Some(ch),_)=>ch,
 					_=> {
 						self.position = head_position;
 						return (None,LEXER_NEEDDATA)
@@ -1213,7 +1245,7 @@ pub impl css_lexer {
 							_ => return(some_token , error)
 						}
 					},
-					_ => (Some(Delim('.')), error_condition),
+					_ => (Some(CSS_TOKEN_CHAR('.')), error_condition),
 				}
 			},
 			'0'..'9' => {
@@ -1237,10 +1269,10 @@ pub impl css_lexer {
 		// io::println("consume_numeric_sign : inside function");
 		let head_position = self.position;
 		if self.is_eof() { 
-			return (Some(Delim(sign)), LEXER_OK) 
+			return (Some(CSS_TOKEN_CHAR(sign)), LEXER_OK) 
 		}
 		let c:char= match self.current_char() {
-					(Some(ch),err)=>ch,
+					(Some(ch),_)=>ch,
 					_=> return (None,LEXER_NEEDDATA)
 		};
 		match c {
@@ -1253,7 +1285,7 @@ pub impl css_lexer {
 					return (None , LEXER_NEEDDATA)
 				}
 				if !self.is_eof() && is_match! (match self.current_char() {
-													(Some(ch),err)=>ch,
+													(Some(ch),_)=>ch,
 													_=>{
 														self.position = head_position;
 														return (None,LEXER_NEEDDATA);
@@ -1270,7 +1302,7 @@ pub impl css_lexer {
 				} 
 				else {
 					self.position -= 1;
-					(Some(Delim(sign)), LEXER_OK)
+					(Some(CSS_TOKEN_CHAR(sign)), LEXER_OK)
 				}
 			},
 
@@ -1284,7 +1316,7 @@ pub impl css_lexer {
 					_ => return(some_token , error)
 				}
 			},
-			_ => (Some(Delim(sign)), LEXER_OK)
+			_ => (Some(CSS_TOKEN_CHAR(sign)), LEXER_OK)
 		}
 	}
 
@@ -1297,7 +1329,7 @@ pub impl css_lexer {
 		while !self.is_eof() {
 			// io::println("consume_numeric_rest:inside while");
 			let c:char= match self.current_char() {
-						(Some(ch),err)=>ch,
+						(Some(ch),_)=>ch,
 						_=> return (None,LEXER_NEEDDATA)
 			};
 			// io::println(fmt!("consume_numeric_rest before mATCH C %?" , c));
@@ -1321,7 +1353,7 @@ pub impl css_lexer {
 						return (None , LEXER_NEEDDATA)
 					}
 					if !self.is_eof() && is_match!(match self.current_char() {
-														(Some(ch),err)=>ch,
+														(Some(ch),_)=>ch,
 														_=>  {
 															self.position = head_position;
 															return (None,LEXER_NEEDDATA)
@@ -1343,15 +1375,16 @@ pub impl css_lexer {
 				},
 				_ => {
 					match self.consume_scientific_number(string) {
-						(Some(Ok(token)),x)=> return (Some(token), x),
-						(Some(Err(s)),_) => { 
-							string = s;
-							break 
-						},
-						(None,_) =>{
+						(Ok(token),x)=> return (Some(token), x),
+						(Err(_),LEXER_NEEDDATA) =>{
 							self.position = head_position;
 							return (None,LEXER_NEEDDATA)
 						}
+						(Err(s),_) => { 
+							string = s;
+							break 
+						},
+						
 					}
 				}
 			}
@@ -1377,42 +1410,41 @@ pub impl css_lexer {
 		// io::println(fmt!("consume_numeric_fraction: here string is %?" , string));
 		let head_position = self.position;
 		let mut string: ~str = string;
-		let mut error_condition:lexer_error= LEXER_OK;
 		while !self.is_eof() {
 			let ch:char=  match self.consume_char() {
-				(Some(c),err)=>c,
+				(Some(c),_)=>c,
 				_=> {
 					self.position = head_position;
 					return (None,LEXER_NEEDDATA);
 				}
 			};
-			// io::println(fmt!("consume_numeric_fraction: here char is %?" , ch));
+			
 			match ch {
 
-				'0'..'9' => push_char!(string,ch ),
-				_ => match self.consume_scientific_number(string) {
-						(Some(Ok(token)),x) => return (Some(token), match(error_condition) {
-																		LEXER_NEEDDATA=>{
-																			self.position = head_position;
-																			LEXER_NEEDDATA
-																		},
-																		_=>x
-																	}
-						),
-						(Some(Err(s)),_) => { 
-									string = s; 
-									break 
-						},
-						(None,_)=> {
+				'0'..'9' => push_char!(string,ch),
+				'%' => {
+					self.position -= 1;
+					break
+				},
+				_ =>  {
+					match self.consume_scientific_number(string) {
+						(Ok(token),x) => return (Some(token), x),
+						(Err(_),LEXER_NEEDDATA)=> {
 							self.position = head_position;
-							return (None, LEXER_NEEDDATA)
+							return (None, LEXER_NEEDDATA);
 						}
+						(Err(s),_) => {
+							self.position -= 1; 
+							string = s; 
+							break 
+						},
+					}
 				}
 			}
 		}
 
-		// io::println(fmt!("consume_numeric_fraction: here number is %?" , string));
 		let value = Float(float::from_str(string).unwrap()); // XXX handle overflow
+		
 		let (some_token , error) = self.consume_numeric_end(string, value);
 		match error {
 			LEXER_NEEDDATA => {
@@ -1431,23 +1463,54 @@ pub impl css_lexer {
 			return (Some(CSS_TOKEN_NUMBER(value, string)), LEXER_OK) 
 		}
 		let c:char= match self.current_char() {
-				(Some(ch),err)=>ch,
-				_=> return (None,LEXER_NEEDDATA)
+			(Some(ch),_)=>ch,
+			_=> return (None,LEXER_NEEDDATA)
 		};
 		match c {
-			'%' => { 
+			'%' => {
 				if  self.position+1 <= self.length {
-					self.position += 1
+					self.position += 1;
+					let c: char = match self.current_char() {
+						(Some(ch) , _)=> ch,
+						_ => return(None , LEXER_NEEDDATA)
+					};
+					match c {
+						'\t' | '\n' | '\x0C' | ' '|';' => {
+							(Some(CSS_TOKEN_PERCENTAGE(value, string)),LEXER_OK)	
+						},
+						_ => {
+							loop {
+								let c: char = match self.current_char() {
+									(Some(ch) , _)=> ch,
+									_ => return(None , LEXER_NEEDDATA)
+								};
+								match c {
+									'\t' | '\n' | '\x0C' | ' '|';' => {
+										break
+									},
+									_ => {
+										if self.position <= self.length {
+											self.position += 1;
+										}
+										else {
+											self.position = head_position;
+											return (None , LEXER_NEEDDATA)
+										}
+									}
+								}
+							}
+							(Some(CSS_TOKEN_INVALID_STRING) , LEXER_OK)
+						}
+					}
 				} 
 				else {
 					self.position = head_position;
 					return (None , LEXER_NEEDDATA)
-				}; 
-				(Some(CSS_TOKEN_PERCENTAGE(value, string)),LEXER_OK) 
+				} 
 			},
 			_ => {
 				match self.consume_ident_string() {
-					(Some(unit),x) => (Some(CSS_TOKEN_DIMENSION(value, string, unit)),LEXER_OK),
+					(Some(unit),_) => (Some(CSS_TOKEN_DIMENSION(value, string, unit)),LEXER_OK),
 					(None,x) => match x {
 						LEXER_NEEDDATA =>  {
 							self.position = head_position;
@@ -1461,8 +1524,7 @@ pub impl css_lexer {
 	}
 
 
-	fn consume_scientific_number(&mut self, string: ~str) -> (Option<Result<css_token_type, ~str>>,lexer_error) {
-		// io::println("consume_scientific_number: inside fn");
+	fn consume_scientific_number(&mut self, string: ~str) -> (Result<css_token_type, ~str>,lexer_error) {
 		let head_position = self.position;
 		let next_3 = self.next_n_chars(3);
 		let mut error_condition:lexer_error= LEXER_OK;
@@ -1487,28 +1549,36 @@ pub impl css_lexer {
 			self.position += 3;
 		} 
 		else {
-			return (Some(Err(string)),error_condition)
+			return (Err(string),error_condition)
 		}
 		while !self.is_eof() && is_match!(
 			match self.current_char() {
-				(Some(ch),err)=>ch,
+				(Some(ch),_)=>ch,
 				_=> {
 					self.position = head_position;
-					return (None,LEXER_NEEDDATA);
+					return (Err(string),LEXER_NEEDDATA);
 				}
 			}, '0'..'9') {
 			let c= match(self.consume_char()) {
-					(Some(ch),x)=>{error_condition=x;ch},
+					(Some(ch),_)=>{
+						ch
+					},
 					(None,_)=> {
 						self.position = head_position;
-						return (None,LEXER_NEEDDATA);
+						return (Err(string),LEXER_NEEDDATA);
 					}
 			};
 			push_char!(string,c)
 		}
 		let value = Float(float::from_str(string).unwrap());
 		// io::println(fmt!("consume_scientific_number: here number is %?" , string));
-		(Some(Ok(CSS_TOKEN_NUMBER(value, string))),error_condition)
+		let (some_token , error) = self.consume_numeric_end(copy string, value);
+		match error {
+			LEXER_NEEDDATA => {
+				self.position = head_position;
+				return(Ok(some_token.unwrap()) , error);
+			},
+			_=> return(Err(string) , error),
+		}
 	}
 }
-

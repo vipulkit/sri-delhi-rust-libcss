@@ -8,7 +8,6 @@ use css::css::*;
 use css::css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
-use css::parse::properties::*;
 use wapcaplet::*;
 
 pub fn resolve_url(_:~str, rel:arc::RWARC<~lwc_string>) -> (css_result,Option<arc::RWARC<~lwc_string>>) {
@@ -49,25 +48,23 @@ fn css(file_name: ~str) {
     r.seek(0 , SeekEnd);
     let mut len = r.tell();
     r.seek(0 , SeekSet);
-    while len>0 {
+    while len>CHUNK_SIZE {
         buf = r.read_bytes(CHUNK_SIZE as uint);
-        len -= buf.len();
+        len -= CHUNK_SIZE;
         let error = css.css_stylesheet_append_data(buf);
         match error {
-        	CSS_OK => {},
-        	CSS_NEEDDATA => {},
+        	CSS_OK | CSS_NEEDDATA => {},
         	_ => {assert!(false);}
         }
     }
     buf = r.read_bytes(len as uint);
     let error = css.css_stylesheet_append_data(buf);
     match error {
-    	CSS_OK => {},
-        CSS_NEEDDATA => {},
+    	CSS_OK | CSS_NEEDDATA => {},
         _ => {assert!(false);}
     }
 
-    let (error , css_stylesheet) = css.css_stylesheet_data_done();
+    let (error , _) = css.css_stylesheet_data_done();
 
     match error {
 		CSS_OK | CSS_IMPORTS_PENDING => {},

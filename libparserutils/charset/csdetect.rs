@@ -345,10 +345,10 @@ pub fn css_charset_read_bom_or_charset(data : &~[u8], alias_arc: arc::ARC<~alias
 pub fn css__charset_extract(data : &~[u8] , mibenum : u16 , source : css_charset_source, alias_arc: arc::ARC<~alias>)
                                 -> (Option<u16>, Option<css_charset_source>, parserutils_error) {   
 
-    let mut charset : u16 = 0;
+    let mut charset : u16;
     let mut src :css_charset_source;
 
-    if (data.len()==(0 as uint))  || mibenum==0u16 {
+    if (data.len()==(0 as uint))  /*|| mibenum==0u16*/ {
         return (None, None, PARSERUTILS_BADPARAM);
     }
 

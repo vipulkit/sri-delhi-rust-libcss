@@ -140,9 +140,6 @@ fn main() {
 			test_logger.fail(~"test_wapcaplet.rs", copy external_argument, copy module_name , copy file_name , copy function_name , copy test_name ,  ~"true", ~"false", copy comment);	
 		}
 
-
-		
-
 		// test 7: test for a static function
 		function_name = ~"lwc_string_data";
 		test_name = ~"data of a lwc_string";
@@ -150,7 +147,19 @@ fn main() {
 		test_logger.info(~"test_wapcaplet.rs", copy external_argument, copy module_name , copy file_name , copy function_name , copy test_name ,  ~"", copy comment);
 		io::println(fmt!("%?" , lwc_string_data(p)));
 
+		// test 8: is equal
+		function_name = ~"lwc_string_isequal";
+		test_name = ~"is equal for memory address";
+		comment = ~"true";
 		
-
+		let s = l.lwc_intern_string(~"abc");
+		let q = l.lwc_intern_string(~"abc");
+		let r = l.lwc_string_isequal(s , q);
+		if r == true{
+			test_logger.pass(~"test_wapcaplet.rs", copy external_argument, copy module_name , copy file_name , copy function_name , copy test_name , ~"true", ~"true", copy comment);
+		}
+		else{
+			test_logger.fail(~"test_wapcaplet.rs", copy external_argument, copy module_name , copy file_name , copy function_name , copy test_name ,  ~"true", ~"false", copy comment);	
+		}
 	}
 }

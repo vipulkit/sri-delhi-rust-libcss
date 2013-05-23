@@ -1,16 +1,12 @@
 extern mod std;
 extern mod css;
 extern mod wapcaplet;
-// extern mod test;
 
-// use test::*;
-use core::io::*;
 use std::arc;
 use css::css::*;
 use css::css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
-// use css::include::types::*;
 use wapcaplet::*;
 
 
@@ -48,26 +44,26 @@ fn parse(file_name: ~str) {
 	let mut css = css_create_fn();
 	let r:@Reader = io::file_reader(&Path(file_name)).get();
 	let mut dataFlag = false;
-	let mut expectedFlag = false;
+	// let mut expectedFlag = false;
 
 	while !r.eof() {
 		let buf = r.read_line();
 		if buf == ~"#data" {
 			dataFlag = true;
-			expectedFlag = false; 
+			// expectedFlag = false; 
 		}
 		else if buf == ~"#errors" {
 			dataFlag = false;
-			expectedFlag = false;
+			// expectedFlag = false;
 		}
 		else if buf == ~"#expected" {
-			expectedFlag = true;
+			// expectedFlag = true;
 			dataFlag = false;
 
 		}
 		else if buf == ~"#reset" {
 			dataFlag = false;
-			expectedFlag = false;
+			// expectedFlag = false;
 		}
 		else if dataFlag {
 			let mut final_buf :~[u8] = ~[];
@@ -81,7 +77,7 @@ fn parse(file_name: ~str) {
 				CSS_NEEDDATA => {},
 				_ => {assert!(false);}
 			}
-			let (error , css_stylesheet) = css.css_stylesheet_data_done();
+			let (error , _) = css.css_stylesheet_data_done();
 
 			match error {
 				CSS_OK => {},
@@ -94,85 +90,85 @@ fn parse(file_name: ~str) {
 
 #[test]
 fn parse2_au() {
-	parse(~"../data/parse2/au.dat");
+	parse(~"data/parse2/au.dat");
 }
 
 #[test]
 fn parse2_bg() {
-	parse(~"../data/parse2/bg.dat");
+	parse(~"data/parse2/bg.dat");
 }
 
 #[test]
 fn parse2_bgpos() {
-	parse(~"../data/parse2/bgpos.dat");
+	parse(~"data/parse2/bgpos.dat");
 }
 
 #[test]
 fn parse2_border() {
-	parse(~"../data/parse2/border.dat");
+	parse(~"data/parse2/border.dat");
 }
 
 #[test]
 fn parse2_comments() {
-	parse(~"../data/parse2/comments.dat");
+	parse(~"data/parse2/comments.dat");
 }
 
 #[test]
 fn parse2_eof() {
-	parse(~"../data/parse2/eof.dat");
+	parse(~"data/parse2/eof.dat");
 }
 
 #[test]
 fn parse2_font() {
-	parse(~"../data/parse2/font.dat");
+	parse(~"data/parse2/font.dat");
 }
 
 #[test]
 fn parse2_illegal_values() {
-	parse(~"../data/parse2/illegal-values.dat");
+	parse(~"data/parse2/illegal-values.dat");
 }
 
 #[test]
 fn parse2_list() {
-	parse(~"../data/parse2/list.dat");
+	parse(~"data/parse2/list.dat");
 }
 
 #[test]
 fn parse2_malformed_declarations() {
-	parse(~"../data/parse2/malformed-declarations.dat");
+	parse(~"data/parse2/malformed-declarations.dat");
 }
 
 #[test]
 fn parse2_margin() {
-	parse(~"../data/parse2/margin.dat");
+	parse(~"data/parse2/margin.dat");
 }
 
 #[test]
 fn parse2_multicol() {
-	parse(~"../data/parse2/multicol.dat");
+	parse(~"data/parse2/multicol.dat");
 }
 
 #[test]
 fn parse2_outline() {
-	parse(~"../data/parse2/outline.dat");
+	parse(~"data/parse2/outline.dat");
 }
 
 #[test]
 fn parse2_padding() {
-	parse(~"../data/parse2/padding.dat");
+	parse(~"data/parse2/padding.dat");
 }
 
 #[test]
 fn parse2_selectors() {
-	parse(~"../data/parse2/selectors.dat");
+	parse(~"data/parse2/selectors.dat");
 }
 
 #[test]
 fn parse2_tests1() {
-	parse(~"../data/parse2/tests1.dat");
+	parse(~"data/parse2/tests1.dat");
 }
 
 #[test]
 fn parse2_unknown_properties() {
-	parse(~"../data/parse2/unknown-properties.dat");
+	parse(~"data/parse2/unknown-properties.dat");
 }

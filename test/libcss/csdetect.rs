@@ -3,18 +3,13 @@ extern mod std;
 extern mod parserutils ; 
 use parserutils::charset::aliases::*;
 use parserutils::input::parserutils_filter::* ;
-use parserutils::input::inputstream::*;
 use parserutils::charset::csdetect::*;
 
 //use test_utils::*;
 use core::str::*;
 use std::arc;
-use core::vec::*;
 use core::io::*;
 
-/*fn main() {
-
-}*/
 struct line_ctx {
 	buflen:uint,
 	bufused:uint,
@@ -26,6 +21,9 @@ struct line_ctx {
 pub type  line_func =  
     ~extern fn(data:~str , pw:&mut line_ctx) -> bool;
 
+fn main() {
+	io::println("csdetect");
+}
 
 pub fn css__parse_filesize( fileName:~str)->uint {
 	let r:@Reader = io::file_reader(&Path(fileName)).get(); 
@@ -38,7 +36,7 @@ pub fn css__parse_testfile(filename:~str,  callback:line_func, pw:&mut line_ctx)
 	let mut string:~str;
 	while(!r.eof()) {				
        data= r.read_line();
-       //io::println(data);
+       io::println(data);
        let numOfbuffers= data.len()/300 + 1 ;
        //let mut v =~[];
        let mut iter = 0;
@@ -63,7 +61,7 @@ pub fn css__parse_testfile(filename:~str,  callback:line_func, pw:&mut line_ctx)
 	true
 }
 fn testMain(fileName: ~str) {
-	io::println(~"testMain : "+ fileName);
+	// io::println(~"testMain : "+ fileName);
 	let len = css__parse_filesize(copy fileName);
 	if len ==0 {
 		return;
@@ -125,17 +123,15 @@ pub fn handle_line(data:~str,  /*datalen:uint,*/ pw:&mut line_ctx)-> bool {
 	return true;
 }
 
-pub fn run_test(data:&~[u8],  len:uint, expectedEncoding:~str) {
-	io::println("inside csdetect run_test");
-    io::println(~"data = "+ from_bytes(*data));
-    io::println(~"expectedEncoding = "+expectedEncoding);
+pub fn run_test(data:&~[u8],  _:uint, expectedEncoding:~str) {
+	// io::println("inside csdetect run_test");
+    // io::println(~"data = "+ from_bytes(*data));
+    // io::println(~"expectedEncoding = "+expectedEncoding);
 	
-	let mut mibenum:u16 = 4;
-	let source: css_charset_source = CSS_CHARSET_DEFAULT;
-	let testnum:int;
-	let Alias = alias();
+	let mut mibenum:u16 = 0;
+	let mut failCount:uint = 0;
 
-	match parserutils_filter(alias() ,to_upper(copy expectedEncoding)) {
+	match parserutils_filter(alias() ,copy expectedEncoding) {
         (x,PARSERUTILS_OK) =>{
             let mut filter_instance = x.unwrap();
             let (charsetOption,srcOption,error)= css__charset_extract(data, mibenum, CSS_CHARSET_DEFAULT, filter_instance.instance.clone());
@@ -146,22 +142,27 @@ pub fn run_test(data:&~[u8],  len:uint, expectedEncoding:~str) {
             mibenum = charsetOption.unwrap();
             //io::println(arc::get(&filter_instance.instance).parserutils_charset_mibenum_to_name(mibenum).unwrap());
 			assert!(mibenum != 0);
+			if !(mibenum == arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(to_upper(copy expectedEncoding))) {
+				io::print("fail::");
+				failCount += 1;
+			}   
 			io::println(fmt!(" Detected mibenum %?   Expected %? ",mibenum,arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(to_upper(copy expectedEncoding))));
-			//assert!(mibenum == arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(to_upper(copy expectedEncoding)));    
+
 			io::println(fmt!(" Detected charset=( %?) mibenum=(%?) Source %? Expected charset=(%?) mibenum=(%?)",arc::get(&filter_instance.instance).parserutils_charset_mibenum_to_name(mibenum).unwrap(),mibenum,srcOption.unwrap(),expectedEncoding,arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(to_upper(copy expectedEncoding))));
            
         },
         
-        (_ , y) => fail!() 
+        (_ , _) => fail!() 
     }
+    assert!(failCount == 0);
 }
 
-// #[test]
-// fn bom() {
-// 	testMain(~"bom.dat");
-// }
+/*#[test]
+fn bom() {
+	testMain(~"data/csdetect/bom.dat");
+}*/
 
 #[test]
 fn bom_charset() {
-	testMain(~"data/bom-charset.dat");
+	testMain(~"data/csdetect/bom-charset.dat");
 }
