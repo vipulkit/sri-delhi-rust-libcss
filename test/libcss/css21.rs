@@ -11,38 +11,38 @@ use css::utils::errors::*;
 use wapcaplet::*;
 
 pub fn resolve_url(_:~str, rel:arc::RWARC<~lwc_string>) -> (css_result,Option<arc::RWARC<~lwc_string>>) {
-	return (CSS_OK,Some(rel.clone()));
+    return (CSS_OK,Some(rel.clone()));
 }
 
 fn fill_params() -> css_params {
-	let css_param = css_params {
-		params_version : 1,
-		level: CSS_LEVEL_21,
-		charset : Some(~"UTF-8"),
-		url : ~"foo",
-		title : ~"",
-		allow_quirks : false,
-		inline_style : false,
-		resolve : @resolve_url,
-		import : None,
-		color : None,
-		font : None
-	};
-	return css_param;
+    let css_param = css_params {
+        params_version : 1,
+        level: CSS_LEVEL_21,
+        charset : Some(~"UTF-8"),
+        url : ~"foo",
+        title : ~"",
+        allow_quirks : false,
+        inline_style : false,
+        resolve : @resolve_url,
+        import : None,
+        color : None,
+        font : None
+    };
+    return css_param;
 }
 
 fn css_create_fn() -> ~css{
-	let css = css_create(fill_params());
-	css
+    let css = css_create(fill_params());
+    css
 }
 
 fn main() {
-	io::println("css21");	
+    io::println("css21");   
 }
 
 fn css(file_name: ~str) {
-	let mut css = css_create_fn();
-	let CHUNK_SIZE = 4096;
+    let mut css = css_create_fn();
+    let CHUNK_SIZE = 4096;
     let mut buf: ~[u8];
     let r:@Reader = io::file_reader(&Path(file_name)).get(); 
     r.seek(0 , SeekEnd);
@@ -53,64 +53,64 @@ fn css(file_name: ~str) {
         len -= CHUNK_SIZE;
         let error = css.css_stylesheet_append_data(buf);
         match error {
-        	CSS_OK | CSS_NEEDDATA => {},
-        	_ => {assert!(false);}
+            CSS_OK | CSS_NEEDDATA => {},
+            _ => {assert!(false);}
         }
     }
     buf = r.read_bytes(len as uint);
     let error = css.css_stylesheet_append_data(buf);
     match error {
-    	CSS_OK | CSS_NEEDDATA => {},
+        CSS_OK | CSS_NEEDDATA => {},
         _ => {assert!(false);}
     }
 
     let (error , _) = css.css_stylesheet_data_done();
 
     match error {
-		CSS_OK | CSS_IMPORTS_PENDING => {},
-		_ => {assert!(false);}
-	}
+        CSS_OK | CSS_IMPORTS_PENDING => {},
+        _ => {assert!(false);}
+    }
 
-	match error {
-		CSS_IMPORTS_PENDING => {
-			// check for next_pending_import
-		},
-		_ =>{}
-	}
+    match error {
+        CSS_IMPORTS_PENDING => {
+            // check for next_pending_import
+        },
+        _ =>{}
+    }
 } 
 
 
 #[test]
 fn allzengarden() {
-	css(~"data/css/allzengarden.css");
+    css(~"data/css/allzengarden.css");
 }
 
 #[test]
 fn badcomment() {
-	css(~"data/css/adcomment.css");
+    css(~"data/css/adcomment.css");
 }
 
 #[test]
 fn Blocks() {
-	css(~"data/css/blocks.css");
+    css(~"data/css/blocks.css");
 }
 
 #[test]
 fn Color() {
-	css(~"data/css/color.css");
+    css(~"data/css/color.css");
 }
 
 #[test]
 fn Fontface() {
-	css(~"data/css/fontface.css");
+    css(~"data/css/fontface.css");
 }
 
 #[test]
 fn Malformed() {
-	css(~"data/css/malformed.css");
+    css(~"data/css/malformed.css");
 }
 
 #[test]
 fn Simple() {
-	css(~"data/css/simple.css");
+    css(~"data/css/simple.css");
 }
