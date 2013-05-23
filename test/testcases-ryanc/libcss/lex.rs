@@ -39,7 +39,7 @@ fn main() {
 #[test]
 fn lex() {
     let ITERATIONS = 1;
-    let file=~"../data/lex/test1.dat";
+    let file=~"../data/lex/tests1.dat";
 
     for int::range(0, ITERATIONS) |i| {
         let (streamOption, PARSERUTILS_STATUS) = inputstream::inputstream(Some(~"UTF-8"), Some(CSS_CHARSET_DEFAULT), None);
