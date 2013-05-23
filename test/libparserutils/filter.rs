@@ -65,7 +65,9 @@ fn main(){
                 Filter.parserutils__filter_reset();
 
 
-                inbuf= (~"hell\x96o!").to_bytes();
+                //inbuf= (~"hell\x96o!").to_bytes(); 
+                inbuf = ~[ 104, 101, 108 , 108 , 150 , 111 , 33];
+                io::println(fmt!("inbuf=%?=len is=%?",inbuf,inbuf.len()));
                 outbuf=~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf)) { 
@@ -78,8 +80,10 @@ fn main(){
                         assert!(false);
                     }
                 }
-
-                if !eq(outbuf,"hell\xef\xbf\xbdo!".to_bytes()){                  
+                io::println(fmt!("outbuf=%?",outbuf));
+                let mut tempbuf = ~[ 104, 101, 108 , 108 , 239, 191 , 189 , 111 , 33];
+                //if !eq(outbuf,"hell\xef\xbf\xbdo!".to_bytes()){                  
+                if !eq(outbuf,tempbuf){         
                     assert!(false);
                 }
 
