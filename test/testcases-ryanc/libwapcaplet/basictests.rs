@@ -147,8 +147,7 @@ fn ops_with_a_filled_context() {
         assert!(l.lwc_string_caseless_isequal(intern_YAY.clone(), new_yay.clone()));
 
         // lwc_string_caseless_isequal_bad
-        assert!(l.lwc_string_caseless_isequal(intern_YAY.clone(), intern_one.clone()));
-
+        assert!(!l.lwc_string_caseless_isequal(intern_YAY.clone(), intern_one.clone()));
 
         // lwc_extract_data_ok
         // NOTE: not implemented
