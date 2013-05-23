@@ -7163,3 +7163,68 @@ pub fn css__compose_counter_reset(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+
+
+// cursor
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_cursor(opv:u32, style:@mut css_style, 
+							state:@mut css_select_state) -> css_result {
+
+	CSS_OK
+}
+
+pub fn css__set_cursor_from_hint(hint:@mut  css_hint, 
+								style:@mut css_computed_style
+								) -> css_result {
+
+	match hint.hint_type {
+		STRINGS_VECTOR=>{
+			match hint.strings {
+				Some(copy x)=>{
+					set_cursor(style, hint.status, x);
+					hint.counters = None ;
+					CSS_OK
+				},
+				None=>{
+					CSS_BADPARM
+				}
+			}
+		},
+		_=>{
+			CSS_INVALID 
+		}
+	}
+}
+
+pub fn css__initial_cursor(state:@mut css_select_state) -> css_result {
+
+	set_cursor(state.computed, 
+			(CSS_CURSOR_AUTO as u8), ~[]);
+	CSS_OK
+}
+
+pub fn css__compose_cursor(parent:@mut css_computed_style,
+								child:@mut css_computed_style,
+								result:@mut css_computed_style
+								) -> css_result {
+
+	let mut (ftype,ourl) = css_computed_cursor(child);
+
+	if (  (child.uncommon.is_none() && parent.uncommon.is_some() ) || 
+			ftype == (CSS_CURSOR_INHERIT as u8) || 
+			(child.uncommon.is_some() && !mut_ptr_eq(result,child) ) ) {
+
+			if ( ( child.uncommon.is_none() && parent.uncommon.is_some() ) ||
+					ftype == (CSS_CURSOR_INHERIT as u8) ) {
+
+				let mut (ftype2,ourl2) = css_computed_cursor(parent);
+				set_cursor(result, ftype2, ourl2.get_or_default( ourl.get_or_default(~[]) ) );
+			}
+			else {
+				set_cursor(result, ftype, ourl.get_or_default(~[]) );
+			}
+	}
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////
