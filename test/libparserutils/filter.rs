@@ -36,10 +36,7 @@ fn main(){
                     }
                 }
 
-                if eq(outbuf,"hell\xc2\xa0o!".to_bytes()){
-                    
-                }
-                else{                   
+                if !eq(outbuf,"hell\xc2\xa0o!".to_bytes()){
                     assert!(false)
                 }
 
@@ -68,7 +65,7 @@ fn main(){
 
                 //inbuf= (~"hell\x96o!").to_bytes(); 
                 inbuf = ~[ 104, 101, 108 , 108 , 150 , 111 , 33];
-                io::println(fmt!("inbuf=%?=len is=%?",inbuf,inbuf.len()));
+                // io::println(fmt!("inbuf=%?=len is=%?",inbuf,inbuf.len()));
                 outbuf=~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf)) { 
@@ -81,7 +78,7 @@ fn main(){
                         assert!(false);
                     }
                 }
-                io::println(fmt!("outbuf=%?",outbuf));
+                // io::println(fmt!("outbuf=%?",outbuf));
                 let mut tempbuf = ~[ 104, 101, 108 , 108 , 239, 191 , 189 , 111 , 33];
                 if !eq(outbuf,tempbuf){         
                     assert!(false);
@@ -122,7 +119,8 @@ fn main(){
                     _ => assert!(false)
                 }
 
-                inbuf= (~"hell\xc2\xc2o!").to_bytes();
+                // inbuf= (~"hell\xc2\xc2o!").to_bytes();
+                inbuf = ~[ 104, 101, 108 , 108 , 194 , 194 , 111 , 33];
                 outbuf=~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
@@ -137,7 +135,7 @@ fn main(){
                 }
 
                 outbuf=~[];
-                match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
+                match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()).to_owned())) { 
                     (processed_chunk , PARSERUTILS_OK) => {
                         outbuf += processed_chunk.outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
@@ -146,7 +144,7 @@ fn main(){
                     (_ , _) => {                        
                         assert!(false);  
                     }
-                }
+                }  //hell\xef\xbf\xbd\xef\xbf\xbdo!"
                 let mut tempbuf = ~[ 104, 101, 108 , 108 , 239, 191 , 189 , 239 , 191 , 189 , 111 , 33];
                 if !eq(outbuf,tempbuf){                  
                     assert!(false)  

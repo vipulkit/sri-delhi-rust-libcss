@@ -1,2 +1,2 @@
-rm *filter 
-rustc filter.rs -L . -L ../../libparserutils
+rm *filter
+rustc --test -L ../../libparserutils filter.rs -L .
