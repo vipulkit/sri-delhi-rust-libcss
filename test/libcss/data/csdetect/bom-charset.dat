@@ -19,3 +19,8 @@ iso-8859-2
 @charset "IMadeThisUp";html{color:green}
 #encoding
 utf-8
+
+#data
+@charset "IMadeThisUp";html{color:green}
+#encoding
+utf-8

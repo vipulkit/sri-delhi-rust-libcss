@@ -108,7 +108,7 @@ fn inputstream() {
     }
 
     let empty_buf : ~[u8] = ~[];
-    match(stream.parserutils_inputstream_insert(empty_buf)) {
+    match(stream.parserutils_inputstream_append(empty_buf)) {
         PARSERUTILS_OK => {}
         _ => {assert!(false);}
     }
@@ -121,7 +121,7 @@ fn inputstream() {
                 let mut (_c, clen) = cOption.get();
                 stream.parserutils_inputstream_advance(clen);
             }
-            _ => {false;}
+            _ => {assert!(false);}
         }
     }
 

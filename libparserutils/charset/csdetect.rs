@@ -240,25 +240,26 @@ pub fn try_utf16_charset(data : &~[u8], alias_arc: arc::ARC<~alias>) -> (Option<
 }
 
 pub fn  try_ascii_compatible_charset(data : &~[u8], alias_arc: arc::ARC<~alias>) -> (Option<u16>, parserutils_error) {  
+    //io::println("Entering: try_ascii_compatible_charset");
+    //io::println(str::from_bytes(*data));
 
-    let mut charset : u16 = 0;
-    let CHARSET : ~[u8] = ~[ '@' as u8, 'c' as u8, 'h' as u8, 'a' as u8 , 'r' as u8, 's' as u8, 'e' as u8, 't' as u8, ' ' as u8 , '\"'  as u8] ;
+    let mut mibenum : u16 = 0;
+    let charset_decl_string : ~[u8] = ~[ '@' as u8, 'c' as u8, 'h' as u8, 'a' as u8 , 'r' as u8, 's' as u8, 'e' as u8, 't' as u8, ' ' as u8 , '\"'  as u8] ;
 
-    if (data.len() <= CHARSET.len() ) {
+    if (data.len() <= charset_decl_string.len() ) {
         return (None, PARSERUTILS_NEEDDATA);
     }
 
     // Look for @charset, assuming ASCII-compatible source data 
     //if ( memcmp(data, CHARSET, CHARSET.len() ) == 0) 
-    let retVal : int = memcmp(data, CHARSET, CHARSET.len());
+    let retVal : int = memcmp(data, charset_decl_string, charset_decl_string.len());
     if (retVal == 0) {
-        let mut indexVal = CHARSET.len()-1;
+        let mut indexVal = charset_decl_string.len();
         // Looking for "; at the end of charset declaration
         while (indexVal < data.len()) {
-            //if data[indexVal] == ('"' as u8) && data[indexVal+1] == (';' as u8) && indexVal < (data.len()-1)  
-            if data[indexVal] == ('"' as u8) && data[indexVal+1] == (';' as u8) && indexVal < (data.len()) {
-                
-                break ;
+            //io::println(fmt!("indexVal == %?", indexVal));
+            if (data[indexVal] == ('"' as u8) || data[indexVal+1] == (';' as u8)) {
+                break;
             }
             indexVal = indexVal + 1 ;
         }
@@ -266,25 +267,31 @@ pub fn  try_ascii_compatible_charset(data : &~[u8], alias_arc: arc::ARC<~alias>)
         if indexVal == data.len() {
             return (None, PARSERUTILS_NEEDDATA);
         }
+        
+        // Extract charset
+        let charset = str::from_bytes(data.slice(charset_decl_string.len(), indexVal));
         // Convert to MIB enum 
-
-        charset = arc::get(&alias_arc).parserutils_charset_mibenum_from_name(str::from_bytes(data.slice(CHARSET.len(), data.len()-1)));
+        mibenum = arc::get(&alias_arc).parserutils_charset_mibenum_from_name(copy charset);
+        //io::println(fmt!("try_ascii_compatible_charset:: charset == %?", charset));
 
         // Any non-ASCII compatible charset must be ignored, as
         // we've just used an ASCII parser to read it. 
-        if (charset == arc::get(&alias_arc).parserutils_charset_mibenum_from_name(~"UTF-32") ||  charset == arc::get(&alias_arc).parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
-            charset == arc::get(&alias_arc).parserutils_charset_mibenum_from_name(~"UTF-32BE") || charset == arc::get(&alias_arc).parserutils_charset_mibenum_from_name(~"UTF-16") ||
-            charset == arc::get(&alias_arc).parserutils_charset_mibenum_from_name(~"UTF-16LE") || charset == arc::get(&alias_arc).parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
+        if (mibenum == arc::get(&alias_arc).parserutils_charset_mibenum_from_name(~"UTF-32") ||  
+            mibenum == arc::get(&alias_arc).parserutils_charset_mibenum_from_name(~"UTF-32LE") || 
+            mibenum == arc::get(&alias_arc).parserutils_charset_mibenum_from_name(~"UTF-32BE") || 
+            mibenum == arc::get(&alias_arc).parserutils_charset_mibenum_from_name(~"UTF-16") ||
+            mibenum == arc::get(&alias_arc).parserutils_charset_mibenum_from_name(~"UTF-16LE") || 
+            mibenum == arc::get(&alias_arc).parserutils_charset_mibenum_from_name(~"UTF-16BE") ) 
         {
-            charset = 0;
+            mibenum = 0;
         }
     }
         
-    (Some(charset),PARSERUTILS_OK)
+    (Some(mibenum),PARSERUTILS_OK)
 }
 
 pub fn css_charset_read_bom_or_charset(data : &~[u8], alias_arc: arc::ARC<~alias>) -> (Option<u16>, parserutils_error) {
-
+    io::println("Entering: css_charset_read_bom_or_charset");
     //let mut err : parserutils_error ;
     let mut charset : u16  = 0;
     //let mut parser : @alias = alias();
@@ -348,7 +355,7 @@ pub fn css__charset_extract(data : &~[u8] , mibenum : u16 , source : css_charset
     let mut charset : u16;
     let mut src :css_charset_source;
 
-    if (data.len()==(0 as uint))  /*|| mibenum==0u16*/ {
+    if (data.len()==(0 as uint)) {
         return (None, None, PARSERUTILS_BADPARAM);
     }
 
@@ -370,7 +377,6 @@ pub fn css__charset_extract(data : &~[u8] , mibenum : u16 , source : css_charset
             charset= option_return.unwrap();            
 
             if charset !=0 {
-                //mibenum = charset;
                 src = CSS_CHARSET_DOCUMENT;
                 return (Some(charset), Some(src), PARSERUTILS_OK);
             }
