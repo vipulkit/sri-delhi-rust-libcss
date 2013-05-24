@@ -3,11 +3,16 @@ use stylesheet::*;
 use utils::errors::*;
 
 pub enum css_computed_content_item_type {
-    TYPE_STRING,
-    TYPE_URI,
-    TYPE_ATTR,
-    TYPE_COUNTER,
-    TYPE_COUNTERS_WITH_SEP
+    CSS_COMPUTED_CONTENT_NONE       = 0,
+    CSS_COMPUTED_CONTENT_STRING     = 1,
+    CSS_COMPUTED_CONTENT_URI        = 2,
+    CSS_COMPUTED_CONTENT_COUNTER    = 3,
+    CSS_COMPUTED_CONTENT_COUNTERS   = 4,
+    CSS_COMPUTED_CONTENT_ATTR       = 5,
+    CSS_COMPUTED_CONTENT_OPEN_QUOTE     = 6,
+    CSS_COMPUTED_CONTENT_CLOSE_QUOTE    = 7,
+    CSS_COMPUTED_CONTENT_NO_OPEN_QUOTE  = 8,
+    CSS_COMPUTED_CONTENT_NO_CLOSE_QUOTE = 9
 }
 
 pub enum css_hint_data_type{
@@ -286,12 +291,12 @@ pub struct css_computed_counter {
 
 pub struct css_computed_content_item_counter {
     name:~str,
-    sep:~str,
-    style:Option<u8>
+    sep:Option<~str>,
+    style:u8
 }
 
 pub struct css_computed_content_item {
-    computed_type:u8,
+  
     item_type:css_computed_content_item_type,
 
     data:Option<~str>,
