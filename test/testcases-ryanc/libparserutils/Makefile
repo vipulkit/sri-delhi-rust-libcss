@@ -1,5 +1,5 @@
 SRI_HOME = ../../..
-LIB = $(SRI_HOME)/libparserutils
+LIB = -L $(SRI_HOME)/libparserutils -L $(SRI_HOME)/libwapcaplet -L $(SRI_HOME)/libcss
 
 SRC = aliases.rs inputstream.rs filter.rs
 EXEC = $(SRC:%.rs=%)
@@ -7,7 +7,7 @@ EXEC = $(SRC:%.rs=%)
 all: $(EXEC) $(SRC)
 
 % : %.rs
-	rustc --test -L $(LIB) $<
+	rustc --test $(LIB) $<
 
 run : $(EXEC)
 	./aliases
