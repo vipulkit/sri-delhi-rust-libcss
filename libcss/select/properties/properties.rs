@@ -7537,3 +7537,100 @@ pub fn css__compose_content( parent:@mut css_computed_style,
 
 
 /////////////////////////////////////////////////////////////////
+
+// column_span
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_column_span(opv:u32, _:@mut css_style, 
+    state:@mut css_select_state ) -> css_result {
+  
+	if !isInherit(opv) {
+		match getValue(opv) {
+	    	COLUMN_SPAN_NONE |
+	    	COLUMN_SPAN_ALL  => {
+	        	//* \todo convert to public values */  
+	      	},  
+	      	_ => {}
+	    }
+	}
+
+  if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+    // \todo set computed elevation */
+  }
+
+  CSS_OK
+}
+
+pub fn css__set_column_span_from_hint(_:@mut css_hint, 
+									_:@mut css_computed_style)
+									-> css_result {
+  // DO NOTHING
+  CSS_OK
+}
+
+pub fn css__initial_column_span(_:@mut css_select_state) -> css_result {
+  
+  CSS_OK
+}
+
+pub fn css__compose_column_span(_:@mut css_computed_style, 
+								_:@mut css_computed_style,
+  								_:@mut css_computed_style
+  								) -> css_result {
+  //DO NOTHING
+  CSS_OK
+}
+
+/////////////////////////////////////////////////////////////////// 
+
+// column_width
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_column_width(opv:u32, style:@mut css_style, 
+    							state:@mut css_select_state ) 
+								-> css_result {
+
+	let mut length : i32 = 0;
+	let mut unit : u32 = UNIT_PX;
+
+  	if !isInherit(opv) {
+	    match getValue(opv) {
+		    COLUMN_WIDTH_SET => {
+		        length = peek_bytecode(style) as i32;
+		        advance_bytecode(style);
+		        unit = peek_bytecode(style);
+		        advance_bytecode(style);
+		    },
+		    COLUMN_WIDTH_AUTO => {
+		        //* \todo convert to public values */  
+		    },  
+		    _ => {}
+		}
+	}
+
+	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+    	// \todo set computed elevation */
+	}
+
+	CSS_OK
+}
+
+pub fn css__set_column_width_from_hint(_:@mut css_hint, 
+									_:@mut css_computed_style) 
+									-> css_result{
+	//DO NOTHING
+	CSS_OK
+}
+
+pub fn css__initial_column_width(_:@mut css_select_state) -> css_result {
+  
+	CSS_OK
+}
+
+pub fn css__compose_column_width(_:@mut css_computed_style, 
+								_:@mut css_computed_style,
+  								_:@mut css_computed_style) 
+								-> css_result {
+	//DO NOTHING
+	CSS_OK
+}
+
+///////////////////////////////////////////////////////////////////

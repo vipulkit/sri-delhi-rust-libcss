@@ -1020,22 +1020,22 @@ static prop_dispatch : &'static[&'static prop_table] = &[
 		group:GROUP_NORMAL ,
 	} ,
 	   
-	// &prop_table { 
-	// 	cascade:css__cascade_column_span ,
-	// 	set_from_hint:css__set_column_span_from_hint ,
-	// 	initial:css__initial_column_span ,
-	// 	compose:css__compose_column_span ,
-	// 	inherited:0 ,
-	// 	group:GROUP_NORMAL ,
-	// } ,
+	&prop_table { 
+		cascade:css__cascade_column_span ,
+		set_from_hint:css__set_column_span_from_hint ,
+		initial:css__initial_column_span ,
+		compose:css__compose_column_span ,
+		inherited:0 ,
+		group:GROUP_NORMAL ,
+	} ,
 	   
-	// &prop_table { 
-	// 	cascade:css__cascade_column_width ,
-	// 	set_from_hint:css__set_column_width_from_hint ,
-	// 	initial:css__initial_column_width ,
-	// 	compose:css__compose_column_width ,
-	// 	inherited:0 ,
-	// 	group:GROUP_NORMAL ,
-	// } 
+	&prop_table { 
+		cascade:css__cascade_column_width ,
+		set_from_hint:css__set_column_width_from_hint ,
+		initial:css__initial_column_width ,
+		compose:css__compose_column_width ,
+		inherited:0 ,
+		group:GROUP_NORMAL ,
+	} 
 
 ] ;
