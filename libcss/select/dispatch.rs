@@ -4,6 +4,7 @@ use utils::errors::*;
 use stylesheet::*;
 use select::common::*;
 use select::properties::properties::*;
+use include::types::*;
 
 pub enum prop_group {
 	GROUP_NORMAL	= 0x0,
@@ -14,13 +15,13 @@ pub enum prop_group {
 
 pub struct prop_table {
 	cascade : &'static fn (opv:u32, style:@mut css_style,
-								state:@mut css_select_state)-> css_result,
+								state:@mut css_select_state)-> css_result ,
 	set_from_hint :  &'static fn (hint:@mut css_hint,
-								style: @mut css_computed_style) -> css_result,
-	initial :  &'static fn (state:@mut css_select_state) -> css_result,
+								style: @mut css_computed_style) -> css_result ,
+	initial :  &'static fn (state:@mut css_select_state) -> css_result ,
 	compose :  &'static fn (parent:@mut css_computed_style,
 								child:@mut css_computed_style,
-								result:@mut css_computed_style) -> css_result,
+								result:@mut css_computed_style) -> css_result ,
 
 	inherited:uint,
 	group:prop_group
@@ -1039,3 +1040,71 @@ static prop_dispatch : &'static[&'static prop_table] = &[
 	} 
 
 ] ;
+
+//////////////////////////////////////////////////////////////////////
+
+// Functionality containing creation / destruction / compose 
+// of the computed functionality of the select/libcss 
+
+//////////////////////////////////////////////////////////////////////
+
+
+pub fn css_computed_style_initialise(style: @mut css_computed_style ,
+                                    fn_handler:@mut css_select_handler) -> css_result {
+
+    let mut state: @mut css_select_state = @mut css_select_state {
+        node:None,
+        media:(CSS_MEDIA_ALL as u64),       
+        results:None,    
+        current_pseudo:CSS_PSEUDO_ELEMENT_NONE,  
+        computed:style,   
+        handler:Some(fn_handler),    
+        sheet:None,   
+        current_origin:CSS_ORIGIN_UA,  
+        current_specificity:0,   
+        element:css_qname{ 
+            name:~"" , 
+            ns:~"" 
+        },
+        id:~"",
+        classes:~[],
+        n_classes:0,             
+        reject_cache: ~[],       
+        next_reject:-1,             
+        props: ~[~[]] 
+    };
+
+    let mut i: uint = 0 ;
+    let mut error: css_result;
+
+    if( prop_dispatch.len() < (CSS_N_PROPERTIES as uint) ) {
+        return CSS_SHOULD_NEVER_OCCUR ;
+    }
+
+    while i < (CSS_N_PROPERTIES as uint) {
+
+        /* No need to initialise anything other than the normal
+         * properties -- the others are handled by the accessors */
+        match prop_dispatch[i].group {
+            GROUP_NORMAL => {
+                if ( prop_dispatch[i].inherited == 0 ) {
+                    let mut dispatch_initial = prop_dispatch[i].initial;
+                    error =  dispatch_initial(state);
+                    match error {
+                        CSS_OK=>{},
+                        x =>  {
+                            return x ;
+                        }
+                    }
+                }
+            }
+            _ => { }
+        }
+        i += 1;
+    }
+    CSS_OK
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
