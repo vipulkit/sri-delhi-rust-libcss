@@ -76,22 +76,22 @@ pub fn css_subtract_fixed(x: i32 , y: i32) -> i32{
 	return res;
 }
 
-pub static F_PI_2: int =	0x00000648;	/* 1.5708 (PI/2) */
-pub static F_PI: int =	0x00000c91;	/* 3.1415 (PI) */
-pub static F_3PI_2: int =	0x000012d9;	/* 4.7124 (3PI/2) */
-pub static F_2PI: int =	0x00001922;	/* 6.2831 (2 PI) */
+pub static F_PI_2: i32 =	0x00000648;	/* 1.5708 (PI/2) */
+pub static F_PI: i32 =	0x00000c91;	/* 3.1415 (PI) */
+pub static F_3PI_2: i32 =	0x000012d9;	/* 4.7124 (3PI/2) */
+pub static F_2PI: i32 =	0x00001922;	/* 6.2831 (2 PI) */
 
-pub static F_90: int =	0x00016800;	/*  90 */
-pub static F_180: int =	0x0002d000;	/* 180 */
-pub static F_270: int =	0x00043800;	/* 270 */
-pub static F_360: int =	0x0005a000;	/* 360 */
+pub static F_90: i32 =	0x00016800;	/*  90 */
+pub static F_180: i32 =	0x0002d000;	/* 180 */
+pub static F_270: i32 =	0x00043800;	/* 270 */
+pub static F_360: i32 =	0x0005a000;	/* 360 */
 
-pub static F_0_5: int =	0x00000200;	/* 0.5 */
-pub static F_1: int =	0x00000400;	/*   1 */
-pub static F_10: int =	0x00002800;	/*  10 */
-pub static F_72: int =	0x00012000;	/*  72 */
-pub static F_100: int =	0x00019000;	/* 100 */
-pub static F_200: int =	0x00032000;	/* 200 */
-pub static F_255: int =	0x0003FC00;	/* 255 */
-pub static F_300: int =	0x0004b000;	/* 300 */
-pub static F_400: int =	0x00064000;	/* 400 */
+pub static F_0_5: i32 =	0x00000200;	/* 0.5 */
+pub static F_1: i32 =	0x00000400;	/*   1 */
+pub static F_10: i32 =	0x00002800;	/*  10 */
+pub static F_72: i32 =	0x00012000;	/*  72 */
+pub static F_100: i32 =	0x00019000;	/* 100 */
+pub static F_200: i32 =	0x00032000;	/* 200 */
+pub static F_255: i32 =	0x0003FC00;	/* 255 */
+pub static F_300: i32 =	0x0004b000;	/* 300 */
+pub static F_400: i32 =	0x00064000;	/* 400 */

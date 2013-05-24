@@ -193,7 +193,7 @@ pub fn output_number(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     
     let mut output : ~str = ~"\tif match token.token_type { CSS_TOKEN_NUMBER(_,_) => true, _ => false} {\n";
   
-    str::push_str(&mut output,fmt!("\t\tlet mut (num,consumed): (int,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), %s);\n",kvlist[0].key));
+    str::push_str(&mut output,fmt!("\t\tlet mut (num,consumed): (i32,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), %s);\n",kvlist[0].key));
     str::push_str(&mut output,"\t\t/* Invalid if there are trailing characters */\n");
     str::push_str(&mut output,"\t\tif consumed != lwc_string_length(token.idata.get_ref().clone()) {\n");
     str::push_str(&mut output,"\t\t\t*ctx = orig_ctx;\n");
@@ -318,7 +318,7 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             str::push_str(&mut output,"\t\t\t\t\t*ctx = orig_ctx;\n");
             str::push_str(&mut output,"\t\t\t\t\treturn CSS_INVALID\n");
             str::push_str(&mut output,"\t\t\t\t}\n");
-            str::push_str(&mut output,"\t\t\t\tnum = css_int_to_fixed(ret_num);\n\n");
+            str::push_str(&mut output,"\t\t\t\tnum = css_int_to_fixed(ret_num as int);\n\n");
             str::push_str(&mut output,"\t\t\t\tconsumeWhitespace(vector, ctx);\n\n");
             str::push_str(&mut output,"\t\t\t\tpctx = *ctx;\n");
             str::push_str(&mut output,"\t\t\t\tif *ctx >= vector.len() {\n");

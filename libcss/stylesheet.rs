@@ -108,8 +108,8 @@ pub struct css_selector_detail {
 
     //css_selector_detail_value - union merged
     string:Option<~str>,
-    a:int,
-    b:int
+    a:i32,
+    b:i32
 }
 
 /**< css_selector */
@@ -365,7 +365,7 @@ impl css_stylesheet {
         qname : css_qname, 
         value_type : css_selector_detail_value_type,
         string_value : Option<~str> , 
-        ab_value : Option<(int,int)>,
+        ab_value : Option<(i32,i32)>,
         negate:bool
     )  -> (css_result, Option<@mut css_selector_detail>) 
     {

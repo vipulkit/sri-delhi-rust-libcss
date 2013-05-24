@@ -30,7 +30,7 @@ pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
     }
 }
 
-pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_token] , ctx: @mut uint , default_unit: u32) -> (Option<int> , Option<u32>, css_result) {
+pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_token] , ctx: @mut uint , default_unit: u32) -> (Option<i32> , Option<u32>, css_result) {
 
     consumeWhitespace(vector , ctx);
     let mut token:&@css_token;
@@ -112,14 +112,14 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
     return(Some(num) , Some(unit_retVal) , CSS_OK);
 }
 
-pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bool) -> (int , uint) {
+pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bool) -> (i32 , uint) {
     let mut ret_value = 0;
     let mut consumed_length = 0;
 
     if lwc_string_length(string.clone()) == 0 {
         return (ret_value , consumed_length);
     }
-    css__number_from_string(lwc_string_data(string.clone()), 0, int_only)
+    css__number_from_string(lwc_string_data(string.clone()), @mut 0, int_only)
 }
 
 pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_result { 
@@ -234,7 +234,7 @@ pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<u32>,css_result
     (Some(unit) , CSS_OK)
 }
 
-pub fn css__number_from_string(data: ~str, data_index: uint, int_only: bool) -> (int , uint){
+pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool) -> (i32 , uint){
 
     let mut length = data.len();
     // let mut ptr = copy data;
@@ -242,79 +242,85 @@ pub fn css__number_from_string(data: ~str, data_index: uint, int_only: bool) -> 
     let mut intpart: i32 = 0;
     let mut fracpart: i32 = 0;
     let mut pwr: i32 = 1;
-    let mut ret_value = 0;
-    let mut index = 0;
+    let mut ret_value :i32= 0;
+    //let mut data_index = 0;
     let mut consumed_length = 0;
     
+    //io::println(fmt!("*****Data %?, data_index: %?", copy (data), *data_index));
 
-    if length - data_index ==0 {
+    
+    if length - *data_index ==0 {
         return (ret_value , consumed_length);
     }
 
     // number = [+-]? ([0-9]+ | [0-9]* '.' [0-9]+) 
 
     // Extract sign, if any 
-    if data[0 + data_index] == '-' as u8 {
+    if data[0 + *data_index] == '-' as u8 {
         sign = -1;
         length -= 1;
-        index += 1;
+        *data_index += 1;
     }
-    else if data[0 + data_index] == '+' as u8 {
+    else if data[0 + *data_index] == '+' as u8 {
         length -=1;
-        index += 1;
+        *data_index += 1;
     }
 
     if length == 0 {
         return (ret_value , consumed_length);
     }
     else {
-        if data[0 + data_index] == '.' as u8 {
-            if length ==1 || (data[1 + data_index] < ('0' as u8)) || (('9' as u8) < data[1 + data_index]) {
+        if data[0 + *data_index] == '.' as u8 {
+            if length ==1 || (data[1 + *data_index] < ('0' as u8)) || (('9' as u8) < data[1 + *data_index]) {
                 return (ret_value , consumed_length);
             }
         }
-        else if (data[0 + data_index] < ('0' as u8)) || (('9' as u8) < data[0 + data_index]) {
+        else if (data[0 + *data_index] < ('0' as u8)) || (('9' as u8) < data[0 + *data_index]) {
             return (ret_value , consumed_length);
         }
     }
+    
 
     while length>0 {
-        if (data[0 + data_index] < ('0' as u8))||(('9' as u8) < data[0 + data_index]) {
+        if (data[0 + *data_index] < ('0' as u8))||(('9' as u8) < data[0 + *data_index]) {
             break
         }
         if intpart < (1<<22) {
             intpart *= 10;
-            intpart += (data[0 + data_index] as i32) - ('0' as i32);
+            intpart += (data[0 + *data_index] as i32) - ('0' as i32);
         }
-        index += 1;
+        *data_index += 1;
         length -= 1;
     }
-
-    if int_only == false && length > 1 && (data[0 + data_index] == '.' as u8) && ('0' as u8 <= data[1 + data_index] && data[1 + data_index] <= '9' as u8) {
-        index += 1; 
+    //io::println(fmt!("*****intpart %?, data_index %?", intpart, *data_index));
+    if int_only == false && length > 1 && (data[0 + *data_index] == '.' as u8) && ('0' as u8 <= data[1 + *data_index] && data[1 + *data_index] <= '9' as u8) {
+        *data_index += 1; 
         length -= 1;
-
+        //io::println(fmt!("*****fracpart %?, data_index %?", fracpart, *data_index));
         while length >0 {
-            if ((data[0 + data_index] < '0' as u8))|| (('9' as u8) < data[0 + data_index]) {
+            if ((data[0 + *data_index] < '0' as u8))|| (('9' as u8) < data[0 + *data_index]) {
                 break
             }
-
+            //io::println(fmt!("*****fracpart %?, data_index %?", fracpart, *data_index));
             if pwr < 1000000 {
                 pwr *= 10;
                 fracpart *= 10;
-                fracpart += (data[0 + data_index] - '0' as u8) as i32;
+                fracpart += (data[0 + *data_index] - '0' as u8) as i32;
             }
-            index += 1;
+            *data_index += 1;
             length -= 1;
+            //io::println(fmt!("*****fracpart %?, data_index %?", fracpart, *data_index));
         }
         fracpart = ((1 << 10) * fracpart + pwr/2) / pwr;
+        //io::println(fmt!("*****fracpart %?, data_index %?", fracpart, *data_index));
         if fracpart >= (1 << 10) {
             intpart += 1;
             fracpart &= (1 << 10) - 1;
         }
+        //io::println(fmt!("*****fracpart %?, data_index %?", fracpart, *data_index));
     }
-
-    consumed_length = index;
+    //io::println(fmt!("*****fracpart %?,", fracpart));
+    consumed_length = *data_index;
 
     if sign > 0 {
         if intpart >= (1 << 21) {
@@ -336,7 +342,9 @@ pub fn css__number_from_string(data: ~str, data_index: uint, int_only: bool) -> 
             }
         }
     }
-    ret_value = ((intpart << 10) | fracpart )as int;
+    ret_value = ((intpart << 10) | fracpart );
+    //io::println(fmt!("*******Fracpart %?", fracpart));
+    //io::println(fmt!("*******Return Value %?", ret_value));
     (ret_value , consumed_length)
 
 }
