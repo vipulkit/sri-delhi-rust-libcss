@@ -2,8 +2,8 @@ use core::vec::*;
 use std::arc;
 
 use charset::aliases::*;
-//use charset::csdetect::*;
 use input::parserutils_filter::*;
+use utils::error::*;
 
 pub type  parserutils_charset_detect_func =  
     ~extern fn(data: &~[u8], mibenum:u16, source:int, arc:arc::ARC<~alias>) -> (Option<u16>, Option<int>, parserutils_error);
