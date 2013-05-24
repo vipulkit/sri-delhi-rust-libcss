@@ -1,6 +1,4 @@
-extern mod std;
-
-use charset::aliases::*;
+use parserutils::charset::aliases::*;
 use std::arc;
 
 pub enum css_charset_source {
@@ -349,8 +347,15 @@ pub fn css_charset_read_bom_or_charset(data : &~[u8], alias_arc: arc::ARC<~alias
     }
     
 
-pub fn css__charset_extract(data : &~[u8] , mibenum : u16 , source : css_charset_source, alias_arc: arc::ARC<~alias>)
-                                -> (Option<u16>, Option<css_charset_source>, parserutils_error) {   
+pub fn css__charset_extract(data : &~[u8] , mibenum : u16 , input_source : int /* css_charset_source */, alias_arc: arc::ARC<~alias>)
+                                -> (Option<u16>, Option<int>, parserutils_error) {   
+
+    
+    let source:css_charset_source = {
+        unsafe {
+            cast::transmute(input_source)
+        }
+    };
 
     let mut charset : u16;
     let mut src :css_charset_source;
@@ -363,7 +368,7 @@ pub fn css__charset_extract(data : &~[u8] , mibenum : u16 , source : css_charset
     match (source)  {
         CSS_CHARSET_DICTATED => {
             charset=mibenum ;
-            return (Some(charset), Some(CSS_CHARSET_DICTATED), PARSERUTILS_OK);
+            return (Some(charset), Some(CSS_CHARSET_DICTATED as int), PARSERUTILS_OK);
         }
         _ => {}
     }   
@@ -378,7 +383,7 @@ pub fn css__charset_extract(data : &~[u8] , mibenum : u16 , source : css_charset
 
             if charset !=0 {
                 src = CSS_CHARSET_DOCUMENT;
-                return (Some(charset), Some(src), PARSERUTILS_OK);
+                return (Some(charset), Some(src as int), PARSERUTILS_OK);
             }
         },
         
@@ -402,11 +407,11 @@ pub fn css__charset_extract(data : &~[u8] , mibenum : u16 , source : css_charset
             }
 
             src = CSS_CHARSET_DEFAULT;
-            (Some(charset) , Some(src) , PARSERUTILS_OK)
+            return (Some(charset) , Some(src as int) , PARSERUTILS_OK);
         },
 
         _ => {
-            return (Some(charset), Some(source), PARSERUTILS_OK);
+            return (Some(charset), Some(source as int), PARSERUTILS_OK);
         }
     }
     

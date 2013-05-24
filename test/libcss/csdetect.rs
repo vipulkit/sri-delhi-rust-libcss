@@ -1,9 +1,11 @@
 
 extern mod std;	
 extern mod testutils;
-extern mod parserutils ; 
+extern mod parserutils; 
+extern mod css;
+
 use parserutils::charset::aliases::*;
-use parserutils::charset::csdetect::*;
+use css::charset::csdetect::*;
 
 use testutils::*;
 use core::str::*;
@@ -83,7 +85,7 @@ pub fn run_test(data:~[u8],  _:uint, expected_encoding:~str) -> bool {
     let mut mibenum:u16 = 0;
     let alias_instance = alias();
 
-    let (charsetOption,srcOption,error)= css__charset_extract(&data, mibenum, CSS_CHARSET_DEFAULT, alias_instance.clone());
+    let (charsetOption,srcOption,error)= css__charset_extract(&data, mibenum, CSS_CHARSET_DEFAULT as int, alias_instance.clone());
     assert!(match error {
         PARSERUTILS_OK=>true,
         _=>false

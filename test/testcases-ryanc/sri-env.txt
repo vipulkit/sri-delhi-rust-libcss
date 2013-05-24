@@ -1,5 +1,5 @@
 #!/bin/sh
 export PATH=/home/ryanc/usr/bin:$PATH
-SRI_HOME=/home/src/sri-delhi-rust-libcss
+SRI_HOME=/home/ryanc/src/sri-delhi-rust-libcss
 SRI_PATH=$SRI_HOME:$SRI_HOME/libcss:$SRI_HOME/libparserutils:$SRI_HOME/libwapcaplet
 export LD_LIBRARY_PATH=.:/home/ryanc/usr/lib/:$SRI_PATH:$LD_LIBRARY_PATH
