@@ -1617,8 +1617,8 @@ pub impl css_language {
                      * (e.g. IDENT: n, -n-1, -n- 1, -n -1, -n - 1)
                      */
                                         
-                    let mut a:int;
-                    let mut b:int = 0;
+                    let mut a:i32;
+                    let mut b:i32 = 0;
                     let mut sign:int = 1;
                     let mut had_sign = false;
                     let mut had_b = false;
@@ -1675,7 +1675,7 @@ pub impl css_language {
                                     
 
                                 /* -n-b */
-                                let (ret_b,consumed) = css__number_from_string( data, data_index + 1, true);
+                                let (ret_b,consumed) = css__number_from_string( data, @mut (data_index + 1), true);
                                 b = ret_b;
                                 if consumed != len - 1
                                 {
@@ -1716,7 +1716,7 @@ pub impl css_language {
                                 /* 2n-b */
                                 bstart = consumed;
 
-                                let (ret_b,consumed) = css__number_from_string( data, data_index + bstart, true);
+                                let (ret_b,consumed) = css__number_from_string( data, @mut (data_index + bstart), true);
                                 b= ret_b;
                                 if consumed != len - bstart {
                                     return (CSS_INVALID, None)

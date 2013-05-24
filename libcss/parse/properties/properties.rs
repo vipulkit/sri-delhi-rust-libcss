@@ -2692,12 +2692,12 @@ pub impl css_properties {
                     flags |= FLAG_INHERIT as u8;
                 }
                 else {
-                    let mut (num,consumed): (int,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), true);
+                    let mut (num,consumed) =  css__number_from_lwc_string(token.idata.get_ref().clone(), true);
                     if (consumed !=  lwc_string_length(token.idata.get_ref().clone())){
                         *ctx = orig_ctx;
                         return CSS_INVALID;
                     }
-                    match css_int_to_fixed(num) {
+                    match css_int_to_fixed(num as int) {
                         100 => value = FONT_WEIGHT_100 ,
                         200 => value = FONT_WEIGHT_200 ,
                         300 => value = FONT_WEIGHT_300 ,
@@ -3035,7 +3035,7 @@ pub impl css_properties {
                 }
             },
             CSS_TOKEN_NUMBER(_,_)=>{
-                    let mut (num,consumed): (int,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), false);
+                    let mut (num,consumed) =  css__number_from_lwc_string(token.idata.get_ref().clone(), false);
                     /* Invalid if there are trailing characters */
                     if (consumed !=  lwc_string_length(token.idata.get_ref().clone())){
                         *ctx = orig_ctx;
@@ -3047,7 +3047,7 @@ pub impl css_properties {
                         num = 0;
                     }
                     if num as i32 > css_int_to_fixed(1) {
-                        num = css_int_to_fixed(1) as int;
+                        num = css_int_to_fixed(1);
                     }
 
                     css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_OPACITY, 0, OPACITY_SET );

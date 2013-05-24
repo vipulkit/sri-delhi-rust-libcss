@@ -52,18 +52,19 @@ fn number(file_name: ~str) {
         }
 
         if (resetFlag && !dataFlag && !expectedFlag) {
-            // io::println(fmt!("data_string = %?" , data_string));
+             io::println(fmt!("data = %?" , data_string));
             // io::println(fmt!("expected_str = %?" , expected_str));
             do lwc.write |l| {
                 let lwc_string= Some(l.lwc_intern_string(copy data_string));
-                // io::println(fmt!("lwc string = %?" , lwc_string.get_ref().clone()));
+                //io::println(fmt!("lwc string = %?" , lwc_string.get_ref().clone()));
                 let (a , _) = css__number_from_lwc_string(lwc_string.unwrap() , false);
                 // io::println(fmt!("a = %?" , a));
                 
-                let b = print_css_fixed(a);
-                // io::println(fmt!("string expected is %?" , expected_str));
-                // io::println(fmt!("string found is %?" , b));
-                assert!(fmt!("%?" , b)==expected_str);
+                let b = print_css_fixed(256, a);
+                //io::println(fmt!("got: %s expected: %.*s\n", b, expected_str.len(), expected_str));
+                io::println(fmt!("expected is %?" , expected_str));
+                io::println(fmt!("found is %? \n" , b));
+                assert!(str::starts_with(b, expected_str));
             }
             // io::println(fmt!("lwc = %?" , lwc));
 
@@ -73,69 +74,70 @@ fn number(file_name: ~str) {
     }
 }
 
-fn print_css_fixed(a: int) -> ~str {
-    let b: int;
+fn print_css_fixed(mut len:uint, a: i32) -> ~str {
+    let b: u32;
     let mut buf: ~str = ~"";
     if a < 0 {
-        b = -a;
+        b = -a as u32;
     }
     else {
-        b = a;
+        b = a as u32;
     }
-    let mut unitpart = b >> 10;
-    let mut fracpart = ((b & 0x3ff)*1000 + 500)/(1 << 10);
+    //io::println(fmt!("Result %?", a));
+    let mut unitpart:u32 = b >> 10;
+    io::println(fmt!("Expected Unitpart %?", unitpart));
+    //io::println(fmt!("b %?", b));
+    let mut fracpart:u32 = ((b & 0x3ff)*1000 + 500)/(1 << 10);
+    io::println(fmt!("Expected Fracpart %?", fracpart));
     let mut flen: uint = 0;
     let mut tmp: ~[char] = ~[];
-    
+
     if a < 0 {
         buf.push_char('-');
+        len -= 1;
     }
     let string_number = ~"0123456789";
 
     loop {
         tmp.push(string_number[unitpart%10] as char);
         unitpart /= 10;
-        if !(unitpart != 0 && tmp.len() < 20) {
+        if unitpart == 0 || tmp.len() >= 20 {
             break;    
         }
     }
     
-    for tmp.each_reverse |i| {
-        buf.push_char(*i);
+    while (len > 0 && tmp.len() > 0) {
+        buf.push_char(tmp.pop());
+        len -= 1;
     }
-
-    let mut len = buf.len();
-    while len < 256 {
+    //io::println(fmt!("Buffer Length %?", buf.len()));
+    if len > 0 {
         buf.push_char('.');
-        len += 1;
+        len -=1;
     }
-
+    //io::println(fmt!("Fracpart %?", fracpart));
     loop {
         tmp.push(string_number[fracpart%10] as char);
         fracpart /= 10;
-        if !(fracpart != 0 && tmp.len() < 20) {
+        if !(tmp.len() < 20 && fracpart != 0 ) {
             break;    
         }
     }
+    //io::println(fmt!("Fracpart %?", fracpart));
 
-    for tmp.each_reverse |i| {
-        buf.push_char(*i);
+    while (len > 0 && tmp.len() > 0) {
+        buf.push_char(tmp.pop());
         flen += 1;
+        len -= 1;
     }
     
-    len = 256 - buf.len();
+    
     while len > 0 && flen < 3 {
         buf.push_char('0');
         len -= 1;
         flen += 1;
     }
-
-    len = buf.len();
-    while len < 256 {
-        buf.push_char('0');
-        len += 1;
-    }
-
+    
     return buf;
 }
 
