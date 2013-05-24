@@ -7,7 +7,8 @@ use wapcaplet::*;
 
 fn main() {
     io::println("number");
-    number(~"data/number/number.dat");
+    // number(~"data/number/number.dat");
+    // let i = print_css_fixed(1);
 }
 
 fn number(file_name: ~str) {
@@ -27,7 +28,7 @@ fn number(file_name: ~str) {
             expectedFlag = false; 
             resetFlag = false;
         }
-        else if buf == ~"#errors" {
+        else if buf == ~"#errors" || buf == ~"" {
             dataFlag = false;
             expectedFlag = false;
             resetFlag = false;
@@ -42,11 +43,6 @@ fn number(file_name: ~str) {
             dataFlag = false;
             expectedFlag = false;
             resetFlag = true;
-        }
-        else if buf == ~"" {
-            dataFlag = false;
-            expectedFlag = false;
-            resetFlag = false;
         }
         else if dataFlag {
             data_string = buf;
@@ -63,8 +59,11 @@ fn number(file_name: ~str) {
                 // io::println(fmt!("lwc string = %?" , lwc_string.get_ref().clone()));
                 let (a , _) = css__number_from_lwc_string(lwc_string.unwrap() , false);
                 // io::println(fmt!("a = %?" , a));
-                // io::println(fmt!("b = %?" , b));
-                assert!(fmt!("%?" , a)==expected_str);
+                
+                let b = print_css_fixed(a);
+                // io::println(fmt!("string expected is %?" , expected_str));
+                // io::println(fmt!("string found is %?" , b));
+                assert!(fmt!("%?" , b)==expected_str);
             }
             // io::println(fmt!("lwc = %?" , lwc));
 
@@ -72,6 +71,72 @@ fn number(file_name: ~str) {
             expected_str = ~"";
         }
     }
+}
+
+fn print_css_fixed(a: int) -> ~str {
+    let b: int;
+    let mut buf: ~str = ~"";
+    if a < 0 {
+        b = -a;
+    }
+    else {
+        b = a;
+    }
+    let mut unitpart = b >> 10;
+    let mut fracpart = ((b & 0x3ff)*1000 + 500)/(1 << 10);
+    let mut flen: uint = 0;
+    let mut tmp: ~[char] = ~[];
+    
+    if a < 0 {
+        buf.push_char('-');
+    }
+    let string_number = ~"0123456789";
+
+    loop {
+        tmp.push(string_number[unitpart%10] as char);
+        unitpart /= 10;
+        if !(unitpart != 0 && tmp.len() < 20) {
+            break;    
+        }
+    }
+    
+    for tmp.each_reverse |i| {
+        buf.push_char(*i);
+    }
+
+    let mut len = buf.len();
+    while len < 256 {
+        buf.push_char('.');
+        len += 1;
+    }
+
+    loop {
+        tmp.push(string_number[fracpart%10] as char);
+        fracpart /= 10;
+        if !(fracpart != 0 && tmp.len() < 20) {
+            break;    
+        }
+    }
+
+    for tmp.each_reverse |i| {
+        buf.push_char(*i);
+        flen += 1;
+    }
+    
+    len = 256 - buf.len();
+    while len > 0 && flen < 3 {
+        buf.push_char('0');
+        len -= 1;
+        flen += 1;
+    }
+
+    len = buf.len();
+    while len < 256 {
+        buf.push_char('0');
+        len += 1;
+    }
+
+    return buf;
 }
 
 #[test]

@@ -63,7 +63,7 @@ pub fn css__cascade_bg_border_color(opv:u32, style:@mut css_style, state:@mut cs
 				color = peek_bytecode(style);
 				advance_bytecode(style)
 			}
-			_ => fail!(~"Invalid css__cascade_bg_border_color match code")
+			_ => {}
 		}
 	}
 
@@ -91,7 +91,7 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 				uri = ret_uri;
 				advance_bytecode(style)	
 			},
-			_ => fail!(~"Invalid css__cascade_uri_none match code")
+			_ => {}
 		}
 	}
 
@@ -124,7 +124,7 @@ pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_selec
 			BORDER_STYLE_RIDGE => value = CSS_BORDER_STYLE_RIDGE,
 			BORDER_STYLE_INSET => value = CSS_BORDER_STYLE_INSET,
 			BORDER_STYLE_OUTSET => value = CSS_BORDER_STYLE_OUTSET,
-			_ => fail!(~"Invalid css__cascade_border_style match code")
+			_ => {}
 		}
 	}
 
@@ -155,7 +155,7 @@ pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_s
 			BORDER_WIDTH_THIN => value = CSS_BORDER_WIDTH_THIN,				
 			BORDER_WIDTH_MEDIUM => value = CSS_BORDER_WIDTH_MEDIUM,
 			BORDER_WIDTH_THICK => value = CSS_BORDER_WIDTH_THICK,
-			_ => fail!(~"Invalid css__cascade_border_width match code")
+			_ => {}
 		}
 	}
 
@@ -186,7 +186,7 @@ pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_se
 				advance_bytecode(style)				
 			},	
 			BOTTOM_AUTO => value = CSS_BOTTOM_AUTO,				
-			_ => fail!(~"Invalid css__cascade_length_auto match code")
+			_ => {}
 		}
 	}
 
@@ -218,7 +218,7 @@ pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_
 				advance_bytecode(style)				
 			},	
 			LETTER_SPACING_NORMAL => value = CSS_LETTER_SPACING_NORMAL,				
-			_ => fail!(~"Invalid css__cascade_length_normal match code")
+			_ => {}
 		}
 	}
 
@@ -249,7 +249,7 @@ pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_se
 				advance_bytecode(style)				
 			},	
 			MAX_HEIGHT_NONE => value = CSS_MAX_HEIGHT_NONE,				
-			_ => fail!(~"Invalid css__cascade_length_none match code")
+			_ => {}
 		}
 	}
 
@@ -330,7 +330,7 @@ pub fn css__cascade_page_break_after_before_inside(opv:u32, _:@mut css_style, st
 			PAGE_BREAK_AFTER_AVOID => value = CSS_PAGE_BREAK_AFTER_AVOID,
 			PAGE_BREAK_AFTER_LEFT => value = CSS_PAGE_BREAK_AFTER_LEFT,
 			PAGE_BREAK_AFTER_RIGHT => value = CSS_PAGE_BREAK_AFTER_RIGHT,				
-			_ => fail!(~"Invalid css__cascade_length_none match code")
+			_ => {}
 		}
 	}
 
@@ -378,7 +378,7 @@ pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state
 				}
 			},	
 			COUNTER_INCREMENT_NONE => value = CSS_COUNTER_INCREMENT_NONE,
-			_ => fail!(~"Invalid css__cascade_counter_increment_reset match code")
+			_ => {}
 		}
 	}
 
@@ -886,7 +886,7 @@ pub fn css__cascade_caption_side(opv:u32, _:@mut css_style, state:@mut css_selec
 		match getValue(opv) {
 			CAPTION_SIDE_TOP => value = CSS_CAPTION_SIDE_TOP,	
 			CAPTION_SIDE_BOTTOM => value = CSS_CAPTION_SIDE_BOTTOM,
-			_ => fail!(~"Invalid css__cascade_length_none match code")
+			_ => {}
 		}
 	}
 
@@ -931,7 +931,7 @@ pub fn css__cascade_clear(opv:u32, _:@mut css_style, state:@mut css_select_state
 			CLEAR_LEFT => value = CSS_CLEAR_LEFT,
 			CLEAR_RIGHT => value = CSS_CLEAR_RIGHT,	
 			CLEAR_BOTH => value = CSS_CLEAR_BOTH,
-			_ => fail!(~"Invalid css__cascade_length_none match code")
+			_ => {}
 		}
 	}
 
@@ -1031,7 +1031,7 @@ pub fn css__cascade_clip(opv:u32, style:@mut css_style, state:@mut css_select_st
 				value = CSS_CLIP_RECT;
 			},	
 			CLIP_AUTO => value = CSS_CLIP_AUTO,
-			_ => fail!(~"Invalid css__cascade_length_none match code")
+			_ => {}
 		}
 	}
 
@@ -1986,7 +1986,7 @@ pub fn  css__cascade_color(opv:u32, style:@mut css_style, state:@mut css_select_
 				color = peek_bytecode(style);
 				advance_bytecode(style);
 			},
-			_ => fail!(~"Invalid css__cascade_color match code")
+			_ => {}
 		}
 	}
 
@@ -2045,7 +2045,7 @@ pub fn css__cascade_column_count(opv:u32, style:@mut css_style,
 			COLUMN_COUNT_AUTO => {
 				// \todo convert to public values */
 			},
-			_ => fail!(~"Invalid css__cascade_column_count match code")
+			_ => {}
 		}
 	}
 
@@ -2081,7 +2081,7 @@ pub fn css__cascade_column_fill(opv:u32, _:@mut css_style,
 			COLUMN_FILL_BALANCE | COLUMN_FILL_AUTO => {
 				// \todo convert to public values */
 			},	
-			_ => fail!(~"Invalid css__cascade_column_fill match code")
+			_ => {}
 		}
 	}
 
@@ -2126,7 +2126,7 @@ pub fn css__cascade_column_gap(opv:u32, style:@mut css_style,
 			COLUMN_GAP_NORMAL => {
 				//** \todo convert to public values */	
 			},	
-			_ => fail!(~"Invalid css__cascade_column_gap match code")
+			_ => {}
 		}
 	}
 
@@ -2168,7 +2168,7 @@ pub fn css__cascade_column_rule_color(opv:u32, style:@mut css_style,
 			COLUMN_RULE_COLOR_TRANSPARENT | COLUMN_RULE_COLOR_CURRENT_COLOR => {
 				//** \todo convert to public values */	
 			},	
-			_ => fail!(~"Invalid css__cascade_column_rule_color match code")
+			_ => {}
 		}
 	}
 
@@ -2208,7 +2208,7 @@ pub fn css__cascade_column_rule_style(opv:u32, _:@mut css_style,
 			COLUMN_RULE_STYLE_INSET | COLUMN_RULE_STYLE_OUTSET => {
 				//** \todo convert to public values */	
 			},	
-			_ => fail!(~"Invalid css__cascade_column_rule_color match code")
+			_ => {}
 		}
 	}
 
@@ -2255,7 +2255,7 @@ pub fn css__cascade_column_rule_width(opv:u32, style:@mut css_style,
 			COLUMN_RULE_WIDTH_THICK => {
 				//** \todo convert to public values */	
 			},	
-			_ => fail!(~"Invalid css__cascade_column_rule_color match code")
+			_ => {}
 		}
 	}
 
@@ -7315,3 +7315,173 @@ pub fn css__compose_cursor(parent:@mut css_computed_style,
 }
 
 ///////////////////////////////////////////////////////////////////
+// content
+///////////////////////////////////////////////////////////////////
+pub fn css__cascade_content(opv:u32, style:@mut css_style, 
+    state:@mut css_select_state ) -> css_result {
+
+    let mut value = CSS_CONTENT_INHERIT;
+    let mut content:~[@mut css_computed_content_item]=~[];
+    // uint32_t n_contents = 0;
+
+    if !isInherit(opv) {
+        let mut v = getValue(opv);
+        match v {
+            CONTENT_NORMAL => value = CSS_CONTENT_NORMAL,
+            CONTENT_NONE => value = CSS_CONTENT_NONE,
+            _ => {
+                value = CSS_CONTENT_SET;
+                
+                while (v != CONTENT_NORMAL) {
+                    
+                    let temp:@mut css_computed_content_item=
+                     @mut css_computed_content_item{item_type:CSS_COMPUTED_CONTENT_NONE,data:None, counters_data:None};
+                       
+                    let (result, he_option) = style.sheet.unwrap().css__stylesheet_string_get(peek_bytecode(style) as uint);
+                    
+                    match result {
+                        CSS_OK => {},
+                        error => return error
+                    }
+
+                    match (v & 0xff) {
+
+                        CONTENT_COUNTER => {
+
+                            advance_bytecode(style);
+
+                            temp.item_type =  CSS_COMPUTED_CONTENT_COUNTER;
+                            temp.data = None;
+                            temp.counters_data = Some(css_computed_content_item_counter {
+                                name:he_option.unwrap(), 
+                                sep:None,
+                                style:(v >> CONTENT_COUNTER_STYLE_SHIFT) as u8
+                            } );
+                            
+                            content.push(temp)
+                        },                          
+                        CONTENT_COUNTERS => {
+
+                            advance_bytecode(style);
+
+                            let (result, sep_option) = style.sheet.unwrap().css__stylesheet_string_get(peek_bytecode(style) as uint);
+                            
+                            match result {
+                                CSS_OK => {},
+                                error => return error
+                            } 
+                            
+                            advance_bytecode(style);
+
+                            temp.item_type =  CSS_COMPUTED_CONTENT_COUNTERS;
+                            temp.data = None;
+                            temp.counters_data = Some(css_computed_content_item_counter {
+                                name:he_option.unwrap(), 
+                                sep:sep_option,
+                                style:(v >> CONTENT_COUNTERS_STYLE_SHIFT) as u8
+                            } );
+                        },                      
+                        CONTENT_URI => {
+
+                            advance_bytecode(style);
+
+                            temp.item_type = CSS_COMPUTED_CONTENT_URI;
+                            temp.data = he_option;
+                            temp.counters_data = None
+                        },  
+                        CONTENT_ATTR => {
+                            
+                            advance_bytecode(style);
+
+                            temp.item_type = CSS_COMPUTED_CONTENT_ATTR;
+                            temp.data = he_option;
+                            temp.counters_data = None
+                        },
+                        CONTENT_STRING => {
+
+                            advance_bytecode(style);
+
+                            temp.item_type =  CSS_COMPUTED_CONTENT_STRING;
+                            temp.data = he_option;
+                            temp.counters_data = None
+                        },
+                        CONTENT_OPEN_QUOTE => {
+                            temp.item_type =  CSS_COMPUTED_CONTENT_OPEN_QUOTE;
+                            temp.data = None;
+                            temp.counters_data = None
+                        },
+                        CONTENT_CLOSE_QUOTE => {
+                            temp.item_type =  CSS_COMPUTED_CONTENT_CLOSE_QUOTE;
+                            temp.data = None;
+                            temp.counters_data = None
+                        },
+                        CONTENT_NO_OPEN_QUOTE => {
+                            temp.item_type =  CSS_COMPUTED_CONTENT_NO_OPEN_QUOTE;
+                            temp.data = None;
+                            temp.counters_data = None
+                        },                  
+                        CONTENT_NO_CLOSE_QUOTE => {
+                            temp.item_type =  CSS_COMPUTED_CONTENT_NO_CLOSE_QUOTE;
+                            temp.data = None;
+                            temp.counters_data = None
+                        }
+                        _ => {}
+                    }
+                        
+                    content.push(temp);                 
+                    v = peek_bytecode(style) as u16;
+                    advance_bytecode(style)
+                }
+            }
+        }
+    }
+
+    /* If we have some content, terminate the array with a blank entry */
+    if !content.is_empty() {
+        let temp = @mut css_computed_content_item{item_type:CSS_COMPUTED_CONTENT_NONE,data:None, counters_data:None};
+        content.push(temp);
+    }
+
+   
+    if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
+        set_content(state.computed, value as u8, content)     
+    } 
+        
+    CSS_OK
+}
+
+
+pub fn css__set_content_from_hint(hint:@mut css_hint, style:@mut css_computed_style) {
+
+    set_content(style, hint.status, ~[hint.content.unwrap()]);
+
+}
+
+pub fn css__initial_content(state:@mut css_select_state) -> css_result {
+    set_content(state.computed, CSS_CONTENT_NORMAL as u8 , ~[]);
+    CSS_OK
+}
+
+
+pub fn css__compose_content( parent:@mut css_computed_style, child:@mut css_computed_style,
+    result:@mut css_computed_style) {
+
+    let mut (content_type, items) = css_computed_content(child);
+        
+    if ((match child.uncommon {None => true, _ => false } ) && (match parent.uncommon {Some(_) => true, None => false } )) ||
+            content_type == CSS_CONTENT_INHERIT as u8 || (match child.uncommon { Some(_) => true, _ => false} && 
+                !mut_ptr_eq(result,child)) {
+        
+        if (match child.uncommon { None => true, _ => false} && match parent.uncommon { Some(_) => true,  None => false }) || 
+           content_type == CSS_CONTENT_INHERIT as u8 {
+            let (p_content_type,p_items) = css_computed_content(parent);
+            content_type = p_content_type;
+            items = p_items
+        }
+        set_content(result, content_type, items)
+    }
+
+}
+
+
+/////////////////////////////////////////////////////////////////
