@@ -1,5 +1,6 @@
 
 extern mod std;
+extern mod css;
 //extern mod parserutils_inputstream;
 extern mod parserutils ; 
 extern mod test;
@@ -11,7 +12,7 @@ use core::str::*;
 use parserutils::* ;
 //use parserutils_inputstream::*;
 use parserutils::input::inputstream::*;
-use parserutils::charset::csdetect::*;
+use css::charset::csdetect::*;
 use parserutils::charset::aliases::*;
 
 fn main() {
@@ -23,7 +24,7 @@ fn main() {
 	let mut comment: ~str=~"";
 	let mut external_argument : ~str = ~"";
 
-	let (inputStreamOption, ParserUtilsError)= inputstream(Some(~"US-ASCII") ,Some(CSS_CHARSET_DEFAULT), None);
+	let (inputStreamOption, ParserUtilsError)= inputstream(Some(~"US-ASCII") ,Some(0), None);
 
 	match(ParserUtilsError)	{
 		PARSERUTILS_OK=>{
@@ -46,7 +47,7 @@ fn main() {
             function_name=~"parserutils_inputstream_change_charset";
 			let toCharset= ~"UTF-16";
 
-            match(stream.parserutils_inputstream_change_charset(copy toCharset,CSS_CHARSET_DEFAULT)) {
+            match(stream.parserutils_inputstream_change_charset(copy toCharset.to_lower(),0)) {
 				PARSERUTILS_OK=>{
 					comment = ~"charset changed successfully ";
 					test1.pass( ~"test_parserutils.rs",copy external_argument, copy module_name, copy file_name  , function_name, copy toCharset+~":checking return value" , ~"PARSERUTILS_OK",~"PARSERUTILS_OK",comment) ;
@@ -61,7 +62,7 @@ fn main() {
             test_name =~"";
             function_name=~"parserutils_inputstream_change_charset";
 			let toCharset= ~"UTF-16";
-            if eq(&toCharset,& (copy charsetStringOption).get()) {
+            if eq(&toCharset.to_lower(),& (copy charsetStringOption).get()) {
             	comment = ~"charset changed successfully ";
 				test1.pass( ~"test_parserutils.rs",copy external_argument, copy module_name, copy file_name  , function_name, test_name ,copy toCharset, charsetStringOption.get(),comment) ;
 			}

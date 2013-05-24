@@ -3,12 +3,13 @@ extern mod std;
 //extern mod parserutils_inputstream;
 extern mod parserutils ; 
 extern mod test;
+extern mod css;
 
 use test::*;
 use parserutils::* ;
 use parserutils::input::inputstream::*;
 use parserutils::charset::aliases::*;
-use parserutils::charset::csdetect::*;
+use css::charset::csdetect::*;
 
  fn main() {
 	let args : ~[~str] = os::args();
@@ -17,7 +18,7 @@ use parserutils::charset::csdetect::*;
     let r:@Reader = io::file_reader(&Path(args[1])).get(); 
     let reader = io::stdin();
     let mut test1 = result::unwrap(test_report(&"Unit_test_report.csv"));
-    let (inputStreamOption, ParserUtilsError)= inputstream(Some(~"UTF-16"),Some(CSS_CHARSET_DEFAULT),None);
+    let (inputStreamOption, ParserUtilsError)= inputstream(Some(~"UTF-16"),Some(0),None);
 
 	match(ParserUtilsError) {
 		PARSERUTILS_OK=>{
