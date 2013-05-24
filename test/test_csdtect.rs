@@ -1,5 +1,6 @@
 
 extern mod std;
+extern mod css;
 // mod parserutils_inputstream;
 extern mod parserutils ; 
 extern mod test;
@@ -10,7 +11,7 @@ use test::*;
 use parserutils::charset::aliases::*;
 use parserutils::input::parserutils_filter::* ;
 use parserutils::input::inputstream::*;
-use parserutils::charset::csdetect::*;
+use css::charset::csdetect::*;
 //use parserutils_inputstream::*;
 use core::str::*;
 use std::arc;
@@ -21,32 +22,32 @@ fn main() {
 	
 	// value initialization
 	let mut encoding : ~str;	
-	let mut encsrcVal: css_charset_source;
+	let mut encsrcVal: int;
 	let mut num_skip_char : uint = 0;	
 	let mut external_argument : ~str = copy args[1];
 	io::println(fmt!("value of external_argument is %?", external_argument));
 	match args[1] {
 		~"utf8.txt"  => {
 						   encoding = ~"UTF-8" ;
-						   encsrcVal = CSS_CHARSET_DEFAULT;	
+						   encsrcVal = 0;	
 						   num_skip_char = 0;
 						   external_argument = ~"utf8.txt";
 							},
 		~"utf16.txt"  => {
 							encoding = ~"UTF-16LE";
-							encsrcVal = CSS_CHARSET_DOCUMENT;
+							encsrcVal = 3;
 							num_skip_char = 2;
 							external_argument = ~"utf16.txt";
 						 },
 		~"utf32.txt"  => {
 							encoding = ~"UTF-32LE";
-							encsrcVal = CSS_CHARSET_DOCUMENT;
+							encsrcVal = 3;
 							num_skip_char = 4;
 							external_argument = ~"utf32.txt";
 							},
 		_           =>  {	
 							encoding = ~"UTF-8" ;
-							encsrcVal = CSS_CHARSET_DEFAULT;   
+							encsrcVal = 0;   
 							// any unknow encoding would be considered as UTF-8
 						}
 	}
@@ -115,7 +116,7 @@ fn main() {
 			 // mibenum test 
 			match(arc::get(&stream2.input.instance).parserutils_charset_mibenum_to_name(stream2.mibenum)) {
 				Some(x)  => {
-								if eq(&x, &encoding){
+								if eq(&x, &encoding.to_lower()){
 									test1.pass( ~"test_csdtect.rs", copy external_argument, ~"csdetect",~"csdetect.rs", ~"css__charset_extract", ~"check if the mibenum read by charset fn into input stream is ok ",copy encoding, x, ~"mibenum value") ;								
 								}
 								else{
@@ -183,7 +184,7 @@ fn main() {
 			 // mibenum test
 			match(arc::get(&stream.input.instance).parserutils_charset_mibenum_to_name(stream.mibenum)) {
 				Some(x)  => {
-								if eq(&x, &encoding){
+								if eq(&x, &encoding.to_lower()){
 								test1.pass( ~"test_csdtect.rs", copy external_argument, ~"csdetect",~"csdetect.rs", ~"css__charset_extract", ~"check if the mibenum read by charset fn into input stream is ok ",copy encoding, x, ~"mibenum value") ;									
 								}
 								else{

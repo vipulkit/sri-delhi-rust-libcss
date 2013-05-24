@@ -10,7 +10,7 @@ use css::lex::lexer::*;
 use test::*;
 use parserutils::* ;
 use parserutils::input::inputstream::*;
-use parserutils::charset::csdetect::*;
+use css::charset::csdetect::*;
 use core::str::*;
 use core::int::*;
 use core::float::*;
@@ -507,7 +507,7 @@ fn testMain(fileName:~str,RWmode:~str) {
     let mut exit:bool=false;
     let mut test_logger = result::unwrap(test_report(&"Unit_test_report_lexer_chunk.csv"));   
 
-    let (inputStreamOption, ParserUtilsError)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT), Some(~css__charset_extract));
+    let (inputStreamOption, ParserUtilsError)= inputstream(Some(~"UTF-8"),Some(0), Some(~css__charset_extract));
 
     let inputstream = 
         match(inputStreamOption) {
