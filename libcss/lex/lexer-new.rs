@@ -194,12 +194,8 @@ impl css_lexer {
         loop {
             let (pu_peek_result , error) = self.inputstream_instance.parserutils_inputstream_peek(self.bytes_read_for_token);
             match error {
-                // PARSERUTILS_BADPARAM => {
-                //     return LEXER_INVALID;
-                // },
-
                 PARSERUTILS_OK => {
-                    /*let (_cptr , clen) = pu_peek_result.unwrap();
+                    let (_cptr , clen) = pu_peek_result.unwrap();
                     c = _cptr[0];
                     
                     if start_url_char(c) && c != '\\' as u8 {
@@ -219,8 +215,12 @@ impl css_lexer {
                                 return LEXER_OK;
                             }
                         }
-                    }*/
+                    }
                 }
+
+                _ => {
+                    return LEXER_INVALID;
+                },
 
             }
 
@@ -239,12 +239,10 @@ impl css_lexer {
         loop {
             let (pu_peek_result , error) = self.inputstream_instance.parserutils_inputstream_peek(self.bytes_read_for_token);
             match error {
-                PARSERUTILS_BADPARAM => {
-                    return LEXER_INVALID;
-                },
+                
 
                 PARSERUTILS_OK => {
-                    /*let (_cptr , clen) = pu_peek_result.unwrap();
+                    let (_cptr , clen) = pu_peek_result.unwrap();
                     c = _cptr[0];
                     
                     if is_space(c) {
@@ -263,8 +261,13 @@ impl css_lexer {
                         self.current_line += 1;
                     }
 
-                    self.context.last_was_cr = (c == '\r' as u8);*/
+                    self.context.last_was_cr = (c == '\r' as u8);
+                },
+
+                _ => {
+                    return LEXER_INVALID;
                 }
+
             }
 
             if !is_space(c) {
