@@ -2,9 +2,10 @@ extern mod std;
 extern mod parserutils;
 extern mod css;
 
-use parserutils::charset::csdetect::*;
 use parserutils::charset::aliases::*;
 use parserutils::input::inputstream::*;
+
+use css::charset::csdetect::*;
 use css::lex::lexer::*;
 use core::str::*;
 
@@ -24,7 +25,7 @@ fn lex(fileName: ~str) {
     let mut final_buf: ~[u8] = ~[];
 
     while !r.eof() {
-        let (inputStreamOption, ParserUtilsError)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT), Some(~css__charset_extract));
+        let (inputStreamOption, ParserUtilsError)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
         match(ParserUtilsError) {
             PARSERUTILS_OK=>{}
             _ => {assert!(false);} // when inputstream is not created

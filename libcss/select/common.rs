@@ -386,6 +386,8 @@ pub struct css_computed_page {
     bits:~[u8],//~[u8, ..1]
 } 
     
+pub struct css_aural ;
+
 pub struct css_computed_style {
 /*
  * background_attachment      2
@@ -573,7 +575,7 @@ pub struct css_computed_style {
     quotes:~[~str],
 
     uncommon:Option<@mut css_computed_uncommon>, /**< Uncommon properties */
-    // void *aural;         /**< Aural properties */
+    aural:Option<@mut css_aural>,         /*< Aural properties */
     page:Option<@mut css_computed_page> /* *< Page properties */
 
 }

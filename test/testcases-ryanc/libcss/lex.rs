@@ -19,39 +19,54 @@ not implemented
 lexer.css__lexer_destroy();
 
 lexer_create() takes ~stream. cannot use stream afterward
-
 */
 
 extern mod std;
-extern mod core;
 extern mod parserutils;
 extern mod css;
 
 use core::io::*;
-use parserutils::input::*;
-use parserutils::charset::csdetect::*;
-use css::lex::*;
+
+use parserutils::input::inputstream::*;
+use parserutils::charset::aliases::*;
+
+use css::charset::csdetect::*;
+use css::lex::lexer::*;
 
 fn main() {
     io::println("parse");
 }
 
 #[test]
-fn lex() {
+fn tests1() {
+    lex(~"../data/lex/tests1.dat");
+}
+
+#[test]
+fn tests2() {
+    lex(~"../data/lex/tests2.dat");
+}
+
+#[test]
+fn regression() {
+    lex(~"../data/lex/regression.dat");
+}
+
+
+fn lex(file: ~str) {
     let ITERATIONS = 1;
-    let file=~"../data/lex/tests1.dat";
 
     for int::range(0, ITERATIONS) |i| {
-        let (streamOption, PARSERUTILS_STATUS) = inputstream::inputstream(Some(~"UTF-8"), Some(CSS_CHARSET_DEFAULT), None);
+        let (streamOption, PARSERUTILS_STATUS) = inputstream(Some(~"UTF-8"), Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
         match(PARSERUTILS_STATUS) {
             PARSERUTILS_OK=>{}
-            //_ => {assert!(false);} // FIXME: unreachable pattern
+            _ => {assert!(false);} 
         }
 
         let mut stream = streamOption.unwrap();
 
         // FIXME: lexer_create() takes ~stream. cannot use stream afterward
-        let mut lexer = lexer::css_lexer::css__lexer_create(stream);
+        let mut lexer = css_lexer::css__lexer_create(stream);
         // FIXME: need to check the status of lexer
 
         let CHUNK_SIZE = 4096;
@@ -65,10 +80,10 @@ fn lex() {
         while len >= CHUNK_SIZE {
             let buf = r.read_bytes(CHUNK_SIZE);
 
-             //match(stream.parserutils_inputstream_append(buf)) {
-             //    PARSERUTILS_OK => {}
-                 //_ => {assert!(false);}
-             //}
+            //match(stream.parserutils_inputstream_append(buf)) {
+            //    PARSERUTILS_OK => {}
+            //    _ => {assert!(false);}
+            //}
 
             len -= CHUNK_SIZE;
 
@@ -80,10 +95,10 @@ fn lex() {
                         io::println(fmt!("%?", tok));
                         match(tok) {
                             CSS_TOKEN_EOF => {break;}
-                            // _ => {}  FIXME: check retrn value
+                            _ => {}  
                         }
                     }
-                    //_ => {break;} FIXME: Check return value
+                    //_ => {break;} 
                 }
             }
         }
@@ -91,11 +106,11 @@ fn lex() {
         if len > 0 {
             let read_size = r.read(buf, len);
             assert!(read_size == len);
-            // let STATUS = stream.parserutils_inputstream_append(buf);
-            // match(STATUS) {
-                // // PARSERUTILS_OK => {}
-                // //_ => {assert!(false);}
-            // }
+            //let STATUS = stream.parserutils_inputstream_append(buf);
+            //match(STATUS) {
+            //    PARSERUTILS_OK => {}
+            //    _ => {assert!(false);}
+            //}
 
             len = 0;
             assert!(len == 0); // to remove the warning;
@@ -118,10 +133,10 @@ fn lex() {
                     io::println(fmt!("%?", tok));
                     match(tok) {
                         CSS_TOKEN_EOF => {break;}
-                        // _ => {} FIXME: check return value
+                        _ => {} 
                     }
                 }
-                // _ => {break;} FIXME: check return value
+                //_ => {break;} 
             }
         }
 

@@ -390,8 +390,6 @@ pub impl css_lexer {
 
 													},
 													_=> {
-															str::unshift_char(&mut string, '"');
-															push_char!(string, '"');
 															return (Some(CSS_TOKEN_STRING(string)), x);
 														},
 												}
