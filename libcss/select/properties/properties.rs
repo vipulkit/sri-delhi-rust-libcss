@@ -898,16 +898,21 @@ pub fn css__cascade_caption_side(opv:u32, _:@mut css_style, state:@mut css_selec
 	CSS_OK
 }
 
-pub fn css__set_caption_side_from_hint(hint:@css_hint, style:@mut css_computed_style) {
+pub fn css__set_caption_side_from_hint(hint:@mut css_hint, 
+										style:@mut css_computed_style) 
+										-> css_result {
 	set_caption_side(style, hint.status);
+	CSS_OK
 }
 
-pub fn css__initial_caption_side(state:@mut css_select_state) {
-	set_caption_side(state.computed, CSS_CAPTION_SIDE_TOP as u8)
+pub fn css__initial_caption_side(state:@mut css_select_state) -> css_result {
+	set_caption_side(state.computed, CSS_CAPTION_SIDE_TOP as u8);
+	CSS_OK
 }
 
-pub fn css__compose_caption_side(parent:@mut css_computed_style, child:@mut css_computed_style,
-		result:@mut css_computed_style) {
+pub fn css__compose_caption_side(parent:@mut css_computed_style, 
+								child:@mut css_computed_style,
+								result:@mut css_computed_style) -> css_result{
 
 	let mut cap_type = css_computed_caption_side(child);
 
@@ -916,6 +921,7 @@ pub fn css__compose_caption_side(parent:@mut css_computed_style, child:@mut css_
 	}
 		
 	set_caption_side(result, cap_type);
+	CSS_OK
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -937,22 +943,26 @@ pub fn css__cascade_clear(opv:u32, _:@mut css_style, state:@mut css_select_state
 
 	// \todo lose fun != None */
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
-			set_clear(state.computed, value as u8)
+			set_clear(state.computed, value as u8) ;
 	}
 
 	CSS_OK
 }
 
-pub fn css__set_clear_from_hint(hint:@css_hint, style:@mut css_computed_style) {
+pub fn css__set_clear_from_hint(hint:@mut css_hint, style:@mut css_computed_style) 
+								-> css_result {
 	set_clear(style, hint.status);
+	CSS_OK
 }
 
-pub fn css__initial_clear(state:@mut css_select_state ) {
+pub fn css__initial_clear(state:@mut css_select_state ) -> css_result {
 	set_clear(state.computed, CSS_CLEAR_NONE as u8);
+	CSS_OK
 }
 
-pub fn css__compose_clear(parent:@mut css_computed_style, child:@mut css_computed_style,
-		result:@mut css_computed_style) {
+pub fn css__compose_clear(parent:@mut css_computed_style, 
+						child:@mut css_computed_style,
+						result:@mut css_computed_style) -> css_result {
 
 	let mut clear_type = css_computed_clear(child);
 
@@ -960,7 +970,8 @@ pub fn css__compose_clear(parent:@mut css_computed_style, child:@mut css_compute
 		clear_type = css_computed_clear(parent);
 	}
 
-	set_clear(result, clear_type)
+	set_clear(result, clear_type) ;
+	CSS_OK
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -1048,11 +1059,13 @@ pub fn css__cascade_clip(opv:u32, style:@mut css_style, state:@mut css_select_st
 	CSS_OK
 }	
 			
-pub fn css__set_clip_from_hint(hint:@mut css_hint, style:@mut css_computed_style) {
-	set_clip(style, hint.status, hint.clip.unwrap())
+pub fn css__set_clip_from_hint(hint:@mut css_hint, style:@mut css_computed_style) 
+								-> css_result {
+	set_clip(style, hint.status, hint.clip.unwrap()) ;
+	CSS_OK
 }
 
-pub fn css__initial_clip(state:@mut css_select_state) {
+pub fn css__initial_clip(state:@mut css_select_state) -> css_result{
 
 	let rect = @mut css_computed_clip_rect{
         top:0,
@@ -1069,11 +1082,14 @@ pub fn css__initial_clip(state:@mut css_select_state) {
         left_auto:false
     };
 
-	set_clip(state.computed, CSS_CLIP_AUTO as u8, rect)
+	set_clip(state.computed, CSS_CLIP_AUTO as u8, rect) ;
+	CSS_OK
 }
 
-pub fn css__compose_clip(parent:@mut css_computed_style, child:@mut css_computed_style,
-		result:@mut css_computed_style) {
+pub fn css__compose_clip(parent:@mut css_computed_style, 
+						child:@mut css_computed_style,
+						result:@mut css_computed_style) 
+						-> css_result {
 
 	
 	let mut (clip_type, rect) = css_computed_clip(child);
@@ -1089,9 +1105,9 @@ pub fn css__compose_clip(parent:@mut css_computed_style, child:@mut css_computed
 			rect = rect_ret
 		}
 
-		set_clip(result, clip_type, rect.unwrap())
+		set_clip(result, clip_type, rect.unwrap());
 	}
-
+	CSS_OK
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -1998,8 +2014,10 @@ pub fn  css__cascade_color(opv:u32, style:@mut css_style, state:@mut css_select_
 
 }
 
-pub fn css__set_color_from_hint(hint:@mut css_hint, style:@mut css_computed_style) {
-	set_color(style, hint.status, hint.color.unwrap())
+pub fn css__set_color_from_hint(hint:@mut css_hint, style:@mut css_computed_style) 
+								-> css_result {
+	set_color(style, hint.status, hint.color.unwrap()) ;
+	CSS_OK
 }
 
 pub fn css__initial_color(_:@mut css_select_state) -> css_result {
@@ -2013,19 +2031,21 @@ pub fn css__initial_color(_:@mut css_select_state) -> css_result {
 	CSS_OK	
 }
 
-pub fn css__compose_color(parent:@mut css_computed_style, child:@mut css_computed_style,
-	result:@mut css_computed_style) {
+pub fn css__compose_color(parent:@mut css_computed_style, 
+						child:@mut css_computed_style,
+						result:@mut css_computed_style) 
+						-> css_result {
 	
 	let (color_type, color) = css_computed_color(child);
 	
 	if color_type == CSS_COLOR_INHERIT as u8{
 		let (p_color_type, p_color) = css_computed_color(parent);
-		set_color(result, p_color_type, p_color.unwrap())
+		set_color(result, p_color_type, p_color.unwrap());
 	}
 	else {
-		set_color(result, color_type, color.unwrap())
+		set_color(result, color_type, color.unwrap());
 	}
-	
+	CSS_OK
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -2056,8 +2076,10 @@ pub fn css__cascade_column_count(opv:u32, style:@mut css_style,
 	CSS_OK
 }
 
-pub fn css__set_column_count_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
+pub fn css__set_column_count_from_hint(_:@mut css_hint, _:@mut css_computed_style) 
+										-> css_result {
 	// DO NOTHING
+	CSS_OK
 }
 
 pub fn css__initial_column_count(_:@mut css_select_state) -> css_result {
@@ -2066,8 +2088,10 @@ pub fn css__initial_column_count(_:@mut css_select_state) -> css_result {
 }
 
 pub fn css__compose_column_count(_:@mut css_computed_style, _:@mut css_computed_style,
-	_:@mut css_computed_style) {
+								_:@mut css_computed_style) 
+								-> css_result {
 	//DO NOTHING
+	CSS_OK
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -2092,8 +2116,10 @@ pub fn css__cascade_column_fill(opv:u32, _:@mut css_style,
 	CSS_OK
 }
 
-pub fn css__set_column_fill_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
+pub fn css__set_column_fill_from_hint(_:@mut css_hint, _:@mut css_computed_style) 
+									-> css_result {
 	// DO NOTHING
+	CSS_OK
 }
 
 pub fn css__initial_column_fill(_:@mut css_select_state) -> css_result {
@@ -2102,8 +2128,10 @@ pub fn css__initial_column_fill(_:@mut css_select_state) -> css_result {
 }
 
 pub fn css__compose_column_fill(_:@mut css_computed_style, _:@mut css_computed_style,
-	_:@mut css_computed_style) {
+								_:@mut css_computed_style) 
+								-> css_result {
 	//DO NOTHING
+	CSS_OK
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -2137,8 +2165,10 @@ pub fn css__cascade_column_gap(opv:u32, style:@mut css_style,
 	CSS_OK
 }
 
-pub fn css__set_column_gap_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
+pub fn css__set_column_gap_from_hint(_:@mut css_hint, _:@mut css_computed_style)
+									-> css_result {
 	// DO NOTHING
+	CSS_OK
 }
 
 pub fn css__initial_column_gap(_:@mut css_select_state) -> css_result {
@@ -2147,8 +2177,10 @@ pub fn css__initial_column_gap(_:@mut css_select_state) -> css_result {
 }
 
 pub fn css__compose_column_gap(_:@mut css_computed_style, _:@mut css_computed_style,
-	_:@mut css_computed_style) {
+								_:@mut css_computed_style) 
+								-> css_result  {
 	//DO NOTHING
+	CSS_OK
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -2179,8 +2211,10 @@ pub fn css__cascade_column_rule_color(opv:u32, style:@mut css_style,
 	CSS_OK
 }
 
-pub fn css__set_column_rule_color_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
+pub fn css__set_column_rule_color_from_hint(_:@mut css_hint, 
+									_:@mut css_computed_style) -> css_result {
 	// DO NOTHING
+	CSS_OK
 }
 
 pub fn css__initial_column_rule_color(_:@mut css_select_state) -> css_result {
@@ -2189,8 +2223,10 @@ pub fn css__initial_column_rule_color(_:@mut css_select_state) -> css_result {
 }
 
 pub fn css__compose_column_rule_color(_:@mut css_computed_style, _:@mut css_computed_style,
-	_:@mut css_computed_style) {
+									_:@mut css_computed_style) 
+									-> css_result {
 	//DO NOTHING
+	CSS_OK
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -2219,8 +2255,11 @@ pub fn css__cascade_column_rule_style(opv:u32, _:@mut css_style,
 	CSS_OK
 }
 
-pub fn css__set_column_rule_style_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
+pub fn css__set_column_rule_style_from_hint(_:@mut css_hint, 
+										_:@mut css_computed_style) 
+										-> css_result {
 	// DO NOTHING
+	CSS_OK
 }
 
 pub fn css__initial_column_rule_style(_:@mut css_select_state) -> css_result {
@@ -2228,9 +2267,12 @@ pub fn css__initial_column_rule_style(_:@mut css_select_state) -> css_result {
 	CSS_OK
 }
 
-pub fn css__compose_column_rule_style(_:@mut css_computed_style, _:@mut css_computed_style,
-	_:@mut css_computed_style) {
+pub fn css__compose_column_rule_style(_:@mut css_computed_style, 
+									_:@mut css_computed_style,
+									_:@mut css_computed_style) 
+									-> css_result {
 	//DO NOTHING
+	CSS_OK
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -2266,8 +2308,11 @@ pub fn css__cascade_column_rule_width(opv:u32, style:@mut css_style,
 	CSS_OK
 }
 
-pub fn css__set_column_rule_width_from_hint(_:@mut css_hint, _:@mut css_computed_style) {
+pub fn css__set_column_rule_width_from_hint(_:@mut css_hint, 
+											_:@mut css_computed_style) 
+											-> css_result {
 	// DO NOTHING
+	CSS_OK
 }
 
 pub fn css__initial_column_rule_width(_:@mut css_select_state) -> css_result {
@@ -2275,9 +2320,12 @@ pub fn css__initial_column_rule_width(_:@mut css_select_state) -> css_result {
 	CSS_OK
 }
 
-pub fn css__compose_column_rule_width(_:@mut css_computed_style, _:@mut css_computed_style,
-	_:@mut css_computed_style) {
+pub fn css__compose_column_rule_width(_:@mut css_computed_style, 
+									_:@mut css_computed_style,
+									_:@mut css_computed_style) 
+									-> css_result {
 	//DO NOTHING
+	CSS_OK
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -7451,10 +7499,12 @@ pub fn css__cascade_content(opv:u32, style:@mut css_style,
 }
 
 
-pub fn css__set_content_from_hint(hint:@mut css_hint, style:@mut css_computed_style) {
+pub fn css__set_content_from_hint(hint:@mut css_hint, 
+								style:@mut css_computed_style) 
+								-> css_result{
 
     set_content(style, hint.status, ~[hint.content.unwrap()]);
-
+    CSS_OK
 }
 
 pub fn css__initial_content(state:@mut css_select_state) -> css_result {
@@ -7463,8 +7513,10 @@ pub fn css__initial_content(state:@mut css_select_state) -> css_result {
 }
 
 
-pub fn css__compose_content( parent:@mut css_computed_style, child:@mut css_computed_style,
-    result:@mut css_computed_style) {
+pub fn css__compose_content( parent:@mut css_computed_style, 
+							child:@mut css_computed_style,
+    						result:@mut css_computed_style) 
+							-> css_result {
 
     let mut (content_type, items) = css_computed_content(child);
         
@@ -7478,9 +7530,9 @@ pub fn css__compose_content( parent:@mut css_computed_style, child:@mut css_comp
             content_type = p_content_type;
             items = p_items
         }
-        set_content(result, content_type, items)
+        set_content(result, content_type, items) ;
     }
-
+   	CSS_OK
 }
 
 
