@@ -28,7 +28,7 @@ pub struct line_ctx_lex {
 
     explen:uint,
     expused:uint,
-    exp:~[css_token_type],
+    exp:~[~str],
 
     indata:bool,
     inexp:bool
