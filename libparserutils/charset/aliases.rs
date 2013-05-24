@@ -1,5 +1,3 @@
-extern mod std;
-
 use core::hashmap::linear::LinearMap;
 use core::vec::*;
 use std::arc;
@@ -10,17 +8,6 @@ pub struct parserutils_charset_aliases_canon {
     name: ~str
 }
 
-pub enum parserutils_error {
-    PARSERUTILS_OK = 0,
-    PARSERUTILS_BADPARAM = 1,
-    PARSERUTILS_NOMEM = 2,
-    PARSERUTILS_EOF = 3,
-    PARSERUTILS_BADENCODING = 4,
-    PARSERUTILS_NEEDDATA = 5,
-    PARSERUTILS_INVALID = 6,
-    PARSERUTILS_ICONV_ERROR = 8,
-    PARSERUTILS_SUCCESS = 9
-}
 
 pub struct alias {
     // these two data structures together can be used for (mibenum -> canonical name) conversion

@@ -1,4 +1,6 @@
 use parserutils::charset::aliases::*;
+use parserutils::utils::error::*;
+
 use std::arc;
 
 pub enum css_charset_source {
