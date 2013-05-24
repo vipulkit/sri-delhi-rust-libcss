@@ -2,8 +2,6 @@ use core::hashmap::linear::LinearMap;
 use core::vec::*;
 use std::arc;
 
-use utils::error::*;
-
 pub struct parserutils_charset_aliases_canon {
     mib_enum:u16,
     name_len:u16,
