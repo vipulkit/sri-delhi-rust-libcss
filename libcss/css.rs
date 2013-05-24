@@ -1,10 +1,10 @@
 use wapcaplet::*;
 use std::arc;
-use parserutils::charset::csdetect::*;
+
 use parserutils::input::inputstream::*;
-use parserutils::charset::csdetect::*;
 
 // libcss uses
+use charset::csdetect::*;
 use lex::lexer::*;
 use parse::language::*;
 use parse::parse::*;
@@ -59,7 +59,7 @@ pub impl css {
 		let (inputstream_option, _) =  
 			match copy params.charset {
 				None => inputstream(None, None ,Some(~css__charset_extract)),
-				Some(charset) => inputstream(Some(charset), Some(CSS_CHARSET_DICTATED), Some(~css__charset_extract))
+				Some(charset) => inputstream(Some(charset), Some(CSS_CHARSET_DICTATED as int), Some(~css__charset_extract))
 			};
 
 		// create lexer

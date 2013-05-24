@@ -4,8 +4,10 @@ extern mod css;
 extern mod testutils;
 
 use css::lex::lexer::*;
+use css::charset::csdetect::*;
+
 use parserutils::input::inputstream::*;
-use parserutils::charset::csdetect::*;
+
 use core::str::*;
 use core::float::*;
 use core::io::*;
@@ -175,7 +177,7 @@ fn testMain(fileName: ~str) {
 pub fn run_test(data:~[u8], exp:~[~str]) {
 	// io::println("run test");
 	// io::println(~"run test data="+ from_bytes(*data));
-	let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT), Some(~css__charset_extract));
+	let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
 
     let inputstream = 
         match(inputStreamOption) {

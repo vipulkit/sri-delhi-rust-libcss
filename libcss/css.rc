@@ -13,6 +13,10 @@ pub mod bytecode {
 	pub mod opcodes;
 }
 
+pub mod charset {
+	pub mod csdetect;
+}
+
 pub mod include {
 	pub mod font_face;
 	pub mod fpmath;
