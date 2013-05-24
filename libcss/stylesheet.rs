@@ -252,6 +252,56 @@ impl css_stylesheet {
         ( CSS_OK, Some(copy self.string_vector[num-1]) )
     }
 
+    pub fn css_stylesheet_set_disabled(&mut self, disabled:bool ) -> css_result {
+
+        self.disabled = disabled;
+        CSS_OK
+    }
+
+    pub fn css_stylesheet_get_disabled(&mut self) -> (css_result,bool) {
+
+        (CSS_OK,self.disabled)
+    }
+
+    pub fn css_stylesheet_quirks_allowed(&mut self) -> (css_result,bool) {
+
+        (CSS_OK,self.quirks_allowed)
+    }
+
+    pub fn css_stylesheet_used_quirks(&mut self) -> (css_result,bool) {
+
+        (CSS_OK,self.quirks_used)
+    }
+
+    pub fn css_stylesheet_get_title(&mut self) -> (css_result,~str) {
+
+        (CSS_OK,copy self.title)
+    }
+
+    pub fn css_stylesheet_get_url(&mut self) -> (css_result,~str) {
+
+        (CSS_OK,copy self.url)
+    }
+
+    pub fn css_stylesheet_get_language_level(&mut self) -> 
+                                    (css_result,css_language_level) {
+
+        (CSS_OK,self.level)  
+    }
+
+    pub fn css_stylesheet_next_pending_import(&mut self) -> 
+                                (css_result,Option<~str>,Option<u64>) {
+
+        (CSS_OK,None,None) // TODO :
+    }
+
+    pub fn css_stylesheet_register_import(&mut self, 
+                                    import:@mut css_stylesheet) 
+                                    -> css_result {
+
+        CSS_OK // TODO :
+    }
+
     pub fn css__stylesheet_style_appendOPV(
                                         style: @mut css_style,
                                         opcode:css_properties_e,
