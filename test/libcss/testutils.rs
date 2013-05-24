@@ -57,7 +57,8 @@ pub fn css__parse_strnchr(string:&~str, chr:char)-> (~str,uint) {
 pub fn css__parse_testfile(filename:~str,  callback:line_func, pw:LINE_CTX_DATA_TYPE)->bool {
     let r:@Reader = io::file_reader(&Path(filename)).get();
     let mut data:~str;
-    let mut string:~str;
+    let mut string:~str = ~"";
+
     while(!r.eof()) {               
        data= r.read_line();
        //io::println(data);
@@ -67,21 +68,26 @@ pub fn css__parse_testfile(filename:~str,  callback:line_func, pw:LINE_CTX_DATA_
        while iter < (numOfbuffers-1) {
             string = data.slice(iter * 300 ,(iter +1) * 300).to_owned();
             if string.len() == 0 {
-                loop;
+                 loop;
             }
 
-            if !(*callback)(string, pw) {
+             if !(*callback)(copy string, pw) {
                 return false;
             }
             iter += 1;
        }
        string = data.slice(iter * 300, data.len()).to_owned();
        if string.len() > 0 {
-            if !(*callback)(string, pw) {
+            if !(*callback)( copy string, pw) {
                 return false;
             }   
        }
        
     }
+
+    if !(*callback)( ~"#", pw) {
+        return false;
+    }   
+
     true
 }
