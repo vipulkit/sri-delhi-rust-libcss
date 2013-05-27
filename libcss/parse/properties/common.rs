@@ -122,44 +122,6 @@ pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bo
     css__number_from_string(lwc_string_data(string.clone()), @mut 0, int_only)
 }
 
-pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_error { 
-    let orig_ctx = *ctx;
-    let mut prev_ctx: uint;
-    let color: bool = true;
-    let style: bool = true;
-    let width: bool = true;
-    let color_style: @mut css_style;
-    let style_style: @mut css_style;
-    let width_style: @mut css_style;
-    let mut token: &@css_token;
-
-    if *ctx >= vector.len() {
-        return CSS_INVALID;
-    }
-
-    token = &vector[*ctx];
-    
-    if (is_css_inherit(strings , token)) {
-        css_stylesheet::css_stylesheet_style_inherit(result_style , unsafe{cast::transmute(CSS_PROP_BORDER_TOP_COLOR as uint + side as uint)});
-        css_stylesheet::css_stylesheet_style_inherit(result_style, unsafe{cast::transmute(CSS_PROP_BORDER_TOP_STYLE as uint + side as uint)});
-        css_stylesheet::css_stylesheet_style_inherit(result_style, unsafe{cast::transmute(CSS_PROP_BORDER_TOP_WIDTH as uint + side as uint)});
-    }
-    
-    *ctx = *ctx + 1;
-    color_style = css_stylesheet::css__stylesheet_style_create(sheet);
-    style_style = css_stylesheet::css__stylesheet_style_create(sheet);
-    width_style = css_stylesheet::css__stylesheet_style_create(sheet);
-
-    prev_ctx = *ctx;
-    while *ctx != prev_ctx {
-        let mut error = CSS_OK;
-        token = &vector[*ctx];
-        if is_css_inherit(strings , token) {
-            error = CSS_INVALID;
-        }
-    }
-    CSS_OK
-}
 
 pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<u32>,css_error) {
     let mut unit = UNIT_GRAD;
@@ -1090,3 +1052,4 @@ fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propst
     }
     return(None , CSS_INVALID);
 }
+
