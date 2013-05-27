@@ -680,7 +680,7 @@ pub enum css_select_handler_version {
 }
 
 pub struct css_select_handler {
-    ua_default_for_property: @extern fn(property:u32, hint:@mut css_hint ) -> css_result,
+    ua_default_for_property: @extern fn(property:u32, hint:@mut css_hint ) -> css_error,
     handler_version:u32
 }
 

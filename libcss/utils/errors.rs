@@ -1,4 +1,4 @@
-pub enum css_result {
+pub enum css_error {
 	CSS_OK  ,
 	CSS_NOMEM,
 	CSS_BADPARM,

@@ -45,7 +45,7 @@ pub fn css__to_css_unit(u:u32) -> css_unit {
  * Utilities below here							      *
  ******************************************************************************/
 pub fn css__cascade_bg_border_color(opv:u32, style:@mut css_style, state:@mut css_select_state, 
-		 fun:@extern fn (@mut css_computed_style, u8, css_color)) -> css_result {
+		 fun:@extern fn (@mut css_computed_style, u8, css_color)) -> css_error {
 	
 	let mut value = CSS_BACKGROUND_COLOR_INHERIT;
 	let mut color:css_color= 0;
@@ -76,11 +76,11 @@ pub fn css__cascade_bg_border_color(opv:u32, style:@mut css_style, state:@mut cs
 
 
 pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_select_state, 
-	fun:Option<@extern fn (@mut css_computed_style, u8, ~str)>) -> css_result {
+	fun:Option<@extern fn (@mut css_computed_style, u8, ~str)>) -> css_error {
 	
 	let mut value = CSS_BACKGROUND_IMAGE_INHERIT;
 	let mut uri: Option<~str> = None;
-	//let mut error:css_result;
+	//let mut error:css_error;
 
 	if !isInherit(opv) {
 		match getValue(opv) {
@@ -108,7 +108,7 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 
 
 pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_select_state, 
-	fun:@extern fn (@mut css_computed_style, u8) ) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8) ) -> css_error {
 	
 	let mut value = CSS_BORDER_STYLE_INHERIT;
 
@@ -137,7 +137,7 @@ pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_selec
 
 
 pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_select_state, 
-	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit)) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit)) -> css_error {
 	
 	let mut value = CSS_BORDER_WIDTH_INHERIT;
 	let mut length = 0;
@@ -170,7 +170,7 @@ pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_s
 
 
 pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 	
 	let mut value = CSS_BOTTOM_INHERIT;
 	let mut length = 0;
@@ -202,7 +202,7 @@ pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_se
 
 
 pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 	
 	let mut value = CSS_LETTER_SPACING_INHERIT;
 	let mut length = 0;
@@ -233,7 +233,7 @@ pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_
 
 
 pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 
 	let mut value = CSS_MAX_HEIGHT_INHERIT;
 	let mut length = 0;
@@ -264,7 +264,7 @@ pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_se
 
 
 pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:Option<@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) >) -> css_result {
+	fun:Option<@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) >) -> css_error {
 
 	let mut value = CSS_MIN_HEIGHT_INHERIT;
 	let mut length = 0;
@@ -293,7 +293,7 @@ pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_
 
 
 pub fn css__cascade_number(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:Option<@extern fn (@mut css_computed_style, u8, css_fixed) -> css_result>) -> css_result {
+	fun:Option<@extern fn (@mut css_computed_style, u8, css_fixed) -> css_error>) -> css_error {
 
 	let mut value = 0;
 	let mut length = 0;
@@ -319,7 +319,7 @@ pub fn css__cascade_number(opv:u32, style:@mut css_style, state:@mut css_select_
 }
 
 pub fn css__cascade_page_break_after_before_inside(opv:u32, _:@mut css_style, state:@mut css_select_state,
-		fun:Option<@extern fn (@mut css_computed_style, u8)>) -> css_result {
+		fun:Option<@extern fn (@mut css_computed_style, u8)>) -> css_error {
 	
 	let mut value = CSS_PAGE_BREAK_AFTER_INHERIT;
 
@@ -347,7 +347,7 @@ pub fn css__cascade_page_break_after_before_inside(opv:u32, _:@mut css_style, st
 }
 
 pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@extern fn (@mut css_computed_style, u8, ~[@mut css_computed_counter]) ) -> css_result {
+	fun:@extern fn (@mut css_computed_style, u8, ~[@mut css_computed_counter]) ) -> css_error {
 
 	let mut value = CSS_COUNTER_INCREMENT_INHERIT;
 	let mut counters:~[@mut css_computed_counter] = ~[];
@@ -405,7 +405,7 @@ pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state
 pub fn css__cascade_azimuth(opv:u32 , 
 							style:@mut css_style ,
 							state: @mut css_select_state 
-							) -> css_result
+							) -> css_error
 {
 	//not used let mut val : i32 ;
 	//let mut unit : u32 ;
@@ -435,19 +435,19 @@ pub fn css__cascade_azimuth(opv:u32 ,
 }
 
 pub fn css__set_azimuth_from_hint(_: @mut css_hint, 
-		_:@mut css_computed_style) -> css_result {
+		_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_azimuth(_:@mut css_select_state) -> css_result {
+pub fn css__initial_azimuth(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_azimuth(_:@mut css_computed_style,
 							_:@mut css_computed_style,
-							_:@mut css_computed_style) -> css_result {
+							_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -460,7 +460,7 @@ pub fn css__compose_azimuth(_:@mut css_computed_style,
 
 pub fn css__cascade_background_attachment(opv:u32, _:@mut css_style, 
 										state:@mut css_select_state
-										) -> css_result {
+										) -> css_error {
 
 	let mut value : u16 = (CSS_BACKGROUND_ATTACHMENT_INHERIT as u16);
 
@@ -486,13 +486,13 @@ pub fn css__cascade_background_attachment(opv:u32, _:@mut css_style,
 
 pub fn css__set_background_attachment_from_hint(hint:@mut css_hint, 
 												style:@mut css_computed_style
-												) -> css_result {
+												) -> css_error {
 
 	set_background_attachment(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_background_attachment(state:@mut css_select_state) -> css_result {
+pub fn css__initial_background_attachment(state:@mut css_select_state) -> css_error {
 
 	set_background_attachment(state.computed, 
 		(CSS_BACKGROUND_ATTACHMENT_SCROLL as u8) );
@@ -502,7 +502,7 @@ pub fn css__initial_background_attachment(state:@mut css_select_state) -> css_re
 pub fn css__compose_background_attachment(parent:@mut css_computed_style,
 										child:@mut css_computed_style,
 										result:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	let mut ftype : u8 = css_computed_background_attachment(child);
 
@@ -520,14 +520,14 @@ pub fn css__compose_background_attachment(parent:@mut css_computed_style,
 // background_color
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_background_color(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_bg_border_color(opv, style, state, @set_background_color);
 }
 
 pub fn css__set_background_color_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		COLOR=>{
@@ -540,7 +540,7 @@ pub fn css__set_background_color_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_background_color(state:@mut css_select_state) -> css_result {
+pub fn css__initial_background_color(state:@mut css_select_state) -> css_error {
 
 	set_background_color(state.computed, 
 		(CSS_BACKGROUND_COLOR_COLOR as u8), 0);
@@ -550,7 +550,7 @@ pub fn css__initial_background_color(state:@mut css_select_state) -> css_result 
 pub fn css__compose_background_color(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,ocolor) = css_computed_background_color(child);
 
@@ -572,14 +572,14 @@ pub fn css__compose_background_color(parent:@mut css_computed_style,
 // background_image
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_background_image(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_uri_none(opv, style, state, Some(@set_background_image) );
 }
 
 pub fn css__set_background_image_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		STRING=>{
@@ -599,7 +599,7 @@ pub fn css__set_background_image_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_background_image(state:@mut css_select_state) -> css_result {
+pub fn css__initial_background_image(state:@mut css_select_state) -> css_error {
 
 	set_background_image(state.computed, 
 		(CSS_BACKGROUND_IMAGE_NONE as u8), ~"");
@@ -609,7 +609,7 @@ pub fn css__initial_background_image(state:@mut css_select_state) -> css_result 
 pub fn css__compose_background_image(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,url) = css_computed_background_image(child);
 
@@ -629,7 +629,7 @@ pub fn css__compose_background_image(parent:@mut css_computed_style,
 // background_position
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_background_position(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut  value : u16 = CSS_BACKGROUND_POSITION_INHERIT as u16;
 	let mut hlength : i32 = 0;
@@ -701,7 +701,7 @@ pub fn css__cascade_background_position(opv:u32, style:@mut css_style,
 
 pub fn css__set_background_position_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH_H_V=>{
@@ -723,7 +723,7 @@ pub fn css__set_background_position_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_background_position(state:@mut css_select_state) -> css_result {
+pub fn css__initial_background_position(state:@mut css_select_state) -> css_error {
 
 	set_background_position(state.computed, 
 		(CSS_BACKGROUND_POSITION_SET as u8), 0,CSS_UNIT_PCT , 0, CSS_UNIT_PCT);
@@ -733,7 +733,7 @@ pub fn css__initial_background_position(state:@mut css_select_state) -> css_resu
 pub fn css__compose_background_position(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									final:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut result = css_computed_background_position(child);
 
@@ -756,7 +756,7 @@ pub fn css__compose_background_position(parent:@mut css_computed_style,
 // background_repeat
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_background_repeat(opv:u32, _:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value : u16  = CSS_BACKGROUND_REPEAT_INHERIT as u16;
 
@@ -786,13 +786,13 @@ pub fn css__cascade_background_repeat(opv:u32, _:@mut css_style,
 
 pub fn css__set_background_repeat_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_background_repeat(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_background_repeat(state:@mut css_select_state) -> css_result {
+pub fn css__initial_background_repeat(state:@mut css_select_state) -> css_error {
 
 	set_background_repeat(state.computed, 
 			(CSS_BACKGROUND_REPEAT_REPEAT as u8));
@@ -802,7 +802,7 @@ pub fn css__initial_background_repeat(state:@mut css_select_state) -> css_result
 pub fn css__compose_background_repeat(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_background_repeat(child);
 
@@ -822,7 +822,7 @@ pub fn css__compose_background_repeat(parent:@mut css_computed_style,
 // border_bottom_color
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_bottom_color(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_bg_border_color(opv, style, state,
 			@set_border_bottom_color);
@@ -830,7 +830,7 @@ pub fn css__cascade_border_bottom_color(opv:u32, style:@mut css_style,
 
 pub fn css__set_border_bottom_color_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		COLOR=>{
@@ -850,7 +850,7 @@ pub fn css__set_border_bottom_color_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_border_bottom_color(state:@mut css_select_state) -> css_result {
+pub fn css__initial_border_bottom_color(state:@mut css_select_state) -> css_error {
 
 	set_border_bottom_color(state.computed, 
 			(CSS_BORDER_COLOR_CURRENT_COLOR as u8), 0);
@@ -860,7 +860,7 @@ pub fn css__initial_border_bottom_color(state:@mut css_select_state) -> css_resu
 pub fn css__compose_border_bottom_color(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,color) = css_computed_border_bottom_color(child);
 
@@ -878,7 +878,7 @@ pub fn css__compose_border_bottom_color(parent:@mut css_computed_style,
 ///////////////////////////////////////////////////////////////////
 // caption_side
 ///////////////////////////////////////////////////////////////////
-pub fn css__cascade_caption_side(opv:u32, _:@mut css_style, state:@mut css_select_state) -> css_result {
+pub fn css__cascade_caption_side(opv:u32, _:@mut css_style, state:@mut css_select_state) -> css_error {
 	
 	let mut value = CSS_CAPTION_SIDE_INHERIT;
 
@@ -900,19 +900,19 @@ pub fn css__cascade_caption_side(opv:u32, _:@mut css_style, state:@mut css_selec
 
 pub fn css__set_caption_side_from_hint(hint:@mut css_hint, 
 										style:@mut css_computed_style) 
-										-> css_result {
+										-> css_error {
 	set_caption_side(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_caption_side(state:@mut css_select_state) -> css_result {
+pub fn css__initial_caption_side(state:@mut css_select_state) -> css_error {
 	set_caption_side(state.computed, CSS_CAPTION_SIDE_TOP as u8);
 	CSS_OK
 }
 
 pub fn css__compose_caption_side(parent:@mut css_computed_style, 
 								child:@mut css_computed_style,
-								result:@mut css_computed_style) -> css_result{
+								result:@mut css_computed_style) -> css_error{
 
 	let mut cap_type = css_computed_caption_side(child);
 
@@ -927,7 +927,7 @@ pub fn css__compose_caption_side(parent:@mut css_computed_style,
 ///////////////////////////////////////////////////////////////////
 // clear
 ///////////////////////////////////////////////////////////////////
-pub fn css__cascade_clear(opv:u32, _:@mut css_style, state:@mut css_select_state) -> css_result {
+pub fn css__cascade_clear(opv:u32, _:@mut css_style, state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_CLEAR_INHERIT;
 
@@ -950,19 +950,19 @@ pub fn css__cascade_clear(opv:u32, _:@mut css_style, state:@mut css_select_state
 }
 
 pub fn css__set_clear_from_hint(hint:@mut css_hint, style:@mut css_computed_style) 
-								-> css_result {
+								-> css_error {
 	set_clear(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_clear(state:@mut css_select_state ) -> css_result {
+pub fn css__initial_clear(state:@mut css_select_state ) -> css_error {
 	set_clear(state.computed, CSS_CLEAR_NONE as u8);
 	CSS_OK
 }
 
 pub fn css__compose_clear(parent:@mut css_computed_style, 
 						child:@mut css_computed_style,
-						result:@mut css_computed_style) -> css_result {
+						result:@mut css_computed_style) -> css_error {
 
 	let mut clear_type = css_computed_clear(child);
 
@@ -978,7 +978,7 @@ pub fn css__compose_clear(parent:@mut css_computed_style,
 // clip
 ///////////////////////////////////////////////////////////////////
 
-pub fn css__cascade_clip(opv:u32, style:@mut css_style, state:@mut css_select_state) -> css_result {
+pub fn css__cascade_clip(opv:u32, style:@mut css_style, state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_CLIP_INHERIT;
 	let rect = 
@@ -1060,12 +1060,12 @@ pub fn css__cascade_clip(opv:u32, style:@mut css_style, state:@mut css_select_st
 }	
 			
 pub fn css__set_clip_from_hint(hint:@mut css_hint, style:@mut css_computed_style) 
-								-> css_result {
+								-> css_error {
 	set_clip(style, hint.status, hint.clip.unwrap()) ;
 	CSS_OK
 }
 
-pub fn css__initial_clip(state:@mut css_select_state) -> css_result{
+pub fn css__initial_clip(state:@mut css_select_state) -> css_error{
 
 	let rect = @mut css_computed_clip_rect{
         top:0,
@@ -1089,7 +1089,7 @@ pub fn css__initial_clip(state:@mut css_select_state) -> css_result{
 pub fn css__compose_clip(parent:@mut css_computed_style, 
 						child:@mut css_computed_style,
 						result:@mut css_computed_style) 
-						-> css_result {
+						-> css_error {
 
 	
 	let mut (clip_type, rect) = css_computed_clip(child);
@@ -1116,20 +1116,20 @@ pub fn css__compose_clip(parent:@mut css_computed_style,
 // border_bottom_style
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_bottom_style(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_border_style(opv, style, state, @set_border_bottom_style);
 }
 
 pub fn css__set_border_bottom_style_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_border_bottom_style(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_border_bottom_style(state:@mut css_select_state) -> css_result {
+pub fn css__initial_border_bottom_style(state:@mut css_select_state) -> css_error {
 
 	set_border_bottom_style(state.computed, (CSS_BORDER_STYLE_NONE as u8) );
 	CSS_OK
@@ -1138,7 +1138,7 @@ pub fn css__initial_border_bottom_style(state:@mut css_select_state) -> css_resu
 pub fn css__compose_border_bottom_style(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_border_bottom_style(child);
 
@@ -1157,14 +1157,14 @@ pub fn css__compose_border_bottom_style(parent:@mut css_computed_style,
 // border_bottom_width
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_bottom_width(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_border_width(opv, style, state, @set_border_bottom_width);
 }
 
 pub fn css__set_border_bottom_width_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -1184,7 +1184,7 @@ pub fn css__set_border_bottom_width_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_border_bottom_width(state:@mut css_select_state) -> css_result {
+pub fn css__initial_border_bottom_width(state:@mut css_select_state) -> css_error {
 
 	set_border_bottom_width(state.computed, 
 						(CSS_BORDER_WIDTH_MEDIUM as u8),
@@ -1196,7 +1196,7 @@ pub fn css__initial_border_bottom_width(state:@mut css_select_state) -> css_resu
 pub fn css__compose_border_bottom_width(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_border_bottom_width(child);
 
@@ -1222,7 +1222,7 @@ pub fn css__compose_border_bottom_width(parent:@mut css_computed_style,
 // border_collapse
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_collapse(opv:u32, _:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value : u16 = CSS_BORDER_COLLAPSE_INHERIT as u16;
 
@@ -1250,13 +1250,13 @@ pub fn css__cascade_border_collapse(opv:u32, _:@mut css_style,
 
 pub fn css__set_border_collapse_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_border_collapse(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_border_collapse(state:@mut css_select_state) -> css_result {
+pub fn css__initial_border_collapse(state:@mut css_select_state) -> css_error {
 
 
 	set_border_collapse(state.computed, (CSS_BORDER_COLLAPSE_SEPARATE as u8) );
@@ -1266,7 +1266,7 @@ pub fn css__initial_border_collapse(state:@mut css_select_state) -> css_result {
 pub fn css__compose_border_collapse(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_border_collapse(child);
 
@@ -1286,7 +1286,7 @@ pub fn css__compose_border_collapse(parent:@mut css_computed_style,
 // border_left_color
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_left_color(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_bg_border_color(opv, style, state, 
 			@set_border_left_color);
@@ -1294,7 +1294,7 @@ pub fn css__cascade_border_left_color(opv:u32, style:@mut css_style,
 
 pub fn css__set_border_left_color_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		COLOR=>{
@@ -1314,7 +1314,7 @@ pub fn css__set_border_left_color_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_border_left_color(state:@mut css_select_state) -> css_result {
+pub fn css__initial_border_left_color(state:@mut css_select_state) -> css_error {
 
 
 	set_border_left_color(state.computed, 
@@ -1325,7 +1325,7 @@ pub fn css__initial_border_left_color(state:@mut css_select_state) -> css_result
 pub fn css__compose_border_left_color(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,color) = css_computed_border_left_color(child);
 
@@ -1346,20 +1346,20 @@ pub fn css__compose_border_left_color(parent:@mut css_computed_style,
 // border_left_style
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_left_style(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_border_style(opv, style, state, @set_border_left_style);
 }
 
 pub fn css__set_border_left_style_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_border_left_style(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_border_left_style(state:@mut css_select_state) -> css_result {
+pub fn css__initial_border_left_style(state:@mut css_select_state) -> css_error {
 
 
 	set_border_left_style(state.computed, (CSS_BORDER_STYLE_NONE as u8) );
@@ -1369,7 +1369,7 @@ pub fn css__initial_border_left_style(state:@mut css_select_state) -> css_result
 pub fn css__compose_border_left_style(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_border_left_style(child);
 
@@ -1386,14 +1386,14 @@ pub fn css__compose_border_left_style(parent:@mut css_computed_style,
 // border_left_width
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_left_width(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_border_width(opv, style, state, @set_border_left_width);
 }
 
 pub fn css__set_border_left_width_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -1413,7 +1413,7 @@ pub fn css__set_border_left_width_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_border_left_width(state:@mut css_select_state) -> css_result {
+pub fn css__initial_border_left_width(state:@mut css_select_state) -> css_error {
 
 
 	set_border_left_width(state.computed, 
@@ -1425,7 +1425,7 @@ pub fn css__initial_border_left_width(state:@mut css_select_state) -> css_result
 pub fn css__compose_border_left_width(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_border_left_width(child);
 
@@ -1450,7 +1450,7 @@ pub fn css__compose_border_left_width(parent:@mut css_computed_style,
 // border_right_color
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_right_color(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_bg_border_color(opv, style, state, 
 			@set_border_right_color);
@@ -1458,7 +1458,7 @@ pub fn css__cascade_border_right_color(opv:u32, style:@mut css_style,
 
 pub fn css__set_border_right_color_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		COLOR=>{
@@ -1478,7 +1478,7 @@ pub fn css__set_border_right_color_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_border_right_color(state:@mut css_select_state) -> css_result {
+pub fn css__initial_border_right_color(state:@mut css_select_state) -> css_error {
 
 
 	set_border_right_color(state.computed, 
@@ -1489,7 +1489,7 @@ pub fn css__initial_border_right_color(state:@mut css_select_state) -> css_resul
 pub fn css__compose_border_right_color(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,color) = css_computed_border_right_color(child);
 
@@ -1509,20 +1509,20 @@ pub fn css__compose_border_right_color(parent:@mut css_computed_style,
 // border_right_style
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_right_style(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_border_style(opv, style, state, @set_border_right_style);
 }
 
 pub fn css__set_border_right_style_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_border_right_style(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_border_right_style(state:@mut css_select_state) -> css_result {
+pub fn css__initial_border_right_style(state:@mut css_select_state) -> css_error {
 
 
 	set_border_right_style(state.computed, (CSS_BORDER_STYLE_NONE as u8) );
@@ -1532,7 +1532,7 @@ pub fn css__initial_border_right_style(state:@mut css_select_state) -> css_resul
 pub fn css__compose_border_right_style(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_border_right_style(child);
 
@@ -1548,14 +1548,14 @@ pub fn css__compose_border_right_style(parent:@mut css_computed_style,
 // border_right_width
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_right_width(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_border_width(opv, style, state, @set_border_right_width);
 }
 
 pub fn css__set_border_right_width_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -1575,7 +1575,7 @@ pub fn css__set_border_right_width_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_border_right_width(state:@mut css_select_state) -> css_result {
+pub fn css__initial_border_right_width(state:@mut css_select_state) -> css_error {
 
 
 	set_border_right_width(state.computed, 
@@ -1587,7 +1587,7 @@ pub fn css__initial_border_right_width(state:@mut css_select_state) -> css_resul
 pub fn css__compose_border_right_width(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_border_right_width(child);
 
@@ -1614,7 +1614,7 @@ pub fn css__compose_border_right_width(parent:@mut css_computed_style,
 
 
 pub fn css__cascade_border_spacing(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value : u16 = CSS_BORDER_SPACING_INHERIT as u16;
 	let mut hlength :i32 = 0;
@@ -1654,7 +1654,7 @@ pub fn css__cascade_border_spacing(opv:u32, style:@mut css_style,
 
 pub fn css__set_border_spacing_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH_H_V=>{
@@ -1676,7 +1676,7 @@ pub fn css__set_border_spacing_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_border_spacing(state:@mut css_select_state) -> css_result {
+pub fn css__initial_border_spacing(state:@mut css_select_state) -> css_error {
 
 	set_border_spacing(state.computed, (CSS_BORDER_SPACING_SET as u8),
 			0, CSS_UNIT_PX, 0, CSS_UNIT_PX);
@@ -1686,7 +1686,7 @@ pub fn css__initial_border_spacing(state:@mut css_select_state) -> css_result {
 pub fn css__compose_border_spacing(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut rect = css_computed_border_spacing(child);
 
@@ -1711,14 +1711,14 @@ pub fn css__compose_border_spacing(parent:@mut css_computed_style,
 // border_top_color
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_top_color(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_bg_border_color(opv, style, state, @set_border_top_color);
 }
 
 pub fn css__set_border_top_color_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		COLOR=>{
@@ -1738,7 +1738,7 @@ pub fn css__set_border_top_color_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_border_top_color(state:@mut css_select_state) -> css_result {
+pub fn css__initial_border_top_color(state:@mut css_select_state) -> css_error {
 
 
 	set_border_top_color(state.computed, 
@@ -1749,7 +1749,7 @@ pub fn css__initial_border_top_color(state:@mut css_select_state) -> css_result 
 pub fn css__compose_border_top_color(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,color) = css_computed_border_top_color(child);
 
@@ -1769,20 +1769,20 @@ pub fn css__compose_border_top_color(parent:@mut css_computed_style,
 // border_top_style
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_top_style(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_border_style(opv, style, state, @set_border_top_style);
 }
 
 pub fn css__set_border_top_style_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_border_top_style(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_border_top_style(state:@mut css_select_state) -> css_result {
+pub fn css__initial_border_top_style(state:@mut css_select_state) -> css_error {
 
 
 	set_border_top_style(state.computed, (CSS_BORDER_STYLE_NONE as u8) );
@@ -1792,7 +1792,7 @@ pub fn css__initial_border_top_style(state:@mut css_select_state) -> css_result 
 pub fn css__compose_border_top_style(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_border_top_style(child);
 
@@ -1808,14 +1808,14 @@ pub fn css__compose_border_top_style(parent:@mut css_computed_style,
 // border_top_width
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_border_top_width(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_border_width(opv, style, state, @set_border_top_width);
 }
 
 pub fn css__set_border_top_width_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -1835,7 +1835,7 @@ pub fn css__set_border_top_width_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_border_top_width(state:@mut css_select_state) -> css_result {
+pub fn css__initial_border_top_width(state:@mut css_select_state) -> css_error {
 
 
 	set_border_top_width(state.computed, 
@@ -1847,7 +1847,7 @@ pub fn css__initial_border_top_width(state:@mut css_select_state) -> css_result 
 pub fn css__compose_border_top_width(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_border_top_width(child);
 
@@ -1872,14 +1872,14 @@ pub fn css__compose_border_top_width(parent:@mut css_computed_style,
 // bottom
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_bottom(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length_auto(opv, style, state, @set_bottom);
 }
 
 pub fn css__set_bottom_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -1899,7 +1899,7 @@ pub fn css__set_bottom_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_bottom(state:@mut css_select_state) -> css_result {
+pub fn css__initial_bottom(state:@mut css_select_state) -> css_error {
 
 	set_bottom(state.computed, (CSS_BOTTOM_AUTO as u8), 0, CSS_UNIT_PX);
 	CSS_OK
@@ -1908,7 +1908,7 @@ pub fn css__initial_bottom(state:@mut css_select_state) -> css_result {
 pub fn css__compose_bottom(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_bottom(child);
 
@@ -1934,7 +1934,7 @@ pub fn css__compose_bottom(parent:@mut css_computed_style,
 // break_after
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_break_after(opv:u32, _:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	if (isInherit(opv) == false) {
 		match (getValue(opv)) {
@@ -1963,12 +1963,12 @@ pub fn css__cascade_break_after(opv:u32, _:@mut css_style,
 
 pub fn css__set_break_after_from_hint(_:@mut  css_hint, 
 										_:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_break_after(_:@mut css_select_state) -> css_result {
+pub fn css__initial_break_after(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
@@ -1976,7 +1976,7 @@ pub fn css__initial_break_after(_:@mut css_select_state) -> css_result {
 pub fn css__compose_break_after(_:@mut css_computed_style,
 									_:@mut css_computed_style,
 									_:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	CSS_OK
 }	
@@ -1984,7 +1984,7 @@ pub fn css__compose_break_after(_:@mut css_computed_style,
 ///////////////////////////////////////////////////////////////////
 // color
 ///////////////////////////////////////////////////////////////////
-pub fn  css__cascade_color(opv:u32, style:@mut css_style, state:@mut css_select_state) -> css_result {
+pub fn  css__cascade_color(opv:u32, style:@mut css_style, state:@mut css_select_state) -> css_error {
 	
 	let mut inherit = isInherit(opv);
 	let mut value = CSS_COLOR_INHERIT;
@@ -2015,12 +2015,12 @@ pub fn  css__cascade_color(opv:u32, style:@mut css_style, state:@mut css_select_
 }
 
 pub fn css__set_color_from_hint(hint:@mut css_hint, style:@mut css_computed_style) 
-								-> css_result {
+								-> css_error {
 	set_color(style, hint.status, hint.color.unwrap()) ;
 	CSS_OK
 }
 
-pub fn css__initial_color(_:@mut css_select_state) -> css_result {
+pub fn css__initial_color(_:@mut css_select_state) -> css_error {
 		
 	// TO DO
 	// match state.handler.ua_default_for_property(CSS_PROP_COLOR) {
@@ -2034,7 +2034,7 @@ pub fn css__initial_color(_:@mut css_select_state) -> css_result {
 pub fn css__compose_color(parent:@mut css_computed_style, 
 						child:@mut css_computed_style,
 						result:@mut css_computed_style) 
-						-> css_result {
+						-> css_error {
 	
 	let (color_type, color) = css_computed_color(child);
 	
@@ -2052,7 +2052,7 @@ pub fn css__compose_color(parent:@mut css_computed_style,
 // column_count
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_column_count(opv:u32, style:@mut css_style, 
-		state:@mut css_select_state ) -> css_result {
+		state:@mut css_select_state ) -> css_error {
 
 	let mut count = 0;
 
@@ -2077,19 +2077,19 @@ pub fn css__cascade_column_count(opv:u32, style:@mut css_style,
 }
 
 pub fn css__set_column_count_from_hint(_:@mut css_hint, _:@mut css_computed_style) 
-										-> css_result {
+										-> css_error {
 	// DO NOTHING
 	CSS_OK
 }
 
-pub fn css__initial_column_count(_:@mut css_select_state) -> css_result {
+pub fn css__initial_column_count(_:@mut css_select_state) -> css_error {
 	
 	CSS_OK
 }
 
 pub fn css__compose_column_count(_:@mut css_computed_style, _:@mut css_computed_style,
 								_:@mut css_computed_style) 
-								-> css_result {
+								-> css_error {
 	//DO NOTHING
 	CSS_OK
 }
@@ -2098,7 +2098,7 @@ pub fn css__compose_column_count(_:@mut css_computed_style, _:@mut css_computed_
 // column_count
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_column_fill(opv:u32, _:@mut css_style, 
-		state:@mut css_select_state ) -> css_result {
+		state:@mut css_select_state ) -> css_error {
 
 	if !isInherit(opv) {
 		match getValue(opv) {
@@ -2117,19 +2117,19 @@ pub fn css__cascade_column_fill(opv:u32, _:@mut css_style,
 }
 
 pub fn css__set_column_fill_from_hint(_:@mut css_hint, _:@mut css_computed_style) 
-									-> css_result {
+									-> css_error {
 	// DO NOTHING
 	CSS_OK
 }
 
-pub fn css__initial_column_fill(_:@mut css_select_state) -> css_result {
+pub fn css__initial_column_fill(_:@mut css_select_state) -> css_error {
 	
 	CSS_OK
 }
 
 pub fn css__compose_column_fill(_:@mut css_computed_style, _:@mut css_computed_style,
 								_:@mut css_computed_style) 
-								-> css_result {
+								-> css_error {
 	//DO NOTHING
 	CSS_OK
 }
@@ -2138,7 +2138,7 @@ pub fn css__compose_column_fill(_:@mut css_computed_style, _:@mut css_computed_s
 // column_gap
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_column_gap(opv:u32, style:@mut css_style, 
-		state:@mut css_select_state ) -> css_result {
+		state:@mut css_select_state ) -> css_error {
 
 	let mut length = 0;
 	let mut unit = UNIT_PX;
@@ -2166,19 +2166,19 @@ pub fn css__cascade_column_gap(opv:u32, style:@mut css_style,
 }
 
 pub fn css__set_column_gap_from_hint(_:@mut css_hint, _:@mut css_computed_style)
-									-> css_result {
+									-> css_error {
 	// DO NOTHING
 	CSS_OK
 }
 
-pub fn css__initial_column_gap(_:@mut css_select_state) -> css_result {
+pub fn css__initial_column_gap(_:@mut css_select_state) -> css_error {
 	
 	CSS_OK
 }
 
 pub fn css__compose_column_gap(_:@mut css_computed_style, _:@mut css_computed_style,
 								_:@mut css_computed_style) 
-								-> css_result  {
+								-> css_error  {
 	//DO NOTHING
 	CSS_OK
 }
@@ -2187,7 +2187,7 @@ pub fn css__compose_column_gap(_:@mut css_computed_style, _:@mut css_computed_st
 // column_rule_color
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_column_rule_color(opv:u32, style:@mut css_style, 
-		state:@mut css_select_state ) -> css_result {
+		state:@mut css_select_state ) -> css_error {
 
 	let mut color = 0;
 	
@@ -2212,19 +2212,19 @@ pub fn css__cascade_column_rule_color(opv:u32, style:@mut css_style,
 }
 
 pub fn css__set_column_rule_color_from_hint(_:@mut css_hint, 
-									_:@mut css_computed_style) -> css_result {
+									_:@mut css_computed_style) -> css_error {
 	// DO NOTHING
 	CSS_OK
 }
 
-pub fn css__initial_column_rule_color(_:@mut css_select_state) -> css_result {
+pub fn css__initial_column_rule_color(_:@mut css_select_state) -> css_error {
 	
 	CSS_OK
 }
 
 pub fn css__compose_column_rule_color(_:@mut css_computed_style, _:@mut css_computed_style,
 									_:@mut css_computed_style) 
-									-> css_result {
+									-> css_error {
 	//DO NOTHING
 	CSS_OK
 }
@@ -2233,7 +2233,7 @@ pub fn css__compose_column_rule_color(_:@mut css_computed_style, _:@mut css_comp
 // column_rule_style
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_column_rule_style(opv:u32, _:@mut css_style, 
-		state:@mut css_select_state ) -> css_result {
+		state:@mut css_select_state ) -> css_error {
 
 	if !isInherit(opv) {
 		match getValue(opv) {
@@ -2257,12 +2257,12 @@ pub fn css__cascade_column_rule_style(opv:u32, _:@mut css_style,
 
 pub fn css__set_column_rule_style_from_hint(_:@mut css_hint, 
 										_:@mut css_computed_style) 
-										-> css_result {
+										-> css_error {
 	// DO NOTHING
 	CSS_OK
 }
 
-pub fn css__initial_column_rule_style(_:@mut css_select_state) -> css_result {
+pub fn css__initial_column_rule_style(_:@mut css_select_state) -> css_error {
 	
 	CSS_OK
 }
@@ -2270,7 +2270,7 @@ pub fn css__initial_column_rule_style(_:@mut css_select_state) -> css_result {
 pub fn css__compose_column_rule_style(_:@mut css_computed_style, 
 									_:@mut css_computed_style,
 									_:@mut css_computed_style) 
-									-> css_result {
+									-> css_error {
 	//DO NOTHING
 	CSS_OK
 }
@@ -2279,7 +2279,7 @@ pub fn css__compose_column_rule_style(_:@mut css_computed_style,
 // column_rule_style
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_column_rule_width(opv:u32, style:@mut css_style, 
-		state:@mut css_select_state ) -> css_result {
+		state:@mut css_select_state ) -> css_error {
 
 	let mut length = 0;
 	let mut unit = UNIT_PX;
@@ -2310,12 +2310,12 @@ pub fn css__cascade_column_rule_width(opv:u32, style:@mut css_style,
 
 pub fn css__set_column_rule_width_from_hint(_:@mut css_hint, 
 											_:@mut css_computed_style) 
-											-> css_result {
+											-> css_error {
 	// DO NOTHING
 	CSS_OK
 }
 
-pub fn css__initial_column_rule_width(_:@mut css_select_state) -> css_result {
+pub fn css__initial_column_rule_width(_:@mut css_select_state) -> css_error {
 	
 	CSS_OK
 }
@@ -2323,7 +2323,7 @@ pub fn css__initial_column_rule_width(_:@mut css_select_state) -> css_result {
 pub fn css__compose_column_rule_width(_:@mut css_computed_style, 
 									_:@mut css_computed_style,
 									_:@mut css_computed_style) 
-									-> css_result {
+									-> css_error {
 	//DO NOTHING
 	CSS_OK
 }
@@ -2334,7 +2334,7 @@ pub fn css__compose_column_rule_width(_:@mut css_computed_style,
 // break_before
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_break_before(opv:u32, _:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	if (isInherit(opv) == false) {
 		match getValue(opv) {
@@ -2361,12 +2361,12 @@ pub fn css__cascade_break_before(opv:u32, _:@mut css_style,
 
 pub fn css__set_break_before_from_hint(_:@mut  css_hint, 
 										_:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_break_before(_:@mut css_select_state) -> css_result {
+pub fn css__initial_break_before(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
@@ -2374,7 +2374,7 @@ pub fn css__initial_break_before(_:@mut css_select_state) -> css_result {
 pub fn css__compose_break_before(_:@mut css_computed_style,
 									_:@mut css_computed_style,
 									_:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	CSS_OK
 }	
@@ -2383,7 +2383,7 @@ pub fn css__compose_break_before(_:@mut css_computed_style,
 // break_inside
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_break_inside(opv:u32, _:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	if (isInherit(opv) == false) {
 		match getValue(opv) {
@@ -2405,12 +2405,12 @@ pub fn css__cascade_break_inside(opv:u32, _:@mut css_style,
 
 pub fn css__set_break_inside_from_hint(_:@mut  css_hint, 
 										_:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_break_inside(_:@mut css_select_state) -> css_result {
+pub fn css__initial_break_inside(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
@@ -2418,7 +2418,7 @@ pub fn css__initial_break_inside(_:@mut css_select_state) -> css_result {
 pub fn css__compose_break_inside(_:@mut css_computed_style,
 									_:@mut css_computed_style,
 									_:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	CSS_OK
 }	
@@ -2427,7 +2427,7 @@ pub fn css__compose_break_inside(_:@mut css_computed_style,
 // direction
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_direction(opv:u32, _:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value = (CSS_DIRECTION_INHERIT as u16);
 
@@ -2452,13 +2452,13 @@ pub fn css__cascade_direction(opv:u32, _:@mut css_style,
 
 pub fn css__set_direction_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_direction(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_direction(state:@mut css_select_state) -> css_result {
+pub fn css__initial_direction(state:@mut css_select_state) -> css_error {
 
 
 	set_direction(state.computed, (CSS_DIRECTION_LTR as u8) );
@@ -2468,7 +2468,7 @@ pub fn css__initial_direction(state:@mut css_select_state) -> css_result {
 pub fn css__compose_direction(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_direction(child);
 
@@ -2485,7 +2485,7 @@ pub fn css__compose_direction(parent:@mut css_computed_style,
 // display
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_display(opv:u32, _:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value : u16 = CSS_DISPLAY_INHERIT as u16;
 
@@ -2552,13 +2552,13 @@ pub fn css__cascade_display(opv:u32, _:@mut css_style,
 
 pub fn css__set_display_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_display(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_display(state:@mut css_select_state) -> css_result {
+pub fn css__initial_display(state:@mut css_select_state) -> css_error {
 
 
 	set_display(state.computed, (CSS_DISPLAY_INLINE as u8) );
@@ -2568,7 +2568,7 @@ pub fn css__initial_display(state:@mut css_select_state) -> css_result {
 pub fn css__compose_display(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_display_static(child);
 
@@ -2585,7 +2585,7 @@ pub fn css__compose_display(parent:@mut css_computed_style,
 // elevation
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_elevation(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut val :i32  = 0;
 	let mut unit : u32 = UNIT_DEG ;
@@ -2620,12 +2620,12 @@ pub fn css__cascade_elevation(opv:u32, style:@mut css_style,
 
 pub fn css__set_elevation_from_hint(_:@mut  css_hint, 
 										_:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_elevation(_:@mut css_select_state) -> css_result {
+pub fn css__initial_elevation(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
@@ -2633,7 +2633,7 @@ pub fn css__initial_elevation(_:@mut css_select_state) -> css_result {
 pub fn css__compose_elevation(_:@mut css_computed_style,
 									_:@mut css_computed_style,
 									_:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	CSS_OK
 }
@@ -2643,7 +2643,7 @@ pub fn css__compose_elevation(_:@mut css_computed_style,
 // empty_cells
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_empty_cells(opv:u32, _:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_EMPTY_CELLS_INHERIT as u16;
 
@@ -2669,13 +2669,13 @@ pub fn css__cascade_empty_cells(opv:u32, _:@mut css_style,
 
 pub fn css__set_empty_cells_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_empty_cells(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_empty_cells(state:@mut css_select_state) -> css_result {
+pub fn css__initial_empty_cells(state:@mut css_select_state) -> css_error {
 
 
 	set_empty_cells(state.computed, (CSS_EMPTY_CELLS_SHOW as u8) );
@@ -2685,7 +2685,7 @@ pub fn css__initial_empty_cells(state:@mut css_select_state) -> css_result {
 pub fn css__compose_empty_cells(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_empty_cells(child);
 
@@ -2702,7 +2702,7 @@ pub fn css__compose_empty_cells(parent:@mut css_computed_style,
 // float
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_float(opv:u32, _:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_FLOAT_INHERIT as u16;
 
@@ -2731,13 +2731,13 @@ pub fn css__cascade_float(opv:u32, _:@mut css_style,
 
 pub fn css__set_float_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_float(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_float(state:@mut css_select_state) -> css_result {
+pub fn css__initial_float(state:@mut css_select_state) -> css_error {
 
 
 	set_float(state.computed, (CSS_FLOAT_NONE as u8) );
@@ -2747,7 +2747,7 @@ pub fn css__initial_float(state:@mut css_select_state) -> css_result {
 pub fn css__compose_float(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_float(child);
 
@@ -2764,7 +2764,7 @@ pub fn css__compose_float(parent:@mut css_computed_style,
 // font_family
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_font_family(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_FONT_FAMILY_INHERIT as u16;
 	let mut fonts : ~[~str] = ~[] ;
@@ -2864,7 +2864,7 @@ pub fn css__cascade_font_family(opv:u32, style:@mut css_style,
 		        string:None,
 		        strings:None
 		    };
-			let mut error : css_result;
+			let mut error : css_error;
 
 			match state.handler {
 				None=> {
@@ -2902,9 +2902,9 @@ pub fn css__cascade_font_family(opv:u32, style:@mut css_style,
 
 pub fn css__set_font_family_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
-	let mut error : css_result;
+	let mut error : css_error;
 
 	match hint.hint_type {
 		STRINGS_VECTOR=>{
@@ -2926,7 +2926,7 @@ pub fn css__set_font_family_from_hint(hint:@mut  css_hint,
 	CSS_OK
 }
 
-pub fn css__initial_font_family(state:@mut css_select_state) -> css_result {
+pub fn css__initial_font_family(state:@mut css_select_state) -> css_error {
 
 
 	let mut hint = @mut css_hint{
@@ -2943,7 +2943,7 @@ pub fn css__initial_font_family(state:@mut css_select_state) -> css_result {
         string:None,
         strings:None
     };
-	let mut error : css_result;
+	let mut error : css_error;
 
 	match state.handler {
 		None=> {
@@ -2966,9 +2966,9 @@ pub fn css__initial_font_family(state:@mut css_select_state) -> css_result {
 pub fn css__compose_font_family(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
-	let mut error : css_result;
+	let mut error : css_error;
 	//lwc_string **names = NULL;
 	let mut (ftype,ffamily) = css_computed_font_family(child);
 
@@ -2991,7 +2991,7 @@ pub fn css__compose_font_family(parent:@mut css_computed_style,
 // font_size
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_font_size(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_FONT_SIZE_INHERIT as u16;
 	let mut size : i32 = 0;
@@ -3049,7 +3049,7 @@ pub fn css__cascade_font_size(opv:u32, style:@mut css_style,
 
 pub fn css__set_font_size_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -3069,7 +3069,7 @@ pub fn css__set_font_size_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_font_size(state:@mut css_select_state) -> css_result {
+pub fn css__initial_font_size(state:@mut css_select_state) -> css_error {
 
 	set_font_size(state.computed, (CSS_FONT_SIZE_MEDIUM as u8), 
 			0, CSS_UNIT_PX);
@@ -3079,7 +3079,7 @@ pub fn css__initial_font_size(state:@mut css_select_state) -> css_result {
 pub fn css__compose_font_size(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_font_size(child);
 
@@ -3105,7 +3105,7 @@ pub fn css__compose_font_size(parent:@mut css_computed_style,
 // font_style
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_font_style(opv:u32, _:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_FONT_STYLE_INHERIT as u16;
 
@@ -3134,13 +3134,13 @@ pub fn css__cascade_font_style(opv:u32, _:@mut css_style,
 
 pub fn css__set_font_style_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_font_style(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_font_style(state:@mut css_select_state) -> css_result {
+pub fn css__initial_font_style(state:@mut css_select_state) -> css_error {
 
 
 	set_font_style(state.computed, (CSS_FONT_STYLE_NORMAL as u8) );
@@ -3150,7 +3150,7 @@ pub fn css__initial_font_style(state:@mut css_select_state) -> css_result {
 pub fn css__compose_font_style(parent:@mut css_computed_style,
 							child:@mut css_computed_style,
 							result:@mut css_computed_style
-							) -> css_result {
+							) -> css_error {
 
 	let mut ftype = css_computed_font_style(child);
 
@@ -3168,7 +3168,7 @@ pub fn css__compose_font_style(parent:@mut css_computed_style,
 // font_variant
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_font_variant(opv:u32, _:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value = (CSS_FONT_VARIANT_INHERIT as u16);
 
@@ -3194,13 +3194,13 @@ pub fn css__cascade_font_variant(opv:u32, _:@mut css_style,
 
 pub fn css__set_font_variant_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_font_variant(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_font_variant(state:@mut css_select_state) -> css_result {
+pub fn css__initial_font_variant(state:@mut css_select_state) -> css_error {
 
 
 	set_font_variant(state.computed, (CSS_FONT_VARIANT_NORMAL as u8) );
@@ -3210,7 +3210,7 @@ pub fn css__initial_font_variant(state:@mut css_select_state) -> css_result {
 pub fn css__compose_font_variant(parent:@mut css_computed_style,
 							child:@mut css_computed_style,
 							result:@mut css_computed_style
-							) -> css_result {
+							) -> css_error {
 
 	let mut ftype = css_computed_font_variant(child);
 
@@ -3228,7 +3228,7 @@ pub fn css__compose_font_variant(parent:@mut css_computed_style,
 // font_weight
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_font_weight(opv:u32, _:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_FONT_WEIGHT_INHERIT as u16;
 
@@ -3287,13 +3287,13 @@ pub fn css__cascade_font_weight(opv:u32, _:@mut css_style,
 
 pub fn css__set_font_weight_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_font_weight(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_font_weight(state:@mut css_select_state) -> css_result {
+pub fn css__initial_font_weight(state:@mut css_select_state) -> css_error {
 
 
 	set_font_weight(state.computed, (CSS_FONT_WEIGHT_NORMAL as u8) );
@@ -3303,7 +3303,7 @@ pub fn css__initial_font_weight(state:@mut css_select_state) -> css_result {
 pub fn css__compose_font_weight(parent:@mut css_computed_style,
 							child:@mut css_computed_style,
 							result:@mut css_computed_style
-							) -> css_result {
+							) -> css_error {
 
 	let mut ftype = css_computed_font_weight(child);
 
@@ -3320,14 +3320,14 @@ pub fn css__compose_font_weight(parent:@mut css_computed_style,
 // height
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_height(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length_auto(opv, style, state, @set_height);
 }
 
 pub fn css__set_height_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -3347,7 +3347,7 @@ pub fn css__set_height_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_height(state:@mut css_select_state) -> css_result {
+pub fn css__initial_height(state:@mut css_select_state) -> css_error {
 
 	set_height(state.computed, (CSS_HEIGHT_AUTO as u8), 0, CSS_UNIT_PX);
 	CSS_OK
@@ -3356,7 +3356,7 @@ pub fn css__initial_height(state:@mut css_select_state) -> css_result {
 pub fn css__compose_height(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_height(child);
 
@@ -3383,14 +3383,14 @@ pub fn css__compose_height(parent:@mut css_computed_style,
 // left
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_left(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length_auto(opv, style, state, @set_left);
 }
 
 pub fn css__set_left_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -3410,7 +3410,7 @@ pub fn css__set_left_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_left(state:@mut css_select_state) -> css_result {
+pub fn css__initial_left(state:@mut css_select_state) -> css_error {
 
 	set_left(state.computed, (CSS_LEFT_AUTO as u8), 0, CSS_UNIT_PX);
 	CSS_OK
@@ -3419,7 +3419,7 @@ pub fn css__initial_left(state:@mut css_select_state) -> css_result {
 pub fn css__compose_left(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_left(child);
 
@@ -3445,14 +3445,14 @@ pub fn css__compose_left(parent:@mut css_computed_style,
 // letter-spacing
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_letter_spacing(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length_normal(opv, style, state, @set_letter_spacing);
 }
 
 pub fn css__set_letter_spacing_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -3472,7 +3472,7 @@ pub fn css__set_letter_spacing_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_letter_spacing(state:@mut css_select_state) -> css_result {
+pub fn css__initial_letter_spacing(state:@mut css_select_state) -> css_error {
 
 	set_letter_spacing(state.computed, (CSS_LETTER_SPACING_NORMAL as u8), 
 			0, CSS_UNIT_PX);
@@ -3482,7 +3482,7 @@ pub fn css__initial_letter_spacing(state:@mut css_select_state) -> css_result {
 pub fn css__compose_letter_spacing(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_letter_spacing(child);
 
@@ -3515,7 +3515,7 @@ pub fn css__compose_letter_spacing(parent:@mut css_computed_style,
 // line-height
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_line_height(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value : u16 = CSS_LINE_HEIGHT_INHERIT as u16;
 	let mut val : i32 = 0;
@@ -3552,7 +3552,7 @@ pub fn css__cascade_line_height(opv:u32, style:@mut css_style,
 
 pub fn css__set_line_height_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -3572,7 +3572,7 @@ pub fn css__set_line_height_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_line_height(state:@mut css_select_state) -> css_result {
+pub fn css__initial_line_height(state:@mut css_select_state) -> css_error {
 
 	set_line_height(state.computed, (CSS_LINE_HEIGHT_NORMAL as u8), 
 			0, CSS_UNIT_PX);
@@ -3582,7 +3582,7 @@ pub fn css__initial_line_height(state:@mut css_select_state) -> css_result {
 pub fn css__compose_line_height(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_line_height(child);
 
@@ -3609,14 +3609,14 @@ pub fn css__compose_line_height(parent:@mut css_computed_style,
 // line_style_image
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_list_style_image(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return  css__cascade_uri_none(opv, style, state, Some(@set_list_style_image) );
 }
 
 pub fn css__set_list_style_image_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		STRING=>{
@@ -3637,7 +3637,7 @@ pub fn css__set_list_style_image_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_list_style_image(state:@mut css_select_state) -> css_result {
+pub fn css__initial_list_style_image(state:@mut css_select_state) -> css_error {
 
 	set_list_style_image(state.computed, 
 			(CSS_LIST_STYLE_IMAGE_NONE as u8) , ~"" );
@@ -3647,7 +3647,7 @@ pub fn css__initial_list_style_image(state:@mut css_select_state) -> css_result 
 pub fn css__compose_list_style_image(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,url) = css_computed_list_style_image(child);
 
@@ -3668,7 +3668,7 @@ pub fn css__compose_list_style_image(parent:@mut css_computed_style,
 // list_style_position
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_list_style_position(opv:u32, _:@mut css_style, 
-										state:@mut css_select_state) -> css_result {
+										state:@mut css_select_state) -> css_error {
 
 	
 	let mut value = CSS_LIST_STYLE_POSITION_INHERIT as u16;
@@ -3694,13 +3694,13 @@ pub fn css__cascade_list_style_position(opv:u32, _:@mut css_style,
 
 pub fn css__set_list_style_position_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_list_style_position(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_list_style_position(state:@mut css_select_state) -> css_result {
+pub fn css__initial_list_style_position(state:@mut css_select_state) -> css_error {
 
 	set_list_style_position(state.computed, 
 			(CSS_LIST_STYLE_POSITION_OUTSIDE as u8) );
@@ -3710,7 +3710,7 @@ pub fn css__initial_list_style_position(state:@mut css_select_state) -> css_resu
 pub fn css__compose_list_style_position(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_list_style_position(child);
 
@@ -3733,7 +3733,7 @@ pub fn css__compose_list_style_position(parent:@mut css_computed_style,
 // list_style_type
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_list_style_type(opv:u32, _:@mut css_style, 
-										state:@mut css_select_state) -> css_result {
+										state:@mut css_select_state) -> css_error {
 
 	
 	let mut value = CSS_LIST_STYLE_TYPE_INHERIT as u16;
@@ -3798,13 +3798,13 @@ pub fn css__cascade_list_style_type(opv:u32, _:@mut css_style,
 
 pub fn css__set_list_style_type_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_list_style_type(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_list_style_type(state:@mut css_select_state) -> css_result {
+pub fn css__initial_list_style_type(state:@mut css_select_state) -> css_error {
 
 	set_list_style_type(state.computed, (CSS_LIST_STYLE_TYPE_DISC as u8) );
 	CSS_OK
@@ -3813,7 +3813,7 @@ pub fn css__initial_list_style_type(state:@mut css_select_state) -> css_result {
 pub fn css__compose_list_style_type(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_list_style_type(child);
 
@@ -3835,14 +3835,14 @@ pub fn css__compose_list_style_type(parent:@mut css_computed_style,
 // margin-bottom
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_margin_bottom(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length_auto(opv, style, state, @set_margin_bottom);
 }
 
 pub fn css__set_margin_bottom_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -3862,7 +3862,7 @@ pub fn css__set_margin_bottom_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_margin_bottom(state:@mut css_select_state) -> css_result {
+pub fn css__initial_margin_bottom(state:@mut css_select_state) -> css_error {
 
 	set_margin_bottom(state.computed, (CSS_MARGIN_SET as u8), 0, CSS_UNIT_PX);
 	CSS_OK
@@ -3871,7 +3871,7 @@ pub fn css__initial_margin_bottom(state:@mut css_select_state) -> css_result {
 pub fn css__compose_margin_bottom(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_margin_bottom(child);
 
@@ -3898,14 +3898,14 @@ pub fn css__compose_margin_bottom(parent:@mut css_computed_style,
 // margin-left
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_margin_left(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length_auto(opv, style, state, @set_margin_left);
 }
 
 pub fn css__set_margin_left_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -3925,7 +3925,7 @@ pub fn css__set_margin_left_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_margin_left(state:@mut css_select_state) -> css_result {
+pub fn css__initial_margin_left(state:@mut css_select_state) -> css_error {
 
 	set_margin_left(state.computed, (CSS_MARGIN_SET as u8), 0, CSS_UNIT_PX);
 	CSS_OK
@@ -3934,7 +3934,7 @@ pub fn css__initial_margin_left(state:@mut css_select_state) -> css_result {
 pub fn css__compose_margin_left(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_margin_left(child);
 
@@ -3961,14 +3961,14 @@ pub fn css__compose_margin_left(parent:@mut css_computed_style,
 // margin-right
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_margin_right(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length_auto(opv, style, state, @set_margin_right);
 }
 
 pub fn css__set_margin_right_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -3988,7 +3988,7 @@ pub fn css__set_margin_right_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_margin_right(state:@mut css_select_state) -> css_result {
+pub fn css__initial_margin_right(state:@mut css_select_state) -> css_error {
 
 	set_margin_right(state.computed, (CSS_MARGIN_SET as u8), 0, CSS_UNIT_PX);
 	CSS_OK
@@ -3997,7 +3997,7 @@ pub fn css__initial_margin_right(state:@mut css_select_state) -> css_result {
 pub fn css__compose_margin_right(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_margin_right(child);
 
@@ -4023,14 +4023,14 @@ pub fn css__compose_margin_right(parent:@mut css_computed_style,
 // margin-top
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_margin_top(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length_auto(opv, style, state, @set_margin_top);
 }
 
 pub fn css__set_margin_top_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -4050,7 +4050,7 @@ pub fn css__set_margin_top_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_margin_top(state:@mut css_select_state) -> css_result {
+pub fn css__initial_margin_top(state:@mut css_select_state) -> css_error {
 
 	set_margin_top(state.computed, (CSS_MARGIN_SET as u8), 0, CSS_UNIT_PX);
 	CSS_OK
@@ -4059,7 +4059,7 @@ pub fn css__initial_margin_top(state:@mut css_select_state) -> css_result {
 pub fn css__compose_margin_top(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_margin_top(child);
 
@@ -4085,14 +4085,14 @@ pub fn css__compose_margin_top(parent:@mut css_computed_style,
 // max_height
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_max_height(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length_none(opv, style, state, @set_max_height);
 }
 
 pub fn css__set_max_height_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -4112,7 +4112,7 @@ pub fn css__set_max_height_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_max_height(state:@mut css_select_state) -> css_result {
+pub fn css__initial_max_height(state:@mut css_select_state) -> css_error {
 
 	set_max_height(state.computed, (CSS_MAX_HEIGHT_NONE as u8), 
 			0, CSS_UNIT_PX);
@@ -4122,7 +4122,7 @@ pub fn css__initial_max_height(state:@mut css_select_state) -> css_result {
 pub fn css__compose_max_height(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_max_height(child);
 
@@ -4148,14 +4148,14 @@ pub fn css__compose_max_height(parent:@mut css_computed_style,
 // max_width
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_max_width(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length_none(opv, style, state, @set_max_width);
 }
 
 pub fn css__set_max_width_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -4175,7 +4175,7 @@ pub fn css__set_max_width_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_max_width(state:@mut css_select_state) -> css_result {
+pub fn css__initial_max_width(state:@mut css_select_state) -> css_error {
 
 	set_max_width(state.computed, (CSS_MAX_WIDTH_NONE as u8), 0, CSS_UNIT_PX);
 	CSS_OK
@@ -4184,7 +4184,7 @@ pub fn css__initial_max_width(state:@mut css_select_state) -> css_result {
 pub fn css__compose_max_width(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_max_width(child);
 
@@ -4210,14 +4210,14 @@ pub fn css__compose_max_width(parent:@mut css_computed_style,
 // min-height
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_min_height(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length(opv, style, state, Some(@set_min_height) );
 }
 
 pub fn css__set_min_height_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -4237,7 +4237,7 @@ pub fn css__set_min_height_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_min_height(state:@mut css_select_state) -> css_result {
+pub fn css__initial_min_height(state:@mut css_select_state) -> css_error {
 
 	set_min_height(state.computed, (CSS_MIN_HEIGHT_SET as u8), 
 			0, CSS_UNIT_PX);
@@ -4247,7 +4247,7 @@ pub fn css__initial_min_height(state:@mut css_select_state) -> css_result {
 pub fn css__compose_min_height(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_min_height(child);
 
@@ -4273,14 +4273,14 @@ pub fn css__compose_min_height(parent:@mut css_computed_style,
 // min-width
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_min_width(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length(opv, style, state, Some(@set_min_width) );
 }
 
 pub fn css__set_min_width_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -4300,7 +4300,7 @@ pub fn css__set_min_width_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_min_width(state:@mut css_select_state) -> css_result {
+pub fn css__initial_min_width(state:@mut css_select_state) -> css_error {
 
 	set_min_width(state.computed, (CSS_MIN_WIDTH_SET as u8), 0, CSS_UNIT_PX);
 	CSS_OK
@@ -4309,7 +4309,7 @@ pub fn css__initial_min_width(state:@mut css_select_state) -> css_result {
 pub fn css__compose_min_width(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_min_width(child);
 
@@ -4335,7 +4335,7 @@ pub fn css__compose_min_width(parent:@mut css_computed_style,
 // opacity
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_opacity(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value : u16 = CSS_OPACITY_INHERIT as u16;
 	let mut opacity : i32 = 0;
@@ -4356,7 +4356,7 @@ pub fn css__cascade_opacity(opv:u32, style:@mut css_style,
 
 pub fn css__set_opacity_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		FIXED=>{
@@ -4376,7 +4376,7 @@ pub fn css__set_opacity_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_opacity(state:@mut css_select_state) -> css_result {
+pub fn css__initial_opacity(state:@mut css_select_state) -> css_error {
 
 	set_opacity(state.computed, (CSS_OPACITY_SET as u8), css_int_to_fixed(1));
 	CSS_OK
@@ -4385,7 +4385,7 @@ pub fn css__initial_opacity(state:@mut css_select_state) -> css_result {
 pub fn css__compose_opacity(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength) = css_computed_opacity(child);
 
@@ -4411,25 +4411,25 @@ pub fn css__compose_opacity(parent:@mut css_computed_style,
 pub fn css__cascade_orphans(opv:u32 , 
 							style:@mut css_style ,
 							state: @mut css_select_state 
-							) -> css_result
+							) -> css_error
 {
 	return css__cascade_number(opv, style, state, None );
 }
 
 pub fn css__set_orphans_from_hint(_: @mut css_hint, 
-		_:@mut css_computed_style) -> css_result {
+		_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_orphans(_:@mut css_select_state) -> css_result {
+pub fn css__initial_orphans(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_orphans(_:@mut css_computed_style,
 							_:@mut css_computed_style,
-							_:@mut css_computed_style) -> css_result {
+							_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -4439,7 +4439,7 @@ pub fn css__compose_orphans(_:@mut css_computed_style,
 // outline_color
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_outline_color(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value : u16 = CSS_OUTLINE_COLOR_INHERIT as u16;
 	let mut color : u32 = 0;
@@ -4474,7 +4474,7 @@ pub fn css__cascade_outline_color(opv:u32, style:@mut css_style,
 
 pub fn css__set_outline_color_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		COLOR=>{
@@ -4494,7 +4494,7 @@ pub fn css__set_outline_color_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_outline_color(state:@mut css_select_state) -> css_result {
+pub fn css__initial_outline_color(state:@mut css_select_state) -> css_error {
 
 	set_outline_color(state.computed, (CSS_OUTLINE_COLOR_INVERT as u8), 0);
 	CSS_OK
@@ -4503,7 +4503,7 @@ pub fn css__initial_outline_color(state:@mut css_select_state) -> css_result {
 pub fn css__compose_outline_color(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,ocolor) = css_computed_outline_color(child);
 
@@ -4531,7 +4531,7 @@ pub fn css__compose_outline_color(parent:@mut css_computed_style,
 // outline_style
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_outline_style(opv:u32, style:@mut css_style, 
-										state:@mut css_select_state) -> css_result {
+										state:@mut css_select_state) -> css_error {
 
 	
 	return css__cascade_border_style(opv, style, state, @set_outline_style);
@@ -4539,13 +4539,13 @@ pub fn css__cascade_outline_style(opv:u32, style:@mut css_style,
 
 pub fn css__set_outline_style_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_outline_style(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_outline_style(state:@mut css_select_state) -> css_result {
+pub fn css__initial_outline_style(state:@mut css_select_state) -> css_error {
 
 	set_outline_style(state.computed, (CSS_OUTLINE_STYLE_NONE as u8) );
 	CSS_OK
@@ -4554,7 +4554,7 @@ pub fn css__initial_outline_style(state:@mut css_select_state) -> css_result {
 pub fn css__compose_outline_style(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_outline_style(child);
 
@@ -4575,14 +4575,14 @@ pub fn css__compose_outline_style(parent:@mut css_computed_style,
 // outline-width
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_outline_width(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_border_width(opv, style, state, @set_outline_width);
 }
 
 pub fn css__set_outline_width_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -4602,7 +4602,7 @@ pub fn css__set_outline_width_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_outline_width(state:@mut css_select_state) -> css_result {
+pub fn css__initial_outline_width(state:@mut css_select_state) -> css_error {
 
 	set_outline_width(state.computed, (CSS_OUTLINE_WIDTH_MEDIUM as u8),
 			0, CSS_UNIT_PX);
@@ -4612,7 +4612,7 @@ pub fn css__initial_outline_width(state:@mut css_select_state) -> css_result {
 pub fn css__compose_outline_width(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_outline_width(child);
 
@@ -4644,7 +4644,7 @@ pub fn css__compose_outline_width(parent:@mut css_computed_style,
 // overflow
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_overflow(opv:u32, _:@mut css_style, 
-										state:@mut css_select_state) -> css_result {
+										state:@mut css_select_state) -> css_error {
 
 	
 	let mut value = CSS_OVERFLOW_INHERIT as u16;
@@ -4677,13 +4677,13 @@ pub fn css__cascade_overflow(opv:u32, _:@mut css_style,
 
 pub fn css__set_overflow_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_overflow(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_overflow(state:@mut css_select_state) -> css_result {
+pub fn css__initial_overflow(state:@mut css_select_state) -> css_error {
 
 	set_overflow(state.computed, (CSS_OVERFLOW_VISIBLE as u8) );
 	CSS_OK
@@ -4692,7 +4692,7 @@ pub fn css__initial_overflow(state:@mut css_select_state) -> css_result {
 pub fn css__compose_overflow(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_overflow(child);
 
@@ -4713,14 +4713,14 @@ pub fn css__compose_overflow(parent:@mut css_computed_style,
 // padding_bottom
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_padding_bottom(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length(opv, style, state, Some(@set_padding_bottom) );
 }
 
 pub fn css__set_padding_bottom_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -4740,7 +4740,7 @@ pub fn css__set_padding_bottom_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_padding_bottom(state:@mut css_select_state) -> css_result {
+pub fn css__initial_padding_bottom(state:@mut css_select_state) -> css_error {
 
 	set_padding_bottom(state.computed, (CSS_PADDING_SET as u8), 
 			0, CSS_UNIT_PX);
@@ -4750,7 +4750,7 @@ pub fn css__initial_padding_bottom(state:@mut css_select_state) -> css_result {
 pub fn css__compose_padding_bottom(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_padding_bottom(child);
 
@@ -4776,14 +4776,14 @@ pub fn css__compose_padding_bottom(parent:@mut css_computed_style,
 // padding_left
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_padding_left(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length(opv, style, state, Some(@set_padding_left) );
 }
 
 pub fn css__set_padding_left_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -4803,7 +4803,7 @@ pub fn css__set_padding_left_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_padding_left(state:@mut css_select_state) -> css_result {
+pub fn css__initial_padding_left(state:@mut css_select_state) -> css_error {
 
 	set_padding_left(state.computed, (CSS_PADDING_SET as u8), 
 			0, CSS_UNIT_PX);
@@ -4813,7 +4813,7 @@ pub fn css__initial_padding_left(state:@mut css_select_state) -> css_result {
 pub fn css__compose_padding_left(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_padding_left(child);
 
@@ -4839,14 +4839,14 @@ pub fn css__compose_padding_left(parent:@mut css_computed_style,
 // padding_right
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_padding_right(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length(opv, style, state, Some(@set_padding_right) );
 }
 
 pub fn css__set_padding_right_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -4866,7 +4866,7 @@ pub fn css__set_padding_right_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_padding_right(state:@mut css_select_state) -> css_result {
+pub fn css__initial_padding_right(state:@mut css_select_state) -> css_error {
 
 	set_padding_right(state.computed, (CSS_PADDING_SET as u8), 
 			0, CSS_UNIT_PX);
@@ -4876,7 +4876,7 @@ pub fn css__initial_padding_right(state:@mut css_select_state) -> css_result {
 pub fn css__compose_padding_right(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_padding_right(child);
 
@@ -4902,14 +4902,14 @@ pub fn css__compose_padding_right(parent:@mut css_computed_style,
 // padding_top
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_padding_top(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length(opv, style, state, Some(@set_padding_top) );
 }
 
 pub fn css__set_padding_top_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -4929,7 +4929,7 @@ pub fn css__set_padding_top_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_padding_top(state:@mut css_select_state) -> css_result {
+pub fn css__initial_padding_top(state:@mut css_select_state) -> css_error {
 
 	set_padding_top(state.computed, (CSS_PADDING_SET as u8), 
 			0, CSS_UNIT_PX);
@@ -4939,7 +4939,7 @@ pub fn css__initial_padding_top(state:@mut css_select_state) -> css_result {
 pub fn css__compose_padding_top(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_padding_top(child);
 
@@ -4965,7 +4965,7 @@ pub fn css__compose_padding_top(parent:@mut css_computed_style,
 // page_break_after
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_page_break_after(opv:u32, style:@mut css_style, 
-										state:@mut css_select_state) -> css_result {
+										state:@mut css_select_state) -> css_error {
 
 	
 	return css__cascade_page_break_after_before_inside(opv, style, state,
@@ -4974,13 +4974,13 @@ pub fn css__cascade_page_break_after(opv:u32, style:@mut css_style,
 
 pub fn css__set_page_break_after_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_page_break_after(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_page_break_after(state:@mut css_select_state) -> css_result {
+pub fn css__initial_page_break_after(state:@mut css_select_state) -> css_error {
 
 	set_page_break_after(state.computed, (CSS_PAGE_BREAK_AFTER_AUTO as u8) );
 	CSS_OK
@@ -4989,7 +4989,7 @@ pub fn css__initial_page_break_after(state:@mut css_select_state) -> css_result 
 pub fn css__compose_page_break_after(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_page_break_after(child);
 
@@ -5009,7 +5009,7 @@ pub fn css__compose_page_break_after(parent:@mut css_computed_style,
 // page_break_before
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_page_break_before(opv:u32, style:@mut css_style, 
-										state:@mut css_select_state) -> css_result {
+										state:@mut css_select_state) -> css_error {
 
 	
 	return css__cascade_page_break_after_before_inside(opv, style, state, 
@@ -5018,13 +5018,13 @@ pub fn css__cascade_page_break_before(opv:u32, style:@mut css_style,
 
 pub fn css__set_page_break_before_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_page_break_before(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_page_break_before(state:@mut css_select_state) -> css_result {
+pub fn css__initial_page_break_before(state:@mut css_select_state) -> css_error {
 
 	set_page_break_before(state.computed, (CSS_PAGE_BREAK_BEFORE_AUTO as u8) );
 	CSS_OK
@@ -5033,7 +5033,7 @@ pub fn css__initial_page_break_before(state:@mut css_select_state) -> css_result
 pub fn css__compose_page_break_before(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_page_break_before(child);
 
@@ -5054,7 +5054,7 @@ pub fn css__compose_page_break_before(parent:@mut css_computed_style,
 // page_break_inside
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_page_break_inside(opv:u32, style:@mut css_style, 
-										state:@mut css_select_state) -> css_result {
+										state:@mut css_select_state) -> css_error {
 
 	
 	return css__cascade_page_break_after_before_inside(opv, style, state, 
@@ -5063,13 +5063,13 @@ pub fn css__cascade_page_break_inside(opv:u32, style:@mut css_style,
 
 pub fn css__set_page_break_inside_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_page_break_inside(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_page_break_inside(state:@mut css_select_state) -> css_result {
+pub fn css__initial_page_break_inside(state:@mut css_select_state) -> css_error {
 
 	set_page_break_inside(state.computed, (CSS_PAGE_BREAK_INSIDE_AUTO as u8) );
 	CSS_OK
@@ -5078,7 +5078,7 @@ pub fn css__initial_page_break_inside(state:@mut css_select_state) -> css_result
 pub fn css__compose_page_break_inside(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_page_break_inside(child);
 
@@ -5101,26 +5101,26 @@ pub fn css__compose_page_break_inside(parent:@mut css_computed_style,
 pub fn css__cascade_pause_after(opv:u32 , 
 							style:@mut css_style ,
 							state: @mut css_select_state 
-							) -> css_result {
+							) -> css_error {
 
 	css__cascade_length(opv, style, state, None)
 }
 
 pub fn css__set_pause_after_from_hint(_: @mut css_hint, 
 									_:@mut css_computed_style) 
-									-> css_result {
+									-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_pause_after(_:@mut css_select_state) -> css_result {
+pub fn css__initial_pause_after(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_pause_after(_:@mut css_computed_style,
 								_:@mut css_computed_style,
-								_:@mut css_computed_style) -> css_result {
+								_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -5132,26 +5132,26 @@ pub fn css__compose_pause_after(_:@mut css_computed_style,
 pub fn css__cascade_pause_before(opv:u32 , 
 							style:@mut css_style ,
 							state: @mut css_select_state 
-							) -> css_result {
+							) -> css_error {
 
 	css__cascade_length(opv, style, state, None)
 }
 
 pub fn css__set_pause_before_from_hint(_: @mut css_hint, 
 									_:@mut css_computed_style) 
-									-> css_result {
+									-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_pause_before(_:@mut css_select_state) -> css_result {
+pub fn css__initial_pause_before(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_pause_before(_:@mut css_computed_style,
 								_:@mut css_computed_style,
-								_:@mut css_computed_style) -> css_result {
+								_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -5163,7 +5163,7 @@ pub fn css__compose_pause_before(_:@mut css_computed_style,
 pub fn css__cascade_pitch(opv:u32 , 
 							style:@mut css_style ,
 							state: @mut css_select_state 
-							) -> css_result {
+							) -> css_error {
 
 	let mut freq : i32 = 0;
 	let mut unit : u32 = UNIT_HZ as u32;
@@ -5198,19 +5198,19 @@ pub fn css__cascade_pitch(opv:u32 ,
 }
 
 pub fn css__set_pitch_from_hint(_: @mut css_hint, 
-								_:@mut css_computed_style) -> css_result {
+								_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_pitch(_:@mut css_select_state) -> css_result {
+pub fn css__initial_pitch(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_pitch(_:@mut css_computed_style,
 						_:@mut css_computed_style,
-						_:@mut css_computed_style) -> css_result {
+						_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -5222,26 +5222,26 @@ pub fn css__compose_pitch(_:@mut css_computed_style,
 pub fn css__cascade_pitch_range(opv:u32 , 
 							style:@mut css_style ,
 							state: @mut css_select_state 
-							) -> css_result {
+							) -> css_error {
 
 	css__cascade_number(opv, style, state, None)
 }
 
 pub fn css__set_pitch_range_from_hint(_: @mut css_hint, 
 									_:@mut css_computed_style) 
-									-> css_result {
+									-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_pitch_range(_:@mut css_select_state) -> css_result {
+pub fn css__initial_pitch_range(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_pitch_range(_:@mut css_computed_style,
 								_:@mut css_computed_style,
-								_:@mut css_computed_style) -> css_result {
+								_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -5253,7 +5253,7 @@ pub fn css__compose_pitch_range(_:@mut css_computed_style,
 pub fn css__cascade_play_during(opv:u32 , 
 							style:@mut css_style ,
 							state: @mut css_select_state 
-							) -> css_result {
+							) -> css_error {
 
 	let mut uri : ~str = ~"" ;
 
@@ -5291,19 +5291,19 @@ pub fn css__cascade_play_during(opv:u32 ,
 
 pub fn css__set_play_during_from_hint(_: @mut css_hint, 
 									_:@mut css_computed_style) 
-									-> css_result {
+									-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_play_during(_:@mut css_select_state) -> css_result {
+pub fn css__initial_play_during(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_play_during(_:@mut css_computed_style,
 								_:@mut css_computed_style,
-								_:@mut css_computed_style) -> css_result {
+								_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -5313,7 +5313,7 @@ pub fn css__compose_play_during(_:@mut css_computed_style,
 // position
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_position(opv:u32, _:@mut css_style, 
-										state:@mut css_select_state) -> css_result {
+										state:@mut css_select_state) -> css_error {
 
 	
 	let mut value = (CSS_POSITION_INHERIT  as u16) ;
@@ -5346,13 +5346,13 @@ pub fn css__cascade_position(opv:u32, _:@mut css_style,
 
 pub fn css__set_position_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_position(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_position(state:@mut css_select_state) -> css_result {
+pub fn css__initial_position(state:@mut css_select_state) -> css_error {
 
 	set_position(state.computed, (CSS_POSITION_STATIC as u8) );
 	CSS_OK
@@ -5361,7 +5361,7 @@ pub fn css__initial_position(state:@mut css_select_state) -> css_result {
 pub fn css__compose_position(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_position(child);
 
@@ -5382,7 +5382,7 @@ pub fn css__compose_position(parent:@mut css_computed_style,
 // quotes
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_quotes(opv:u32, style:@mut css_style, 
-						state:@mut css_select_state) -> css_result {
+						state:@mut css_select_state) -> css_error {
 
 	
 	let mut value : u16 = CSS_QUOTES_INHERIT as u16;
@@ -5439,7 +5439,7 @@ pub fn css__cascade_quotes(opv:u32, style:@mut css_style,
 
 pub fn css__set_quotes_from_hint(hint:@mut  css_hint, 
 								style:@mut css_computed_style
-								) -> css_result {
+								) -> css_error {
 
 	match hint.hint_type {
 		STRINGS_VECTOR => {
@@ -5460,7 +5460,7 @@ pub fn css__set_quotes_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_quotes(state:@mut css_select_state) -> css_result {
+pub fn css__initial_quotes(state:@mut css_select_state) -> css_error {
 
 	let mut hint = @mut css_hint{
         hint_type:HINT_LENGTH,
@@ -5476,7 +5476,7 @@ pub fn css__initial_quotes(state:@mut css_select_state) -> css_result {
         string:None,
         strings:None
     };
-	let mut error : css_result;
+	let mut error : css_error;
 
 	match state.handler {
 		None=> {
@@ -5499,7 +5499,7 @@ pub fn css__initial_quotes(state:@mut css_select_state) -> css_result {
 pub fn css__compose_quotes(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,quotes) = css_computed_quotes(child) ;
 
@@ -5527,26 +5527,26 @@ pub fn css__compose_quotes(parent:@mut css_computed_style,
 pub fn css__cascade_richness(opv:u32 , 
 							style:@mut css_style ,
 							state: @mut css_select_state 
-							) -> css_result {
+							) -> css_error {
 
 	return css__cascade_number(opv, style, state, None);
 }
 
 pub fn css__set_richness_from_hint(_: @mut css_hint, 
 									_:@mut css_computed_style) 
-									-> css_result {
+									-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_richness(_:@mut css_select_state) -> css_result {
+pub fn css__initial_richness(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_richness(_:@mut css_computed_style,
 								_:@mut css_computed_style,
-								_:@mut css_computed_style) -> css_result {
+								_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -5556,7 +5556,7 @@ pub fn css__compose_richness(_:@mut css_computed_style,
 // right
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_right(opv:u32, style:@mut css_style, 
-										state:@mut css_select_state) -> css_result {
+										state:@mut css_select_state) -> css_error {
 
 	
 	return css__cascade_length_auto(opv, style, state, @set_right);
@@ -5564,7 +5564,7 @@ pub fn css__cascade_right(opv:u32, style:@mut css_style,
 
 pub fn css__set_right_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -5584,7 +5584,7 @@ pub fn css__set_right_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_right(state:@mut css_select_state) -> css_result {
+pub fn css__initial_right(state:@mut css_select_state) -> css_error {
 
 	set_right(state.computed, (CSS_RIGHT_AUTO as u8), 0, CSS_UNIT_PX);
 	CSS_OK
@@ -5593,7 +5593,7 @@ pub fn css__initial_right(state:@mut css_select_state) -> css_result {
 pub fn css__compose_right(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_right(child);
 
@@ -5621,7 +5621,7 @@ pub fn css__compose_right(parent:@mut css_computed_style,
 pub fn css__cascade_speak(opv:u32 , 
 							_:@mut css_style ,
 							state: @mut css_select_state 
-							) -> css_result {
+							) -> css_error {
 
 	if (isInherit(opv) == false) {
 		match (getValue(opv)) {
@@ -5644,19 +5644,19 @@ pub fn css__cascade_speak(opv:u32 ,
 
 pub fn css__set_speak_from_hint(_: @mut css_hint, 
 								_:@mut css_computed_style) 
-								-> css_result {
+								-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_speak(_:@mut css_select_state) -> css_result {
+pub fn css__initial_speak(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_speak(_:@mut css_computed_style,
 							_:@mut css_computed_style,
-							_:@mut css_computed_style) -> css_result {
+							_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -5668,7 +5668,7 @@ pub fn css__compose_speak(_:@mut css_computed_style,
 pub fn css__cascade_speak_header(opv:u32 , 
 								_:@mut css_style ,
 								state: @mut css_select_state 
-								) -> css_result {
+								) -> css_error {
 
 	if (isInherit(opv) == false) {
 		match (getValue(opv)) {
@@ -5690,19 +5690,19 @@ pub fn css__cascade_speak_header(opv:u32 ,
 
 pub fn css__set_speak_header_from_hint(_: @mut css_hint, 
 									_:@mut css_computed_style) 
-									-> css_result {
+									-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_speak_header(_:@mut css_select_state) -> css_result {
+pub fn css__initial_speak_header(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_speak_header(_:@mut css_computed_style,
 								_:@mut css_computed_style,
-								_:@mut css_computed_style) -> css_result {
+								_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -5714,7 +5714,7 @@ pub fn css__compose_speak_header(_:@mut css_computed_style,
 pub fn css__cascade_speak_numeral(opv:u32 , 
 								_:@mut css_style ,
 								state: @mut css_select_state 
-								) -> css_result {
+								) -> css_error {
 
 	if (isInherit(opv) == false) {
 		match (getValue(opv)) {
@@ -5736,19 +5736,19 @@ pub fn css__cascade_speak_numeral(opv:u32 ,
 
 pub fn css__set_speak_numeral_from_hint(_: @mut css_hint, 
 									_:@mut css_computed_style) 
-									-> css_result {
+									-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_speak_numeral(_:@mut css_select_state) -> css_result {
+pub fn css__initial_speak_numeral(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_speak_numeral(_:@mut css_computed_style,
 								_:@mut css_computed_style,
-								_:@mut css_computed_style) -> css_result {
+								_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -5760,7 +5760,7 @@ pub fn css__compose_speak_numeral(_:@mut css_computed_style,
 pub fn css__cascade_speak_punctuation(opv:u32 , 
 									_:@mut css_style ,
 									state: @mut css_select_state 
-									) -> css_result {
+									) -> css_error {
 
 	if (isInherit(opv) == false) {
 		match (getValue(opv)) {
@@ -5782,19 +5782,19 @@ pub fn css__cascade_speak_punctuation(opv:u32 ,
 
 pub fn css__set_speak_punctuation_from_hint(_: @mut css_hint, 
 											_:@mut css_computed_style) 
-											-> css_result {
+											-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_speak_punctuation(_:@mut css_select_state) -> css_result {
+pub fn css__initial_speak_punctuation(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_speak_punctuation(_:@mut css_computed_style,
 									_:@mut css_computed_style,
-									_:@mut css_computed_style) -> css_result {
+									_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -5806,7 +5806,7 @@ pub fn css__compose_speak_punctuation(_:@mut css_computed_style,
 pub fn css__cascade_speech_rate(opv:u32 , 
 								style:@mut css_style ,
 								state: @mut css_select_state 
-								) -> css_result {
+								) -> css_error {
 
 	let mut rate : i32 = 0;
 
@@ -5839,19 +5839,19 @@ pub fn css__cascade_speech_rate(opv:u32 ,
 
 pub fn css__set_speech_rate_from_hint(_: @mut css_hint, 
 									_:@mut css_computed_style) 
-									-> css_result {
+									-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_speech_rate(_:@mut css_select_state) -> css_result {
+pub fn css__initial_speech_rate(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_speech_rate(_:@mut css_computed_style,
 								_:@mut css_computed_style,
-								_:@mut css_computed_style) -> css_result {
+								_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -5863,26 +5863,26 @@ pub fn css__compose_speech_rate(_:@mut css_computed_style,
 pub fn css__cascade_stress(opv:u32 , 
 							style:@mut css_style ,
 							state: @mut css_select_state 
-							) -> css_result {
+							) -> css_error {
 
 	return css__cascade_number(opv, style, state, None);
 }
 
 pub fn css__set_stress_from_hint(_: @mut css_hint, 
 								_:@mut css_computed_style) 
-								-> css_result {
+								-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_stress(_:@mut css_select_state) -> css_result {
+pub fn css__initial_stress(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_stress(_:@mut css_computed_style,
 							_:@mut css_computed_style,
-							_:@mut css_computed_style) -> css_result {
+							_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -5892,7 +5892,7 @@ pub fn css__compose_stress(_:@mut css_computed_style,
 // table_layout
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_table_layout(opv:u32, _:@mut css_style, 
-								state:@mut css_select_state) -> css_result {
+								state:@mut css_select_state) -> css_error {
 
 	
 	let mut value = CSS_TABLE_LAYOUT_INHERIT as u16;
@@ -5919,13 +5919,13 @@ pub fn css__cascade_table_layout(opv:u32, _:@mut css_style,
 
 pub fn css__set_table_layout_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_table_layout(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_table_layout(state:@mut css_select_state) -> css_result {
+pub fn css__initial_table_layout(state:@mut css_select_state) -> css_error {
 
 	set_table_layout(state.computed, (CSS_TABLE_LAYOUT_AUTO as u8) );
 	CSS_OK
@@ -5934,7 +5934,7 @@ pub fn css__initial_table_layout(state:@mut css_select_state) -> css_result {
 pub fn css__compose_table_layout(parent:@mut css_computed_style,
 								child:@mut css_computed_style,
 								result:@mut css_computed_style
-								) -> css_result {
+								) -> css_error {
 
 	let mut ftype = css_computed_table_layout(child);
 
@@ -5955,7 +5955,7 @@ pub fn css__compose_table_layout(parent:@mut css_computed_style,
 // text-align
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_text_align(opv:u32, _:@mut css_style, 
-								state:@mut css_select_state) -> css_result {
+								state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_TEXT_ALIGN_INHERIT as u16;
 
@@ -5997,13 +5997,13 @@ pub fn css__cascade_text_align(opv:u32, _:@mut css_style,
 
 pub fn css__set_text_align_from_hint(hint:@mut  css_hint, 
 									style:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	set_text_align(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_text_align(state:@mut css_select_state) -> css_result {
+pub fn css__initial_text_align(state:@mut css_select_state) -> css_error {
 
 	set_text_align(state.computed, (CSS_TEXT_ALIGN_DEFAULT as u8) );
 	CSS_OK
@@ -6012,7 +6012,7 @@ pub fn css__initial_text_align(state:@mut css_select_state) -> css_result {
 pub fn css__compose_text_align(parent:@mut css_computed_style,
 								child:@mut css_computed_style,
 								result:@mut css_computed_style
-								) -> css_result {
+								) -> css_error {
 
 	let mut ftype = css_computed_text_align(child);
 
@@ -6042,7 +6042,7 @@ pub fn css__compose_text_align(parent:@mut css_computed_style,
 // text_decoration
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_text_decoration(opv:u32, _:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_TEXT_DECORATION_INHERIT as u16;
 
@@ -6080,13 +6080,13 @@ pub fn css__cascade_text_decoration(opv:u32, _:@mut css_style,
 
 pub fn css__set_text_decoration_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_text_decoration(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_text_decoration(state:@mut css_select_state) -> css_result {
+pub fn css__initial_text_decoration(state:@mut css_select_state) -> css_error {
 
 	set_text_decoration(state.computed, (CSS_TEXT_DECORATION_NONE as u8) );
 	CSS_OK
@@ -6095,7 +6095,7 @@ pub fn css__initial_text_decoration(state:@mut css_select_state) -> css_result {
 pub fn css__compose_text_decoration(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_text_decoration(child);
 
@@ -6116,7 +6116,7 @@ pub fn css__compose_text_decoration(parent:@mut css_computed_style,
 // text_indent
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_text_indent(opv:u32, style:@mut css_style, 
-										state:@mut css_select_state) -> css_result {
+										state:@mut css_select_state) -> css_error {
 
 	
 	return css__cascade_length(opv, style, state, Some(@set_text_indent) );
@@ -6124,7 +6124,7 @@ pub fn css__cascade_text_indent(opv:u32, style:@mut css_style,
 
 pub fn css__set_text_indent_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -6144,7 +6144,7 @@ pub fn css__set_text_indent_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_text_indent(state:@mut css_select_state) -> css_result {
+pub fn css__initial_text_indent(state:@mut css_select_state) -> css_error {
 
 	set_text_indent(state.computed, (CSS_TEXT_INDENT_SET as u8), 
 			0, CSS_UNIT_PX);
@@ -6154,7 +6154,7 @@ pub fn css__initial_text_indent(state:@mut css_select_state) -> css_result {
 pub fn css__compose_text_indent(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_text_indent(child);
 
@@ -6180,7 +6180,7 @@ pub fn css__compose_text_indent(parent:@mut css_computed_style,
 // text_transform
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_text_transform(opv:u32, _:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_TEXT_TRANSFORM_INHERIT as u16;
 
@@ -6212,13 +6212,13 @@ pub fn css__cascade_text_transform(opv:u32, _:@mut css_style,
 
 pub fn css__set_text_transform_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	set_text_transform(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_text_transform(state:@mut css_select_state) -> css_result {
+pub fn css__initial_text_transform(state:@mut css_select_state) -> css_error {
 
 	set_text_transform(state.computed, (CSS_TEXT_TRANSFORM_NONE as u8) );
 	CSS_OK
@@ -6227,7 +6227,7 @@ pub fn css__initial_text_transform(state:@mut css_select_state) -> css_result {
 pub fn css__compose_text_transform(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut ftype = css_computed_text_transform(child);
 
@@ -6248,14 +6248,14 @@ pub fn css__compose_text_transform(parent:@mut css_computed_style,
 // top
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_top(opv:u32, style:@mut css_style, 
-						state:@mut css_select_state) -> css_result {
+						state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length_auto(opv, style, state, @set_top) ;
 }
 
 pub fn css__set_top_from_hint(hint:@mut  css_hint, 
 							style:@mut css_computed_style
-							) -> css_result {
+							) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -6275,7 +6275,7 @@ pub fn css__set_top_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_top(state:@mut css_select_state) -> css_result {
+pub fn css__initial_top(state:@mut css_select_state) -> css_error {
 
 	set_top(state.computed, (CSS_TOP_AUTO as u8), 0, CSS_UNIT_PX);
 	CSS_OK
@@ -6284,7 +6284,7 @@ pub fn css__initial_top(state:@mut css_select_state) -> css_result {
 pub fn css__compose_top(parent:@mut css_computed_style,
 						child:@mut css_computed_style,
 						result:@mut css_computed_style
-						) -> css_result {
+						) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_top(child);
 
@@ -6310,7 +6310,7 @@ pub fn css__compose_top(parent:@mut css_computed_style,
 // unicode_bidi
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_unicode_bidi(opv:u32, _:@mut css_style, 
-								state:@mut css_select_state) -> css_result {
+								state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_UNICODE_BIDI_INHERIT as u16;
 
@@ -6339,13 +6339,13 @@ pub fn css__cascade_unicode_bidi(opv:u32, _:@mut css_style,
 
 pub fn css__set_unicode_bidi_from_hint(hint:@mut  css_hint, 
 									style:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	set_unicode_bidi(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_unicode_bidi(state:@mut css_select_state) -> css_result {
+pub fn css__initial_unicode_bidi(state:@mut css_select_state) -> css_error {
 
 	set_unicode_bidi(state.computed, (CSS_UNICODE_BIDI_NORMAL as u8) );
 	CSS_OK
@@ -6354,7 +6354,7 @@ pub fn css__initial_unicode_bidi(state:@mut css_select_state) -> css_result {
 pub fn css__compose_unicode_bidi(parent:@mut css_computed_style,
 								child:@mut css_computed_style,
 								result:@mut css_computed_style
-								) -> css_result {
+								) -> css_error {
 
 	let mut ftype = css_computed_unicode_bidi(child);
 
@@ -6375,7 +6375,7 @@ pub fn css__compose_unicode_bidi(parent:@mut css_computed_style,
 // vertical_align
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_vertical_align(opv:u32, style:@mut css_style, 
-								state:@mut css_select_state) -> css_result {
+								state:@mut css_select_state) -> css_error {
 
 	let mut value : u16 = CSS_VERTICAL_ALIGN_INHERIT as u16;
 	let mut length : i32 = 0;
@@ -6429,7 +6429,7 @@ pub fn css__cascade_vertical_align(opv:u32, style:@mut css_style,
 
 pub fn css__set_vertical_align_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -6449,7 +6449,7 @@ pub fn css__set_vertical_align_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_vertical_align(state:@mut css_select_state) -> css_result {
+pub fn css__initial_vertical_align(state:@mut css_select_state) -> css_error {
 
 	set_vertical_align(state.computed, (CSS_VERTICAL_ALIGN_BASELINE as u8),
 					 0, CSS_UNIT_PX);
@@ -6459,7 +6459,7 @@ pub fn css__initial_vertical_align(state:@mut css_select_state) -> css_result {
 pub fn css__compose_vertical_align(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_vertical_align(child);
 
@@ -6485,7 +6485,7 @@ pub fn css__compose_vertical_align(parent:@mut css_computed_style,
 // visibility
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_visibility(opv:u32, _:@mut css_style, 
-								state:@mut css_select_state) -> css_result {
+								state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_VISIBILITY_INHERIT as u16;
 
@@ -6514,13 +6514,13 @@ pub fn css__cascade_visibility(opv:u32, _:@mut css_style,
 
 pub fn css__set_visibility_from_hint(hint:@mut  css_hint, 
 									style:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	set_visibility(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_visibility(state:@mut css_select_state) -> css_result {
+pub fn css__initial_visibility(state:@mut css_select_state) -> css_error {
 
 	set_visibility(state.computed, (CSS_VISIBILITY_VISIBLE as u8) );
 	CSS_OK
@@ -6529,7 +6529,7 @@ pub fn css__initial_visibility(state:@mut css_select_state) -> css_result {
 pub fn css__compose_visibility(parent:@mut css_computed_style,
 								child:@mut css_computed_style,
 								result:@mut css_computed_style
-								) -> css_result {
+								) -> css_error {
 
 	let mut ftype = css_computed_visibility(child);
 
@@ -6552,7 +6552,7 @@ pub fn css__compose_visibility(parent:@mut css_computed_style,
 pub fn css__cascade_voice_family(opv:u32 , 
 								style:@mut css_style ,
 								state: @mut css_select_state 
-								) -> css_result {
+								) -> css_error {
 
 	let mut value : u16 = 0;
 	let mut voices : ~[~str] = ~[];
@@ -6619,19 +6619,19 @@ pub fn css__cascade_voice_family(opv:u32 ,
 
 pub fn css__set_voice_family_from_hint(_: @mut css_hint, 
 								_:@mut css_computed_style) 
-								-> css_result {
+								-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_voice_family(_:@mut css_select_state) -> css_result {
+pub fn css__initial_voice_family(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_voice_family(_:@mut css_computed_style,
 								_:@mut css_computed_style,
-								_:@mut css_computed_style) -> css_result {
+								_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -6643,7 +6643,7 @@ pub fn css__compose_voice_family(_:@mut css_computed_style,
 pub fn css__cascade_volume(opv:u32 , 
 								style:@mut css_style ,
 								state: @mut css_select_state 
-								) -> css_result {
+								) -> css_error {
 
 	let mut val : i32 = 0;
 	let mut unit : u32 = UNIT_PCT as u32;
@@ -6683,19 +6683,19 @@ pub fn css__cascade_volume(opv:u32 ,
 
 pub fn css__set_volume_from_hint(_: @mut css_hint, 
 								_:@mut css_computed_style) 
-								-> css_result {
+								-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_volume(_:@mut css_select_state) -> css_result {
+pub fn css__initial_volume(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_volume(_:@mut css_computed_style,
 							_:@mut css_computed_style,
-							_:@mut css_computed_style) -> css_result {
+							_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -6705,7 +6705,7 @@ pub fn css__compose_volume(_:@mut css_computed_style,
 // white_space
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_white_space(opv:u32, _:@mut css_style, 
-								state:@mut css_select_state) -> css_result {
+								state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_WHITE_SPACE_INHERIT as u16;
 
@@ -6740,13 +6740,13 @@ pub fn css__cascade_white_space(opv:u32, _:@mut css_style,
 
 pub fn css__set_white_space_from_hint(hint:@mut  css_hint, 
 									style:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	set_white_space(style, hint.status);
 	CSS_OK
 }
 
-pub fn css__initial_white_space(state:@mut css_select_state) -> css_result {
+pub fn css__initial_white_space(state:@mut css_select_state) -> css_error {
 
 	set_white_space(state.computed, (CSS_WHITE_SPACE_NORMAL as u8) );
 	CSS_OK
@@ -6755,7 +6755,7 @@ pub fn css__initial_white_space(state:@mut css_select_state) -> css_result {
 pub fn css__compose_white_space(parent:@mut css_computed_style,
 								child:@mut css_computed_style,
 								result:@mut css_computed_style
-								) -> css_result {
+								) -> css_error {
 
 	let mut ftype = css_computed_white_space(child);
 
@@ -6776,14 +6776,14 @@ pub fn css__compose_white_space(parent:@mut css_computed_style,
 // width
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_width(opv:u32, style:@mut css_style, 
-						state:@mut css_select_state) -> css_result {
+						state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length_auto(opv, style, state, @set_width);	
 }
 
 pub fn css__set_width_from_hint(hint:@mut  css_hint, 
 								style:@mut css_computed_style
-								) -> css_result {
+								) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -6803,7 +6803,7 @@ pub fn css__set_width_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_width(state:@mut css_select_state) -> css_result {
+pub fn css__initial_width(state:@mut css_select_state) -> css_error {
 
 	set_width(state.computed, (CSS_WIDTH_AUTO as u8) , 0, CSS_UNIT_PX);
 	CSS_OK
@@ -6812,7 +6812,7 @@ pub fn css__initial_width(state:@mut css_select_state) -> css_result {
 pub fn css__compose_width(parent:@mut css_computed_style,
 							child:@mut css_computed_style,
 							result:@mut css_computed_style
-							) -> css_result {
+							) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_width(child);
 
@@ -6839,26 +6839,26 @@ pub fn css__compose_width(parent:@mut css_computed_style,
 pub fn css__cascade_windows(opv:u32 , 
 								style:@mut css_style ,
 								state: @mut css_select_state 
-								) -> css_result {
+								) -> css_error {
 
 	return css__cascade_number(opv, style, state, None);
 }
 
 pub fn css__set_windows_from_hint(_: @mut css_hint, 
 								_:@mut css_computed_style) 
-								-> css_result {
+								-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_windows(_:@mut css_select_state) -> css_result {
+pub fn css__initial_windows(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_windows(_:@mut css_computed_style,
 							_:@mut css_computed_style,
-							_:@mut css_computed_style) -> css_result {
+							_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -6868,14 +6868,14 @@ pub fn css__compose_windows(_:@mut css_computed_style,
 // word_spacing
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_word_spacing(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_length_normal(opv, style, state, @set_word_spacing);
 }
 
 pub fn css__set_word_spacing_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
@@ -6895,7 +6895,7 @@ pub fn css__set_word_spacing_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_word_spacing(state:@mut css_select_state) -> css_result {
+pub fn css__initial_word_spacing(state:@mut css_select_state) -> css_error {
 
 	set_word_spacing(state.computed, (CSS_WORD_SPACING_NORMAL as u8), 
 			0, CSS_UNIT_PX);
@@ -6905,7 +6905,7 @@ pub fn css__initial_word_spacing(state:@mut css_select_state) -> css_result {
 pub fn css__compose_word_spacing(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,olength,ounit) = css_computed_word_spacing(child);
 
@@ -6939,26 +6939,26 @@ pub fn css__compose_word_spacing(parent:@mut css_computed_style,
 pub fn css__cascade_cue_after(opv:u32 , 
 								style:@mut css_style ,
 								state: @mut css_select_state 
-								) -> css_result {
+								) -> css_error {
 
 	return css__cascade_uri_none(opv, style, state, None);
 }
 
 pub fn css__set_cue_after_from_hint(_: @mut css_hint, 
 								_:@mut css_computed_style) 
-								-> css_result {
+								-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_cue_after(_:@mut css_select_state) -> css_result {
+pub fn css__initial_cue_after(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_cue_after(_:@mut css_computed_style,
 							_:@mut css_computed_style,
-							_:@mut css_computed_style) -> css_result {
+							_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -6971,26 +6971,26 @@ pub fn css__compose_cue_after(_:@mut css_computed_style,
 pub fn css__cascade_cue_before(opv:u32 , 
 								style:@mut css_style ,
 								state: @mut css_select_state 
-								) -> css_result {
+								) -> css_error {
 
 	return css__cascade_uri_none(opv, style, state, None);
 }
 
 pub fn css__set_cue_before_from_hint(_: @mut css_hint, 
 								_:@mut css_computed_style) 
-								-> css_result {
+								-> css_error {
 
 	CSS_OK
 }
 
-pub fn css__initial_cue_before(_:@mut css_select_state) -> css_result {
+pub fn css__initial_cue_before(_:@mut css_select_state) -> css_error {
 
 	CSS_OK
 }
 
 pub fn css__compose_cue_before(_:@mut css_computed_style,
 							_:@mut css_computed_style,
-							_:@mut css_computed_style) -> css_result {
+							_:@mut css_computed_style) -> css_error {
 
 	CSS_OK
 }
@@ -7000,7 +7000,7 @@ pub fn css__compose_cue_before(_:@mut css_computed_style,
 // z_index
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_z_index(opv:u32, style:@mut css_style, 
-							state:@mut css_select_state) -> css_result {
+							state:@mut css_select_state) -> css_error {
 
 	let mut value : u16= CSS_Z_INDEX_INHERIT as u16;
 	let mut index : i32 = 0;
@@ -7030,7 +7030,7 @@ pub fn css__cascade_z_index(opv:u32, style:@mut css_style,
 
 pub fn css__set_z_index_from_hint(hint:@mut  css_hint, 
 								style:@mut css_computed_style
-								) -> css_result {
+								) -> css_error {
 
 	match hint.hint_type {
 		INTEGER_TYPE=>{
@@ -7050,7 +7050,7 @@ pub fn css__set_z_index_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_z_index(state:@mut css_select_state) -> css_result {
+pub fn css__initial_z_index(state:@mut css_select_state) -> css_error {
 
 	set_z_index(state.computed, (CSS_Z_INDEX_AUTO as u8) , 0);
 	CSS_OK
@@ -7059,7 +7059,7 @@ pub fn css__initial_z_index(state:@mut css_select_state) -> css_result {
 pub fn css__compose_z_index(parent:@mut css_computed_style,
 							child:@mut css_computed_style,
 							result:@mut css_computed_style
-							) -> css_result {
+							) -> css_error {
 
 	let mut (ftype,index) = css_computed_z_index(child);
 
@@ -7080,7 +7080,7 @@ pub fn css__compose_z_index(parent:@mut css_computed_style,
 // counter_increment
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_counter_increment(opv:u32, style:@mut css_style, 
-									state:@mut css_select_state) -> css_result {
+									state:@mut css_select_state) -> css_error {
 
 	return css__cascade_counter_increment_reset(opv, style, state, 
 			@set_counter_increment);
@@ -7088,7 +7088,7 @@ pub fn css__cascade_counter_increment(opv:u32, style:@mut css_style,
 
 pub fn css__set_counter_increment_from_hint(hint:@mut  css_hint, 
 											style:@mut css_computed_style
-											) -> css_result {
+											) -> css_error {
 
 	match hint.hint_type {
 		COUNTER=>{
@@ -7111,7 +7111,7 @@ pub fn css__set_counter_increment_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_counter_increment(state:@mut css_select_state) -> css_result {
+pub fn css__initial_counter_increment(state:@mut css_select_state) -> css_error {
 
 	set_counter_increment(state.computed, 
 			(CSS_COUNTER_INCREMENT_NONE as u8), ~[]);
@@ -7121,7 +7121,7 @@ pub fn css__initial_counter_increment(state:@mut css_select_state) -> css_result
 pub fn css__compose_counter_increment(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
-									) -> css_result {
+									) -> css_error {
 
 	let mut (ftype,ocounters) = css_computed_counter_increment(child);
 
@@ -7148,7 +7148,7 @@ pub fn css__compose_counter_increment(parent:@mut css_computed_style,
 // counter_reset
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_counter_reset(opv:u32, style:@mut css_style, 
-								state:@mut css_select_state) -> css_result {
+								state:@mut css_select_state) -> css_error {
 
 	return css__cascade_counter_increment_reset(opv, style, state,
 			@set_counter_reset);
@@ -7156,7 +7156,7 @@ pub fn css__cascade_counter_reset(opv:u32, style:@mut css_style,
 
 pub fn css__set_counter_reset_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
-										) -> css_result {
+										) -> css_error {
 
 	match hint.hint_type {
 		COUNTER=>{
@@ -7179,7 +7179,7 @@ pub fn css__set_counter_reset_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_counter_reset(state:@mut css_select_state) -> css_result {
+pub fn css__initial_counter_reset(state:@mut css_select_state) -> css_error {
 
 	set_counter_reset(state.computed, 
 			(CSS_COUNTER_RESET_NONE as u8), ~[]);
@@ -7189,7 +7189,7 @@ pub fn css__initial_counter_reset(state:@mut css_select_state) -> css_result {
 pub fn css__compose_counter_reset(parent:@mut css_computed_style,
 								child:@mut css_computed_style,
 								result:@mut css_computed_style
-								) -> css_result {
+								) -> css_error {
 
 	let mut (ftype,ocounters) = css_computed_counter_reset(child);
 
@@ -7216,7 +7216,7 @@ pub fn css__compose_counter_reset(parent:@mut css_computed_style,
 // cursor
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_cursor(opv:u32, style:@mut css_style, 
-							state:@mut css_select_state) -> css_result {
+							state:@mut css_select_state) -> css_error {
 
 	let mut value : u16= CSS_CURSOR_INHERIT as u16;
 	let mut uris : ~[~str] = ~[] ;
@@ -7310,7 +7310,7 @@ pub fn css__cascade_cursor(opv:u32, style:@mut css_style,
 
 pub fn css__set_cursor_from_hint(hint:@mut  css_hint, 
 								style:@mut css_computed_style
-								) -> css_result {
+								) -> css_error {
 
 	match hint.hint_type {
 		STRINGS_VECTOR=>{
@@ -7331,7 +7331,7 @@ pub fn css__set_cursor_from_hint(hint:@mut  css_hint,
 	}
 }
 
-pub fn css__initial_cursor(state:@mut css_select_state) -> css_result {
+pub fn css__initial_cursor(state:@mut css_select_state) -> css_error {
 
 	set_cursor(state.computed, 
 			(CSS_CURSOR_AUTO as u8), ~[]);
@@ -7341,7 +7341,7 @@ pub fn css__initial_cursor(state:@mut css_select_state) -> css_result {
 pub fn css__compose_cursor(parent:@mut css_computed_style,
 								child:@mut css_computed_style,
 								result:@mut css_computed_style
-								) -> css_result {
+								) -> css_error {
 
 	let mut (ftype,ourl) = css_computed_cursor(child);
 
@@ -7366,7 +7366,7 @@ pub fn css__compose_cursor(parent:@mut css_computed_style,
 // content
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_content(opv:u32, style:@mut css_style, 
-    state:@mut css_select_state ) -> css_result {
+    state:@mut css_select_state ) -> css_error {
 
     let mut value = CSS_CONTENT_INHERIT;
     let mut content:~[@mut css_computed_content_item]=~[];
@@ -7501,13 +7501,13 @@ pub fn css__cascade_content(opv:u32, style:@mut css_style,
 
 pub fn css__set_content_from_hint(hint:@mut css_hint, 
 								style:@mut css_computed_style) 
-								-> css_result{
+								-> css_error{
 
     set_content(style, hint.status, ~[hint.content.unwrap()]);
     CSS_OK
 }
 
-pub fn css__initial_content(state:@mut css_select_state) -> css_result {
+pub fn css__initial_content(state:@mut css_select_state) -> css_error {
     set_content(state.computed, CSS_CONTENT_NORMAL as u8 , ~[]);
     CSS_OK
 }
@@ -7516,7 +7516,7 @@ pub fn css__initial_content(state:@mut css_select_state) -> css_result {
 pub fn css__compose_content( parent:@mut css_computed_style, 
 							child:@mut css_computed_style,
     						result:@mut css_computed_style) 
-							-> css_result {
+							-> css_error {
 
     let mut (content_type, items) = css_computed_content(child);
         
@@ -7541,7 +7541,7 @@ pub fn css__compose_content( parent:@mut css_computed_style,
 // column_span
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_column_span(opv:u32, _:@mut css_style, 
-    state:@mut css_select_state ) -> css_result {
+    state:@mut css_select_state ) -> css_error {
   
 	if !isInherit(opv) {
 		match getValue(opv) {
@@ -7562,12 +7562,12 @@ pub fn css__cascade_column_span(opv:u32, _:@mut css_style,
 
 pub fn css__set_column_span_from_hint(_:@mut css_hint, 
 									_:@mut css_computed_style)
-									-> css_result {
+									-> css_error {
   // DO NOTHING
   CSS_OK
 }
 
-pub fn css__initial_column_span(_:@mut css_select_state) -> css_result {
+pub fn css__initial_column_span(_:@mut css_select_state) -> css_error {
   
   CSS_OK
 }
@@ -7575,7 +7575,7 @@ pub fn css__initial_column_span(_:@mut css_select_state) -> css_result {
 pub fn css__compose_column_span(_:@mut css_computed_style, 
 								_:@mut css_computed_style,
   								_:@mut css_computed_style
-  								) -> css_result {
+  								) -> css_error {
   //DO NOTHING
   CSS_OK
 }
@@ -7586,7 +7586,7 @@ pub fn css__compose_column_span(_:@mut css_computed_style,
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_column_width(opv:u32, style:@mut css_style, 
     							state:@mut css_select_state ) 
-								-> css_result {
+								-> css_error {
 
 	let mut length : i32 = 0;
 	let mut unit : u32 = UNIT_PX;
@@ -7615,12 +7615,12 @@ pub fn css__cascade_column_width(opv:u32, style:@mut css_style,
 
 pub fn css__set_column_width_from_hint(_:@mut css_hint, 
 									_:@mut css_computed_style) 
-									-> css_result{
+									-> css_error{
 	//DO NOTHING
 	CSS_OK
 }
 
-pub fn css__initial_column_width(_:@mut css_select_state) -> css_result {
+pub fn css__initial_column_width(_:@mut css_select_state) -> css_error {
   
 	CSS_OK
 }
@@ -7628,7 +7628,7 @@ pub fn css__initial_column_width(_:@mut css_select_state) -> css_result {
 pub fn css__compose_column_width(_:@mut css_computed_style, 
 								_:@mut css_computed_style,
   								_:@mut css_computed_style) 
-								-> css_result {
+								-> css_error {
 	//DO NOTHING
 	CSS_OK
 }

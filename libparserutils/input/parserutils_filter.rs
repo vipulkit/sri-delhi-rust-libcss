@@ -16,12 +16,12 @@ impl filter {
     pub fn filter_set_encoding(&mut self, enc : ~str) -> parserutils_error {
 
         if enc.len()==0 {
-            return PARSERUTILS_BADPARAM;
+            return PARSERUTILS_BADPARM;
         }
 
         let mibenum_search_result  = arc::get(&self.instance).parserutils_charset_mibenum_from_name(enc);
         if mibenum_search_result==0 {
-            return PARSERUTILS_BADPARAM;
+            return PARSERUTILS_BADPARM;
         }
 
         let mibenum = mibenum_search_result;
@@ -38,7 +38,7 @@ impl filter {
         let totype: Option<~str> = arc::get(&self.instance).parserutils_charset_mibenum_to_name(self.int_enc) ;
         let fromtype: Option<~str> = arc::get(&self.instance).parserutils_charset_mibenum_to_name(mibenum) ;
         if totype.is_none() || fromtype.is_none() {
-            return PARSERUTILS_BADPARAM;
+            return PARSERUTILS_BADPARM;
         }
 
         self.iconv_h = riconv::safe_riconv_open(totype.unwrap(),fromtype.unwrap());
@@ -91,7 +91,7 @@ impl filter {
             PARSERUTILS_OK
         }
         else {
-            PARSERUTILS_BADPARAM
+            PARSERUTILS_BADPARM
         }   
     }
 
@@ -101,7 +101,7 @@ impl filter {
             return PARSERUTILS_OK;
         }
         else {
-            PARSERUTILS_BADPARAM
+            PARSERUTILS_BADPARM
         }   
     }
 
@@ -115,10 +115,10 @@ impl filter {
                 status = PARSERUTILS_NOMEM;
             } 
             else if iconv_result.err_state==2 {
-                status = PARSERUTILS_BADPARAM;
+                status = PARSERUTILS_BADPARM;
             }
             else {
-                status = PARSERUTILS_ICONV_ERROR;
+                status = PARSERUTILS_INVALID;
             }
         }
         else {

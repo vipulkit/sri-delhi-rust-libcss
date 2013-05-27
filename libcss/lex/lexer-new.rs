@@ -239,8 +239,6 @@ impl css_lexer {
         loop {
             let (pu_peek_result , error) = self.inputstream_instance.parserutils_inputstream_peek(self.bytes_read_for_token);
             match error {
-                
-
                 PARSERUTILS_OK => {
                     let (_cptr , clen) = pu_peek_result.unwrap();
                     c = _cptr[0];
@@ -285,6 +283,9 @@ impl css_lexer {
 
 }
 
+fn consumeEscape(lexer : &css_lexer, nl : bool){
+
+}
 
 
 fn start_nm_char(c: u8) -> bool{

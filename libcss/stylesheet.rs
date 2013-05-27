@@ -84,10 +84,10 @@ pub struct css_token {
     idata: Option<arc::RWARC<~lwc_string>>,
 }
 
-pub type css_url_resolution_fn = @extern fn (base:~str, rel:arc::RWARC<~lwc_string>) -> (css_result,Option<arc::RWARC<~lwc_string>>);
-pub type css_font_resolution_fn = @extern fn (name: arc::RWARC<~lwc_string>) -> (css_result , Option<css_system_font>);
-pub type css_import_notification_fn =  @extern fn(url:~str, media:@mut u64) -> css_result;
-pub type css_color_resolution_fn = @extern fn (name: arc::RWARC<~lwc_string>) -> (Option<u32> , css_result);
+pub type css_url_resolution_fn = @extern fn (base:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>);
+pub type css_font_resolution_fn = @extern fn (name: arc::RWARC<~lwc_string>) -> (css_error , Option<css_system_font>);
+pub type css_import_notification_fn =  @extern fn(url:~str, media:@mut u64) -> css_error;
+pub type css_color_resolution_fn = @extern fn (name: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error);
 
 
 static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
@@ -244,7 +244,7 @@ impl css_stylesheet {
     }
     
     pub fn css__stylesheet_string_get(&mut self, num:uint) 
-                                    -> (css_result,Option<~str>) {
+                                    -> (css_error,Option<~str>) {
 
         if( (self.string_vector.len() < num) || (num == 0) ) {
             return (CSS_BADPARM,None) ;
@@ -252,45 +252,45 @@ impl css_stylesheet {
         ( CSS_OK, Some(copy self.string_vector[num-1]) )
     }
 
-    pub fn css_stylesheet_set_disabled(&mut self, disabled:bool ) -> css_result {
+    pub fn css_stylesheet_set_disabled(&mut self, disabled:bool ) -> css_error {
 
         self.disabled = disabled;
         CSS_OK
     }
 
-    pub fn css_stylesheet_get_disabled(&mut self) -> (css_result,bool) {
+    pub fn css_stylesheet_get_disabled(&mut self) -> (css_error,bool) {
 
         (CSS_OK,self.disabled)
     }
 
-    pub fn css_stylesheet_quirks_allowed(&mut self) -> (css_result,bool) {
+    pub fn css_stylesheet_quirks_allowed(&mut self) -> (css_error,bool) {
 
         (CSS_OK,self.quirks_allowed)
     }
 
-    pub fn css_stylesheet_used_quirks(&mut self) -> (css_result,bool) {
+    pub fn css_stylesheet_used_quirks(&mut self) -> (css_error,bool) {
 
         (CSS_OK,self.quirks_used)
     }
 
-    pub fn css_stylesheet_get_title(&mut self) -> (css_result,~str) {
+    pub fn css_stylesheet_get_title(&mut self) -> (css_error,~str) {
 
         (CSS_OK,copy self.title)
     }
 
-    pub fn css_stylesheet_get_url(&mut self) -> (css_result,~str) {
+    pub fn css_stylesheet_get_url(&mut self) -> (css_error,~str) {
 
         (CSS_OK,copy self.url)
     }
 
     pub fn css_stylesheet_get_language_level(&mut self) -> 
-                                    (css_result,css_language_level) {
+                                    (css_error,css_language_level) {
 
         (CSS_OK,self.level)  
     }
 
     pub fn css_stylesheet_next_pending_import(&mut self) -> 
-                                (css_result,Option<~str>,Option<u64>) {
+                                (css_error,Option<~str>,Option<u64>) {
 
         let mut ptr = self.rule_list ;
         loop {
@@ -327,9 +327,9 @@ impl css_stylesheet {
         (CSS_INVALID,None,None) 
     }
 
-    pub fn css_stylesheet_register_import(&mut self, 
-                                    import:Option<@mut css_stylesheet>) 
-                                    -> css_result {
+    pub fn css_stylesheet_register_import(&mut self, import:Option<@mut css_stylesheet>) 
+        -> css_error {
+
 
         if import.is_none() {
             return CSS_BADPARM ;
@@ -486,7 +486,7 @@ impl css_stylesheet {
         string_value : Option<~str> , 
         ab_value : Option<(i32,i32)>,
         negate:bool
-    )  -> (css_result, Option<@mut css_selector_detail>) 
+    )  -> (css_error, Option<@mut css_selector_detail>) 
     {
         let detail : @mut css_selector_detail = @mut css_selector_detail{
             qname:qname,
@@ -519,7 +519,7 @@ impl css_stylesheet {
         (CSS_OK,Some(detail)) 
     }
     
-    pub fn css__stylesheet_selector_append_specific(selector : @mut css_selector, detail: @mut css_selector_detail)  -> css_result  {
+    pub fn css__stylesheet_selector_append_specific(selector : @mut css_selector, detail: @mut css_selector_detail)  -> css_error  {
         match detail.selector_type {
             CSS_SELECTOR_CLASS=> selector.specificity += CSS_SPECIFICITY_C, 
             CSS_SELECTOR_PSEUDO_CLASS=> selector.specificity += CSS_SPECIFICITY_C, 
@@ -542,7 +542,7 @@ impl css_stylesheet {
     }
 
     pub fn css__stylesheet_selector_combine(combinator_type : css_combinator, a : @mut css_selector , 
-                                            b : @mut css_selector) -> css_result {
+                                            b : @mut css_selector) -> css_error {
         match b.combinator {
             Some(_)=> return CSS_INVALID,
             None=> {}
@@ -638,7 +638,7 @@ impl css_stylesheet {
         }
     }
 
-    pub fn css__stylesheet_rule_add_selector(css_rule : CSS_RULE_DATA_TYPE , selector : @mut css_selector) -> css_result {
+    pub fn css__stylesheet_rule_add_selector(css_rule : CSS_RULE_DATA_TYPE , selector : @mut css_selector) -> css_error {
 
         match css_rule {
             RULE_SELECTOR(x)=> {
@@ -650,7 +650,7 @@ impl css_stylesheet {
         }
     }
     
-    pub fn css__stylesheet_rule_append_style(&mut self, css_rule : CSS_RULE_DATA_TYPE , style : @mut css_style) -> css_result {
+    pub fn css__stylesheet_rule_append_style(&mut self, css_rule : CSS_RULE_DATA_TYPE , style : @mut css_style) -> css_error {
         match css_rule {
             RULE_PAGE(page)=> {
                 if page.style.is_none() {
@@ -677,7 +677,7 @@ impl css_stylesheet {
         CSS_OK
     }
 
-    pub fn css__stylesheet_rule_set_charset(css_rule : CSS_RULE_DATA_TYPE, charset: ~str) -> css_result {
+    pub fn css__stylesheet_rule_set_charset(css_rule : CSS_RULE_DATA_TYPE, charset: ~str) -> css_error {
         if charset.len() <= 0 {
             return CSS_BADPARM;
         }
@@ -694,7 +694,7 @@ impl css_stylesheet {
     }
 
     pub fn css__stylesheet_rule_set_nascent_import(
-        css_rule : CSS_RULE_DATA_TYPE, url_str:~str, media:u64) -> css_result {
+        css_rule : CSS_RULE_DATA_TYPE, url_str:~str, media:u64) -> css_error {
 
         match css_rule {
             RULE_IMPORT(x) => {
@@ -709,7 +709,7 @@ impl css_stylesheet {
     }
 
     pub fn css__stylesheet_rule_set_media(
-        css_rule : CSS_RULE_DATA_TYPE, media:u64) -> css_result {
+        css_rule : CSS_RULE_DATA_TYPE, media:u64) -> css_error {
 
         match css_rule {
             RULE_MEDIA(x) => {
@@ -723,7 +723,7 @@ impl css_stylesheet {
     }
 
     pub fn css__stylesheet_rule_set_page_selector(
-        css_rule : CSS_RULE_DATA_TYPE, selector:@mut css_selector) -> css_result {
+        css_rule : CSS_RULE_DATA_TYPE, selector:@mut css_selector) -> css_error {
 
         match css_rule {
             RULE_PAGE(x) => {
@@ -776,7 +776,7 @@ impl css_stylesheet {
     }
 
     pub fn css__stylesheet_add_rule(sheet : @mut css_stylesheet, css_rule : CSS_RULE_DATA_TYPE,
-                                    parent_rule : Option<CSS_RULE_DATA_TYPE> ) -> css_result {
+                                    parent_rule : Option<CSS_RULE_DATA_TYPE> ) -> css_error {
         
         let mut base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
 
@@ -837,7 +837,7 @@ impl css_stylesheet {
     }
     
     pub fn css__stylesheet_remove_rule(sheet : @mut css_stylesheet, css_rule : CSS_RULE_DATA_TYPE) 
-                                        -> css_result {
+                                        -> css_error {
         match sheet._remove_selectors(css_rule) {
             CSS_OK=>{},
             _=>return CSS_INVALID
@@ -866,7 +866,7 @@ impl css_stylesheet {
         CSS_OK
     }
 
-    pub fn _add_selectors(&mut self, css_rule : CSS_RULE_DATA_TYPE) -> css_result {
+    pub fn _add_selectors(&mut self, css_rule : CSS_RULE_DATA_TYPE) -> css_error {
         match css_rule {
             RULE_SELECTOR(x) => {
                 if x.base.parent_rule.is_some() {
@@ -948,7 +948,7 @@ impl css_stylesheet {
         }
     }
 
-    pub fn _remove_selectors(&mut self, css_rule : CSS_RULE_DATA_TYPE) -> css_result {
+    pub fn _remove_selectors(&mut self, css_rule : CSS_RULE_DATA_TYPE) -> css_error {
 
         match css_rule {
             RULE_SELECTOR(x) => {
@@ -1078,7 +1078,7 @@ impl css_selector_hash {
     }
     
     pub fn css__selector_hash_insert(&mut self, selector : @mut css_selector) 
-                                    -> css_result {
+                                    -> css_error {
         unsafe {
             let mut mask :uint ;
             let mut index:uint=0;
@@ -1122,7 +1122,7 @@ impl css_selector_hash {
                             hash_type : css_hash_type,
                             index:uint,
                             selector : @mut css_selector) 
-                            -> css_result {
+                            -> css_error {
 
         let mut hash_entry_list = 
                 match hash_type {
@@ -1199,7 +1199,7 @@ impl css_selector_hash {
     }
 
     pub fn css__selector_hash_remove(&mut self, selector : @mut css_selector) 
-                                    -> css_result {
+                                    -> css_error {
         unsafe {
             let mut mask :uint ;
             let mut index:uint=0;
@@ -1242,7 +1242,7 @@ impl css_selector_hash {
                             hash_type : css_hash_type,
                             index:uint,
                             selector : @mut css_selector) 
-                            -> css_result {
+                            -> css_error {
 
         let mut hash_entry_list = 
             match hash_type {
@@ -1326,7 +1326,7 @@ impl css_selector_hash {
         return true ;
     }
 
-    pub fn css__selector_hash_find(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_result) {
+    pub fn css__selector_hash_find(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_error) {
 
         let mut mask  = self.default_slots-1 ;
         let mut index = css_selector_hash::_hash_name(copy name) & mask ; 
@@ -1363,7 +1363,7 @@ impl css_selector_hash {
     }
     
 
-    pub fn css__selector_hash_find_by_class(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_result) {
+    pub fn css__selector_hash_find_by_class(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_error) {
 
         let mut mask  = self.default_slots-1 ;
         let mut index = css_selector_hash::_hash_name(copy name) & mask ; 
@@ -1398,7 +1398,7 @@ impl css_selector_hash {
         }
     }
 
-    pub fn css__selector_hash_find_by_id(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_result) {
+    pub fn css__selector_hash_find_by_id(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_error) {
 
         let mut mask  = self.default_slots-1 ;
         let mut index = css_selector_hash::_hash_name(copy name) & mask ; 
@@ -1434,7 +1434,7 @@ impl css_selector_hash {
     }
 
 
-    pub fn css__selector_hash_find_universal(&mut self) -> (Option<@mut hash_entry>,css_result) {
+    pub fn css__selector_hash_find_universal(&mut self) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = self.universal[0] ;
         match head {
@@ -1447,7 +1447,7 @@ impl css_selector_hash {
         }
     }
 
-    pub fn _iterate_elements(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_result) {
+    pub fn _iterate_elements(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
 
@@ -1476,7 +1476,7 @@ impl css_selector_hash {
         }
     }
 
-    pub fn _iterate_classes(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_result) {
+    pub fn _iterate_classes(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
 
@@ -1504,7 +1504,7 @@ impl css_selector_hash {
         }
     }
 
-    pub fn _iterate_ids(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_result) {
+    pub fn _iterate_ids(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
 
@@ -1532,7 +1532,7 @@ impl css_selector_hash {
         }
     }
 
-    pub fn _iterate_universal(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_result) {
+    pub fn _iterate_universal(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         if current.next.is_some() {
             return (current.next,CSS_OK);

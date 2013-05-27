@@ -12,7 +12,7 @@ use test::*;
 use wapcaplet::*;
 use std::arc;
 
-pub fn resolve_url(base:~str, rel:arc::RWARC<~lwc_string>) -> (css_result,Option<arc::RWARC<~lwc_string>>) {
+pub fn resolve_url(base:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>) {
 	return (CSS_OK,Some(rel.clone()));
 }
 
@@ -327,34 +327,34 @@ fn css__stylesheet_selector_functionalities_test(css_stylesheet_instance : @mut 
 	 
 	// B.
 
-	let mut (css_result_value, OptValue) = css_stylesheet::css__stylesheet_selector_detail_init(CSS_SELECTOR_ELEMENT, copy buff_qname, CSS_SELECTOR_DETAIL_VALUE_STRING,
+	let mut (css_error_value, OptValue) = css_stylesheet::css__stylesheet_selector_detail_init(CSS_SELECTOR_ELEMENT, copy buff_qname, CSS_SELECTOR_DETAIL_VALUE_STRING,
 	None, None, false);
 
-	match(css_result_value){
+	match(css_error_value){
 		CSS_OK => test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_selector_detail_init", ~"" , ~"CSS_OK", ~"CSS_OK", ~""),
 		 _  =>  test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_selector_detail_init", ~"" , ~"CSS_OK", ~"Non CSS_OK", ~"")	
 	}
 
-	let mut (css_result_value, OptValue) = css_stylesheet::css__stylesheet_selector_detail_init(CSS_SELECTOR_ID, copy buff_qname, CSS_SELECTOR_DETAIL_VALUE_STRING,
+	let mut (css_error_value, OptValue) = css_stylesheet::css__stylesheet_selector_detail_init(CSS_SELECTOR_ID, copy buff_qname, CSS_SELECTOR_DETAIL_VALUE_STRING,
 	Some(~"RandomValue"), None, false);
 
-	match(css_result_value){
+	match(css_error_value){
 		CSS_OK => test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_selector_detail_init", ~"", ~"CSS_OK", ~"CSS_OK", ~""),
 		 _  =>  test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_selector_detail_init", ~"" , ~"CSS_OK", ~"Non CSS_OK", ~"")	
 	}
 
-	let (css_result_value, OptValue) = css_stylesheet::css__stylesheet_selector_detail_init(CSS_SELECTOR_ATTRIBUTE, copy buff_qname, CSS_SELECTOR_DETAIL_VALUE_NTH,
+	let (css_error_value, OptValue) = css_stylesheet::css__stylesheet_selector_detail_init(CSS_SELECTOR_ATTRIBUTE, copy buff_qname, CSS_SELECTOR_DETAIL_VALUE_NTH,
 	Some(~"RandomValue"), None, false);
 
-	match(css_result_value){
+	match(css_error_value){
 		CSS_OK => test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_selector_detail_init", ~"" , ~"CSS_OK", ~"CSS_OK", ~""),
 		 _  =>  test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_selector_detail_init", ~"" , ~"CSS_OK", ~"Non CSS_OK",~"")	
 	}
 
-	let mut (css_result_value, OptValue) = css_stylesheet::css__stylesheet_selector_detail_init(CSS_SELECTOR_ATTRIBUTE_PREFIX, copy buff_qname, CSS_SELECTOR_DETAIL_VALUE_NTH,
+	let mut (css_error_value, OptValue) = css_stylesheet::css__stylesheet_selector_detail_init(CSS_SELECTOR_ATTRIBUTE_PREFIX, copy buff_qname, CSS_SELECTOR_DETAIL_VALUE_NTH,
 	None, Some((11, 22)), false);
 
-	match(css_result_value){
+	match(css_error_value){
 		CSS_OK => test_logger.pass( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_selector_detail_init", ~"" , ~"CSS_OK", ~"CSS_OK", ~""),
 		 _  =>  test_logger.fail( ~"test_css_stylesheet.rs", ~"", ~"stylesheet",~"css_stylesheet.rs", ~"css__stylesheet_selector_detail_init", ~"" , ~"CSS_OK", ~" Non CSS_OK", ~"")	
 	}

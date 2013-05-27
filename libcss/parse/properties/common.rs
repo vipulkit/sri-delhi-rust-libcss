@@ -30,7 +30,7 @@ pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
     }
 }
 
-pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_token] , ctx: @mut uint , default_unit: u32) -> (Option<i32> , Option<u32>, css_result) {
+pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_token] , ctx: @mut uint , default_unit: u32) -> (Option<i32> , Option<u32>, css_error) {
 
     consumeWhitespace(vector , ctx);
     let mut token:&@css_token;
@@ -122,7 +122,7 @@ pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bo
     css__number_from_string(lwc_string_data(string.clone()), @mut 0, int_only)
 }
 
-pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_result { 
+pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_error { 
     let orig_ctx = *ctx;
     let mut prev_ctx: uint;
     let color: bool = true;
@@ -161,7 +161,7 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
     CSS_OK
 }
 
-pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<u32>,css_result) {
+pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<u32>,css_error) {
     let mut unit = UNIT_GRAD;
     let len:uint= ptr.len() - index;
     let ptr_lower = ptr.to_lower();
@@ -358,7 +358,7 @@ pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->boo
     }
 }
 
-pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_result) {
+pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_error) {
     let mut token:&@css_token;
     let mut ret_value: u16 = 0;
     let mut ret_result: u32 = 0;
@@ -737,7 +737,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
     (Some(ret_value) , Some(ret_result) , CSS_OK)
 }
 
-pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_result){
+pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error){
     let mut result_val: u32;
     let mut r: u8;
     let mut g: u8;
@@ -913,7 +913,7 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
     }
 }
 
-fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_result){
+fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error){
     let mut result_val: u32;
     let colourmap: ~[u32] = ~[
         0xfff0f8ff, /* ALICEBLUE */
