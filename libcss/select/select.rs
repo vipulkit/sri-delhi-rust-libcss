@@ -1,6 +1,7 @@
 
 use include::types::*;
 use include::font_face::*;
+use utils::errors::*;
 use select::common::*;
 use stylesheet::*;
 
@@ -19,7 +20,7 @@ pub struct css_select_sheet {
 struct css_select_ctx {
 	n_sheets:u32,
 
-	 sheets:~[@mut css_select_sheet],
+	sheets:~[@mut css_select_sheet],
 
 	/* Useful interned strings */
 	universal:~str,
@@ -99,3 +100,63 @@ pub fn peek_bytecode(style: @mut css_style) -> u32 {
 		}
 	}
 }
+
+
+//////////////////////////////////////////////////////////////////
+// Start of CSS Selector internal functions
+//////////////////////////////////////////////////////////////////
+impl css_select_ctx {
+
+	pub fn css_select_ctx_create() -> (css_error,Option<@mut css_select_ctx>) {
+		let mut error : css_error ;
+		let mut result = @mut css_select_ctx {
+			n_sheets:0,
+
+			sheets:~[],
+
+			universal:~"",
+			first_child:~"",
+			link:~"",
+			visited:~"",
+			hover:~"",
+			active:~"",
+			focus:~"",
+			nth_child:~"",
+			nth_last_child:~"",
+			nth_of_type:~"",
+			nth_last_of_type:~"",
+			last_child:~"",
+			first_of_type:~"",
+			last_of_type:~"",
+			only_child:~"",
+			only_of_type:~"",
+			root:~"",
+			empty:~"",
+			target:~"",
+			lang:~"",
+			enabled:~"",
+			disabled:~"",
+			checked:~"",
+			first_line:~"",
+			first_letter:~"",
+			before:~"",
+			after:~""
+		};
+
+		error = css_select_ctx::intern_strings(result);
+		match error {
+			CSS_OK => {},
+			x => {
+				return (x,None) ;
+			}
+		}
+		(CSS_OK,Some(result))
+	}
+
+	pub fn intern_strings(ctx:@mut css_select_ctx) -> css_error {
+		CSS_OK
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////
