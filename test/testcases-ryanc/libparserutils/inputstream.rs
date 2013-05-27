@@ -17,7 +17,7 @@ extern mod css;
 
 use core::io::*;
 use parserutils::input::*;
-use parserutils::charset::aliases::*; // FIXME: to be removed
+use parserutils::utils::error::*;
 use css::charset::csdetect::*;
 
 fn main() {

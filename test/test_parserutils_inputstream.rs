@@ -10,6 +10,7 @@ use parserutils::* ;
 use parserutils::input::inputstream::*;
 use parserutils::charset::aliases::*;
 use css::charset::csdetect::*;
+use parserutils::utils::error::*;
 
  fn main() {
 	let args : ~[~str] = os::args();

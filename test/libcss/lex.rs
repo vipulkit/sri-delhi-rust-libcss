@@ -4,6 +4,7 @@ extern mod css;
 
 use parserutils::charset::aliases::*;
 use parserutils::input::inputstream::*;
+use parserutils::utils::error::*;
 
 use css::charset::csdetect::*;
 use css::lex::lexer::*;

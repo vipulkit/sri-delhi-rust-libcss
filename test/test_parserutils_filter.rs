@@ -8,7 +8,7 @@ use std::arc;
 use core::vec::*;
 use parserutils::charset::aliases::*;
 use parserutils::input::parserutils_filter::*;
-
+use parserutils::utils::error::*;
 
 
 use test::*;

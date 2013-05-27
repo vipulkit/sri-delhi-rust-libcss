@@ -10,7 +10,6 @@ use parserutils::input::inputstream::*;
 
 use core::str::*;
 use core::float::*;
-use core::io::*;
 use testutils::*;
 
 static EXP_ENTRY_TEXT_LEN:int = (128);

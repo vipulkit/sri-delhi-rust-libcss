@@ -14,6 +14,7 @@ use parserutils::* ;
 use parserutils::input::inputstream::*;
 use css::charset::csdetect::*;
 use parserutils::charset::aliases::*;
+use parserutils::utils::error::*;
 
 fn main() {
 	let mut test1 = result::unwrap(test_report(&"Unit_test_report.csv"));

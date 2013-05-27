@@ -11,6 +11,7 @@ use test::*;
 use parserutils::charset::aliases::*;
 use parserutils::input::parserutils_filter::* ;
 use parserutils::input::inputstream::*;
+use parserutils::utils::error::*;
 use css::charset::csdetect::*;
 //use parserutils_inputstream::*;
 use core::str::*;
