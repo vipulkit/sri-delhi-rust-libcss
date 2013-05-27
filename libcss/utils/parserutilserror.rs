@@ -1,10 +1,3 @@
-extern mod std;
-extern mod wapcaplet;
-extern mod parserutils;
-
-use std::arc;
-use wapcaplet::*;
-use parserutils::input::inputstream::*;
 use parserutils::utils::errors::*;
 use utils::errors::*;
 

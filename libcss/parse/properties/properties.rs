@@ -4128,12 +4128,14 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
         error = CSS_OK;
         
         if *ctx >= vector.len() {
+            *ctx = orig_ctx;
             return CSS_INVALID
         }
         
         token = &vector[*ctx];
         
         if is_css_inherit(strings , token) {
+            *ctx = orig_ctx;
             return CSS_INVALID;
         }
 
@@ -4162,7 +4164,7 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
                 break;
             }
         
-            token = &vector[*ctx];
+            //token = &vector[*ctx]; Not Used
         
         } else {
             /* Forcibly cause loop to exit */
@@ -4189,7 +4191,14 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
     
     css_stylesheet::css__stylesheet_merge_style(result_style, width_style);
 
-    CSS_OK
+    match error {
+        CSS_OK => CSS_OK,
+        error => {
+            *ctx = orig_ctx;
+            error
+        }
+    }
+    
 }
 
 

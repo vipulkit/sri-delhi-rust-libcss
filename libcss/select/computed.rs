@@ -1,12 +1,7 @@
 use select::common::*;
-use select::propset::*;
-
 use include::fpmath::*;
 use include::types::*;
 use include::properties::*;
-use stylesheet::*;
-
-use utils::errors::*;
 
 pub fn css_computed_letter_spacing(
         style : @mut css_computed_style) 

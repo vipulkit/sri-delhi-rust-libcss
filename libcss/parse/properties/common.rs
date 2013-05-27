@@ -8,7 +8,6 @@ use lex::lexer::*;
 use stylesheet::*;
 
 use include::fpmath::*;
-use include::properties::*;
 
 use parse::propstrings::*;
 
@@ -376,10 +375,10 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
             }
         },
         CSS_TOKEN_FUNCTION(_) => {
-            let mut r: u8 = 0;
-            let mut g: u8 = 0;
-            let mut b: u8 = 0;
-            let mut a: u8 = 0xff;
+            let r:@mut u8 = @mut 0;
+            let g:@mut u8 = @mut 0;
+            let b:@mut u8 = @mut 0;
+            let a:@mut u8 = @mut 0xff;
             let mut colour_channels: int = 0;
             if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RGB as uint) {
                 colour_channels = 3;
@@ -397,8 +396,8 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
             if colour_channels ==3 || colour_channels == 4 {
                 let mut i: int =0;
                 let mut valid: Option<css_token_type> = None;
-                let components: ~[u8] = ~[r , g , b , a];
-                let mut component: u8;
+                let components: ~[@mut u8] = ~[r, g, b, a];
+                let mut component: @mut u8;
                 while i < colour_channels {
                     
                     let mut intval: i32;
@@ -464,13 +463,13 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                      }
 
                     if intval > 255 {
-                        component = 255;
+                        *component = 255;
                     }
                     else if intval < 0 {
-                        component = 0;
+                        *component = 0;
                     }
                     else {
-                        component = intval as u8;
+                        *component = intval as u8;
                     }
 
                     *ctx = *ctx + 1;
@@ -627,25 +626,25 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                     goto_flag = true;
                 }
                 let (ra , ga , ba) = HSL_to_RGB(hue as i32, sat as i32, lit as i32);
-                r = ra;
-                g = ga;
-                b = ba;
+                *r = ra;
+                *g = ga;
+                *b = ba;
 
                 if alpha > 255 {
-                    a = 255;
+                    *a = 255;
                 }
                 else if alpha < 0 {
-                    a = 0;
+                    *a = 0;
                 }
                 else {
-                    a = alpha as u8;
+                    *a = alpha as u8;
                 }
             }
             else {
                 goto_flag = true;
             }
 
-            ret_result = (a << 24 | r << 16 | g << 8 | b) as u32;
+            ret_result = (*a << 24 | *r << 16 | *g << 8 | *b) as u32;
             ret_value = COLOR_SET ;
         },
         _=>{
