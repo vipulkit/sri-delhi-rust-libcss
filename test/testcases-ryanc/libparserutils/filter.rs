@@ -34,7 +34,7 @@ extern mod parserutils;
 use parserutils::input::parserutils_filter::*;
 //use parserutils::charset::*;
 use parserutils::charset::aliases::*;
-use parserutils::utils::error::*;
+use parserutils::utils::errors::*;
 
 
 fn main() {

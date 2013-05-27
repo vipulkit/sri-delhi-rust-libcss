@@ -17,7 +17,7 @@ extern mod css;
 
 use core::io::*;
 use parserutils::input::*;
-use parserutils::utils::error::*;
+use parserutils::utils::errors::*;
 use css::charset::csdetect::*;
 
 fn main() {

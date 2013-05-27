@@ -5,7 +5,7 @@ extern mod parserutils;
 extern mod css;
 
 use parserutils::charset::aliases::*;
-use parserutils::utils::error::*;
+use parserutils::utils::errors::*;
 use css::charset::csdetect::*;
 
 use testutils::*;
