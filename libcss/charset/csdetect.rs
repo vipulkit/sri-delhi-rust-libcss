@@ -1,5 +1,5 @@
 use parserutils::charset::aliases::*;
-use parserutils::utils::error::*;
+use parserutils::utils::errors::*;
 
 use std::arc;
 

@@ -47,6 +47,7 @@ pub mod parse {
 
 pub mod utils {
 	pub mod errors;
+	pub mod parserutilserror;
 }
 
 pub mod stylesheet;

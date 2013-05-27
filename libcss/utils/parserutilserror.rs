@@ -5,14 +5,16 @@ extern mod parserutils;
 use std::arc;
 use wapcaplet::*;
 use parserutils::input::inputstream::*;
-use parserutils::utils::error::*;
+use parserutils::utils::errors::*;
+use utils::errors::*;
 
 fn css_error_from_parserutils_error(css_result : parserutils_error) -> css_error{
 	match css_result{
-		CSS_OK => { 
+
+		PARSERUTILS_OK => { 
 			return CSS_OK
 		},
-		UTILS_NOMEM => {
+		PARSERUTILS_NOMEM => {
 			return CSS_NOMEM
 		},
 		PARSERUTILS_BADPARM => {
@@ -27,7 +29,7 @@ fn css_error_from_parserutils_error(css_result : parserutils_error) -> css_error
 		PARSERUTILS_NEEDDATA => {
 			return CSS_NEEDDATA
 		},
-		PARSERUTILS_BADCHARSET => {
+		PARSERUTILS_BADENCODING => {
 			return CSS_BADCHARSET
 		},
 		PARSERUTILS_EOF => {

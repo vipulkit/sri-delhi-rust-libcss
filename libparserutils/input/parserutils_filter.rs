@@ -2,7 +2,7 @@ use std::arc;
 
 use charset::aliases::*;
 use input::riconv;
-use utils::error::*;
+use utils::errors::*;
 
 pub struct filter {
     int_enc: u16,               // The internal encoding

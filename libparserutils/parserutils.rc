@@ -17,5 +17,5 @@ pub mod input {
 }
 
 pub mod utils {
-	pub mod error;
+	pub mod errors;
 }

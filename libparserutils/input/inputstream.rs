@@ -3,7 +3,7 @@ use std::arc;
 
 use charset::aliases::*;
 use input::parserutils_filter::*;
-use utils::error::*;
+use utils::errors::*;
 
 pub type  parserutils_charset_detect_func =  
     ~extern fn(data: &~[u8], mibenum:u16, source:int, arc:arc::ARC<~alias>) -> (Option<u16>, Option<int>, parserutils_error);

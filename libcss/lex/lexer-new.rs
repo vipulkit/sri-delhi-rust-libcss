@@ -1,4 +1,5 @@
 extern mod std;
+extern mod css; // To be removed
 extern mod wapcaplet;
 extern mod parserutils;
 
@@ -6,6 +7,9 @@ use std::arc;
 use wapcaplet::*;
 use parserutils::input::inputstream::*;
 use parserutils::utils::error::*;
+
+use css::utils::errors::*;
+use css::utils::parserutilserror::*;
 
 
 pub enum css_token_type {
@@ -42,12 +46,6 @@ pub struct css_token {
     data: ~[u8],
     token_type: css_token_type,
     idata: Option<arc::RWARC<~lwc_string>>,
-}
-
-pub enum lexer_error {
-    LEXER_OK = 0,
-    LEXER_NEEDDATA = 1,
-    LEXER_INVALID = 2
 }
 
 pub enum states {
@@ -133,7 +131,7 @@ impl css_lexer {
         }
     }
 
-    pub fn css__lexer_get_token(&mut self) -> (lexer_error , Option<css_token>){
+    pub fn css__lexer_get_token(&mut self) -> (css_error , Option<css_token>){
 
         match self.state {
             sSTART => {},
@@ -152,7 +150,7 @@ impl css_lexer {
             sURL => {},
             sUCR => {}
         }
-        return (LEXER_INVALID , None);
+        return (CSS_INVALID , None);
     }
 
     pub fn append_to_token_data(&mut self , data: ~[u8]) {
@@ -162,7 +160,7 @@ impl css_lexer {
         }
     }
 
-    pub fn emit_token(&mut self , token_type: css_token_type) -> lexer_error {
+    pub fn emit_token(&mut self , token_type: css_token_type) -> css_error {
 
         match token_type {
             CSS_TOKEN_ATKEYWORD => {},
@@ -180,14 +178,10 @@ impl css_lexer {
         self.state = sSTART;
         self.substate = 0;
 
-        return LEXER_OK;
+        return CSS_OK;
     }
 
-    pub fn consume_escape(&mut self , nl: bool) -> lexer_error {
-        LEXER_OK
-    }
-
-    pub fn consume_url_chars(&mut self) -> lexer_error {
+    pub fn consume_url_chars(&mut self) -> css_error {
         let mut cptr: ~[u8];
         let mut c: u8 = 0;
 
@@ -209,17 +203,17 @@ impl css_lexer {
                         let lex_error = self.consume_escape(false);
 
                         match lex_error {
-                            LEXER_OK => {},
+                            CSS_OK => {},
                             _ => {
                                 self.bytes_read_for_token -= clen;
-                                return LEXER_OK;
+                                return CSS_OK;
                             }
                         }
                     }
                 }
 
                 _ => {
-                    return LEXER_INVALID;
+                    return CSS_INVALID;
                 },
 
             }
@@ -229,10 +223,10 @@ impl css_lexer {
             }
         }
 
-        return LEXER_OK
+        return CSS_OK
     } 
 
-    pub fn consume_w_chars(&mut self) -> lexer_error {
+    pub fn consume_w_chars(&mut self) -> css_error {
         let mut cptr: ~[u8];
         let mut c: u8 = 0;
 
@@ -263,7 +257,7 @@ impl css_lexer {
                 },
 
                 _ => {
-                    return LEXER_INVALID;
+                    return CSS_INVALID;
                 }
 
             }
@@ -278,14 +272,39 @@ impl css_lexer {
             self.current_line += 1;
         }
 
-        LEXER_OK
+        CSS_OK
     }
 
-}
+    fn consume_escape(&mut self, nl : bool) -> css_error {
+        let cptr : @mut u8;
+        let mut c : u8;
+        let (pu_peek_result , error) = 
+            self.inputstream_instance.parserutils_inputstream_peek(self.bytes_read_for_token);
+        
+        match error {
+        
+            PARSERUTILS_NOMEM | 
+            PARSERUTILS_BADPARM | 
+            PARSERUTILS_INVALID | 
+            PARSERUTILS_FILENOTFOUND | 
+            PARSERUTILS_NEEDDATA | 
+            PARSERUTILS_BADENCODING => {
+                return css_error_from_parserutils_error(error);
+            }
+            PARSERUTILS_EOF => {
+               return CSS_EOF;
+            }
+            PARSERUTILS_OK => {
 
-fn consumeEscape(lexer : &css_lexer, nl : bool){
+            }
+        }
 
-}
+        CSS_OK
+    }
+
+} // impl css_lexer
+
+
 
 
 fn start_nm_char(c: u8) -> bool{
