@@ -1,3 +1,4 @@
+set -e
 
 # run test programs 
 

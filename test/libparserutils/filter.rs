@@ -3,7 +3,7 @@ extern mod parserutils;
 
 use core::vec::*;
 use parserutils::charset::aliases::*;
-use parserutils::utils::error::*;
+use parserutils::utils::errors::*;
 use parserutils::input::parserutils_filter::*;
 
 #[test]

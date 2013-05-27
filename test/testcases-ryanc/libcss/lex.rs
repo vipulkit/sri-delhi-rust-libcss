@@ -29,7 +29,7 @@ use core::io::*;
 
 use parserutils::input::inputstream::*;
 use parserutils::charset::aliases::*;
-use parserutils::utils::error::*;
+use parserutils::utils::errors::*;
 
 use css::charset::csdetect::*;
 use css::lex::lexer::*;

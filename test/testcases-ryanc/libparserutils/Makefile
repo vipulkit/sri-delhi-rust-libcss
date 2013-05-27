@@ -12,6 +12,7 @@ all: $(EXEC) $(SRC)
 run : $(EXEC)
 	./aliases
 	./inputstream
+	./filter
 
 .phony: clean
 
