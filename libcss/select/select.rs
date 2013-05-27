@@ -1,6 +1,75 @@
 
+use include::types::*;
+use include::font_face::*;
 use select::common::*;
 use stylesheet::*;
+
+/*
+ * Container for stylesheet selection info
+ */
+pub struct css_select_sheet {
+	sheet:Option<@mut css_stylesheet>,
+	origin:css_origin,
+	media:u64
+}
+
+/*
+ * CSS selection context
+ */
+struct css_select_ctx {
+	n_sheets:u32,
+
+	 sheets:~[@mut css_select_sheet],
+
+	/* Useful interned strings */
+	universal:~str,
+	first_child:~str,
+	link:~str,
+	visited:~str,
+	hover:~str,
+	active:~str,
+	focus:~str,
+	nth_child:~str,
+	nth_last_child:~str,
+	nth_of_type:~str,
+	nth_last_of_type:~str,
+	last_child:~str,
+	first_of_type:~str,
+	last_of_type:~str,
+	only_child:~str,
+	only_of_type:~str,
+	root:~str,
+	empty:~str,
+	target:~str,
+	lang:~str,
+	enabled:~str,
+	disabled:~str,
+	checked:~str,
+	first_line:~str,
+	first_letter:~str,
+	before:~str,
+	after:~str
+}
+
+/*
+ * Container for selected font faces
+ */
+pub struct css_select_font_faces_list {
+	font_faces:~[Option<@mut css_font_face>]
+}
+
+/*
+ * Font face selection state
+ */
+pub struct css_select_font_faces_state {
+	font_family:~str,
+	media:u64,
+
+	ua_font_faces:css_select_font_faces_list,
+	user_font_faces:css_select_font_faces_list,
+	author_font_faces:css_select_font_faces_list
+}
+
 
 pub fn css__outranks_existing(op:u16, 
 							important:bool, 

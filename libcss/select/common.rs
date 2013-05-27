@@ -1,4 +1,5 @@
 use include::types::*;
+use include::font_face::*;
 use stylesheet::*;
 use utils::errors::*;
 
@@ -674,6 +675,10 @@ pub struct prop_state {
     inherit   : bool         /* Property is set to inherit */
 }
 
+pub enum css_select_handler_version {
+    CSS_SELECT_HANDLER_VERSION_1 = 1
+}
+
 pub struct css_select_handler {
     ua_default_for_property: @extern fn(property:u32, hint:@mut css_hint ) -> css_error,
     handler_version:u32
@@ -706,5 +711,16 @@ pub struct css_select_state {
 
     props: ~[~[@mut prop_state]] 
 } 
+
+/*
+ * Font face selection result set
+ */
+pub struct css_select_font_faces_results {
+    
+    /*
+     * Array of pointers to computed font faces. 
+     */
+    font_faces:~[Option<@mut css_font_face>],
+}
 
 /////////////////////////////////////
