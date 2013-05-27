@@ -195,7 +195,7 @@ pub struct css_rule_import {
     base:@mut css_rule,
     url:~str,
     media:u64,
-    sheet:Option<@css_stylesheet>
+    sheet:Option<@mut css_stylesheet>
 } 
 pub struct css_rule_charset {
     base:@mut css_rule,
@@ -292,14 +292,83 @@ impl css_stylesheet {
     pub fn css_stylesheet_next_pending_import(&mut self) -> 
                                 (css_result,Option<~str>,Option<u64>) {
 
-        (CSS_OK,None,None) // TODO :
+        let mut ptr = self.rule_list ;
+        loop {
+            match ptr {
+                None=> {
+                    break ;
+                },
+                Some(current_rule) => {
+                    match current_rule {
+                        RULE_IMPORT(irule)=>{
+                            if irule.sheet.is_none() {
+                                return (CSS_OK,Some(copy irule.url),Some(irule.media));
+                            }
+                            else {
+                                ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                                loop ;
+                            }
+                        },
+                        RULE_CHARSET(_) =>{
+                            ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                            loop;
+                        },
+                        RULE_UNKNOWN(_) =>{
+                            ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                            loop;
+                        },
+                        _=> {
+                            break ;
+                        }
+                    }
+                }
+            }
+        }
+        (CSS_INVALID,None,None) 
     }
 
     pub fn css_stylesheet_register_import(&mut self, 
-                                    import:@mut css_stylesheet) 
+                                    import:Option<@mut css_stylesheet>) 
                                     -> css_result {
 
-        CSS_OK // TODO :
+        if import.is_none() {
+            return CSS_BADPARM ;
+        }
+
+        let mut ptr = self.rule_list ;
+        loop {
+            match ptr {
+                None=> {
+                    break ;
+                },
+                Some(current_rule) => {
+                    match current_rule {
+                        RULE_IMPORT(irule)=>{
+                            if irule.sheet.is_none() {
+                                irule.sheet = import ;
+                                return CSS_OK ;
+                            }
+                            else {
+                                ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                                loop ;
+                            }
+                        },
+                        RULE_CHARSET(_) =>{
+                            ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                            loop;
+                        },
+                        RULE_UNKNOWN(_) =>{
+                            ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                            loop;
+                        },
+                        _=> {
+                            break ;
+                        }
+                    }
+                }
+            }
+        }
+        CSS_INVALID 
     }
 
     pub fn css__stylesheet_style_appendOPV(
