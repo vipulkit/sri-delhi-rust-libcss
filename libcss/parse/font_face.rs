@@ -30,7 +30,7 @@ pub fn font_rule_font_family_reserved(strings:&mut ~css_propstrings, ident:&@css
 }
 
 pub fn font_face_parse_font_family(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, 
-    font_face:@mut css_font_face, lwc_instance:arc::RWARC<~lwc>) -> css_result {
+    font_face:@mut css_font_face, lwc_instance:arc::RWARC<~lwc>) -> css_error {
     
     match css__ident_list_or_string_to_string(sheet , strings , vector, ctx, Some(@font_rule_font_family_reserved)) {
         (CSS_OK,Some(string)) => { 
@@ -44,7 +44,7 @@ pub fn font_face_parse_font_family(sheet:@mut css_stylesheet, strings:&mut ~css_
 
 
 pub fn css__parse_font_descriptor(sheet:@mut css_stylesheet, descriptor:&@css_token, strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, 
-    curRule:@mut css_rule_font_face, lwc_instance:arc::RWARC<~lwc>) -> css_result {
+    curRule:@mut css_rule_font_face, lwc_instance:arc::RWARC<~lwc>) -> css_error {
     
     let font_face:Option<@mut css_font_face> = curRule.font_face;
     
@@ -67,7 +67,7 @@ pub fn css__parse_font_descriptor(sheet:@mut css_stylesheet, descriptor:&@css_to
 
 
 pub fn font_face_parse_src(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint,
-    font_face:@mut css_font_face, lwc_instance:arc::RWARC<~lwc>) -> css_result {
+    font_face:@mut css_font_face, lwc_instance:arc::RWARC<~lwc>) -> css_error {
 
     let orig_ctx = *ctx;
     let mut srcs:~[~css_font_face_src]=~[];
@@ -125,7 +125,7 @@ pub fn font_face_parse_src(sheet:@mut css_stylesheet, strings:&mut ~css_propstri
 }
 
 pub fn font_face_parse_font_style(strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint,
-    font_face:@mut css_font_face) -> css_result {
+    font_face:@mut css_font_face) -> css_error {
 
     let orig_ctx = *ctx;
     let style:css_font_style_e;
@@ -160,7 +160,7 @@ pub fn font_face_parse_font_style(strings:&mut ~css_propstrings, vector:&~[@css_
 }
 
 pub fn font_face_parse_font_weight(strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint,
-    font_face:@mut css_font_face) -> css_result {
+    font_face:@mut css_font_face) -> css_error {
 
     let orig_ctx = *ctx;
     let token:&@css_token;
@@ -217,7 +217,7 @@ pub fn font_face_parse_font_weight(strings:&mut ~css_propstrings, vector:&~[@css
 }
 
 pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, 
-    location_type:@mut css_font_face_location_type, format:@mut css_font_face_format, lwc_instance:arc::RWARC<~lwc>) -> (css_result, Option<arc::RWARC<~lwc_string>>) {
+    location_type:@mut css_font_face_location_type, format:@mut css_font_face_format, lwc_instance:arc::RWARC<~lwc>) -> (css_error, Option<arc::RWARC<~lwc_string>>) {
     let mut token: &@css_token;
     let mut location:Option<arc::RWARC<~lwc_string>> = None;
     /* spec-or-name    ::= font-face-spec | font-face-name
@@ -302,7 +302,7 @@ pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut 
  * \param srcs       The array of css_font_face_srcs
  * \return CSS_OK
  */
-pub fn css__font_face_set_srcs(font_face:@mut css_font_face, srcs:~[~css_font_face_src]) -> css_result {
+pub fn css__font_face_set_srcs(font_face:@mut css_font_face, srcs:~[~css_font_face_src]) -> css_error {
     font_face.srcs = srcs;
             
     CSS_OK
@@ -316,7 +316,7 @@ pub fn css__font_face_set_srcs(font_face:@mut css_font_face, srcs:~[~css_font_fa
  * \return CSS_OK
  *         
  */
-pub fn css__font_face_set_font_family(font_face: @mut css_font_face, font_family:~str, lwc_instance:arc::RWARC<~lwc>) -> css_result {
+pub fn css__font_face_set_font_family(font_face: @mut css_font_face, font_family:~str, lwc_instance:arc::RWARC<~lwc>) -> css_error {
     // if (font_face.font_family != NULL)
     do lwc_instance.write |l|{
         font_face.font_family = Some(l.lwc_intern_string(copy font_family))
@@ -328,7 +328,7 @@ pub fn css__font_face_set_font_family(font_face: @mut css_font_face, font_family
 
 
 
-pub fn font_face_src_parse_format(strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, format:@mut  css_font_face_format) -> css_result {
+pub fn font_face_src_parse_format(strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, format:@mut  css_font_face_format) -> css_error {
     
     let mut token:&@css_token;
 

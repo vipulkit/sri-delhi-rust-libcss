@@ -102,11 +102,11 @@ pub impl css {
 		}
 	}
 
-	pub fn css_stylesheet_append_data(&mut self, data:~[u8]) -> css_result {
+	pub fn css_stylesheet_append_data(&mut self, data:~[u8]) -> css_error {
 		self.parser.css__parser_parse_chunk(data)
 	}
 
-	pub fn css_stylesheet_data_done(&mut self) -> (css_result , Option<@mut css_stylesheet>) {
+	pub fn css_stylesheet_data_done(&mut self) -> (css_error , Option<@mut css_stylesheet>) {
 		let error = self.parser.css__parser_completed();
 
 		self.stylesheet.cached_style = None;

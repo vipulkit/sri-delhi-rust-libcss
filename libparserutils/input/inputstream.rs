@@ -86,7 +86,7 @@ impl inputstream {
     pub fn parserutils_inputstream_insert(&mut self, data: ~[u8])-> parserutils_error {
         
         if data.len()==0 && (self.utf8.len() < self.cursor) {
-            return PARSERUTILS_BADPARAM;
+            return PARSERUTILS_BADPARM;
         }
 
         let temp = self.utf8.slice(self.cursor,self.utf8.len()).to_owned();
@@ -104,7 +104,7 @@ impl inputstream {
     pub fn parserutils_inputstream_change_charset(&mut self, enc:~str, source:int)-> parserutils_error {
 
         if enc.len() == 0 {
-            return PARSERUTILS_BADPARAM;
+            return PARSERUTILS_BADPARM;
         }
 
         if self.done_first_chunk {
@@ -113,7 +113,7 @@ impl inputstream {
         
         self.mibenum  = arc::get(&self.input.instance).parserutils_charset_mibenum_from_name(copy enc);
         if self.mibenum==0 {
-            return PARSERUTILS_BADPARAM;
+            return PARSERUTILS_BADPARM;
         }
         
         // Ensure filter is using the correct encoding 
@@ -138,7 +138,7 @@ impl inputstream {
         let totype : Option<~str> = arc::get(&self.input.instance).parserutils_charset_mibenum_to_name(self.mibenum);
 
         if totype.is_none() {
-            return PARSERUTILS_BADPARAM;
+            return PARSERUTILS_BADPARM;
         }
 
         let result: ~str= totype.unwrap();
@@ -153,7 +153,7 @@ impl inputstream {
             ~"UTF-32" => {
                 self.mibenum  = arc::get(&self.input.instance).parserutils_charset_mibenum_from_name(~"UTF-32BE");
                 if self.mibenum==0 {
-                    return PARSERUTILS_BADPARAM;
+                    return PARSERUTILS_BADPARM;
                 }
 
                 if self.raw.len() >= UTF32_BOM_LEN {
@@ -164,7 +164,7 @@ impl inputstream {
                     else if self.raw[0] == 0xFF && self.raw[1] == 0xFE && self.raw[2] == 0x00 && self.raw[3] == 0x00 {
                         self.mibenum  = arc::get(&self.input.instance).parserutils_charset_mibenum_from_name(~"UTF-32LE");
                         if self.mibenum==0 {
-                            return PARSERUTILS_BADPARAM;
+                            return PARSERUTILS_BADPARM;
                         }
                         
                         self.raw= slice(self.raw,UTF32_BOM_LEN,self.raw.len()).to_owned();
@@ -176,7 +176,7 @@ impl inputstream {
                 self.mibenum  = arc::get(&self.input.instance).parserutils_charset_mibenum_from_name(~"UTF-16BE");
                 
                 if self.mibenum==0 {
-                    return PARSERUTILS_BADPARAM;
+                    return PARSERUTILS_BADPARM;
                 }
 
                 if self.raw.len() >= UTF16_BOM_LEN {
@@ -187,7 +187,7 @@ impl inputstream {
                     else if self.raw[0] == 0xFF && self.raw[1] == 0xFE {
                         self.mibenum  = arc::get(&self.input.instance).parserutils_charset_mibenum_from_name(~"UTF-16LE");
                         if self.mibenum == 0 {
-                            return PARSERUTILS_BADPARAM;
+                            return PARSERUTILS_BADPARM;
                         }
 
                         self.raw= slice(self.raw,UTF16_BOM_LEN,self.raw.len()).to_owned();
@@ -235,7 +235,7 @@ impl inputstream {
 
     pub fn parserutils_inputstream_advance(&mut self, bytes:uint) -> parserutils_error {
         if bytes > (self.utf8.len() - self.cursor) {
-                return PARSERUTILS_BADPARAM;
+                return PARSERUTILS_BADPARM;
         }
 
         if (self.cursor == self.utf8.len()) {
@@ -274,7 +274,7 @@ impl inputstream {
             if (self.mibenum == 0) {
                 self.mibenum = arc::get(&self.input.instance).parserutils_charset_mibenum_from_name(~"UTF-8");
                 if self.mibenum == 0 {
-                    return PARSERUTILS_BADPARAM;
+                    return PARSERUTILS_BADPARM;
                 }
                 self.encsrc = 0;
             }
@@ -284,7 +284,7 @@ impl inputstream {
                     //self.done_first_chunk = true;
                 },
                 _ => {
-                    return PARSERUTILS_BADPARAM;
+                    return PARSERUTILS_BADPARM;
                 } 
             }
 
@@ -363,7 +363,7 @@ impl inputstream {
 
          // Refill utf8 buffer from raw buffer 
         match(self.parserutils_inputstream_refill_buffer()) {
-            PARSERUTILS_BADPARAM => {return (None, PARSERUTILS_BADPARAM);},
+            PARSERUTILS_BADPARM => {return (None, PARSERUTILS_BADPARM);},
             PARSERUTILS_BADENCODING => {return (None, PARSERUTILS_BADENCODING);},
             PARSERUTILS_NEEDDATA => {return (None, PARSERUTILS_NEEDDATA);},
             _ => {}
@@ -384,7 +384,7 @@ impl inputstream {
             
             match(filter::parserutils_charset_utf8_char_byte_length(requested_data)) {
                 None=>{
-                    return (None, PARSERUTILS_BADPARAM);
+                    return (None, PARSERUTILS_BADPARM);
                      
                 },
                 Some(l)=> {
@@ -414,7 +414,7 @@ impl inputstream {
                 
                 match(filter::parserutils_charset_utf8_char_byte_length(ptr)) {
                     None=>{
-                        return (None, PARSERUTILS_BADPARAM);
+                        return (None, PARSERUTILS_BADPARM);
                     },
                     Some(l)=> {
                         len=l as uint;

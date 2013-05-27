@@ -23,7 +23,7 @@ pub fn try_utf32_charset(data : &~[u8], alias_arc: arc::ARC<~alias>) -> (Option<
 
 
     if data.len() <= CHARSET_LE.len() {
-        return (None, PARSERUTILS_BADPARAM);
+        return (None, PARSERUTILS_BADPARM);
     }
     
     if (memcmp(data, CHARSET_LE, CHARSET_LE.len()) == 0) {
@@ -135,7 +135,7 @@ pub fn try_utf16_charset(data : &~[u8], alias_arc: arc::ARC<~alias>) -> (Option<
 
     
     if data.len() <= CHARSET_LE.len() {
-        return (None, PARSERUTILS_BADPARAM);
+        return (None, PARSERUTILS_BADPARM);
     }
 
     if (memcmp(data, CHARSET_LE, CHARSET_LE.len()) == 0) {      
@@ -297,7 +297,7 @@ pub fn css_charset_read_bom_or_charset(data : &~[u8], alias_arc: arc::ARC<~alias
     //let mut parser : @alias = alias();
 
     if (data.len()<4) {
-        return (None, PARSERUTILS_BADPARAM);
+        return (None, PARSERUTILS_BADPARM);
     }   
 
     //Look for BOM 
@@ -363,7 +363,7 @@ pub fn css__charset_extract(data : &~[u8] , mibenum : u16 , input_source : int /
     let mut src :css_charset_source;
 
     if (data.len()==(0 as uint)) {
-        return (None, None, PARSERUTILS_BADPARAM);
+        return (None, None, PARSERUTILS_BADPARM);
     }
 
     // If the charset was dictated by the client, we've nothing to detect 
@@ -390,7 +390,7 @@ pub fn css__charset_extract(data : &~[u8] , mibenum : u16 , input_source : int /
         },
         
         _ => {           
-            return (None, None, PARSERUTILS_BADPARAM);
+            return (None, None, PARSERUTILS_BADPARM);
         }
     }
     
