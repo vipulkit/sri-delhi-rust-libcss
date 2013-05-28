@@ -22,7 +22,8 @@ fn main(){
                     _   =>  assert!(false)          
                 }
 
-                let mut inbuf:~[u8]= (~"hell\xc2\xa0o!").to_bytes();
+                // let mut inbuf:~[u8]= (~"hell\xc2\xa0o!").to_bytes();
+                let mut inbuf:~[u8]= ~[104 , 101 , 108 , 108 , 194 , 160 , 111 , 33];
                 let mut outbuf:~[u8]=~[];
                 //let mut processedLen:uint;
 
@@ -37,7 +38,8 @@ fn main(){
                     }
                 }
 
-                if !eq(outbuf,"hell\xc2\xa0o!".to_bytes()){
+                let tempbuf = ~[104 , 101 , 108 , 108 , 194 , 160 , 111 , 33];
+                if !eq(outbuf,tempbuf) {
                     assert!(false)
                 }
 
@@ -87,7 +89,8 @@ fn main(){
 
                 Filter.parserutils__filter_reset();
 
-                inbuf = (~"hell\xc2\xa0o!").to_bytes();
+                // inbuf = (~"hell\xc2\xa0o!").to_bytes();
+                inbuf = ~[104 , 101 , 108 , 108 , 194 , 160 , 111 , 33];
                 outbuf = ~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
@@ -111,7 +114,8 @@ fn main(){
                     }
                 }
 
-                if !eq(outbuf,"hell\xc2\xa0o!".to_bytes()){                  
+                tempbuf = ~[104 , 101 , 108 , 108 , 194 , 160 , 111 , 33];
+                if !eq(outbuf,tempbuf) {                  
                     assert!(false);  
                 }
 
@@ -156,7 +160,8 @@ fn main(){
                     _ => assert!(false)
                 }
 
-                inbuf= (~"hell\xc2\xa0\xc2\xa1o!").to_bytes();
+                // inbuf= (~"hell\xc2\xa0\xc2\xa1o!").to_bytes();
+                inbuf = ~[104 , 101 , 108 , 108 , 194 , 160 , 194 , 161 , 111 , 33];
                 outbuf=~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-5).to_owned())) { 
@@ -196,7 +201,8 @@ fn main(){
                     }
                 }
 
-                if !eq(outbuf,"hell\xc2\xa0\xc2\xa1o!".to_bytes()){
+                let tempbuf = ~[104 , 101 , 108 , 108 , 194 , 160 , 194 , 161 , 111 , 33];
+                if !eq(outbuf,tempbuf){
                     assert!(false);
                 }
 
@@ -206,7 +212,8 @@ fn main(){
                 }
 
 
-                inbuf= (~"hell\xe2\x80\xa2o!").to_bytes();
+                // inbuf= (~"hell\xe2\x80\xa2o!").to_bytes();
+                inbuf = ~[104 , 101 , 108 , 108 , 226 , 128 , 162 , 111 , 33];
                 outbuf=~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-4).to_owned())) { 
@@ -241,8 +248,8 @@ fn main(){
                         assert!(false);
                     }
                 }
-
-                if !eq(outbuf,"hell\xe2\x80\xa2o!".to_bytes()) {
+                let tempbuf = ~[104 , 101 , 108 , 108 , 226 , 128 , 162 , 111 , 33];
+                if !eq(outbuf,tempbuf) {
                     assert!(false);
                 }
 
