@@ -1159,7 +1159,7 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
     let mut error: css_error;
 
     if( prop_dispatch.len() < (CSS_N_PROPERTIES as uint) ) {
-        return CSS_SHOULD_NEVER_OCCUR ;
+        return CSS_BADPARM ;
     }
 
     while i < (CSS_N_PROPERTIES as uint) {
@@ -1329,7 +1329,7 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
                 }
             }
         },
-        _=> return CSS_SHOULD_NEVER_OCCUR
+        _=> return CSS_BADPARM
     }
 
     ex_size.status = CSS_FONT_SIZE_DIMENSION as u8;

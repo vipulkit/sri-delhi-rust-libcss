@@ -2780,7 +2780,7 @@ pub fn css__cascade_font_family(opv:u32, style:@mut css_style,
 				FONT_FAMILY_IDENT_LIST => {
 					match style.sheet {
 						None =>{
-							return CSS_SHOULD_NEVER_OCCUR ;
+							return CSS_BADPARM ;
 						},
 						Some(css_sheet) => {
 							let mut (res,ofont) = css_sheet.css__stylesheet_string_get(
@@ -2868,7 +2868,7 @@ pub fn css__cascade_font_family(opv:u32, style:@mut css_style,
 
 			match state.handler {
 				None=> {
-					return CSS_SHOULD_NEVER_OCCUR ;
+					return CSS_BADPARM ;
 				},
 				Some(fnhandler) => {
 					error = (*(fnhandler.ua_default_for_property))(
@@ -2947,7 +2947,7 @@ pub fn css__initial_font_family(state:@mut css_select_state) -> css_error {
 
 	match state.handler {
 		None=> {
-			return CSS_SHOULD_NEVER_OCCUR ;
+			return CSS_BADPARM ;
 		},
 		Some(fnhandler) => {
 			error = (*(fnhandler.ua_default_for_property))(
@@ -5480,7 +5480,7 @@ pub fn css__initial_quotes(state:@mut css_select_state) -> css_error {
 
 	match state.handler {
 		None=> {
-			return CSS_SHOULD_NEVER_OCCUR ;
+			return CSS_BADPARM ;
 		},
 		Some(fnhandler) => {
 			error = (*(fnhandler.ua_default_for_property))(
@@ -6052,7 +6052,7 @@ pub fn css__cascade_text_decoration(opv:u32, _:@mut css_style,
 		} 
 		else {
 			if(value == 0) {
-				return CSS_SHOULD_NEVER_OCCUR ;
+				return CSS_BADPARM ;
 			}
 
 			if ( (getValue(opv) & TEXT_DECORATION_UNDERLINE) == 0 ) {
@@ -7227,7 +7227,7 @@ pub fn css__cascade_cursor(opv:u32, style:@mut css_style,
 		while (v == (CURSOR_URI as u32) ) {
 
 			if style.sheet.is_none() {
-				return CSS_SHOULD_NEVER_OCCUR ;
+				return CSS_BADPARM ;
 			}
 			let mut (result,o_url)  = style.sheet.get().css__stylesheet_string_get( 
 														peek_bytecode(style) as uint );

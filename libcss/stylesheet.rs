@@ -1034,7 +1034,7 @@ impl css_selector_hash {
                         // added , due to logical incompatibilty with "_remove_into_chain"
                         // in origical code , _remove_into_chain removes by comparing pointer values,
                         // and freeing the final result , by doing reallocation of 0 bytes ( line num : 650-671 , hash.c)
-                        return CSS_SHOULD_NEVER_OCCUR;
+                        return CSS_BADPARM;
                     }
 
                     if search.selector.specificity> selector.specificity {
