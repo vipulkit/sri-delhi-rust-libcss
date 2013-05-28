@@ -18,9 +18,13 @@ pub struct css {
 
 }
 
+enum css_params_version {
+	CSS_PARAMS_VERSION_1 = 1
+}
+
 pub struct css_params {
 		/** ABI version of this structure */
-		params_version : uint,
+		params_version : css_params_version,
 
 		/** The language level of the stylesheet */
 		level: css_language_level,

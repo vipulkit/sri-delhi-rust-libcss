@@ -9,6 +9,14 @@ pub enum css_font_face_format {
     CSS_FONT_FACE_FORMAT_EMBEDDED_OPENTYPE  =   0x04, // Embedded OpenType; .eot */
     CSS_FONT_FACE_FORMAT_SVG        =   0x08, // SVG Font; .svg, .svgz */
     CSS_FONT_FACE_FORMAT_UNKNOWN        =   0x10 // Format specified, but not recognised */
+     // We don't define CSS_FONT_FACE_SRC_FORMAT_TRUETYPE as might be 
+     // * expected, because the CSS3 specification 
+     // *  (http://www.w3.org/TR/css3-fonts/, Â§4.3) says:
+     // *  "Given the overlap in common usage between TrueType and
+     // *   OpenType, the format hints "truetype" and "opentype" must be 
+     // *   considered as synonymous"
+     // * so we compute a hint of 'truetype' to css_font_face_format_opentype.
+     
 }
 
 pub enum css_font_face_location_type{

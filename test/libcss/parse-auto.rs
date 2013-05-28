@@ -21,7 +21,7 @@ pub struct rule_s{
 
 fn fill_params() -> css_params {
 	let css_param = css_params {
-		params_version : 1,
+		params_version : CSS_PARAMS_VERSION_1,
 		level: CSS_LEVEL_21,
 		charset : Some(~"UTF-8"),
 		url : ~"foo",
