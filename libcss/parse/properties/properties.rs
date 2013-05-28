@@ -205,78 +205,64 @@ pub impl css_properties {
             match (token.token_type) {
                 CSS_TOKEN_IDENT(_) => true,
                 _=> false
-             } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHTWARDS as uint) 
-            ) {
+            } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHTWARDS as uint) 
+        ) {
             *ctx += 1;
             value = AZIMUTH_RIGHTWARDS ;
         }
-        else if ( match (token.token_type) {
+        else if ( 
+            match (token.token_type) {
                 CSS_TOKEN_IDENT(_) => true,
                 _=> false
             } 
-        )
-            {
+        ) {
             if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT_SIDE as uint) {
-                *ctx += 1;
                 value = AZIMUTH_LEFT_SIDE ;
-
             }
 
             else if ( 
             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_LEFT as uint) 
             ) {
-                *ctx += 1;
                 value = AZIMUTH_FAR_LEFT ;
-
             }
             else if ( 
             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT as uint) 
             ) {
-                *ctx += 1;
                 value = AZIMUTH_LEFT ;
-
             }
             else if ( 
              strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER_LEFT as uint) 
             ) {
-                *ctx += 1;
                 value = AZIMUTH_CENTER_LEFT ;
-
             }
             else if ( 
              strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER as uint) 
             ) {
-                *ctx += 1;
                 value = AZIMUTH_CENTER;
             }
             else if ( 
              strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),CENTER_RIGHT as uint) 
             ) {
-                *ctx += 1;
                 value = AZIMUTH_CENTER_RIGHT;
             }
             else if ( 
              strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT as uint) 
             ) {
-                *ctx += 1;
                 value = AZIMUTH_RIGHT;
             }
             else if ( 
              strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_RIGHT as uint) 
             ) {
-                *ctx += 1;
                 value = AZIMUTH_FAR_RIGHT;
             }
             else if ( 
              strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT_SIDE as uint) 
             ) {
-                *ctx += 1;
                 value = AZIMUTH_RIGHT_SIDE;
             }
             else if ( 
              strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BEHIND as uint) 
             ) {
-                *ctx += 1;
                 value = AZIMUTH_BEHIND;
             }
             else {
@@ -290,7 +276,7 @@ pub impl css_properties {
                 match (token.token_type) {
                     CSS_TOKEN_IDENT(_) => true,
                     _=> false
-                }&& value == AZIMUTH_BEHIND
+                } && value == AZIMUTH_BEHIND
             ) {
                 *ctx += 1;
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT_SIDE as uint) {
@@ -344,8 +330,8 @@ pub impl css_properties {
                 match (token.token_type) {
                     CSS_TOKEN_IDENT(_) => false,
                     _=> true
-                }&& value == AZIMUTH_BEHIND
-            ){
+                } && value == AZIMUTH_BEHIND
+            ) {
                 value |= AZIMUTH_CENTER;
             }
         } 
@@ -365,7 +351,7 @@ pub impl css_properties {
                 return CSS_INVALID;
             }
             if (unit_val.unwrap() == UNIT_DEG as u32) {
-                if ((length_val.unwrap() < -F_400) || (length_val.unwrap() > F_360)) {
+                if ((length_val.unwrap() < -F_360) || (length_val.unwrap() > F_360)) {
                     *ctx = orig_ctx;
                     return CSS_INVALID;
                 }
@@ -487,11 +473,10 @@ pub impl css_properties {
                 CSS_OK => {
                     consumeWhitespace(vector, ctx);
                     if *ctx >= vector.len() {
-                        error = CSS_INVALID;
+                        // error = CSS_INVALID;
                         break   
                     }
                     token = &vector[*ctx];
-                    *ctx +=1; //Iterate
                 },
                 _ =>  break //Forcibly cause loop to exit
             }
@@ -564,17 +549,13 @@ pub impl css_properties {
         if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false }  
             && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),INHERIT as uint) {
             
-            if *ctx >= vector.len() {
-                return CSS_INVALID   
-            }
-            
             //token = &vector[*ctx]; Value assigned never used
             *ctx += 1;
             flags = FLAG_INHERIT as u8;
         } 
         else {
             let mut second_pass = false;
-            for uint::range(0,1) |i| {
+            for uint::range(0,2) |i| {
                 if *ctx >= vector.len() {
                     break   
                 }
@@ -650,8 +631,9 @@ pub impl css_properties {
 
             /* Now, sort out the mess we've got */
             if second_pass {
-                //assert(BACKGROUND_POSITION_VERT_CENTER == BACKGROUND_POSITION_HORZ_CENTER);
+                assert!(BACKGROUND_POSITION_VERT_CENTER == BACKGROUND_POSITION_HORZ_CENTER);
 
+                // ??
                 /* Only one value, so the other is center */
                 if value[0] == BACKGROUND_POSITION_HORZ_LEFT  ||
                     value[0] == BACKGROUND_POSITION_HORZ_RIGHT  || 
@@ -705,7 +687,6 @@ pub impl css_properties {
         }
 
         return CSS_OK;
-  
     }
 
 
@@ -757,14 +738,13 @@ pub impl css_properties {
     fn css__parse_border_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
         let mut prev_ctx: uint;
-        let mut token: &@css_token;
         let mut side_count: u32 = 0;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
         }
         
-        token=&vector[*ctx];
+        let mut token=&vector[*ctx];
 
         if is_css_inherit(strings , token) {
             css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_BORDER_TOP_COLOR);
