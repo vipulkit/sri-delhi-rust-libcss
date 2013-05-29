@@ -902,6 +902,8 @@ pub impl css_properties {
                     }
                     num_lengths = 1;
                     consumeWhitespace(vector, ctx);
+
+                    // ?? y not token ..it is used nowhere below
                     if *ctx < vector.len() {
                         let (length_opt,unit_opt,result) = css__parse_unit_specifier(sheet, vector, ctx, UNIT_PX as u32);
                         length.push(length_opt.unwrap() as i32);
@@ -1087,19 +1089,23 @@ pub impl css_properties {
                 *ctx = orig_ctx;
                 return CSS_INVALID;
             }
-            if (match token.token_type {
-                CSS_TOKEN_IDENT(_) => true,
-                _ => false
-            }) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THIN as uint) {
+            if (
+                match token.token_type {
+                    CSS_TOKEN_IDENT(_) => true,
+                    _ => false
+                }
+                ) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THIN as uint) {
 
-                side_val.push(BORDER_WIDTH_THIN );
+                side_val.push(BORDER_WIDTH_THIN);
                 *ctx = *ctx + 1;
                 error = CSS_OK;
             }
-            else if (match token.token_type {
-                CSS_TOKEN_IDENT(_) => true,
-                _ => false
-            }) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MEDIUM as uint) {
+            else if (
+                match token.token_type {
+                    CSS_TOKEN_IDENT(_) => true,
+                    _ => false
+                }
+                ) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MEDIUM as uint) {
                 
                 side_val.push(BORDER_WIDTH_MEDIUM);
                 *ctx = *ctx + 1;
@@ -1132,6 +1138,11 @@ pub impl css_properties {
                             return CSS_INVALID;
                         }
                         if (side_unit[side_count] & (UNIT_FREQ as u32)) > 0{
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+
+                        if side_length[side_count] < 0 {
                             *ctx = orig_ctx;
                             return CSS_INVALID;
                         }
@@ -1312,6 +1323,8 @@ pub impl css_properties {
                         }
                         i += 1;
                     }
+
+                    /* Finally, consume closing parenthesis */
                     consumeWhitespace(vector , ctx);
                     if *ctx >= vector.len() {
                         *ctx = orig_ctx;
@@ -1327,7 +1340,7 @@ pub impl css_properties {
                     css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_CLIP , 0 , value);
 
                     while i < num_lengths {
-                        css_stylesheet::css__stylesheet_style_vappend(style , unit);
+                        css_stylesheet::css__stylesheet_style_vappend(style,[ length[i] as u32, unit[i]]);
                         num_lengths += 1;
                     }
                 }
@@ -1370,10 +1383,10 @@ pub impl css_properties {
             if (is_css_inherit(strings, token)) {
                 return CSS_INVALID;
             }
-            error_width=css__parse_column_width(sheet , strings ,vector, ctx,  width_style);
+            error_width= css__parse_column_width(sheet , strings ,vector, ctx,  width_style);
             error_count= css__parse_column_count(sheet , strings ,vector, ctx,  count_style);
             if (width &&
-                match error_width  {
+                match error_width {
                     CSS_OK=>true,
                     _=>false
                 }
@@ -1405,11 +1418,12 @@ pub impl css_properties {
                 break;
             }
         }//end of loop
+
         if width {
-            css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_COLUMN_WIDTH, 0, COLUMN_WIDTH_AUTO );
+            css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_COLUMN_WIDTH, 0, COLUMN_WIDTH_AUTO);
         }
         if count {
-            css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_COLUMN_COUNT, 0, COLUMN_COUNT_AUTO );
+            css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_COLUMN_COUNT, 0, COLUMN_COUNT_AUTO);
         }
         css_stylesheet::css__stylesheet_merge_style(style , width_style);
         css_stylesheet::css__stylesheet_merge_style(style , count_style);
@@ -1431,7 +1445,6 @@ pub impl css_properties {
         }
         
         token=&vector[*ctx];
-        *ctx = *ctx + 1;
 
         if is_css_inherit(strings , token) {
             css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_COLUMN_RULE_COLOR);
@@ -1457,7 +1470,7 @@ pub impl css_properties {
             token=&vector[*ctx];
             if is_css_inherit(strings , token) {
                 *ctx = orig_ctx;
-                error = CSS_INVALID;
+                return CSS_INVALID;
             }
 
             if ((color) && 
@@ -1488,10 +1501,6 @@ pub impl css_properties {
             match error {
                 CSS_OK => {
                     consumeWhitespace(vector , ctx);
-                    if *ctx >= vector.len() {
-                        return CSS_INVALID;
-                    }
-                    // token=&vector[*ctx];
                 },
                 _ => {
                     break;
@@ -1504,7 +1513,7 @@ pub impl css_properties {
 
         if color {
             css_stylesheet::css__stylesheet_style_appendOPV(color_style , CSS_PROP_COLUMN_RULE_COLOR , 0 , COLUMN_RULE_COLOR_SET );
-            // css_stylesheet::css__stylesheet_style_append(color_style , 0x00000000);
+            css_stylesheet::css__stylesheet_style_append(color_style , 0x00000000);
         }
         if bool_style {
             css_stylesheet::css__stylesheet_style_appendOPV(style_style , CSS_PROP_COLUMN_RULE_STYLE , 0 , COLUMN_RULE_STYLE_NONE );   
@@ -1520,8 +1529,7 @@ pub impl css_properties {
     }
 
 
-    fn css__parse_content(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token],
-     ctx: @mut uint, result: @mut css_style)->css_error {
+    fn css__parse_content(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, result: @mut css_style)->css_error {
         let mut orig_ctx = *ctx;
         let mut error:css_error = CSS_OK;                
         /* IDENT(normal, none, inherit) | [ ... ]+ */
@@ -1589,12 +1597,12 @@ pub impl css_properties {
                     
                     css_stylesheet::css__stylesheet_style_append(result, snumber as u32);
                 }
-               else if match token.token_type {CSS_TOKEN_URI(_) => true, _ => false} {
+                else if match token.token_type {CSS_TOKEN_URI(_) => true, _ => false} {
                     
                     match (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone()){
                         (CSS_OK, Some(uri)) => {
                             let uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri));
-                            CSS_APPEND(first, CONTENT_URI );
+                            CSS_APPEND(first, CONTENT_URI);
                     
                             css_stylesheet::css__stylesheet_style_append(result, uri_snumber as u32)
                         },
@@ -1605,8 +1613,7 @@ pub impl css_properties {
                     }
                 } 
                 else if match token.token_type {CSS_TOKEN_FUNCTION(_) => true, _ => false} &&
-                       strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ATTR as uint) {
-                    // uint32_t snumber;
+                        strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ATTR as uint) {
 
                     consumeWhitespace(vector, ctx);
 
@@ -1690,7 +1697,6 @@ pub impl css_properties {
                     }
 
                     if tokenIsChar(token, ',') {
-                        // uint16_t v;
 
                         *ctx += 1;
 
@@ -1941,14 +1947,12 @@ pub impl css_properties {
                 return error;
             }
         }    
-
     
         CSS_OK
     }
 
 
     fn css__parse_cue(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
-        // TODO: review
         let orig_ctx = *ctx;
         let mut error: css_error;
         let mut token:&@css_token;
@@ -2010,7 +2014,6 @@ pub impl css_properties {
         }
         token = &vector[*ctx];
         *ctx = *ctx + 1;
-
         
         match token.token_type {
             CSS_TOKEN_IDENT(_) =>{},
