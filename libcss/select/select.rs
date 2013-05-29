@@ -334,6 +334,102 @@ impl css_select_ctx {
 		applies
 	}
 
+	pub fn _selector_less_specific(refer:@mut css_selector, cand:@mut css_selector) -> bool {
+
+		let mut result : bool = true;
+
+		// if (cand == NULL)
+		// 	return false;
+
+		// if (ref == NULL)
+		// 	return true;
+
+		/* Sort by specificity */
+		if (cand.specificity < refer.specificity) {
+			result = true;
+		} 
+		else if (refer.specificity < cand.specificity) {
+			result = false;
+		} 
+		else {
+
+			if( cand.rule.is_none() || refer.rule.is_none() ) {
+				fail!(~"_selector_less_specific:Base rule cannot be null");
+			}
+			let mut cand_base = css_stylesheet::css__stylesheet_get_base_rule(cand.rule.get()) ;
+			let mut refer_base = css_stylesheet::css__stylesheet_get_base_rule(refer.rule.get()) ;
+			/* Then by rule index -- earliest wins */
+			if (cand_base.index < refer_base.index) {
+				result = true;
+			}
+			else {
+				result = false;
+			}
+		}
+
+		result
+	}
+
+	pub fn update_reject_cache(state: @mut css_select_state, comb:css_combinator,
+								s:@mut css_selector) {
+
+		let mut  next_detail : Option<@mut css_selector_detail> = None;
+
+		unsafe {
+			if (s.data.len() > 1 ) {
+				next_detail = Some(s.data[1]);
+			}
+
+			if (state.next_reject < 0 || s.data.len() > 2 ) { 
+				return;
+			}
+		}
+
+		if( next_detail.is_none() ) {
+			return ;
+		}
+
+		match comb {
+			CSS_COMBINATOR_ANCESTOR => {},
+			_=>{
+				return ;
+			}
+		}
+
+		match next_detail.get().selector_type {
+			CSS_SELECTOR_CLASS=> {},
+			CSS_SELECTOR_ID=>{},
+			_=>{
+				return ;
+			}
+		}
+
+		/* Insert */
+		let mut item : reject_item = reject_item{
+			value: copy next_detail.get().qname.name ,
+			sel_type: next_detail.get().selector_type
+		};
+		state.reject_cache[state.next_reject] = Some(item) ;
+		state.next_reject -= 1;
+	}
+
+	pub fn match_nth(a:i32  , b:i32 , count:i32) -> bool {
+		if (a == 0) {
+			return (count == b);
+		} 
+		else {
+			let mut delta : i32 = count - b;
+
+			/* (count - b) / a is positive or (count - b) is 0 */
+			if (((delta > 0) == (a > 0)) || delta == 0) {
+				/* (count - b) / a is integer */
+				return (delta % a == 0);
+			}
+
+			return false;
+		}
+	}
+
 	pub fn cascade_style(style:@mut css_style, state:@mut css_select_state) -> css_error {
 		let mut s = style;
 

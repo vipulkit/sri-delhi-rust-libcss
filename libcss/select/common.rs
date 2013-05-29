@@ -783,8 +783,8 @@ pub struct css_select_state {
     classes:~[~str],
     n_classes:u32,           
 
-    reject_cache: ~[Option<reject_item>],       
-    next_reject:int,            
+    reject_cache: ~[Option<reject_item>],     /* Reject cache (filled from end) */  
+    next_reject:int,                        /* Next free slot in reject cache */
 
     props: ~[~[@mut prop_state]] 
 } 
