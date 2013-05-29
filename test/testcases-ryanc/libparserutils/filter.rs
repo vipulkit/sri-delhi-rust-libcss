@@ -84,7 +84,13 @@ fn filter() {
 
     /* Illegal input sequence; output buffer large enough
     // ryanc: only checking for illegal input sequence */
-    let mut in: ~[u8] = "hell\x96o!".to_bytes();
+
+    // ryanc: Rust does not allow to create invalid utf-8 string.
+    // Hence, a sequence of ascii code equivalent to "hell\x96o!"
+    // is created and used for this test case
+    //let mut in: ~[u8] = "hell\x96o!".to_bytes();
+    let mut in: ~[u8] = ~[104,101,108,108,150,111,33];
+
 
     /* Input does loose decoding, converting to U+FFFD if illegal
        input is encountered */
@@ -102,7 +108,8 @@ fn filter() {
     }
 
     // FIXME: fails
-    assert_eq!(str::from_bytes(out), ~"hell\xef\xbf\xbdo!");
+    //assert_eq!(str::from_bytes(out), ~"hell\xef\xbf\xbdo!");
+    assert!(vec::eq(out, ~[104,101,108,108,239,191,189,111,33]));
 
     /* Input ends mid-sequence */
     let mut in: ~[u8] = "hell\xc2\xa0o!".to_bytes();
@@ -144,7 +151,9 @@ fn filter() {
     /* Input ends mid-sequence, but second attempt contains
      * invalid character */
 
-    let mut in: ~[u8] = "hell\xc2\xc2o!".to_bytes();
+    //let mut in: ~[u8] = "hell\xc2\xc2o!".to_bytes();
+    // ryanc: invalid utf-8 string is emulated by a sequence of ascii chars
+    let mut in: ~[u8] = ~[104,101,108,108,194,194,111,33];
     let mut inlen = in.len()-3;
 
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
@@ -173,8 +182,8 @@ fn filter() {
         _ => {assert!(false);}
     }
 
-    // FIXME: failed
-    assert_eq!(str::from_bytes(out), ~"hell\xef\xbf\xbd\xef\xbf\xbdo!");
+    //assert_eq!(str::from_bytes(out), ~"hell\xef\xbf\xbd\xef\xbf\xbdo!");
+    assert!(vec::eq(out, ~[104,101,108,108, 239,191,189,239,191,189,111,33]));
 
     /* Input ends mid-sequence, but second attempt contains another
      * incomplete character */
