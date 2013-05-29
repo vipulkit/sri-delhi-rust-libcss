@@ -1046,7 +1046,62 @@ static prop_dispatch : &'static[&'static prop_table] = &[
 
 ] ;
 
+pub struct dispatch_table ;
+	//table : ~[prop_table]
 
+// dispatch table impl , to access dispatch table static functions from other modules
+// otherwise static variables are not visible outside
+impl dispatch_table {
+
+	pub fn check_index(index:uint) {
+		if( index >= CSS_N_PROPERTIES as uint) {
+			fail!(~"In Check Index : index should be less that CSS_N_PROPERTIES value") ;
+		}
+	}
+
+	pub fn get_cascade_ptr(index:uint) -> (&fn (opv:u32, style:@mut css_style,state:@mut css_select_state)-> css_error) {
+
+		dispatch_table::check_index(index);
+		let mut dispatch_cascade = prop_dispatch[index].cascade;
+		dispatch_cascade
+	}
+
+	pub fn get_set_from_hint_ptr(index:uint) -> (&fn (hint:@mut css_hint, style: @mut css_computed_style) -> css_error) {
+
+		dispatch_table::check_index(index);
+		let mut dispatch_set_from_hint = prop_dispatch[index].set_from_hint;
+		dispatch_set_from_hint
+	}
+
+	pub fn get_initial_ptr(index:uint) -> (&fn (state:@mut css_select_state) -> css_error ) {
+
+		dispatch_table::check_index(index);
+		let mut dispatch_initial = prop_dispatch[index].initial;
+		dispatch_initial
+	}
+
+	pub fn get_compose_ptr(index:uint) -> (&fn (parent:@mut css_computed_style, child:@mut css_computed_style, 
+											result:@mut css_computed_style) -> css_error) {
+
+		dispatch_table::check_index(index);
+		let mut dispatch_compose = prop_dispatch[index].compose;
+		dispatch_compose
+	}
+
+	pub fn get_inherited(index:uint) -> uint {
+
+		dispatch_table::check_index(index);
+		let mut dispatch_inherited = prop_dispatch[index].inherited;
+		dispatch_inherited
+	}
+
+	pub fn get_group(index:uint) -> prop_group {
+
+		dispatch_table::check_index(index);
+		let mut dispatch_group = prop_dispatch[index].group;
+		dispatch_group
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////
 // Function pointers used in the "functions containing absolute in thier name"
