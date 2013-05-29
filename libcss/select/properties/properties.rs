@@ -10,13 +10,20 @@ use bytecode::bytecode::*;
 use bytecode::opcodes::*;
 use stylesheet::*;
 use utils::errors::*;
-use select::select::*;
 use select::common::*;
 use select::propset::*;
 use select::computed::*;
 
 /* HELPERS --- Useful helpers */
 ///////////////////////////////////////////////////////////////////
+
+// moved from select , to resolve cyclic dependency between modules
+pub fn css__outranks_existing(op:u16, 
+							important:bool, 
+							state: @mut css_select_state,
+							inherit:bool) -> bool {
+	true 
+}
 
 pub fn css__to_css_unit(u:u32) -> css_unit {
 	match u {

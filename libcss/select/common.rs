@@ -800,4 +800,26 @@ pub struct css_select_font_faces_results {
     font_faces:~[Option<@mut css_font_face>],
 }
 
+pub fn advance_bytecode(style: @mut css_style) {
+    unsafe{
+        if (style.bytecode.len() - style.used > 1) {
+            style.used += 1 
+        }
+        else {
+            fail!(~"Advancing Bytecode vector after end index")
+        }
+    }
+}   
+
+pub fn peek_bytecode(style: @mut css_style) -> u32 {
+    unsafe{
+        if style.bytecode.len() - style.used > 0 {
+            style.bytecode[style.used] 
+        }
+        else {
+            fail!(~"Advancing Bytecode vector after end index")
+        }
+    }
+}
+
 /////////////////////////////////////////////////////////////////

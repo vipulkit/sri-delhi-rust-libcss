@@ -1,8 +1,10 @@
 
 use include::types::*;
 use include::font_face::*;
+use bytecode::bytecode::*;
 use utils::errors::*;
 use select::common::*;
+use select::dispatch::*;
 use stylesheet::*;
 
 use core::managed::*;
@@ -20,8 +22,6 @@ pub struct css_select_sheet {
  * CSS selection context
  */
 struct css_select_ctx {
-	n_sheets:u32,
-
 	sheets:~[@mut css_select_sheet],
 
 	/* Useful interned strings */
@@ -73,37 +73,6 @@ pub struct css_select_font_faces_state {
 	author_font_faces:css_select_font_faces_list
 }
 
-
-pub fn css__outranks_existing(op:u16, 
-							important:bool, 
-							state: @mut css_select_state,
-							inherit:bool) -> bool {
-	true 
-}
-
-pub fn advance_bytecode(style: @mut css_style) {
-	unsafe{
-	 	if (style.bytecode.len() - style.used > 1) {
-			style.used += 1	
-		}
-		else {
-			fail!(~"Advancing Bytecode vector after end index")
-		}
-	}
-}	
-
-pub fn peek_bytecode(style: @mut css_style) -> u32 {
-	unsafe{
-		if style.bytecode.len() - style.used > 0 {
-			style.bytecode[style.used] 
-		}
-		else {
-			fail!(~"Advancing Bytecode vector after end index")
-		}
-	}
-}
-
-
 //////////////////////////////////////////////////////////////////
 // Start of CSS Selector internal functions
 //////////////////////////////////////////////////////////////////
@@ -112,8 +81,6 @@ impl css_select_ctx {
 	pub fn css_select_ctx_create() -> (css_error,Option<~css_select_ctx>) {
 		let mut error : css_error ;
 		let mut result = ~css_select_ctx {
-			n_sheets:0,
-
 			sheets:~[],
 
 			universal:~"",
@@ -262,6 +229,134 @@ impl css_select_ctx {
 
 	pub fn css_select_results_destroy(results: &mut ~[@mut css_select_results] ) -> css_error {
 		results.clear() ;
+		CSS_OK
+	}
+
+	pub fn css_select_font_faces(&mut self,
+								media:u64,
+								font_family:~str) 
+								-> (css_error,Option<css_select_font_faces_results>) {
+
+		let mut results : Option<css_select_font_faces_results> = None ;
+		let mut error = CSS_OK ;
+
+		if(font_family.len()==0) {
+			return (CSS_BADPARM,results) ;
+		}
+
+		let mut state = @mut css_select_font_faces_state {
+			font_family:copy font_family,
+			media:media,
+
+			ua_font_faces:css_select_font_faces_list{font_faces:~[]},
+			user_font_faces:css_select_font_faces_list{font_faces:~[]},
+			author_font_faces:css_select_font_faces_list{font_faces:~[]}
+		};
+
+		for self.sheets.each |select_sheet| {
+
+			if ((select_sheet.media & media) != 0 ) && 
+				(select_sheet.sheet.disabled == false ) {
+
+				error = self.select_font_faces_from_sheet(select_sheet.sheet,
+														select_sheet.origin,state);
+				match error {
+					CSS_OK=>{} ,
+					x => {
+						return (x,None) ;
+					}
+				}
+			}
+		}
+
+		(error,results)
+	}
+
+
+	pub fn select_font_faces_from_sheet(&self,
+										sheet:@mut css_stylesheet,
+										origin: css_origin,
+										state:@mut css_select_font_faces_state)
+										-> css_error {
+
+		CSS_OK
+	}
+
+	pub fn _select_font_face_from_rule(rule:@mut css_rule_font_face,
+									origin: css_origin,
+									state:@mut css_select_font_faces_state) 
+									-> css_error {
+
+
+		CSS_OK
+	}
+
+	pub fn _rule_applies_to_media(rule: Option<CSS_RULE_DATA_TYPE>, media:u64) -> bool {
+
+		let mut applies : bool = true;
+		let mut ancestor = rule;
+
+		loop {	
+			match ancestor {
+				None=>{
+					break ;
+				},
+				Some(ancestor_rule)=> {
+					match ancestor_rule {
+			            RULE_MEDIA(r)=>{
+			                if( ( r.media & media ) == 0 ) {
+			                	applies = false ;
+			                	return applies ;
+			                }
+
+			                if r.base.parent_stylesheet.is_none() {
+			                	ancestor = r.base.parent_rule ;
+			                }
+			                else {
+			                	ancestor = None ;
+			                }
+			                loop ;
+			            },
+			            _ => {
+			            	let mut ancestor_base = css_stylesheet::css__stylesheet_get_base_rule(ancestor_rule);
+			            	if ancestor_base.parent_stylesheet.is_none() {
+			                	ancestor = ancestor_base.parent_rule ;
+			                }
+			                else {
+			                	ancestor = None ;
+			                }
+			                loop ;
+			            }
+			        }
+		    	}
+	    	}
+    	}
+		applies
+	}
+
+	pub fn cascade_style(style:@mut css_style, state:@mut css_select_state) -> css_error {
+		let mut s = style;
+
+		while (s.used > 0) {
+			let mut op: u32;
+			let mut error : css_error ;
+			let mut opv = peek_bytecode(s);
+
+			advance_bytecode(s);
+
+			op = getOpcode(opv) as u32;
+
+			let mut dispatch_cascade = dispatch_table::get_cascade_ptr(op as uint) ;
+            error =  dispatch_cascade(opv, s, state);
+
+			match error {
+				CSS_OK => {},
+				x => {
+					return x ;
+				}
+			}
+		}
+
 		CSS_OK
 	}
 }
