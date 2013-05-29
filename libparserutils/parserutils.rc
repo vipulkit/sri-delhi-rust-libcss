@@ -8,6 +8,9 @@ extern mod std;
 
 pub mod charset {
     pub mod aliases;
+    pub mod encodings {
+    	pub mod utf8impl;
+    }
 }
 
 pub mod input {
