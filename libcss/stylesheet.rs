@@ -228,6 +228,170 @@ pub enum css_rule_type {
     CSS_RULE_PAGE
 }
 
+pub fn get_css_rule_next(rule: Option<CSS_RULE_DATA_TYPE>) -> Option<CSS_RULE_DATA_TYPE> {
+    match rule {
+        None => None,
+        Some(T) => {
+            match T {
+               RULE_UNKNOWN(x) => x.next,
+               RULE_SELECTOR(x) => x.base.next,
+               RULE_CHARSET(x) => x.base.next,
+               RULE_IMPORT(x) => x.base.next,
+               RULE_MEDIA(x) => x.base.next,
+               RULE_FONT_FACE(x) => x.base.next,
+               RULE_PAGE(x) => x.base.next,
+            }
+        }
+    }
+}
+
+pub fn compare_css_rule_types(rule : Option<CSS_RULE_DATA_TYPE>, rule_type : css_rule_type) -> bool{
+    match rule {
+        None => false,
+        Some(T) => {
+
+            match T {
+                RULE_UNKNOWN(x) =>{
+                    match rule_type{
+                        CSS_RULE_UNKNOWN => true,
+                        _=> false
+                    }
+                } 
+                RULE_SELECTOR(x) =>{
+                    match rule_type {
+                        CSS_RULE_SELECTOR => true,
+                        _=> false
+                    }
+                } 
+                RULE_CHARSET(x) =>{
+                    match rule_type {
+                        CSS_RULE_CHARSET => true,
+                        _=> false
+                    }
+                } 
+                RULE_IMPORT(x) =>{
+                    match rule_type {
+                        CSS_RULE_IMPORT => true,
+                        _=> false
+                    }
+                } 
+                RULE_MEDIA(x) =>{
+                    match rule_type {
+                        CSS_RULE_MEDIA => true,
+                        _=> false
+                    }
+                } 
+                RULE_FONT_FACE(x) =>{
+                    match rule_type {
+                        CSS_RULE_FONT_FACE => true,
+                        _=> false
+                    }
+                } 
+                RULE_PAGE(x) =>{
+                    match rule_type {
+                        CSS_RULE_PAGE => true,
+                        _=> false
+                    }
+                } 
+            }
+        }
+    }
+}
+
+
+pub fn compare_css_rdt(rule1: Option<CSS_RULE_DATA_TYPE>, rule2: Option<CSS_RULE_DATA_TYPE>) -> bool{
+    match rule1{
+        None => {
+            match rule2 {
+                None => true,
+                Some(T) => false,
+            }
+        }
+
+        Some(T1) => {
+            match  T1 {
+                RULE_UNKNOWN(x) => {
+                    match rule2{
+                        None => false,
+                        Some(T2) =>{
+                            match  T2 {
+                                RULE_UNKNOWN(y) => mut_ptr_eq(x,y),
+                                _=> false,
+                            }
+                        }
+                    }
+                },
+                RULE_SELECTOR(x) => {
+                    match rule2{
+                        None => false,
+                        Some(T2) =>{
+                            match  T2 {
+                                RULE_SELECTOR(y) => mut_ptr_eq(x,y),
+                                _=> false,
+                            }
+                        }
+                    }
+                },
+                RULE_CHARSET(x) => {
+                    match rule2{
+                        None => false,
+                        Some(T2) =>{
+                            match  T2 {
+                                RULE_CHARSET(y) => mut_ptr_eq(x,y),
+                                _=> false,
+                            }
+                        }
+                    }
+                },
+                RULE_IMPORT(x) => {
+                    match rule2{
+                        None => false,
+                        Some(T2) =>{
+                            match  T2 {
+                                RULE_IMPORT(y) => mut_ptr_eq(x,y),
+                                _=> false,
+                            }
+                        }
+                    }
+                },
+                RULE_MEDIA(x) => {
+                    match rule2{
+                        None => false,
+                        Some(T2) =>{
+                            match  T2 {
+                                RULE_MEDIA(y) => mut_ptr_eq(x,y),
+                                _=> false,
+                            }
+                        }
+                    }
+                },
+                RULE_FONT_FACE(x) => {
+                    match rule2{
+                        None => false,
+                        Some(T2) =>{
+                            match  T2 {
+                                RULE_FONT_FACE(y) => mut_ptr_eq(x,y),
+                                _=> false,
+                            }
+                        }
+                    }
+                },
+                RULE_PAGE(x) => {
+                    match rule2{
+                        None => false,
+                        Some(T2) =>{
+                            match  T2 {
+                                RULE_PAGE(y) => mut_ptr_eq(x,y),
+                                _=> false,
+                            }
+                        }
+                    }
+                },
+            }
+        }
+    }
+}
+
 impl css_stylesheet {
 
     pub fn css__stylesheet_string_add(&mut self, string: ~str) -> uint {

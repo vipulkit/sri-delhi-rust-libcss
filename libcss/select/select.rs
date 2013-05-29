@@ -1,4 +1,7 @@
 
+use std::arc;
+use wapcaplet::*;
+
 use include::types::*;
 use include::font_face::*;
 use bytecode::bytecode::*;
@@ -23,35 +26,35 @@ pub struct css_select_sheet {
  */
 struct css_select_ctx {
 	sheets:~[@mut css_select_sheet],
-
+	lwc_instance:arc::RWARC<~lwc>,
 	/* Useful interned strings */
-	universal:~str,
-	first_child:~str,
-	link:~str,
-	visited:~str,
-	hover:~str,
-	active:~str,
-	focus:~str,
-	nth_child:~str,
-	nth_last_child:~str,
-	nth_of_type:~str,
-	nth_last_of_type:~str,
-	last_child:~str,
-	first_of_type:~str,
-	last_of_type:~str,
-	only_child:~str,
-	only_of_type:~str,
-	root:~str,
-	empty:~str,
-	target:~str,
-	lang:~str,
-	enabled:~str,
-	disabled:~str,
-	checked:~str,
-	first_line:~str,
-	first_letter:~str,
-	before:~str,
-	after:~str
+	universal:Option<arc::RWARC<~lwc_string>>,
+	first_child:Option<arc::RWARC<~lwc_string>>,
+	link:Option<arc::RWARC<~lwc_string>>,
+	visited:Option<arc::RWARC<~lwc_string>>,
+	hover:Option<arc::RWARC<~lwc_string>>,
+	active:Option<arc::RWARC<~lwc_string>>,
+	focus:Option<arc::RWARC<~lwc_string>>,
+	nth_child:Option<arc::RWARC<~lwc_string>>,
+	nth_last_child:Option<arc::RWARC<~lwc_string>>,
+	nth_of_type:Option<arc::RWARC<~lwc_string>>,
+	nth_last_of_type:Option<arc::RWARC<~lwc_string>>,
+	last_child:Option<arc::RWARC<~lwc_string>>,
+	first_of_type:Option<arc::RWARC<~lwc_string>>,
+	last_of_type:Option<arc::RWARC<~lwc_string>>,
+	only_child:Option<arc::RWARC<~lwc_string>>,
+	only_of_type:Option<arc::RWARC<~lwc_string>>,
+	root:Option<arc::RWARC<~lwc_string>>,
+	empty:Option<arc::RWARC<~lwc_string>>,
+	target:Option<arc::RWARC<~lwc_string>>,
+	lang:Option<arc::RWARC<~lwc_string>>,
+	enabled:Option<arc::RWARC<~lwc_string>>,
+	disabled:Option<arc::RWARC<~lwc_string>>,
+	checked:Option<arc::RWARC<~lwc_string>>,
+	first_line:Option<arc::RWARC<~lwc_string>>,
+	first_letter:Option<arc::RWARC<~lwc_string>>,
+	before:Option<arc::RWARC<~lwc_string>>,
+	after:Option<arc::RWARC<~lwc_string>>
 }
 
 /*
@@ -78,92 +81,82 @@ pub struct css_select_font_faces_state {
 //////////////////////////////////////////////////////////////////
 impl css_select_ctx {
 
-	pub fn css_select_ctx_create() -> (css_error,Option<~css_select_ctx>) {
-		let mut error : css_error ;
+	pub fn css_select_ctx_create() -> ~css_select_ctx {
+		
 		let mut result = ~css_select_ctx {
 			sheets:~[],
+			lwc_instance:lwc(), // create lwc
 
-			universal:~"",
-			first_child:~"",
-			link:~"",
-			visited:~"",
-			hover:~"",
-			active:~"",
-			focus:~"",
-			nth_child:~"",
-			nth_last_child:~"",
-			nth_of_type:~"",
-			nth_last_of_type:~"",
-			last_child:~"",
-			first_of_type:~"",
-			last_of_type:~"",
-			only_child:~"",
-			only_of_type:~"",
-			root:~"",
-			empty:~"",
-			target:~"",
-			lang:~"",
-			enabled:~"",
-			disabled:~"",
-			checked:~"",
-			first_line:~"",
-			first_letter:~"",
-			before:~"",
-			after:~""
+			universal:None,
+			first_child:None,
+			link:None,
+			visited:None,
+			hover:None,
+			active:None,
+			focus:None,
+			nth_child:None,
+			nth_last_child:None,
+			nth_of_type:None,
+			nth_last_of_type:None,
+			last_child:None,
+			first_of_type:None,
+			last_of_type:None,
+			only_child:None,
+			only_of_type:None,
+			root:None,
+			empty:None,
+			target:None,
+			lang:None,
+			enabled:None,
+			disabled:None,
+			checked:None,
+			first_line:None,
+			first_letter:None,
+			before:None,
+			after:None
 		};
 
-		error = css_select_ctx::intern_strings(&mut result);
-		match error {
-			CSS_OK => {},
-			x => {
-				return (x,None) ;
-			}
-		}
-		(CSS_OK,Some(result))
+		result.intern_strings();
+		return result 
 	}
 
-	pub fn css_select_ctx_destroy(&mut self) -> css_error {
-		// need to check , if final outcome of select contains lwc_string
-		// then we will need destroy function , to unref lwc_strings
-		CSS_OK
-	}
+	pub fn intern_strings(&mut self) {
+		
+		do self.lwc_instance.clone().write |l| {
 
-	pub fn intern_strings(ctx: &mut ~css_select_ctx) -> css_error {
+			/* Universal selector */
+			self.universal = Some(l.lwc_intern_string(~"*"));
 
-		/* Universal selector */
-		ctx.universal = ~"*" ;
+			/* Pseudo classes */
+			self.first_child = Some(l.lwc_intern_string(~"first_child"));
+			self.link = Some(l.lwc_intern_string(~"link"));
+			self.visited = Some(l.lwc_intern_string(~"visited"));
+			self.hover = Some(l.lwc_intern_string(~"hover"));
+			self.active = Some(l.lwc_intern_string(~"active"));
+			self.focus = Some(l.lwc_intern_string(~"focus"));
+			self.nth_child = Some(l.lwc_intern_string(~"nth_child"));
+			self.nth_last_child = Some(l.lwc_intern_string(~"nth_last_child"));
+			self.nth_of_type = Some(l.lwc_intern_string(~"nth_of_type"));
+			self.nth_last_of_type = Some(l.lwc_intern_string(~"nth_last_of_type"));
+			self.last_child = Some(l.lwc_intern_string(~"last_child"));
+			self.first_of_type = Some(l.lwc_intern_string(~"first_of_type"));
+			self.last_of_type = Some(l.lwc_intern_string(~"last_of_type"));
+			self.only_child = Some(l.lwc_intern_string(~"only_child"));
+			self.only_of_type = Some(l.lwc_intern_string(~"only_of_type"));
+			self.root = Some(l.lwc_intern_string(~"root"));
+			self.empty = Some(l.lwc_intern_string(~"empty"));
+			self.target = Some(l.lwc_intern_string(~"target"));
+			self.lang = Some(l.lwc_intern_string(~"lang"));
+			self.enabled = Some(l.lwc_intern_string(~"enabled"));
+			self.disabled = Some(l.lwc_intern_string(~"disabled"));
+			self.checked = Some(l.lwc_intern_string(~"checked"));
 
-		/* Pseudo classes */
-		ctx.first_child = ~"first_child" ;
-		ctx.link = ~"link" ;
-		ctx.visited = ~"visited" ;
-		ctx.hover = ~"hover" ;
-		ctx.active = ~"active" ;
-		ctx.focus = ~"focus" ;
-		ctx.nth_child = ~"nth_child" ;
-		ctx.nth_last_child = ~"nth_last_child" ;
-		ctx.nth_of_type = ~"nth_of_type" ;
-		ctx.nth_last_of_type = ~"nth_last_of_type" ;
-		ctx.last_child = ~"last_child" ;
-		ctx.first_of_type = ~"first_of_type" ;
-		ctx.last_of_type = ~"last_of_type" ;
-		ctx.only_child = ~"only_child" ;
-		ctx.only_of_type = ~"only_of_type" ;
-		ctx.root = ~"root" ;
-		ctx.empty = ~"empty" ;
-		ctx.target = ~"target" ;
-		ctx.lang = ~"lang" ;
-		ctx.enabled = ~"enabled" ;
-		ctx.disabled = ~"disabled" ;
-		ctx.checked = ~"checked" ;
-
-		/* Pseudo elements */
-		ctx.first_line = ~"first_line" ;
-		ctx.first_letter = ~"first_letter" ;
-		ctx.before = ~"before" ;
-		ctx.after = ~"after" ;
-
-		CSS_OK
+			/* Pseudo elements */
+			self.first_line = Some(l.lwc_intern_string(~"first_line"));
+			self.first_letter = Some(l.lwc_intern_string(~"first_letter"));
+			self.before = Some(l.lwc_intern_string(~"before"));
+			self.after = Some(l.lwc_intern_string(~"after"));
+		}	
 	}
 
 	pub fn css_select_ctx_append_sheet(&mut self,
@@ -171,30 +164,56 @@ impl css_select_ctx {
 									origin:css_origin,
 									media:u64) 
 									-> css_error {
-
-		self.css_select_ctx_insert_sheet(sheet,origin,media)
+		let n_sheets = self.sheets.len();
+		self.css_select_ctx_insert_sheet(sheet, n_sheets, origin,media)
 	}
 
+	/**
+	 * Insert a stylesheet into a selection context
+	 * 
+	 * \param self   The selection context to insert into
+	 * \param sheet  Sheet to insert
+	 * \param index  Index in context to insert sheet
+	 * \param origin  Origin of the sheet
+	 * \param media   Media types to which the sheet applies
+	 * \return CSS_OK on success, appropriate error otherwise
+	 */
 	pub fn css_select_ctx_insert_sheet(&mut self,
 									csheet:@mut css_stylesheet,
+									index:uint,
 									corigin:css_origin,
 									cmedia:u64) 
 									-> css_error {
 
+	
+		/* Inline styles cannot be inserted into a selection context */
 		if (csheet.inline_style) {
 			return CSS_INVALID ;
 		}
-
+	
+		/* Index must be in the range [0, n_sheets]
+		 * The latter being equivalent to append */
+		if index > self.sheets.len()	{
+			return CSS_INVALID;
+		}	
+			
 		let mut select_sheet = @mut css_select_sheet{
 			sheet:csheet,
 			origin:corigin,
 			media:cmedia
 		};
 
-		self.sheets.push(select_sheet);
+		self.sheets.insert(index, select_sheet);
 		CSS_OK
 	}
 
+	/**
+	 * Remove a sheet from a selection context
+	 *
+	 * \param self   The selection context to remove from
+	 * \param sheet  Sheet to remove
+	 * \return CSS_OK on success, appropriate error otherwise
+	 */
 	pub fn css_select_ctx_remove_sheet(&mut self, csheet:@mut css_stylesheet)-> css_error {
 
 		let mut i = self.sheets.len() ;
@@ -455,6 +474,63 @@ impl css_select_ctx {
 
 		CSS_OK
 	}
+
+	//Note: incomplete
+	pub fn select_from_sheet(&mut self, sheet : @mut css_stylesheet, state : &mut css_select_state, index:uint) -> css_error{
+		let mut s : @mut css_stylesheet = sheet;
+		let mut rule : Option<CSS_RULE_DATA_TYPE> = s.rule_list;
+		let mut sp : u32 = 0;
+		let mut import_stack : ~[Option<CSS_RULE_DATA_TYPE>] = ~[];
+		loop{
+			if compare_css_rdt(rule, s.rule_list){
+				while !rule.is_none() && compare_css_rule_types(rule, CSS_RULE_IMPORT) {
+					rule = get_css_rule_next(rule);
+				}
+			}
+			if !rule.is_none() && compare_css_rule_types(rule, CSS_RULE_IMPORT) {
+				let mut import_sheet : Option<@mut css_stylesheet> = None;
+				let mut import_media:u64 = 0;
+			    match rule {
+			        None => {},
+			        Some(T) => {
+			            match T {
+			               RULE_IMPORT(x) => {
+			               	import_media = x.media;
+			               	import_sheet = x.sheet;
+			               },
+			               _=> {},
+			            }
+			        }
+			    }
+
+				if !import_sheet.is_none() && (import_media & state.media) != 0 {
+					if sp >= 256 {
+						return CSS_NOMEM;
+					}
+
+					import_stack.push(rule);
+					match import_sheet {
+						None => {},
+						Some(T) => {
+							s = T;
+						}
+					}
+					// s = import_sheet;
+					rule = s.rule_list;
+				}
+				else {
+					rule = get_css_rule_next(rule);
+				}
+			}
+			else {
+				state.sheet = Some(s);
+				state.current_origin = self.sheets[index].origin;
+				//writing match_selectors_in_sheet()
+			}
+    	}
+		CSS_OK
+	}
+
 }
 
 
