@@ -753,22 +753,140 @@ impl css_lexer {
 
     pub fn escaped_ident_or_function(&mut self) -> (css_error, Option<~css_token>) {
 
-        (CSS_OK, None)
+    /* IDENT = ident = [-]? nmstart nmchar*
+     * FUNCTION = ident '(' = [-]? nmstart nmchar* '('
+     *
+     * In this case, nmstart is an escape sequence and no '-' is present.
+     *
+     * The '\\' has been consumed.
+     */
+
+        let error = self.consume_escape(false);
+        if (error as int != CSS_OK as int) {
+            if (error as int == CSS_EOF as int || error as int == CSS_INVALID as int) {
+                /* The '\\' is a token of its own */
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+            return (error, None);
+        }
+
+        self.state = sIDENT;
+        self.substate = 0;
+        self.ident_or_function()
     }
 
     pub fn hash(&mut self) -> (css_error, Option<~css_token>) {
 
-        (CSS_OK, None)
+        /* HASH = '#' name  = '#' nmchar+ 
+         *
+         * The '#' has been consumed.
+         */
+
+        let error = self.consume_NM_chars();
+        if (error as int != CSS_OK as int) {
+            return (error, None);
+        }
+
+        /* Require at least one NMChar otherwise, we're just a raw '#' */
+        if (self.bytes_read_for_token - self.context.orig_bytes > 0) {
+            return self.emit_token(Some(CSS_TOKEN_HASH));
+        }
+
+        self.emit_token(Some(CSS_TOKEN_CHAR))
     }
 
     pub fn ident_or_function(&mut self) -> (css_error, Option<~css_token>) {
 
-        (CSS_OK, None)
+        enum ident_or_function_substates { Initial = 0, Bracket = 1 };
+
+        /* IDENT = ident = [-]? nmstart nmchar*
+         * FUNCTION = ident '(' = [-]? nmstart nmchar* '('
+         *
+         * The optional dash and nmstart are already consumed
+         */
+
+        if (self.substate == Initial as uint) {
+            /* Consume all subsequent nmchars (if any exist) */
+            let error = self.consume_NM_chars();
+            if (error as int != CSS_OK as int) {
+                return (error, None);
+            }
+
+            /* Fall through */
+            self.substate = Bracket as uint;
+        }
+
+        if (self.substate == Bracket as uint) {
+            let (pu_peek_result , perror) = 
+                    self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                /* IDENT, rather than CHAR */
+                return self.emit_token(Some(CSS_TOKEN_IDENT));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+            if (c == '(') {
+                self.APPEND(cptr, clen);
+
+                self.token.get_mut_ref().token_type = CSS_TOKEN_FUNCTION;
+            } else {
+                self.token.get_mut_ref().token_type = CSS_TOKEN_IDENT;
+            }
+        }
+
+        self.emit_token(None)
     }
 
     pub fn match_prefix(&mut self) -> (css_error, Option<~css_token>) {
 
-        (CSS_OK, None)
+        /* INCLUDES       = "~="
+         * DASHMATCH      = "|="
+         * PREFIXMATCH    = "^="
+         * SUFFIXMATCH    = "$="
+         * SUBSTRINGMATCH = "*="
+         *
+         * The first character has been consumed.
+         */
+
+        let (pu_peek_result , perror) = 
+            self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+        if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+            return (css_error_from_parserutils_error(perror), None);
+        }
+
+        if (perror as int == PARSERUTILS_EOF as int) {
+            return self.emit_token(Some(CSS_TOKEN_CHAR));
+        }
+
+        let (cptr , clen) = pu_peek_result.unwrap();
+        let c = cptr[0] as char;
+
+        if (c != '=') {
+            return self.emit_token(Some(CSS_TOKEN_CHAR));
+        }
+
+        self.APPEND(cptr, clen);
+
+        let token_type = 
+            match (self.context.first as char) {
+                '~' => CSS_TOKEN_INCLUDES, 
+                '|' => CSS_TOKEN_DASHMATCH,    
+                '^' => CSS_TOKEN_PREFIXMATCH,  
+                '$' => CSS_TOKEN_SUFFIXMATCH,  
+                '*' => CSS_TOKEN_SUBSTRINGMATCH,   
+                _ => fail!()
+            };
+        
+        self.emit_token(Some(token_type))
     }
 
     pub fn number_or_percentage_or_dimension(&mut self) -> (css_error, Option<~css_token>) {
@@ -778,7 +896,17 @@ impl css_lexer {
 
     pub fn s(&mut self) -> (css_error, Option<~css_token>) {
 
-        (CSS_OK, None)
+        /* S = wc*
+     * 
+     * The first whitespace character has been consumed.
+     */
+
+        let error = self.consume_w_chars();
+        if (error as int != CSS_OK as int) {
+            return (error, None);
+        }
+
+        self.emit_token(Some(CSS_TOKEN_S))
     }
 
     pub fn start(&mut self) -> (css_error, Option<~css_token>) {
@@ -788,7 +916,26 @@ impl css_lexer {
 
     pub fn string(&mut self) -> (css_error, Option<~css_token>) {
 
-        (CSS_OK, None)
+        /* STRING = string
+         *
+         * The open quote has been consumed.
+         */
+
+        let error = self.consume_string();
+        if (error as int != CSS_OK as int && error as int != CSS_EOF as int && error as int != CSS_INVALID as int) {
+            return (error, None);
+        }
+
+        /* EOF will be reprocessed in Start() */
+        match error {
+            CSS_OK | CSS_EOF => {
+                self.emit_token(Some(CSS_TOKEN_STRING))
+            }
+            CSS_INVALID => {
+                self.emit_token(Some(CSS_TOKEN_INVALID_STRING))
+            }
+            _ => {fail!()}
+        }
     }
 
     pub fn uri_or_unicode_range_or_ident_or_function(&mut self) -> (css_error, Option<~css_token>) {
