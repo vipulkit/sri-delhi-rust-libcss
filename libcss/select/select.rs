@@ -391,6 +391,86 @@ impl css_select_ctx {
         return CSS_OK;
     }
 
+    pub fn set_initial(state : @mut css_select_state, prop : uint, pseudo : css_pseudo_element,
+        parent: Option<@mut css_computed_style>) -> css_error {
+
+        let mut error : css_error = CSS_OK; 
+        let mut is_pseudo_and_parent_none : bool = false;
+        match pseudo {
+            CSS_PSEUDO_ELEMENT_NONE => {
+                match parent {
+                    None => {
+                        is_pseudo_and_parent_none = true;
+                    }
+                    Some(T) => {}
+                }
+            }
+            _=> {}
+        }
+
+        if dispatch_table::get_inherited(prop) == 0 || is_pseudo_and_parent_none{
+            let mut group : prop_group = dispatch_table::get_group(prop);
+            match group {
+                GROUP_NORMAL => {
+                    error = (dispatch_table::get_initial_ptr(prop))(state);
+                    match error {
+                        CSS_OK => {},
+                        _=> {
+                            return error;
+                        }
+                    }
+                }
+
+                GROUP_UNCOMMON => {
+                    match state.computed.uncommon {
+                        None => {},
+                        Some(T) => {
+                            error = (dispatch_table::get_initial_ptr(prop))(state);
+                            match error {
+                                CSS_OK => {},
+                                _=> {
+                                    return error;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                GROUP_PAGE => {
+                    match state.computed.page {
+                        None => {},
+                        Some(T) => {
+                            error = (dispatch_table::get_initial_ptr(prop))(state);
+                            match error {
+                                CSS_OK => {},
+                                _=> {
+                                    return error;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                GROUP_AURAL => {
+                    match state.computed.aural {
+                        None => {},
+                        Some(T) => {
+                            error = (dispatch_table::get_initial_ptr(prop))(state);
+                            match error {
+                                CSS_OK => {},
+                                _=> {
+                                    return error;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+            }
+        }
+        CSS_OK
+    }
+
     pub fn select_from_sheet(&mut self, sheet : Option<@mut css_stylesheet>, state : &mut css_select_state, index:uint) -> css_error{
         let mut s_option : Option<@mut css_stylesheet> = sheet;
         let mut rule : Option<CSS_RULE_DATA_TYPE> = None;
