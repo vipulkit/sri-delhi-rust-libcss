@@ -12,6 +12,8 @@ use stylesheet::*;
 
 use core::managed::*;
 
+static IMPORT_STACK_SIZE : int = 256 ;
+
 /*
  * Container for stylesheet selection info
  */
@@ -479,7 +481,9 @@ impl css_select_ctx {
         loop{
             let mut s : @mut css_stylesheet;
             match s_option {
-                None => { break;},
+                None => { 
+                    break;
+                },
                 Some(T) => { s = T;}
             }
 
@@ -539,8 +543,10 @@ impl css_select_ctx {
                         else {
                             s_option = None;
                         }
+                    },
+                    _=> { 
+                        return error;
                     }
-                    _=> { return error;}
                 }
             }
         }
@@ -553,6 +559,88 @@ impl css_select_ctx {
                                         origin: css_origin,
                                         state:@mut css_select_font_faces_state)
                                         -> css_error {
+
+        let mut s = Some(sheet) ;
+        let mut rule = s.get().rule_list;
+        let mut sp : u32 = 0 ;
+        let mut import_stack : ~[CSS_RULE_DATA_TYPE] = ~[];
+        vec::reserve_at_least(&mut import_stack,IMPORT_STACK_SIZE as uint) ;
+
+        let mut ptr = rule ;
+        while ( s.is_some() ) {
+            loop {
+                match ptr {
+                    None=> { 
+                        break ;
+                    },
+                    Some(current_rule) => {
+                        match current_rule {
+                            RULE_CHARSET(_) =>{
+                                ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                                loop;
+                            },
+                            _=> {
+                                break ;
+                            }
+                        }
+                    }
+                }
+            }
+            match ptr {
+                None=> {
+                    /* Find next sheet to process */
+                    if (sp > 0) {
+                        sp -= 1;
+                        rule = css_stylesheet::css__stylesheet_get_base_rule(import_stack[sp]).next;
+                        s = css_stylesheet::css__stylesheet_get_base_rule(import_stack[sp]).parent_stylesheet;
+                    } 
+                    else {
+                        s = None;
+                    }
+                },
+                Some(current_rule) => {
+                    match current_rule {
+                        RULE_CHARSET(_) =>{
+                            ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                        },
+                        RULE_IMPORT(x) => {
+                            /* Current rule is an import */
+                            if ( x.sheet.is_some() && 
+                                ((x.media & state.media) != 0) ) {
+                                if ( sp >= IMPORT_STACK_SIZE as u32) {
+                                    return CSS_NOMEM ;
+                                }
+                                import_stack[sp] = current_rule ;
+                                sp += 1;
+                                s = x.sheet ;
+                                rule = s.get().rule_list ;
+                                ptr = rule ;
+                            }
+                            else {
+                                ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                            }
+                        },
+                        RULE_FONT_FACE(x) => {
+                            let mut error : css_error = self._select_font_face_from_rule(
+                                                            x,
+                                                            origin,
+                                                            state);
+                            match error {
+                                CSS_OK=>{},
+                                x => { 
+                                    return x ;
+                                }
+                            }
+
+                            ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                        },
+                        _=> {
+                            ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                        }
+                    }
+                }
+            }
+        }
 
         CSS_OK
     }
