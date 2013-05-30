@@ -797,7 +797,7 @@ pub struct css_select_font_faces_results {
     /*
      * Array of pointers to computed font faces. 
      */
-    font_faces:~[Option<@mut css_font_face>],
+    font_faces:~[@mut css_font_face],
 }
 
 pub fn advance_bytecode(style: @mut css_style) {
