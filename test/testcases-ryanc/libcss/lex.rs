@@ -57,11 +57,11 @@ fn regression() {
 fn lex(file: ~str) {
     let ITERATIONS = 1;
 
-    for int::range(0, ITERATIONS) |i| {
+    for int::range(0, ITERATIONS) |_i| {
         let (streamOption, PARSERUTILS_STATUS) = inputstream(Some(~"UTF-8"), Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
         match(PARSERUTILS_STATUS) {
             PARSERUTILS_OK=>{}
-            _ => {assert!(false);} 
+            _ => {assert!(false);}
         }
 
         let mut stream = streamOption.unwrap();
@@ -81,10 +81,15 @@ fn lex(file: ~str) {
         while len >= CHUNK_SIZE {
             let buf = r.read_bytes(CHUNK_SIZE);
 
+            assert!(buf.len() == CHUNK_SIZE);
+
             //match(stream.parserutils_inputstream_append(buf)) {
             //    PARSERUTILS_OK => {}
             //    _ => {assert!(false);}
             //}
+            // FIXME: Is it how to append data?
+            // FIXME: Need to check the status
+            lexer.lexer_append_data(buf);
 
             len -= CHUNK_SIZE;
 
@@ -96,10 +101,11 @@ fn lex(file: ~str) {
                         io::println(fmt!("%?", tok));
                         match(tok) {
                             CSS_TOKEN_EOF => {break;}
-                            _ => {}  
+                            _ => {}
                         }
                     }
-                    //_ => {break;} 
+                    // FIXME: "unreachable pattern" error msg appears
+                    //_ => {break;}
                 }
             }
         }
@@ -107,11 +113,14 @@ fn lex(file: ~str) {
         if len > 0 {
             let read_size = r.read(buf, len);
             assert!(read_size == len);
+
             //let STATUS = stream.parserutils_inputstream_append(buf);
             //match(STATUS) {
             //    PARSERUTILS_OK => {}
             //    _ => {assert!(false);}
             //}
+            // FIXME: Need to check the status
+            lexer.lexer_append_data(buf);
 
             len = 0;
             assert!(len == 0); // to remove the warning;
@@ -134,15 +143,107 @@ fn lex(file: ~str) {
                     io::println(fmt!("%?", tok));
                     match(tok) {
                         CSS_TOKEN_EOF => {break;}
-                        _ => {} 
+                        _ => {}
                     }
                 }
-                //_ => {break;} 
+                //_ => {break;}
             }
         }
 
-        //lexer.css__lexer_destroy(); FIXME: not implemented
+        // FIXME: not implemented
+        //lexer.css__lexer_destroy();
         //stream.parserutils_inputstream_destroy();
     }
+}
+
+// FIXME: change the name: css_token_type -> css_token
+fn printToken(token: css_token_type) {
+    let mut toPrint;
+
+    // FIXME: token does not have line and col
+    //io::println(fmt!("[%d, %d] : ", token.line, token.col));
+
+    match token {
+        CSS_TOKEN_IDENT(x) => {
+            toPrint = ~"IDENT" + x;
+        },
+        CSS_TOKEN_ATKEYWORD(x) => {
+            toPrint = ~"ATKEYWORD " + x;
+        },
+        CSS_TOKEN_STRING(x) => {
+            toPrint = ~"STRING " + x;
+        },
+        // FIXME: invalid number of arg error msg
+        // CSS_TOKEN_INVALID_STRING(x) => {
+            // toPrint = ~"INVALID " + x;
+        // },
+        CSS_TOKEN_HASH(x) => {
+            toPrint = ~"HASH " + x;
+        },
+        // FIXME: invalid number of arg error msg
+        // CSS_TOKEN_NUMBER(x) => {
+            // toPrint = ~"NUMBER " + x;
+        // },
+        // FIXME: invalid number of arg error msg
+        // CSS_TOKEN_PERCENTAGE(x) => {
+            // toPrint = ~"PERCENTAGE " + x;
+        // },
+        // FIXME: invalid number of arg error msg
+        // CSS_TOKEN_DIMENSION(x) => {
+            // toPrint = ~"DIMENSION "+ x;
+        // },
+        CSS_TOKEN_URI(x) => {
+            toPrint = ~"URI " + x;
+        },
+        // FIXME: invalid number of arg error msg
+        // CSS_TOKEN_UNICODE_RANGE(x) => {
+            // toPrint = ~"UNICODE_RANGE " + x;
+        // },
+        CSS_TOKEN_CDO => {
+            toPrint = ~"CDO";
+        },
+        CSS_TOKEN_CDC => {
+            toPrint = ~"CDC";
+        },
+        CSS_TOKEN_S => {
+            toPrint = ~"S";
+        },
+        // FIXME: not defined
+        // CSS_TOKEN_COMMENT(x) => {
+            // toPrint = ~"COMMENT" + x;
+        // },
+        CSS_TOKEN_FUNCTION(x) => {
+            toPrint = ~"FUNCTION " + x;
+        },
+        CSS_TOKEN_INCLUDES => {
+            toPrint = ~"INCLUDES";
+        },
+        // FIXME: unreachable pattern
+        // CSS_TOKEN_DASHMATCH => {
+            // toPrint = ~"DASHMATCH";
+        // },
+        // CSS_TOKEN_PREFIXMATCH => {
+            // toPrint = ~"PREFIXMATCH";
+        // },
+        // CSS_TOKEN_SUFFIXMATCH => {
+            // toPrint = ~"SUFFIXMATCH";
+        // },
+        // CSS_TOKEN_SUBSTRINGMATCH => {
+            // toPrint = ~"SUBSTRINGMATCH";
+        // },
+        // FIXME: type mismatch
+        // CSS_TOKEN_CHAR(x) => {
+            // toPrint = ~"CHAR " + x
+        // },
+
+        // FIXME: unreachable pattern
+        // CSS_TOKEN_EOF => {
+            // toPrint = ~"EOF ";
+        // }
+        // CSS_TOKEN_LAST_INTERN_LOWER => {;}
+        // CSS_TOKEN_LAST_INTERN => {;}
+    }
+    io::println(toPrint);
+
 }
 

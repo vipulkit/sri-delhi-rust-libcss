@@ -16,8 +16,6 @@ use parse::properties::common::*;
 
 use utils::errors::*;
 
-
-
 pub type handle =  @extern fn(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style) ->css_error;
 pub type reserved_fn = @extern fn (strings:&mut ~css_propstrings, ident:&@css_token) -> bool;
 pub type get_value_fn = @extern fn (strings: &mut ~css_propstrings , token: &@css_token , first: bool) -> u32;
@@ -473,7 +471,6 @@ pub impl css_properties {
                 CSS_OK => {
                     consumeWhitespace(vector, ctx);
                     if *ctx >= vector.len() {
-                        // error = CSS_INVALID;
                         break   
                     }
                     token = &vector[*ctx];
@@ -633,7 +630,6 @@ pub impl css_properties {
             if second_pass {
                 assert!(BACKGROUND_POSITION_VERT_CENTER == BACKGROUND_POSITION_HORZ_CENTER);
 
-                // ??
                 /* Only one value, so the other is center */
                 if value[0] == BACKGROUND_POSITION_HORZ_LEFT  ||
                     value[0] == BACKGROUND_POSITION_HORZ_RIGHT  || 
@@ -903,7 +899,6 @@ pub impl css_properties {
                     num_lengths = 1;
                     consumeWhitespace(vector, ctx);
 
-                    // ?? y not token ..it is used nowhere below
                     if *ctx < vector.len() {
                         let (length_opt,unit_opt,result) = css__parse_unit_specifier(sheet, vector, ctx, UNIT_PX as u32);
                         length.push(length_opt.unwrap() as i32);
@@ -1020,7 +1015,13 @@ pub impl css_properties {
             side_count += 1;
             *ctx = *ctx + 1;
             consumeWhitespace(vector , ctx);
+            
+            if *ctx >= vector.len() {
+                break;
+            }
+
             token=&vector[*ctx];
+
             if !(*ctx != prev_ctx && side_count < 4) {
                 break;
             }
@@ -1154,6 +1155,11 @@ pub impl css_properties {
                 CSS_OK => {
                     side_count += 1;
                     consumeWhitespace(vector , ctx);
+
+                    if *ctx >= vector.len() {
+                        break;
+                    }
+
                     token=&vector[*ctx];
                 }
                 _ => {
@@ -1501,6 +1507,10 @@ pub impl css_properties {
             match error {
                 CSS_OK => {
                     consumeWhitespace(vector , ctx);
+
+                    if *ctx >= vector.len() {
+                        break;
+                    }
                 },
                 _ => {
                     break;
@@ -2070,10 +2080,10 @@ pub impl css_properties {
                 }
                 token = &vector[*ctx];
                 *ctx = *ctx + 1;
+
                 if tokenIsChar(token, ',') == false {
                     *ctx = orig_ctx;
                     return CSS_INVALID;
-
                 }
 
                 consumeWhitespace(vector, ctx);
@@ -2093,6 +2103,7 @@ pub impl css_properties {
                 }
                 first = false;
             }//end of while
+
             match token.token_type {
                 CSS_TOKEN_IDENT(_)=>{
                    if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), AUTO as uint) {
@@ -2351,7 +2362,7 @@ pub impl css_properties {
                 *ctx += 1;
                 value = ELEVATION_LOWER ;
             }
-        else{
+        else {
             let (unit_ret,length_ret,error) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_DEG as u32);
             length = length_ret.unwrap() as i32;
             unit = unit_ret.unwrap() as u32;
@@ -2630,6 +2641,7 @@ pub impl css_properties {
 
         if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false } && 
         strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
+            
             css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_FONT_FAMILY)
         } 
         else {
@@ -2662,64 +2674,61 @@ pub impl css_properties {
         }
         token=&vector[*ctx];
         *ctx += 1;
+
+        if (match token.token_type { 
+            CSS_TOKEN_IDENT(_) | CSS_TOKEN_NUMBER(_ , _) => false,
+            _ => true 
+        }) {
+            *ctx = orig_ctx;
+            return CSS_INVALID
+        }
         
-        match token.token_type {
-            CSS_TOKEN_IDENT(_)=>{
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
-                    flags |= FLAG_INHERIT as u8;
-                    isMatchExexcuted = true;
-                }
-            },
-            CSS_TOKEN_NUMBER(_, _) =>{
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
-                    flags |= FLAG_INHERIT as u8;
-                }
-                else {
-                    let mut (num,consumed) =  css__number_from_lwc_string(token.idata.get_ref().clone(), true);
-                    if (consumed !=  lwc_string_length(token.idata.get_ref().clone())){
-                        *ctx = orig_ctx;
-                        return CSS_INVALID;
-                    }
-                    match css_int_to_fixed(num as int) {
-                        100 => value = FONT_WEIGHT_100 ,
-                        200 => value = FONT_WEIGHT_200 ,
-                        300 => value = FONT_WEIGHT_300 ,
-                        400 => value = FONT_WEIGHT_400 ,
-                        500 => value = FONT_WEIGHT_500 ,
-                        600 => value = FONT_WEIGHT_600 ,
-                        700 => value = FONT_WEIGHT_700 ,
-                        800 => value = FONT_WEIGHT_800 ,
-                        900 => value = FONT_WEIGHT_900 ,
-                        _=>{
-                            *ctx = orig_ctx;
-                            return CSS_INVALID;
-                        }
-                    }
-                }
-                isMatchExexcuted = true;
-            },
-            _=>{
+        if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
+            flags |= FLAG_INHERIT as u8;
+        }
+        else if (
+            match token.token_type {
+                CSS_TOKEN_NUMBER(_ , _) => true,
+                _ => false 
+            } ) 
+        {
+            let mut (num,consumed) =  css__number_from_lwc_string(token.idata.get_ref().clone(), true);
+            if (consumed !=  lwc_string_length(token.idata.get_ref().clone())){
                 *ctx = orig_ctx;
                 return CSS_INVALID;
+            }
+            match css_int_to_fixed(num as int) {
+                100 => value = FONT_WEIGHT_100 ,
+                200 => value = FONT_WEIGHT_200 ,
+                300 => value = FONT_WEIGHT_300 ,
+                400 => value = FONT_WEIGHT_400 ,
+                500 => value = FONT_WEIGHT_500 ,
+                600 => value = FONT_WEIGHT_600 ,
+                700 => value = FONT_WEIGHT_700 ,
+                800 => value = FONT_WEIGHT_800 ,
+                900 => value = FONT_WEIGHT_900 ,
+                _=>{
+                    *ctx = orig_ctx;
+                    return CSS_INVALID;
+                }
             }
         }
-        if(!isMatchExexcuted ) {
-            if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NORMAL as uint) {
-                value = FONT_WEIGHT_NORMAL ;
-            }
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BOLD as uint) {
-                value = FONT_WEIGHT_BOLD ;
-            }
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BOLDER as uint) {
-                value = FONT_WEIGHT_BOLDER ;
-            }
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LIGHTER as uint) {
-                value = FONT_WEIGHT_LIGHTER ;
-            }
-            else  {
-                *ctx = orig_ctx;
-                return CSS_INVALID;
-            }
+
+        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NORMAL as uint) {
+            value = FONT_WEIGHT_NORMAL ;
+        }
+        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BOLD as uint) {
+            value = FONT_WEIGHT_BOLD ;
+        }
+        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BOLDER as uint) {
+            value = FONT_WEIGHT_BOLDER ;
+        }
+        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LIGHTER as uint) {
+            value = FONT_WEIGHT_LIGHTER ;
+        }
+        else  {
+            *ctx = orig_ctx;
+            return CSS_INVALID;
         }
         css_stylesheet::css__stylesheet_style_appendOPV(style,  CSS_PROP_FONT_WEIGHT,flags, value);
         CSS_OK
@@ -2793,9 +2802,8 @@ pub impl css_properties {
                 CSS_OK => {
                     consumeWhitespace(vector , ctx);
                     if *ctx >= vector.len() {
-                        return CSS_INVALID;
+                        break;
                     }
-                    // token=&vector[*ctx];
                 },
                 _ => {
                     break;
@@ -2884,6 +2892,7 @@ pub impl css_properties {
             *ctx += 1;
             return CSS_OK;
         }
+
         let mut prev_ctx: uint;
         loop {
             prev_ctx = *ctx;
@@ -2903,6 +2912,7 @@ pub impl css_properties {
             else {
                 side_val.push(MARGIN_SET );
                 let (_ , _ , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
+                
                 match result {
                     CSS_OK => {
                         if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
@@ -2925,6 +2935,9 @@ pub impl css_properties {
                 CSS_OK => {
                     side_count += 1;
                     consumeWhitespace(vector , ctx);
+                    if *ctx >= vector.len() {
+                        break;
+                    }
                     token=&vector[*ctx];
                 }
                 _ => {
@@ -3007,8 +3020,7 @@ pub impl css_properties {
             return CSS_INVALID;
         }
 
-        let mut token:&@css_token;
-        token=&vector[*ctx];
+        let mut token=&vector[*ctx];
         *ctx += 1;
         
         match token.token_type {
@@ -3065,21 +3077,21 @@ pub impl css_properties {
             *ctx +=1;
             return CSS_OK;
         }
-        if *ctx >= vector.len() {
-            return CSS_INVALID   
-        }
         
         let mut color_style = css_stylesheet::css__stylesheet_style_create(sheet);
         let mut style_style = css_stylesheet::css__stylesheet_style_create(sheet);
         let mut width_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         let mut prev_ctx: uint;
+
         loop {
             prev_ctx = *ctx;
-            token=&vector[*ctx];
+            
             if *ctx >= vector.len() {
                 return CSS_INVALID;
             }
+
+            token=&vector[*ctx];
             
             if is_css_inherit(strings , token) {
                 *ctx = orig_ctx;
@@ -3101,7 +3113,7 @@ pub impl css_properties {
                     _ => false
                 }) {
                 style_bool = false;
-                error = CSS_OK;
+                error = CSS_OK; 
             }
             else if (width) && 
                 (match (css__parse_outline_color(sheet , strings , vector , ctx , width_style)) {
@@ -3115,9 +3127,8 @@ pub impl css_properties {
                 CSS_OK => {
                     consumeWhitespace(vector , ctx);
                     if *ctx >= vector.len() {
-                        return CSS_INVALID;
+                        break;
                     }
-                    // token=&vector[*ctx];
                 },
                 _ => {
                     break;
@@ -3191,82 +3202,84 @@ pub impl css_properties {
                         *ctx = orig_ctx;
                         return CSS_INVALID;
                     }
-                    if side_unit[side_count] < 0{
+                    if side_unit[side_count] < 0 {
                         *ctx = orig_ctx;
                         return CSS_INVALID;
                     }
                     side_count += 1;
                     consumeWhitespace(vector , ctx);
-                    token=&vector[*ctx];
+                    if *ctx >= vector.len() {
+                        break;
+                    }
                 },
                 _ => {
                     break;
                 }
             }
-            match side_count {
-                1 => {
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                },
-                2 => {
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
-                },
-                3 => {
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
-                },
-                4 => {
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
-                    css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET );
-                    css_stylesheet::css__stylesheet_style_append(style , side_length[3] as u32);
-                    css_stylesheet::css__stylesheet_style_append(style , side_unit[3] as u32);
-                },
-                _ => {
-                    *ctx = orig_ctx;
-                    return CSS_INVALID;
-                }
-            }
             if !(*ctx != prev_ctx && side_count < 4) {
                 break;
+            }
+        }
+        match side_count {
+            1 => {
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+            },
+            2 => {
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+            },
+            3 => {
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+            },
+            4 => {
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_TOP , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_RIGHT , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_BOTTOM , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
+                css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_PADDING_LEFT , 0 , PADDING_SET );
+                css_stylesheet::css__stylesheet_style_append(style , side_length[3] as u32);
+                css_stylesheet::css__stylesheet_style_append(style , side_unit[3] as u32);
+            },
+            _ => {
+                *ctx = orig_ctx;
+                return CSS_INVALID;
             }
         }
         CSS_OK
@@ -3278,11 +3291,13 @@ pub impl css_properties {
         let mut first_token: &@css_token;
         let mut token: &@css_token;
 
-         if *ctx >= vector.len() {
+        if *ctx >= vector.len() {
             return CSS_INVALID;
         }
+
         first_token = &vector[*ctx];
         let mut error = css__parse_pause_before(sheet,strings, vector, ctx, style);
+        
         match error {
             CSS_OK=> {
                 consumeWhitespace(vector, ctx);
@@ -3355,7 +3370,7 @@ pub impl css_properties {
                     return CSS_INVALID;
                 }
             },
-            _ => {
+            CSS_TOKEN_URI(_) => {
                 let mut modifiers:int = 0;
                 value = PLAY_DURING_URI as u16;
 
@@ -3373,6 +3388,11 @@ pub impl css_properties {
 
                 while modifiers < 2 {
                     consumeWhitespace(vector, ctx);
+
+                    if *ctx >= vector.len() {
+                        return CSS_INVALID;
+                    }
+
                     token=&vector[*ctx];
 
                     match token.token_type {
@@ -3405,6 +3425,10 @@ pub impl css_properties {
                     }
                     modifiers += 1;
                 }
+            },
+            _ => {
+                *ctx = orig_ctx;
+                return CSS_INVALID;
             }
         }
         css_stylesheet::css__stylesheet_style_appendOPV(style ,CSS_PROP_PLAY_DURING , flags , value);
@@ -3422,8 +3446,7 @@ pub impl css_properties {
             return CSS_INVALID;
         }
 
-        let mut token:&@css_token;
-        token=&vector[*ctx];
+        let mut token = &vector[*ctx];
         *ctx += 1;
         
         match (token.token_type) {
@@ -3439,15 +3462,19 @@ pub impl css_properties {
                 let mut first: bool =true;
                 
                 loop {
+
                     match token.token_type {
                         CSS_TOKEN_STRING(_)=>{
                             let mut open_snumber:u32;
                             let mut close_snumber:u32;
                             open_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone())) as u32;
                             consumeWhitespace(vector, ctx);
+                            
                             if (*ctx < vector.len()) {
-                                break;
+                                *ctx = orig_ctx;
+                                return CSS_INVALID;
                             } 
+
                             token=&vector[*ctx];
                             *ctx += 1;
                             match token.token_type {
@@ -3486,8 +3513,8 @@ pub impl css_properties {
                         },
                         _=>break
                     }
+                    css_stylesheet::css__stylesheet_style_append(style, QUOTES_NONE as u32);
                 }
-                css_stylesheet::css__stylesheet_style_append(style, QUOTES_NONE as u32);
             },
             _=>  {
                 *ctx = orig_ctx;
@@ -3562,12 +3589,15 @@ pub impl css_properties {
                             return CSS_INVALID;
                         }
                         consumeWhitespace(vector, ctx);
+                        
+                        if *ctx >= vector.len() {
+                            break;
+                        }
+
                         token=&vector[*ctx];
                         *ctx += 1;
                         match (token.token_type) {
-                            CSS_TOKEN_IDENT(_) => {
-
-                            },
+                            CSS_TOKEN_IDENT(_) => {},
                             _=> {
                                 break;
                             }
@@ -3612,6 +3642,7 @@ pub impl css_properties {
 
         if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false } &&
                 strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
+            
             css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_VOICE_FAMILY)
         } 
         else {
@@ -3626,7 +3657,6 @@ pub impl css_properties {
             }
             css_stylesheet::css__stylesheet_style_append(result, VOICE_FAMILY_END as u32);
         }
-
         CSS_OK
     }
       
@@ -3915,6 +3945,7 @@ pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings:
     
     match token.token_type {
         CSS_TOKEN_STRING(_) => {
+            token = &vector[*ctx];
             *ctx += 1; //Iterate
             return (CSS_OK,Some(lwc_string_data(token.idata.get_ref().clone())))
         },  
@@ -3923,7 +3954,19 @@ pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings:
     }   
 }
 
-
+/**
+ * \param c          Parsing context
+ * \param vector     Vector containing tokens
+ * \param ctx        Vector iteration context
+ * \param reserved   Callback to determine if an identifier is reserved
+ * \param result     Pointer to location to receive resulting string
+ * \return CSS_OK on success, appropriate error otherwise.
+ *
+ * Post condition: \a *ctx is updated with the next token to process
+ *                 If the input is invalid, then \a *ctx remains unchanged.
+ *
+ *                 The resulting string's reference is passed to the caller
+ */
 pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token],
     ctx: @mut uint , reserved:Option<reserved_fn>) -> (css_error , Option<~str>) {
 
@@ -3966,6 +4009,7 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
         token = &vector[*ctx];
         *ctx += 1;
     }
+
     if *ctx >= vector.len() {
         *ctx -= 1;
     }
@@ -4075,7 +4119,20 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
     CSS_OK
 }
 
-
+/**
+ * Parse border_side
+ *
+ * \param sheet   Stylesheet  
+ * \param strings Propstrings
+ * \param vector  Vector of tokens to process
+ * \param ctx     Pointer to vector iteration context
+ * \param result  resulting style
+ * \return CSS_OK on success,
+ *      CSS_INVALID if the input is not valid
+ *
+ * Post condition: \a @ctx is updated with the next token to process
+ *          If the input is invalid, then \a @ctx remains unchanged.
+ */
 pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_error { 
     let orig_ctx = *ctx;
     let mut prev_ctx: uint;
