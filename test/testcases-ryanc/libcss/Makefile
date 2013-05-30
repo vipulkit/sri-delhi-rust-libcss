@@ -1,18 +1,29 @@
 SRI_HOME = ../../..
-LIB = -L $(SRI_HOME)/libparserutils -L $(SRI_HOME)/libwapcaplet -L $(SRI_HOME)/libcss
+LIB = -L $(SRI_HOME)/libparserutils -L $(SRI_HOME)/libwapcaplet -L $(SRI_HOME)/libcss -L .
 
-SRC = parse.rs lex.rs csdetect.rs
+SRC = parse.rs lex.rs csdetect.rs number.rs
 EXEC = $(SRC:%.rs=%)
+UTIL_SRC = testutils.rs
+UTIL = $(UTIL_SRC:%.rs=%.so)
 
-all: $(EXEC) $(SRC)
+.DEFAULT_GOAL := all
 
-% : %.rs
+all: $(EXEC) $(SRC) $(UTIL_SRC)
+
+%.so: %.rs
+	rustc $<
+
+% : %.rs $(UTIL)
 	rustc --test $(LIB) $<
 
 run : $(EXEC)
+	./csdetect
+	./number
 	./parse
+	./lex
+
 
 .phony: clean
 
 clean:
-	rm  -f $(EXEC)
+	rm  -f $(EXEC) *.so 
