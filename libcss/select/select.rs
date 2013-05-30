@@ -390,7 +390,83 @@ impl css_select_ctx {
         return CSS_OK;
     }
 
- 
+    pub fn select_from_sheet(&mut self, sheet : Option<@mut css_stylesheet>, state : &mut css_select_state, index:uint) -> css_error{
+        let mut s_option : Option<@mut css_stylesheet> = sheet;
+        let mut rule : Option<CSS_RULE_DATA_TYPE> = None;
+        let mut sp : u32 = 0;
+        let mut import_stack : ~[Option<CSS_RULE_DATA_TYPE>] = ~[];
+        loop{
+            let mut s : @mut css_stylesheet;
+            match s_option {
+                None => { break;},
+                Some(T) => { s = T;}
+            }
+
+            rule = s.rule_list;
+            if compare_css_rdt(rule, s.rule_list){
+                while !rule.is_none() && compare_css_rule_types(rule, CSS_RULE_IMPORT) {
+                    rule = get_css_rule_next(rule);
+                }
+            }
+            if !rule.is_none() && compare_css_rule_types(rule, CSS_RULE_IMPORT) {
+                let mut import_sheet : Option<@mut css_stylesheet> = None;
+                let mut import_media:u64 = 0;
+                match rule {
+                    None => {},
+                    Some(T) => {
+                        match T {
+                           RULE_IMPORT(x) => {
+                            import_media = x.media;
+                            import_sheet = x.sheet;
+                           },
+                           _=> {},
+                        }
+                    }
+                }
+
+                if !import_sheet.is_none() && (import_media & state.media) != 0 {
+                    if sp >= 256 {
+                        return CSS_NOMEM;
+                    }
+
+                    import_stack.push(rule);
+                    match import_sheet {
+                        None => {},
+                        Some(T) => {
+                            s = T;
+                        }
+                    }
+
+                    rule = s.rule_list;
+                }
+                else {
+                    rule = get_css_rule_next(rule);
+                }
+            }
+            else {
+                let mut error : css_error ;
+                state.sheet = Some(s);
+                state.current_origin = self.sheets[index].origin;
+                error = self.match_selectors_in_sheet(s, state);
+                match error {
+                    CSS_OK => {
+                        if sp > 0 {
+                            sp -= 1;
+                            rule = get_css_rule_next(import_stack[sp]);
+                            s_option = get_stylesheet_parent(import_stack[sp]);
+                        }
+                        else {
+                            s_option = None;
+                        }
+                    }
+                    _=> { return error;}
+                }
+            }
+        }
+
+        CSS_OK
+    }
+
     pub fn select_font_faces_from_sheet(&mut self,
                                         sheet:@mut css_stylesheet,
                                         origin: css_origin,
@@ -488,6 +564,11 @@ impl css_select_ctx {
         result
     }
 
+    // Note: pending implementation
+    pub fn match_selectors_in_sheet(&mut self, sheet : @mut css_stylesheet, state : &mut css_select_state) -> css_error {
+        CSS_OK
+    }
+
     pub fn update_reject_cache(state: @mut css_select_state, comb:css_combinator,
                                 s:@mut css_selector) {
 
@@ -573,88 +654,6 @@ impl css_select_ctx {
 
 		CSS_OK
 	}
-
-    // Note: pending implementation
-    pub fn match_selectors_in_sheet(&mut self, sheet : @mut css_stylesheet, state : &mut css_select_state) -> css_error {
-        CSS_OK
-    }
-
-    pub fn select_from_sheet(&mut self, sheet : Option<@mut css_stylesheet>, state : &mut css_select_state, index:uint) -> css_error{
-        let mut s_option : Option<@mut css_stylesheet> = sheet;
-        let mut rule : Option<CSS_RULE_DATA_TYPE> = None;
-        let mut sp : u32 = 0;
-        let mut import_stack : ~[Option<CSS_RULE_DATA_TYPE>] = ~[];
-        loop{
-            let mut s : @mut css_stylesheet;
-            match s_option {
-                None => { break;},
-                Some(T) => { s = T;}
-            }
-
-            rule = s.rule_list;
-            if compare_css_rdt(rule, s.rule_list){
-                while !rule.is_none() && compare_css_rule_types(rule, CSS_RULE_IMPORT) {
-                    rule = get_css_rule_next(rule);
-                }
-            }
-            if !rule.is_none() && compare_css_rule_types(rule, CSS_RULE_IMPORT) {
-                let mut import_sheet : Option<@mut css_stylesheet> = None;
-                let mut import_media:u64 = 0;
-                match rule {
-                    None => {},
-                    Some(T) => {
-                        match T {
-                           RULE_IMPORT(x) => {
-                            import_media = x.media;
-                            import_sheet = x.sheet;
-                           },
-                           _=> {},
-                        }
-                    }
-                }
-
-                if !import_sheet.is_none() && (import_media & state.media) != 0 {
-                    if sp >= 256 {
-                        return CSS_NOMEM;
-                    }
-
-                    import_stack.push(rule);
-                    match import_sheet {
-                        None => {},
-                        Some(T) => {
-                            s = T;
-                        }
-                    }
-
-                    rule = s.rule_list;
-                }
-                else {
-                    rule = get_css_rule_next(rule);
-                }
-            }
-            else {
-                let mut error : css_error ;
-                state.sheet = Some(s);
-                state.current_origin = self.sheets[index].origin;
-                error = self.match_selectors_in_sheet(s, state);
-                match error {
-                    CSS_OK => {
-                        if sp > 0 {
-                            sp -= 1;
-                            rule = get_css_rule_next(import_stack[sp]);
-                            s_option = get_stylesheet_parent(import_stack[sp]);
-                        }
-                        else {
-                            s_option = None;
-                        }
-                    }
-                    _=> { return error;}
-                }
-            }
-        }
-
-        CSS_OK
-    }
 
 }
 
