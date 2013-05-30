@@ -13,6 +13,13 @@ use parse::propstrings::*;
 
 use utils::errors::*;
 
+
+/**
+ * Consume all leading whitespace tokens
+ *
+ * \param vector  The vector to consume from
+ * \param ctx     The vector's context
+ */
 pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
     loop {
         if *ctx < vector.len() {
@@ -29,12 +36,28 @@ pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
     }
 }
 
+
+/**
+ * Parse a unit specifier
+ *
+ * \param vector        Vector of tokens to process
+ * \param ctx           Pointer to current vector iteration context
+ * \param default_unit  The default unit to use if none specified
+ * \return length        Option of i32(Some(x) if CSS_OK else None)
+ * \return unit          Option of u32(Some(x) if CSS_OK else None)
+ * \return CSS_OK      on success,
+ *         CSS_INVALID if the tokens do not form a valid unit
+ *
+ * Post condition: \a @ctx is updated with the next token to process
+ *                 If the input is invalid, then \a @ctx remains unchanged.
+ */
 pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_token] , ctx: @mut uint , default_unit: u32) -> (Option<i32> , Option<u32>, css_error) {
 
-    consumeWhitespace(vector , ctx);
     let mut token:&@css_token;
     let mut unit_retVal:u32;
     let orig_ctx = *ctx;
+
+    consumeWhitespace(vector , ctx);
 
     if *ctx >= vector.len() {
         return (None , None , CSS_INVALID)
@@ -54,7 +77,6 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
 
     match token.token_type {
         CSS_TOKEN_DIMENSION(_ , _ , _) => {
-            // let len = lwc_string_length(token.idata.get_ref().clone());
             let data = lwc_string_data(token.idata.get_ref().clone());
 
             let (unit , result) = css__parse_unit_keyword(data , consumed_index);
@@ -81,6 +103,9 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
             if sheet.quirks_allowed {
                 let tmp_ctx = ctx;
                 consumeWhitespace(vector , tmp_ctx);
+                if *ctx >= vector.len() {
+                    return (None , None , CSS_INVALID)
+                }
                 token = &vector[*tmp_ctx];
                 *tmp_ctx = *tmp_ctx + 1;
 
@@ -122,15 +147,24 @@ pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bo
 }
 
 
+/**
+ * Parse a unit keyword
+ *
+ * \param ptr   keyword string
+ * \param index   index of string from where we have to parse
+ * \return unit  Option of u32 to get computed unit(Some(x) if CSS_OK else None)
+ * \return CSS_OK      on success,
+ *         CSS_INVALID on encountering an unknown keyword
+ */
 pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<u32>,css_error) {
     let mut unit = UNIT_GRAD;
     let len:uint= ptr.len() - index;
     let ptr_lower = ptr.to_lower();
     match(len) {
-        4=>if (ptr_lower == ~"grad") {
-              unit= UNIT_GRAD;    
+        4=> if (ptr_lower == ~"grad") {
+                unit= UNIT_GRAD;    
             },
-        3=>{
+        3=> {
             if (ptr_lower == ~"KHz") {
                 unit= UNIT_KHZ;    
             }
@@ -144,7 +178,7 @@ pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<u32>,css_error)
                 return (None,CSS_INVALID);
             }
         },
-        2=>{
+        2=> {
             if (ptr_lower == ~"Hz") {
                 unit= UNIT_HZ;    
             }
@@ -179,7 +213,7 @@ pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<u32>,css_error)
                 return (None,CSS_INVALID);
             }
         },
-        1=>{
+        1=> {
             if (ptr_lower == ~"s") {
                 unit= UNIT_S;    
             }
@@ -190,7 +224,6 @@ pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<u32>,css_error)
         _=>{
             return (None,CSS_INVALID);
         }
-
     }
     (Some(unit) , CSS_OK)
 }
@@ -207,9 +240,6 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
     //let mut data_index = 0;
     let mut consumed_length = 0;
     
-    //io::println(fmt!("*****Data %?, data_index: %?", copy (data), *data_index));
-
-    
     if length - *data_index ==0 {
         return (ret_value , consumed_length);
     }
@@ -222,6 +252,7 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
         length -= 1;
         *data_index += 1;
     }
+
     else if data[0 + *data_index] == '+' as u8 {
         length -=1;
         *data_index += 1;
@@ -230,6 +261,7 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
     if length == 0 {
         return (ret_value , consumed_length);
     }
+
     else {
         if data[0 + *data_index] == '.' as u8 {
             if length ==1 || (data[1 + *data_index] < ('0' as u8)) || (('9' as u8) < data[1 + *data_index]) {
@@ -240,7 +272,6 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
             return (ret_value , consumed_length);
         }
     }
-    
 
     while length>0 {
         if (data[0 + *data_index] < ('0' as u8))||(('9' as u8) < data[0 + *data_index]) {
@@ -253,16 +284,14 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
         *data_index += 1;
         length -= 1;
     }
-    //io::println(fmt!("*****intpart %?, data_index %?", intpart, *data_index));
+
     if int_only == false && length > 1 && (data[0 + *data_index] == '.' as u8) && ('0' as u8 <= data[1 + *data_index] && data[1 + *data_index] <= '9' as u8) {
         *data_index += 1; 
         length -= 1;
-        //io::println(fmt!("*****fracpart %?, data_index %?", fracpart, *data_index));
         while length >0 {
             if ((data[0 + *data_index] < '0' as u8))|| (('9' as u8) < data[0 + *data_index]) {
                 break
             }
-            //io::println(fmt!("*****fracpart %?, data_index %?", fracpart, *data_index));
             if pwr < 1000000 {
                 pwr *= 10;
                 fracpart *= 10;
@@ -270,17 +299,14 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
             }
             *data_index += 1;
             length -= 1;
-            //io::println(fmt!("*****fracpart %?, data_index %?", fracpart, *data_index));
         }
         fracpart = ((1 << 10) * fracpart + pwr/2) / pwr;
-        //io::println(fmt!("*****fracpart %?, data_index %?", fracpart, *data_index));
         if fracpart >= (1 << 10) {
             intpart += 1;
             fracpart &= (1 << 10) - 1;
         }
-        //io::println(fmt!("*****fracpart %?, data_index %?", fracpart, *data_index));
     }
-    //io::println(fmt!("*****fracpart %?,", fracpart));
+
     consumed_length = *data_index;
 
     if sign > 0 {
@@ -289,6 +315,7 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
             fracpart = (1 << 10) - 1;
         }
     }
+
     else {
          // If the negated result is smaller than we can represent then clamp to the minimum value we can store. 
         if intpart >= (1 << 21) {
@@ -303,11 +330,9 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
             }
         }
     }
-    ret_value = ((intpart << 10) | fracpart );
-    //io::println(fmt!("*******Fracpart %?", fracpart));
-    //io::println(fmt!("*******Return Value %?", ret_value));
-    (ret_value , consumed_length)
 
+    ret_value = ((intpart << 10) | fracpart );
+    (ret_value , consumed_length)
 }
 
 pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->bool {
@@ -319,6 +344,20 @@ pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->boo
     }
 }
 
+
+/**
+ * Parse a colour specifier
+ *
+ * \param vector  Vector of tokens to process
+ * \param ctx     Pointer to vector iteration context
+ * \return value   Option of u16(Some(x) if CSS_OK else None)
+ * \return result  Option of u16(Some(x) if CSS_OK else None) (AARRGGBB)
+ * \return CSS_OK      on success,
+ *         CSS_INVALID if the input is invalid
+ *
+ * Post condition: \a @ctx is updated with the next token to process
+ *                 If the input is invalid, then \a @ctx remains unchanged.
+ */
 pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_error) {
     let mut token:&@css_token;
     let mut ret_value: u16 = 0;
@@ -698,6 +737,15 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
     (Some(ret_value) , Some(ret_result) , CSS_OK)
 }
 
+
+/**
+ * Parse a hash colour (#rgb or #rrggbb)
+ *
+ * \param data    arc of colour string(lwc_string)
+ * \return result  Option of u32 (AARRGGBB) (some(x) if CSS_OK else None)
+ * \return CSS_OK      on success,
+ *         CSS_INVALID if the input is invalid
+ */
 pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error){
     let mut result_val: u32;
     let mut r: u8;
@@ -787,6 +835,17 @@ pub fn charToHex(c: u8) -> u32 {
     return k as u32;
 }
 
+
+/**
+ * Convert Hue Saturation Lightness value to RGB.
+ *
+ * \param hue Hue in degrees 0..360
+ * \param sat Saturation value in percent 0..100
+ * \param lit Lightness value in percent 0..100
+ * \return r(u8) red component
+ * \return g(u8) green component
+ * \return b(u8) blue component
+ */
 pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
     let min_rgb: i32;
     let max_rgb: i32;
@@ -815,6 +874,26 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 
     /* Compute min(r,g,b) */
     min_rgb = css_subtract_fixed(css_multiply_fixed(lit, css_int_to_fixed(2)), max_rgb);
+
+    /* We know that the value of at least one of the components is 
+     * max(r,g,b) and that the value of at least one of the other
+     * components is min(r,g,b).
+     *
+     * We can determine which components have these values by
+     * considering which the sextant of the hexcone the hue lies
+     * in:
+     *
+     * Sextant: max(r,g,b): min(r,g,b):
+     *
+     * 0        r       b
+     * 1        g       b
+     * 2        g       r
+     * 3        b       r
+     * 4        b       g
+     * 5        r       g
+     *
+     * Thus, we need only compute the value of the third component
+     */
 
     /* Chroma is the difference between min and max */
     chroma = css_subtract_fixed(max_rgb, min_rgb);
@@ -874,6 +953,15 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
     }
 }
 
+
+/**
+ * Parse a named colour
+ *
+ * \param data    Colour name string
+ * \return result  Option of u32(Some(x) if CSS_OK else None for invalid colour name)
+ * \return CSS_OK      on success,
+ *         CSS_INVALID if the colour name is unknown
+ */
 fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error){
     let mut result_val: u32;
     let colourmap: ~[u32] = ~[
@@ -1043,6 +1131,7 @@ fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propst
         return (Some(result_val) , CSS_OK);
     }
 
+    /* We don't know this colour name; ask the client */
     match sheet.color {
         None => {},
         Some(x) => {

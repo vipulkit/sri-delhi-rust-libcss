@@ -275,8 +275,10 @@ impl css_select_ctx {
         /* Iterate through the top-level stylesheets, selecting font-faces
          * from those which apply to our current media requirements and
          * are not disabled */
-        for self.sheets.each |select_sheet| {
-
+        let mut i = self.sheets.len() ;
+        while (i>0) { 
+        	i -= 1 ;
+        	let mut select_sheet = self.sheets[i] ;
             if ((select_sheet.media & media) != 0 ) && 
                 (select_sheet.sheet.disabled == false ) {
 
@@ -290,8 +292,7 @@ impl css_select_ctx {
                 }
             }
         }
-
-                   
+          
         let results = @mut css_select_font_faces_results{
                     font_faces:~[]
             };
@@ -389,7 +390,8 @@ impl css_select_ctx {
         return CSS_OK;
     }
 
-    pub fn select_font_faces_from_sheet(&self,
+ 
+    pub fn select_font_faces_from_sheet(&mut self,
                                         sheet:@mut css_stylesheet,
                                         origin: css_origin,
                                         state:@mut css_select_font_faces_state)
@@ -571,6 +573,10 @@ impl css_select_ctx {
 
 		CSS_OK
 	}
+	// Note: pending implementation
+	pub fn match_selectors_in_sheet(&mut self, sheet : @mut css_stylesheet, state : &mut css_select_state) -> css_error {
+		CSS_OK
+	}
 
 	//Note: incomplete
 	pub fn select_from_sheet(&mut self, sheet : @mut css_stylesheet, state : &mut css_select_state, index:uint) -> css_error{
@@ -620,9 +626,10 @@ impl css_select_ctx {
 				}
 			}
 			else {
+				let mut error : css_error ;
 				state.sheet = Some(s);
 				state.current_origin = self.sheets[index].origin;
-				//writing match_selectors_in_sheet()
+				error = self.match_selectors_in_sheet(s, state);
 			}
     	}
 		CSS_OK
