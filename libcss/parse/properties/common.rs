@@ -40,6 +40,7 @@ pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
 /**
  * Parse a unit specifier
  *
+ * \param sheet         Stylesheet
  * \param vector        Vector of tokens to process
  * \param ctx           Pointer to current vector iteration context
  * \param default_unit  The default unit to use if none specified
@@ -348,6 +349,7 @@ pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->boo
 /**
  * Parse a colour specifier
  *
+ * \param sheet   Stylesheet
  * \param vector  Vector of tokens to process
  * \param ctx     Pointer to vector iteration context
  * \return value   Option of u16(Some(x) if CSS_OK else None)
@@ -1140,4 +1142,3 @@ fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propst
     }
     return(None , CSS_INVALID);
 }
-
