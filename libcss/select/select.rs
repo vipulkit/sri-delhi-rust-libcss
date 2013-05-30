@@ -68,13 +68,14 @@ pub struct css_select_font_faces_list {
  * Font face selection state
  */
 pub struct css_select_font_faces_state {
-    font_family:~str,
+    font_family:Option<arc::RWARC<~lwc_string>>,
     media:u64,
 
     ua_font_faces:css_select_font_faces_list,
     user_font_faces:css_select_font_faces_list,
     author_font_faces:css_select_font_faces_list
 }
+
 
 //////////////////////////////////////////////////////////////////
 // Start of CSS Selector internal functions
@@ -256,15 +257,15 @@ impl css_select_ctx {
      */
     pub fn css_select_font_faces(&mut self,
                                 media:u64,
-                                font_family:~str) 
+                                font_family:arc::RWARC<~lwc_string>) 
                                 -> (css_error,Option<@mut css_select_font_faces_results>) {
 
-        if(font_family.len()==0) {
+        if( lwc_string_length(font_family.clone()) == 0 ) {
             return (CSS_BADPARM,None) ;
         }
 
         let state = @mut css_select_font_faces_state {
-            font_family:font_family,
+            font_family:Some(font_family.clone()),
             media:media,
 
             ua_font_faces:css_select_font_faces_list{font_faces:~[]},
@@ -476,12 +477,46 @@ impl css_select_ctx {
         CSS_OK
     }
 
-    pub fn _select_font_face_from_rule(rule:@mut css_rule_font_face,
+    pub fn _select_font_face_from_rule(&mut self,
+                                    rule:@mut css_rule_font_face,
                                     origin: css_origin,
                                     state:@mut css_select_font_faces_state) 
                                     -> css_error {
 
 
+        if ( css_select_ctx::_rule_applies_to_media(Some(RULE_FONT_FACE(rule)), state.media) ) {
+
+            if ( rule.font_face.is_none() || 
+                rule.font_face.get().font_family.is_none() || 
+                state.font_family.is_none() ) {
+                return CSS_BADPARM ;
+            }
+
+            let mut res : bool = false ;
+            do self.lwc_instance.read |lwc_ins| {
+                res = lwc_ins.lwc_string_isequal(rule.font_face.get().font_family.swap_unwrap(),
+                                                    state.font_family.swap_unwrap() ) ;
+            }
+            if ( res ) {
+                let mut faces = @mut css_select_font_faces_list{
+                    font_faces:~[]
+                };
+                unsafe {
+                    match (origin) {
+                        CSS_ORIGIN_UA => {
+                            faces.font_faces.push_all(state.ua_font_faces.font_faces);
+                        },
+                        CSS_ORIGIN_USER => {
+                            faces.font_faces.push_all(state.user_font_faces.font_faces);
+                        },
+                        CSS_ORIGIN_AUTHOR => {
+                            faces.font_faces.push_all(state.author_font_faces.font_faces);
+                        }
+                    }
+                }
+                faces.font_faces.push(rule.font_face.get());
+            }
+        }
         CSS_OK
     }
 
