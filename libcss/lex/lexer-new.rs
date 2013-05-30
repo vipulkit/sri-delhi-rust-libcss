@@ -556,37 +556,199 @@ impl css_lexer {
             }
         }
 
-        // case Escape:
-        // escape:
-        //     lexer->substate = Escape;
-        //     error = consumeEscape(lexer, false);
-        //     if (error != CSS_OK) {
-        //         if (error == CSS_EOF || error == CSS_INVALID) {
-        //             /* Rewind the '\\' */
-        //             lexer->bytesReadForToken -= 1;
+        if (self.substate == Escape as uint) {
+            let error = self.consume_escape(false);
+            if (error as int != CSS_OK as int) {
+                if (error as int == CSS_EOF as int || error as int == CSS_INVALID as int) {
+                    /* Rewind the '\\' */
+                    self.bytes_read_for_token -= 1;
 
-        //             return emit_token(lexer, CSS_TOKEN_CHAR, token);
-        //         }
+                    return self.emit_token(Some(CSS_TOKEN_CHAR));
+                }
 
-        //         return error;
-        //     }
+                return (error, None);
+            }
 
-        //     lexer->state = sIDENT;
-        //     lexer->substate = 0;
-        //     return IdentOrFunction(lexer, token);
-        // }
+            self.state = sIDENT;
+            self.substate = 0;
+            return self.ident_or_function();
+        }
         
         self.emit_token(None) // == token.token_type
     }
     
     pub fn cdo(&mut self) -> (css_error, Option<~css_token>) {
-        
-        (CSS_OK, None)
+        enum cdo_substates { Initial = 0, Dash1 = 1, Dash2 = 2 };
+
+        /* CDO = "<!--"
+         * 
+         * The '<' has been consumed
+         */
+
+        if (self.substate == Initial as uint) {
+            /* Expect '!' */
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                /* We can only match char with what we've read so far */
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+            if (c == '!') {
+                self.APPEND(cptr, clen);
+            } else {
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+            /* Fall Through */
+            self.substate = Dash1 as uint;
+        }
+
+        if (self.substate == Dash1 as uint) {
+            /* Expect '-' */
+            let (pu_peek_result , perror) = 
+                            self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                /* CHAR is the only match here */
+                /* Remove the '!' we read above */
+                self.bytes_read_for_token -= 1;
+                self.token.get_mut_ref().data.len -= 1;
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+            if (c == '-') {
+                self.APPEND(cptr, clen);
+            } else {
+                /* Remove the '!' we read above */
+                self.bytes_read_for_token -= 1;
+                self.token.get_mut_ref().data.len -= 1;
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+            /* Fall through */
+            self.substate = Dash2 as uint;           
+        }
+
+        if (self.substate == Dash2 as uint) {
+            /* Expect '-' */
+            let (pu_peek_result , perror) = 
+                    self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                /* CHAR is the only match here */
+                /* Remove the '-' and the '!' we read above */
+                self.bytes_read_for_token -= 2;
+                self.token.get_mut_ref().data.len -= 2;
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+
+            if (c == '-') {
+                self.APPEND(cptr, clen);
+            } else {
+                /* Remove the '-' and the '!' we read above */
+                self.bytes_read_for_token -= 2;
+                self.token.get_mut_ref().data.len -= 2;
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+        }
+
+        self.emit_token(Some(CSS_TOKEN_CDO))
     }
 
     pub fn comment(&mut self) -> (css_error, Option<~css_token>) {
-        
-        (CSS_OK, None)
+        enum comment_substates { Initial = 0, InComment = 1 };
+
+        /* COMMENT = '/' '*' [^*]* '*'+ ([^/] [^*]* '*'+)* '/'
+         *
+         * The '/' has been consumed.
+         */
+
+        if (self.substate == Initial as uint) {
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+            let (cptr , _) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+            if (c != '*') {
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+            /* Fall through */
+            self.substate = InComment as uint;
+        }
+
+        if (self.substate == InComment as uint) {
+            loop {
+                let (pu_peek_result , perror) = 
+                    self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+                if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                    return (css_error_from_parserutils_error(perror), None);
+                }
+
+                if (perror as int == PARSERUTILS_EOF as int) {
+                    /* As per unterminated strings, 
+                     * we ignore unterminated comments. */
+                    return self.emit_token(Some(CSS_TOKEN_EOF));
+                }
+
+                let (cptr , clen) = pu_peek_result.unwrap();
+                let c = cptr[0] as char;
+
+                self.APPEND(cptr, clen);
+                
+                if (self.context.last_was_star && c == '/') {
+                    break;
+                }
+
+                self.context.last_was_star = (c == '*');
+
+                if (c == '\n' /*|| c == '\f'*/) {
+                    self.current_col = 1;
+                    self.current_line+=1;
+                }
+
+                if (self.context.last_was_cr && c != '\n') {
+                    self.current_col = 1;
+                    self.current_line+=1;
+                }
+                self.context.last_was_cr = (c == '\r');
+            }
+        }
+        self.emit_token(Some(CSS_TOKEN_COMMENT))
     }
 
     pub fn escaped_ident_or_function(&mut self) -> (css_error, Option<~css_token>) {
