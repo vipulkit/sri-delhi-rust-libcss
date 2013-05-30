@@ -429,7 +429,7 @@ impl css_lexer {
 
         // goto nmchar;
         if (self.substate == NMChar as uint) {
-            let error = self.consume_NM_chars();
+            let error = self.consume_nm_chars();
             if (error as int != CSS_OK as int) {
                 return (error, None);
             }
@@ -783,7 +783,7 @@ impl css_lexer {
          * The '#' has been consumed.
          */
 
-        let error = self.consume_NM_chars();
+        let error = self.consume_nm_chars();
         if (error as int != CSS_OK as int) {
             return (error, None);
         }
@@ -808,7 +808,7 @@ impl css_lexer {
 
         if (self.substate == Initial as uint) {
             /* Consume all subsequent nmchars (if any exist) */
-            let error = self.consume_NM_chars();
+            let error = self.consume_nm_chars();
             if (error as int != CSS_OK as int) {
                 return (error, None);
             }
@@ -891,7 +891,171 @@ impl css_lexer {
 
     pub fn number_or_percentage_or_dimension(&mut self) -> (css_error, Option<~css_token>) {
 
-        (CSS_OK, None)
+        enum number_or_percentage_or_dimension_substates { 
+            Initial = 0, Dot = 1, MoreDigits = 2, Suffix = 3, NMChars = 4, Escape = 5, NMChars2 = 6 };
+
+        /* NUMBER = num = [-+]? ([0-9]+ | [0-9]* '.' [0-9]+)
+         * PERCENTAGE = num '%'
+         * DIMENSION = num ident
+         *
+         * The sign, or sign and first digit or dot, 
+         * or first digit, or '.' has been consumed.
+         */
+
+        if (self.substate == Initial as uint) {
+            let error = self.consume_digits();
+            if (error as int != CSS_OK as int) {
+                return (error, None);
+            }
+
+            /* Fall through */
+            self.substate == Dot as uint;
+        }
+
+        if (self.substate == Dot as uint) {
+            
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                let mut token_type = CSS_TOKEN_NUMBER;
+
+                if ( self.token.get_mut_ref().data.len == 1 && 
+                    (self.context.first == '.' as u8 || self.context.first == '+' as u8)
+                   ) {
+                    token_type = CSS_TOKEN_CHAR;
+                }
+                
+                self.emit_token(Some(token_type));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+            /* Bail if we've not got a '.' or we've seen one already */
+            if c != '.' || self.context.first == '.' as u8 {
+                // goto suffix
+                self.substate = Suffix as uint;
+            }
+            else {
+                /* Save the token length up to the end of the digits */
+                self.context.orig_bytes = self.bytes_read_for_token;
+                
+                /* Append the '.' to the token */
+                self.APPEND(cptr, clen);
+
+                /* Fall through */
+                self.substate = MoreDigits as uint;
+            }
+        }
+
+        if (self.substate == MoreDigits as uint) {
+
+            let error = self.consume_digits();
+            if (error as int != CSS_OK as int) {
+                return (error, None);
+            }
+
+            if (self.bytes_read_for_token - self.context.orig_bytes == 1) {
+                /* No digits after dot => dot isn't part of number */
+                self.bytes_read_for_token -= 1;
+                self.token.get_mut_ref().data.len -= 1;
+            }
+
+            /* Fall through */
+            self.substate = Suffix as uint;
+        }
+        
+        if (self.substate == Suffix as uint) {
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                let mut token_type = CSS_TOKEN_NUMBER;
+
+                if ( self.token.get_ref().data.len == 1 && 
+                    (self.context.first == '.' as u8 || self.context.first == '+' as u8)
+                   ) {
+                    token_type = CSS_TOKEN_CHAR;
+                }
+                
+                return self.emit_token(Some(token_type));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+            
+            /* A solitary '.' or '+' is a CHAR, not numeric */
+            let mut emit_char = false;
+            if ( self.token.get_ref().data.len == 1 && 
+                    (self.context.first == '.' as u8 || self.context.first == '+' as u8)) {
+                emit_char = true;
+            }
+            if (emit_char) {
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+            if (c == '%') {
+                self.APPEND(cptr, clen);
+                return self.emit_token(Some(CSS_TOKEN_PERCENTAGE));
+            } else if (!start_nm_start(c)) {
+                return self.emit_token(Some(CSS_TOKEN_NUMBER));
+            }
+
+            if (c != '\\') {
+                self.APPEND(cptr, clen);
+
+                /* Fall through */
+                self.substate = NMChars as uint;
+            } else {
+                self.bytes_read_for_token += clen;
+                //goto escape;
+                self.substate = Escape as uint;
+            }
+
+            
+        }
+
+        if (self.substate == NMChars as uint) {
+            let error = self.consume_nm_chars();
+            if (error as int != CSS_OK as int) {
+                return (error, None);
+            }
+        }
+            
+        if (self.substate == Escape as uint) {
+            let error = self.consume_escape(false);
+            if (error as int != CSS_OK as int) {
+                if (error as int == CSS_EOF as int || error as int == CSS_INVALID as int) {
+                    /* Rewind the '\\' */
+                    self.bytes_read_for_token -= 1;
+
+                    /* This can only be a number */
+                    return self.emit_token(Some(CSS_TOKEN_NUMBER));
+                }
+
+                return (error, None);
+            }
+            // goto nmchars;
+            self.substate = NMChars2 as uint;
+        }
+
+        if (self.substate == NMChars2 as uint) {
+            let error = self.consume_nm_chars();
+            if (error as int != CSS_OK as int) {
+                return (error, None);
+            }
+        }
+
+        self.emit_token(Some(CSS_TOKEN_DIMENSION))
     }
 
     pub fn s(&mut self) -> (css_error, Option<~css_token>) {
@@ -910,7 +1074,7 @@ impl css_lexer {
     }
 
     pub fn start(&mut self) -> (css_error, Option<~css_token>) {
-
+        // TODO: Abhijeet
         (CSS_OK, None)
     }
 
@@ -939,17 +1103,58 @@ impl css_lexer {
     }
 
     pub fn uri_or_unicode_range_or_ident_or_function(&mut self) -> (css_error, Option<~css_token>) {
+        /* URI = "url(" w (string | urlchar*) w ')' 
+         * UNICODE-RANGE = [Uu] '+' [0-9a-fA-F?]{1,6}(-[0-9a-fA-F]{1,6})?
+         * IDENT = ident = [-]? nmstart nmchar*
+         * FUNCTION = ident '(' = [-]? nmstart nmchar* '('
+         *
+         * The 'u' (or 'U') has been consumed.
+         */
 
-        (CSS_OK, None)
+        let (pu_peek_result , perror) = 
+                        self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+        if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+            return (css_error_from_parserutils_error(perror), None);
+        }
+
+        if (perror as int == PARSERUTILS_EOF as int) {
+            /* IDENT, rather than CHAR */
+            return self.emit_token(Some(CSS_TOKEN_IDENT));
+        }
+
+        let (cptr , clen) = pu_peek_result.unwrap();
+        let c = cptr[0] as char;
+
+        if (c == 'r' || c == 'R') {
+            self.APPEND(cptr, clen);
+
+            self.state = sURL;
+            self.substate = 0;
+            return self.uri();
+        } else if (c == '+') {
+            self.APPEND(cptr, clen);
+
+            self.state = sUCR;
+            self.substate = 0;
+            self.context.hex_count = 0;
+            return self.unicode_range();
+        }
+
+        /* Can only be IDENT or FUNCTION. Reprocess current character */
+        self.state = sIDENT;
+        self.substate = 0;
+        
+        self.ident_or_function()
     }
     
     pub fn uri(&mut self) -> (css_error, Option<~css_token>) {
-
+        // TODO: Abhijeet
         (CSS_OK, None)
     }
 
     pub fn unicode_range(&mut self) -> (css_error, Option<~css_token>) {
-
+        // TODO: Abhijeet
         (CSS_OK, None)
     }
 
@@ -1112,7 +1317,7 @@ impl css_lexer {
         CSS_OK
     }
 
-    pub fn consume_NM_chars(&mut self) -> css_error
+    pub fn consume_nm_chars(&mut self) -> css_error
     {
         /* nmchar = [a-zA-Z] | '-' | '_' | nonascii | escape */
 
@@ -1324,67 +1529,67 @@ impl css_lexer {
             PARSERUTILS_OK => {
                 let (pu_peek_result , error) = 
                  self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-                 match error {
+                match error {
                 
-                     PARSERUTILS_NOMEM | 
-                     PARSERUTILS_BADPARM | 
-                     PARSERUTILS_INVALID | 
-                     PARSERUTILS_FILENOTFOUND | 
-                     PARSERUTILS_NEEDDATA | 
-                     PARSERUTILS_BADENCODING => {
-                         self.bytes_read_for_token = bytes_read_init;
-                         return css_error_from_parserutils_error(error);
-                     }
-                     PARSERUTILS_EOF => {
-                        return CSS_OK;
-                     }
-                     PARSERUTILS_OK => {
-                         let mut (_cptr , clen) = pu_peek_result.unwrap();
-                         if (_cptr[0] as char == '\r') { // Potential CRLF 
-                             //let mut p_cr : u8 = _cptr[0];
-                             let (pu_peek_result2 , error2) = 
-                               self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-                             self.bytes_read_for_token = bytes_read_init;
+                    PARSERUTILS_NOMEM | 
+                    PARSERUTILS_BADPARM | 
+                    PARSERUTILS_INVALID | 
+                    PARSERUTILS_FILENOTFOUND | 
+                    PARSERUTILS_NEEDDATA | 
+                    PARSERUTILS_BADENCODING => {
+                        self.bytes_read_for_token = bytes_read_init;
+                        return css_error_from_parserutils_error(error);
+                    }
+                    PARSERUTILS_EOF => {
+                       return CSS_OK;
+                    }
+                    PARSERUTILS_OK => {
+                        let mut (_cptr , clen) = pu_peek_result.unwrap();
+                        if (_cptr[0] as char == '\r') { // Potential CRLF 
+                            //let mut p_cr : u8 = _cptr[0];
+                            let (pu_peek_result2 , error2) = 
+                                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+                            self.bytes_read_for_token = bytes_read_init;
 
-                             match error2 {
-                            
-                                 PARSERUTILS_NOMEM | 
-                                 PARSERUTILS_BADPARM | 
-                                 PARSERUTILS_INVALID | 
-                                 PARSERUTILS_FILENOTFOUND | 
-                                 PARSERUTILS_NEEDDATA | 
-                                 PARSERUTILS_BADENCODING => {
-                                     self.bytes_read_for_token = bytes_read_init;
-                                     return css_error_from_parserutils_error(error2);
-                                 }
-                                 PARSERUTILS_EOF => {
-                                    return CSS_OK;
-                                 }
-                                 PARSERUTILS_OK => {
-                                     let (_cptr2 , clen2) = pu_peek_result2.unwrap();
-                                     if (_cptr2[0] as char == '\n') { // Potential CRLF 
-                                         self.bytes_read_for_token += 1;
-                                         _cptr = _cptr2;
-                                     }
-                                 }
-                             }
-                         }
-                         let mut utf8sequence = utf8sequence_option.unwrap();
-                         self.append_to_token_data(utf8sequence, utf8sequence.len());
-                         if (is_space(_cptr[0] as char)) {
-                            self.bytes_read_for_token += clen;
-                         }
+                            match error2 {
+                           
+                                PARSERUTILS_NOMEM | 
+                                PARSERUTILS_BADPARM | 
+                                PARSERUTILS_INVALID | 
+                                PARSERUTILS_FILENOTFOUND | 
+                                PARSERUTILS_NEEDDATA | 
+                                PARSERUTILS_BADENCODING => {
+                                    self.bytes_read_for_token = bytes_read_init;
+                                    return css_error_from_parserutils_error(error2);
+                                }
+                                PARSERUTILS_EOF => {
+                                   return CSS_OK;
+                                }
+                                PARSERUTILS_OK => {
+                                    let (_cptr2 , clen2) = pu_peek_result2.unwrap();
+                                    if (_cptr2[0] as char == '\n') { // Potential CRLF 
+                                        self.bytes_read_for_token += 1;
+                                        _cptr = _cptr2;
+                                    }
+                                }
+                            }
+                        }
+                        let mut utf8sequence = utf8sequence_option.unwrap();
+                        self.append_to_token_data(utf8sequence, utf8sequence.len());
+                        if (is_space(_cptr[0] as char)) {
+                           self.bytes_read_for_token += clen;
+                        }
 
-                         if _cptr[0] as char=='\r' || _cptr[0] as char == '\n' /*|| _cptr[0] == '\f'*/ {
-                            self.current_col = 1;
-                            self.current_line += 1;
-                         }
-                         else {
-                            self.current_col += self.bytes_read_for_token - bytes_read_init + 2;
-                         }
-                     }
+                        if _cptr[0] as char=='\r' || _cptr[0] as char == '\n' /*|| _cptr[0] == '\f'*/ {
+                           self.current_col = 1;
+                           self.current_line += 1;
+                        }
+                        else {
+                           self.current_col += self.bytes_read_for_token - bytes_read_init + 2;
+                        }
+                    }
 
-                 }
+                } 
             }
             _ => {
                 return css_error_from_parserutils_error(pu_charset_error);
