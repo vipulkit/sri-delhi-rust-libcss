@@ -746,11 +746,11 @@ pub struct css_select_handler {
     css_error (*node_is_target)(void *pw, void *node, bool *match);
     css_error (*node_is_lang)(void *pw, void *node,
             lwc_string *lang, bool *match);
+    */
+    node_presentational_hint: @extern fn(node:@mut css_selector, property:u32) -> 
+    (css_error, Option<@mut css_hint>),
 
-    css_error (*node_presentational_hint)(void *pw, void *node, 
-            uint32_t property, css_hint *hint);
-
-    css_error (*ua_default_for_property)(void *pw, uint32_t property,
+    /*css_error (*ua_default_for_property)(void *pw, uint32_t property,
             css_hint *hint);
 
     css_error (*compute_font_size)(void *pw, const css_hint *parent,
