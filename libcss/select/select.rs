@@ -356,6 +356,39 @@ impl css_select_ctx {
         }   
     }
 
+    pub fn set_hint(state:@mut css_select_state, prop:u32) -> css_error {
+        
+        
+        /* Retrieve this property's hint from the client */
+        let (error,hint_option) = (*state.handler.unwrap().node_presentational_hint)(state.node.unwrap(), prop);
+        match error {
+            CSS_OK => {},
+            CSS_PROPERTY_NOT_SET => return CSS_OK, 
+            x => return x
+        } 
+
+        /* Hint defined -- set it in the result */
+        let mut dispatch_hint = dispatch_table::get_set_from_hint_ptr(prop as uint) ;
+        let hint = hint_option.unwrap();
+        let error =  dispatch_hint(hint, state.computed);
+
+        match error {
+            CSS_OK => {},
+            x => {
+                return x ;
+            }
+        }
+        
+        /* Keep selection state in sync with reality */
+        state.props[prop][CSS_PSEUDO_ELEMENT_NONE as uint].set = true;
+        state.props[prop][CSS_PSEUDO_ELEMENT_NONE as uint].specificity = 0;
+        state.props[prop][CSS_PSEUDO_ELEMENT_NONE as uint].origin = CSS_ORIGIN_AUTHOR as u8;
+        state.props[prop][CSS_PSEUDO_ELEMENT_NONE as uint].important = false;
+        state.props[prop][CSS_PSEUDO_ELEMENT_NONE as uint].inherit = (hint.status == 0);
+
+        return CSS_OK;
+    }
+
     pub fn select_font_faces_from_sheet(&self,
                                         sheet:@mut css_stylesheet,
                                         origin: css_origin,
