@@ -148,26 +148,80 @@ impl css_lexer {
         }
     }
 
-    pub fn css__lexer_get_token(&mut self) -> (css_error , Option<css_token>){
+    pub fn css__lexer_get_token(&mut self) -> (css_error , Option<~css_token>){
+        let mut start_again = false;
 
-        match self.state {
-            sSTART => {},
-            sATKEYWORD => {},
-            sSTRING => {},
-            sHASH => {},
-            sNUMBER => {},
-            sCDO => {},
-            sCDC => {},
-            sS => {},
-            sCOMMENT => {},
-            sMATCH => {},
-            sURI => {},
-            sIDENT => {},
-            sESCAPEDIDENT => {},
-            sURL => {},
-            sUCR => {}
+        let ret_val =
+            match self.state {
+                sSTART => {
+                    self.start()
+                },
+                sATKEYWORD => {
+                    self.at_keyword()
+                },
+                sSTRING => {
+                    self.string()
+                },
+                sHASH => {
+                    self.hash()
+                },
+                sNUMBER => {
+                    self.number_or_percentage_or_dimension()
+                },
+                sCDO => {
+                    self.cdo()
+                },
+                sCDC => {
+                    self.cdc_or_ident_or_function_or_npd()
+                },
+                sS => {
+                    self.s()
+                },
+                sCOMMENT => {
+                    let (error, token_option) = self.comment();
+                    if (!self.emit_comments && error as int == CSS_OK as int) {
+                        let token = token_option.unwrap();
+
+                        if (token.token_type as int == CSS_TOKEN_COMMENT as int) {
+                            self.state = sSTART;
+                            start_again = true;
+
+                            (CSS_OK, None)
+                        }
+                        else {
+                            (error, Some(token))
+                        }
+                    }
+                    else {
+                        (error, token_option)
+                    }
+                },
+                sMATCH => {
+                    self.match_prefix()
+                },
+                sURI => {
+                    self.uri()
+                },
+                sIDENT => {
+                    self.ident_or_function()
+                },
+                sESCAPEDIDENT => {
+                    self.escaped_ident_or_function()
+                },
+                sURL => {
+                    self.uri()
+                },
+                sUCR => {
+                    self.unicode_range()
+                }
+            }; // match
+
+        if (!start_again) { 
+            return ret_val;
         }
-        return (CSS_INVALID , None);
+        else { // goto start;
+            return self.css__lexer_get_token();
+        }
     }
 
     /******************************************************************************
@@ -190,10 +244,19 @@ impl css_lexer {
         self.token.get_mut_ref().data.len += len;
     }
 
-    pub fn emit_token(&mut self , token_type: css_token_type) -> (css_error, Option<~css_token>) {
+    pub fn emit_token(&mut self , input_token_type: Option<css_token_type>) -> (css_error, Option<~css_token>) {
 
         let mut t = self.token.swap_unwrap();
-        t.token_type = token_type;
+        let token_type = match (input_token_type) {
+            Some(tt) => {
+                t.token_type = tt;
+                tt
+            },
+            None => {
+                t.token_type
+            }
+        };
+        
 
         if (self.escape_seen) {
             t.data.data = self.unescaped_token_data.swap_unwrap();
@@ -265,11 +328,11 @@ impl css_lexer {
                 /* Strip any trailing whitespace */
                 /* Strip any trailing quote */
                 do vec::retain(&mut t.data.data) |&c| {
-                    if (c != ' ' as u8 && c != ')' as u8 && c !='"' as u8 && c != '\'' as u8) {
-                        true
+                    if (c == ' ' as u8 || c == ')' as u8 || c =='"' as u8 || c == '\'' as u8) {
+                        false
                     }
                     else {
-                        false
+                        true
                     }
                 }
 
@@ -306,6 +369,280 @@ impl css_lexer {
     /******************************************************************************
      * State machine components                                                   *
      ******************************************************************************/
+
+    pub fn at_keyword(&mut self) -> (css_error, Option<~css_token>) {
+        enum at_keyword_substates {
+            Initial = 0, 
+            Escape = 1, 
+            NMChar = 2
+        }
+
+        /* ATKEYWORD = '@' ident 
+         * 
+         * The '@' has been consumed.
+         */
+
+        if (self.substate == Initial as uint) {
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+            if (!start_nm_char(c)) {
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+            if (c != '\\') {
+                self.APPEND(cptr, clen);
+                self.substate = NMChar as uint; // fall through
+            } else {
+                self.bytes_read_for_token += clen;
+                self.substate = Escape as uint;
+            }
+        }
+
+        if (self.substate == Escape as uint) {
+            let error = self.consume_escape(false);
+            if (error as int != CSS_OK as int) {
+                if (error as int == CSS_EOF as int || error as int == CSS_INVALID as int) {
+                    /* Rewind the '\\' */
+                    self.bytes_read_for_token -= 1;
+
+                    return self.emit_token(Some(CSS_TOKEN_CHAR));
+                }
+
+                return (error, None);
+            }
+
+            // goto nmchar;
+            self.substate = NMChar as uint;
+        }
+
+        // goto nmchar;
+        if (self.substate == NMChar as uint) {
+            let error = self.consume_NM_chars();
+            if (error as int != CSS_OK as int) {
+                return (error, None);
+            }
+        }
+
+        self.emit_token(Some(CSS_TOKEN_ATKEYWORD))
+    }
+
+
+    pub fn cdc_or_ident_or_function_or_npd(&mut self) -> (css_error, Option<~css_token>) {
+        
+        enum CDC_or_Ident_or_function_or_NPD_substates { 
+            Initial = 0, 
+            Escape = 1, 
+            Gt = 2 
+        }
+
+        /* CDC = "-->"
+         * IDENT = [-]? nmstart nmchar*
+         * FUNCTION = [-]? nmstart nmchar* '('
+         * NUMBER = num = [-+]? ([0-9]+ | [0-9]* '.' [0-9]+)
+         * PERCENTAGE = num '%'
+         * DIMENSION = num ident
+         *
+         * The first dash has been consumed. Thus, we must consume the next 
+         * character in the stream. If it's a dash, then we're dealing with 
+         * CDC. If it's a digit or dot, then we're dealing with NPD. 
+         * Otherwise, we're dealing with IDENT/FUNCTION.
+         */
+
+
+        if (self.substate == Initial as uint) {
+            
+            /* Fall through */
+            self.substate = Gt as uint;
+
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                /* We can only match char with what we've read so far */
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+            if (!start_nm_char(c)) {
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+            if (char::is_digit(c) || c == '.') {
+                /* NPD */
+                self.APPEND(cptr, clen);
+                self.state = sNUMBER;
+                self.substate = 0;
+                /* Abuse "first" to store first non-sign character */
+                self.context.first = c as u8;
+                //return NumberOrPercentageOrDimension(lexer, token);
+                return self.number_or_percentage_or_dimension();
+            }
+
+            if (c != '-' && !start_nm_start(c)) {
+                /* Can only be CHAR */
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+
+            if (c != '\\') {
+                self.APPEND(cptr, clen);
+            }
+
+            if (c != '-') {
+                if (c == '\\') {
+                    self.bytes_read_for_token += clen;
+                    self.substate = Escape as uint; // goto Escape
+                }
+                else {
+                    self.state = sIDENT;
+                    self.substate = 0;
+                    return self.ident_or_function();
+                }
+            }
+
+            
+        }
+        
+        if (self.substate == Gt as uint) {
+        
+
+            /* Ok, so we're dealing with CDC. Expect a '>' */
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                
+                /* CHAR is the only match here */
+                /* Remove the '-' we read above */
+                self.bytes_read_for_token -= 1;
+                self.token.get_mut_ref().data.len -= 1;
+                return self.emit_token(Some(CSS_TOKEN_CHAR));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+            if (c == '>') {
+                self.APPEND(cptr, clen);
+
+                self.token.get_mut_ref().token_type = CSS_TOKEN_CDC;
+            } else {
+                /* Remove the '-' we read above */
+                self.bytes_read_for_token -= 1;
+                self.token.get_mut_ref().data.len -= 1;
+                self.token.get_mut_ref().token_type = CSS_TOKEN_CHAR;
+            }
+        }
+
+        // case Escape:
+        // escape:
+        //     lexer->substate = Escape;
+        //     error = consumeEscape(lexer, false);
+        //     if (error != CSS_OK) {
+        //         if (error == CSS_EOF || error == CSS_INVALID) {
+        //             /* Rewind the '\\' */
+        //             lexer->bytesReadForToken -= 1;
+
+        //             return emit_token(lexer, CSS_TOKEN_CHAR, token);
+        //         }
+
+        //         return error;
+        //     }
+
+        //     lexer->state = sIDENT;
+        //     lexer->substate = 0;
+        //     return IdentOrFunction(lexer, token);
+        // }
+        
+        self.emit_token(None) // == token.token_type
+    }
+    
+    pub fn cdo(&mut self) -> (css_error, Option<~css_token>) {
+        
+        (CSS_OK, None)
+    }
+
+    pub fn comment(&mut self) -> (css_error, Option<~css_token>) {
+        
+        (CSS_OK, None)
+    }
+
+    pub fn escaped_ident_or_function(&mut self) -> (css_error, Option<~css_token>) {
+
+        (CSS_OK, None)
+    }
+
+    pub fn hash(&mut self) -> (css_error, Option<~css_token>) {
+
+        (CSS_OK, None)
+    }
+
+    pub fn ident_or_function(&mut self) -> (css_error, Option<~css_token>) {
+
+        (CSS_OK, None)
+    }
+
+    pub fn match_prefix(&mut self) -> (css_error, Option<~css_token>) {
+
+        (CSS_OK, None)
+    }
+
+    pub fn number_or_percentage_or_dimension(&mut self) -> (css_error, Option<~css_token>) {
+
+        (CSS_OK, None)
+    }
+
+    pub fn s(&mut self) -> (css_error, Option<~css_token>) {
+
+        (CSS_OK, None)
+    }
+
+    pub fn start(&mut self) -> (css_error, Option<~css_token>) {
+
+        (CSS_OK, None)
+    }
+
+    pub fn string(&mut self) -> (css_error, Option<~css_token>) {
+
+        (CSS_OK, None)
+    }
+
+    pub fn uri_or_unicode_range_or_ident_or_function(&mut self) -> (css_error, Option<~css_token>) {
+
+        (CSS_OK, None)
+    }
+    
+    pub fn uri(&mut self) -> (css_error, Option<~css_token>) {
+
+        (CSS_OK, None)
+    }
+
+    pub fn unicode_range(&mut self) -> (css_error, Option<~css_token>) {
+
+        (CSS_OK, None)
+    }
 
     /******************************************************************************
      * Input consumers                                                            *
@@ -660,7 +997,6 @@ impl css_lexer {
             }
 
             count += 1;
-
         }
 
         if (ucs > 0x10FFFF || ucs <= 0x0008 || ucs == 0x000B ||
