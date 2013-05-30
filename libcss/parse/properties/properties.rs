@@ -29,7 +29,7 @@ pub impl css_properties {
 
     pub fn css_properties(sheet_instance: @mut css_stylesheet) -> ~css_properties {
 
-        /**
+        /*
          * Dispatch table of property handlers, indexed by property enum
          */
         let mut vec = ~[
