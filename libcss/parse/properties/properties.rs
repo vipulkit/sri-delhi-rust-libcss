@@ -2857,7 +2857,6 @@ pub impl css_properties {
         let mut flags:u8 = 0;
         let mut value:u16= 0;
         let mut token:&@css_token;
-        let mut isMatchExexcuted = false;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
