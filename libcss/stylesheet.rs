@@ -245,6 +245,23 @@ pub fn get_css_rule_next(rule: Option<CSS_RULE_DATA_TYPE>) -> Option<CSS_RULE_DA
     }
 }
 
+pub fn get_stylesheet_parent(rule: Option<CSS_RULE_DATA_TYPE>) -> Option<@mut css_stylesheet> {
+    match rule {
+        None => None,
+        Some(T) => {
+            match T {
+               RULE_UNKNOWN(x) => x.parent_stylesheet,
+               RULE_SELECTOR(x) => x.base.parent_stylesheet,
+               RULE_CHARSET(x) => x.base.parent_stylesheet,
+               RULE_IMPORT(x) => x.base.parent_stylesheet,
+               RULE_MEDIA(x) => x.base.parent_stylesheet,
+               RULE_FONT_FACE(x) => x.base.parent_stylesheet,
+               RULE_PAGE(x) => x.base.parent_stylesheet,
+            }
+        }
+    }
+}
+
 pub fn compare_css_rule_types(rule : Option<CSS_RULE_DATA_TYPE>, rule_type : css_rule_type) -> bool{
     match rule {
         None => false,
