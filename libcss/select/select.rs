@@ -404,7 +404,7 @@ impl css_select_ctx {
                     None => {
                         is_pseudo_and_parent_none = true;
                     }
-                    Some(T) => {}
+                    Some(_) => {}
                 }
             }
             _=> {}
@@ -426,7 +426,7 @@ impl css_select_ctx {
                 GROUP_UNCOMMON => {
                     match state.computed.uncommon {
                         None => {},
-                        Some(T) => {
+                        Some(_) => {
                             error = (dispatch_table::get_initial_ptr(prop))(state);
                             match error {
                                 CSS_OK => {},
@@ -441,7 +441,7 @@ impl css_select_ctx {
                 GROUP_PAGE => {
                     match state.computed.page {
                         None => {},
-                        Some(T) => {
+                        Some(_) => {
                             error = (dispatch_table::get_initial_ptr(prop))(state);
                             match error {
                                 CSS_OK => {},
@@ -456,7 +456,7 @@ impl css_select_ctx {
                 GROUP_AURAL => {
                     match state.computed.aural {
                         None => {},
-                        Some(T) => {
+                        Some(_) => {
                             error = (dispatch_table::get_initial_ptr(prop))(state);
                             match error {
                                 CSS_OK => {},
@@ -736,7 +736,6 @@ impl css_select_ctx {
                 univ: Option<Option<css_selector>>) -> bool {
 
         let mut pending : bool = false;
-        let mut i : uint;
         match node {
             None => {}
             Some(T) => {
@@ -744,7 +743,7 @@ impl css_select_ctx {
                     None => {
                         pending |= false;
                     }
-                    Some(t) => {
+                    Some(_) => {
                         pending |= true;
                     }
                 }
@@ -758,7 +757,7 @@ impl css_select_ctx {
                     None => {
                         pending |= false;
                     }
-                    Some(t) => {
+                    Some(_) => {
                         pending |= true;
                     }
                 }
@@ -772,7 +771,7 @@ impl css_select_ctx {
                     None => {
                         pending |= false;
                     }
-                    Some(t) => {
+                    Some(_) => {
                         pending |= true;
                     }
                 }
@@ -788,7 +787,7 @@ impl css_select_ctx {
                         None => {
                             pending |= false;
                         }
-                        Some(t) => {
+                        Some(_) => {
                             pending |= true;
                         }
                     }
@@ -835,6 +834,69 @@ impl css_select_ctx {
         }
 
         result
+    }
+
+    pub fn _selector_next(node: Option<@mut css_selector>, id: Option<@mut css_selector>,
+                classes: ~[Option<@mut css_selector>], n_classes : uint, 
+                univ: Option<@mut css_selector>) -> Option<@mut css_selector> {
+
+        let mut ret : Option<@mut css_selector> = None;
+
+        match node {
+            None => {}
+            Some(T) => {
+                ret = Some(T);
+            }
+        }
+
+        match id {
+            None => {}
+            Some(I) => {
+                match ret {
+                    None => {}
+                    Some(R) => {
+                        if css_select_ctx::_selector_less_specific(R, I) {
+                            ret = Some(I);
+                        }
+                    }
+                }
+            }
+        }
+
+        match univ {
+            None => {}
+            Some(I) => {
+                match ret {
+                    None => {}
+                    Some(R) => {
+                        if css_select_ctx::_selector_less_specific(R, I) {
+                            ret = Some(I);
+                        }
+                    }
+                }
+            }
+        }
+
+        let mut i : uint = 0;
+        while i < n_classes {
+            match copy classes[i] {
+                None => {}
+                Some(T) => {
+                    match ret {
+                        None => {}
+                        Some(R) => {
+                            if css_select_ctx::_selector_less_specific(R, T) {
+                                ret = Some(T);
+                            }
+                        }
+                    }
+                }
+            }
+
+            i += 1;
+        }
+
+        ret
     }
 
     // Note: pending implementation
