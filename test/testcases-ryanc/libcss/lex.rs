@@ -28,7 +28,7 @@ extern mod css;
 use core::io::*;
 
 use parserutils::input::inputstream::*;
-use parserutils::charset::aliases::*;
+// use parserutils::charset::aliases::*;
 use parserutils::utils::errors::*;
 
 use css::charset::csdetect::*;
@@ -96,7 +96,7 @@ fn lex(file: ~str) {
             loop {
                 let mut (tokOption, STATUS) = lexer.get_token();
                 match(STATUS) {
-                    CSS_OK => {
+                    LEXER_OK => {
                         let tok = tokOption.unwrap();
                         io::println(fmt!("%?", tok));
                         match(tok) {
@@ -104,8 +104,7 @@ fn lex(file: ~str) {
                             _ => {}
                         }
                     }
-                    // FIXME: "unreachable pattern" error msg appears
-                    //_ => {break;}
+                    _ => {break;}
                 }
             }
         }
@@ -138,7 +137,7 @@ fn lex(file: ~str) {
         loop {
             let (tokOption, STATUS) = lexer.get_token();
             match(STATUS) {
-                CSS_OK => {
+                LEXER_OK => {
                     let tok = tokOption.unwrap();
                     io::println(fmt!("%?", tok));
                     match(tok) {
@@ -146,7 +145,7 @@ fn lex(file: ~str) {
                         _ => {}
                     }
                 }
-                //_ => {break;}
+                _ => {break;}
             }
         }
 
@@ -215,9 +214,9 @@ fn printToken(token: css_token_type) {
         CSS_TOKEN_FUNCTION(x) => {
             toPrint = ~"FUNCTION " + x;
         },
-        CSS_TOKEN_INCLUDES => {
-            toPrint = ~"INCLUDES";
-        },
+        //CSS_TOKEN_INCLUDES => {
+        //    toPrint = ~"INCLUDES";
+        //},
         // FIXME: unreachable pattern
         // CSS_TOKEN_DASHMATCH => {
             // toPrint = ~"DASHMATCH";
@@ -242,6 +241,7 @@ fn printToken(token: css_token_type) {
         // }
         // CSS_TOKEN_LAST_INTERN_LOWER => {;}
         // CSS_TOKEN_LAST_INTERN => {;}
+        _ => {fail!(~"Invalid type")}
     }
     io::println(toPrint);
 

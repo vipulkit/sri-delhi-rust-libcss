@@ -12,8 +12,11 @@
 #[crate_type="lib"];
 
 extern mod core;
+extern mod css;
 
 use core::io::*;
+use css::lex::lexer::*;
+
 
 pub type line_func = ~extern fn(data: ~str, pw: line_ctx) -> bool;
 
@@ -40,8 +43,18 @@ pub struct line_ctx_number{
 }
 
 pub struct line_ctx_lex {
-    buflen: uint
+    buf: ~[u8],
+    exp: ~[~exp_entry],
+    indata: bool,
+    inexp: bool
 }
+
+pub struct exp_entry {
+    token_type: css_token_type,
+    text: ~str,
+    hasText: bool
+}
+
 
 pub fn css__parse_filesize(filename: &str) -> uint {
     let r: @Reader = io::file_reader(&Path(filename)).get();
