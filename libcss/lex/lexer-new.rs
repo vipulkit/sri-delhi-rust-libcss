@@ -1074,7 +1074,157 @@ impl css_lexer {
     }
 
     pub fn start(&mut self) -> (css_error, Option<~css_token>) {
-        // TODO: Abhijeet
+        let mut start_again = false;
+
+        loop {
+            /* Advance past the input read for the previous token */
+            if (self.bytes_read_for_token > 0) {
+                self.input.parserutils_inputstream_advance(self.bytes_read_for_token);
+                self.bytes_read_for_token = 0;
+            }
+
+            /* Reset in preparation for the next token */
+            for self.token.each_mut |t| {
+                t.token_type = CSS_TOKEN_EOF;
+                t.data.data = ~[];
+                t.data.len = 0;
+                t.idata = None;
+                t.col = self.current_col;
+                t.line = self.current_line;
+            }
+
+            self.escape_seen = false;
+            if (self.unescaped_token_data.is_some()) {
+                self.unescaped_token_data = None;
+            }
+
+
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                return self.emit_token(Some(CSS_TOKEN_EOF));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+            self.APPEND(cptr, clen);
+
+            if (clen > 1 || c >= 0x80 as char) {
+                self.state = sIDENT;
+                self.substate = 0;
+
+                return self.ident_or_function();
+            }
+
+            match (c) {
+                '@'=> {
+                    self.state = sATKEYWORD;
+                    self.substate = 0;
+                    return self.at_keyword();
+                }
+
+                '"'|'\''=> {
+                    self.state = sSTRING;
+                    self.substate = 0;
+                    self.context.first = c as u8;
+                    return self.string();
+                }
+                '#' => {
+                    self.state = sHASH;
+                    self.substate = 0;
+                    self.context.orig_bytes = self.bytes_read_for_token;
+                }
+                '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'.'|'+' => {
+                    self.state = sNUMBER;
+                    self.substate = 0;
+                    self.context.first = c as u8;
+                }
+                '<'=> {
+                    self.state = sCDO;
+                    self.substate = 0;
+                    return self.cdo();
+                }
+                '-'=> {
+                    self.state = sCDC;
+                    self.substate = 0;
+                    return self.cdc_or_ident_or_function_or_npd();
+                }
+                ' '|'\t'| '\r'| '\n' => {
+                    self.state = sS;
+                    self.substate = 0;
+                    if (c=='\n') {
+                        self.current_col = 1;
+                        self.current_line += 1;
+                    }
+                    self.context.last_was_cr = (c == '\r');
+                    return self.s();
+                }
+                '/' => {
+                    self.state = sCOMMENT;
+                    self.substate = 0;
+                    self.context.last_was_star = false;
+                    self.context.last_was_cr = false;
+                    let (error, token_option) = self.comment();
+                    if (!self.emit_comments && error as int == CSS_OK as int) {
+                        let token = token_option.unwrap();
+
+                        if (token.token_type as int == CSS_TOKEN_COMMENT as int) {
+                            //goto start;
+                            start_again = true;
+                        }
+                        else {
+                            return (error, Some(token))
+                        }
+                    }
+                    else {
+                        return (error, token_option);
+                    }
+                }
+                '~'|'|'|'^'|'$'|'*' => {
+                    self.state = sMATCH;
+                    self.substate = 0;
+                    self.context.first = c as u8;
+                    return self.match_prefix();
+                }
+                'u'|'U' => {
+                    self.state = sURI;
+                    self.substate = 0;
+                    return self.uri_or_unicode_range_or_ident_or_function();
+                }
+                'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|
+                'n'|'o'|'p'|'q'|'r'|'s'|'t'/*'u'*/ |'v'|'w'|'x'|'y'|
+                'z'|'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|
+                'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|/*'U'*/ 'V'|'W'|'X'|
+                'Y'|'Z'|'_' => {
+                    self.state = sIDENT;
+                    self.substate = 0;
+                    return self.ident_or_function();
+                }
+                '\\'=> {
+                    self.state = sESCAPEDIDENT;
+                    self.substate = 0;
+                    return self.escaped_ident_or_function();
+                }
+                _=> {
+                    return self.emit_token(Some(CSS_TOKEN_CHAR));
+                }
+            } // match (c)
+
+            // goto start
+            if (!start_again) {
+                break;
+            }
+            else {
+                start_again = false;
+            }
+        }
+
         (CSS_OK, None)
     }
 
