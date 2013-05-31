@@ -731,6 +731,76 @@ impl css_select_ctx {
         applies
     }
 
+    pub fn _selectors_pending(node: Option<Option<css_selector>>, id: Option<Option<css_selector>>,
+                classes: ~[Option<Option<css_selector>>], n_classes : uint, 
+                univ: Option<Option<css_selector>>) -> bool {
+
+        let mut pending : bool = false;
+        let mut i : uint;
+        match node {
+            None => {}
+            Some(T) => {
+                match T {
+                    None => {
+                        pending |= false;
+                    }
+                    Some(t) => {
+                        pending |= true;
+                    }
+                }
+            }
+        }
+
+        match id {
+            None => {}
+            Some(T) => {
+                match T {
+                    None => {
+                        pending |= false;
+                    }
+                    Some(t) => {
+                        pending |= true;
+                    }
+                }
+            }
+        }
+
+        match univ {
+            None => {}
+            Some(T) => {
+                match T {
+                    None => {
+                        pending |= false;
+                    }
+                    Some(t) => {
+                        pending |= true;
+                    }
+                }
+            }
+        }
+
+        let mut i : uint = 0;
+        while i < n_classes {
+            match copy classes[i] {
+                None => {}
+                Some(T) => {
+                    match T {
+                        None => {
+                            pending |= false;
+                        }
+                        Some(t) => {
+                            pending |= true;
+                        }
+                    }
+                }
+            }
+
+            i += 1;
+        }
+
+        pending
+    }
+
     pub fn _selector_less_specific(refer:@mut css_selector, cand:@mut css_selector) -> bool {
 
         let mut result : bool = true;
