@@ -747,7 +747,7 @@ pub struct css_select_handler {
     css_error (*node_is_lang)(void *pw, void *node,
             lwc_string *lang, bool *match);
     */
-    node_presentational_hint: @extern fn(node:@mut css_selector, property:u32) -> 
+    node_presentational_hint: @extern fn(node:*libc::c_void, property:u32) -> 
     (css_error, Option<@mut css_hint>),
 
     /*css_error (*ua_default_for_property)(void *pw, uint32_t property,
@@ -763,7 +763,7 @@ pub struct css_select_handler {
 
 pub struct css_select_state {
     //TODO : void *node;        
-    node:Option<@mut css_selector>,
+    node:*libc::c_void,
     media:u64,         
     results:Option<css_select_results>,
     current_pseudo:css_pseudo_element,  

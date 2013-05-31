@@ -1189,7 +1189,7 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
                                     fn_handler:@mut css_select_handler) -> css_error {
 
     let mut state: @mut css_select_state = @mut css_select_state {
-        node:None,
+        node:ptr::null(),
         media:(CSS_MEDIA_ALL as u64),       
         results:None,    
         current_pseudo:CSS_PSEUDO_ELEMENT_NONE,  

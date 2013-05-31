@@ -364,7 +364,7 @@ impl css_select_ctx {
         
         
         /* Retrieve this property's hint from the client */
-        let (error,hint_option) = (*state.handler.unwrap().node_presentational_hint)(state.node.unwrap(), prop);
+        let (error,hint_option) = (*state.handler.unwrap().node_presentational_hint)(state.node, prop);
         match error {
             CSS_OK => {},
             CSS_PROPERTY_NOT_SET => return CSS_OK, 
