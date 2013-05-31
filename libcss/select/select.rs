@@ -78,7 +78,17 @@ pub struct css_select_font_faces_state {
     author_font_faces:css_select_font_faces_list
 }
 
+pub enum source_type {
+    CSS_SELECT_RULE_SRC_ELEMENT,
+    CSS_SELECT_RULE_SRC_CLASS,
+    CSS_SELECT_RULE_SRC_ID,
+    CSS_SELECT_RULE_SRC_UNIVERSAL
+}
 
+pub struct css_select_rule_source {
+    source:source_type,
+    source_class:u32
+}
 //////////////////////////////////////////////////////////////////
 // Start of CSS Selector internal functions
 //////////////////////////////////////////////////////////////////
@@ -404,7 +414,7 @@ impl css_select_ctx {
                     None => {
                         is_pseudo_and_parent_none = true;
                     }
-                    Some(T) => {}
+                    Some(_) => {}
                 }
             }
             _=> {}
@@ -426,7 +436,7 @@ impl css_select_ctx {
                 GROUP_UNCOMMON => {
                     match state.computed.uncommon {
                         None => {},
-                        Some(T) => {
+                        Some(_) => {
                             error = (dispatch_table::get_initial_ptr(prop))(state);
                             match error {
                                 CSS_OK => {},
@@ -441,7 +451,7 @@ impl css_select_ctx {
                 GROUP_PAGE => {
                     match state.computed.page {
                         None => {},
-                        Some(T) => {
+                        Some(_) => {
                             error = (dispatch_table::get_initial_ptr(prop))(state);
                             match error {
                                 CSS_OK => {},
@@ -456,7 +466,7 @@ impl css_select_ctx {
                 GROUP_AURAL => {
                     match state.computed.aural {
                         None => {},
-                        Some(T) => {
+                        Some(_) => {
                             error = (dispatch_table::get_initial_ptr(prop))(state);
                             match error {
                                 CSS_OK => {},
@@ -736,7 +746,6 @@ impl css_select_ctx {
                 univ: Option<Option<css_selector>>) -> bool {
 
         let mut pending : bool = false;
-        let mut i : uint;
         match node {
             None => {}
             Some(T) => {
@@ -744,7 +753,7 @@ impl css_select_ctx {
                     None => {
                         pending |= false;
                     }
-                    Some(t) => {
+                    Some(_) => {
                         pending |= true;
                     }
                 }
@@ -758,7 +767,7 @@ impl css_select_ctx {
                     None => {
                         pending |= false;
                     }
-                    Some(t) => {
+                    Some(_) => {
                         pending |= true;
                     }
                 }
@@ -772,7 +781,7 @@ impl css_select_ctx {
                     None => {
                         pending |= false;
                     }
-                    Some(t) => {
+                    Some(_) => {
                         pending |= true;
                     }
                 }
@@ -788,7 +797,7 @@ impl css_select_ctx {
                         None => {
                             pending |= false;
                         }
-                        Some(t) => {
+                        Some(_) => {
                             pending |= true;
                         }
                     }
@@ -836,6 +845,89 @@ impl css_select_ctx {
 
         result
     }
+
+    pub fn _selector_next(node: Option<@mut css_selector>, id: Option<@mut css_selector>,
+                classes: ~[Option<@mut css_selector>], n_classes : uint, 
+                univ: Option<@mut css_selector>) -> Option<@mut css_selector> {
+
+        let mut ret : Option<@mut css_selector> = None;
+
+        match node {
+            None => {}
+            Some(T) => {
+                ret = Some(T);
+            }
+        }
+
+        match id {
+            None => {}
+            Some(I) => {
+                match ret {
+                    None => {}
+                    Some(R) => {
+                        if css_select_ctx::_selector_less_specific(R, I) {
+                            ret = Some(I);
+                        }
+                    }
+                }
+            }
+        }
+
+        match univ {
+            None => {}
+            Some(I) => {
+                match ret {
+                    None => {}
+                    Some(R) => {
+                        if css_select_ctx::_selector_less_specific(R, I) {
+                            ret = Some(I);
+                        }
+                    }
+                }
+            }
+        }
+
+        let mut i : uint = 0;
+        while i < n_classes {
+            match copy classes[i] {
+                None => {}
+                Some(T) => {
+                    match ret {
+                        None => {}
+                        Some(R) => {
+                            if css_select_ctx::_selector_less_specific(R, T) {
+                                ret = Some(T);
+                            }
+                        }
+                    }
+                }
+            }
+
+            i += 1;
+        }
+
+        ret
+    }
+
+    pub fn _rule_good_for_element_name(selector:@mut css_selector,
+        src:@mut css_select_rule_source, state:@mut css_select_state) -> bool {
+        /* If source of rule is element or universal hash, we know the
+         * element name is a match.  If it comes from the class or id hash,
+         * we have to test for a match */
+        if (match src.source { 
+            CSS_SELECT_RULE_SRC_ID | CSS_SELECT_RULE_SRC_CLASS => true,
+            _ => false }) {
+            
+            if (unsafe {selector.data[0].qname.name.len()} != 1 ||
+                   selector.data[0].qname.name[0] != '*' as u8) {
+                
+                if selector.data[0].qname.name != state.element.name {
+                    return false;
+                }
+            }
+        }    
+        return true;
+    }        
 
     // Note: pending implementation
     pub fn match_selectors_in_sheet(&mut self, sheet : @mut css_stylesheet, state : &mut css_select_state) -> css_error {

@@ -268,43 +268,43 @@ pub fn compare_css_rule_types(rule : Option<CSS_RULE_DATA_TYPE>, rule_type : css
         Some(T) => {
 
             match T {
-                RULE_UNKNOWN(x) =>{
+                RULE_UNKNOWN(_) =>{
                     match rule_type{
                         CSS_RULE_UNKNOWN => true,
                         _=> false
                     }
                 } 
-                RULE_SELECTOR(x) =>{
+                RULE_SELECTOR(_) =>{
                     match rule_type {
                         CSS_RULE_SELECTOR => true,
                         _=> false
                     }
                 } 
-                RULE_CHARSET(x) =>{
+                RULE_CHARSET(_) =>{
                     match rule_type {
                         CSS_RULE_CHARSET => true,
                         _=> false
                     }
                 } 
-                RULE_IMPORT(x) =>{
+                RULE_IMPORT(_) =>{
                     match rule_type {
                         CSS_RULE_IMPORT => true,
                         _=> false
                     }
                 } 
-                RULE_MEDIA(x) =>{
+                RULE_MEDIA(_) =>{
                     match rule_type {
                         CSS_RULE_MEDIA => true,
                         _=> false
                     }
                 } 
-                RULE_FONT_FACE(x) =>{
+                RULE_FONT_FACE(_) =>{
                     match rule_type {
                         CSS_RULE_FONT_FACE => true,
                         _=> false
                     }
                 } 
-                RULE_PAGE(x) =>{
+                RULE_PAGE(_) =>{
                     match rule_type {
                         CSS_RULE_PAGE => true,
                         _=> false
@@ -321,7 +321,7 @@ pub fn compare_css_rdt(rule1: Option<CSS_RULE_DATA_TYPE>, rule2: Option<CSS_RULE
         None => {
             match rule2 {
                 None => true,
-                Some(T) => false,
+                Some(_) => false,
             }
         }
 
