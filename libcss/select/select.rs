@@ -1234,6 +1234,99 @@ impl css_select_ctx {
         state.next_reject -= 1;
     }
 
+    pub fn match_named_combinator(&mut self, combinator_type:css_combinator,
+        selector:@mut css_selector, state:@mut css_select_state, 
+        node:*libc::c_void, next_node:*mut *libc::c_void) -> css_error {
+
+        let detail :&mut ~[@mut css_selector_detail] = &mut selector.data;
+        let mut n = node;
+        let mut error:css_error;
+
+        loop {
+            let mut match_result = false;
+
+            /* Find candidate node */
+            match combinator_type {
+                CSS_COMBINATOR_ANCESTOR => {
+                    error = (*state.handler.unwrap().named_ancestor_node)( 
+                            n, &mut selector.data[0].qname, &n);
+                    match error {
+                        CSS_OK => {},
+                        err => return err
+                    }
+                }   
+                CSS_COMBINATOR_PARENT => {
+                    error = (*state.handler.unwrap().named_parent_node)( 
+                            n, &mut selector.data[0].qname, &n);
+                    match error {
+                        CSS_OK => {},
+                        err => return err
+                    }
+                }    
+                CSS_COMBINATOR_SIBLING => {
+                    error = (*state.handler.unwrap().named_sibling_node)( 
+                            n, &mut selector.data[0].qname, &n);
+                    match error {
+                        CSS_OK => {},
+                        err => return err
+                    }
+                }    
+                    
+                CSS_COMBINATOR_GENERIC_SIBLING => {
+                    error = (*state.handler.unwrap().named_generic_sibling_node)(
+                            n, &mut selector.data[0].qname, &n);
+                    match error {
+                        CSS_OK => {},
+                        err => return err
+                    }
+                }        
+                CSS_COMBINATOR_NONE => {}
+                    
+            }
+
+            if n != ptr::null() {
+                /* Match its details */
+                error = self.match_details(n, detail, state, @mut match_result, None);
+                match error {
+                    CSS_OK => {},
+                    err => return err
+                }
+
+                /* If we found a match, use it */
+                if (match_result == true){
+                    break   
+                }
+                    
+
+                /* For parent and sibling selectors, only adjacent 
+                 * nodes are valid. Thus, if we failed to match, 
+                 * give up. */
+                match combinator_type { 
+                    CSS_COMBINATOR_PARENT | CSS_COMBINATOR_SIBLING => {
+                        n = ptr::null();   
+                    },
+                    _  => {}
+                }    
+                    
+            }
+
+            if n == ptr::null() {
+                break
+            }
+        }
+
+        unsafe { *next_node = n };
+
+        return CSS_OK;
+    }
+
+    pub fn match_details(&mut self, node:*libc::c_void, 
+        detail :&mut ~[@mut css_selector_detail], state : @mut css_select_state, 
+        matched : @mut bool, pseudo_element : Option<css_pseudo_element>) -> css_error {
+
+        CSS_OK
+    }
+
     pub fn match_nth(a:i32  , b:i32 , count:i32) -> bool {
         if (a == 0) {
             return (count == b);

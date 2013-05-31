@@ -1,4 +1,4 @@
 all:
-	cd libwapcaplet; make run; cd ..
-	cd libparserutils; make run; cd ..
-	cd libcss; make run; cd ..
+	cd libwapcaplet; make; make run; cd ..
+	cd libparserutils; make; make run; cd ..
+	cd libcss; make; make run; cd ..
