@@ -227,7 +227,7 @@ pub impl css_language {
 
         /* We now have an ATKEYWORD and the context for the start of any0, if 
          * there is one */
-        match atkeyword.token_type { CSS_TOKEN_ATKEYWORD(_) => {}, _ => return CSS_INVALID };
+        match atkeyword.token_type { CSS_TOKEN_ATKEYWORD => {}, _ => return CSS_INVALID };
 
         if self.strings.lwc_string_caseless_isequal(atkeyword.idata.get_ref().clone(), CHARSET as uint) {
             match self.state {
@@ -244,7 +244,7 @@ pub impl css_language {
                     let charset = &vector[*ctx];
                     *ctx += 1; //Iterate
                     
-                    if match charset.token_type {CSS_TOKEN_STRING(_) => false, _ => true} {
+                    if match charset.token_type {CSS_TOKEN_STRING => false, _ => true} {
                         return CSS_INVALID;
                     }
                     
@@ -292,7 +292,7 @@ pub impl css_language {
                 let uri = &vector[*ctx];
                 *ctx += 1; //Iterate
                     
-                if match uri.token_type { CSS_TOKEN_STRING(_) | CSS_TOKEN_URI(_) => false, _ => true} {
+                if match uri.token_type { CSS_TOKEN_STRING | CSS_TOKEN_URI => false, _ => true} {
                     return CSS_INVALID
                 }
                     
@@ -363,7 +363,7 @@ pub impl css_language {
                 token = &vector[*ctx];
                 *ctx += 1; //Iterate
                 
-                if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false} {
+                if match token.token_type { CSS_TOKEN_IDENT => true, _ => false} {
                     prefix = Some(token.idata.get_ref().clone());
 
                     consumeWhitespace(vector, ctx);
@@ -376,7 +376,7 @@ pub impl css_language {
                     *ctx += 1; //Iterate
                 }
 
-                if match token.token_type { CSS_TOKEN_STRING(_) | CSS_TOKEN_URI(_) => false, _ => true} {
+                if match token.token_type { CSS_TOKEN_STRING | CSS_TOKEN_URI => false, _ => true} {
                     return CSS_INVALID
                 }
 
@@ -578,7 +578,7 @@ pub impl css_language {
                 None => CSS_INVALID,
                 Some(curRule) => {
                     match curRule {
-                        RULE_SELECTOR(_) | RULE_PAGE (_) | RULE_FONT_FACE(_) => {                                   
+                        RULE_SELECTOR(_) | RULE_PAGE(_)  | RULE_FONT_FACE(_) => {                                   
                             //Expect declarations 
                             return self.handleDeclaration(tokens);
                         },
@@ -612,7 +612,7 @@ pub impl css_language {
                 None => CSS_INVALID,
                 Some(curRule) => {
                     match curRule {
-                        RULE_SELECTOR(_) | RULE_PAGE (_) | RULE_FONT_FACE(_) => {                                   
+                        RULE_SELECTOR(_) | RULE_PAGE(_)  | RULE_FONT_FACE(_) => {                                   
                             // Strip any leading whitespace (can happen if in nested block) 
                             consumeWhitespace(tokens, ctx);
 
@@ -625,7 +625,7 @@ pub impl css_language {
                                 let ident =&tokens[*ctx];
                                 *ctx = *ctx + 1;
                                 match ident.token_type { 
-                                    CSS_TOKEN_IDENT(_) => {
+                                    CSS_TOKEN_IDENT => {
                                         consumeWhitespace(tokens, ctx);
                                         if tokens.len() <= *ctx || !tokenIsChar(&tokens[*ctx],':') {
                                             return CSS_INVALID
@@ -707,7 +707,7 @@ pub impl css_language {
         *ctx += 1; //Iterate
                 
         loop {
-            if match token.token_type { CSS_TOKEN_IDENT(_) => false, _ => true} {
+            if match token.token_type { CSS_TOKEN_IDENT => false, _ => true} {
                 return CSS_INVALID
             }
 
@@ -966,7 +966,7 @@ pub impl css_language {
         else {
             /* Universal selector */
             match self.default_namespace {
-                Some (copy ns) => qname.ns = ns,
+                Some(copy ns) => qname.ns = ns,
                 None => qname.ns = self.strings.lwc_string_data(UNIVERSAL as uint)
             }   
             
@@ -1061,7 +1061,7 @@ pub impl css_language {
             *ctx += 1; //Iterate
 
             /* Expect element_name */
-            if *ctx >= vector.len() || ( match vector[*ctx].token_type { CSS_TOKEN_IDENT(_) => false, _ => true} && !tokenIsChar(&vector[*ctx], '*') ) {
+            if *ctx >= vector.len() || ( match vector[*ctx].token_type { CSS_TOKEN_IDENT => false, _ => true} && !tokenIsChar(&vector[*ctx], '*') ) {
                 return CSS_INVALID
             }
             *ctx += 1; //Iterate
@@ -1074,13 +1074,13 @@ pub impl css_language {
         else {
             /* No namespace prefix */
             match self.default_namespace {
-                Some (copy ns) => qname.ns = ns,
+                Some(copy ns) => qname.ns = ns,
                 None => qname.ns = self.strings.lwc_string_data(UNIVERSAL as uint)
             }
 
 
             qname.name = match prefix {
-                            Some (x) => lwc_string_data(x),
+                            Some(x) => lwc_string_data(x),
                             None => ~""
                         }
             
@@ -1140,7 +1140,7 @@ pub impl css_language {
         token = &vector[*ctx];
 
         match token.token_type {
-            CSS_TOKEN_HASH(_)   => {
+            CSS_TOKEN_HASH   => {
                 let qname:css_qname=css_qname{ns:~"", name:lwc_string_data(token.idata.get_ref().clone())};
                 match css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_ID, qname, 
                                             CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false) {
@@ -1204,7 +1204,7 @@ pub impl css_language {
                 }   
 
                 match self.namespaces[idx].uri {
-                    Some(_) => qname.ns = lwc_string_data(self.namespaces[idx].uri.get_ref().clone()),
+                    Some(_)=> qname.ns = lwc_string_data(self.namespaces[idx].uri.get_ref().clone()),
                     None => qname.ns = ~""
                 }
             }
@@ -1235,7 +1235,7 @@ pub impl css_language {
         *ctx +=1; //Iterate 
 
         match token.token_type {
-            CSS_TOKEN_IDENT(_) => {
+            CSS_TOKEN_IDENT => {
                 let qname:css_qname=css_qname{ns:~"", name:lwc_string_data(token.idata.get_ref().clone())};
                 return css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_CLASS, qname, 
                                                     CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false)
@@ -1279,7 +1279,7 @@ pub impl css_language {
         token = &vector[*ctx];
         *ctx +=1; //Iterate             
 
-        if (match token.token_type { CSS_TOKEN_IDENT(_) => false, _ => true}) && !tokenIsChar(token, '*') &&
+        if (match token.token_type { CSS_TOKEN_IDENT => false, _ => true}) && !tokenIsChar(token, '*') &&
                 !tokenIsChar(token, '|') {
             return (CSS_INVALID, None)
         }   
@@ -1305,7 +1305,7 @@ pub impl css_language {
             *ctx +=1; //Iterate
         }
 
-        if match token.token_type { CSS_TOKEN_IDENT(_) => false, _ => true} {
+        if match token.token_type { CSS_TOKEN_IDENT => false, _ => true} {
             return (CSS_INVALID, None)
         }   
 
@@ -1349,7 +1349,7 @@ pub impl css_language {
             token = &vector[*ctx];
             *ctx +=1; //Iterate
             
-            match token.token_type{ CSS_TOKEN_IDENT(_) => {}, CSS_TOKEN_STRING(_) => {}, _ => return (CSS_INVALID,None) }
+            match token.token_type{ CSS_TOKEN_IDENT => {}, CSS_TOKEN_STRING => {}, _ => return (CSS_INVALID,None) }
 
             value = Some(token);
 
@@ -1420,8 +1420,8 @@ pub impl css_language {
 
         /* Expect IDENT or FUNCTION */
         match token.token_type {
-            CSS_TOKEN_IDENT(_) => {},
-            CSS_TOKEN_FUNCTION (_) => {},
+            CSS_TOKEN_IDENT => {},
+            CSS_TOKEN_FUNCTION  => {},
             _ => return (CSS_INVALID, None)
         } 
             
@@ -1446,7 +1446,7 @@ pub impl css_language {
             return (CSS_INVALID, None)  
         }   
 
-        if match token.token_type { CSS_TOKEN_FUNCTION(_) => true, _ => false} {
+        if match token.token_type { CSS_TOKEN_FUNCTION => true, _ => false} {
             
             let mut fun_type = match selector_type{ CSS_SELECTOR_PSEUDO_ELEMENT => self.strings.pseudo_element_list[lut_idx],_ => self.strings.pseudo_class_list[lut_idx]} ;
 
@@ -1463,7 +1463,7 @@ pub impl css_language {
                     *ctx +=1; //Iterate
                     
                     match token.token_type {
-                        CSS_TOKEN_IDENT(_) => {},
+                        CSS_TOKEN_IDENT => {},
                         _ => return (CSS_INVALID, None)
                      } 
                         
@@ -1505,7 +1505,7 @@ pub impl css_language {
                         
                     token = &vector[*ctx];
                         
-                    if (match token.token_type {    CSS_TOKEN_IDENT(_) => true, _  => false }) || 
+                    if (match token.token_type {    CSS_TOKEN_IDENT => true, _  => false }) || 
                             tokenIsChar(token, '*') || tokenIsChar(token, '|') {
                         /* Have type selector */
                         match self.parseTypeSelector(vector, ctx, qname) {
@@ -1596,14 +1596,14 @@ pub impl css_language {
         token = &vector[*ctx];
                         
         match token.token_type { 
-            CSS_TOKEN_IDENT(_) | CSS_TOKEN_DIMENSION(_,_,_) => {
-                if (match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false}) &&
+            CSS_TOKEN_IDENT | CSS_TOKEN_DIMENSION => {
+                if (match token.token_type { CSS_TOKEN_IDENT => true, _ => false}) &&
                         self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ODD as uint) {
                     /* Odd */
                     value.a = 2;
                     value.b = 1;
                 }
-                else if (match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false}) &&
+                else if (match token.token_type { CSS_TOKEN_IDENT => true, _ => false}) &&
                             self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), EVEN as uint)
                 {
                     /* Even */
@@ -1628,7 +1628,7 @@ pub impl css_language {
                     let mut data_index = 0;
                     /* Compute a */
                     if (match token.token_type {
-                        CSS_TOKEN_IDENT(_) => true, 
+                        CSS_TOKEN_IDENT => true, 
                         _ => false   
                     }) {
                         if len < 2 {
@@ -1756,7 +1756,7 @@ pub impl css_language {
 
                         /* Expect NUMBER */
                         if *ctx < vector.len() && (match token.token_type 
-                            { CSS_TOKEN_NUMBER(_,_) => true, _ => false }) {
+                            { CSS_TOKEN_NUMBER => true, _ => false }) {
 
                             *ctx += 1;
 
@@ -1786,7 +1786,7 @@ pub impl css_language {
                     value.b = b << 10 * sign;
                 }
             },
-            CSS_TOKEN_NUMBER(_,_)  => {
+            CSS_TOKEN_NUMBER  => {
                 
                 let (ret_val,consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
                 if consumed != lwc_string_length(token.idata.get_ref().clone())
@@ -1842,7 +1842,7 @@ pub impl css_language {
             
             consumeWhitespace(vector, ctx);
 
-            if *ctx >= vector.len() || match vector[*ctx].token_type { CSS_TOKEN_IDENT(_) => false, _ => true} {
+            if *ctx >= vector.len() || match vector[*ctx].token_type { CSS_TOKEN_IDENT => false, _ => true} {
                 *ctx = orig_ctx;
                 return (CSS_INVALID,flags)
             }

@@ -79,11 +79,6 @@ pub struct css_system_font {
 
 pub type css_fixed = i32;
 
-pub struct css_token {
-    token_type: css_token_type,
-    idata: Option<arc::RWARC<~lwc_string>>,
-}
-
 pub type css_url_resolution_fn = @extern fn (base:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>);
 pub type css_font_resolution_fn = @extern fn (name: arc::RWARC<~lwc_string>) -> (css_error , Option<css_system_font>);
 pub type css_import_notification_fn =  @extern fn(url:~str, media:@mut u64) -> css_error;

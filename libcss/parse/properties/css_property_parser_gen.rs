@@ -116,7 +116,7 @@ pub fn output_token_type_check(fp:@Writer, do_token_check:bool, IDENT:~[keyval],
                   
         if !vec::is_empty(IDENT) {
             str::push_str(&mut output, "\tif ");
-            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false})");
+            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_IDENT => true, _ => false})");
             prev = true;
         }
         if !vec::is_empty(URI) {
@@ -124,7 +124,7 @@ pub fn output_token_type_check(fp:@Writer, do_token_check:bool, IDENT:~[keyval],
             else {
                 str::push_str(&mut output, "\tif ");
             }
-            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_URI(_) => false, _ => true})");
+            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_URI => false, _ => true})");
             prev = true;
         }
         if !vec::is_empty(NUMBER) {
@@ -132,7 +132,7 @@ pub fn output_token_type_check(fp:@Writer, do_token_check:bool, IDENT:~[keyval],
             else {
                 str::push_str(&mut output, "\tif ");
             }
-            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_NUMBER(_,_) => false, _ => true}) ");
+            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_NUMBER => false, _ => true}) ");
             prev = true;
         }
         if prev {
@@ -153,7 +153,7 @@ pub fn output_ident(fp:@Writer, only_ident:bool, parseid:&keyval, IDENT:~[keyval
         
         str::push_str(&mut output,"\tif ");
         if !only_ident {
-            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false}) && \n");
+            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_IDENT => true, _ => false}) && \n");
         }
         str::push_str(&mut output, fmt!("\tstrings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), %s as uint) {\n",i.key));
         if i.key == ~"INHERIT" {
@@ -169,7 +169,7 @@ pub fn output_ident(fp:@Writer, only_ident:bool, parseid:&keyval, IDENT:~[keyval
 
 pub fn output_uri(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     
-        let mut output : ~str = ~" if match token.token_type { CSS_TOKEN_URI(_) => true, _ => false} {\n";
+        let mut output : ~str = ~" if match token.token_type { CSS_TOKEN_URI => true, _ => false} {\n";
         
         str::push_str(&mut output,"\n");
         str::push_str(&mut output,"\t\tmatch (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone()) {\n");
@@ -191,7 +191,7 @@ pub fn output_uri(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
 
 pub fn output_number(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     
-    let mut output : ~str = ~"\tif match token.token_type { CSS_TOKEN_NUMBER(_,_) => true, _ => false} {\n";
+    let mut output : ~str = ~"\tif match token.token_type { CSS_TOKEN_NUMBER => true, _ => false} {\n";
   
     str::push_str(&mut output,fmt!("\t\tlet mut (num,consumed): (i32,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), %s);\n",kvlist[0].key));
     str::push_str(&mut output,"\t\t/* Invalid if there are trailing characters */\n");
@@ -296,7 +296,7 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
         let mut output : ~str = ~"{\n"; 
             
             str::push_str(&mut output,fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s);\n", parseid.val,kvlist[0].val));
-            str::push_str(&mut output,"\t\twhile (*ctx < vector.len()) && (match (&vector[*ctx]).token_type {CSS_TOKEN_IDENT(_) => true, _ => false}) {\n");
+            str::push_str(&mut output,"\t\twhile (*ctx < vector.len()) && (match (&vector[*ctx]).token_type {CSS_TOKEN_IDENT => true, _ => false}) {\n");
             str::push_str(&mut output,"\t\t\ttoken=&vector[*ctx];\n");
             str::push_str(&mut output,"\t\t\tlet mut num:css_fixed;\n");
             str::push_str(&mut output,"\t\t\tlet mut pctx:uint;\n\n");
@@ -312,7 +312,7 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             str::push_str(&mut output,"\t\t\t\ttoken = &vector[*ctx];\n");
             str::push_str(&mut output,"\t\t\t\t*ctx += 1 //Iterate\n");
             str::push_str(&mut output,"\t\t\t}\n");
-            str::push_str(&mut output,"\t\t\tif !token_null && (match token.token_type { CSS_TOKEN_NUMBER(_,_) => true, _ => false}) {\n");
+            str::push_str(&mut output,"\t\t\tif !token_null && (match token.token_type { CSS_TOKEN_NUMBER => true, _ => false}) {\n");
             str::push_str(&mut output,"\t\t\t\tlet (ret_num, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);\n");
             str::push_str(&mut output,"\t\t\t\tif consumed != lwc_string_length(token.idata.get_ref().clone()) {\n");
             str::push_str(&mut output,"\t\t\t\t\t*ctx = orig_ctx;\n");
@@ -335,7 +335,7 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             str::push_str(&mut output,"\t\t\tcss_stylesheet::css__stylesheet_style_append(result, num as u32);\n");
             str::push_str(&mut output,"\t\t\tif token_null {\n");
             str::push_str(&mut output,"\t\t\t\tbreak;\n}\n");
-            str::push_str(&mut output,"\t\t\tif match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false} {\n");
+            str::push_str(&mut output,"\t\t\tif match token.token_type { CSS_TOKEN_IDENT => true, _ => false} {\n");
             str::push_str(&mut output,fmt!("\t\t\t\tcss_stylesheet::css__stylesheet_style_append(result, %s as u32);\n",kvlist[0].val));
             str::push_str(&mut output,"\t\t\t}\n");
             str::push_str(&mut output,"\t\t\telse {\n");

@@ -133,7 +133,7 @@ pub fn font_face_parse_font_style(strings:&mut ~css_propstrings, vector:&~[@css_
 
     /* IDENT(normal, italic, oblique) */
 
-    if *ctx > vector.len() || match vector[*ctx].token_type {CSS_TOKEN_IDENT(_) => false, _ => true} {
+    if *ctx > vector.len() || match vector[*ctx].token_type {CSS_TOKEN_IDENT => false, _ => true} {
         *ctx = orig_ctx;
         return CSS_INVALID
     }   
@@ -169,7 +169,7 @@ pub fn font_face_parse_font_weight(strings:&mut ~css_propstrings, vector:&~[@css
     /* NUMBER (100, 200, 300, 400, 500, 600, 700, 800, 900) | 
      * IDENT (normal, bold) */
     
-    if *ctx >= vector.len() || match vector[*ctx].token_type { CSS_TOKEN_IDENT(_) | CSS_TOKEN_NUMBER(_,_) => false, _ => true } {
+    if *ctx >= vector.len() || match vector[*ctx].token_type { CSS_TOKEN_IDENT | CSS_TOKEN_NUMBER => false, _ => true } {
         return CSS_INVALID;
     }
 
@@ -177,7 +177,7 @@ pub fn font_face_parse_font_weight(strings:&mut ~css_propstrings, vector:&~[@css
     *ctx += 1;
 
 
-    if match token.token_type { CSS_TOKEN_NUMBER(_,_) => true, _ => false }  {
+    if match token.token_type { CSS_TOKEN_NUMBER => true, _ => false }  {
         let (num, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
         /* Invalid if there are trailing characters */
         if consumed != lwc_string_length(token.idata.get_ref().clone()) {
@@ -235,7 +235,7 @@ pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut 
     *ctx += 1;  //Iterate
 
     match token.token_type {
-        CSS_TOKEN_URI(_) => {
+        CSS_TOKEN_URI => {
             match (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone())
             { 
                 (CSS_OK,loc) => location =loc,
@@ -249,7 +249,7 @@ pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut 
             if *ctx < vector.len() {
                 
                 token = &vector[*ctx];
-                if match token.token_type { CSS_TOKEN_FUNCTION(_) => true, _ => false}  &&
+                if match token.token_type { CSS_TOKEN_FUNCTION => true, _ => false}  &&
                     strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),FORMAT as uint) {
                 
                     *ctx += 1;
@@ -263,7 +263,7 @@ pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut 
                 }
             }       
         },
-        CSS_TOKEN_FUNCTION(_) => {
+        CSS_TOKEN_FUNCTION => {
             if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LOCAL as uint) {
                 consumeWhitespace(vector, ctx);
 
@@ -342,7 +342,7 @@ pub fn font_face_src_parse_format(strings:&mut ~css_propstrings, vector:&~[@css_
     loop {
         consumeWhitespace(vector, ctx);
 
-        if  *ctx > vector.len() || match vector[*ctx].token_type { CSS_TOKEN_STRING(_) => false, _ => true} {
+        if  *ctx > vector.len() || match vector[*ctx].token_type { CSS_TOKEN_STRING => false, _ => true} {
             return CSS_INVALID
         } 
             

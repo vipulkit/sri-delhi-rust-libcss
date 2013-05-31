@@ -1,7 +1,7 @@
 use parserutils::utils::errors::*;
 use utils::errors::*;
 
-fn css_error_from_parserutils_error(css_result : parserutils_error) -> css_error{
+pub fn css_error_from_parserutils_error(css_result : parserutils_error) -> css_error{
 	match css_result{
 
 		PARSERUTILS_OK => { 
