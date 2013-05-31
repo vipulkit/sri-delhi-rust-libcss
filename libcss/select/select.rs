@@ -1238,7 +1238,7 @@ impl css_select_ctx {
         selector:@mut css_selector, state:@mut css_select_state, 
         node:*libc::c_void, next_node:*mut *libc::c_void) -> css_error {
 
-        let detail :&mut ~[@mut css_selector_detail] = &mut selector.data;
+        let detail :~[@mut css_selector_detail] = copy selector.data;
         let mut n = node;
         let mut error:css_error;
 
@@ -1284,9 +1284,10 @@ impl css_select_ctx {
                     
             }
 
+            let mut index : uint = 0;
             if n != ptr::null() {
                 /* Match its details */
-                error = self.match_details(n, detail, state, @mut match_result, None);
+                error = self.match_details(n, copy detail, state, @mut match_result, None, @mut index);
                 match error {
                     CSS_OK => {},
                     err => return err
@@ -1320,12 +1321,52 @@ impl css_select_ctx {
         return CSS_OK;
     }
 
-    pub fn match_details(&mut self, node:*libc::c_void, 
-        detail :&mut ~[@mut css_selector_detail], state : @mut css_select_state, 
-        matched : @mut bool, pseudo_element : Option<css_pseudo_element>) -> css_error {
+    pub fn match_detail(&mut self, node:*libc::c_void, 
+        detail :~[@mut css_selector_detail], state : @mut css_select_state, 
+        matched : @mut bool, pseudo_element : Option<css_pseudo_element>, index: @mut uint) -> css_error {
 
         CSS_OK
     }
+
+    pub fn match_details(&mut self, node:*libc::c_void, 
+        detail :~[@mut css_selector_detail], state : @mut css_select_state, 
+        matched : @mut bool, pseudo_element : Option<css_pseudo_element>, index: @mut uint) -> css_error {
+
+        let mut error : css_error = CSS_OK;
+        let mut pseudo : css_pseudo_element = CSS_PSEUDO_ELEMENT_NONE;
+        if(detail.len() > *index){
+            *index += 1;
+        }
+        else {
+            *index = -1;
+        }
+
+        *matched = true;
+
+        while *index != -1 {
+            error = self.match_detail(node, copy detail, state, matched, Some(pseudo), index);
+            match error {
+                CSS_OK => {}
+                _=> {
+                    return error;
+                }
+            }
+
+            if !(*matched) {
+                return CSS_OK;
+            }
+
+            if(copy detail.len() > *index){
+                *index += 1;
+            }
+            else {
+                *index = -1;
+            }
+        }
+
+        error
+    }
+    
 
     pub fn match_nth(a:i32  , b:i32 , count:i32) -> bool {
         if (a == 0) {
