@@ -1074,8 +1074,149 @@ impl css_lexer {
     }
 
     pub fn start(&mut self) -> (css_error, Option<~css_token>) {
-        // TODO: Abhijeet
-        (CSS_OK, None)
+
+        loop {
+            /* Advance past the input read for the previous token */
+            if (self.bytes_read_for_token > 0) {
+                self.input.parserutils_inputstream_advance(self.bytes_read_for_token);
+                self.bytes_read_for_token = 0;
+            }
+
+            /* Reset in preparation for the next token */
+            for self.token.each_mut |t| {
+                t.token_type = CSS_TOKEN_EOF;
+                t.data.data = ~[];
+                t.data.len = 0;
+                t.idata = None;
+                t.col = self.current_col;
+                t.line = self.current_line;
+            }
+
+            self.escape_seen = false;
+            if (self.unescaped_token_data.is_some()) {
+                self.unescaped_token_data = None;
+            }
+
+
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                return self.emit_token(Some(CSS_TOKEN_EOF));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+            self.APPEND(cptr, clen);
+
+            if (clen > 1 || c >= 0x80 as char) {
+                self.state = sIDENT;
+                self.substate = 0;
+
+                return self.ident_or_function();
+            }
+
+            match (c) {
+                '@'=> {
+                    self.state = sATKEYWORD;
+                    self.substate = 0;
+                    return self.at_keyword();
+                }
+
+                '"'|'\''=> {
+                    self.state = sSTRING;
+                    self.substate = 0;
+                    self.context.first = c as u8;
+                    return self.string();
+                }
+                '#' => {
+                    self.state = sHASH;
+                    self.substate = 0;
+                    self.context.orig_bytes = self.bytes_read_for_token;
+                    return self.hash();
+                }
+                '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'.'|'+' => {
+                    self.state = sNUMBER;
+                    self.substate = 0;
+                    self.context.first = c as u8;
+                    return self.number_or_percentage_or_dimension();
+                }
+                '<'=> {
+                    self.state = sCDO;
+                    self.substate = 0;
+                    return self.cdo();
+                }
+                '-'=> {
+                    self.state = sCDC;
+                    self.substate = 0;
+                    return self.cdc_or_ident_or_function_or_npd();
+                }
+                ' '|'\t'| '\r'| '\n' => {
+                    self.state = sS;
+                    self.substate = 0;
+                    if (c=='\n') {
+                        self.current_col = 1;
+                        self.current_line += 1;
+                    }
+                    self.context.last_was_cr = (c == '\r');
+                    return self.s();
+                }
+                '/' => {
+                    self.state = sCOMMENT;
+                    self.substate = 0;
+                    self.context.last_was_star = false;
+                    self.context.last_was_cr = false;
+                    let (error, token_option) = self.comment();
+                    if (!self.emit_comments && error as int == CSS_OK as int) {
+                        let token = token_option.unwrap();
+
+                        if (token.token_type as int == CSS_TOKEN_COMMENT as int) {
+                            //goto start;
+                            loop;
+                        }
+                        else {
+                            return (error, Some(token))
+                        }
+                    }
+                    else {
+                        return (error, token_option);
+                    }
+                }
+                '~'|'|'|'^'|'$'|'*' => {
+                    self.state = sMATCH;
+                    self.substate = 0;
+                    self.context.first = c as u8;
+                    return self.match_prefix();
+                }
+                'u'|'U' => {
+                    self.state = sURI;
+                    self.substate = 0;
+                    return self.uri_or_unicode_range_or_ident_or_function();
+                }
+                'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|
+                'n'|'o'|'p'|'q'|'r'|'s'|'t'/*'u'*/ |'v'|'w'|'x'|'y'|
+                'z'|'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|
+                'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|/*'U'*/ 'V'|'W'|'X'|
+                'Y'|'Z'|'_' => {
+                    self.state = sIDENT;
+                    self.substate = 0;
+                    return self.ident_or_function();
+                }
+                '\\'=> {
+                    self.state = sESCAPEDIDENT;
+                    self.substate = 0;
+                    return self.escaped_ident_or_function();
+                }
+                _=> {
+                    return self.emit_token(Some(CSS_TOKEN_CHAR));
+                }
+            } // match (c)
+        } // loop
     }
 
     pub fn string(&mut self) -> (css_error, Option<~css_token>) {
@@ -1149,8 +1290,199 @@ impl css_lexer {
     }
     
     pub fn uri(&mut self) -> (css_error, Option<~css_token>) {
-        // TODO: Abhijeet
-        (CSS_OK, None)
+        enum uri_substates { Initial = 0, LParen = 1, W1 = 2, Quote = 3, 
+        URL = 4, W2 = 5, RParen = 6, String = 7 };
+
+        /* URI = "url(" w (string | urlchar*) w ')' 
+         *
+         * 'u' and 'r' have been consumed.
+         */
+
+        if (self.substate == Initial as uint) {
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                /* IDENT */
+                return self.emit_token(Some(CSS_TOKEN_IDENT));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+            if (c == 'l' || c == 'L') {
+                self.APPEND(cptr, clen);
+            }
+            else {
+                self.state = sIDENT;
+                self.substate = 0;
+
+                return self.ident_or_function();
+            }
+
+            /* Fall through */
+            self.substate = LParen as uint;
+        }
+
+        if (self.substate == LParen as uint) {
+
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                return self.emit_token(Some(CSS_TOKEN_IDENT));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+            if (c == '(') {
+                self.APPEND(cptr, clen);
+            }
+            else {
+                self.state = sIDENT;
+                self.substate = 0;
+
+                return self.ident_or_function();
+            }
+
+            /* Save the number of input bytes read for "url(" */
+            self.context.bytes_for_url = self.bytes_read_for_token;
+            /* And the length of the token data at the same point */
+            self.context.data_len_for_url = { self.token.get_ref().data.len };
+
+            self.context.last_was_cr = false;
+
+            /* Fall through */
+            self.substate = W1 as uint;
+        }
+
+        if (self.substate == W1 as uint) {
+            let error = self.consume_w_chars();
+
+            if (error as int != CSS_OK as int) {
+                return (error, None);
+            }
+
+            /* Fall through */
+            self.substate = Quote as uint;
+        }
+
+        if (self.substate == Quote as uint) {
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                /* Rewind to "url(" */
+                self.bytes_read_for_token = self.context.bytes_for_url;
+                {self.token.get_mut_ref().data.len = self.context.data_len_for_url;}
+                return self.emit_token(Some(CSS_TOKEN_FUNCTION));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+            if (c == '"' || c == '\'') {
+                self.APPEND(cptr, clen);
+                self.context.first = c as u8;
+
+                // goto string;
+                self.substate == String as uint;
+            }
+
+            /* Potential minor optimisation: If string is more common, 
+             * then fall through to that state and branch for the URL 
+             * state. Need to investigate a reasonably large corpus of 
+             * real-world data to determine if this is worthwhile. */
+
+            /* Fall through */
+            self.substate = URL as uint;
+        }
+
+        /* re-ordered states to avoid goto */
+        if (self.substate == String as uint) {
+            let error = self.consume_string();
+            if (error as int == CSS_INVALID as int) {
+                /* Rewind to "url(" */
+                self.bytes_read_for_token = self.context.bytes_for_url;
+                {self.token.get_mut_ref().data.len = self.context.data_len_for_url;}
+                return self.emit_token(Some(CSS_TOKEN_FUNCTION));
+            } 
+            else if (error as int != CSS_OK as int && error as int != CSS_EOF as int) {
+                return (error, None);
+            }
+        
+            /* EOF gets handled in RParen */
+            self.context.last_was_cr = false;
+
+            //goto w2;
+            self.substate = W2 as uint;
+        }
+
+        if (self.substate == URL as uint) {
+            let error = self.consume_url_chars();
+            if (error as int != CSS_OK as int) {
+                return (error, None);
+            }
+
+            self.context.last_was_cr = false;
+            
+            /* Fall through */
+            self.substate = W2 as uint;
+        }
+
+        if (self.substate == W2 as uint) {
+            let error = self.consume_w_chars();
+            if (error as int != CSS_OK as int) {
+                return (error, None);
+            }
+
+            /* Fall through */
+            self.substate = RParen as uint;
+        }
+
+        if (self.substate == RParen as uint) {
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return (css_error_from_parserutils_error(perror), None);
+            }
+
+            if (perror as int == PARSERUTILS_EOF as int) {
+                /* Rewind to "url(" */
+                self.bytes_read_for_token = self.context.bytes_for_url;
+                {self.token.get_mut_ref().data.len = self.context.data_len_for_url;}
+                return self.emit_token(Some(CSS_TOKEN_FUNCTION));
+            }
+
+            let (cptr , clen) = pu_peek_result.unwrap();
+            let c = cptr[0] as char;
+
+            if (c != ')') {
+                /* Rewind to "url(" */
+                self.bytes_read_for_token = self.context.bytes_for_url;
+                {self.token.get_mut_ref().data.len = self.context.data_len_for_url;}
+                return self.emit_token(Some(CSS_TOKEN_FUNCTION));
+            }
+
+            self.APPEND(cptr, clen);
+            // break;
+        }
+
+        self.emit_token(Some(CSS_TOKEN_URI))
     }
 
     pub fn unicode_range(&mut self) -> (css_error, Option<~css_token>) {
