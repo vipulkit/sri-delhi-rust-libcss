@@ -554,6 +554,92 @@ impl css_select_ctx {
         CSS_OK
     }
 
+    pub fn _rule_applies_to_media(rule: Option<CSS_RULE_DATA_TYPE>, media:u64) -> bool {
+
+        let mut applies : bool = true;
+        let mut ancestor = rule;
+
+        loop {  
+            match ancestor {
+                None=>{
+                    break ;
+                },
+                Some(ancestor_rule)=> {
+                    match ancestor_rule {
+                        RULE_MEDIA(r)=>{
+                            if( ( r.media & media ) == 0 ) {
+                                applies = false ;
+                                return applies ;
+                            }
+
+                            if r.base.parent_stylesheet.is_none() {
+                                ancestor = r.base.parent_rule ;
+                            }
+                            else {
+                                ancestor = None ;
+                            }
+                            loop ;
+                        },
+                        _ => {
+                            let mut ancestor_base = css_stylesheet::css__stylesheet_get_base_rule(ancestor_rule);
+                            if ancestor_base.parent_stylesheet.is_none() {
+                                ancestor = ancestor_base.parent_rule ;
+                            }
+                            else {
+                                ancestor = None ;
+                            }
+                            loop ;
+                        }
+                    }
+                }
+            }
+        }
+        applies
+    }
+
+    pub fn _select_font_face_from_rule(&mut self,
+                                    rule:@mut css_rule_font_face,
+                                    origin: css_origin,
+                                    state:@mut css_select_font_faces_state) 
+                                    -> css_error {
+
+
+        if ( css_select_ctx::_rule_applies_to_media(Some(RULE_FONT_FACE(rule)), state.media) ) {
+
+            if ( rule.font_face.is_none() || 
+                rule.font_face.get().font_family.is_none() || 
+                state.font_family.is_none() ) {
+                return CSS_BADPARM ;
+            }
+
+            let mut res : bool = false ;
+            do self.lwc_instance.read |lwc_ins| {
+                res = lwc_ins.lwc_string_isequal(rule.font_face.get().font_family.swap_unwrap(),
+                                                    state.font_family.swap_unwrap() ) ;
+            }
+            if ( res ) {
+                let mut faces = @mut css_select_font_faces_list{
+                    font_faces:~[]
+                };
+                unsafe {
+                    match (origin) {
+                        CSS_ORIGIN_UA => {
+                            faces.font_faces.push_all(state.ua_font_faces.font_faces);
+                        },
+                        CSS_ORIGIN_USER => {
+                            faces.font_faces.push_all(state.user_font_faces.font_faces);
+                        },
+                        CSS_ORIGIN_AUTHOR => {
+                            faces.font_faces.push_all(state.author_font_faces.font_faces);
+                        }
+                    }
+                }
+                faces.font_faces.push(rule.font_face.get());
+            }
+        }
+        CSS_OK
+    }
+
     pub fn select_font_faces_from_sheet(&mut self,
                                         sheet:@mut css_stylesheet,
                                         origin: css_origin,
@@ -643,92 +729,6 @@ impl css_select_ctx {
         }
 
         CSS_OK
-    }
-
-    pub fn _select_font_face_from_rule(&mut self,
-                                    rule:@mut css_rule_font_face,
-                                    origin: css_origin,
-                                    state:@mut css_select_font_faces_state) 
-                                    -> css_error {
-
-
-        if ( css_select_ctx::_rule_applies_to_media(Some(RULE_FONT_FACE(rule)), state.media) ) {
-
-            if ( rule.font_face.is_none() || 
-                rule.font_face.get().font_family.is_none() || 
-                state.font_family.is_none() ) {
-                return CSS_BADPARM ;
-            }
-
-            let mut res : bool = false ;
-            do self.lwc_instance.read |lwc_ins| {
-                res = lwc_ins.lwc_string_isequal(rule.font_face.get().font_family.swap_unwrap(),
-                                                    state.font_family.swap_unwrap() ) ;
-            }
-            if ( res ) {
-                let mut faces = @mut css_select_font_faces_list{
-                    font_faces:~[]
-                };
-                unsafe {
-                    match (origin) {
-                        CSS_ORIGIN_UA => {
-                            faces.font_faces.push_all(state.ua_font_faces.font_faces);
-                        },
-                        CSS_ORIGIN_USER => {
-                            faces.font_faces.push_all(state.user_font_faces.font_faces);
-                        },
-                        CSS_ORIGIN_AUTHOR => {
-                            faces.font_faces.push_all(state.author_font_faces.font_faces);
-                        }
-                    }
-                }
-                faces.font_faces.push(rule.font_face.get());
-            }
-        }
-        CSS_OK
-    }
-
-    pub fn _rule_applies_to_media(rule: Option<CSS_RULE_DATA_TYPE>, media:u64) -> bool {
-
-        let mut applies : bool = true;
-        let mut ancestor = rule;
-
-        loop {  
-            match ancestor {
-                None=>{
-                    break ;
-                },
-                Some(ancestor_rule)=> {
-                    match ancestor_rule {
-                        RULE_MEDIA(r)=>{
-                            if( ( r.media & media ) == 0 ) {
-                                applies = false ;
-                                return applies ;
-                            }
-
-                            if r.base.parent_stylesheet.is_none() {
-                                ancestor = r.base.parent_rule ;
-                            }
-                            else {
-                                ancestor = None ;
-                            }
-                            loop ;
-                        },
-                        _ => {
-                            let mut ancestor_base = css_stylesheet::css__stylesheet_get_base_rule(ancestor_rule);
-                            if ancestor_base.parent_stylesheet.is_none() {
-                                ancestor = ancestor_base.parent_rule ;
-                            }
-                            else {
-                                ancestor = None ;
-                            }
-                            loop ;
-                        }
-                    }
-                }
-            }
-        }
-        applies
     }
 
     pub fn _selectors_pending(node: Option<Option<css_selector>>, id: Option<Option<css_selector>>,
