@@ -680,6 +680,15 @@ pub enum css_select_handler_version {
 }
 
 pub struct css_select_handler {
+
+    node_name: @extern fn(node:*libc::c_void, qname:css_qname ) -> css_error,
+    node_classes: @extern fn(node:*libc::c_void, classes:~[~str] ) -> css_error,
+    node_id: @extern fn(node:*libc::c_void, id:~str ) -> css_error,
+    parent_node: @extern fn(node:*libc::c_void, parent:*libc::c_void ) -> css_error,
+    compute_font_size: @extern fn(parent: Option<@mut css_hint>,
+                                    size: Option<@mut css_hint>) -> css_error,
+    
+    
     /*
         css_error (*node_name)(void *pw, void *node,
             css_qname *qname);
@@ -688,17 +697,16 @@ pub struct css_select_handler {
             uint32_t *n_classes);
     css_error (*node_id)(void *pw, void *node,
             lwc_string **id);
+*/
+    named_ancestor_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, ancestor:**libc::c_void) -> css_error,
+   
+    named_parent_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, parent:**libc::c_void) -> css_error,
+    
+    named_sibling_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, sibling:**libc::c_void) -> css_error,
 
-    css_error (*named_ancestor_node)(void *pw, void *node,
-            const css_qname *qname, void **ancestor);
-    css_error (*named_parent_node)(void *pw, void *node,
-            const css_qname *qname, void **parent);
-    css_error (*named_sibling_node)(void *pw, void *node,
-            const css_qname *qname, void **sibling);
-    css_error (*named_generic_sibling_node)(void *pw, void *node,
-            const css_qname *qname, void **sibling);
-
-    css_error (*parent_node)(void *pw, void *node, void **parent);
+    named_generic_sibling_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, sibling:**libc::c_void) -> css_error,
+    
+    /*css_error (*parent_node)(void *pw, void *node, void **parent);
     css_error (*sibling_node)(void *pw, void *node, void **sibling);
 
     css_error (*node_has_name)(void *pw, void *node,
@@ -748,7 +756,7 @@ pub struct css_select_handler {
             lwc_string *lang, bool *match);
     */
     node_presentational_hint: @extern fn(node:*libc::c_void, property:u32) -> 
-    (css_error, Option<@mut css_hint>),
+        (css_error,Option<@mut css_hint>),
 
     /*css_error (*ua_default_for_property)(void *pw, uint32_t property,
             css_hint *hint);
