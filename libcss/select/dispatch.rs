@@ -1185,13 +1185,97 @@ pub type  compute_absolute_color_set =
 
 //////////////////////////////////////////////////////////////////////
 
+pub fn css_computed_style_create() -> @mut css_computed_style {
+	let mut result = @mut css_computed_style {
+	    bits:~[],
+	    unused:~[],
+
+	    background_color:0,
+
+	    background_image:~"",
+
+	    background_position:~[],
+
+	    border_color:~[],
+	    border_width:~[],
+
+	    top:0,
+	    right:0,
+	    bottom:0,
+	    left:0,
+
+	    color:0,
+
+	    font_size:0,
+
+	    height:0,
+
+	    line_height:0,
+
+	    list_style_image:~"",
+
+	    margin:~[],
+
+	    max_height:0,
+	    max_width:0,
+
+	    min_height:0,
+	    min_width:0,
+
+	    opacity:0,
+
+	    padding:~[],
+
+	    text_indent:0,
+
+	    vertical_align:0,
+
+	    width:0,
+
+	    z_index:0,
+
+	    font_family:~[],
+
+	    quotes:~[],
+
+	    uncommon:None, 
+	    aural:None,         
+	    page:None 
+	};
+	for uint::range(0,34) |_| {
+		result.bits.push(0) ;
+	}
+	for uint::range(0,2) |_| {
+		result.unused.push(0) ;
+	}
+	for uint::range(0,2) |_| {
+		result.background_position.push(0) ;
+	}
+	for uint::range(0,4) |_| {
+		result.border_color.push(0) ;
+	}
+	for uint::range(0,4) |_| {
+		result.border_width.push(0) ;
+	}
+	for uint::range(0,4) |_| {
+		result.margin.push(0) ;
+	}	
+	for uint::range(0,4) |_| {
+		result.padding.push(0) ;
+	}
+
+	result
+}
+
 pub fn css_computed_style_initialise(style: @mut css_computed_style ,
                                     fn_handler:@mut css_select_handler) -> css_error {
 
     let mut state: @mut css_select_state = @mut css_select_state {
         node:ptr::null(),
         media:(CSS_MEDIA_ALL as u64),       
-        results:None,    
+        results:css_select_results{ 
+        	styles:~[] 
+        },    
         current_pseudo:CSS_PSEUDO_ELEMENT_NONE,  
         computed:style,   
         handler:Some(fn_handler),    
@@ -1206,10 +1290,24 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
         classes:~[],
         n_classes:0,             
         reject_cache: ~[],       
-        next_reject:-1,             
+        next_reject:128-1,             
         props: ~[~[]] 
     };
-
+    for uint::range(0,CSS_N_PROPERTIES as uint) |outer| {
+        let mut prop_vec : ~[@mut prop_state] = ~[] ;
+        for uint::range(0,CSS_PSEUDO_ELEMENT_COUNT as uint) |inner| {
+            let mut pstate = @mut prop_state{
+                specificity:0,
+                set:false,
+                origin:0,
+                important:false,
+                inherit:false    
+            };
+            prop_vec.push(pstate);
+        }
+        state.props.push(prop_vec);
+    }
+        
     let mut i: uint = 0 ;
     let mut error: css_error;
 

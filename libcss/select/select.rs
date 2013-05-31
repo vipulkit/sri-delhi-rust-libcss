@@ -78,7 +78,17 @@ pub struct css_select_font_faces_state {
     author_font_faces:css_select_font_faces_list
 }
 
+pub enum source_type {
+    CSS_SELECT_RULE_SRC_ELEMENT,
+    CSS_SELECT_RULE_SRC_CLASS,
+    CSS_SELECT_RULE_SRC_ID,
+    CSS_SELECT_RULE_SRC_UNIVERSAL
+}
 
+pub struct css_select_rule_source {
+    source:source_type,
+    source_class:u32
+}
 //////////////////////////////////////////////////////////////////
 // Start of CSS Selector internal functions
 //////////////////////////////////////////////////////////////////
@@ -898,6 +908,26 @@ impl css_select_ctx {
 
         ret
     }
+
+    pub fn _rule_good_for_element_name(selector:@mut css_selector,
+        src:@mut css_select_rule_source, state:@mut css_select_state) -> bool {
+        /* If source of rule is element or universal hash, we know the
+         * element name is a match.  If it comes from the class or id hash,
+         * we have to test for a match */
+        if (match src.source { 
+            CSS_SELECT_RULE_SRC_ID | CSS_SELECT_RULE_SRC_CLASS => true,
+            _ => false }) {
+            
+            if (unsafe {selector.data[0].qname.name.len()} != 1 ||
+                   selector.data[0].qname.name[0] != '*' as u8) {
+                
+                if selector.data[0].qname.name != state.element.name {
+                    return false;
+                }
+            }
+        }    
+        return true;
+    }        
 
     // Note: pending implementation
     pub fn match_selectors_in_sheet(&mut self, sheet : @mut css_stylesheet, state : &mut css_select_state) -> css_error {
