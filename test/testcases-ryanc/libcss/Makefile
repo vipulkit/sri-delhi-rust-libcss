@@ -19,9 +19,9 @@ all: $(EXEC) $(SRC) $(UTIL_SRC)
 run : $(EXEC)
 	./csdetect
 	./number
-	./parse
 	./lex
 	./lex-auto
+	./parse
 
 
 .phony: clean

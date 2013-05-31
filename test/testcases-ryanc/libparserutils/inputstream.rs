@@ -25,9 +25,11 @@ fn main() {
 }
 
 #[test]
-fn inputstream() {
-    let file=~"../data/input/UTF-8-test.txt";
+fn utf8Test() {
+    inputstream(~"data/input/UTF-8-test.txt");
+}
 
+fn inputstream(filename: ~str) {
     let (streamOption, PARSERUTILS_STATUS) = inputstream::inputstream(Some(~"UTF-8"), Some(CSS_CHARSET_DEFAULT as int), None);
     //let (streamOption, PARSERUTILS_STATUS) = inputstream::inputstream(~"UTF-8", None);
     match(PARSERUTILS_STATUS) {
@@ -37,7 +39,7 @@ fn inputstream() {
 
     let CHUNK_SIZE = 4096;
     //let mut buf: ~[u8] = ~[];
-    let r: @Reader = io::file_reader(&Path(file)).get();
+    let r: @Reader = io::file_reader(&Path(filename)).get();
     let mut stream = streamOption.unwrap();
 
     r.seek(0, SeekEnd);

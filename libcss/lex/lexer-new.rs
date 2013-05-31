@@ -699,13 +699,14 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
 
-            let (cptr , _) = pu_peek_result.unwrap();
+            let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
 
             if (c != '*') {
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
 
+            self.APPEND(cptr, clen);
             /* Fall through */
             self.substate = InComment as uint;
         }
@@ -1406,9 +1407,10 @@ impl css_lexer {
              * then fall through to that state and branch for the URL 
              * state. Need to investigate a reasonably large corpus of 
              * real-world data to determine if this is worthwhile. */
-
-            /* Fall through */
-            self.substate = URL as uint;
+            else {
+                /* Fall through */
+                self.substate = URL as uint;
+            }
         }
 
         /* re-ordered states to avoid goto */
@@ -1486,8 +1488,157 @@ impl css_lexer {
     }
 
     pub fn unicode_range(&mut self) -> (css_error, Option<~css_token>) {
-        // TODO: Abhijeet
-        (CSS_OK, None)
+        enum unicode_range_states { Initial = 0, MoreDigits = 1 };
+
+        /* UNICODE-RANGE = [Uu] '+' [0-9a-fA-F?]{1,6}(-[0-9a-fA-F]{1,6})?
+         * 
+         * "U+" has been consumed.
+         */
+
+        let mut c:char;
+
+        if (self.substate == Initial as uint) {
+            /* Attempt to consume 6 hex digits (or question marks) */
+            while (self.context.hex_count < 6) {
+                let (pu_peek_result , perror) = 
+                    self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+                if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                    return (css_error_from_parserutils_error(perror), None);
+                }
+
+                if (perror as int == PARSERUTILS_EOF as int) {
+                    if (self.context.hex_count == 0) {
+                        /* Remove '+' */
+                        self.bytes_read_for_token -= 1;
+                        self.token.get_mut_ref().data.len -= 1;
+
+                        /* u == IDENT */
+                        return self.emit_token(Some(CSS_TOKEN_IDENT));
+                    } 
+                    else {
+                        return self.emit_token(Some(CSS_TOKEN_UNICODE_RANGE));
+                    }
+                }
+
+                let (cptr , clen) = pu_peek_result.unwrap();
+                c = cptr[0] as char;
+
+                if (char::is_digit_radix(c, 16)) {
+                    self.APPEND(cptr, clen);
+                }
+                else {
+                    break;
+                }
+
+                self.context.hex_count += 1;
+            } // while
+
+            if (self.context.hex_count == 0) {
+                /* We didn't consume any valid Unicode Range digits */
+                /* Remove the '+' */
+                self.bytes_read_for_token -= 1;
+                self.token.get_mut_ref().data.len -= 1;
+
+                /* u == IDENT */
+                return self.emit_token(Some(CSS_TOKEN_IDENT));
+            }
+
+            else if (self.context.hex_count == 6) {
+                /* Consumed 6 valid characters. Look for '-' */
+                let (pu_peek_result , perror) = 
+                    self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+                if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                    return (css_error_from_parserutils_error(perror), None);
+                }
+
+                if (perror as int == PARSERUTILS_EOF as int) {
+                    return self.emit_token(Some(CSS_TOKEN_UNICODE_RANGE));
+                }
+
+                let (cptr , clen) = pu_peek_result.unwrap();
+                c = cptr[0] as char;
+
+                /* If we've got a '-', then we may have a 
+                 * second range component */
+                if (c != '-') {
+                    /* Reached the end of the range */
+                    return self.emit_token(Some(CSS_TOKEN_UNICODE_RANGE));
+                }
+
+                self.APPEND(cptr, clen);
+            }
+            else {
+                // hex count > 0 && <  6
+                // append what we had at end of while loop
+                let (pu_peek_result , _) = 
+                                    self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+                /* don't check error, this succeded in while loop above */
+                let (cptr , clen) = pu_peek_result.unwrap();
+                c = cptr[0] as char;
+                /* If we've got a '-', then we may have a 
+                 * second range component */
+                if (c != '-') {
+                    /* Reached the end of the range */
+                    return self.emit_token(Some(CSS_TOKEN_UNICODE_RANGE));
+                }
+
+                self.APPEND(cptr, clen);
+            }
+
+            /* Reset count for next set of digits */
+            self.context.hex_count = 0;
+
+            /* Fall through */
+            self.substate = MoreDigits as uint;
+        }
+
+        if (self.substate == MoreDigits as uint) {
+            /* Consume up to 6 hex digits */
+            while (self.context.hex_count < 6) {
+                let (pu_peek_result , perror) = 
+                    self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+                if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                    return (css_error_from_parserutils_error(perror), None);
+                }
+
+                if (perror as int == PARSERUTILS_EOF as int) {
+                    if (self.context.hex_count == 0) {
+                        /* Remove '+' */
+                        self.bytes_read_for_token -= 1;
+                        self.token.get_mut_ref().data.len -= 1;
+
+                        /* u == IDENT */
+                        return self.emit_token(Some(CSS_TOKEN_IDENT));
+                    } 
+                    else {
+                        return self.emit_token(Some(CSS_TOKEN_UNICODE_RANGE));
+                    }
+                }
+
+                let (cptr , clen) = pu_peek_result.unwrap();
+                c = cptr[0] as char;
+
+                if (char::is_digit_radix(c, 16)) {
+                    self.APPEND(cptr, clen);
+                }
+                else {
+                    break;
+                }
+
+                self.context.hex_count += 1;
+            } // while
+
+            if (self.context.hex_count == 0) {
+                /* No hex digits consumed. Remove '-' */
+                self.bytes_read_for_token -= 1;
+                self.token.get_mut_ref().data.len -= 1;
+            }
+        }
+        
+        self.emit_token(Some(CSS_TOKEN_UNICODE_RANGE))
     }
 
     /******************************************************************************
@@ -1964,7 +2115,7 @@ impl css_lexer {
                 }
 
                 _ => {
-                    return CSS_INVALID;
+                    return css_error_from_parserutils_error(error);
                 },
 
             }
@@ -2007,7 +2158,7 @@ impl css_lexer {
                 },
 
                 _ => {
-                    return CSS_INVALID;
+                    return css_error_from_parserutils_error(error);
                 }
 
             }

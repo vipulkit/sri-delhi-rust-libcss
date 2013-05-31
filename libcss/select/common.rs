@@ -522,18 +522,18 @@ pub struct css_computed_style {
  * 33 oooottuu  outline-style       | table-layout          | unicode-bidi
  * 34 vvlltttt  visibility          | list-style-position   | text-align
  */
-    bits:~[u8, ..34],
+    bits:~[u8],
 
-    unused:~[u8, ..2],
+    unused:~[u8],
 
     background_color:u32,
 
     background_image:~str,
 
-    background_position:[i32, ..2],
+    background_position:~[i32],
 
-    border_color:[u32, ..4],
-    border_width:[i32, ..4],
+    border_color:~[u32],
+    border_width:~[i32],
 
     top:i32,
     right:i32,
@@ -550,7 +550,7 @@ pub struct css_computed_style {
 
     list_style_image:~str,
 
-    margin:~[i32, ..4],
+    margin:~[i32],
 
     max_height:i32,
     max_width:i32,
@@ -560,7 +560,7 @@ pub struct css_computed_style {
 
     opacity:i32,
 
-    padding:~[i32, ..4],
+    padding:~[i32],
 
     text_indent:i32,
 
@@ -757,14 +757,14 @@ pub struct css_select_handler {
     */
     // TODO write above function pointers , as required by select module
     ua_default_for_property: @extern fn(property:u32, hint:@mut css_hint ) -> css_error,
-    handler_version:u32
+    handler_version:uint
 }
 
 pub struct css_select_state {
     //TODO : void *node;        
     node:*libc::c_void,
     media:u64,         
-    results:Option<css_select_results>,
+    results:css_select_results,
     current_pseudo:css_pseudo_element,  
     computed:@mut css_computed_style,  
 
