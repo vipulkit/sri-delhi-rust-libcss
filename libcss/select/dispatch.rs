@@ -1109,7 +1109,7 @@ impl dispatch_table {
 
 // function pointer : used in "css__compute_absolute_values" function 
 ///////////////////////////////////////////////////////////////////////
-pub type css_fnptr_compute_font_size =  ~extern fn(parent:Option<@mut css_hint>,
+pub type css_fnptr_compute_font_size =  @extern fn(parent:Option<@mut css_hint>,
                                                 size:Option<@mut css_hint> ) 
                                                     -> css_error ;
 
@@ -1307,7 +1307,7 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
         }
         state.props.push(prop_vec);
     }
-        
+
     let mut i: uint = 0 ;
     let mut error: css_error;
 
@@ -1341,7 +1341,7 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
 
 pub fn css_computed_style_compose(parent: @mut css_computed_style, 
                                 child: @mut css_computed_style, 
-                                compute_font_size: css_fnptr_compute_font_size , 
+                                compute_font_size_ptr: css_fnptr_compute_font_size , 
                                 result: @mut css_computed_style
                                 ) -> css_error {
 
@@ -1385,7 +1385,7 @@ pub fn css_computed_style_compose(parent: @mut css_computed_style,
         i += 1;
     }
 
-    css__compute_absolute_values(Some(parent),result,compute_font_size)
+    css__compute_absolute_values(Some(parent),result,compute_font_size_ptr)
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1397,7 +1397,7 @@ pub fn css_computed_style_compose(parent: @mut css_computed_style,
 //////////////////////////////////////////////////////////////////////
 pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
                                     style: @mut css_computed_style,
-                                    compute_font_size:css_fnptr_compute_font_size) 
+                                    compute_font_size_ptr:css_fnptr_compute_font_size) 
                                     -> css_error {
 
     let mut psize = @mut css_hint{
@@ -1453,7 +1453,7 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
                 unit:c.get_or_default(CSS_UNIT_PX) 
             };
             psize.length = Some(length);
-            error = (*compute_font_size)(Some(psize),Some(size));
+            error = (*compute_font_size_ptr)(Some(psize),Some(size));
         },
         None=>{
             let (a,b,c) = css_computed_font_size(style);
@@ -1463,7 +1463,7 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
                 unit:c.get_or_default(CSS_UNIT_PX) 
             };
             psize.length = Some(length);
-            error = (*compute_font_size)(None,Some(size));
+            error = (*compute_font_size_ptr)(None,Some(size));
         }
     }
     match error {
@@ -1491,7 +1491,7 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
         unit:CSS_UNIT_EX 
     };
     ex_size.length = Some(length);
-    error = (*compute_font_size)(Some(size),Some(ex_size));
+    error = (*compute_font_size_ptr)(Some(size),Some(ex_size));
     match error {
         CSS_OK=>{},
         _=> return error

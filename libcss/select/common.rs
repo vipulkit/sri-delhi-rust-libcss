@@ -680,6 +680,15 @@ pub enum css_select_handler_version {
 }
 
 pub struct css_select_handler {
+
+    node_name: @extern fn(node:*libc::c_void, qname:css_qname ) -> css_error,
+    node_classes: @extern fn(node:*libc::c_void, classes:~[~str] ) -> css_error,
+    node_id: @extern fn(node:*libc::c_void, id:~str ) -> css_error,
+    parent_node: @extern fn(node:*libc::c_void, parent:*libc::c_void ) -> css_error,
+    compute_font_size: @extern fn(parent: Option<@mut css_hint>,
+                                    size: Option<@mut css_hint>) -> css_error,
+    
+    
     /*
         css_error (*node_name)(void *pw, void *node,
             css_qname *qname);

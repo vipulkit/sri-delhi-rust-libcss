@@ -2,6 +2,7 @@
 use std::arc;
 use wapcaplet::*;
 
+use include::properties::*;
 use include::types::*;
 use include::font_face::*;
 use bytecode::bytecode::*;
@@ -245,9 +246,265 @@ impl css_select_ctx {
         (CSS_OK,Some(self.sheets[index].sheet))
     } 
 
-    // pub fn css_select_style(&mut self) -> css_error {
+    pub fn css_select_style(&mut self,
+                                node:*libc::c_void,
+                                media:u64,
+                                inline_style:Option<@mut css_stylesheet>,
+                                handler:@mut css_select_handler) 
+                                -> (css_error,Option<css_select_results>) {
 
-    // }
+        if( node == ptr::null() || handler.handler_version != (CSS_SELECT_HANDLER_VERSION_1  as uint) ) {
+            return (CSS_BADPARM,None) ;
+        }
+        let mut i = 0 ;
+        let mut j = 0 ;
+        let mut error : css_error ;
+        let mut results : Option<css_select_results> = None ;
+        let mut parent : *libc::c_void = ptr::null() ;
+
+        let mut state: @mut css_select_state = @mut css_select_state {
+            node:node,
+            media:media,       
+            results:css_select_results{ 
+                styles:~[] 
+            },    
+            current_pseudo:CSS_PSEUDO_ELEMENT_NONE,  
+            computed:css_computed_style_create(),   
+            handler:Some(handler),    
+            sheet:None,   
+            current_origin:CSS_ORIGIN_UA,  
+            current_specificity:0,   
+            element:css_qname{ 
+                name:~"" , 
+                ns:~"" 
+            },
+            id:~"",
+            classes:~[],
+            n_classes:0,             
+            reject_cache: ~[],       
+            next_reject:128-1,             
+            props: ~[~[]] 
+        };
+        for uint::range(0,CSS_N_PROPERTIES as uint) |outer| {
+            let mut prop_vec : ~[@mut prop_state] = ~[] ;
+            for uint::range(0,CSS_PSEUDO_ELEMENT_COUNT as uint) |inner| {
+                let mut pstate = @mut prop_state{
+                    specificity:0,
+                    set:false,
+                    origin:0,
+                    important:false,
+                    inherit:false    
+                };
+                prop_vec.push(pstate);
+            }
+            state.props.push(prop_vec);
+        }
+
+        i = CSS_PSEUDO_ELEMENT_COUNT as int ;
+        while (i>0) {
+            state.results.styles.push(None) ;
+        }
+
+        /* Base element style is guaranteed to exist */
+        state.results.styles.push(Some(css_computed_style_create()));
+
+        error = (*(handler.parent_node))(node, parent);
+        match error {
+            CSS_OK=>{},
+            x =>  {
+                return (x,None) ;
+            }
+        }
+
+        /* Get node's name */
+        error = (*(handler.node_name))(node, copy state.element);
+        match error {
+            CSS_OK=>{},
+            x =>  {
+                return (x,None) ;
+            }
+        }
+
+        /* Get node's ID, if any */
+        error = (*(handler.node_id))(node, copy state.id);
+        match error {
+            CSS_OK=>{},
+            x =>  {
+                return (x,None) ;
+            }
+        }
+
+        /* Get node's classes, if any */
+        /* \todo Do we really want to force the client to allocate a new array 
+         * every time we call this? It seems hugely inefficient, given they can 
+         * cache the data. */
+        error = (*(handler.node_classes))(node, 
+                copy state.classes);
+        match error {
+            CSS_OK=>{},
+            x =>  {
+                return (x,None) ;
+            }
+        }
+
+        /* Iterate through the top-level stylesheets, selecting styles
+         * from those which apply to our current media requirements and
+         * are not disabled */
+        i=0;
+        while(i < (self.sheets.len() as int) ) {
+            let mut s = self.sheets[i] ;
+            if( s.media & media ) != 0 && 
+                s.sheet.disabled == false {
+                    //error = self.select_from_sheet(Some(s.sheet), 
+                    //           s.origin, state);  
+                    match error {
+                        CSS_OK=>{},
+                        x =>  {
+                            return (x,None) ;
+                        }
+                    }
+            }
+
+            i += 1 ;
+        }
+       
+        /* Consider any inline style for the node */
+        if (inline_style.is_some()) {
+            let mut  sel = 
+                        inline_style.get().rule_list;
+
+            /* Sanity check style */
+            if (inline_style.get().rule_count != 1 ){
+                 return (CSS_INVALID,None) ;
+            }
+            
+            match sel {
+                None=>{
+                    return (CSS_INVALID,None) ;
+                },
+                Some(r) => {
+                    match r {
+                        RULE_SELECTOR(r_sel)=>{
+                            // Complete 
+
+                            /* No bytecode if input was empty or wholly invalid */
+                            if(r_sel.style.is_some()){
+                                /* Inline style applies to base element only */
+                                state.current_pseudo = CSS_PSEUDO_ELEMENT_NONE;
+                                state.computed = state.results.styles[
+                                        CSS_PSEUDO_ELEMENT_NONE as uint].get();
+
+                                error = css_select_ctx::cascade_style(r_sel.style.get(), 
+                                                        state);
+                                match error {
+                                    CSS_OK=>{},
+                                    x =>  {
+                                        return (x,None) ;
+                                    }
+                                }
+                            }
+                        },
+                        _=>{
+                            return (CSS_INVALID,None) ;
+                        }
+                    }
+                }
+            }
+        }
+
+        /* Take account of presentational hints and fix up any remaining
+         * unset properties. */
+
+        /* Base element */
+        state.current_pseudo = CSS_PSEUDO_ELEMENT_NONE;
+        state.computed = state.results.styles[CSS_PSEUDO_ELEMENT_NONE as uint].get();
+        i = 0 ;
+        while (i<(CSS_N_PROPERTIES as int)) {
+            let mut prop = 
+                    state.props[i][CSS_PSEUDO_ELEMENT_NONE as uint];
+
+            /* Apply presentational hints if the property is unset or 
+             * the existing property value did not come from an author 
+             * stylesheet or a user sheet using !important. */
+            if (prop.set == false ||
+                    (prop.origin != (CSS_ORIGIN_AUTHOR as u8) &&
+                    prop.important == false)) {
+                error = css_select_ctx::set_hint(state, i as u32);
+                match error {
+                    CSS_OK=>{},
+                    x =>  {
+                        return (x,None) ;
+                    }
+                }
+            }
+
+            /* If the property is still unset or it's set to inherit 
+             * and we're the root element, then set it to its initial 
+             * value. */
+            if (prop.set == false || 
+                    (parent == ptr::null() && 
+                    prop.inherit == true)) {
+                error = css_select_ctx::set_initial(state, i as uint, 
+                        CSS_PSEUDO_ELEMENT_NONE, None);
+                match error {
+                    CSS_OK=>{},
+                    x =>  {
+                        return (x,None) ;
+                    }
+                }
+            }
+            i += 1;
+        }
+
+        /* Pseudo elements, if any */
+        j = (CSS_PSEUDO_ELEMENT_NONE as int) + 1;
+        while ( j < (CSS_PSEUDO_ELEMENT_COUNT as int) ) {
+            state.current_pseudo = unsafe { cast::transmute(j)};
+            state.computed = state.results.styles[j].get();
+
+            /* Skip non-existent pseudo elements */
+            // if (state.computed == NULL)
+            //     continue;
+            i = 0 ;
+            while (i < (CSS_N_PROPERTIES as int) ) {
+                let mut prop = state.props[i][j];
+
+                /* If the property is still unset then set it 
+                 * to its initial value. */
+                if (prop.set == false) {
+                    error = css_select_ctx::set_initial(state, i as uint, unsafe { cast::transmute(j)}, None);
+                    match error {
+                        CSS_OK=>{},
+                        x =>  {
+                            return (x,None) ;
+                        }
+                    }
+                }
+                i += 1 ;
+            }
+            j += 1;
+        }
+
+        /* If this is the root element, then we must ensure that all
+         * length values are absolute, display and float are correctly 
+         * computed, and the default border-{top,right,bottom,left}-color 
+         * is set to the computed value of color. */
+        if (parent == ptr::null()) {
+            /* Only compute absolute values for the base element */
+            error = css__compute_absolute_values(None,
+                    state.results.styles[CSS_PSEUDO_ELEMENT_NONE as uint].get(),
+                    handler.compute_font_size);
+            match error {
+                CSS_OK=>{},
+                x =>  {
+                    return (x,None) ;
+                }
+            }
+        }
+
+        (CSS_OK,Some(copy state.results))
+    }
+
 
     /**
      * Destroy a selection result set
