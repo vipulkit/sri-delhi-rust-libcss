@@ -355,8 +355,8 @@ impl css_select_ctx {
             let mut s = self.sheets[i] ;
             if( s.media & media ) != 0 && 
                 s.sheet.disabled == false {
-                    //error = self.select_from_sheet(Some(s.sheet), 
-                    //           s.origin, state);  
+                    error = self.select_from_sheet(Some(s.sheet), 
+                              s.origin, state);  
                     match error {
                         CSS_OK=>{},
                         x =>  {
@@ -740,7 +740,7 @@ impl css_select_ctx {
         CSS_OK
     }
 
-    pub fn select_from_sheet(&mut self, sheet : Option<@mut css_stylesheet>, state : &mut css_select_state, index:uint) -> css_error{
+    pub fn select_from_sheet(&mut self, sheet : Option<@mut css_stylesheet>,origin : css_origin, state : &mut css_select_state) -> css_error{
         let mut s_option : Option<@mut css_stylesheet> = sheet;
         let mut rule : Option<CSS_RULE_DATA_TYPE> = None;
         let mut sp : u32 = 0;
@@ -798,7 +798,7 @@ impl css_select_ctx {
             else {
                 let mut error : css_error ;
                 state.sheet = Some(s);
-                state.current_origin = self.sheets[index].origin;
+                state.current_origin = origin;
                 error = self.match_selectors_in_sheet(s, state);
                 match error {
                     CSS_OK => {
