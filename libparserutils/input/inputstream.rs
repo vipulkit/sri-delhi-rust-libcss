@@ -260,12 +260,12 @@ impl inputstream {
                             self.encsrc = srcOption.unwrap();
                         },
                         x => match x {
-                                PARSERUTILS_NEEDDATA => {   
-                                                            if self.had_eof == false {
-                                                                return x;
-                                                            }
-                                                        },
-                                                    _ => return x   
+                            PARSERUTILS_NEEDDATA => {   
+                                if self.had_eof == false {
+                                    return x;
+                                }
+                            },
+                            _ => return x   
                         }
                     }
                 },

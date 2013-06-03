@@ -129,7 +129,7 @@ pub impl css_parser {
 
 
     pub fn css__parser_parse_chunk(&mut self, data: ~[u8]) -> css_error {
-        self.lexer.lexer_append_data(data);
+        self.lexer.css__lexer_append_data(data);
 
         loop {
             if self.state_stack.is_empty() {
@@ -155,7 +155,6 @@ pub impl css_parser {
     }
 
     pub fn css__parser_completed(&mut self) -> css_error {
-        self.lexer.data_done();
 
         loop {
             if self.state_stack.is_empty() {
@@ -216,7 +215,7 @@ pub impl css_parser {
 
     fn eat_ws(&mut self) -> css_error
     {
-        let (token_option, parser_error) = self.get_token();
+        let (parser_error, token_option) = self.get_token();
         if (token_option.is_none()) {
             return parser_error;
         }
@@ -256,7 +255,7 @@ pub impl css_parser {
         interned_string.unwrap()
     }
 
-    fn get_token(&mut self) -> (Option<@css_token>, css_error) {
+    fn get_token(&mut self) -> (css_error, Option<@css_token>) {
 
         let mut token_option: Option<@css_token>;
 
@@ -266,135 +265,64 @@ pub impl css_parser {
         }
         else {
             /* Otherwise, ask the lexer */
-            let (lexer_token_option, lexer_error) = self.lexer.get_token();
+            let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
 
-            match lexer_error {
-                LEXER_OK => {
-                    /* Lexer has returned a valid token with no errors */
-                    let lexer_token = lexer_token_option.unwrap();
-                    
-                    match (lexer_token) {
-                        CSS_TOKEN_IDENT(copy value) => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : Some(self.intern_string(value)),
-                            })
-                        },
-                        CSS_TOKEN_ATKEYWORD(copy value) => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : Some(self.intern_string(value)),
-                            })
-                        },
-                        CSS_TOKEN_HASH(copy value) => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : Some(self.intern_string(value)),
-                            })
-                        },
-                        CSS_TOKEN_FUNCTION(copy value) => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : Some(self.intern_string(value)),
-                            })
-                        }, 
-                        CSS_TOKEN_STRING(copy value) => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : Some(self.intern_string(value)),
-                            })
-                        }, 
-                        CSS_TOKEN_INVALID_STRING => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : None,
-                            })
-                        }, 
-                        CSS_TOKEN_URI(copy value) => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : Some(self.intern_string(value)),
-                            })
-                        }, 
-                        CSS_TOKEN_UNICODE_RANGE(_ , _) => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : None,
-                            })
-                        }, 
-                        CSS_TOKEN_CHAR(_) => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : None,
-                            })
-                        },
-                        CSS_TOKEN_NUMBER(_ , copy value) => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : Some(self.intern_string(value)),
-                            })
-                        }, 
-                        CSS_TOKEN_PERCENTAGE(_ , copy value) => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : Some(self.intern_string(value)),
-                            })
-                        }, 
-                        CSS_TOKEN_DIMENSION(_ , _ , copy value2) => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : Some(self.intern_string(value2)),
-                            })
-                        },
-                        CSS_TOKEN_CDO => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : None,
-                            })
-                        }, 
-                        CSS_TOKEN_CDC => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : None,
-                            })
-                        }, 
-                        CSS_TOKEN_S => {
-                            self.last_was_ws = true;
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : None,
-                            })
-                        },
-                        // Delim(_) => {
-                        //     token_option = Some (@css_token {
-                        //         token_type : lexer_token,
-                        //         idata : None,
-                        //     })
-                        // },
-                        CSS_TOKEN_EOF => {
-                            token_option = Some (@css_token {
-                                token_type : lexer_token,
-                                idata : None,
-                            })
-                        }
-                    }
-                }
-
-                LEXER_NEEDDATA => {
-                    /*Lexer doesn't have enough data to create a token*/
-                    return (None, CSS_NEEDDATA);
-                }
-
-                LEXER_INVALID => {
-                    /*Lexer had encountered invalid data, cannot proceed*/
-                    return (None, CSS_INVALID);
-                }
+            if (lexer_error as int != CSS_OK as int) {
+                return (lexer_error, None);
             }
+
+            let mut t = lexer_token_option.unwrap();
+            /* If the last token read was whitespace, keep reading
+             * tokens until we encounter one that isn't whitespace */
+            while (self.last_was_ws && t.token_type as int == CSS_TOKEN_S as int) {
+                let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
+                if (lexer_error as int != CSS_OK as int) {
+                    return (lexer_error, None);
+                }
+
+                t = lexer_token_option.unwrap();
+            }
+
+            if ((t.token_type as int) < (CSS_TOKEN_LAST_INTERN as int)) {
+                let idata = Some(self.intern_string(str::from_bytes(copy t.data.data)));
+
+                let t1_data = css_token_data {
+                    data: copy t.data.data,
+                    len: t.data.len
+                };
+
+                let t1 = @css_token{
+                    data:t1_data,
+                    token_type:t.token_type,
+                    idata:idata,
+                    col:t.col,
+                    line:t.line
+                };
+
+                token_option = Some(t1);
+            }
+            else {
+                let t1_data = css_token_data {
+                    data: copy t.data.data,
+                    len: t.data.len
+                };
+
+                let t1 = @css_token{
+                    data:t1_data,
+                    token_type:t.token_type,
+                    idata:None,
+                    col:t.col,
+                    line:t.line
+                };
+
+                token_option = Some(t1);
+            }
+           
         }
 
         self.tokens.push(token_option.get());
 
-        (token_option, CSS_OK)
+        (CSS_OK, token_option)
     }
 
     /* parser states */
@@ -424,7 +352,7 @@ pub impl css_parser {
                     return CSS_OK;
                 },
                 2 /*AfterStylesheet*/ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
@@ -468,7 +396,7 @@ pub impl css_parser {
             while (true) {
                 match (current_substate) {
                     0 /*Initial*/=> {
-                        let (token_option, parser_error) = parser.get_token();
+                        let (parser_error, token_option) = parser.get_token();
                         if (token_option.is_none()) {
                             return parser_error;
                         }
@@ -532,14 +460,14 @@ pub impl css_parser {
 
         let mut to = (sRuleset as uint, Initial as uint);
 
-        let (token_option, parser_error) = parser.get_token();
+        let (parser_error, token_option) = parser.get_token();
         if (token_option.is_none()) {
             return parser_error;
         }
         let token = token_option.unwrap();
 
         match (token.token_type) {
-            CSS_TOKEN_ATKEYWORD(_) => {
+            CSS_TOKEN_ATKEYWORD => {
                 to = (sAtRule as uint, Initial as uint);
             }
             _ => {}
@@ -568,14 +496,15 @@ pub impl css_parser {
                         
                     parser.tokens.clear();
 
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
                     let token = token_option.unwrap();
 
                     match (token.token_type) {
-                        CSS_TOKEN_CHAR (c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             if (c=='{') {
                                 match (
                                     parser.language.language_handle_event(CSS_PARSER_START_RULESET, &parser.tokens)
@@ -628,7 +557,7 @@ pub impl css_parser {
                         return CSS_OK;
                     }
 
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
@@ -641,7 +570,8 @@ pub impl css_parser {
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
                         
-                        CSS_TOKEN_CHAR (c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             if (c != '{') {
                                 fail!(); // Should not happen
                             }
@@ -694,7 +624,7 @@ pub impl css_parser {
         while (true) {
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
@@ -707,7 +637,8 @@ pub impl css_parser {
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
 
-                        CSS_TOKEN_CHAR(c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             if (c != '}' && c != ';') {
                                 /* If this can't possibly be the start of a decl-list, then
                                  * attempt to parse a declaration. This will catch any invalid
@@ -745,7 +676,7 @@ pub impl css_parser {
                 } /* DeclList */
 
                 2 /* Brace */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
@@ -758,7 +689,8 @@ pub impl css_parser {
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
 
-                        CSS_TOKEN_CHAR(c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             if (c != '}') {
                                 /* This should never happen, as FOLLOW(decl-list)
                                  * contains only '}' */
@@ -810,14 +742,14 @@ pub impl css_parser {
                 0 /* Initial */ => {
                     parser.tokens.clear();
 
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
                     let token = token_option.unwrap();
 
                     match (token.token_type) {
-                        CSS_TOKEN_ATKEYWORD (_)=> {
+                        CSS_TOKEN_ATKEYWORD => {
                             current_substate = WS as uint;      
                         }
                         _ => {
@@ -853,14 +785,15 @@ pub impl css_parser {
                         parser.transition_no_ret(to);
                         return CSS_OK;
                     } /* if */
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
                     let token = token_option.unwrap();
 
                     match (token.token_type) {
-                        CSS_TOKEN_CHAR (c)=> {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             if (c==')' || c==']') {
                                 let to = (sAny0 as uint, Initial as uint);
                                 let subsequent = (sAtRule as uint, AfterAny as uint);
@@ -917,7 +850,7 @@ pub impl css_parser {
                         _=> {}
                     }
 
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
@@ -930,7 +863,8 @@ pub impl css_parser {
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
 
-                        CSS_TOKEN_CHAR(c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             if (c=='{') {
                                 parser.push_back(token);
 
@@ -1001,7 +935,7 @@ pub impl css_parser {
         while (true) {
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
@@ -1010,7 +944,8 @@ pub impl css_parser {
                     parser.language.language_handle_event(CSS_PARSER_START_BLOCK, &parser.tokens);
 
                     match (token.token_type) {
-                        CSS_TOKEN_CHAR(c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             if (c != '{') {
                                 /* This should never happen, as FIRST(block) == '{' */
                                 fail!();
@@ -1047,7 +982,7 @@ pub impl css_parser {
                 } /* Content */
 
                 3 /* Brace */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
@@ -1060,7 +995,8 @@ pub impl css_parser {
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
 
-                        CSS_TOKEN_CHAR(c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             if (c != '}') {
                                 /* This should never happen, as 
                                  * FOLLOW(block-content) == '}' */
@@ -1114,18 +1050,19 @@ pub impl css_parser {
             while (true) {
                 match (current_substate) {
                     0 /* Initial */ => {
-                        let (token_option, parser_error) = parser.get_token();
+                        let (parser_error, token_option) = parser.get_token();
                         if (token_option.is_none()) {
                             return parser_error;
                         }
                         let mut token = token_option.unwrap();
 
                         match (token.token_type) {
-                            CSS_TOKEN_ATKEYWORD(_) => {
+                            CSS_TOKEN_ATKEYWORD => {
                                 current_substate = WS as uint;
                             } /* CSS_TOKEN_ATKEYWORD */
                             
-                            CSS_TOKEN_CHAR(c) => {
+                            CSS_TOKEN_CHAR => {
+                                let c = token.data.data[0] as char;
                                 if (c=='{') { /* Grammar ambiguity. Assume block */
                                     parser.push_back(token);
                                     parser.language.language_handle_event(
@@ -1143,7 +1080,7 @@ pub impl css_parser {
                                     parser.language.language_handle_event(
                                         CSS_PARSER_BLOCK_CONTENT, &parser.tokens);
 
-                                    let (token_option, parser_error) = parser.get_token();
+                                    let (parser_error, token_option) = parser.get_token();
                                     if (token_option.is_none()) {
                                         return parser_error;
                                     }
@@ -1283,7 +1220,7 @@ pub impl css_parser {
                         return CSS_OK;
                     }
 
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
@@ -1296,7 +1233,8 @@ pub impl css_parser {
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
 
-                        CSS_TOKEN_CHAR (c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             if (c != ':') { /* parse error -- expected : */
                                 parser.push_back(token);
                                 
@@ -1372,7 +1310,7 @@ pub impl css_parser {
         while (true) {
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
@@ -1385,7 +1323,8 @@ pub impl css_parser {
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
 
-                        CSS_TOKEN_CHAR (c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             if (c != ';' && c != '}') { /* Should never happen */
                                 fail!();
                             } /* if */
@@ -1442,14 +1381,15 @@ pub impl css_parser {
         while (true) {
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
                     let token = token_option.unwrap();
 
                     match (token.token_type) {
-                        CSS_TOKEN_CHAR(c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             parser.push_back(token);
                             
                             if (c!=';' && c != '}') {
@@ -1496,7 +1436,7 @@ pub impl css_parser {
         while (true) {
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
@@ -1510,7 +1450,7 @@ pub impl css_parser {
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
 
-                        CSS_TOKEN_IDENT(_) => {
+                        CSS_TOKEN_IDENT => {
                             current_substate = WS as uint; /* fall through */
                         }/* CSS_TOKEN_IDENT */
 
@@ -1557,7 +1497,7 @@ pub impl css_parser {
         while(true) {
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
@@ -1570,7 +1510,8 @@ pub impl css_parser {
                             return CSS_OK;  
                         }/* CSS_TOKEN_EOF */
 
-                        CSS_TOKEN_CHAR(c) => { 
+                        CSS_TOKEN_CHAR => { 
+                            let c = token.data.data[0] as char;
                             if (c==';' || c=='}') { /* Grammar ambiguity -- assume ';' or '}' mark end */
                                 parser.push_back(token);
                                 parser.done();
@@ -1620,7 +1561,7 @@ pub impl css_parser {
 
         match (current_substate) {
             0 /* Initial */ => {
-                let (token_option, parser_error) = parser.get_token();
+                let (parser_error, token_option) = parser.get_token();
                 if (token_option.is_none()) {
                     return parser_error;
                 }
@@ -1630,7 +1571,8 @@ pub impl css_parser {
                 let subsequent = ( sValue1 as uint, AfterValue as uint );
 
                 match (token.token_type) {
-                    CSS_TOKEN_CHAR(c) => {
+                    CSS_TOKEN_CHAR => {
+                        let c = token.data.data[0] as char;
                         parser.push_back(token);
 
                         if (c==';' || c=='}') {
@@ -1684,17 +1626,18 @@ pub impl css_parser {
         while (true) {
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
                     let token = token_option.unwrap();
 
                     match (token.token_type) {
-                        CSS_TOKEN_ATKEYWORD(_) => {
+                        CSS_TOKEN_ATKEYWORD => {
                             current_substate = WS as uint;
                         }
-                        CSS_TOKEN_CHAR(c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             parser.push_back(token);
 
                             let mut to = (sAny as uint, Initial as uint);
@@ -1751,7 +1694,7 @@ pub impl css_parser {
         while (true) {
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
@@ -1764,7 +1707,8 @@ pub impl css_parser {
                             return CSS_OK;
                         }/* CSS_TOKEN_EOF */
 
-                        CSS_TOKEN_CHAR(c) => { 
+                        CSS_TOKEN_CHAR => { 
+                            let c = token.data.data[0] as char;
                             parser.push_back(token);
 
                             /* Grammar ambiguity: 
@@ -1844,14 +1788,15 @@ pub impl css_parser {
                     return CSS_OK;
                 }
 
-                let (token_option, parser_error) = parser.get_token();
+                let (parser_error, token_option) = parser.get_token();
                 if (token_option.is_none()) {
                     return parser_error;
                 }
                 let token = token_option.unwrap();
 
                 match token.token_type {
-                    CSS_TOKEN_CHAR(c) => {
+                    CSS_TOKEN_CHAR => {
+                        let c = token.data.data[0] as char;
                         parser.push_back(token);
 
                         if (c==';' || c==')' || c==']') {
@@ -1896,25 +1841,26 @@ pub impl css_parser {
         while (true) {
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
                     let token = token_option.unwrap();
 
                     match token.token_type {
-                        CSS_TOKEN_IDENT(_) |
-                        CSS_TOKEN_NUMBER(_,_) |
-                        CSS_TOKEN_PERCENTAGE(_,_) |
-                        CSS_TOKEN_DIMENSION(_,_,_) |
-                        CSS_TOKEN_STRING(_) |
-                        CSS_TOKEN_URI(_) |
-                        CSS_TOKEN_HASH(_) |
-                        CSS_TOKEN_UNICODE_RANGE(_,_) => {
+                        CSS_TOKEN_IDENT |
+                        CSS_TOKEN_NUMBER |
+                        CSS_TOKEN_PERCENTAGE |
+                        CSS_TOKEN_DIMENSION |
+                        CSS_TOKEN_STRING |
+                        CSS_TOKEN_URI |
+                        CSS_TOKEN_HASH |
+                        CSS_TOKEN_UNICODE_RANGE => {
 
                         }
                         
-                        CSS_TOKEN_CHAR(c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             match(c) {
                                 '(' => { 
                                     parser.match_char=')';
@@ -1929,7 +1875,7 @@ pub impl css_parser {
                                 }
                             }
                         }
-                        CSS_TOKEN_FUNCTION(_) => {
+                        CSS_TOKEN_FUNCTION => {
                             parser.match_char = ')';
                             current_substate = WS as uint;
                         }
@@ -1960,14 +1906,15 @@ pub impl css_parser {
                 } /* WS */
 
                 2 /* AfterAny0 */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
                     let token = token_option.unwrap();
 
                     match token.token_type {
-                        CSS_TOKEN_CHAR(c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             /* Match correct close bracket (grammar ambiguity) */
                             if (c==parser.match_char) { 
                                 current_substate = WS2 as uint;
@@ -2034,7 +1981,7 @@ pub impl css_parser {
 
         /* Go */ /* Fall Through */
         while (true) {
-            let (token_option, parser_error) = parser.get_token();
+            let (parser_error, token_option) = parser.get_token();
             if (token_option.is_none()) {
                 return parser_error;
             }
@@ -2046,7 +1993,8 @@ pub impl css_parser {
                     break;
                 }/* CSS_TOKEN_EOF */
 
-                CSS_TOKEN_CHAR(c) => {
+                CSS_TOKEN_CHAR => {
+                    let c = token.data.data[0] as char;
                     match (c) {
                         '{' | '}' | '[' | ']' | '(' | ')' | ';' => {
                             if (parser.open_items_stack.is_empty()
@@ -2110,7 +2058,7 @@ pub impl css_parser {
 
         /* Go */ /* Fall Through */
         while (true) {
-            let (token_option, parser_error) = parser.get_token();
+            let (parser_error, token_option) = parser.get_token();
             if (token_option.is_none()) {
                 return parser_error;
             }
@@ -2121,7 +2069,8 @@ pub impl css_parser {
                     break;
                 }/* CSS_TOKEN_EOF */
 
-                CSS_TOKEN_CHAR(c) => {
+                CSS_TOKEN_CHAR => {
+                    let c = token.data.data[0] as char;
                     match (c) {
                         '{' | '}' | '[' | ']' | '(' | ')' => {
 
@@ -2195,7 +2144,7 @@ pub impl css_parser {
 
         /* Go */ /* Fall Through */
         while (true) {
-            let (token_option, parser_error) = parser.get_token();
+            let (parser_error, token_option) = parser.get_token();
             if (token_option.is_none()) {
                 return parser_error;
             }
@@ -2206,7 +2155,8 @@ pub impl css_parser {
                     break;
                 }/* CSS_TOKEN_EOF */
 
-                CSS_TOKEN_CHAR(c) => {
+                CSS_TOKEN_CHAR => {
+                    let c = token.data.data[0] as char;
                     match (c) {
                         '{' | '}' | '[' | ']' | '(' | ')' | ';' => {
 
@@ -2338,7 +2288,7 @@ pub impl css_parser {
         while (true) {
             match current_substate {
                 0 /* Initial */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
@@ -2397,14 +2347,15 @@ pub impl css_parser {
         while(true) {
             match current_substate {
                 0 /* Initial */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
                     let token = token_option.unwrap();
 
                     match token.token_type {
-                        CSS_TOKEN_CHAR(c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             parser.push_back(token);
 
                             if (c != '}' && c !=';') {
@@ -2438,7 +2389,7 @@ pub impl css_parser {
                 } /* DeclList */
 
                 2 /* Brace */ => {
-                    let (token_option, parser_error) = parser.get_token();
+                    let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
                     }
@@ -2451,7 +2402,8 @@ pub impl css_parser {
                             return CSS_OK;
                         }/* CSS_TOKEN_EOF */
 
-                        CSS_TOKEN_CHAR(c) => {
+                        CSS_TOKEN_CHAR => {
+                            let c = token.data.data[0] as char;
                             if (c != '}') {
                                 fail!();
                             }

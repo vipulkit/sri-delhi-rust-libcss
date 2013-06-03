@@ -197,7 +197,7 @@ pub impl css_properties {
         let mut token=&vector[*ctx];
         if ( 
             match (token.token_type) {
-                CSS_TOKEN_IDENT(_) => true,
+                CSS_TOKEN_IDENT  => true,
                 _=> false
             } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) 
         ) {
@@ -206,7 +206,7 @@ pub impl css_properties {
         }
         else if ( 
             match (token.token_type) {
-                CSS_TOKEN_IDENT(_) => true,
+                CSS_TOKEN_IDENT  => true,
                 _=> false
             } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFTWARDS as uint)
         ) {
@@ -215,7 +215,7 @@ pub impl css_properties {
         }        
         else if ( 
             match (token.token_type) {
-                CSS_TOKEN_IDENT(_) => true,
+                CSS_TOKEN_IDENT  => true,
                 _=> false
             } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHTWARDS as uint) 
         ) {
@@ -224,7 +224,7 @@ pub impl css_properties {
         }
         else if ( 
             match (token.token_type) {
-                CSS_TOKEN_IDENT(_) => true,
+                CSS_TOKEN_IDENT  => true,
                 _=> false
             } 
         ) {
@@ -286,7 +286,7 @@ pub impl css_properties {
 
             if (
                 match (token.token_type) {
-                    CSS_TOKEN_IDENT(_) => true,
+                    CSS_TOKEN_IDENT  => true,
                     _=> false
                 } && value == AZIMUTH_BEHIND
             ) {
@@ -325,7 +325,7 @@ pub impl css_properties {
             }
             else if  (
                 match (token.token_type) {
-                    CSS_TOKEN_IDENT(_) => true,
+                    CSS_TOKEN_IDENT  => true,
                     _=> false
                 }&& value != AZIMUTH_BEHIND
             ) {
@@ -340,7 +340,7 @@ pub impl css_properties {
             } 
             else if (
                 match (token.token_type) {
-                    CSS_TOKEN_IDENT(_) => false,
+                    CSS_TOKEN_IDENT  => false,
                     _=> true
                 } && value == AZIMUTH_BEHIND
             ) {
@@ -568,7 +568,7 @@ pub impl css_properties {
             
         let mut token = &vector[*ctx];
 
-        if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false }  
+        if match token.token_type { CSS_TOKEN_IDENT  => true, _ => false }  
             && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),INHERIT as uint) {
             
             //token = &vector[*ctx]; Value assigned never used
@@ -585,7 +585,7 @@ pub impl css_properties {
                 token = &vector[*ctx];
 
                 match token.token_type {
-                    CSS_TOKEN_IDENT(_) => {
+                    CSS_TOKEN_IDENT  => {
                         if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT as uint) {
                             value[i] = BACKGROUND_POSITION_HORZ_LEFT 
                         } 
@@ -613,7 +613,7 @@ pub impl css_properties {
                         *ctx += 1; //Iterate
                     },    
                 
-                    CSS_TOKEN_DIMENSION(_,_,_) | CSS_TOKEN_NUMBER(_,_) | CSS_TOKEN_PERCENTAGE(_,_) => {
+                    CSS_TOKEN_DIMENSION | CSS_TOKEN_NUMBER | CSS_TOKEN_PERCENTAGE => {
                         match css__parse_unit_specifier(sheet, vector, ctx, UNIT_PX as u32){                               
                             (Some(length_val), Some(unit_val), CSS_OK) => {
                                 length[i] = length_val as i32;
@@ -933,7 +933,7 @@ pub impl css_properties {
 
         if ( 
             match (token.token_type) {
-                CSS_TOKEN_IDENT(_) => true,
+                CSS_TOKEN_IDENT  => true,
                 _=> false
             } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) 
         ) {
@@ -1042,7 +1042,7 @@ pub impl css_properties {
             }
 
             match token.token_type {
-                CSS_TOKEN_IDENT(_) => {
+                CSS_TOKEN_IDENT  => {
                     if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , NONE as uint) {
                         side_val_vec.push(BORDER_STYLE_NONE );
                     }
@@ -1172,7 +1172,7 @@ pub impl css_properties {
             }
             if (
                 match token.token_type {
-                    CSS_TOKEN_IDENT(_) => true,
+                    CSS_TOKEN_IDENT  => true,
                     _ => false
                 }
                 ) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THIN as uint) {
@@ -1183,7 +1183,7 @@ pub impl css_properties {
             }
             else if (
                 match token.token_type {
-                    CSS_TOKEN_IDENT(_) => true,
+                    CSS_TOKEN_IDENT  => true,
                     _ => false
                 }
                 ) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MEDIUM as uint) {
@@ -1193,7 +1193,7 @@ pub impl css_properties {
                 error = CSS_OK;
             }
             else if (match token.token_type {
-                CSS_TOKEN_IDENT(_) => true,
+                CSS_TOKEN_IDENT  => true,
                 _ => false
             }) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THICK as uint) {
                 
@@ -1341,7 +1341,7 @@ pub impl css_properties {
         *ctx = *ctx + 1;
 
         match token.token_type {
-            CSS_TOKEN_IDENT(_) => {
+            CSS_TOKEN_IDENT  => {
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint) {
                     css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_CLIP , FLAG_INHERIT as u8 , 0);
                 }
@@ -1349,7 +1349,7 @@ pub impl css_properties {
                     css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_CLIP , 0 , CLIP_AUTO );
                 }
             },
-            CSS_TOKEN_FUNCTION(_) => {
+            CSS_TOKEN_FUNCTION  => {
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , RECT as uint) {
                     let mut i: int = 0;
                     let mut value: u16 = CLIP_SHAPE_RECT ;
@@ -1365,7 +1365,7 @@ pub impl css_properties {
                         token=&vector[*ctx];
 
                         match token.token_type {
-                            CSS_TOKEN_IDENT(_) => {
+                            CSS_TOKEN_IDENT  => {
                                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
                                     value |= 1 << (i+3);
                                 }
@@ -1675,7 +1675,7 @@ pub impl css_properties {
         let mut token=&vector[*ctx];
         *ctx = *ctx + 1; //Iterate
 
-        let token_ident_match_res = match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false};
+        let token_ident_match_res = match token.token_type { CSS_TOKEN_IDENT  => true, _ => false};
 
         if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),INHERIT as uint) {
            css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_CONTENT)        
@@ -1724,14 +1724,14 @@ pub impl css_properties {
                  NO_CLOSE_QUOTE as uint) {
                     CSS_APPEND(first, CONTENT_NO_CLOSE_QUOTE );
                 } 
-                else if match token.token_type {CSS_TOKEN_STRING(_) => true, _ => false} {
+                else if match token.token_type {CSS_TOKEN_STRING  => true, _ => false} {
                     
                     let snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone())) ;
                     CSS_APPEND(first, CONTENT_STRING );
                     
                     css_stylesheet::css__stylesheet_style_append(result, snumber as u32);
                 }
-                else if match token.token_type {CSS_TOKEN_URI(_) => true, _ => false} {
+                else if match token.token_type {CSS_TOKEN_URI  => true, _ => false} {
                     
                     match (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone()){
                         (CSS_OK, Some(uri)) => {
@@ -1746,7 +1746,7 @@ pub impl css_properties {
                         }
                     }
                 } 
-                else if match token.token_type {CSS_TOKEN_FUNCTION(_) => true, _ => false} &&
+                else if match token.token_type {CSS_TOKEN_FUNCTION  => true, _ => false} &&
                         strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ATTR as uint) {
 
                     consumeWhitespace(vector, ctx);
@@ -1761,7 +1761,7 @@ pub impl css_properties {
                     *ctx = *ctx + 1; //Iterate
                     
                     match token.token_type { 
-                        CSS_TOKEN_IDENT(_) => {},
+                        CSS_TOKEN_IDENT  => {},
                         _ => {
                             *ctx = orig_ctx;
                             return CSS_INVALID
@@ -1789,7 +1789,7 @@ pub impl css_properties {
                         return CSS_INVALID
                     }
                 }
-                else if match token.token_type {CSS_TOKEN_FUNCTION(_) => true, _ => false} &&
+                else if match token.token_type {CSS_TOKEN_FUNCTION  => true, _ => false} &&
                        strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), COUNTER as uint) {
                                        
                     let mut opv = CONTENT_COUNTER as u32;
@@ -1806,7 +1806,7 @@ pub impl css_properties {
                     *ctx = *ctx + 1; //Iterate
                     
                     match token.token_type { 
-                        CSS_TOKEN_IDENT(_) => {},
+                        CSS_TOKEN_IDENT  => {},
                         _ => {
                             *ctx = orig_ctx;
                             return CSS_INVALID
@@ -1845,7 +1845,7 @@ pub impl css_properties {
                         token=&vector[*ctx]; //peek
                         
                         match token.token_type { 
-                            CSS_TOKEN_IDENT(_) => {},
+                            CSS_TOKEN_IDENT  => {},
                             _ => {
                                 *ctx = orig_ctx;
                                 return CSS_INVALID
@@ -1890,7 +1890,7 @@ pub impl css_properties {
                     
                     css_stylesheet::css__stylesheet_style_append(result, snumber as u32);
                 } 
-                else if match token.token_type {CSS_TOKEN_FUNCTION(_) => true, _ => false} &&
+                else if match token.token_type {CSS_TOKEN_FUNCTION  => true, _ => false} &&
                        strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), COUNTERS as uint) {
                                       
                     let mut opv = CONTENT_COUNTERS as u32;
@@ -1907,7 +1907,7 @@ pub impl css_properties {
                         *ctx += 1; //Iterate
 
                         match token.token_type { 
-                            CSS_TOKEN_IDENT(_) => {},
+                            CSS_TOKEN_IDENT  => {},
                             _ => {
                                 *ctx = orig_ctx;
                                 return CSS_INVALID
@@ -1944,7 +1944,7 @@ pub impl css_properties {
                     *ctx += 1; //Iterate
 
                     match token.token_type{
-                        CSS_TOKEN_STRING(_) => {},
+                        CSS_TOKEN_STRING  => {},
                         _ => { 
                             *ctx = orig_ctx;
                             return CSS_INVALID
@@ -1984,7 +1984,7 @@ pub impl css_properties {
                         token=&vector[*ctx];
                         
                         match token.token_type {
-                            CSS_TOKEN_IDENT(_) => {},
+                            CSS_TOKEN_IDENT  => {},
                             _ => {
                                 *ctx = orig_ctx;
                                 return CSS_INVALID;
@@ -2172,8 +2172,8 @@ pub impl css_properties {
         *ctx = *ctx + 1;
         
         match token.token_type {
-            CSS_TOKEN_IDENT(_) =>{},
-            CSS_TOKEN_URI(_) => {},
+            CSS_TOKEN_IDENT  =>{},
+            CSS_TOKEN_URI  => {},
             _=>{
                 *ctx = orig_ctx;
                 return CSS_INVALID;
@@ -2182,7 +2182,7 @@ pub impl css_properties {
 
         if (
             match token.token_type {
-                CSS_TOKEN_IDENT(_) => true,
+                CSS_TOKEN_IDENT  => true,
                 _=> false
             } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint)
             ) {
@@ -2193,7 +2193,7 @@ pub impl css_properties {
             let mut uri_snumber:u32;
             while (*ctx < vector.len() 
                 && match token.token_type {
-                        CSS_TOKEN_URI(_) => true,
+                        CSS_TOKEN_URI  => true,
                         _ => false
                    }
                    ) {
@@ -2240,8 +2240,8 @@ pub impl css_properties {
                 token = &vector[*ctx];
                 *ctx = *ctx + 1;
                 match token.token_type {
-                    CSS_TOKEN_IDENT(_) =>{},
-                    CSS_TOKEN_URI(_) => {},
+                    CSS_TOKEN_IDENT  =>{},
+                    CSS_TOKEN_URI  => {},
                     _=>{
                         *ctx = orig_ctx;
                         return CSS_INVALID;
@@ -2251,7 +2251,7 @@ pub impl css_properties {
             }//end of while
 
             match token.token_type {
-                CSS_TOKEN_IDENT(_)=>{
+                CSS_TOKEN_IDENT =>{
                    if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), AUTO as uint) {
                         match first{
                             true=>{
@@ -2461,7 +2461,7 @@ pub impl css_properties {
         
         if (
             match token.token_type {
-                CSS_TOKEN_IDENT(_)=>true,
+                CSS_TOKEN_IDENT =>true,
                 _=>false
             } && 
             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) 
@@ -2471,7 +2471,7 @@ pub impl css_properties {
         }
         else if (
             match token.token_type {
-                CSS_TOKEN_IDENT(_)=>true,
+                CSS_TOKEN_IDENT =>true,
                  _=>false
             } &&
             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BELOW as uint)
@@ -2481,7 +2481,7 @@ pub impl css_properties {
             }
         else if (
             match token.token_type {
-                CSS_TOKEN_IDENT(_)=>true,
+                CSS_TOKEN_IDENT =>true,
                  _=>false
             } &&
          strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEVEL as uint)
@@ -2491,7 +2491,7 @@ pub impl css_properties {
             }
         else if (
             match token.token_type {
-                CSS_TOKEN_IDENT(_)=>true,
+                CSS_TOKEN_IDENT =>true,
                  _=>false
             } &&
             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ABOVE as uint)
@@ -2501,7 +2501,7 @@ pub impl css_properties {
             }
         else if (
             match token.token_type {
-                CSS_TOKEN_IDENT(_)=>true,
+                CSS_TOKEN_IDENT =>true,
                  _=>false
             } &&
             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HIGHER as uint) 
@@ -2511,7 +2511,7 @@ pub impl css_properties {
             }
         else if (
             match token.token_type {
-                CSS_TOKEN_IDENT(_)=>true,
+                CSS_TOKEN_IDENT =>true,
                  _=>false
             } &&
             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LOWER as uint)
@@ -2609,7 +2609,7 @@ pub impl css_properties {
             Some(font_resolution) => {
                 let (sheet_font_error , some_sys_font) = (*font_resolution)(token.idata.get_ref().clone());
                 match token.token_type {
-                    CSS_TOKEN_IDENT(_) => {
+                    CSS_TOKEN_IDENT  => {
                         let value_from_font = match some_sys_font {
                             None => false,
                             _ => match sheet_font_error {
@@ -2813,12 +2813,12 @@ pub impl css_properties {
         let token = &vector[*ctx];
         *ctx +=1; //Iterate
         
-        if match token.token_type { CSS_TOKEN_IDENT(_) | CSS_TOKEN_STRING(_) => false, _ => true } {
+        if match token.token_type { CSS_TOKEN_IDENT  | CSS_TOKEN_STRING  => false, _ => true } {
             *ctx = orig_ctx;
             return CSS_INVALID
         }
 
-        if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false } && 
+        if match token.token_type { CSS_TOKEN_IDENT  => true, _ => false } && 
         strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
             
             css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_FONT_FAMILY)
@@ -2865,7 +2865,7 @@ pub impl css_properties {
         *ctx += 1;
 
         if (match token.token_type { 
-            CSS_TOKEN_IDENT(_) | CSS_TOKEN_NUMBER(_ , _) => false,
+            CSS_TOKEN_IDENT  | CSS_TOKEN_NUMBER => false,
             _ => true 
         }) {
             *ctx = orig_ctx;
@@ -2877,7 +2877,7 @@ pub impl css_properties {
         }
         else if (
             match token.token_type {
-                CSS_TOKEN_NUMBER(_ , _) => true,
+                CSS_TOKEN_NUMBER => true,
                 _ => false 
             } ) 
         {
@@ -3055,7 +3055,7 @@ pub impl css_properties {
         token=&vector[*ctx];
         *ctx += 1;
         match token.token_type {
-            CSS_TOKEN_IDENT(_) => {
+            CSS_TOKEN_IDENT  => {
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint) {
                     flags |= FLAG_INHERIT as u8;
                 }
@@ -3123,7 +3123,7 @@ pub impl css_properties {
                 return CSS_INVALID;
             }
             if (match token.token_type {
-                CSS_TOKEN_IDENT(_) => true,
+                CSS_TOKEN_IDENT  => true,
                 _ => false
             }) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
 
@@ -3257,12 +3257,12 @@ pub impl css_properties {
         *ctx += 1;
         
         match token.token_type {
-            CSS_TOKEN_IDENT(_)=>{
+            CSS_TOKEN_IDENT =>{
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
                     css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_OPACITY);
                 }
             },
-            CSS_TOKEN_NUMBER(_,_)=>{
+            CSS_TOKEN_NUMBER=>{
                     let mut (num,consumed) =  css__number_from_lwc_string(token.idata.get_ref().clone(), false);
                     /* Invalid if there are trailing characters */
                     if (consumed !=  lwc_string_length(token.idata.get_ref().clone())){
@@ -3632,7 +3632,7 @@ pub impl css_properties {
         *ctx += 1;
 
         match token.token_type {
-            CSS_TOKEN_IDENT(_) => {
+            CSS_TOKEN_IDENT  => {
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint) {
                     flags = flags | FLAG_INHERIT as u8;
                 }
@@ -3647,7 +3647,7 @@ pub impl css_properties {
                     return CSS_INVALID;
                 }
             },
-            CSS_TOKEN_URI(_) => {
+            CSS_TOKEN_URI  => {
                 let mut modifiers:int = 0;
                 value = PLAY_DURING_URI as u16;
 
@@ -3673,7 +3673,7 @@ pub impl css_properties {
                     token=&vector[*ctx];
 
                     match token.token_type {
-                        CSS_TOKEN_IDENT(_) => {
+                        CSS_TOKEN_IDENT  => {
                             if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MIX as uint) {
                                 if value & (PLAY_DURING_MIX as u16) == 0 {
                                     value |= (PLAY_DURING_MIX as u16);
@@ -3738,7 +3738,7 @@ pub impl css_properties {
         *ctx += 1;
         
         match (token.token_type) {
-            CSS_TOKEN_IDENT(_) => {
+            CSS_TOKEN_IDENT  => {
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
                     css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_QUOTES);
                 }
@@ -3746,13 +3746,13 @@ pub impl css_properties {
                     css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_QUOTES, 0, QUOTES_NONE );
                 }
             },
-            CSS_TOKEN_STRING(_) => {
+            CSS_TOKEN_STRING  => {
                 let mut first: bool =true;
                 
                 loop {
 
                     match token.token_type {
-                        CSS_TOKEN_STRING(_)=>{
+                        CSS_TOKEN_STRING =>{
                             let mut open_snumber:u32;
                             let mut close_snumber:u32;
                             open_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone())) as u32;
@@ -3766,7 +3766,7 @@ pub impl css_properties {
                             token=&vector[*ctx];
                             *ctx += 1;
                             match token.token_type {
-                                CSS_TOKEN_STRING(_) => {},
+                                CSS_TOKEN_STRING  => {},
                                 _=> {
                                     *ctx = orig_ctx;
                                     return CSS_INVALID;
@@ -3788,7 +3788,7 @@ pub impl css_properties {
                             }
                             token=&vector[*ctx];
                             match token.token_type {
-                                CSS_TOKEN_STRING(_) => {},
+                                CSS_TOKEN_STRING  => {},
                                 _=> {
                                     break;
                                 }
@@ -3835,7 +3835,7 @@ pub impl css_properties {
         *ctx += 1;
 
         match token.token_type {
-            CSS_TOKEN_IDENT(_) => {
+            CSS_TOKEN_IDENT  => {
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
                     css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_TEXT_DECORATION);
                 }
@@ -3896,7 +3896,7 @@ pub impl css_properties {
                         token=&vector[*ctx];
                         *ctx += 1;
                         match (token.token_type) {
-                            CSS_TOKEN_IDENT(_) => {},
+                            CSS_TOKEN_IDENT  => {},
                             _=> {
                                 break;
                             }
@@ -3943,14 +3943,14 @@ pub impl css_properties {
         *ctx += 1;
 
         match token.token_type {
-            CSS_TOKEN_IDENT(_) | CSS_TOKEN_STRING(_) => {}, 
+            CSS_TOKEN_IDENT  | CSS_TOKEN_STRING  => {}, 
             _ => {
                 *ctx = orig_ctx;
                 return CSS_INVALID
             }
         } 
 
-        if match token.token_type { CSS_TOKEN_IDENT(_) => true, _ => false } &&
+        if match token.token_type { CSS_TOKEN_IDENT  => true, _ => false } &&
                 strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
             
             css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_VOICE_FAMILY)
@@ -4065,7 +4065,7 @@ pub fn font_family_value(strings:&mut ~css_propstrings, token:&@css_token, first
     let mut value:u16;
     
     match token.token_type{
-        CSS_TOKEN_IDENT(_) => {
+        CSS_TOKEN_IDENT  => {
             if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SERIF as uint) {
                 value = FONT_FAMILY_SERIF
             }    
@@ -4229,7 +4229,7 @@ pub fn voice_family_value(strings: &mut ~css_propstrings, token:&@css_token, fir
 {
      
     let value = match token.token_type {
-        CSS_TOKEN_IDENT(_) => {
+        CSS_TOKEN_IDENT  => {
             if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), MALE as uint){
                 VOICE_FAMILY_MALE
             }
@@ -4278,12 +4278,12 @@ pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings:
     let mut token = &vector[*ctx];  
     
     match token.token_type {
-        CSS_TOKEN_STRING(_) => {
+        CSS_TOKEN_STRING  => {
             token = &vector[*ctx];
             *ctx += 1; //Iterate
             return (CSS_OK,Some(lwc_string_data(token.idata.get_ref().clone())))
         },  
-        CSS_TOKEN_IDENT(_) =>  return css__ident_list_to_string(sheet , strings , vector , ctx , reserved),
+        CSS_TOKEN_IDENT  =>  return css__ident_list_to_string(sheet , strings , vector , ctx , reserved),
         _ => return (CSS_INVALID,None)
     }
 }
@@ -4317,7 +4317,7 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
 
     loop {
         match token.token_type {
-            CSS_TOKEN_IDENT(_) => {
+            CSS_TOKEN_IDENT  => {
                 match reserved {
                     None => {},
                     Some(reserved_function) => {
@@ -4384,7 +4384,7 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
 
     loop {
         match token.token_type {
-            CSS_TOKEN_IDENT(_) => {
+            CSS_TOKEN_IDENT  => {
                 match get_value {
                     None => {},
                     Some(get_value_function) => {
@@ -4415,7 +4415,7 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
                     }
                 }
             },
-            CSS_TOKEN_STRING(_) => {
+            CSS_TOKEN_STRING  => {
                 match get_value {
                     None => {},
                     Some(get_value_function) => {
@@ -4446,7 +4446,7 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
                 return CSS_INVALID;
             }
             match token.token_type {
-                CSS_TOKEN_IDENT(_)|CSS_TOKEN_STRING(_) => {},
+                CSS_TOKEN_IDENT |CSS_TOKEN_STRING  => {},
                 _ => {
                     *ctx = orig_ctx;
                     return CSS_INVALID;

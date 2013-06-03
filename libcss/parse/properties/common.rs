@@ -67,7 +67,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
     *ctx = *ctx + 1;
 
     match token.token_type {
-        CSS_TOKEN_DIMENSION(_ , _ , _)|CSS_TOKEN_NUMBER(_ , _)|CSS_TOKEN_PERCENTAGE(_ , _) => {},
+        CSS_TOKEN_DIMENSION|CSS_TOKEN_NUMBER|CSS_TOKEN_PERCENTAGE => {},
         _ => {
             *ctx = orig_ctx;
             return(None , None , CSS_INVALID);
@@ -77,7 +77,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
     let (num , consumed_index) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
 
     match token.token_type {
-        CSS_TOKEN_DIMENSION(_ , _ , _) => {
+        CSS_TOKEN_DIMENSION => {
             let data = lwc_string_data(token.idata.get_ref().clone());
 
             let (unit , result) = css__parse_unit_keyword(data , consumed_index);
@@ -90,7 +90,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
             }
             unit_retVal = unit.unwrap() as u32;
         },
-        CSS_TOKEN_NUMBER(_ , _) => {
+        CSS_TOKEN_NUMBER => {
             if num !=0 {
                 if sheet.quirks_allowed {
                     sheet.quirks_used = true;
@@ -111,7 +111,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
                 *tmp_ctx = *tmp_ctx + 1;
 
                 match token.token_type {
-                    CSS_TOKEN_IDENT(_) => {
+                    CSS_TOKEN_IDENT => {
                         let (unit , result) = css__parse_unit_keyword(lwc_string_data(token.idata.get_ref().clone()) , 0);
                         match  result {
                             CSS_OK => {
@@ -338,7 +338,7 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
 
 pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->bool {
     match token.token_type {
-        CSS_TOKEN_IDENT(_) => {
+        CSS_TOKEN_IDENT => {
              return strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint);
         }
         _ => false
@@ -375,7 +375,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
     *ctx = *ctx + 1;
 
     match token.token_type {
-        CSS_TOKEN_IDENT(_) => {
+        CSS_TOKEN_IDENT => {
             if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , TRANSPARENT as uint) {
                 ret_value = COLOR_TRANSPARENT ;
                 ret_result = 0;
@@ -406,7 +406,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
             }
         },
 
-        CSS_TOKEN_HASH(_) => {
+        CSS_TOKEN_HASH => {
             let(_ , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
             match error_from_hash {
                 CSS_OK => {},
@@ -415,7 +415,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                 }
             }
         },
-        CSS_TOKEN_FUNCTION(_) => {
+        CSS_TOKEN_FUNCTION => {
             let r:@mut u8 = @mut 0;
             let g:@mut u8 = @mut 0;
             let b:@mut u8 = @mut 0;
@@ -449,8 +449,8 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
 
                     token = &vector[*ctx];
                     match token.token_type {
-                        CSS_TOKEN_NUMBER(_ , _) => {},
-                        CSS_TOKEN_PERCENTAGE(_ , _) => {},
+                        CSS_TOKEN_NUMBER => {},
+                        CSS_TOKEN_PERCENTAGE => {},
                         _ => {
                             goto_flag = true;
                         }
@@ -463,7 +463,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                      else if (
                         i<3 &&
                         match token.token_type {
-                            CSS_TOKEN_NUMBER(_,_) => false,
+                            CSS_TOKEN_NUMBER => false,
                             _=>true
                         }
                         ) {
@@ -474,7 +474,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
 
                     if i<3 {
                         int_only = match valid {
-                         Some(CSS_TOKEN_NUMBER(_ , _) )=> true,
+                         Some(CSS_TOKEN_NUMBER )=> true,
                          _=> false
                         };
                     }
@@ -487,7 +487,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                         goto_flag = true;
                     }
                      match valid {
-                        Some(CSS_TOKEN_NUMBER(_,_))=>{
+                        Some(CSS_TOKEN_NUMBER)=>{
                             if (i==3) {
                                 intval = css_multiply_fixed((num as i32), F_255 as i32)>> CSS_RADIX_POINT;
                                 //FIXTOINT(FMUL(num, F_255));
@@ -546,7 +546,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                     goto_flag = true
                 }
                 match token.token_type {
-                    CSS_TOKEN_NUMBER(_ , _) => {},
+                    CSS_TOKEN_NUMBER => {},
                     _ => goto_flag = true
                 }
                 let mut (hue_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
@@ -580,7 +580,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                     goto_flag = true
                 }
                 match token.token_type {
-                    CSS_TOKEN_PERCENTAGE(_ , _) => {},
+                    CSS_TOKEN_PERCENTAGE => {},
                     _ => {
                         goto_flag = true
                     }
@@ -613,7 +613,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                 *ctx = *ctx + 1;
 
                 match token.token_type {
-                    CSS_TOKEN_PERCENTAGE(_ , _) => {},
+                    CSS_TOKEN_PERCENTAGE => {},
                     _ => {
                         goto_flag = true
                     }
@@ -646,7 +646,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                     *ctx = *ctx + 1;
 
                     match token.token_type {
-                        CSS_TOKEN_NUMBER(_ , _) => {},
+                        CSS_TOKEN_NUMBER => {},
                         _ => {
                             goto_flag = true
                         }
@@ -691,8 +691,8 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
         _=>{
             if (sheet.quirks_allowed== false ||
                 match token.token_type {
-                    CSS_TOKEN_NUMBER(_,_)=> false,
-                    CSS_TOKEN_DIMENSION(_ , _ , _) =>false,
+                    CSS_TOKEN_NUMBER=> false,
+                    CSS_TOKEN_DIMENSION =>false,
                     _=> true,
                 }) {
                 goto_flag =true;
@@ -701,7 +701,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
     }
     if sheet.quirks_allowed {
         match token.token_type {
-            CSS_TOKEN_NUMBER(_ , _) => {
+            CSS_TOKEN_NUMBER => {
                 let(_ , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
                 match error_from_hash {
                     CSS_OK => {
@@ -712,7 +712,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                     }
                 }
             },
-            CSS_TOKEN_DIMENSION(_,_,_) => {
+            CSS_TOKEN_DIMENSION => {
                 let(_ , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
                 match error_from_hash {
                     CSS_OK => {
@@ -794,7 +794,7 @@ pub fn tokenIsChar(token:&@css_token, c:char) -> bool {
     let result = false;
 
     match token.token_type {
-        CSS_TOKEN_CHAR(_) => {   
+        CSS_TOKEN_CHAR => {   
                 if lwc_string_length(token.idata.get_ref().clone()) == 1 {
                     let mut token_char = lwc_string_data(token.idata.get_ref().clone()).char_at(0);
 
