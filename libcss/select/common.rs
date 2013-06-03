@@ -782,7 +782,7 @@ pub struct css_select_state {
     sheet:Option<@mut css_stylesheet>,   
 
     current_origin:css_origin, 
-    current_specificity:u32,  
+    current_specificity:uint,  
 
     element:css_qname,       
      //TODO :lwc_string *id;         /* Node id, if any */

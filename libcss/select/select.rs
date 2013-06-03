@@ -1320,6 +1320,153 @@ impl css_select_ctx {
         return CSS_OK;
     }
 
+    pub fn match_selector_chain(&mut self, selector:Option<@mut css_selector>,
+                            state:@mut css_select_state) -> css_error {
+
+        let mut s = selector;
+        let mut node = state.node;
+        let mut match_b = false;
+        let mut may_optimise = true;
+        let mut rejected_by_cache : bool = true ;
+        let mut pseudo : css_pseudo_element = CSS_PSEUDO_ELEMENT_NONE ;
+        let mut error : css_error = CSS_OK;
+        
+        /* Match the details of the first selector in the chain. 
+         *
+         * Note that pseudo elements will only appear as details of
+         * the first selector in the chain, as the parser will reject
+         * any selector chains containing pseudo elements anywhere 
+         * else.
+         */
+        //error = match_details(ctx, node, detail, state, match_b, pseudo);
+        match error {
+            CSS_OK => {},
+            err => { 
+                return err ;
+            }
+        }
+
+        /* Details don't match, so reject selector chain */
+        if (match_b == false) {
+            return CSS_OK;
+        }
+
+        unsafe {
+            /* Iterate up the selector chain, matching combinators */
+            while ( s.is_some() ) {
+                let mut next_node : *libc::c_void = ptr::null();
+
+                /* Consider any combinator on this selector */
+                if ( (s.get().data.len() > 0 ) && 
+                     ( match s.get().data[0].combinator_type { 
+                        CSS_COMBINATOR_NONE=>{false},
+                        _=>{true} }
+                     ) && 
+                     (s.get().combinator.is_some() ) &&
+                     (self.universal.is_some() ) /*&&
+                     (s.get().combinator.get().data[0].qname.name != 
+                      lwc_string_data(self.universal.unwrap().clone()) ) */ ) {
+
+                    /* Named combinator */
+                    if may_optimise {
+                        may_optimise = match s.get().data[0].combinator_type {
+                            CSS_COMBINATOR_ANCESTOR=> { true },
+                            CSS_COMBINATOR_PARENT=>{ true },
+                            _=>{ false }
+                        } ;
+                    }
+
+                    //error = match_named_combinator(ctx, s.data[0].combinator_type, 
+                    //        s.combinator, state, node, next_node);
+                    match error {
+                        CSS_OK => {},
+                        err => { 
+                            return err ;
+                        }
+                    }
+
+                    /* No match for combinator, so reject selector chain */
+                    if (next_node == ptr::null() ) {
+                        return CSS_OK;
+                    }
+                } 
+                else if ( (s.get().data.len() > 0 ) &&
+                        ( match s.get().data[0].combinator_type { 
+                            CSS_COMBINATOR_NONE=>{false},
+                            _=>{true} }
+                        ) ) {
+
+                    /* Universal combinator */
+                    if may_optimise {
+                        may_optimise = match s.get().data[0].combinator_type {
+                            CSS_COMBINATOR_ANCESTOR=> { true },
+                            CSS_COMBINATOR_PARENT=>{ true },
+                            _=>{ false }
+                        } ;
+                    }
+
+                    // error = match_universal_combinator(ctx, s.data[0].comb, 
+                    //         s.combinator, state, node, 
+                    //         may_optimise, &rejected_by_cache,
+                    //         next_node);
+                    match error {
+                        CSS_OK => {},
+                        err => { 
+                            return err ;
+                        }
+                    }
+
+                    /* No match for combinator, so reject selector chain */
+                    if (next_node == ptr::null()) {
+                        if (may_optimise && mut_ptr_eq(s.get(),selector.get()) &&
+                                rejected_by_cache == false) {
+                            // update_reject_cache(state, s.data[0].comb,
+                            //         s.combinator);
+                        }
+
+                        return CSS_OK;
+                    }
+                }
+
+                /* Details matched, so progress to combining selector */
+                s = s.get().combinator;
+                node = next_node;
+            } 
+        }
+        /* If we got here, then the entire selector chain matched, so cascade */
+        state.current_specificity = selector.get().specificity;
+
+        /* No bytecode if rule body is empty or wholly invalid */
+        if ( selector.get().rule.is_none() ) {
+            return CSS_OK;
+        }
+
+         /* No bytecode if rule body is empty or wholly invalid */
+        let mut rule = match selector.get().rule.get() {
+            RULE_SELECTOR(x)=>{
+                x
+            },
+            _=> {
+                return CSS_OK ;
+            }
+        } ;
+
+        if ( rule.style.is_none() ) {
+            return CSS_OK ;
+        }
+
+        unsafe {
+            /* Ensure that the appropriate computed style exists */
+            if ( state.results.styles[pseudo as uint].is_none() ) {
+                state.results.styles[pseudo as uint] = Some(css_computed_style_create()); 
+            }
+        }
+
+        state.current_pseudo = pseudo;
+        state.computed = state.results.styles[pseudo as uint].get();
+
+        css_select_ctx::cascade_style( rule.style.get() , state)
+    }
     pub fn match_universal_combinator(&mut self, combinator_type:css_combinator,
         selector:@mut css_selector, state:@mut css_select_state,
         node:*libc::c_void, may_optimise:bool, rejected_by_cache:@mut bool,
