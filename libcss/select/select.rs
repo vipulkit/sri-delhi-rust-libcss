@@ -1063,6 +1063,105 @@ impl css_select_ctx {
         return CSS_OK;
     }
 
+    pub fn match_universal_combinator(&mut self, combinator_type:css_combinator,
+        selector:@mut css_selector, state:@mut css_select_state,
+        node:*libc::c_void, may_optimise:bool, rejected_by_cache:@mut bool,
+        next_node:*mut *libc::c_void) -> css_error  {
+        
+        let detail :&mut ~[@mut css_selector_detail] = &mut selector.data;
+        let mut n = node;
+        let mut next_detail:Option<@mut css_selector_detail> = None; 
+        let mut error:css_error;
+        
+        if (detail.len() > 1){
+            next_detail = Some(detail[1]);   
+        }
+            
+        *rejected_by_cache = false;
+
+        /* Consult reject cache first */
+        if (may_optimise && 
+            (match combinator_type { CSS_COMBINATOR_ANCESTOR | CSS_COMBINATOR_PARENT => true, _ => false }) && 
+            match next_detail { Some(_) => true, None => false } &&
+            (match next_detail.unwrap().selector_type { CSS_SELECTOR_CLASS | CSS_SELECTOR_ID => true, _ => false})) {
+
+            let mut reject = state.next_reject + 1;
+            let last = unsafe { state.reject_cache.len()} -1;
+
+            while (reject <= last) {
+                /* Perform pessimistic matching (may hurt quirks) */
+                if ((copy state.reject_cache[reject]).unwrap().sel_type as uint == next_detail.unwrap().selector_type as uint) &&
+                   ((copy state.reject_cache[reject]).unwrap().value==next_detail.unwrap().qname.name) {
+                    
+                    /* Found it: can't match */
+                    unsafe { *next_node = ptr::null() };
+                    *rejected_by_cache = true;
+                    return CSS_OK;
+                }
+
+                reject += 1;
+            }
+        }
+
+        loop {
+            let mut match_result = false;
+
+            /* Find candidate node */
+            match (combinator_type) {
+                CSS_COMBINATOR_ANCESTOR | 
+                CSS_COMBINATOR_PARENT => {
+                    error = (*state.handler.unwrap().parent_node)(n, &n);
+                    match error {
+                        CSS_OK => {},
+                        err => return err
+                    }
+                }
+                CSS_COMBINATOR_SIBLING |
+                CSS_COMBINATOR_GENERIC_SIBLING => {
+                    error = (*state.handler.unwrap().sibling_node)(n, &n);
+                    match error {
+                        CSS_OK => {},
+                        err => return err
+                    }
+                }
+                CSS_COMBINATOR_NONE => {}
+            }
+
+            if (n != ptr::null()) {
+                /* Match its details */
+                error = self.match_details(n, detail, state, @mut match_result, None);
+                match error {
+                    CSS_OK => {},
+                    err => return err
+                }
+
+                /* If we found a match, use it */
+                if (match_result == true){
+                    break   
+                }
+
+                /* For parent and sibling selectors, only adjacent
+                 * nodes are valid. Thus, if we failed to match,
+                 * give up. */
+                
+                match combinator_type { 
+                    CSS_COMBINATOR_PARENT | CSS_COMBINATOR_SIBLING => {
+                        n = ptr::null();   
+                    },
+                    _  => {}
+                }    
+
+                if n == ptr::null() {
+                break
+            }    
+            }
+        } 
+
+        unsafe { *next_node = n };
+
+        return CSS_OK;
+    }
+
     pub fn match_details(&mut self, node:*libc::c_void, 
         detail :&mut ~[@mut css_selector_detail], state : @mut css_select_state, 
         matched : @mut bool, pseudo_element : Option<css_pseudo_element>) -> css_error {

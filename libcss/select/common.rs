@@ -697,9 +697,10 @@ pub struct css_select_handler {
 
     named_generic_sibling_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, sibling:**libc::c_void) -> css_error,
     
-    /*css_error (*parent_node)(void *pw, void *node, void **parent);
-    css_error (*sibling_node)(void *pw, void *node, void **sibling);
+    parent_node: @extern fn(node:*libc::c_void, parent:**libc::c_void) -> css_error,
 
+    sibling_node: @extern fn(node:*libc::c_void, sibling:**libc::c_void) -> css_error,
+    /*
     css_error (*node_has_name)(void *pw, void *node,
             const css_qname *qname, bool *match);
     css_error (*node_has_class)(void *pw, void *node,
@@ -783,7 +784,7 @@ pub struct css_select_state {
     n_classes:u32,           
 
     reject_cache: ~[Option<reject_item>],     /* Reject cache (filled from end) */  
-    next_reject:int,                        /* Next free slot in reject cache */
+    next_reject:uint,                        /* Next free slot in reject cache */
 
     props: ~[~[@mut prop_state]] 
 } 
