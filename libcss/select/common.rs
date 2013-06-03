@@ -2,6 +2,9 @@ use include::types::*;
 use include::font_face::*;
 use stylesheet::*;
 use utils::errors::*;
+use std::arc;
+use wapcaplet::*;
+
 
 pub enum css_computed_content_item_type {
     CSS_COMPUTED_CONTENT_NONE       = 0,
@@ -682,21 +685,11 @@ pub enum css_select_handler_version {
 pub struct css_select_handler {
 
     node_name: @extern fn(node:*libc::c_void, qname:css_qname ) -> css_error,
+
     node_classes: @extern fn(node:*libc::c_void, classes:~[~str] ) -> css_error,
+
     node_id: @extern fn(node:*libc::c_void, id:~str ) -> css_error,
-    compute_font_size: @extern fn(parent: Option<@mut css_hint>,
-                                    size: Option<@mut css_hint>) -> css_error,
-    
-    
-    /*
-        css_error (*node_name)(void *pw, void *node,
-            css_qname *qname);
-    css_error (*node_classes)(void *pw, void *node,
-            lwc_string ***classes,
-            uint32_t *n_classes);
-    css_error (*node_id)(void *pw, void *node,
-            lwc_string **id);
-*/
+
     named_ancestor_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, ancestor:**libc::c_void) -> css_error,
    
     named_parent_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, parent:**libc::c_void) -> css_error,
@@ -708,63 +701,60 @@ pub struct css_select_handler {
     parent_node: @extern fn(node:*libc::c_void, parent:**libc::c_void) -> css_error,
 
     sibling_node: @extern fn(node:*libc::c_void, sibling:**libc::c_void) -> css_error,
-    /*
-    css_error (*node_has_name)(void *pw, void *node,
-            const css_qname *qname, bool *match);
-    css_error (*node_has_class)(void *pw, void *node,
-            lwc_string *name, bool *match);
-    css_error (*node_has_id)(void *pw, void *node,
-            lwc_string *name, bool *match);
-    css_error (*node_has_attribute)(void *pw, void *node,
-            const css_qname *qname, bool *match);
-    css_error (*node_has_attribute_equal)(void *pw, void *node,
-            const css_qname *qname, lwc_string *value,
-            bool *match);
-    css_error (*node_has_attribute_dashmatch)(void *pw, void *node,
-            const css_qname *qname, lwc_string *value,
-            bool *match);
-    css_error (*node_has_attribute_includes)(void *pw, void *node,
-            const css_qname *qname, lwc_string *value,
-            bool *match);
-    css_error (*node_has_attribute_prefix)(void *pw, void *node,
-            const css_qname *qname, lwc_string *value,
-            bool *match);
-    css_error (*node_has_attribute_suffix)(void *pw, void *node,
-            const css_qname *qname, lwc_string *value,
-            bool *match);
-    css_error (*node_has_attribute_substring)(void *pw, void *node,
-            const css_qname *qname, lwc_string *value,
-            bool *match);
 
-    css_error (*node_is_root)(void *pw, void *node, bool *match);
-    css_error (*node_count_siblings)(void *pw, void *node,
-            bool same_name, bool after, int32_t *count);
-    css_error (*node_is_empty)(void *pw, void *node, bool *match);
+    node_has_name: @extern fn(node:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error,
 
-    css_error (*node_is_link)(void *pw, void *node, bool *match);
-    css_error (*node_is_visited)(void *pw, void *node, bool *match);
-    css_error (*node_is_hover)(void *pw, void *node, bool *match);
-    css_error (*node_is_active)(void *pw, void *node, bool *match);
-    css_error (*node_is_focus)(void *pw, void *node, bool *match);
+    node_has_class: @extern fn(node:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error,
 
-    css_error (*node_is_enabled)(void *pw, void *node, bool *match);
-    css_error (*node_is_disabled)(void *pw, void *node, bool *match);
-    css_error (*node_is_checked)(void *pw, void *node, bool *match);
+    node_has_id: @extern fn(node:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error,
 
-    css_error (*node_is_target)(void *pw, void *node, bool *match);
-    css_error (*node_is_lang)(void *pw, void *node,
-            lwc_string *lang, bool *match);
-    */
+    node_has_attribute: @extern fn(node:*libc::c_void, name:css_qname, matched:@mut bool) -> css_error,
+    
+    node_has_name: @extern fn(node:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error,
+
+    node_has_attribute_equal: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+   
+    node_has_attribute_dashmatch: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+
+    node_has_attribute_includes: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+
+    node_has_attribute_prefix: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+
+    node_has_attribute_suffix: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+
+    node_has_attribute_substring: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+
+    node_is_root: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+   
+    node_count_siblings: @extern fn(node:*libc::c_void, same_name:bool, after:bool, count:@mut i32) -> css_error,
+	
+    node_is_empty: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+    
+    node_is_link: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+
+    node_is_visited: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+
+    node_is_hover: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+
+    node_is_active: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+
+    node_is_focus: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+
+    node_is_enabled: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+
+    node_is_disabled: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+
+    node_is_checked: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+ 
+    node_is_target: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+
+    node_is_lang: @extern fn(node:*libc::c_void, lang:~str, matched:@mut bool) -> css_error,
+
     node_presentational_hint: @extern fn(node:*libc::c_void, property:u32) -> 
         (css_error,Option<@mut css_hint>),
 
-    /*css_error (*ua_default_for_property)(void *pw, uint32_t property,
-            css_hint *hint);
-
-    css_error (*compute_font_size)(void *pw, const css_hint *parent,
-            css_hint *size);
-    */
-    // TODO write above function pointers , as required by select module
+    compute_font_size: @extern fn(parent: Option<@mut css_hint>, size: Option<@mut css_hint>) -> css_error,
+   
     ua_default_for_property: @extern fn(property:u32, hint:@mut css_hint ) -> css_error,
     handler_version:uint
 }
