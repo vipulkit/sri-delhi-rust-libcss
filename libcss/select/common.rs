@@ -727,7 +727,7 @@ pub struct css_select_handler {
     node_is_root: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
    
     node_count_siblings: @extern fn(node:*libc::c_void, same_name:bool, after:bool, count:@mut i32) -> css_error,
-	
+    
     node_is_empty: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
     
     node_is_link: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,

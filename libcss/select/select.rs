@@ -547,8 +547,8 @@ impl css_select_ctx {
          * are not disabled */
         let mut i = self.sheets.len() ;
         while (i>0) { 
-        	i -= 1 ;
-        	let mut select_sheet = self.sheets[i] ;
+            i -= 1 ;
+            let mut select_sheet = self.sheets[i] ;
             if ((select_sheet.media & media) != 0 ) && 
                 (select_sheet.sheet.disabled == false ) {
 
@@ -1582,7 +1582,7 @@ impl css_select_ctx {
 
         let mut error : css_error = CSS_OK;
         let mut pseudo : css_pseudo_element = CSS_PSEUDO_ELEMENT_NONE;
-	let mut index:uint = 0;
+    let mut index:uint = 0;
         if(detail.len() > index){
             index += 1;
         }
@@ -1634,319 +1634,351 @@ impl css_select_ctx {
         }
     }
 
-	pub fn match_detail(&mut self, node:*libc::c_void, 
-			detail:@mut css_selector_detail, state:@mut css_select_state, 
-			matched:@mut bool, pseudo_element:@mut css_pseudo_element) -> css_error	{
+    pub fn match_detail(&mut self, node:*libc::c_void, 
+            detail:@mut css_selector_detail, state:@mut css_select_state, 
+            matched:@mut bool, pseudo_element:@mut css_pseudo_element) -> css_error {
 
-		let mut is_root = false;
-		let mut error = CSS_OK;
-		let lwc_name = do self.lwc_instance.clone().write |l|{
-			l.lwc_intern_string(copy detail.qname.name)
-		};
+        let mut is_root = false;
+        let mut error = CSS_OK;
+        let lwc_name = do self.lwc_instance.clone().write |l|{
+            l.lwc_intern_string(copy detail.qname.name)
+        };
 
-		match (detail.selector_type) {
-			CSS_SELECTOR_ELEMENT => {
-				if (detail.negate) {
-					/* Only need to test this inside not(), since
-					 * it will have been considered as a named node
-					 * otherwise. */
-					error = (*state.handler.unwrap().node_has_name)( node,
-							copy detail.qname, matched);
-				}
-			}
-			CSS_SELECTOR_CLASS => {
-				error = (*state.handler.unwrap().node_has_class)( node,
-						lwc_name.clone(), matched);
-			}		
-			CSS_SELECTOR_ID => {
-				error = (*state.handler.unwrap().node_has_id)( node,
-						lwc_name.clone(), matched);
-			}
-			CSS_SELECTOR_PSEUDO_CLASS => {
-				error = (*state.handler.unwrap().node_is_root)( node, @mut is_root);
-				match error {
-	                        CSS_OK => {},
-	                        _=> {
-	                            return error;
-	                        }
-	                    }
-				
-				if (is_root == false && 
-						 do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.first_child.get_ref().clone())} ) { 
-					let mut num_before:i32 = 0;
+        match (detail.selector_type) {
+            CSS_SELECTOR_ELEMENT => {
+                if (detail.negate) {
+                    /* Only need to test this inside not(), since
+                     * it will have been considered as a named node
+                     * otherwise. */
+                    error = (*state.handler.unwrap().node_has_name)( node,
+                            copy detail.qname, matched);
+                }
+            }
+            CSS_SELECTOR_CLASS => {
+                error = (*state.handler.unwrap().node_has_class)( node,
+                        lwc_name.clone(), matched);
+            }       
+            CSS_SELECTOR_ID => {
+                error = (*state.handler.unwrap().node_has_id)( node,
+                        lwc_name.clone(), matched);
+            }
+            CSS_SELECTOR_PSEUDO_CLASS => {
+                error = (*state.handler.unwrap().node_is_root)( node, @mut is_root);
+                match error {
+                    CSS_OK => {},
+                    _=> {
+                        return error;
+                    }
+                }
+        
+                if (is_root == false && 
+                         do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.first_child.get_ref().clone())} ) { 
 
-					error = (*state.handler.unwrap().node_count_siblings)( 
-							node, false, false, @mut num_before);
-					match error {
-		                        CSS_OK => {
-		                        	if  (num_before == 0) {
-		                        		*matched = true
-		                        	}
-		                        	else {
-							*matched = false
-		                        	}
-		                        },
-		                        _=> {}
-		                    }
-				} else if (is_root == false && 
-						do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.nth_child.get_ref().clone())} ) { 
-					let mut num_before:i32 = 0;
+                    let mut num_before:i32 = 0;
 
-					error = (*state.handler.unwrap().node_count_siblings)( 
-							node, false, false, @mut num_before);
-					match error {
-		                        CSS_OK => {
-						let a = detail.a;
-						let b = detail.b;
+                    error = (*state.handler.unwrap().node_count_siblings)( 
+                            node, false, false, @mut num_before);
 
-						*matched = css_select_ctx::match_nth(a, b, num_before + 1);
-					   },
-					   _ => {}
-					}
-				} else if (is_root == false && 
-						do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.nth_last_child.get_ref().clone())} ) { 
-					let mut num_after:i32 = 0;
+                    match error {
+                        CSS_OK => {
+                            if  (num_before == 0) {
+                                *matched = true
+                            }
+                            else {
+                                *matched = false
+                            }
+                        },
+                        _=> {}
+                    }
+                }
+                else if (is_root == false && 
+                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.nth_child.get_ref().clone())} ) { 
+                    let mut num_before:i32 = 0;
 
-					error = (*state.handler.unwrap().node_count_siblings)( 
-							node, false, true, @mut num_after);
-					match error {
-		                        CSS_OK => {
-						let a = detail.a;
-						let b = detail.b;
+                    error = (*state.handler.unwrap().node_count_siblings)( 
+                            node, false, false, @mut num_before);
+                
+                    match error {
+                        CSS_OK => {
+                            let a = detail.a;
+                            let b = detail.b;
 
-						*matched = css_select_ctx::match_nth(a, b, num_after + 1);
-					   },
-					   _ => {}
-					}
-				} else if (is_root == false && 
-						do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.nth_of_type.get_ref().clone())} ) { 
-					let mut num_before:i32 = 0;
+                            *matched = css_select_ctx::match_nth(a, b, num_before + 1);
+                        },
+                        _ => {}
+                    }
+                }
+                else if (is_root == false && 
+                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.nth_last_child.get_ref().clone())} ) { 
+                    let mut num_after:i32 = 0;
 
-					error = (*state.handler.unwrap().node_count_siblings)( 
-							node, true, false, @mut num_before);
-					match error {
-		                        CSS_OK => {
-						let a = detail.a;
-						let b = detail.b;
+                    error = (*state.handler.unwrap().node_count_siblings)( 
+                            node, false, true, @mut num_after);
+                    
+                    match error {
+                        CSS_OK => {
+                            let a = detail.a;
+                            let b = detail.b;
 
-						*matched = css_select_ctx::match_nth(a, b, num_before + 1);
-					   },
-					   _ => {}
-					}
-				} else if (is_root == false && 
-						do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.nth_last_of_type.get_ref().clone())} ) { 
-					let mut num_after:i32 = 0;
+                            *matched = css_select_ctx::match_nth(a, b, num_after + 1);
+                        },
+                        _ => {}
+                    }
+                }
+                else if (is_root == false && 
+                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.nth_of_type.get_ref().clone())} ) { 
+                    let mut num_before:i32 = 0;
 
-					error = (*state.handler.unwrap().node_count_siblings)( 
-							node, true, true, @mut num_after);
-					match error {
-		                        CSS_OK => {
-						let a = detail.a;
-						let b = detail.b;
+                    error = (*state.handler.unwrap().node_count_siblings)( 
+                            node, true, false, @mut num_before);
+                    
+                    match error {
+                        CSS_OK => {
+                            let a = detail.a;
+                            let b = detail.b;
 
-						*matched = css_select_ctx::match_nth(a, b, num_after + 1);
-					   },
-					   _ => {}
-					}
-				} else if (is_root == false &&
-						do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.last_child.get_ref().clone())} ) { 
-					let mut num_after:i32 = 0;
+                            *matched = css_select_ctx::match_nth(a, b, num_before + 1);
+                        },
+                        _ => {}
+                    }
+                } 
+                else if (is_root == false && 
+                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.nth_last_of_type.get_ref().clone())} ) { 
+                    let mut num_after:i32 = 0;
 
-					error = (*state.handler.unwrap().node_count_siblings)(
-							node, false, true, @mut num_after);
-					match error {
-		                        CSS_OK => {
-		                        	if  (num_after == 0) {
-		                        		*matched = true
-		                        	}
-		                        	else {
-							*matched = false
-		                        	}
-		                        },
-		                        _=> {}
-		                    }
-				} else if (is_root == false &&
-						do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.first_of_type.get_ref().clone())} ) { 
-					let mut num_before:i32 = 0;
+                    error = (*state.handler.unwrap().node_count_siblings)( 
+                            node, true, true, @mut num_after);
+                    
+                    match error {
+                        CSS_OK => {
+                            let a = detail.a;
+                            let b = detail.b;
 
-					error = (*state.handler.unwrap().node_count_siblings)( 
-							node, true, false, @mut num_before);
-					
-					match error {
-		                        CSS_OK => {
-		                        	if  (num_before == 0) {
-		                        		*matched = true
-		                        	}
-		                        	else {
-							*matched = false
-		                        	}
-		                        },
-		                        _=> {}
-		                    }
-				} else if (is_root == false &&
-						do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.last_of_type.get_ref().clone())} ) { 
-					let mut num_after:i32 = 0;
+                            *matched = css_select_ctx::match_nth(a, b, num_after + 1);
+                        },
+                        _ => {}
+                    }
+                } else if (is_root == false &&
+                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.last_child.get_ref().clone())} ) { 
+                    let mut num_after:i32 = 0;
 
-					error = (*state.handler.unwrap().node_count_siblings)( 
-							node, true, true, @mut num_after);
-					match error {
-		                        CSS_OK => {
-		                        	if  (num_after == 0) {
-		                        		*matched = true
-		                        	}
-		                        	else {
-							*matched = false
-		                        	}
-		                        },
-		                        _=> {}
-		                    }
-				} else if (is_root == false && 
-						do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.only_child.get_ref().clone())} ) { 
-					let mut num_before = 0;
-					let mut num_after = 0;
+                    error = (*state.handler.unwrap().node_count_siblings)(
+                            node, false, true, @mut num_after);
+                    match error {
+                                CSS_OK => {
+                                    if  (num_after == 0) {
+                                        *matched = true
+                                    }
+                                    else {
+                                        *matched = false
+                                    }
+                                },
+                                _=> {}
+                            }
+                } 
+                else if (is_root == false &&
+                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.first_of_type.get_ref().clone())} ) { 
+                    let mut num_before:i32 = 0;
 
-					error = (*state.handler.unwrap().node_count_siblings)( 
-							node, false, false, @mut num_before);
-					match error {
-		                        CSS_OK => {
-						error = (*state.handler.unwrap().node_count_siblings)(
-								 node, false, true,
-								@mut num_after);
-						match error {
-			                        CSS_OK => {
-			                        	if  (num_before == 0) && 
-									(num_after == 0) {
-			                        		*matched = true
-			                        	}
-			                        	else {
-								*matched = false
-			                        	}
-			                        },
-			                        _=> {}
-			                    }		
-					   }
-					   _ => {}
-					}
-				} else if (is_root == false && 
-						do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.only_of_type.get_ref().clone())} ) { 
-					let mut num_before = 0;
-					let mut num_after = 0;
+                    error = (*state.handler.unwrap().node_count_siblings)( 
+                            node, true, false, @mut num_before);
+                    
+                    match error {
+                        CSS_OK => {
+                            if  (num_before == 0) {
+                                *matched = true
+                            }
+                            else {
+                                *matched = false
+                            }
+                        },
+                        _=> {}
+                    }
+                } 
+                else if (is_root == false &&
+                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.last_of_type.get_ref().clone())} ) { 
+                    let mut num_after:i32 = 0;
 
-					error = (*state.handler.unwrap().node_count_siblings)( 
-							node, true, false, @mut num_before);
-					if (match error { CSS_OK => true, _  => false}) {
-						error = (*state.handler.unwrap().node_count_siblings)(
-								 node, true, true,
-								@mut num_after);
-						match error {
-			                        CSS_OK => {
-			                        	if  (num_before == 0) && 
-									(num_after == 0) {
-			                        		*matched = true
-			                        	}
-			                        	else {
-								*matched = false
-			                        	}
-			                        },
-			                        _=> {}
-			                    }		
-					}
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.root.get_ref().clone())} ) { 
-					*matched = is_root;
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.empty.get_ref().clone())} ) {
-					error = (*state.handler.unwrap().node_is_empty)(
-							node, matched);
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.link.get_ref().clone())} ) { 
-					error = (*state.handler.unwrap().node_is_link)(
-							node, matched);
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.visited.get_ref().clone())} ) { 
-					error = (*state.handler.unwrap().node_is_visited)(
-							node, matched);
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.hover.get_ref().clone())} ) { 
-					error = (*state.handler.unwrap().node_is_hover)(
-							node, matched);
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.active.get_ref().clone())} ) { 
-					error = (*state.handler.unwrap().node_is_active)(
-							node, matched);
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.focus.get_ref().clone())} ) { 
-					error = (*state.handler.unwrap().node_is_focus)(
-							node, matched);
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.target.get_ref().clone())} ) { 
-					error = (*state.handler.unwrap().node_is_target)(
-							node, matched);
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.lang.get_ref().clone())} ) { 
-					error = (*state.handler.unwrap().node_is_lang)(
-							node, (copy detail.string).unwrap(), matched);
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.enabled.get_ref().clone())} ) { 
-					error = (*state.handler.unwrap().node_is_enabled)(
-							node, matched);
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.disabled.get_ref().clone())} ) { 
-					error = (*state.handler.unwrap().node_is_disabled)(
-							node, matched);
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.checked.get_ref().clone())} ) { 
-					error = (*state.handler.unwrap().node_is_checked)(
-							node, matched);
-				} else {
-					*matched = false;
-				}
-			}
-			CSS_SELECTOR_PSEUDO_ELEMENT => {
-				*matched = true;
+                    error = (*state.handler.unwrap().node_count_siblings)( 
+                            node, true, true, @mut num_after);
+                
+                    match error {
+                        CSS_OK => {
+                            if  (num_after == 0) {
+                                *matched = true
+                            }
+                            else {
+                                *matched = false
+                            }
+                        },
+                        _=> {}
+                    }
+                }
+                else if (is_root == false && 
+                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.only_child.get_ref().clone())} ) { 
+                    
+                    let mut num_before = 0;
+                    let mut num_after = 0;
 
-				if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.first_line.get_ref().clone())} ) { 
-					*pseudo_element = CSS_PSEUDO_ELEMENT_FIRST_LINE;
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.first_letter.get_ref().clone())} ) { 
-					*pseudo_element = CSS_PSEUDO_ELEMENT_FIRST_LETTER;
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.before.get_ref().clone())} ) { 
-					*pseudo_element = CSS_PSEUDO_ELEMENT_BEFORE;
-				} else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.after.get_ref().clone())} ) { 
-					*pseudo_element = CSS_PSEUDO_ELEMENT_AFTER;
-				} else {
-					*matched = false;
-				}
-			}
-			CSS_SELECTOR_ATTRIBUTE => {
-				error = (*state.handler.unwrap().node_has_attribute)( node,
-						copy detail.qname, matched);
-			}
-			CSS_SELECTOR_ATTRIBUTE_EQUAL => {
-				error = (*state.handler.unwrap().node_has_attribute_equal)( 
-						node, copy detail.qname, (copy detail.string).unwrap(), 
-						matched);
-			}
-			CSS_SELECTOR_ATTRIBUTE_DASHMATCH => {
-				error = (*state.handler.unwrap().node_has_attribute_dashmatch)(
-						node, copy detail.qname, (copy detail.string).unwrap(),
-						matched);
-			}
-			CSS_SELECTOR_ATTRIBUTE_INCLUDES => {
-				error = (*state.handler.unwrap().node_has_attribute_includes)( 
-						node, copy detail.qname, (copy detail.string).unwrap(),
-						matched);
-			}
-			CSS_SELECTOR_ATTRIBUTE_PREFIX => {
-				error = (*state.handler.unwrap().node_has_attribute_prefix)(
-						node, copy detail.qname, (copy detail.string).unwrap(),
-						matched);
-			}
-			CSS_SELECTOR_ATTRIBUTE_SUFFIX => {
-				error = (*state.handler.unwrap().node_has_attribute_suffix)(
-						node, copy detail.qname,(copy detail.string).unwrap(),
-						matched);
-			}
-			CSS_SELECTOR_ATTRIBUTE_SUBSTRING => {
-				error = (*state.handler.unwrap().node_has_attribute_substring)(
-						node, copy detail.qname,(copy  detail.string).unwrap(),
-						matched);
-			}
-		}
+                    error = (*state.handler.unwrap().node_count_siblings)( 
+                            node, false, false, @mut num_before);
+                    
+                    match error {
+                        CSS_OK => {
+                            error = (*state.handler.unwrap().node_count_siblings)(
+                                 node, false, true, @mut num_after);
+                                    
+                            match error {
+                                CSS_OK => {
+                                    if  (num_before == 0) && 
+                                            (num_after == 0) {
+                                        *matched = true
+                                    }
+                                    else {
+                                        *matched = false
+                                    }
+                                },
+                                _=> {}
+                            }       
+                        }
+                        _ => {}
+                    }
+                } 
+                else if (is_root == false && 
+                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.only_of_type.get_ref().clone())} ) { 
+                
+                    let mut num_before = 0;
+                    let mut num_after = 0;
 
-		/* Invert match, if the detail requests it */
-		if ( (match error { CSS_OK => true, _ => false} )&& detail.negate){
-			*matched = !*matched;
-		}
-		return error
-	}
+                    error = (*state.handler.unwrap().node_count_siblings)( 
+                            node, true, false, @mut num_before);
+                
+                    if (match error { CSS_OK => true, _  => false}) {
+                        error = (*state.handler.unwrap().node_count_siblings)(
+                                    node, true, true, @mut num_after);
+                
+                        match error {
+                            CSS_OK => {
+                                if  (num_before == 0) && 
+                                            (num_after == 0) {
+                                        *matched = true
+                                }
+                                else {
+                                    *matched = false
+                                }
+                            },
+                            _=> {}
+                        }       
+                    }
+                } 
+                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.root.get_ref().clone())} ) { 
+                    *matched = is_root;
+                } 
+                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.empty.get_ref().clone())} ) {
+                    error = (*state.handler.unwrap().node_is_empty)(
+                            node, matched);
+                } 
+                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.link.get_ref().clone())} ) { 
+                    error = (*state.handler.unwrap().node_is_link)(
+                            node, matched);
+                }
+                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.visited.get_ref().clone())} ) { 
+                    error = (*state.handler.unwrap().node_is_visited)(
+                            node, matched);
+                }
+                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.hover.get_ref().clone())} ) { 
+                    error = (*state.handler.unwrap().node_is_hover)(
+                            node, matched);
+                }
+                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.active.get_ref().clone())} ) { 
+                    error = (*state.handler.unwrap().node_is_active)(
+                            node, matched);
+                } 
+                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.focus.get_ref().clone())} ) { 
+                    error = (*state.handler.unwrap().node_is_focus)(
+                            node, matched);
+                } 
+                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.target.get_ref().clone())} ) { 
+                    error = (*state.handler.unwrap().node_is_target)(
+                            node, matched);
+                }
+                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.lang.get_ref().clone())} ) { 
+                    error = (*state.handler.unwrap().node_is_lang)(
+                            node, (copy detail.string).unwrap(), matched);
+                }
+                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.enabled.get_ref().clone())} ) { 
+                    error = (*state.handler.unwrap().node_is_enabled)(
+                            node, matched);
+                }
+                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.disabled.get_ref().clone())} ) { 
+                    error = (*state.handler.unwrap().node_is_disabled)(
+                            node, matched);
+                }
+                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.checked.get_ref().clone())} ) { 
+                    error = (*state.handler.unwrap().node_is_checked)(
+                            node, matched);
+                }
+                else {
+                    *matched = false;
+                }
+            }
+            CSS_SELECTOR_PSEUDO_ELEMENT => {
+                *matched = true;
+
+                if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.first_line.get_ref().clone())} ) { 
+                    *pseudo_element = CSS_PSEUDO_ELEMENT_FIRST_LINE;
+                } else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.first_letter.get_ref().clone())} ) { 
+                    *pseudo_element = CSS_PSEUDO_ELEMENT_FIRST_LETTER;
+                } else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.before.get_ref().clone())} ) { 
+                    *pseudo_element = CSS_PSEUDO_ELEMENT_BEFORE;
+                } else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.after.get_ref().clone())} ) { 
+                    *pseudo_element = CSS_PSEUDO_ELEMENT_AFTER;
+                } else {
+                    *matched = false;
+                }
+            }
+            CSS_SELECTOR_ATTRIBUTE => {
+                error = (*state.handler.unwrap().node_has_attribute)( node,
+                        copy detail.qname, matched);
+            }
+            CSS_SELECTOR_ATTRIBUTE_EQUAL => {
+                error = (*state.handler.unwrap().node_has_attribute_equal)( 
+                        node, copy detail.qname, (copy detail.string).unwrap(), 
+                        matched);
+            }
+            CSS_SELECTOR_ATTRIBUTE_DASHMATCH => {
+                error = (*state.handler.unwrap().node_has_attribute_dashmatch)(
+                        node, copy detail.qname, (copy detail.string).unwrap(),
+                        matched);
+            }
+            CSS_SELECTOR_ATTRIBUTE_INCLUDES => {
+                error = (*state.handler.unwrap().node_has_attribute_includes)( 
+                        node, copy detail.qname, (copy detail.string).unwrap(),
+                        matched);
+            }
+            CSS_SELECTOR_ATTRIBUTE_PREFIX => {
+                error = (*state.handler.unwrap().node_has_attribute_prefix)(
+                        node, copy detail.qname, (copy detail.string).unwrap(),
+                        matched);
+            }
+            CSS_SELECTOR_ATTRIBUTE_SUFFIX => {
+                error = (*state.handler.unwrap().node_has_attribute_suffix)(
+                        node, copy detail.qname,(copy detail.string).unwrap(),
+                        matched);
+            }
+            CSS_SELECTOR_ATTRIBUTE_SUBSTRING => {
+                error = (*state.handler.unwrap().node_has_attribute_substring)(
+                        node, copy detail.qname,(copy  detail.string).unwrap(),
+                        matched);
+            }
+        }
+
+        /* Invert match, if the detail requests it */
+        if ( (match error { CSS_OK => true, _ => false} )&& detail.negate){
+            *matched = !*matched;
+        }
+        return error
+    }
 
     pub fn cascade_style(style:@mut css_style, state:@mut css_select_state) -> css_error {
         let mut s = style;
@@ -1971,8 +2003,8 @@ impl css_select_ctx {
             }
         }
 
-		CSS_OK
-	}
+        CSS_OK
+    }
 
 }
 
