@@ -7,9 +7,6 @@ use bytecode::bytecode::*;
 use include::font_face::*;
 use include::properties::*;
 use include::types::*;
-
-use lex::lexer::*;
-
 use utils::errors::*;
 
 /**

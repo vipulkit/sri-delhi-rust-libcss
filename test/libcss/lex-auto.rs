@@ -1,14 +1,16 @@
+extern mod std;
 extern mod css;
 extern mod parserutils ; 
-extern mod css;
 extern mod testutils;
+extern mod wapcaplet;
 
+use css::utils::errors::*;
 use css::lex::lexer::*;
 use css::charset::csdetect::*;
 
 use parserutils::input::inputstream::*;
 
-use core::str::*;
+// use core::str::*;
 use core::float::*;
 use testutils::*;
 
@@ -17,55 +19,44 @@ static EXP_ENTRY_TEXT_LEN:int = (128);
 pub type  line_func =  
     ~extern fn(data:~str , pw:&mut line_ctx_lex) -> bool;
 
-fn NumValToString(NumVal:NumericValue)-> ~str {
-    match NumVal {
-        Integer(x)=>{
-            return fmt!("%?",x);
-        },
-        Float(x)=>{
-            return fmt!("%?",x);
-        },
-    }
-}
-
 fn token_to_string(token:css_token_type)-> ~str {
     let mut returnString =~"";
     match token {
-        CSS_TOKEN_IDENT(x)=>{
-            returnString += ~"IDENT:" + x;
+        CSS_TOKEN_IDENT=>{
+            returnString += ~"IDENT:";
         },
-        CSS_TOKEN_ATKEYWORD(x)=>{
-            returnString += ~"ATKEYWORD:" + x;
+        CSS_TOKEN_ATKEYWORD=>{
+            returnString += ~"ATKEYWORD:";
         },
-        CSS_TOKEN_HASH(x)=>{
-            returnString += ~"HASH:" + x;
+        CSS_TOKEN_HASH=>{
+            returnString += ~"HASH:";
         },
-        CSS_TOKEN_FUNCTION(x)=>{
-            returnString += ~"FUNCTION:" + x;
+        CSS_TOKEN_FUNCTION=>{
+            returnString += ~"FUNCTION:";
         }, 
-        CSS_TOKEN_STRING(x)=>{
-            returnString += ~"STRING:" + x;
+        CSS_TOKEN_STRING=>{
+            returnString += ~"STRING:";
         }, 
         CSS_TOKEN_INVALID_STRING=>{
             returnString += ~"INVALID_STRING";
         }, 
-        CSS_TOKEN_URI(x)=>{
-            returnString += ~"URI:" + x;
+        CSS_TOKEN_URI=>{
+            returnString += ~"URI:";
         }, 
-        CSS_TOKEN_UNICODE_RANGE(ch1 , ch2)=>{
-            returnString += ~"UNICODE_RANGE: " + from_char(ch1)+~" "+from_char(ch2);
+        CSS_TOKEN_UNICODE_RANGE=>{
+            returnString += ~"UNICODE_RANGE: ";
         }, 
-        CSS_TOKEN_CHAR(ch)=>{
-            returnString += ~"CHAR:" + from_char(ch);
+        CSS_TOKEN_CHAR=>{
+            returnString += ~"CHAR:";
         },
-        CSS_TOKEN_NUMBER(NumVal , x)=>{
-            returnString += ~"NUMBER:" + NumValToString(NumVal)+~" "+x;
+        CSS_TOKEN_NUMBER=>{
+            returnString += ~"NUMBER:";
         }, 
-        CSS_TOKEN_PERCENTAGE(NumVal , x)=>{
-            returnString += ~"PERCENTAGE:"+NumValToString(NumVal)+~" "+x;
+        CSS_TOKEN_PERCENTAGE=>{
+            returnString += ~"PERCENTAGE:";
         }, 
-        CSS_TOKEN_DIMENSION(NumVal , x1, x2)=>{
-            returnString += ~"DIMENSION:"+NumValToString(NumVal)+~" "+x1+~" "+x2;
+        CSS_TOKEN_DIMENSION=>{
+            returnString += ~"DIMENSION:";
         },
         CSS_TOKEN_CDO=>{
             returnString += ~"CDO";
@@ -76,12 +67,24 @@ fn token_to_string(token:css_token_type)-> ~str {
         CSS_TOKEN_S=>{
             returnString += ~"S";
         },
-        /*Delim(ch)=>{
-            returnString += ~"Delim " + from_char(ch);
-        },*/
-        // CSS_TOKEN_COMMENT, 
-        // CSS_TOKEN_INCLUDES, CSS_TOKEN_DASHMATCH, CSS_TOKEN_PREFIXMATCH, 
-        // CSS_TOKEN_SUFFIXMATCH, CSS_TOKEN_SUBSTRINGMATCH, 
+        CSS_TOKEN_COMMENT => {
+            returnString += ~"COMMENT";
+        },
+        CSS_TOKEN_INCLUDES => {
+            returnString += ~"INCLUDES";
+        },
+        CSS_TOKEN_DASHMATCH => {
+            returnString += ~"DASHMATCH";
+        },
+        CSS_TOKEN_PREFIXMATCH => {
+            returnString += ~"PREFIXMATCH";
+        },
+        CSS_TOKEN_SUFFIXMATCH => {
+            returnString += ~"SUFFIXMATCH";
+        },
+        CSS_TOKEN_SUBSTRINGMATCH => {
+            returnString += ~"SUBSTRINGMATCH";
+        }
         CSS_TOKEN_EOF =>{
             returnString += ~"EOF";
         }
@@ -190,32 +193,54 @@ pub fn run_test(data:~[u8], exp:~[~str]) {
     // io::println("Creating lexer");
     let mut lexer = css_lexer::css__lexer_create(inputstream);
 
-    lexer.lexer_append_data(data);
-    lexer.data_done();
+    lexer.css__lexer_append_data(data);
+    // lexer.data_done();
     // io::println(~"after append data="+ from_bytes(*data));
     let mut index = 0;
     loop {
     	// io::println("inside loop");
-        let (token_option,error)= lexer.get_token();
+        let (error,token_option)= lexer.css__lexer_get_token();
        
         match(error)	{
-            LEXER_OK => {
-            	let token_string = token_to_string(token_option.unwrap());
-                io::println(fmt!("Expected token == %?", exp[index]));
-                io::println(fmt!("Found token == %?", token_string));
-                if token_string != exp[index] {
-                    //fail!(~"Expected and Found tokens do not match.");
+            CSS_OK => {
+                let token = token_option.unwrap();
+                io::println(fmt!("token == %?", token));
+
+                let token_type_string = token_to_string(token.token_type);
+                let token_data = str::from_bytes(copy token.data.data);
+
+                let found = fmt!("%s%s" , token_type_string , token_data);
+
+                io::println(fmt!("found == %?", found));
+                io::println(fmt!("Expected token == %?", (exp[index])));
+                if  found.ne(&exp[index]) {
+                    // io::println(fmt!("Expected token == %?", (exp[index])));
+                    // io::println(fmt!("Found token == %?", (found)));
+                    fail!(~"Expected and Found tokens do not match.");
+
                 }
+
                 index += 1;
             },
             _=>{
-                //io::println(fmt!("error == %?", error));
+                io::println(fmt!("error = %?", error));
             	if token_option.is_some() {
-                    let token_string = token_to_string(token_option.unwrap());
-                    io::println(fmt!("Expected token == %?", exp[index]));
-                    io::println(fmt!("Found token == %?", token_string));
-                    if token_string != exp[index] {
-                        //fail!(~"Expected and Found tokens do not match.");
+                    
+                    let token = token_option.unwrap();
+                    io::println(fmt!("token == %?", token));
+
+                    let token_type_string = token_to_string(token.token_type);
+                    let token_data = str::from_bytes(copy token.data.data);
+
+                    let found = fmt!("%s%s" , token_type_string , token_data);
+
+                    io::println(fmt!("found == %?", found));
+                    io::println(fmt!("Expected token == %?", (exp[index])));
+                    if  found.ne(&exp[index]) {
+                        // io::println(fmt!("Expected token == %?", (exp[index])));
+                        // io::println(fmt!("Found token == %?", (found)));
+                        fail!(~"Expected and Found tokens do not match.");
+
                     }
                     index += 1;
                 }
@@ -225,13 +250,6 @@ pub fn run_test(data:~[u8], exp:~[~str]) {
         
     }
     
-    io::println(fmt!("Expected token == %?", exp[index]));
-    let (token_option,error)= lexer.get_token();
-    let token_string = token_to_string(token_option.unwrap());
-    io::println(fmt!("Found token == %?", token_string));
-    if token_string != exp[index] {
-        //fail!(~"Expected and Found tokens do not match.");
-    }
     index += 1;
 
     assert!(index == exp.len());

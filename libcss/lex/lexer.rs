@@ -232,6 +232,7 @@ impl css_lexer {
      ******************************************************************************/
 
     pub fn APPEND(&mut self, data: &[u8], len: uint) {
+        // io::println("entering APPEND");
         self.append_to_token_data(data, len);
 
         self.bytes_read_for_token += len;
@@ -240,16 +241,32 @@ impl css_lexer {
 
     pub fn append_to_token_data(&mut self , data: &[u8], len: uint) {
         
+        // io::println("entering append_to_token_data");
         if self.escape_seen {
+            // io::println("inside: append_to_token_data in if");
             self.unescaped_token_data.get_mut_ref().push_all(data.slice(0,len));
         }
 
+        // io::println("inside: append_to_token_data");
         self.token.get_mut_ref().data.len += len;
     }
 
     pub fn emit_token(&mut self , input_token_type: Option<css_token_type>) -> (css_error, Option<@mut css_token>) {
 
+        // io::println("entering emit_token");
         let mut t = self.token.swap_unwrap();
+        let _data = css_token_data {
+            data: ~[],
+            len: 0
+        };
+        let _token = @mut css_token {
+            data: _data,
+            token_type: CSS_TOKEN_EOF,
+            idata: None,
+            col: 0,
+            line: 0
+        };
+        self.token = Some(_token);
         let token_type = match (input_token_type) {
             Some(tt) => {
                 t.token_type = tt;
@@ -376,6 +393,7 @@ impl css_lexer {
      ******************************************************************************/
 
     pub fn at_keyword(&mut self) -> (css_error, Option<@mut css_token>) {
+        // io::println("entering at_keyword");
         enum at_keyword_substates {
             Initial = 0, 
             Escape = 1, 
@@ -542,6 +560,7 @@ impl css_lexer {
                 /* CHAR is the only match here */
                 /* Remove the '-' we read above */
                 self.bytes_read_for_token -= 1;
+                // io::println("inside: cdc_or_ident_or_function_or_npd in perror == PARSERUTILS_EOF");
                 self.token.get_mut_ref().data.len -= 1;
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
@@ -551,11 +570,12 @@ impl css_lexer {
 
             if (c == '>') {
                 self.APPEND(cptr, clen);
-
+                // io::println("inside: cdc_or_ident_or_function_or_npd in c == '>'");
                 self.token.get_mut_ref().token_type = CSS_TOKEN_CDC;
             } else {
                 /* Remove the '-' we read above */
                 self.bytes_read_for_token -= 1;
+                // io::println("inside: cdc_or_ident_or_function_or_npd in else of c == '>'");
                 self.token.get_mut_ref().data.len -= 1;
                 self.token.get_mut_ref().token_type = CSS_TOKEN_CHAR;
             }
@@ -630,6 +650,7 @@ impl css_lexer {
                 /* CHAR is the only match here */
                 /* Remove the '!' we read above */
                 self.bytes_read_for_token -= 1;
+                // io::println("inside: cdo in perror == PARSERUTILS_EOF of Dash1");
                 self.token.get_mut_ref().data.len -= 1;
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
@@ -642,6 +663,7 @@ impl css_lexer {
             } else {
                 /* Remove the '!' we read above */
                 self.bytes_read_for_token -= 1;
+                // io::println("inside: cdo in perror == in else of c == '-'");
                 self.token.get_mut_ref().data.len -= 1;
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
@@ -663,6 +685,7 @@ impl css_lexer {
                 /* CHAR is the only match here */
                 /* Remove the '-' and the '!' we read above */
                 self.bytes_read_for_token -= 2;
+                // io::println("inside: cdo in perror == PARSERUTILS_EOF of dash2");
                 self.token.get_mut_ref().data.len -= 2;
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
@@ -675,6 +698,7 @@ impl css_lexer {
                 self.APPEND(cptr, clen);
             } else {
                 /* Remove the '-' and the '!' we read above */
+                // io::println("inside: cdo in perror == in else of c = '-' in dash 2");
                 self.bytes_read_for_token -= 2;
                 self.token.get_mut_ref().data.len -= 2;
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
@@ -841,9 +865,10 @@ impl css_lexer {
 
             if (c == '(') {
                 self.APPEND(cptr, clen);
-
+                // io::println("inside: ident_or_function in c == '('");
                 self.token.get_mut_ref().token_type = CSS_TOKEN_FUNCTION;
             } else {
+                // io::println("inside: ident_or_function in else of c == '('");
                 self.token.get_mut_ref().token_type = CSS_TOKEN_IDENT;
             }
         }
@@ -1964,7 +1989,6 @@ impl css_lexer {
     }
 
     fn consume_unicode(&mut self, mut ucs : u32) -> css_error {
-        let cptr : @mut u8;
         let mut count : int = 0;
         let mut bytes_read_init : uint = self.bytes_read_for_token;
 
@@ -2054,7 +2078,7 @@ impl css_lexer {
                                    return CSS_OK;
                                 }
                                 PARSERUTILS_OK => {
-                                    let (_cptr2 , clen2) = pu_peek_result2.unwrap();
+                                    let (_cptr2 , _) = pu_peek_result2.unwrap();
                                     if (_cptr2[0] as char == '\n') { // Potential CRLF 
                                         self.bytes_read_for_token += 1;
                                         _cptr = _cptr2;
@@ -2208,5 +2232,5 @@ fn is_space(c: char) -> bool{
 
 
 fn main() {
-    io::println("lexer");
+    // io::println("lexer");
 }

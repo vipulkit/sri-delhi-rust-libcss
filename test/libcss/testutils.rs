@@ -4,7 +4,6 @@
 
 #[crate_type = "lib"];
 extern mod css;
-use css::lex::lexer::*;
 use core::io::*;
 
 pub type  line_func =  
@@ -57,7 +56,7 @@ pub fn css__parse_strnchr(string:&~str, chr:char)-> (~str,uint) {
 pub fn css__parse_testfile(filename:~str,  callback:line_func, pw:LINE_CTX_DATA_TYPE)->bool {
     let r:@Reader = io::file_reader(&Path(filename)).get();
     let mut data:~str;
-    let mut string:~str = ~"";
+    let mut string: ~str;
 
     while(!r.eof()) {               
        data= r.read_line();
@@ -82,7 +81,6 @@ pub fn css__parse_testfile(filename:~str,  callback:line_func, pw:LINE_CTX_DATA_
                 return false;
             }   
        }
-       
     }
 
     if !(*callback)( ~"#", pw) {

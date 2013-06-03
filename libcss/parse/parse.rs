@@ -1,6 +1,5 @@
 use parse::common::*;
 use parse::language::*;
-use stylesheet::*;
 use lex::lexer::*;
 use utils::errors::*;
 
