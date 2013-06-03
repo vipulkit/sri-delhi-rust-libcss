@@ -1325,11 +1325,13 @@ impl css_select_ctx {
 
         let mut s = selector;
         let mut node = state.node;
-        let mut match_b = false;
+        let mut match_b : @mut bool = @mut false;
         let mut may_optimise = true;
-        let mut rejected_by_cache : bool = true ;
+        let mut rejected_by_cache : @mut bool = @mut true ;
         let mut pseudo : css_pseudo_element = CSS_PSEUDO_ELEMENT_NONE ;
         let mut error : css_error = CSS_OK;
+        let mut universal_string = self.universal.swap_unwrap().clone() ;
+        self.universal = Some(universal_string.clone()) ;     
         
         /* Match the details of the first selector in the chain. 
          *
@@ -1338,7 +1340,9 @@ impl css_select_ctx {
          * any selector chains containing pseudo elements anywhere 
          * else.
          */
-        //error = match_details(ctx, node, detail, state, match_b, pseudo);
+        unsafe {
+            error = self.match_details(node, &(s.get().data) , state, match_b, Some(pseudo) );
+        }
         match error {
             CSS_OK => {},
             err => { 
@@ -1347,7 +1351,7 @@ impl css_select_ctx {
         }
 
         /* Details don't match, so reject selector chain */
-        if (match_b == false) {
+        if (match_b == @mut false) {
             return CSS_OK;
         }
 
@@ -1363,9 +1367,9 @@ impl css_select_ctx {
                         _=>{true} }
                      ) && 
                      (s.get().combinator.is_some() ) &&
-                     (self.universal.is_some() ) /*&&
+                     (self.universal.is_some() ) &&
                      (s.get().combinator.get().data[0].qname.name != 
-                      lwc_string_data(self.universal.unwrap().clone()) ) */ ) {
+                      lwc_string_data(universal_string.clone()) )  ) {
 
                     /* Named combinator */
                     if may_optimise {
@@ -1376,8 +1380,8 @@ impl css_select_ctx {
                         } ;
                     }
 
-                    //error = match_named_combinator(ctx, s.data[0].combinator_type, 
-                    //        s.combinator, state, node, next_node);
+                    error = self.match_named_combinator(s.get().data[0].combinator_type, 
+                           s.get().combinator.get(), state, node, &mut next_node);
                     match error {
                         CSS_OK => {},
                         err => { 
@@ -1405,10 +1409,10 @@ impl css_select_ctx {
                         } ;
                     }
 
-                    // error = match_universal_combinator(ctx, s.data[0].comb, 
-                    //         s.combinator, state, node, 
-                    //         may_optimise, &rejected_by_cache,
-                    //         next_node);
+                    error = self.match_universal_combinator(s.get().data[0].combinator_type, 
+                                                    s.get().combinator.get(), state, node, 
+                                                    may_optimise, rejected_by_cache,
+                                                    &mut next_node);
                     match error {
                         CSS_OK => {},
                         err => { 
@@ -1419,9 +1423,10 @@ impl css_select_ctx {
                     /* No match for combinator, so reject selector chain */
                     if (next_node == ptr::null()) {
                         if (may_optimise && mut_ptr_eq(s.get(),selector.get()) &&
-                                rejected_by_cache == false) {
-                            // update_reject_cache(state, s.data[0].comb,
-                            //         s.combinator);
+                                rejected_by_cache == @mut false) {
+                            css_select_ctx::update_reject_cache(state, 
+                                                    s.get().data[0].combinator_type,
+                                                    s.get().combinator.get());
                         }
 
                         return CSS_OK;
@@ -1456,6 +1461,10 @@ impl css_select_ctx {
         }
 
         unsafe {
+            if( state.results.styles.len() <= pseudo as uint ) {
+                return CSS_INVALID ;
+            }
+
             /* Ensure that the appropriate computed style exists */
             if ( state.results.styles[pseudo as uint].is_none() ) {
                 state.results.styles[pseudo as uint] = Some(css_computed_style_create()); 
@@ -1467,6 +1476,7 @@ impl css_select_ctx {
 
         css_select_ctx::cascade_style( rule.style.get() , state)
     }
+
     pub fn match_universal_combinator(&mut self, combinator_type:css_combinator,
         selector:@mut css_selector, state:@mut css_select_state,
         node:*libc::c_void, may_optimise:bool, rejected_by_cache:@mut bool,
