@@ -291,7 +291,7 @@ pub fn  try_ascii_compatible_charset(data : &~[u8], alias_arc: arc::ARC<~alias>)
 }
 
 pub fn css_charset_read_bom_or_charset(data : &~[u8], alias_arc: arc::ARC<~alias>) -> (Option<u16>, parserutils_error) {
-    io::println("Entering: css_charset_read_bom_or_charset");
+    // io::println("Entering: css_charset_read_bom_or_charset");
     //let mut err : parserutils_error ;
     let mut charset : u16  = 0;
     //let mut parser : @alias = alias();

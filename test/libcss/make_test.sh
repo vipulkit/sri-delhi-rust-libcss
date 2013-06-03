@@ -2,7 +2,7 @@
 
 # do clean
 
-rm *css21 *csdetect *parse *parse-auto *parse2-auto *lex *number *lex-auto
+rm *css21 *csdetect *parse *parse-auto *parse2-auto *lex *number *lex-auto *.so
 rustc -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet testutils.rs
 rustc --test -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet css21.rs
 rustc --test -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet parse.rs
