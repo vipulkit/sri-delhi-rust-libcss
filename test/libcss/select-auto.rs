@@ -102,7 +102,36 @@ pub fn select_test(file:~str) {
 		lwc_instance:lwc_ins.clone()
 	};
 
-	//css__parse_testfile(file,handle_line,ctx) ;
+	let file_content_result = io::read_whole_file_str(&Path(file)) ;
+	let mut file_content : ~str ;
+	match file_content_result {
+		Ok(x) => {
+			file_content = x ;
+		},
+		Err(y) => {
+			file_content = ~"" ;
+			io::println(fmt!("\n Error opening file"));
+			assert!(false) ;
+		}
+	}
+
+	for str::each_line_any(file_content) |line| {  
+		handle_line(line,ctx);
+	}
+
+	if( ctx.tree.is_some() ) {
+		run_test(ctx);
+	}
+
+	io::println(fmt!("File is ========= \n %? \n =====================",file_content));
+}
+
+pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
+	true 
+}
+
+pub fn run_test(ctx:@mut line_ctx) {
+
 }
 
 pub fn main() {
