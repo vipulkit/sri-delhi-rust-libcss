@@ -61,13 +61,11 @@ fn lex(fileName: ~str) {
         else if dataFlag {
             // io::println(buf);
             finalstr.push_str(buf);
-            // finalstr.push_char('\n');
+            finalstr.push_char('\n');
             // io::println(finalstr);
         }
         else if expectedFlag {
             expectedstr.push_str(buf);
-
-
         }
 
         if resetFlag && !dataFlag && !expectedFlag {
