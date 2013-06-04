@@ -1341,7 +1341,7 @@ impl css_select_ctx {
          * else.
          */
         unsafe {
-            error = self.match_details(node, &(s.get().data) , state, match_b, Some(pseudo) );
+            error = self.match_details(node, &(s.get().data) , state, match_b, Some(@mut pseudo) );
         }
         match error {
             CSS_OK => {},
@@ -1578,11 +1578,16 @@ impl css_select_ctx {
 
     pub fn match_details(&mut self, node:*libc::c_void, 
         detail :&~[@mut css_selector_detail], state : @mut css_select_state, 
-        matched : @mut bool, pseudo_element : Option<css_pseudo_element>) -> css_error {
+        matched : @mut bool, pseudo_element : Option<@mut css_pseudo_element>) -> css_error {
 
         let mut error : css_error = CSS_OK;
         let mut pseudo : css_pseudo_element = CSS_PSEUDO_ELEMENT_NONE;
-    let mut index:uint = 0;
+        let mut index:uint = 0;
+
+        /* Skip the element selector detail, which is always first.
+         * (Named elements are handled by match_named_combinator, so the
+         * element selector detail always matches here.) */
+
         if(detail.len() > index){
             index += 1;
         }
@@ -1590,7 +1595,15 @@ impl css_select_ctx {
             index = -1;
         }
 
+        /* We match by default (if there are no details other than the element
+         * selector, then we must match) */
         *matched = true;
+
+        //** \todo Some details are easier to test than others (e.g. dashmatch 
+        // * actually requires looking at data rather than simply comparing 
+        // * pointers). Should we consider sorting the detail list such that the 
+        // * simpler details come first (and thus the expensive match routines 
+        // * can be avoided unless absolutely necessary)? 
 
         while index != -1 {
             error = self.match_detail(node, detail[index], state, matched, @mut pseudo);
@@ -1605,15 +1618,21 @@ impl css_select_ctx {
                 return CSS_OK;
             }
 
-            if(copy detail.len() > index){
+            if(copy detail.len() -1 > index){
                 index += 1;
             }
             else {
                 index = -1;
             }
         }
-
-        error
+        
+        /* Return the applicable pseudo element, if required */
+        match pseudo_element {
+            Some(value) => *value = pseudo,
+            None => {}
+        }
+ 
+        CSS_OK
     }
     
 
