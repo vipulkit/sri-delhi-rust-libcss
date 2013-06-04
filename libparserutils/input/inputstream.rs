@@ -142,7 +142,7 @@ impl inputstream {
         }
 
         let result: ~str= totype.unwrap();
-        io::println(result);
+        // io::println(result);
         match(result) {
             ~"UTF-8" => {
                 if (self.raw.len() >= UTF8_BOM_LEN) && self.raw[0] == 0xEF && self.raw[1] == 0xBB && self.raw[2] == 0xBF {

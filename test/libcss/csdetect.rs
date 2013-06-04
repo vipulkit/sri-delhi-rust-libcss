@@ -20,8 +20,6 @@ fn testMain(fileName: ~str) {
 	
 	let ctx: @mut line_ctx_csdetect = @mut line_ctx_csdetect
 		{
-			buflen:len,
-			bufused:0,
 			buf:~[],
 			enc:~"",
 			indata:false,
@@ -46,23 +44,22 @@ pub fn handle_line(data:~str, pw:LINE_CTX_DATA_TYPE)-> bool {
 	}
 	if data[0] == '#' as u8 {
 		if ctx.inenc {
-			if (ctx.buf[ctx.bufused - 1] == '\n' as u8) {
-				ctx.bufused -= 1;	
+			unsafe {
+				if (vec::last(ctx.buf) == &('\n' as u8)) {
+					ctx.buf.pop();
+				}
 			}
-			result = run_test(copy ctx.buf, ctx.bufused,copy  ctx.enc);	
-            ctx.buf[0]=0;
+			result = run_test(copy ctx.buf, copy  ctx.enc);	
+            ctx.buf = ~[];
             ctx.enc=~"";
-            ctx.bufused =0;
 		}
-		ctx.indata = str::eq(&data.slice(1,data.len()).to_owned().to_lower(),&~"data");
-		ctx.inenc = str::eq(&data.slice(1,data.len()).to_owned().to_lower(),&~"encoding");
-		
+		ctx.indata = str::ends_with(data,&"data");
+		ctx.inenc = str::ends_with(data,&"encoding");
+
 	}
  	else {
 		if (ctx.indata) {
-			ctx.buf =  unsafe { ctx.buf.slice(0,ctx.bufused).to_owned() };
 			ctx.buf += data.to_bytes();
-			ctx.bufused += data.len();
 		}
 		if (ctx.inenc) {
 			ctx.enc = (data);
@@ -77,7 +74,7 @@ pub fn handle_line(data:~str, pw:LINE_CTX_DATA_TYPE)-> bool {
     return result;
 }
 
-pub fn run_test(data:~[u8],  _:uint, expected_encoding:~str) -> bool {
+pub fn run_test(data:~[u8],  expected_encoding:~str) -> bool {
     let alias_instance = alias();
     
     let expected_mibenum = 

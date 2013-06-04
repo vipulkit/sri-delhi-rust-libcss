@@ -94,12 +94,15 @@ fn token_to_string(token:css_token_type)-> ~str {
 
 pub fn handle_line(mut data:~str,  pw:LINE_CTX_DATA_TYPE)->bool
 {
-	//io::println("handle_line");
-	//io::println(~"STRING="+data);
-	
-    let ctx :@mut line_ctx_lex;
+    io::println("Entering: handle_line");
 
-    match pw { CSDETECT(_) => fail!(~"In File lex-auto.rs, Function handle_line, argument LINE_CTX_DATA_TYPE contains incorrect struct line_ctx_csdetect"), LEX(x) => ctx = x }
+    let mut ctx = match pw { 
+        CSDETECT(_) => fail!(~"In File lex-auto.rs, Function handle_line, argument LINE_CTX_DATA_TYPE contains incorrect struct line_ctx_csdetect"), 
+        LEX(x) => x 
+    };
+
+    unsafe{io::println(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
+    io::println(~"STRING="+data);
 
     if data.len() <= 0 {
 		io::println("error");
@@ -107,77 +110,70 @@ pub fn handle_line(mut data:~str,  pw:LINE_CTX_DATA_TYPE)->bool
 	}
    
 	if (data[0] == '#' as u8) {
+        io::println("Entering: data[0] == '#' as u8");
 		if (ctx.inexp) {
 			/* This marks end of testcase, so run it */
 
 			run_test(copy ctx.buf , copy ctx.exp);
-
-			//ctx.buf[0] = 0;//
 			ctx.exp= ~[];
 			ctx.buf=~[];
-			ctx.bufused = 0;
-
-			ctx.expused = 0;
 		}
 
-		if (ctx.indata && str::eq(&data.slice(1,data.len()).to_owned().to_lower(),&~"expected")) {
+		if (ctx.indata && str::ends_with(data, &"expected")) {
 			ctx.indata = false;
 			ctx.inexp = true;
+            //unsafe{io::println(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
 		} else if (!ctx.indata) {
-			ctx.indata = str::eq(&data.slice(1,data.len()).to_owned().to_lower(),&~"data");
-			ctx.inexp  = str::eq(&data.slice(1,data.len()).to_owned().to_lower(),&~"expected")
+			ctx.indata = str::ends_with(data,&"data");
+			ctx.inexp  = str::ends_with(data,&"expected");
+            //unsafe{io::println(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
 		} else {
-			ctx.buf = unsafe { ctx.buf.slice(0,ctx.bufused).to_owned() };
 			ctx.buf += data.to_bytes();
-			ctx.bufused += data.len();
 		}
 	}
 	else {
 		if ctx.indata {
-			ctx.buf = unsafe { ctx.buf.slice(0,ctx.bufused).to_owned() };
 			ctx.buf += data.to_bytes();
-			ctx.bufused += data.len();
+            ctx.buf.push('\n' as u8);
+			
+            //unsafe {io::println(fmt!("buf == %? , buf.len == %? \n\n" , ctx.buf , ctx.buf.len()));}
 		}
 		if (ctx.inexp) {
-			if (data[data.len() - 1] == '\n' as u8) {
-				data= data.slice(0,data.len()-1).to_owned();
-			}
-				//datalen -= 1;
             ctx.exp.push(data);
-			//css__parse_expected(ctx, &data);
 		}
 	}
 
+    //unsafe{io::println(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
 	return true;
 }
 
 fn testMain(fileName: ~str) {
-	// io::println(~"testMain : "+ fileName);
+	io::println(~"testMain : "+ fileName);
 	let len = css__parse_filesize(copy fileName);
 	if len ==0 {
 		return;
 	}
 	let ctx: @mut line_ctx_lex = @mut line_ctx_lex
     {
-		mut buflen:len,
-		mut bufused:0,
 		mut buf:~[],
-		mut explen : 0,
-		mut expused :0,
 		mut exp : ~[],
+
 		mut indata:false,
 		mut inexp:false
 	};
 	//ctx.buf.push(0);//why?
 	assert!(css__parse_testfile(copy fileName, ~handle_line, LEX(ctx)) == true);
-	if ctx.bufused > 0 {
+	
+    if unsafe {copy ctx.buf.len()} > 0 {
+        io::println("testMain : inside if ctx.buf.len() > 0");
 		run_test(copy ctx.buf,copy ctx.exp);
 	}
+    io::println("testMain : outside if ctx.buf.len() > 0");
 }
 
 
 pub fn run_test(data:~[u8], exp:~[~str]) {
-	// io::println("run test");
+	io::println("run test");
 	// io::println(~"run test data="+ from_bytes(*data));
 	let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
 
@@ -190,7 +186,7 @@ pub fn run_test(data:~[u8], exp:~[~str]) {
             }
         };
 
-    // io::println("Creating lexer");
+    io::println("Creating lexer");
     let mut lexer = css_lexer::css__lexer_create(inputstream);
 
     lexer.css__lexer_append_data(data);
@@ -198,22 +194,22 @@ pub fn run_test(data:~[u8], exp:~[~str]) {
     // io::println(~"after append data="+ from_bytes(*data));
     let mut index = 0;
     loop {
-    	// io::println("inside loop");
+    	io::println("inside loop");
         let (error,token_option)= lexer.css__lexer_get_token();
        
         match(error)	{
             CSS_OK => {
                 let token = token_option.unwrap();
-                io::println(fmt!("token == %?", token));
+                // io::println(foundmt!("token == %?", token));
 
                 let token_type_string = token_to_string(token.token_type);
                 let token_data = str::from_bytes(copy token.data.data);
 
-                let found = fmt!("%s%s" , token_type_string , token_data);
-
+                let found_str = fmt!("%s%s" , token_type_string , token_data);
+                let found = str::trim(found_str);
                 io::println(fmt!("found == %?", found));
                 io::println(fmt!("Expected token == %?", (exp[index])));
-                if  found.ne(&exp[index]) {
+                if  !(found == exp[index]) {
                     // io::println(fmt!("Expected token == %?", (exp[index])));
                     // io::println(fmt!("Found token == %?", (found)));
                     fail!(~"Expected and Found tokens do not match.");
@@ -227,7 +223,7 @@ pub fn run_test(data:~[u8], exp:~[~str]) {
             	if token_option.is_some() {
                     
                     let token = token_option.unwrap();
-                    io::println(fmt!("token == %?", token));
+                    // io::println(fmt!("token == %?", token));
 
                     let token_type_string = token_to_string(token.token_type);
                     let token_data = str::from_bytes(copy token.data.data);
@@ -269,4 +265,8 @@ fn tests2() {
 #[test]
 fn regression() {
     testMain(~"data/lex/regression.dat");
+}
+
+fn main() {
+    testMain(~"data/lex/tests2.dat");
 }
