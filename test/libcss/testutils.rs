@@ -33,7 +33,7 @@ pub enum LINE_CTX_DATA_TYPE {
 }
 
 pub fn css__parse_filesize( fileName:~str)->uint {
-    io::println(~"css__parse_filesize : "+ fileName);
+    // io::println(~"css__parse_filesize : "+ fileName);
     let r:@Reader = io::file_reader(&Path(fileName)).get(); 
     r.seek(0,SeekEnd);
     r.tell()
@@ -49,7 +49,7 @@ pub fn css__parse_strnchr(string:&~str, chr:char)-> (~str,uint) {
     return (~"",string.len());
 }
 pub fn css__parse_testfile(filename:~str,  callback:line_func, pw:LINE_CTX_DATA_TYPE)->bool {
-    io::println(~"css__parse_testfile : "+ filename);
+    // io::println(~"css__parse_testfile : "+ filename);
     let r:@Reader = io::file_reader(&Path(filename)).get();
     let mut data:~str;
     let mut string: ~str;
