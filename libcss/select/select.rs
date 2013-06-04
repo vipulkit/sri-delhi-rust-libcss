@@ -998,70 +998,37 @@ impl css_select_ctx {
         CSS_OK
     }
 
-    pub fn _selectors_pending(node: Option<Option<css_selector>>, id: Option<Option<css_selector>>,
-                classes: ~[Option<Option<css_selector>>], n_classes : uint, 
-                univ: Option<Option<css_selector>>) -> bool {
+    pub fn _selectors_pending(node: Option<@mut css_selector>, id: Option<@mut css_selector>,
+                classes: &~[Option<@mut css_selector>], 
+                univ: Option<@mut css_selector>) -> bool {
 
         let mut pending : bool = false;
         match node {
             None => {}
-            Some(T) => {
-                match T {
-                    None => {
-                        pending |= false;
-                    }
-                    Some(_) => {
-                        pending |= true;
-                    }
-                }
+            Some(_) => {
+                pending = true;
             }
         }
-
         match id {
             None => {}
-            Some(T) => {
-                match T {
-                    None => {
-                        pending |= false;
-                    }
-                    Some(_) => {
-                        pending |= true;
-                    }
-                }
+            Some(_) => {
+                pending = true;
             }
         }
-
         match univ {
             None => {}
-            Some(T) => {
-                match T {
-                    None => {
-                        pending |= false;
-                    }
-                    Some(_) => {
-                        pending |= true;
-                    }
-                }
+            Some(_) => {
+                pending = true;
             }
         }
 
-        let mut i : uint = 0;
-        while i < n_classes {
-            match copy classes[i] {
+	for classes.each |&ele| {        
+            match ele {
                 None => {}
-                Some(T) => {
-                    match T {
-                        None => {
-                            pending |= false;
-                        }
-                        Some(_) => {
-                            pending |= true;
-                        }
-                    }
+                Some(_) => {
+                    pending |= true;
                 }
             }
-
-            i += 1;
         }
 
         pending
