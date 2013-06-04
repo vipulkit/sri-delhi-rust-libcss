@@ -220,37 +220,27 @@ pub enum css_rule_type {
     CSS_RULE_PAGE
 }
 
-pub fn get_css_rule_next(rule: Option<CSS_RULE_DATA_TYPE>) -> Option<CSS_RULE_DATA_TYPE> {
+pub fn get_css_rule_next(rule: CSS_RULE_DATA_TYPE) -> Option<CSS_RULE_DATA_TYPE> {
     match rule {
-        None => None,
-        Some(T) => {
-            match T {
-               RULE_UNKNOWN(x) => x.next,
-               RULE_SELECTOR(x) => x.base.next,
-               RULE_CHARSET(x) => x.base.next,
-               RULE_IMPORT(x) => x.base.next,
-               RULE_MEDIA(x) => x.base.next,
-               RULE_FONT_FACE(x) => x.base.next,
-               RULE_PAGE(x) => x.base.next,
-            }
-        }
+        RULE_UNKNOWN(x) => x.next,
+        RULE_SELECTOR(x) => x.base.next,
+        RULE_CHARSET(x) => x.base.next,
+        RULE_IMPORT(x) => x.base.next,
+        RULE_MEDIA(x) => x.base.next,
+        RULE_FONT_FACE(x) => x.base.next,
+        RULE_PAGE(x) => x.base.next,
     }
 }
 
-pub fn get_stylesheet_parent(rule: Option<CSS_RULE_DATA_TYPE>) -> Option<@mut css_stylesheet> {
+pub fn get_stylesheet_parent(rule: CSS_RULE_DATA_TYPE) -> Option<@mut css_stylesheet> {
     match rule {
-        None => None,
-        Some(T) => {
-            match T {
-               RULE_UNKNOWN(x) => x.parent_stylesheet,
-               RULE_SELECTOR(x) => x.base.parent_stylesheet,
-               RULE_CHARSET(x) => x.base.parent_stylesheet,
-               RULE_IMPORT(x) => x.base.parent_stylesheet,
-               RULE_MEDIA(x) => x.base.parent_stylesheet,
-               RULE_FONT_FACE(x) => x.base.parent_stylesheet,
-               RULE_PAGE(x) => x.base.parent_stylesheet,
-            }
-        }
+        RULE_UNKNOWN(x) => x.parent_stylesheet,
+        RULE_SELECTOR(x) => x.base.parent_stylesheet,
+        RULE_CHARSET(x) => x.base.parent_stylesheet,
+        RULE_IMPORT(x) => x.base.parent_stylesheet,
+        RULE_MEDIA(x) => x.base.parent_stylesheet,
+        RULE_FONT_FACE(x) => x.base.parent_stylesheet,
+        RULE_PAGE(x) => x.base.parent_stylesheet,
     }
 }
 
