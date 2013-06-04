@@ -795,7 +795,7 @@ impl css_select_ctx {
                             s = get_stylesheet_parent(import_stack[sp]);
                         }
                         else {
-                            break;
+                            s = None;
                         }
                     },
                     _=> { 
@@ -803,6 +803,11 @@ impl css_select_ctx {
                     }
                 }
             }
+            
+            if s.is_none() {
+                break;
+            }
+ 
         }
 
         CSS_OK
