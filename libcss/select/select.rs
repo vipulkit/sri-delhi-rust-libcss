@@ -445,7 +445,7 @@ impl css_select_ctx {
                     (parent == ptr::null() && 
                     prop.inherit == true)) {
                 error = css_select_ctx::set_initial(state, i as uint, 
-                        CSS_PSEUDO_ELEMENT_NONE, None);
+                        CSS_PSEUDO_ELEMENT_NONE, ptr::null());
                 match error {
                     CSS_OK=>{},
                     x =>  {
@@ -472,7 +472,7 @@ impl css_select_ctx {
                 /* If the property is still unset then set it 
                  * to its initial value. */
                 if (prop.set == false) {
-                    error = css_select_ctx::set_initial(state, i as uint, unsafe { cast::transmute(j)}, None);
+                    error = css_select_ctx::set_initial(state, i as uint, unsafe { cast::transmute(j)}, ptr::null());
                     match error {
                         CSS_OK=>{},
                         x =>  {
@@ -661,24 +661,32 @@ impl css_select_ctx {
     }
 
     pub fn set_initial(state : @mut css_select_state, prop : uint, pseudo : css_pseudo_element,
-        parent: Option<@mut css_computed_style>) -> css_error {
+        parent: *libc::c_void) -> css_error {
 
-        let mut error : css_error = CSS_OK; 
-        let mut is_pseudo_and_parent_none : bool = false;
-        match pseudo {
-            CSS_PSEUDO_ELEMENT_NONE => {
-                match parent {
-                    None => {
-                        is_pseudo_and_parent_none = true;
-                    }
-                    Some(_) => {}
-                }
-            }
-            _=> {}
-        }
+        let mut error : css_error; 
 
-        if dispatch_table::get_inherited(prop) == 0 || is_pseudo_and_parent_none{
+        /* Do nothing if this property is inherited (the default state 
+         * of a clean computed style is for everything to be set to inherit)
+         *
+         * If the node is tree root and we're dealing with the base element, 
+         * everything should be defaulted.
+         */
+
+        if dispatch_table::get_inherited(prop) == 0 || match pseudo { CSS_PSEUDO_ELEMENT_NONE => true, _ => false} &&
+            parent == ptr::null() {
+            
             let mut group : prop_group = dispatch_table::get_group(prop);
+
+            /* Remaining properties are neither inherited nor 
+             * already set. Thus, we set them to their initial 
+             * values here. Except, however, if the property in 
+             * question resides in one of the extension blocks and 
+             * the extension block has yet to be allocated. In that 
+             * case, we do nothing and leave it to the property 
+             * accessors to return the initial values for the 
+             * property.
+             */
+
             match group {
                 GROUP_NORMAL => {
                     error = (dispatch_table::get_initial_ptr(prop))(state);
