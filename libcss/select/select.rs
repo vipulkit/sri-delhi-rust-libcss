@@ -355,7 +355,7 @@ impl css_select_ctx {
             let mut s = self.sheets[i] ;
             if( s.media & media ) != 0 && 
                 s.sheet.disabled == false {
-                    error = self.select_from_sheet(Some(s.sheet), 
+                    error = self.select_from_sheet(s.sheet, 
                               s.origin, state);  
                     match error {
                         CSS_OK=>{},
@@ -445,7 +445,7 @@ impl css_select_ctx {
                     (parent == ptr::null() && 
                     prop.inherit == true)) {
                 error = css_select_ctx::set_initial(state, i as uint, 
-                        CSS_PSEUDO_ELEMENT_NONE, None);
+                        CSS_PSEUDO_ELEMENT_NONE, ptr::null());
                 match error {
                     CSS_OK=>{},
                     x =>  {
@@ -472,7 +472,7 @@ impl css_select_ctx {
                 /* If the property is still unset then set it 
                  * to its initial value. */
                 if (prop.set == false) {
-                    error = css_select_ctx::set_initial(state, i as uint, unsafe { cast::transmute(j)}, None);
+                    error = css_select_ctx::set_initial(state, i as uint, unsafe { cast::transmute(j)}, ptr::null());
                     match error {
                         CSS_OK=>{},
                         x =>  {
@@ -661,24 +661,32 @@ impl css_select_ctx {
     }
 
     pub fn set_initial(state : @mut css_select_state, prop : uint, pseudo : css_pseudo_element,
-        parent: Option<@mut css_computed_style>) -> css_error {
+        parent: *libc::c_void) -> css_error {
 
-        let mut error : css_error = CSS_OK; 
-        let mut is_pseudo_and_parent_none : bool = false;
-        match pseudo {
-            CSS_PSEUDO_ELEMENT_NONE => {
-                match parent {
-                    None => {
-                        is_pseudo_and_parent_none = true;
-                    }
-                    Some(_) => {}
-                }
-            }
-            _=> {}
-        }
+        let mut error : css_error; 
 
-        if dispatch_table::get_inherited(prop) == 0 || is_pseudo_and_parent_none{
+        /* Do nothing if this property is inherited (the default state 
+         * of a clean computed style is for everything to be set to inherit)
+         *
+         * If the node is tree root and we're dealing with the base element, 
+         * everything should be defaulted.
+         */
+
+        if dispatch_table::get_inherited(prop) == 0 || match pseudo { CSS_PSEUDO_ELEMENT_NONE => true, _ => false} &&
+            parent == ptr::null() {
+            
             let mut group : prop_group = dispatch_table::get_group(prop);
+
+            /* Remaining properties are neither inherited nor 
+             * already set. Thus, we set them to their initial 
+             * values here. Except, however, if the property in 
+             * question resides in one of the extension blocks and 
+             * the extension block has yet to be allocated. In that 
+             * case, we do nothing and leave it to the property 
+             * accessors to return the initial values for the 
+             * property.
+             */
+
             match group {
                 GROUP_NORMAL => {
                     error = (dispatch_table::get_initial_ptr(prop))(state);
@@ -740,75 +748,62 @@ impl css_select_ctx {
         CSS_OK
     }
 
-    pub fn select_from_sheet(&mut self, sheet : Option<@mut css_stylesheet>,origin : css_origin, state : &mut css_select_state) -> css_error{
-        let mut s_option : Option<@mut css_stylesheet> = sheet;
-        let mut rule : Option<CSS_RULE_DATA_TYPE> = None;
+    pub fn select_from_sheet(&mut self, sheet : @mut css_stylesheet, origin : css_origin, state : @mut css_select_state) -> css_error{
+        let mut s:Option<@mut css_stylesheet> = Some(sheet);
+        let mut rule : Option<CSS_RULE_DATA_TYPE> = s.unwrap().rule_list;
         let mut sp : u32 = 0;
-        let mut import_stack : ~[Option<CSS_RULE_DATA_TYPE>] = ~[];
-        loop{
-            let mut s : @mut css_stylesheet;
-            match s_option {
-                None => { 
-                    break;
-                },
-                Some(T) => { s = T;}
-            }
+        let mut import_stack : ~[CSS_RULE_DATA_TYPE] = ~[];
 
-            rule = s.rule_list;
-            if compare_css_rdt(rule, s.rule_list){
+        loop{
+            /* Find first non-charset rule, if we're at the list head */
+            if compare_css_rdt(rule, s.unwrap().rule_list){
                 while !rule.is_none() && compare_css_rule_types(rule, CSS_RULE_IMPORT) {
-                    rule = get_css_rule_next(rule);
+                    rule = get_css_rule_next(rule.unwrap());
                 }
             }
             if !rule.is_none() && compare_css_rule_types(rule, CSS_RULE_IMPORT) {
-                let mut import_sheet : Option<@mut css_stylesheet> = None;
+                /* Current rule is an import */
+		let mut import_sheet : Option<@mut css_stylesheet> = None;
                 let mut import_media:u64 = 0;
-                match rule {
-                    None => {},
-                    Some(T) => {
-                        match T {
-                           RULE_IMPORT(x) => {
-                            import_media = x.media;
-                            import_sheet = x.sheet;
-                           },
-                           _=> {},
-                        }
-                    }
+                match rule.unwrap() {
+                    RULE_IMPORT(x) => {
+                        import_media = x.media;
+                        import_sheet = x.sheet;
+                    },
+                    _=> {},
                 }
 
                 if !import_sheet.is_none() && (import_media & state.media) != 0 {
-                    if sp >= 256 {
-                        return CSS_NOMEM;
-                    }
+                    /* It's applicable, so process it */
 
-                    import_stack.push(rule);
-                    match import_sheet {
-                        None => {},
-                        Some(T) => {
-                            s = T;
-                        }
-                    }
+                    import_stack.push(rule.unwrap());
 
-                    rule = s.rule_list;
+                    s = import_sheet;
+                    rule = s.unwrap().rule_list;
                 }
                 else {
-                    rule = get_css_rule_next(rule);
+                    /* Not applicable; skip over it */
+                    rule = get_css_rule_next(rule.unwrap());
                 }
             }
             else {
-                let mut error : css_error ;
-                state.sheet = Some(s);
+                /* Gone past import rules in this sheet */
+                let mut error : css_error;
+
+                /* Process this sheet */
+                state.sheet = s;
                 state.current_origin = origin;
-                error = self.match_selectors_in_sheet(s, state);
+
+                error = self.match_selectors_in_sheet(s.unwrap(), state);
                 match error {
                     CSS_OK => {
                         if sp > 0 {
                             sp -= 1;
                             rule = get_css_rule_next(import_stack[sp]);
-                            s_option = get_stylesheet_parent(import_stack[sp]);
+                            s = get_stylesheet_parent(import_stack[sp]);
                         }
                         else {
-                            s_option = None;
+                            s = None;
                         }
                     },
                     _=> { 
@@ -816,6 +811,11 @@ impl css_select_ctx {
                     }
                 }
             }
+            
+            if s.is_none() {
+                break;
+            }
+ 
         }
 
         CSS_OK
@@ -998,70 +998,37 @@ impl css_select_ctx {
         CSS_OK
     }
 
-    pub fn _selectors_pending(node: Option<Option<css_selector>>, id: Option<Option<css_selector>>,
-                classes: ~[Option<Option<css_selector>>], n_classes : uint, 
-                univ: Option<Option<css_selector>>) -> bool {
+    pub fn _selectors_pending(node: Option<@mut css_selector>, id: Option<@mut css_selector>,
+                classes: &~[Option<@mut css_selector>], 
+                univ: Option<@mut css_selector>) -> bool {
 
         let mut pending : bool = false;
         match node {
             None => {}
-            Some(T) => {
-                match T {
-                    None => {
-                        pending |= false;
-                    }
-                    Some(_) => {
-                        pending |= true;
-                    }
-                }
+            Some(_) => {
+                pending = true;
             }
         }
-
         match id {
             None => {}
-            Some(T) => {
-                match T {
-                    None => {
-                        pending |= false;
-                    }
-                    Some(_) => {
-                        pending |= true;
-                    }
-                }
+            Some(_) => {
+                pending = true;
             }
         }
-
         match univ {
             None => {}
-            Some(T) => {
-                match T {
-                    None => {
-                        pending |= false;
-                    }
-                    Some(_) => {
-                        pending |= true;
-                    }
-                }
+            Some(_) => {
+                pending = true;
             }
         }
 
-        let mut i : uint = 0;
-        while i < n_classes {
-            match copy classes[i] {
+	for classes.each |&ele| {        
+            match ele {
                 None => {}
-                Some(T) => {
-                    match T {
-                        None => {
-                            pending |= false;
-                        }
-                        Some(_) => {
-                            pending |= true;
-                        }
-                    }
+                Some(_) => {
+                    pending = true;
                 }
             }
-
-            i += 1;
         }
 
         pending
@@ -1103,9 +1070,11 @@ impl css_select_ctx {
         result
     }
 
-    pub fn _selector_next(node: Option<@mut css_selector>, id: Option<@mut css_selector>,
-                classes: ~[Option<@mut css_selector>], n_classes : uint, 
-                univ: Option<@mut css_selector>) -> Option<@mut css_selector> {
+    pub fn _selector_next(node: Option<@mut css_selector>, 
+                            id: Option<@mut css_selector>,
+                            classes: &~[Option<@mut css_selector>], 
+                            univ: Option<@mut css_selector>) 
+                            -> Option<@mut css_selector> {
 
         let mut ret : Option<@mut css_selector> = None;
 
@@ -1145,7 +1114,7 @@ impl css_select_ctx {
         }
 
         let mut i : uint = 0;
-        while i < n_classes {
+        while i < classes.len() {
             match copy classes[i] {
                 None => {}
                 Some(T) => {
@@ -1186,11 +1155,211 @@ impl css_select_ctx {
         return true;
     }        
 
-    // Note: pending implementation
-    pub fn match_selectors_in_sheet(&mut self, sheet : @mut css_stylesheet, state : &mut css_select_state) -> css_error {
+    pub fn match_selectors_in_sheet(&mut self, sheet : @mut css_stylesheet, 
+                                    state : @mut css_select_state) -> css_error {
+    
+        let mut node_selectors_hash_entry : Option<@mut hash_entry> = None ;
+        let mut node_selectors_option : Option<@mut css_selector> = None ;
+        let mut id_selectors_hash_entry : Option<@mut hash_entry> = None ;
+        let mut id_selectors_option : Option<@mut css_selector> = None ;
+        let mut class_selectors_hash_entry : ~[Option<@mut hash_entry>] = ~[];
+        let mut class_selectors_option_list : ~[Option<@mut css_selector>] = ~[] ;
+        let mut univ_selectors_hash_entry : Option<@mut hash_entry> = None ;
+        let mut univ_selectors_option : Option<@mut css_selector> = None ;
+        let mut error : css_error ;
+
+        /* Find hash chain that applies to current node */
+        let mut (sel,error) = sheet.selectors.css__selector_hash_find(copy state.element.name);
+        match error {
+            CSS_OK => {},
+            err => {
+                return err;
+            }
+        }
+        if sel.is_some() {
+            node_selectors_hash_entry = sel;
+            node_selectors_option = Some(sel.get().selector) ;
+        }
+
+        if ( unsafe {state.classes.len() != 0} ) {
+             /* Find hash chains for node classes */
+
+            for state.classes.each_mut |&sclass| {
+                let mut (sel_class,error) = sheet.selectors.css__selector_hash_find_by_class(copy sclass);
+                match error {
+                    CSS_OK => {},
+                    err => {
+                        return err;
+                    }
+                }
+                if sel_class.is_some() {
+                    class_selectors_hash_entry.push(sel_class) ;
+                    class_selectors_option_list.push(Some(sel_class.get().selector)) ;
+                }
+            }
+        }
+
+        if ( unsafe { state.id.len() != 0 } ) {
+            /* Find hash chain for node ID */
+            let mut (sel_id,error) = sheet.selectors.css__selector_hash_find_by_id(copy state.id);
+            match error {
+                CSS_OK => {},
+                err => {
+                    return err;
+                }
+            }
+            if sel_id.is_some() {
+                id_selectors_hash_entry = sel_id ;
+                id_selectors_option = Some(sel_id.get().selector) ;
+            }
+        }
+
+        /* Find hash chain for universal selector */
+        let mut (sel_univ,error) = sheet.selectors.css__selector_hash_find_universal();
+        match error {
+            CSS_OK => {},
+            err => {
+                return err;
+            }
+        }
+        if sel_univ.is_some() {
+            univ_selectors_hash_entry = sel_univ ;
+            univ_selectors_option = Some(sel_univ.get().selector) ;
+        }
+
+        // /* Process matching selectors, if any */
+        while ( css_select_ctx::_selectors_pending(node_selectors_option, 
+                                                    id_selectors_option, 
+                                                    &class_selectors_option_list,
+                                                    univ_selectors_option) ) {
+            let mut selector : @mut css_selector ;
+
+            /*Selectors must be matched in ascending order of specificity
+             * and rule index. (c.f. css__outranks_existing())
+             *
+             * Pick the least specific/earliest occurring selector.
+             */
+            let mut o_selector = css_select_ctx::_selector_next(
+                                    node_selectors_option, 
+                                    id_selectors_option,
+                                    &class_selectors_option_list, 
+                                    univ_selectors_option );
+
+            selector = o_selector.get() ; 
+            /* Ignore any selectors contained in rules which are a child 
+             * of an @media block that doesn't match the current media 
+             * requirements. */
+            if (css_select_ctx::_rule_applies_to_media(selector.rule, state.media)) {
+                error = self.match_selector_chain(Some(selector), state);
+                match error {
+                    CSS_OK => {},
+                    err => {
+                        return err;
+                    }
+                }
+            }
+
+            /* Advance to next selector in whichever chain we extracted 
+             * the processed selector from. */
+            if ( node_selectors_option.is_some() &&
+                 mut_ptr_eq( selector, node_selectors_option.get() ) ) {
+                let mut (node_next_hash,error) = 
+                        css_selector_hash::_iterate_elements(node_selectors_hash_entry.get());
+
+                match error {
+                    CSS_OK => {},
+                    err => {
+                        return err;
+                    }
+                }
+
+                if node_next_hash.is_some() {
+                    node_selectors_hash_entry = node_next_hash;
+                    node_selectors_option = Some(node_next_hash.get().selector) ;
+                }
+                else {
+                    node_selectors_option = None ;
+                }
+            } 
+            else if (   id_selectors_option.is_some() &&
+                        mut_ptr_eq(selector, id_selectors_option.get() ) ){
+                let mut (id_next_hash,error) = 
+                            css_selector_hash::_iterate_ids(id_selectors_hash_entry.get());
+
+                match error {
+                    CSS_OK => {},
+                    err => {
+                        return err;
+                    }
+                }
+
+                if id_next_hash.is_some() {
+                    id_selectors_hash_entry = id_next_hash;
+                    id_selectors_option = Some(id_next_hash.get().selector) ;
+                }
+                else {
+                    id_selectors_option = None ;
+                }
+            } 
+            else if (   univ_selectors_option.is_some() &&
+                        mut_ptr_eq(selector, univ_selectors_option.get() ) ){
+                let mut (univ_next_hash,error) = 
+                            css_selector_hash::_iterate_universal(univ_selectors_hash_entry.get());
+
+                match error {
+                    CSS_OK => {},
+                    err => {
+                        return err;
+                    }
+                }
+
+                if univ_next_hash.is_some() {
+                    univ_selectors_hash_entry = univ_next_hash;
+                    univ_selectors_option = Some(univ_next_hash.get().selector);
+                }
+                else {
+                    univ_selectors_option = None ;
+                }
+            } 
+            else {
+                let mut i = 0 ;
+                let mut j = class_selectors_option_list.len()  ;
+                while i < j  {
+                    if ( class_selectors_option_list[i].is_some() &&
+                         mut_ptr_eq(selector, class_selectors_option_list[i].get()) ) {
+                        let mut (class_next_hash,error) = 
+                                        css_selector_hash::_iterate_classes(
+                                                    class_selectors_hash_entry[i].get());
+
+                        match error {
+                            CSS_OK => {},
+                            err => {
+                                return err;
+                            }
+                        }
+
+                        if class_next_hash.is_some() {
+                            class_selectors_hash_entry[i] = class_next_hash;
+                            class_selectors_option_list[i] = Some(class_next_hash.get().selector);
+                        }
+                        else {
+                            class_selectors_option_list[i] = None;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            match error {
+                CSS_OK => {},
+                err => {
+                    return err;
+                }
+            }
+        }
+
         CSS_OK
     }
-
     pub fn update_reject_cache(state: @mut css_select_state, comb:css_combinator,
                                 s:@mut css_selector) {
 
