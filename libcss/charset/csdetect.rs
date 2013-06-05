@@ -352,7 +352,7 @@ pub fn css_charset_read_bom_or_charset(data : &~[u8], alias_arc: arc::ARC<~alias
 pub fn css__charset_extract(data : &~[u8] , mibenum : u16 , input_source : int /* css_charset_source */, alias_arc: arc::ARC<~alias>)
                                 -> (Option<u16>, Option<int>, parserutils_error) {   
 
-    io::println("Entering: css__charset_extract");
+    // io::println("Entering: css__charset_extract");
     let source:css_charset_source = {
         unsafe {
             cast::transmute(input_source)
@@ -363,7 +363,7 @@ pub fn css__charset_extract(data : &~[u8] , mibenum : u16 , input_source : int /
     let mut src :css_charset_source;
 
     if (data.len()==(0 as uint)) {
-        io::println("Entering: data.len() == 0");
+        // io::println("Entering: data.len() == 0");
         return (None, None, PARSERUTILS_BADPARM);
     }
 
