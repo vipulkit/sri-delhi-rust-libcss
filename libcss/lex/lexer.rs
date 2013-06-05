@@ -232,7 +232,7 @@ impl css_lexer {
      ******************************************************************************/
 
     pub fn APPEND(&mut self, data: &[u8], len: uint) {
-        io::println("entering APPEND");
+        // // io::println("entering APPEND");
         self.append_to_token_data(data, len);
 
         self.bytes_read_for_token += len;
@@ -241,21 +241,21 @@ impl css_lexer {
 
     pub fn append_to_token_data(&mut self , data: &[u8], len: uint) {
         
-        io::println("entering append_to_token_data");
-        io::println(fmt!("append_to_token_data:: data == %?" , data));
+        // // io::println("entering append_to_token_data");
+        // // io::println(fmt!("append_to_token_data:: data == %?" , data));
         if self.escape_seen {
-            io::println("inside: append_to_token_data in if self.escape_seen");
-            io::println(fmt!("unescaped token data == %?" , self.unescaped_token_data));
+            // // io::println("inside: append_to_token_data in if self.escape_seen");
+            // // io::println(fmt!("unescaped token data == %?" , self.unescaped_token_data));
             self.unescaped_token_data.get_mut_ref().push_all(data.slice(0,len));
         }
 
-        // io::println("inside: append_to_token_data");
+        // // io::println("inside: append_to_token_data");
         self.token.get_mut_ref().data.len += len;
     }
 
     pub fn emit_token(&mut self , input_token_type: Option<css_token_type>) -> (css_error, Option<@mut css_token>) {
 
-        io::println("entering emit_token");
+        // // io::println("entering emit_token");
         let mut t = self.token.swap_unwrap();
         let _data = css_token_data {
             data: ~[],
@@ -281,7 +281,7 @@ impl css_lexer {
         
 
         if (self.escape_seen) {
-            io::println("Entering:if self.escape_seen");
+            // io::println("Entering:if self.escape_seen");
             t.data.data = self.unescaped_token_data.swap_unwrap();
             unsafe{t.data.len = t.data.data.len();}
         }
@@ -345,7 +345,7 @@ impl css_lexer {
 
                 /* Strip the "url(" from the start */
                 unsafe {
-                    io::println(fmt!("emit_token::uri:: t.data.data == %?" , t.data.data));
+                    // io::println(fmt!("emit_token::uri:: t.data.data == %?" , t.data.data));
                     t.data.data = vec::tailn(t.data.data, 4).to_owned();
                 }
                 t.data.len -= 4;
@@ -377,7 +377,7 @@ impl css_lexer {
                     }
 
                     t.data.len = t.data.data.len();
-                    io::println(fmt!("emit_token::uri:: t.data.data == %?" , t.data.data));
+                    // io::println(fmt!("emit_token::uri:: t.data.data == %?" , t.data.data));
                 }
                 
             },
@@ -413,7 +413,7 @@ impl css_lexer {
      ******************************************************************************/
 
     pub fn at_keyword(&mut self) -> (css_error, Option<@mut css_token>) {
-        io::println("entering at_keyword");
+        // io::println("entering at_keyword");
         enum at_keyword_substates {
             Initial = 0, 
             Escape = 1, 
@@ -439,7 +439,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("at_keyword: character read is %c" , c));
+            // io::println(fmt!("at_keyword: character read is %c" , c));
 
             if (!start_nm_char(c)) {
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
@@ -484,7 +484,7 @@ impl css_lexer {
 
 
     pub fn cdc_or_ident_or_function_or_npd(&mut self) -> (css_error, Option<@mut css_token>) {
-        io::println("entering : cdc_or_ident_or_function_or_npd");
+        // io::println("entering : cdc_or_ident_or_function_or_npd");
         enum CDC_or_Ident_or_function_or_NPD_substates { 
             Initial = 0, 
             Escape = 1, 
@@ -524,7 +524,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("cdc_or_ident_or_function_or_npd1: character read is %c" , c));
+            // io::println(fmt!("cdc_or_ident_or_function_or_npd1: character read is %c" , c));
 
             if (char::is_digit(c) || c == '.') {
                 /* NPD */
@@ -584,7 +584,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("cdc_or_ident_or_function_or_npd2: character read is %c" , c));
+            // io::println(fmt!("cdc_or_ident_or_function_or_npd2: character read is %c" , c));
             if (c == '>') {
                 self.APPEND(cptr, clen);
                 self.token.get_mut_ref().token_type = CSS_TOKEN_CDC;
@@ -618,7 +618,7 @@ impl css_lexer {
     }
     
     pub fn cdo(&mut self) -> (css_error, Option<@mut css_token>) {
-        io::println("entering : cdo");
+        // io::println("entering : cdo");
         enum cdo_substates { Initial = 0, Dash1 = 1, Dash2 = 2 };
 
         /* CDO = "<!--"
@@ -642,7 +642,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("cdo1: character read is %c" , c));
+            // io::println(fmt!("cdo1: character read is %c" , c));
             if (c == '!') {
                 self.APPEND(cptr, clen);
             } else {
@@ -672,7 +672,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("cdo2: character read is %c" , c));
+            // io::println(fmt!("cdo2: character read is %c" , c));
             if (c == '-') {
                 self.APPEND(cptr, clen);
             } else {
@@ -705,7 +705,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("cdo3: character read is %c" , c));
+            // io::println(fmt!("cdo3: character read is %c" , c));
 
             if (c == '-') {
                 self.APPEND(cptr, clen);
@@ -721,7 +721,7 @@ impl css_lexer {
     }
 
     pub fn comment(&mut self) -> (css_error, Option<@mut css_token>) {
-        io::println("entering : comment");
+        // io::println("entering : comment");
         enum comment_substates { Initial = 0, InComment = 1 };
 
         /* COMMENT = '/' '*' [^*]* '*'+ ([^/] [^*]* '*'+)* '/'
@@ -743,7 +743,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("comment1: character read is %c" , c));
+            // io::println(fmt!("comment1: character read is %c" , c));
             if (c != '*') {
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
@@ -770,7 +770,7 @@ impl css_lexer {
 
                 let (cptr , clen) = pu_peek_result.unwrap();
                 let c = cptr[0] as char;
-                io::println(fmt!("comment2: character read is %c" , c));
+                // io::println(fmt!("comment2: character read is %c" , c));
                 self.APPEND(cptr, clen);
                 
                 if (self.context.last_was_star && c == '/') {
@@ -795,7 +795,7 @@ impl css_lexer {
     }
 
     pub fn escaped_ident_or_function(&mut self) -> (css_error, Option<@mut css_token>) {
-        io::println("entering : escaped_ident_or_function");
+        // io::println("entering : escaped_ident_or_function");
     /* IDENT = ident = [-]? nmstart nmchar*
      * FUNCTION = ident '(' = [-]? nmstart nmchar* '('
      *
@@ -820,7 +820,7 @@ impl css_lexer {
     }
 
     pub fn hash(&mut self) -> (css_error, Option<@mut css_token>) {
-        io::println("entering : hash");
+        // io::println("entering : hash");
         /* HASH = '#' name  = '#' nmchar+ 
          *
          * The '#' has been consumed.
@@ -841,7 +841,7 @@ impl css_lexer {
 
     pub fn ident_or_function(&mut self) -> (css_error, Option<@mut css_token>) {
 
-        io::println("entering : ident_or_function");
+        // io::println("entering : ident_or_function");
         enum ident_or_function_substates { Initial = 0, Bracket = 1 };
 
         /* IDENT = ident = [-]? nmstart nmchar*
@@ -876,7 +876,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("ident_or_function: character read is %c" , c));
+            // io::println(fmt!("ident_or_function: character read is %c" , c));
             if (c == '(') {
                 self.APPEND(cptr, clen);
                 self.token.get_mut_ref().token_type = CSS_TOKEN_FUNCTION;
@@ -890,7 +890,7 @@ impl css_lexer {
 
     pub fn match_prefix(&mut self) -> (css_error, Option<@mut css_token>) {
 
-        io::println("entering : match_prefix");
+        // io::println("entering : match_prefix");
         /* INCLUDES       = "~="
          * DASHMATCH      = "|="
          * PREFIXMATCH    = "^="
@@ -913,7 +913,7 @@ impl css_lexer {
 
         let (cptr , clen) = pu_peek_result.unwrap();
         let c = cptr[0] as char;
-        io::println(fmt!("match_prefix: character read is %c" , c));
+        // io::println(fmt!("match_prefix: character read is %c" , c));
         if (c != '=') {
             return self.emit_token(Some(CSS_TOKEN_CHAR));
         }
@@ -935,7 +935,7 @@ impl css_lexer {
 
     pub fn number_or_percentage_or_dimension(&mut self) -> (css_error, Option<@mut css_token>) {
 
-        io::println("entering : number_or_percentage_or_dimension");
+        // io::println("entering : number_or_percentage_or_dimension");
         enum number_or_percentage_or_dimension_substates { 
             Initial = 0, Dot = 1, MoreDigits = 2, Suffix = 3, NMChars = 4, Escape = 5, NMChars2 = 6 };
 
@@ -980,7 +980,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("number_or_percentage_or_dimension1: character read is %c" , c));
+            // io::println(fmt!("number_or_percentage_or_dimension1: character read is %c" , c));
             /* Bail if we've not got a '.' or we've seen one already */
             if c != '.' || self.context.first == '.' as u8 {
                 // goto suffix
@@ -1037,7 +1037,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("number_or_percentage_or_dimension2: character read is %c" , c));
+            // io::println(fmt!("number_or_percentage_or_dimension2: character read is %c" , c));
             /* A solitary '.' or '+' is a CHAR, not numeric */
             let mut emit_char = false;
             if ( self.token.get_ref().data.len == 1 && 
@@ -1104,7 +1104,7 @@ impl css_lexer {
     }
 
     pub fn s(&mut self) -> (css_error, Option<@mut css_token>) {
-        io::println("entering : s");
+        // io::println("entering : s");
         /* S = wc*
      * 
      * The first whitespace character has been consumed.
@@ -1119,10 +1119,10 @@ impl css_lexer {
     }
 
     pub fn start(&mut self) -> (css_error, Option<@mut css_token>) {
-        io::println("entering : start");
-        io::println(fmt!("self.input == %?", self.input));
+        // io::println("entering : start");
+        // io::println(fmt!("self.input == %?", self.input));
         loop {
-            io::println(fmt!("start:: self.bytes_read_for_token == %?", self.bytes_read_for_token));
+            // io::println(fmt!("start:: self.bytes_read_for_token == %?", self.bytes_read_for_token));
             /* Advance past the input read for the previous token */
             if (self.bytes_read_for_token > 0) {
                 self.input.parserutils_inputstream_advance(self.bytes_read_for_token);
@@ -1144,24 +1144,24 @@ impl css_lexer {
                 self.unescaped_token_data = None;
             }
 
-            io::println(fmt!("start:: self.bytes_read_for_token == %?", self.bytes_read_for_token));
+            // io::println(fmt!("start:: self.bytes_read_for_token == %?", self.bytes_read_for_token));
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
-                io::println("Entering: perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int");
+                // io::println("Entering: perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int");
                 return (css_error_from_parserutils_error(perror), None);
             }
 
             if (perror as int == PARSERUTILS_EOF as int) {
-                io::println("perror as int == PARSERUTILS_EOF as int");
-                io::println(fmt!("pu_peek_result.is_some() == %?", pu_peek_result.is_some()));
+                // io::println("perror as int == PARSERUTILS_EOF as int");
+                // io::println(fmt!("pu_peek_result.is_some() == %?", pu_peek_result.is_some()));
                 return self.emit_token(Some(CSS_TOKEN_EOF));
             }
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("start: character read is %c" , c));
+            // io::println(fmt!("start: character read is %c" , c));
             self.APPEND(cptr, clen);
 
             if (clen > 1 || c >= 0x80 as char) {
@@ -1270,7 +1270,7 @@ impl css_lexer {
     }
 
     pub fn string(&mut self) -> (css_error, Option<@mut css_token>) {
-        io::println("entering : string");
+        // io::println("entering : string");
         /* STRING = string
          *
          * The open quote has been consumed.
@@ -1294,7 +1294,7 @@ impl css_lexer {
     }
 
     pub fn uri_or_unicode_range_or_ident_or_function(&mut self) -> (css_error, Option<@mut css_token>) {
-        io::println("entering : uri_or_unicode_range_or_ident_or_function");
+        // io::println("entering : uri_or_unicode_range_or_ident_or_function");
         /* URI = "url(" w (string | urlchar*) w ')' 
          * UNICODE-RANGE = [Uu] '+' [0-9a-fA-F?]{1,6}(-[0-9a-fA-F]{1,6})?
          * IDENT = ident = [-]? nmstart nmchar*
@@ -1317,7 +1317,7 @@ impl css_lexer {
 
         let (cptr , clen) = pu_peek_result.unwrap();
         let c = cptr[0] as char;
-        io::println(fmt!("uri_or_unicode_range_or_ident_or_function: character read is %c" , c));
+        // io::println(fmt!("uri_or_unicode_range_or_ident_or_function: character read is %c" , c));
         if (c == 'r' || c == 'R') {
             self.APPEND(cptr, clen);
 
@@ -1341,7 +1341,7 @@ impl css_lexer {
     }
     
     pub fn uri(&mut self) -> (css_error, Option<@mut css_token>) {
-        io::println("entering : uri");
+        // io::println("entering : uri");
         enum uri_substates { Initial = 0, LParen = 1, W1 = 2, Quote = 3, 
         URL = 4, W2 = 5, RParen = 6, String = 7 };
 
@@ -1365,7 +1365,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("uri1: character read is %c" , c));
+            // io::println(fmt!("uri1: character read is %c" , c));
             if (c == 'l' || c == 'L') {
                 self.APPEND(cptr, clen);
             }
@@ -1395,7 +1395,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("uri2: character read is %c" , c));
+            // io::println(fmt!("uri2: character read is %c" , c));
             if (c == '(') {
                 self.APPEND(cptr, clen);
             }
@@ -1445,7 +1445,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("uri3: character read is %c" , c));
+            // io::println(fmt!("uri3: character read is %c" , c));
             if (c == '"' || c == '\'') {
                 self.APPEND(cptr, clen);
                 self.context.first = c as u8;
@@ -1464,7 +1464,7 @@ impl css_lexer {
             }
         }
 
-        io::println(fmt!("uri:: self.substate == %?", self.substate));
+        // io::println(fmt!("uri:: self.substate == %?", self.substate));
         /* re-ordered states to avoid goto */
         if (self.substate == String as uint) {
             let error = self.consume_string();
@@ -1524,7 +1524,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("uri4: character read is %c" , c));
+            // io::println(fmt!("uri4: character read is %c" , c));
             if (c != ')') {
                 /* Rewind to "url(" */
                 self.bytes_read_for_token = self.context.bytes_for_url;
@@ -1540,7 +1540,7 @@ impl css_lexer {
     }
 
     pub fn unicode_range(&mut self) -> (css_error, Option<@mut css_token>) {
-        io::println("entering : unicode_range");
+        // io::println("entering : unicode_range");
         enum unicode_range_states { Initial = 0, MoreDigits = 1 };
 
         /* UNICODE-RANGE = [Uu] '+' [0-9a-fA-F?]{1,6}(-[0-9a-fA-F]{1,6})?
@@ -1576,7 +1576,7 @@ impl css_lexer {
 
                 let (cptr , clen) = pu_peek_result.unwrap();
                 c = cptr[0] as char;
-                io::println(fmt!("unicode_range1: character read is %c" , c));
+                // io::println(fmt!("unicode_range1: character read is %c" , c));
                 if (char::is_digit_radix(c, 16) || c == '?') {
                     self.APPEND(cptr, clen);
                 }
@@ -1612,7 +1612,7 @@ impl css_lexer {
 
                 let (cptr , clen) = pu_peek_result.unwrap();
                 c = cptr[0] as char;
-                io::println(fmt!("unicode_range2: character read is %c" , c));
+                // io::println(fmt!("unicode_range2: character read is %c" , c));
                 /* If we've got a '-', then we may have a 
                  * second range component */
                 if (c != '-') {
@@ -1630,7 +1630,7 @@ impl css_lexer {
                 /* don't check error, this succeded in while loop above */
                 let (cptr , clen) = pu_peek_result.unwrap();
                 c = cptr[0] as char;
-                io::println(fmt!("unicode_range3: character read is %c" , c));
+                // io::println(fmt!("unicode_range3: character read is %c" , c));
                 /* If we've got a '-', then we may have a 
                  * second range component */
                 if (c != '-') {
@@ -1674,7 +1674,7 @@ impl css_lexer {
 
                 let (cptr , clen) = pu_peek_result.unwrap();
                 c = cptr[0] as char;
-                io::println(fmt!("unicode_range4: character read is %c" , c));
+                // io::println(fmt!("unicode_range4: character read is %c" , c));
                 if (char::is_digit_radix(c, 16)) {
                     self.APPEND(cptr, clen);
                 }
@@ -1700,7 +1700,7 @@ impl css_lexer {
      ******************************************************************************/ 
 
     pub fn consume_digits(&mut self) -> css_error {
-        io::println("entering : consume_digits");
+        // io::println("entering : consume_digits");
         /* digit = [0-9] */
 
         /* Consume all digits */
@@ -1718,7 +1718,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("consume_digits: character read is %c" , c));
+            // io::println(fmt!("consume_digits: character read is %c" , c));
             if (char::is_digit(c)) {
                 self.APPEND(cptr, clen);
             }
@@ -1731,7 +1731,7 @@ impl css_lexer {
     }
 
     fn consume_escape(&mut self, nl : bool) -> css_error {
-        io::println("entering : consume_escape");
+        // io::println("entering : consume_escape");
         /* escape = unicode | '\' [^\n\r\f0-9a-fA-F] 
              * 
              * The '\' has been consumed.
@@ -1760,23 +1760,23 @@ impl css_lexer {
 
         let (cptr , clen) = pu_peek_result.unwrap();
         let mut c = cptr[0] as char;
-        io::println(fmt!("consume_escape1: character read is %c" , c));
+        // io::println(fmt!("consume_escape1: character read is %c" , c));
         if (!nl && (c=='\n' || c=='\r' /* || c=='\f'*/)) {
-            io::println("!nl && (c==)");
+            // io::println("!nl && (c==)");
             /* These are not permitted */
             return CSS_INVALID;
         }
 
         /* Create unescaped buffer, if it doesn't already exist */
         if (self.unescaped_token_data.is_none()) {
-            io::println("self.unescaped_token_data.is_none()");
+            // io::println("self.unescaped_token_data.is_none()");
             self.unescaped_token_data = Some(~[]);
         }
 
         /* If this is the first escaped character we've seen for this token,
          * we must copy the characters we've read to the unescaped buffer */
         if (!self.escape_seen) {
-            io::println("!self.escape_seen");
+            // io::println("!self.escape_seen");
             if (self.bytes_read_for_token > 1) {
                 let (pu_peek_result , perror) = 
                     self.input.parserutils_inputstream_peek(0);
@@ -1784,7 +1784,7 @@ impl css_lexer {
                 assert!(perror as int == PARSERUTILS_OK as int);
 
                 let (sdata , _) = pu_peek_result.unwrap();
-                io::println("-1 to skip \\");
+                // io::println("-1 to skip \\");
                 /* -1 to skip '\\' */
                 self.unescaped_token_data.get_mut_ref().push_all(sdata.slice(0, self.bytes_read_for_token-1));
             }
@@ -1794,7 +1794,7 @@ impl css_lexer {
         }
 
         if (char::is_digit_radix(c,16)) {
-            io::println("char::is_digit_radix(c,16)");
+            // io::println("char::is_digit_radix(c,16)");
             self.bytes_read_for_token += clen;
 
             match (self.consume_unicode(char::to_digit(c, 16).unwrap() as u32)) {
@@ -1810,7 +1810,7 @@ impl css_lexer {
 
         /* If we're handling escaped newlines, convert CR(LF)? to LF */
         if (nl && c=='\r') {
-            io::println("nl && c=='\r'");
+            // io::println("nl && c=='\r'");
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token+clen);
 
@@ -1831,9 +1831,9 @@ impl css_lexer {
             let (cptr , clen) = pu_peek_result.unwrap();
 
             c=cptr[0] as char;
-            io::println(fmt!("consume_escape2: character read is %c" , c));
+            // io::println(fmt!("consume_escape2: character read is %c" , c));
             if (c=='\n') {
-                io::println("c=='\n'");
+                // io::println("c=='\n'");
                 self.APPEND(cptr, 1);
                 /* And skip the '\r' in the input */
                 self.bytes_read_for_token += clen;
@@ -1848,7 +1848,7 @@ impl css_lexer {
             return CSS_OK;
         }
         else if (nl && (c == '\n'/* || c == '\f'*/)) {
-            io::println("consume_escape:: nl && ");
+            // io::println("consume_escape:: nl && ");
             /* APPEND will increment this appropriately */
             self.current_col = 0;
             self.current_line+=1;
@@ -1858,7 +1858,7 @@ impl css_lexer {
         }
 
         /* Append the unescaped character */
-        io::println("consume_escape:: Append the unescaped character");
+        // io::println("consume_escape:: Append the unescaped character");
         self.APPEND(cptr, clen);
 
         CSS_OK
@@ -1866,7 +1866,7 @@ impl css_lexer {
 
     pub fn consume_nm_chars(&mut self) -> css_error
     {
-        io::println("entering : consume_nm_chars");
+        // io::println("entering : consume_nm_chars");
         /* nmchar = [a-zA-Z] | '-' | '_' | nonascii | escape */
 
         loop {
@@ -1883,7 +1883,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("consume_nm_chars: character read is %c" , c));
+            // io::println(fmt!("consume_nm_chars: character read is %c" , c));
             if (start_nm_char(c) && c != '\\') {
                 self.APPEND(cptr, clen);
             }
@@ -1921,7 +1921,7 @@ impl css_lexer {
 
     pub fn consume_string(&mut self) -> css_error
     {
-        io::println("entering : consume_string");
+        // io::println("entering : consume_string");
         let quote = self.context.first as char;
         let permittedquote = 
             match(quote) {
@@ -1948,7 +1948,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("consume_string: character read is %c" , c));
+            // io::println(fmt!("consume_string: character read is %c" , c));
             if (c == permittedquote) {
                 self.APPEND(cptr, clen);
             } else if (start_string_char(c)) {
@@ -1973,7 +1973,7 @@ impl css_lexer {
 
     pub fn consume_string_chars(&mut self) -> css_error
     {
-        io::println("entering : consume_string_chars");
+        // io::println("entering : consume_string_chars");
         /* stringchar = urlchar | ' ' | ')' | '\' nl */
 
         loop {
@@ -1990,7 +1990,7 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-            io::println(fmt!("consume_string_chars: character read is %c" , c));
+            // io::println(fmt!("consume_string_chars: character read is %c" , c));
             if (start_string_char(c) && c != '\\') {
                 self.APPEND(cptr, clen);
             }
@@ -2025,7 +2025,7 @@ impl css_lexer {
     }
 
     fn consume_unicode(&mut self, mut ucs : u32) -> css_error {
-        io::println("entering : consume_unicode");
+        // io::println("entering : consume_unicode");
         let mut count : int = 0;
         let mut bytes_read_init : uint = self.bytes_read_for_token;
 
@@ -2128,7 +2128,7 @@ impl css_lexer {
     }
 
     pub fn consume_url_chars(&mut self) -> css_error {
-        io::println("entering : consume_url_chars");
+        // io::println("entering : consume_url_chars");
         loop {
             let (pu_peek_result , error) = self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
 
@@ -2142,7 +2142,7 @@ impl css_lexer {
 
             let (_cptr , clen) = pu_peek_result.unwrap();
             let c = _cptr[0] as char;
-            io::println(fmt!("consume_url_chars: character read is %c" , c));
+            // io::println(fmt!("consume_url_chars: character read is %c" , c));
             if start_url_char(c) && c != '\\' {
                 self.APPEND(_cptr , clen);
             }
@@ -2169,7 +2169,7 @@ impl css_lexer {
     } 
 
     pub fn consume_w_chars(&mut self) -> css_error {
-        io::println("entering : consume_w_chars");
+        // io::println("entering : consume_w_chars");
         loop {
             let (pu_peek_result , error) = self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
             
@@ -2183,7 +2183,7 @@ impl css_lexer {
             
             let (_cptr , clen) = pu_peek_result.unwrap();
             let c = _cptr[0] as char;
-            io::println(fmt!("consume_w_chars: character read is %c" , c));
+            // io::println(fmt!("consume_w_chars: character read is %c" , c));
             if is_space(c) {
                 self.APPEND(_cptr , clen);
             }
@@ -2220,29 +2220,29 @@ impl css_lexer {
 
 
 fn start_nm_char(c: char) -> bool{
-    io::println("entering : start_nm_char");
+    // io::println("entering : start_nm_char");
     return c == '_' || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || 
         ('0' <= c && c <= '9') || c == '-' || c >= 0x80 as char || c == '\\';
 }
 
 fn start_nm_start(c: char) -> bool{
-    io::println("entering : start_nm_start");
+    // io::println("entering : start_nm_start");
     return c == '_' || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') ||
         c >= 0x80 as char || c == '\\';
 }
 
 fn start_string_char(c: char) -> bool{
-    io::println("entering : start_string_char");
+    // io::println("entering : start_string_char");
     return start_url_char(c) || c == ' ' || c == ')';
 }
 
 fn start_url_char(c: char) -> bool{
-    io::println("entering : start_url_char");
+    // io::println("entering : start_url_char");
     return c == '\t' || c == '!' || ('#' <= c && c <= '&') || c == '(' ||
         ('*' <= c && c <= '~') || c >= 0x80 as char || c == '\\';
 }
 
 fn is_space(c: char) -> bool{
-    io::println("entering : is_space");
+    // io::println("entering : is_space");
     return c == ' ' || c == '\r' || c == '\n' || c == '\t';
 }
