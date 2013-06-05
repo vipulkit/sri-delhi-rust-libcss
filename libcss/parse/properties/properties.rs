@@ -172,15 +172,17 @@ pub impl css_properties {
 
 
     /**
-    * Parse azimuth
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' - 
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_azimuth(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx:uint = *ctx;
@@ -393,15 +395,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse background
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     pub fn css__parse_background(sheet:@mut css_stylesheet, strings: &mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, result:@mut css_style) -> css_error {
         let orig_ctx = *ctx;
@@ -540,15 +545,18 @@ pub impl css_properties {
  
 
     /**
-    * Parse background_position
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_background_position(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,
         vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -712,15 +720,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse border
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_border(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -768,15 +779,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse border_color
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_border_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -908,15 +922,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse border_spacing
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_border_spacing(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -1002,15 +1019,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse border_style
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_border_style(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -1130,15 +1150,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse border_width
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_border_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -1316,15 +1339,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse clip
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_clip(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -1452,15 +1478,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse columns
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_columns(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let mut prev_ctx:uint;
@@ -1541,15 +1570,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse column_rule
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_column_rule(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -1653,15 +1685,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse content
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_content(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, result: @mut css_style)->css_error {
         let mut orig_ctx = *ctx;
@@ -2087,15 +2122,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse cue
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_cue(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -2151,15 +2189,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse cursor
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_cursor(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -2436,15 +2477,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse elevation
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_elevation(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx:uint = *ctx;
@@ -2567,15 +2611,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse font
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_font(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let mut prev_ctx: uint;
@@ -2783,15 +2830,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse font_family
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     pub fn css__parse_font_family(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token], ctx: @mut uint, result: @mut css_style) -> css_error {
     
@@ -2842,15 +2892,18 @@ pub impl css_properties {
 
  
     /**
-    * Parse font_weight
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_font_weight(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -2925,15 +2978,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse list_style
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_list_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -3033,15 +3089,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse list_style_type
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_list_style_type(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -3082,15 +3141,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse margin
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_margin(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -3236,15 +3298,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse opacity
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_opacity(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx:uint = *ctx;
@@ -3291,15 +3356,18 @@ pub impl css_properties {
 
     
     /**
-    * Parse outline
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_outline(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -3401,15 +3469,18 @@ pub impl css_properties {
 
     
     /**
-    * Parse padding
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_padding(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -3542,15 +3613,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse pause
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_pause(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -3608,15 +3682,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse play_during
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_play_during(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx = *ctx;
@@ -3717,15 +3794,18 @@ pub impl css_properties {
 
     
     /**
-    * Parse quotes
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_quotes(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
@@ -3814,15 +3894,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse text_decoration
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_text_decoration(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         let orig_ctx:uint= *ctx;
@@ -3915,15 +3998,18 @@ pub impl css_properties {
 
 
     /**
-    * Parse voice_family
-    *
-    * \param sheet   Stylesheet 
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration ctx
-    * \return CSS_OK on success, 
-    *     CSS_INVALID if the input is not valid
-    * Post condition: \a @ctx is updated with the next token to process
-    *         If the input is invalid, then \a @ctx remains unchanged.
+	* #Arguments:
+    *  'sheet'  - Stylesheet. 
+    *  'strings' -  Prop_string
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration ctx.
+    *  'results' -  css_style
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_voice_family(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token], ctx: @mut uint, result: @mut css_style) -> css_error {
     
@@ -3972,17 +4058,17 @@ pub impl css_properties {
       
 }//end of impl css_properties
 
-
 /**
-* Parse list-style-type value
-*
-* \param string css_propstrings
-* \param token  tokens to process
-* \return value Option of u16 (Some(x) if CSS_OK else None)
-* \return CSS_OK on success, 
-*     CSS_INVALID if the input is not valid
-* Post condition: \a @ctx is updated with the next token to process
-*         If the input is invalid, then \a @ctx remains unchanged.
+* #Arguments:
+*  'strings' -  css_propstrings
+*  'token' - tokens to process.
+* #Return Value:
+* 'value' - Option of u16 (Some(x) if CSS_OK else None)
+* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+* #Post condition:
+*   ctx is updated with the next token to process.
+*   If the input is invalid, then ctx remains unchanged.
 */
 pub fn css__parse_list_style_type_value(strings: &mut ~css_propstrings , token:&@css_token) -> (Option<u16> , css_error) {
     if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , DISC as uint) {
@@ -4037,12 +4123,12 @@ pub fn css__parse_list_style_type_value(strings: &mut ~css_propstrings , token:&
 
 
 /**
- * Determine if a given font-family ident is reserved
- *
- * \param strings Propstrings
- * \param ident  IDENT to consider
- * \return True if IDENT is reserved, false otherwise
- */
+* #Arguments:
+*  'strings' -  css_propstrings
+*  'ident' - IDENT to consider.
+* #Return Value:
+* 	True if IDENT is reserved, false otherwise.
+*/
 pub fn font_family_reserved(strings:&mut ~css_propstrings, ident:&@css_token) -> bool {
 
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), SERIF as uint) ||
@@ -4054,13 +4140,13 @@ pub fn font_family_reserved(strings:&mut ~css_propstrings, ident:&@css_token) ->
 
 
 /**
- * Convert a font-family token into a bytecode value
- *
- * \param strings Propstrings
- * \param token  Token to consider
- * \param first  Whether the token is the first
- * \return Bytecode value
- */
+* #Arguments:
+*  'strings' -  Propstrings
+*  'token' - Token to consider.
+*  'first' - Whether the token is the first.
+* #Return Value:
+* 	Bytecode value.
+*/
 pub fn font_family_value(strings:&mut ~css_propstrings, token:&@css_token, first:bool) -> u32 {
     let mut value:u16;
     
@@ -4097,6 +4183,15 @@ pub fn font_family_value(strings:&mut ~css_propstrings, token:&@css_token, first
 }
 
 
+/**
+* #Arguments:
+*  'sheet' - css_stylesheet.
+*  'strings' -  css_propstrings.
+*  'style' - css_style.
+*  'system_font' - css_system_font.
+* #Return Value:
+* 	'css_error'.
+*/
 pub fn parse_system_font(sheet: @mut css_stylesheet , strings:&mut ~css_propstrings , style: @mut css_style , system_font: css_system_font) -> css_error{
     match system_font.style {
         CSS_FONT_STYLE_NORMAL => {
@@ -4202,14 +4297,14 @@ pub fn parse_system_font(sheet: @mut css_stylesheet , strings:&mut ~css_propstri
     CSS_INVALID
 }
 
-
 /**
- * Determine if a given voice-family ident is reserved
- *
- * \param strings Propstrings
- * \param ident  IDENT to consider
- * \return True if IDENT is reserved, false otherwise
- */
+* #Arguments:
+*  'strings' -  css_propstrings.
+*  'ident' - IDENT to consider.
+*  'system_font' - css_system_font.
+* #Return Value:
+* 	'bool' - True if IDENT is reserved, false otherwise.
+*/
 pub fn voice_family_reserved(strings: &mut ~css_propstrings, ident:&@css_token) -> bool {
     
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), MALE as uint) ||
@@ -4217,14 +4312,14 @@ pub fn voice_family_reserved(strings: &mut ~css_propstrings, ident:&@css_token) 
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), CHILD as uint) 
 }
 
-
 /**
- * Convert a voice-family token into a bytecode value
- *
- * \param strings Propstrings
- * \param token  Token to consider
- * \return Bytecode value
- */
+* #Arguments:
+*  'strings' -  css_propstrings.
+*  'token' - token to consider.
+*  'system_font' - css_system_font.
+* #Return Value:
+* 	'u32' - Bytecode value.
+*/
 pub fn voice_family_value(strings: &mut ~css_propstrings, token:&@css_token, first:bool) -> u32
 {
      
@@ -4255,18 +4350,19 @@ pub fn voice_family_value(strings: &mut ~css_propstrings, token:&@css_token, fir
 }
 
 /**
-* Create a string from a list of IDENT/S tokens if the next token is IDENT
-* or references the next token's string if it is a STRING
-*
-* \param sheet   Stylesheet 
-* \param vector  Vector of tokens to process
-* \param ctx     Pointer to vector iteration ctx
-* \param reserved   Callback to determine if an identifier is reserved
-* \return result Option of ~str (Some(x) if CSS_OK else None)
-* \return CSS_OK on success, 
-*     CSS_INVALID if the input is not valid
-* Post condition: \a @ctx is updated with the next token to process
-*         If the input is invalid, then \a @ctx remains unchanged.
+* #Arguments:
+*  'sheet' -  Stylesheet.
+*  'strings' -  css_propstrings.
+*  'vector' - Vector of tokens to process.
+*  'ctx' - Pointer to vector iteration ctx.
+*  'reserved' - 
+* #Return Value:
+* 	'result' - Option of ~str (Some(x) if CSS_OK else None).
+*	'css_error' - CSS_OK on success, 
+			CSS_INVALID if the input is not valid
+* #Post Condition:
+* 	ctx is updated with the next token to process
+        If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, reserved:Option<reserved_fn>)
     -> (css_error, Option<~str>) {
@@ -4288,18 +4384,19 @@ pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings:
     }
 }
 
-
 /**
-* Create a string from a list of IDENT/S tokens
-*
-* \param vector  Vector of tokens to process
-* \param ctx     Pointer to vector iteration ctx
-* \param reserved   Callback to determine if an identifier is reserved
-* \return result Option of ~str (Some(x) if CSS_OK else None)
-* \return CSS_OK on success, 
-*     CSS_INVALID if the input is not valid
-* Post condition: \a @ctx is updated with the next token to process
-*         If the input is invalid, then \a @ctx remains unchanged.
+* #Arguments:
+*  'strings' -  css_propstrings.
+*  'vector' - Vector of tokens to process.
+*  'ctx' - Pointer to vector iteration ctx.
+*  'reserved' - Callback to determine if an identifier is reserved.
+* #Return Value:
+* 	'result' - Option of ~str (Some(x) if CSS_OK else None).
+*	'css_error' - CSS_OK on success, 
+			CSS_INVALID if the input is not valid
+* #Post Condition:
+* 	ctx is updated with the next token to process
+        If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token],
     ctx: @mut uint , reserved:Option<reserved_fn>) -> (css_error , Option<~str>) {
@@ -4355,16 +4452,20 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
 
 
 /**
-* Parse a comma separated list, converting to bytecode
-*
-* \param vector  Vector of tokens to process
-* \param ctx     Pointer to vector iteration ctx
-* \param reserved   Callback to determine if an identifier is reserved
-* \param get_value  Callback to retrieve bytecode value for a token
-* \return CSS_OK on success, 
-*     CSS_INVALID if the input is not valid
-* Post condition: \a @ctx is updated with the next token to process
-*         If the input is invalid, then \a @ctx remains unchanged.
+* #Arguments:
+*  'sheet' -  Stylesheet.
+*  'strings' -  css_propstrings.
+*  'vector' - Vector of tokens to process.
+*  'ctx' - Pointer to vector iteration ctx.
+*  'reserved' - 
+*  'get_value' - Callback to retrieve bytecode value for a token.
+*  'style' - 
+* #Return Value:
+*	'css_error' - CSS_OK on success, 
+			CSS_INVALID if the input is not valid
+* #Post Condition:
+* 	ctx is updated with the next token to process
+        If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token], 
     ctx: @mut uint , reserved:Option<reserved_fn> , get_value: Option<get_value_fn> , style: @mut css_style) -> css_error {
@@ -4466,19 +4567,20 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
 }
 
 /**
- * Parse border_side
- *
- * \param sheet   Stylesheet  
- * \param strings Propstrings
- * \param vector  Vector of tokens to process
- * \param ctx     Pointer to vector iteration context
- * \param result  resulting style
- * \return CSS_OK on success,
- *      CSS_INVALID if the input is not valid
- *
- * Post condition: \a @ctx is updated with the next token to process
- *          If the input is invalid, then \a @ctx remains unchanged.
- */
+* #Arguments:
+*  'sheet' -  Stylesheet.
+*  'strings' -  css_propstrings.
+*  'vector' - Vector of tokens to process.
+*  'ctx' - Pointer to vector iteration ctx.
+*  'result_style' - resulting style.
+*  'side' - 
+* #Return Value:
+*	'css_error' - CSS_OK on success, 
+			CSS_INVALID if the input is not valid
+* #Post Condition:
+* 	ctx is updated with the next token to process
+        If the input is invalid, then \a ctx remains unchanged.
+*/
 pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_error { 
     let orig_ctx = *ctx;
     let mut prev_ctx: uint;
@@ -4592,18 +4694,19 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
 Moved Autogenerated Parse/Properties functions for removing circular dependency
 *********************************************************************************/
 /**
- * Parse border_top
- *
- * \param strings Propstrings
- * \param vector  Vector of tokens to process
- * \param ctx     Pointer to vector iteration context
- * \param result  resulting style
- * \return CSS_OK on success,
- *      CSS_INVALID if the input is not valid
- *
- * Post condition: \a @ctx is updated with the next token to process
- *          If the input is invalid, then \a @ctx remains unchanged.
- */
+* #Arguments:
+*  'sheet' -  Stylesheet.
+*  'strings' -  css_propstrings.
+*  'vector' - Vector of tokens to process.
+*  'ctx' - Pointer to vector iteration ctx.
+*  'result' - resulting style.
+* #Return Value:
+*	'css_error' - CSS_OK on success, 
+			CSS_INVALID if the input is not valid
+* #Post Condition:
+* 	ctx is updated with the next token to process
+        If the input is invalid, then \a ctx remains unchanged.
+*/
 pub fn css__parse_border_top(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings,
       vector:&~[@css_token], ctx:@mut uint, result:@mut css_style) -> css_error
 {
@@ -4612,18 +4715,20 @@ pub fn css__parse_border_top(sheet:@mut css_stylesheet, strings:&mut ~css_propst
  
 
 /**
- * Parse border_bottom
- *
- * \param strings Propstrings
- * \param vector  Vector of tokens to process
- * \param ctx     Pointer to vector iteration context
- * \param result  resulting style
- * \return CSS_OK on success,
- *      CSS_INVALID if the input is not valid
- *
- * Post condition: \a @ctx is updated with the next token to process
- *          If the input is invalid, then \a @ctx remains unchanged.
- */
+* #Arguments:
+*  'sheet' -  Stylesheet.
+*  'strings' -  css_propstrings.
+*  'vector' - Vector of tokens to process.
+*  'ctx' - Pointer to vector iteration ctx.
+*  'result' - resulting style.
+*  'side' - 
+* #Return Value:
+*	'css_error' - CSS_OK on success, 
+			CSS_INVALID if the input is not valid
+* #Post Condition:
+* 	ctx is updated with the next token to process
+        If the input is invalid, then \a ctx remains unchanged.
+*/
 pub fn css__parse_border_bottom(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings,
       vector:&~[@css_token], ctx:@mut uint, result:@mut css_style) -> css_error
 {
@@ -4632,18 +4737,20 @@ pub fn css__parse_border_bottom(sheet:@mut css_stylesheet, strings:&mut ~css_pro
 
 
 /**
- * Parse border_left
- *
- * \param strings Propstrings
- * \param vector  Vector of tokens to process
- * \param ctx     Pointer to vector iteration context
- * \param result  resulting style
- * \return CSS_OK on success,
- *      CSS_INVALID if the input is not valid
- *
- * Post condition: \a @ctx is updated with the next token to process
- *          If the input is invalid, then \a @ctx remains unchanged.
- */
+* #Arguments:
+*  'sheet' -  Stylesheet.
+*  'strings' -  css_propstrings.
+*  'vector' - Vector of tokens to process.
+*  'ctx' - Pointer to vector iteration ctx.
+*  'result' - resulting style.
+*  'side' - 
+* #Return Value:
+*	'css_error' - CSS_OK on success, 
+			CSS_INVALID if the input is not valid
+* #Post Condition:
+* 	ctx is updated with the next token to process
+        If the input is invalid, then \a ctx remains unchanged.
+*/
 pub fn css__parse_border_left(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings,
       vector:&~[@css_token], ctx:@mut uint, result:@mut css_style) -> css_error
 {
@@ -4652,18 +4759,20 @@ pub fn css__parse_border_left(sheet:@mut css_stylesheet, strings:&mut ~css_props
 
 
 /**
- * Parse border_right
- *
- * \param strings Propstrings
- * \param vector  Vector of tokens to process
- * \param ctx     Pointer to vector iteration context
- * \param result  resulting style
- * \return CSS_OK on success,
- *      CSS_INVALID if the input is not valid
- *
- * Post condition: \a @ctx is updated with the next token to process
- *          If the input is invalid, then \a @ctx remains unchanged.
- */
+* #Arguments:
+*  'sheet' -  Stylesheet.
+*  'strings' -  css_propstrings.
+*  'vector' - Vector of tokens to process.
+*  'ctx' - Pointer to vector iteration ctx.
+*  'result' - resulting style.
+*  'side' - 
+* #Return Value:
+*	'css_error' - CSS_OK on success, 
+			CSS_INVALID if the input is not valid
+* #Post Condition:
+* 	ctx is updated with the next token to process
+        If the input is invalid, then \a ctx remains unchanged.
+*/
 pub fn css__parse_border_right(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings,
       vector:&~[@css_token], ctx:@mut uint, result:@mut css_style) -> css_error
 {
