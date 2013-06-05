@@ -31,7 +31,8 @@ fn fill_params() -> css_params {
 }
 
 fn css_create_fn() -> ~css{
-    let css = css_create(fill_params());
+    let mut lwc = wapcaplet::lwc();
+    let css = css_create(fill_params() , Some(lwc));
     css
 }
 
@@ -77,7 +78,7 @@ fn parse(file_name: ~str) {
                 CSS_NEEDDATA => {},
                 _ => {assert!(false);}
             }
-            let (error , _) = css.css_stylesheet_data_done();
+            let error = css.css_stylesheet_data_done();
 
             match error {
                 CSS_OK => {},

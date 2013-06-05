@@ -37,8 +37,9 @@ fn fill_params() -> css_params {
 }
 
 fn css_create_fn() -> ~css{
-	let css = css_create(fill_params());
-	css
+    let mut lwc = wapcaplet::lwc();
+    let css = css_create(fill_params() , Some(lwc));
+    css
 }
 
 fn main() {
@@ -101,14 +102,14 @@ fn parse(file_name: ~str) {
 				CSS_NEEDDATA => {},
 				_ => {assert!(false);}
 			}
-			let (error , css_stylesheet) = css.css_stylesheet_data_done();
+			let error = css.css_stylesheet_data_done();
 
 			match error {
 				CSS_OK => {},
 				_ => {assert!(false);}
 			}
 			// io::println(fmt!("parse: css_stylesheet is %?" , copy css_stylesheet));
-			let rule =  css_stylesheet.unwrap().rule_list;
+			let rule =  css.stylesheet.rule_list;
 			// io::println(fmt!("parse: rule is %?" , copy rule));
 			loop {
 				match rule {

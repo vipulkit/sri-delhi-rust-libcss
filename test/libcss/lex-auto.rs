@@ -107,7 +107,7 @@ fn match_vec_u8(expected_data: &[u8] , found_string: &str) -> bool {
 
     let mut found_string_vector = str::to_bytes(found_string);
     if found_string_vector.len() != expected_data.len() {
-        io::println("lenghts don't match");
+        // io::println("lenghts don't match");
         return false;
     }
 
