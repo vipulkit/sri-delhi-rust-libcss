@@ -135,12 +135,12 @@ pub impl css_parser {
                 break;
             }
 
-            io::println(fmt!("css__parser_parse_chunk:: state_stack (1) == %?", self.state_stack));
+            // io::println(fmt!("css__parser_parse_chunk:: state_stack (1) == %?", self.state_stack));
             let (current_state, _) = self.state_stack[self.state_stack.len()-1];
 
             unsafe {
                 let current_state_enum : parse_states = cast::transmute(current_state);
-                io::println(fmt!("css__parser_parse_chunk:: current state == %?", current_state_enum));
+                // io::println(fmt!("css__parser_parse_chunk:: current state == %?", current_state_enum));
             }
             let result = (*self.states[current_state])(self);
 
@@ -159,9 +159,9 @@ pub impl css_parser {
             if self.state_stack.is_empty() {
                 break;
             }
-            io::println(fmt!("css__parser_completed, state_stack (1) == %?", self.state_stack));
+            // io::println(fmt!("css__parser_completed, state_stack (1) == %?", self.state_stack));
             let (current_state, _) = self.state_stack[self.state_stack.len()-1];
-            io::println(fmt!("css__parser_completed, state_stack (2) == %?", self.state_stack));
+            // io::println(fmt!("css__parser_completed, state_stack (2) == %?", self.state_stack));
             let result = (*self.states[current_state])(self);
 
             match(result) {
@@ -206,10 +206,10 @@ pub impl css_parser {
 
     fn done(&mut self)
     {
-        io::println("Entering: done");
+        // io::println("Entering: done");
         /* Pop current state from stack */
         self.state_stack.pop();
-        io::println("Leaving: done");
+        // io::println("Leaving: done");
     }
 
     fn eat_ws(&mut self) -> css_error
@@ -232,15 +232,15 @@ pub impl css_parser {
     }
 
     fn push_back(&mut self, token: @css_token) {
-        io::println("Entering: push_back");
-        /*io::println(fmt!("token == %?", token));
-        io::println(fmt!("self.tokens == %?", self.tokens));*/
+        // io::println("Entering: push_back");
+        /*// io::println(fmt!("token == %?", token));
+        // io::println(fmt!("self.tokens == %?", self.tokens));*/
 
         assert!(self.pushback.is_none());
 
         self.pushback = Some(token);
         self.tokens.pop();
-        io::println("Exiting: push_back");
+        // io::println("Exiting: push_back");
     }
 
 
@@ -332,10 +332,10 @@ pub impl css_parser {
             AfterStylesheet = 2 
         };
 
-        io::println(fmt!("parse_start: state_stack (1) == %?", parser.state_stack));
+        // io::println(fmt!("parse_start: state_stack (1) == %?", parser.state_stack));
         let mut (current_state,current_substate) = parser.state_stack.pop();
         assert!(current_state == sStart as uint);
-        io::println(fmt!("parse_start: state_stack (2) == %?", parser.state_stack));
+        // io::println(fmt!("parse_start: state_stack (2) == %?", parser.state_stack));
 
         while (true) {
             match (current_substate) {

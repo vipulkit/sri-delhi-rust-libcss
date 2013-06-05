@@ -75,7 +75,7 @@ impl inputstream {
     }
 
     pub fn parserutils_inputstream_append(&mut self, data: ~[u8]) -> parserutils_error {
-        io::println("Entering: parserutils_inputstream_append");
+        // io::println("Entering: parserutils_inputstream_append");
         if data.len()==0 {
             self.had_eof = true;
             return PARSERUTILS_OK;
@@ -85,7 +85,7 @@ impl inputstream {
     }
 
     pub fn parserutils_inputstream_insert(&mut self, data: ~[u8])-> parserutils_error {
-        io::println("Entering: parserutils_inputstream_insert");
+        // io::println("Entering: parserutils_inputstream_insert");
         if data.len()==0 && (self.utf8.len() < self.cursor) {
             return PARSERUTILS_BADPARM;
         }
@@ -98,12 +98,12 @@ impl inputstream {
     }
 
     pub fn parserutils_inputstream_read_charset(&mut self)-> (Option<~str>,int) {
-        io::println("Entering: parserutils_inputstream_read_charset");
+        // io::println("Entering: parserutils_inputstream_read_charset");
         (arc::get(&self.input.instance).parserutils_charset_mibenum_to_name(self.mibenum),self.encsrc)
     }
 
     pub fn parserutils_inputstream_change_charset(&mut self, enc:~str, source:int)-> parserutils_error {
-        io::println("Entering: parserutils_inputstream_change_charset");
+        // io::println("Entering: parserutils_inputstream_change_charset");
         if enc.len() == 0 {
             return PARSERUTILS_BADPARM;
         }
@@ -131,7 +131,7 @@ impl inputstream {
     }
 
     pub fn parserutils_inputstream_strip_bom(&mut self)-> parserutils_error {
-        io::println("Entering: parserutils_inputstream_strip_bom");
+        // io::println("Entering: parserutils_inputstream_strip_bom");
         let UTF32_BOM_LEN =4;
         let UTF16_BOM_LEN =2;
         let UTF8_BOM_LEN  =3;
@@ -235,7 +235,7 @@ impl inputstream {
     }
 
     pub fn parserutils_inputstream_advance(&mut self, bytes:uint) -> parserutils_error {
-        io::println("Entering: parserutils_inputstream_advance");
+        // io::println("Entering: parserutils_inputstream_advance");
         if bytes > (self.utf8.len() - self.cursor) {
                 return PARSERUTILS_BADPARM;
         }
@@ -249,7 +249,7 @@ impl inputstream {
     }
 
     pub fn parserutils_inputstream_refill_buffer(&mut self) -> parserutils_error {
-        io::println("Entering: parserutils_inputstream_refill_buffer");
+        // io::println("Entering: parserutils_inputstream_refill_buffer");
         if (self.done_first_chunk == false) {
 
             match(self.csdetect) {
@@ -267,7 +267,7 @@ impl inputstream {
                             }
                         },
                         _ => {
-                            io::println(fmt!("parserutils_inputstream_refill_buffer:: error == %?" , error));
+                            // io::println(fmt!("parserutils_inputstream_refill_buffer:: error == %?" , error));
                             return error 
                         }  
                     }
@@ -277,7 +277,7 @@ impl inputstream {
             if (self.mibenum == 0) {
                 self.mibenum = arc::get(&self.input.instance).parserutils_charset_mibenum_from_name(~"UTF-8");
                 if self.mibenum == 0 {
-                    io::println("parserutils_inputstream_refill_buffer: self.mibenum == 0");
+                    // io::println("parserutils_inputstream_refill_buffer: self.mibenum == 0");
                     return PARSERUTILS_BADPARM;
                 }
                 self.encsrc = 0;
@@ -288,7 +288,7 @@ impl inputstream {
                     //self.done_first_chunk = true;
                 },
                 _ => {
-                    io::println("parserutils_inputstream_refill_buffer: match self.parserutils_inputstream_strip_bom => _");
+                    // io::println("parserutils_inputstream_refill_buffer: match self.parserutils_inputstream_strip_bom => _");
                     return PARSERUTILS_BADPARM;
                 } 
             }
@@ -354,7 +354,7 @@ impl inputstream {
 
 
     pub fn parserutils_inputstream_peek_slow(&mut self , offset: uint)-> (Option<(~[u8],uint)>,parserutils_error) {
-            io::println("Entering: parserutils_inputstream_peek_slow");
+            // io::println("Entering: parserutils_inputstream_peek_slow");
         let len: uint;
 
         if self.raw.len() == 0 {
@@ -369,7 +369,7 @@ impl inputstream {
          // Refill utf8 buffer from raw buffer 
         match(self.parserutils_inputstream_refill_buffer()) {
             PARSERUTILS_BADPARM => {
-                io::println("parserutils_inputstream_peek_slow: Refill buffer badparam");
+                // io::println("parserutils_inputstream_peek_slow: Refill buffer badparam");
                 return (None, PARSERUTILS_BADPARM);
             },
             PARSERUTILS_BADENCODING => {return (None, PARSERUTILS_BADENCODING);},
@@ -379,7 +379,7 @@ impl inputstream {
 
          // Refill may have succeeded, but not actually produced any new data 
         if self.cursor + offset == self.utf8.len() {  
-            io::println("parserutils_inputstream_peek_slow: cursor+ offset = = utf8.len() ");                  
+            // io::println("parserutils_inputstream_peek_slow: cursor+ offset = = utf8.len() ");                  
             return (None,PARSERUTILS_NEEDDATA);
         }
         
@@ -393,7 +393,7 @@ impl inputstream {
             
             match(filter::parserutils_charset_utf8_char_byte_length(requested_data)) {
                 None=>{
-                    io::println("Entering: parserutils_inputstream_peek_slow: None");
+                    // io::println("Entering: parserutils_inputstream_peek_slow: None");
                     return (None, PARSERUTILS_BADPARM);
                      
                 },
@@ -408,7 +408,7 @@ impl inputstream {
 
  
     pub fn parserutils_inputstream_peek(&mut self, offset: uint)-> (Option<(~[u8],uint)>,parserutils_error) {
-        io::println("Entering: parserutils_inputstream_peek");
+        // io::println("Entering: parserutils_inputstream_peek");
         let mut ptr:~[u8];
         let mut len :uint;
         
@@ -424,7 +424,7 @@ impl inputstream {
                 
                 match(filter::parserutils_charset_utf8_char_byte_length(ptr)) {
                     None=>{
-                        io::println("parserutils_inputstream_peek: None");
+                        // io::println("parserutils_inputstream_peek: None");
                         return (None, PARSERUTILS_BADPARM);
                     },
                     Some(l)=> {
@@ -434,7 +434,7 @@ impl inputstream {
                 return(Some((ptr , len)) , PARSERUTILS_OK);
             }
         }
-        io::println("parserutils_inputstream_peek: before peek_slow");
+        // io::println("parserutils_inputstream_peek: before peek_slow");
         return self.parserutils_inputstream_peek_slow(offset);
     }
 }

@@ -69,7 +69,7 @@ pub impl css_language {
     
     pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:&~[@css_token])
         -> css_error {
-        io::println("Entering: language_handle_event");
+        // io::println("Entering: language_handle_event");
         match event_type {
             
             CSS_PARSER_START_STYLESHEET => {
@@ -116,14 +116,14 @@ pub impl css_language {
 
 
     pub fn handleStartStylesheet(&mut self ) -> css_error {
-            io::println("Entering: handleStartStylesheet");
+            // io::println("Entering: handleStartStylesheet");
             let entry:context_entry = context_entry {
                 event_type: CSS_PARSER_START_STYLESHEET, 
                 data:None                                       
             };
             
             self.context.push(entry);
-            io::println("Exiting: handleStartStylesheet");
+            // io::println("Exiting: handleStartStylesheet");
             CSS_OK
         }
 
