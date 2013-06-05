@@ -165,3 +165,15 @@ pub fn alias() -> arc::ARC<~alias> {
     new_alias.read_aliases();
     arc::ARC(new_alias)
 }
+
+pub fn mibenum_is_unicode(mibenum:u16) -> bool {
+    (mibenum == 1000) || 
+    (mibenum == 1001) || 
+    (mibenum == 1015) || 
+    (mibenum == 1013) || 
+    (mibenum == 1014) || 
+    (mibenum == 1017) || 
+    (mibenum == 1018) || 
+    (mibenum == 1019) || 
+    (mibenum == 106)
+}

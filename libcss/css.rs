@@ -12,7 +12,7 @@ use stylesheet::*;
 use utils::errors::*;
 
 pub struct css {
-	priv lwc:arc::RWARC<~lwc>,
+	lwc:arc::RWARC<~lwc>,
 	stylesheet:@mut css_stylesheet,
 	priv parser:~css_parser,
 
@@ -55,9 +55,14 @@ pub struct css_params {
 }
 
 pub impl css {
-	pub fn css_create(params: css_params) -> ~css {
+	pub fn css_create(params: css_params, lwc_instance: Option<arc::RWARC<~lwc>>) -> ~css {
 		// create lwc
-		let lwc = lwc();
+		let lwc = 	if lwc_instance.is_none() { 
+						lwc()
+					}  
+					else {
+						lwc_instance.get_ref().clone()
+					} ;
 
 		// create inputstream
 		let (inputstream_option, _) =  

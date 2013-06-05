@@ -15,11 +15,10 @@ use utils::errors::*;
 
 
 /**
- * Consume all leading whitespace tokens
- *
- * \param vector  The vector to consume from
- * \param ctx     The vector's context
- */
+#Arguments:
+*  'vector' - Vector of tokens to process.
+*  'ctx'    - Pointer to vector iteration ctx.
+*/
 pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
     loop {
         if *ctx < vector.len() {
@@ -36,22 +35,21 @@ pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
     }
 }
 
-
 /**
- * Parse a unit specifier
- *
- * \param sheet         Stylesheet
- * \param vector        Vector of tokens to process
- * \param ctx           Pointer to current vector iteration context
- * \param default_unit  The default unit to use if none specified
- * \return length        Option of i32(Some(x) if CSS_OK else None)
- * \return unit          Option of u32(Some(x) if CSS_OK else None)
- * \return CSS_OK      on success,
- *         CSS_INVALID if the tokens do not form a valid unit
- *
- * Post condition: \a @ctx is updated with the next token to process
- *                 If the input is invalid, then \a @ctx remains unchanged.
- */
+* #Arguments:
+*  'sheet'  - Stylesheet. 
+*  'vector' - Vector of tokens to process.
+*  'ctx'    - Pointer to current vector iteration context.
+*  'default_unit'    - The default unit to use if none specified.
+* #Return Value:
+* 'length' - Option of i32(Some(x) if CSS_OK else None).
+* 'unit' - Option of u32(Some(x) if CSS_OK else None).
+* 'css_error' - CSS_OK on success,  
+                CSS_INVALID if the input is not valid.
+* #Post condition:
+*   ctx is updated with the next token to process.
+*   If the input is invalid, then ctx remains unchanged.
+*/
 pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_token] , ctx: @mut uint , default_unit: u32) -> (Option<i32> , Option<u32>, css_error) {
 
     let mut token:&@css_token;
@@ -147,16 +145,15 @@ pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bo
     css__number_from_string(lwc_string_data(string.clone()), @mut 0, int_only)
 }
 
-
 /**
- * Parse a unit keyword
- *
- * \param ptr   keyword string
- * \param index   index of string from where we have to parse
- * \return unit  Option of u32 to get computed unit(Some(x) if CSS_OK else None)
- * \return CSS_OK      on success,
- *         CSS_INVALID on encountering an unknown keyword
- */
+* #Arguments:
+*  'ptr'  - keyword string. 
+*  'index' - index of string from where we have to parse.
+* #Return Value:
+* 'unit' - Option of u32(Some(x) if CSS_OK else None).
+* 'css_error' - CSS_OK on success,  
+                CSS_INVALID if the input is not valid.
+*/
 pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<u32>,css_error) {
     let mut unit = UNIT_GRAD;
     let len:uint= ptr.len() - index;
@@ -345,21 +342,20 @@ pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->boo
     }
 }
 
-
 /**
- * Parse a colour specifier
- *
- * \param sheet   Stylesheet
- * \param vector  Vector of tokens to process
- * \param ctx     Pointer to vector iteration context
- * \return value   Option of u16(Some(x) if CSS_OK else None)
- * \return result  Option of u16(Some(x) if CSS_OK else None) (AARRGGBB)
- * \return CSS_OK      on success,
- *         CSS_INVALID if the input is invalid
- *
- * Post condition: \a @ctx is updated with the next token to process
- *                 If the input is invalid, then \a @ctx remains unchanged.
- */
+* #Arguments:
+*  'sheet'  - Stylesheet. 
+*  'vector' - Vector of tokens to process.
+*  'ctx'    - Pointer to current vector iteration context.
+* #Return Value:
+* 'value' - Option of u16(Some(x) if CSS_OK else None).
+* 'result' - Option of u16(Some(x) if CSS_OK else None) (AARRGGBB).
+* 'css_error' - CSS_OK on success,  
+                CSS_INVALID if the input is not valid.
+* #Post condition:
+*   ctx is updated with the next token to process.
+*   If the input is invalid, then ctx remains unchanged.
+*/
 pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_error) {
     let mut token:&@css_token;
     let mut ret_value: u16 = 0;
@@ -741,13 +737,16 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
 
 
 /**
- * Parse a hash colour (#rgb or #rrggbb)
- *
- * \param data    arc of colour string(lwc_string)
- * \return result  Option of u32 (AARRGGBB) (some(x) if CSS_OK else None)
- * \return CSS_OK      on success,
- *         CSS_INVALID if the input is invalid
- */
+* #Arguments:
+*  'data'  - arc of colour string(lwc_string). 
+* #Return Value:
+* 'result' - Option of u32 (AARRGGBB) (some(x) if CSS_OK else None).
+* 'css_error' - CSS_OK on success,  
+                CSS_INVALID if the input is not valid.
+* #Post condition:
+*   ctx is updated with the next token to process.
+*   If the input is invalid, then ctx remains unchanged.
+*/
 pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error){
     let mut result_val: u32;
     let mut r: u8;
@@ -784,12 +783,12 @@ pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , c
 }
 
 /**
- * Determine if a token is a character
- *
- * \param token  The token to consider
- * \param c      The character to match (lowerASCII only)
- * \return True if the token matches, false otherwise
- */
+* #Arguments:
+*  'token'  - The token to consider. 
+*  'c'  - The character to match (lowerASCII only). 
+* #Return Value:
+* 'bool' - True if the token matches, false otherwise.
+*/
 pub fn tokenIsChar(token:&@css_token, c:char) -> bool {
     let result = false;
 
@@ -839,15 +838,15 @@ pub fn charToHex(c: u8) -> u32 {
 
 
 /**
- * Convert Hue Saturation Lightness value to RGB.
- *
- * \param hue Hue in degrees 0..360
- * \param sat Saturation value in percent 0..100
- * \param lit Lightness value in percent 0..100
- * \return r(u8) red component
- * \return g(u8) green component
- * \return b(u8) blue component
- */
+* #Arguments:
+*  'hue'  - Hue in degrees 0..360. 
+*  'sat'  - Saturation value in percent 0..100. 
+*  'lit'  - Lightness value in percent 0..100. 
+* #Return Value:
+* 'r(u8)' - red component.
+* 'g(u8)' - green component.
+* 'b(u8)' - blue component.
+*/
 pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
     let min_rgb: i32;
     let max_rgb: i32;
@@ -955,15 +954,14 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
     }
 }
 
-
 /**
- * Parse a named colour
- *
- * \param data    Colour name string
- * \return result  Option of u32(Some(x) if CSS_OK else None for invalid colour name)
- * \return CSS_OK      on success,
- *         CSS_INVALID if the colour name is unknown
- */
+* #Arguments:
+*  'data'  - arc of colour string(lwc_string). 
+* #Return Value:
+* 'result' - Option of u32 (AARRGGBB) (some(x) if CSS_OK else None).
+* 'css_error' - CSS_OK on success,  
+                CSS_INVALID if the input is not valid.
+*/
 fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error){
     let mut result_val: u32;
     let colourmap: ~[u32] = ~[
