@@ -46,11 +46,8 @@ fn main() {
 fn lwc_string() -> arc::RWARC<~lwc_string> {
     let s = arc::RWARC(~lwc_string {
         string: ~"",
-        length: 0,
-        refcnt: 0,
         hash: 0,
-        is_case_insensitive: false,
-        case_insensitive: None
+        insensitive: None
     });
     return s;
 }
