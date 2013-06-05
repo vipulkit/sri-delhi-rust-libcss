@@ -13,7 +13,7 @@ use utils::errors::*;
 
 pub struct css {
 	priv lwc:arc::RWARC<~lwc>,
-	priv stylesheet:@mut css_stylesheet,
+	stylesheet:@mut css_stylesheet,
 	priv parser:~css_parser,
 
 }
@@ -110,14 +110,51 @@ pub impl css {
 		self.parser.css__parser_parse_chunk(data)
 	}
 
-	pub fn css_stylesheet_data_done(&mut self) -> (css_error , Option<@mut css_stylesheet>) {
+	pub fn css_stylesheet_data_done(&mut self) -> css_error {
 		let error = self.parser.css__parser_completed();
+		match error {
+			CSS_OK=>{},
+			err => {
+				return err ;
+			}
+		}
 
 		self.stylesheet.cached_style = None;
 
-		// TODO <Abhijeet>: Handle pending imports
+		let mut ptr = self.stylesheet.rule_list ;
+		loop {
+			match ptr {
+				None=>{
+					return CSS_OK ;
+				},
+				Some(rule)=>{
+					match rule {
+						RULE_IMPORT(import_rule)=>{
+							if import_rule.sheet.is_none() {
+								return CSS_IMPORTS_PENDING ;
+							}
+							else {
+								ptr = css_stylesheet::css__stylesheet_get_base_rule(rule).next;
+								loop ;
+							}
+						},
+						RULE_UNKNOWN(_)=>{
+							ptr = css_stylesheet::css__stylesheet_get_base_rule(rule).next;
+							loop ;
+						},
+						RULE_CHARSET(_)=>{
+							ptr = css_stylesheet::css__stylesheet_get_base_rule(rule).next;
+							loop ;
+						},
+						_=>{
+							break ;
+						}
+					}
+				}
+			}
+		}
 
-		(error , Some(self.stylesheet))
+		CSS_OK
 	}
 
 	pub fn css_stylesheet_set_disabled(&mut self, disabled:bool ) -> css_error {
