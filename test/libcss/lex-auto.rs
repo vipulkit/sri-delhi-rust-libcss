@@ -12,7 +12,17 @@ use parserutils::input::inputstream::*;
 
 // use core::str::*;
 use core::float::*;
-use testutils::*;
+
+pub struct line_ctx_lex {
+    buf:~[u8],
+
+    exp:~[~[u8]],
+
+    indata:bool,
+    inexp:bool
+}
+
+fn check_newline(x: &u8) -> bool { *x == ('\n' as u8) }
 
 static EXP_ENTRY_TEXT_LEN:int = (128);
 
@@ -92,25 +102,33 @@ fn token_to_string(token:css_token_type)-> ~str {
     return returnString;   
 }
 
-pub fn handle_line(mut data:~str,  pw:LINE_CTX_DATA_TYPE)->bool
+
+fn match_vec_u8(expected_data: &[u8] , found_string: &str) -> bool {
+
+    let mut found_string_vector = str::to_bytes(found_string);
+    if found_string_vector.len() != expected_data.len() {
+        io::println("lenghts don't match");
+        return false;
+    }
+
+    for vec::each2(expected_data , found_string_vector) |&e , &f| {
+        if e != f {
+            return false;
+        }
+    } 
+    true
+}
+
+pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx_lex)->bool
 {
-    // io::println("Entering: handle_line");
-
-    let mut ctx = match pw { 
-        CSDETECT(_) => fail!(~"In File lex-auto.rs, Function handle_line, argument LINE_CTX_DATA_TYPE contains incorrect struct line_ctx_csdetect"), 
-        LEX(x) => x 
-    };
-
+    let mut data : ~[u8] = args ;
     // unsafe{io::println(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
-    io::println(~"STRING="+data);
-
-    if data.len() <= 0 {
-		io::println("error");
+    if  (data.len() == 0) {
+		// io::println("error");
 		return true;
 	}
-   
+
 	if (data[0] == '#' as u8) {
-        // io::println("Entering: data[0] == '#' as u8");
 		if (ctx.inexp) {
 			/* This marks end of testcase, so run it */
 
@@ -118,63 +136,59 @@ pub fn handle_line(mut data:~str,  pw:LINE_CTX_DATA_TYPE)->bool
 			ctx.exp= ~[];
 			ctx.buf=~[];
 		}
-
-		if (ctx.indata && str::ends_with(data, &"expected")) {
+		if (ctx.indata && match_vec_u8(data, &"#expected")) {
 			ctx.indata = false;
 			ctx.inexp = true;
-            //unsafe{io::println(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
 		} else if (!ctx.indata) {
-			ctx.indata = str::ends_with(data,&"data");
-			ctx.inexp  = str::ends_with(data,&"expected");
-            //unsafe{io::println(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
+			ctx.indata = match_vec_u8(data,&"#data");
+			ctx.inexp  = match_vec_u8(data,&"#expected");
 		} else {
-			ctx.buf += data.to_bytes();
+			ctx.buf += copy data;
             ctx.buf.push('\n' as u8);
-            unsafe {io::println(fmt!("buf == %?\n\n" , ctx.buf));}
 		}
 	}
 	else {
 		if ctx.indata {
-			ctx.buf += data.to_bytes();
+			ctx.buf += copy data;
             ctx.buf.push('\n' as u8);
 			
-            unsafe {io::println(fmt!("buf == %?\n\n" , ctx.buf));}
 		}
 		if (ctx.inexp) {
-            // Convert /n to '/n'
-            let mut new_data = str::replace(data, "\\n", "\n");
-            new_data = str::replace(new_data, "\\t", "\t");
 
-            let mut unescaped_data = ~"";
-            let mut counter = 0;
+            let mut unescaped_data = ~[];
+            let mut counter = 1;
 
-            while (counter < new_data.len()) {
-                if (new_data[counter] as char == '\\') {
-                    counter +=1;
-                    loop;
+            while (counter <= data.len()) {
+                if (data[counter -1] == 92) && (data[counter] == 110) {
+                    unescaped_data.push(10 as u8);
+                    counter += 2;
                 }
-
-                unescaped_data.push_char(new_data[counter] as char);
-                counter +=1;
+                else if (data[counter -1] == 92) && (data[counter] == 116) {
+                    unescaped_data.push(9 as u8);
+                    counter += 2;
+                } 
+                else if (data[counter -1] == 92) && (data[counter] == 92) {
+                    unescaped_data.push(92 as u8);
+                    counter += 2;
+                } 
+                else {
+                    unescaped_data.push(data[counter - 1]);
+                    counter +=1;
+                }
             }
-            io::print("unescaped_data == ");
-            io::println(unescaped_data);
-
+            if counter <= data.len() {
+                unescaped_data.push(data[counter-1]);    
+            }
+            
             ctx.exp.push(unescaped_data);
-            unsafe{io::println(fmt!("exp == %?", ctx.exp));}
 		}
 	}
 
-    //unsafe{io::println(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
 	return true;
 }
 
 fn testMain(fileName: ~str) {
 	// io::println(~"testMain : "+ fileName);
-	let len = css__parse_filesize(copy fileName);
-	if len ==0 {
-		return;
-	}
 	let ctx: @mut line_ctx_lex = @mut line_ctx_lex
     {
 		mut buf:~[],
@@ -183,41 +197,50 @@ fn testMain(fileName: ~str) {
 		mut indata:false,
 		mut inexp:false
 	};
-	//ctx.buf.push(0);//why?
-	assert!(css__parse_testfile(copy fileName, ~handle_line, LEX(ctx)) == true);
+
+    let file_content_result = io::read_whole_file(&Path(fileName)) ;
+    let mut file_content : ~[u8] ;
+    match file_content_result {
+        Ok(x) => {
+            file_content = x ;
+        },
+        Err(_) => {
+            file_content = ~[] ;
+            io::println(fmt!("\n Error opening file"));
+            assert!(false) ;
+        }
+    }        
+    let mut vec_lines = vec::split(file_content, check_newline) ;
+
+    for vec_lines.each |&each_line| {
+        handle_line(each_line,ctx);
+    }
 	
     if unsafe {copy ctx.buf.len()} > 0 {
-        // io::println("testMain : inside if ctx.buf.len() > 0");
 		run_test(copy ctx.buf,copy ctx.exp);
 	}
-    io::println("testMain : outside if ctx.buf.len() > 0");
 }
 
 
-pub fn run_test(data:~[u8], exp:~[~str]) {
+pub fn run_test(data:~[u8], exp:~[~[u8]]) {
 	// io::println("run test");
-	// io::println(~"run test data="+ from_bytes(*data));
 	let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
 
     let inputstream = 
         match(inputStreamOption) {
             Some(x)   => x,
             None        => {
-                // io::println("InputStream is not created, hence lexer can't be initialised");                        
                 fail!(~"InputStream is not created, hence lexer can't be initialised");
             }
         };
 
-    // io::println("Creating lexer");
     let mut lexer = css_lexer::css__lexer_create(inputstream);
 
     lexer.css__lexer_append_data(data);
     lexer.css__lexer_append_data(~[]);
-    // lexer.data_done();
     // io::println(~"after append data="+ from_bytes(*data));
     let mut index = 0;
     loop {
-    	// io::println("inside loop");
         let (error,token_option)= lexer.css__lexer_get_token();
        
         match(error)	{
@@ -235,11 +258,10 @@ pub fn run_test(data:~[u8], exp:~[~str]) {
                 }
 
                 //let found = {copy str::trim(found_str)};
-                io::println(fmt!("found == %?", found));
-                io::println(fmt!("Expected token == %?", (exp[index])));
                 // io::println(fmt!("Expected token bytes == %?", str::to_bytes(exp[index])));
-                if  !(found == exp[index]) {
-                    // io::println(fmt!("Expected token == %?", (exp[index])));
+                // io::println(fmt!("match token == %?" , match_vec_u8(&exp[index] , found)));
+                if  !match_vec_u8(exp[index] , found) {
+                    // io::println(fmt!("Expected token == %?", (&exp[index])));
                     // io::println(fmt!("Found token == %?", (found)));
                     fail!(~"Expected and Found tokens do not match.");
 
@@ -248,7 +270,7 @@ pub fn run_test(data:~[u8], exp:~[~str]) {
                 index += 1;
             },
             _=>{
-                io::println(fmt!("error = %?", error));
+                // io::println(fmt!("error = %?", error));
             	if token_option.is_some() {
                     
                     let token = token_option.unwrap();
@@ -259,14 +281,14 @@ pub fn run_test(data:~[u8], exp:~[~str]) {
 
                     let found = fmt!("%s%s" , token_type_string , token_data);
 
-                    io::println(fmt!("found == %?", found));
-                    io::println(fmt!("Expected token == %?", (exp[index])));
-                    if  found.ne(&exp[index]) {
-                        // io::println(fmt!("Expected token == %?", (exp[index])));
-                        // io::println(fmt!("Found token == %?", (found)));
-                        fail!(~"Expected and Found tokens do not match.");
+                    // io::println(fmt!("found == %?", found));
+                    // io::println(fmt!("Expected token == %?", (exp[index])));
+                    if  !match_vec_u8(exp[index] , found) {
+                    // io::println(fmt!("Expected token == %?", (exp[index])));
+                    // io::println(fmt!("Found token == %?", (found)));
+                    fail!(~"Expected and Found tokens do not match.");
 
-                    }
+                }
                     index += 1;
                 }
                 break;
