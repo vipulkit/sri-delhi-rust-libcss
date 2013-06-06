@@ -3,19 +3,17 @@
  */
 extern mod std;
 use core::io::WriterUtil;
-//use std::getopts::*;
 
 
 
-//use std::tempfile;
-
-/* Descriptors are space separated key:value pairs brackets () are
- * used to quote in values.
- *
- * Examples:
- * list_style_image:CSS_PROP_LIST_STYLE_IMAGE IDENT:( INHERIT: NONE:0,LIST_STYLE_IMAGE_NONE IDENT:) URI:LIST_STYLE_IMAGE_URI
- *
- * list_style_position:CSS_PROP_LIST_STYLE_POSITION IDENT:( INHERIT: INSIDE:0,LIST_STYLE_POSITION_INSIDE OUTSIDE:0,LIST_STYLE_POSITION_OUTSIDE IDENT:)
+/**
+* #Description:
+*  Descriptors are space separated key:value pairs brackets () are
+*  used to quote in values.
+* #Examples:
+*  list_style_image:CSS_PROP_LIST_STYLE_IMAGE IDENT:( INHERIT: NONE:0,LIST_STYLE_IMAGE_NONE IDENT:) URI:LIST_STYLE_IMAGE_URI
+*
+*  list_style_position:CSS_PROP_LIST_STYLE_POSITION IDENT:( INHERIT: INSIDE:0,LIST_STYLE_POSITION_INSIDE OUTSIDE:0,LIST_STYLE_POSITION_OUTSIDE IDENT:)
 */
 
 struct keyval {
@@ -71,26 +69,28 @@ pub fn file_header(fp:@Writer) -> () {
 }
 
 pub fn function_header(fp:@Writer, descriptor:~str, parser_id:&keyval, is_generic:bool) -> () {
-    fp.write_line(" /* Generated from:");
+    fp.write_line("/**");
+    fp.write_line(" * #Generated from:");
     fp.write_line(" *");
-    fp.write_line(fmt!(" * %s", descriptor));
+    fp.write_line(fmt!(" *     %s", descriptor));
     fp.write_line(" * ");
     fp.write_line(" */");
     fp.write_line("");
     fp.write_line("/**");
-    fp.write_line(fmt!(" * Parse %s",parser_id.key));
-    fp.write_line(" *");
-    fp.write_line(" * \\param strings Propstrings");
-    fp.write_line(" * \\param vector  Vector of tokens to process");
-    fp.write_line(" * \\param ctx     Pointer to vector iteration context");
-    fp.write_line(" * \\param result  resulting style");
-    fp.write_str(fmt!("%s",if is_generic {" * \\param op     Bytecode OpCode for CSS property to encode"} else { ""}));
-    fp.write_line(" * \\return CSS_OK on success,");
-    fp.write_line(" *      CSS_INVALID if the input is not valid");
-    fp.write_line(" *");
-    fp.write_line(" * Post condition: \\a @ctx is updated with the next token to process");
-    fp.write_line(" *          If the input is invalid, then \\a @ctx remains unchanged.");
-    fp.write_line(" */");
+    fp.write_line("* #Arguments:");
+    fp.write_line("*  'sheet' -  Stylesheet.");
+    fp.write_line("*  'strings' -  css_propstrings.");
+    fp.write_line("*  'vector' -  Vector of tokens to process.");
+    fp.write_line("*  'ctx' -  Pointer to vector iteration context.");
+    fp.write_line("*  'result' - resulting style.");
+    fp.write_str(fmt!("%s",if is_generic {" * 'op' - Bytecode OpCode for CSS property to encode"} else { ""}));
+    fp.write_line("* #Return Value:");
+    fp.write_line("*  'css_error' - CSS_OK on success,");
+    fp.write_line("      CSS_INVALID if the input is not valid");
+    fp.write_line("* #Post Condition:");
+    fp.write_line("*   ctx is updated with the next token to process");
+    fp.write_line("*     If the input is invalid, then ctx remains unchanged.");
+    fp.write_line("*/");
     fp.write_line(fmt!("pub fn css__parse_%s(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings,",parser_id.key));
     fp.write_str("      vector:&~[@css_token], ctx:@mut uint,");
     fp.write_line(fmt!(" result:@mut css_style%s) -> css_error", if is_generic {", op:css_properties_e" } else {""}    ));
