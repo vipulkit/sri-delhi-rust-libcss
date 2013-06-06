@@ -11,16 +11,14 @@ use core::comm::PortSet;
 
 pub struct lwc_string {
     string: ~str,
-    length: uint,
-    refcnt: u32,
     hash: u32,
-    is_case_insensitive: bool,
-    case_insensitive: Option<arc::RWARC<~lwc_string>>
+    insensitive: Option<arc::RWARC<~lwc_string>>
 }
 
+pub type  lwc_iteration_callback_fn = ~extern fn(arc::RWARC<~lwc_string>, pw: *libc::c_void);
 
 pub struct lwc {
-    priv bucketVector: ~([~[arc::RWARC<~lwc_string>]])
+    priv buckets: ~([~[arc::RWARC<~lwc_string>]])
 }
 
 pub impl lwc {
@@ -103,11 +101,8 @@ pub impl lwc {
         let mut interned_string_list : ~[arc::RWARC<~lwc_string>] = ~[];
         let dummy_lwc_string = arc::RWARC(~lwc_string {
             string: ~"" , 
-            length: 0 ,
-            refcnt: 0 , 
             hash: 0 , 
-            is_case_insensitive : false,
-            case_insensitive: None
+            insensitive: None
         });
 
         do vec::grow_fn(&mut interned_string_list, num_strings) |_| {
@@ -166,43 +161,38 @@ pub impl lwc {
             // io::println(fmt!("recv_count: %?", recv_count));
             // io::println(fmt!("receiving (index,hash_value): (%?,%?)", index, hash_value));
 
-            let mut vector_index = self.bucketVector[hash_value].len();
+            let mut vector_index = self.buckets[hash_value].len();
 
             let copy_of_string_to_intern = copy arc::get(&string_list_arc)[index];
-            let len = copy_of_string_to_intern.len();
 
             let lwc_string_to_intern = arc::RWARC(~lwc_string {
                 string: copy copy_of_string_to_intern , 
-                length: len ,
-                refcnt: 1 , 
                 hash: hash_value , 
-                is_case_insensitive : false,
-                case_insensitive: None
+                insensitive: None
             });
             
             if vector_index == 0 {
-                vec::push(&mut self.bucketVector[hash_value], lwc_string_to_intern.clone());
+                vec::push(&mut self.buckets[hash_value], lwc_string_to_intern.clone());
                 interned_string_list[index] = lwc_string_to_intern;
             }
             else {
                 while vector_index>0 {
                     let mut found_flag = false;
                     
-                    do self.bucketVector[hash_value][vector_index-1].write |l| {
+                    do self.buckets[hash_value][vector_index-1].write |l| {
                         if ((*l).string == copy_of_string_to_intern) {
-                            (*l).refcnt += 1;
                             found_flag = true;
                         }
                     }
                     
                     if (found_flag) {
-                        interned_string_list[index] = self.bucketVector[hash_value][vector_index-1].clone();
+                        interned_string_list[index] = self.buckets[hash_value][vector_index-1].clone();
                     }
                     
                     vector_index = vector_index-1;
                     
                 }   
-                vec::push(&mut self.bucketVector[hash_value], lwc_string_to_intern.clone());
+                vec::push(&mut self.buckets[hash_value], lwc_string_to_intern.clone());
                 interned_string_list[index] = lwc_string_to_intern;
             }
         }
@@ -214,69 +204,55 @@ pub impl lwc {
         self.__lwc_intern(string_to_intern, false)
     }
 
-    priv fn __lwc_intern(&mut self , string_to_intern: ~str, case_insensitive:bool) -> arc::RWARC<~lwc_string> {
+    priv fn __lwc_intern(&mut self , string_to_intern: ~str, insensitive:bool) -> arc::RWARC<~lwc_string> {
         
         let mut string_to_intern_actual : ~str; //= ~"";
         let string_to_intern_lcase = str::to_lower(string_to_intern);
         let mut hash_value : u32;//= 0u32;
-        let mut is_case_insensitive : bool;//= case_insensitive;
 
-        match (case_insensitive) {
+        match (insensitive) {
             false=> {
                 hash_value = lwc::lwc_calculate_hash(string_to_intern);
                 string_to_intern_actual = string_to_intern;
-                if (string_to_intern_actual==string_to_intern_lcase) {
-                    is_case_insensitive = true;
-                }
-                else {
-                    is_case_insensitive = false;
-                }
             }
             true=> { 
                 hash_value = lwc::lwc_calculate_lcase_hash(string_to_intern);
                 string_to_intern_actual = string_to_intern_lcase;
-                is_case_insensitive = true;
             }
         };
         
-
-        let len = str::char_len(string_to_intern_actual);
-        let mut vector_index = self.bucketVector[hash_value].len();
+        let mut vector_index = self.buckets[hash_value].len();
 
         let copy_of_string_to_intern = copy string_to_intern_actual;
 
         let lwc_string_to_intern = arc::RWARC(~lwc_string {
             string: string_to_intern_actual , 
-            length: len ,
-            refcnt: 1 , 
             hash: hash_value , 
-            is_case_insensitive : is_case_insensitive,
-            case_insensitive: None
+            insensitive: None
         });
         
         if vector_index == 0 {
-            vec::push(&mut self.bucketVector[hash_value], lwc_string_to_intern.clone());
+            vec::push(&mut self.buckets[hash_value], lwc_string_to_intern.clone());
             return lwc_string_to_intern;
         }
         else {
             while vector_index>0 {
                 let mut found_flag = false;
                 
-                do self.bucketVector[hash_value][vector_index-1].write |l| {
+                do self.buckets[hash_value][vector_index-1].write |l| {
                     if ((*l).string == copy_of_string_to_intern) {
-                        (*l).refcnt += 1;
                         found_flag = true;
                     }
                 }
                 
                 if (found_flag) {
-                    return self.bucketVector[hash_value][vector_index-1].clone();
+                    return self.buckets[hash_value][vector_index-1].clone();
                 }
                 
                 vector_index = vector_index-1;
                 
             }   
-            vec::push(&mut self.bucketVector[hash_value], lwc_string_to_intern.clone());
+            vec::push(&mut self.buckets[hash_value], lwc_string_to_intern.clone());
             return lwc_string_to_intern;
         }
     }
@@ -301,99 +277,95 @@ pub impl lwc {
         }
     }
 
-    pub fn lwc_intern_caseless_string(&mut self , string_to_intern: arc::RWARC<~lwc_string>) ->  arc::RWARC<~lwc_string> {
-        let mut string = ~"";
-        do string_to_intern.read |s| {
-            string = copy s.string;
+    pub fn lwc_intern_caseless_string(&mut self , lwc_string_instance: arc::RWARC<~lwc_string>) {
+        
+        let mut string:Option<~str> = None;
+        do lwc_string_instance.read |s| {
+            if (*s).insensitive.is_none() {
+                string = Some(copy (*s).string);
+            }
         }
-        self.__lwc_intern(string, true)
+
+        if string.is_none() {
+            return;
+        }
+
+        let caseless_string = self.__lwc_intern(string.unwrap(), true);
+
+        let mut already_caseless =
+            do lwc_string_instance.read |s1| {
+                do caseless_string.read |s2| {
+                    ptr::ref_eq(s1,s2)
+                }
+            };
+        
+        // setting the insensitive value if already caseless
+        // would cause a dangling allocation on heap
+        // and core dump on program exit
+        if (!already_caseless) {
+            do lwc_string_instance.write |s| {
+                (*s).insensitive = Some(caseless_string.clone());
+            }
+        }
     }
 
 
     pub fn lwc_string_caseless_isequal(&mut self, str1: arc::RWARC<~lwc_string> , str2: arc::RWARC<~lwc_string>) ->bool {
             
-        let mut retVal: bool = false;   
-        do str1.read |s1| {
-            do str2.read |s2| {
-                retVal = ptr::ref_eq(s1,s2);
-            }
-        }
+        let mut return_value =
+            do str1.read |s1| {
+                do str2.read |s2| {
+                    ptr::ref_eq(s1,s2)
+                }
+            };
 
-        if retVal {
+        if return_value {
             return true;
         }
 
-        let mut s1_c: Option<arc::RWARC<~lwc_string>> = None;
-        let mut s2_c: Option<arc::RWARC<~lwc_string>> = None; 
+        let mut str1_insensitive_is_none = 
+            do str1.read |s| {
+                (*s).insensitive.is_none()
+            };
 
-        let mut string = ~"";
-
-        let mut case_insensitive_is_none = false;
-        let mut is_case_insensitive = false;
-
-        do str1.read |s| {
-            is_case_insensitive = (*s).is_case_insensitive;
-            if !is_case_insensitive && (*s).case_insensitive.is_none() {
-                string = copy s.string;
-                case_insensitive_is_none = true;
-            }
-        }
-
-        if (case_insensitive_is_none) {
-                case_insensitive_is_none = false;
-                let temp = self.__lwc_intern(copy string, true);
-                s1_c = Some(temp.clone());
-                do str1.write |s|  {
-                    (*s).case_insensitive = Some(temp.clone());
-            }
-        }
-        else if (is_case_insensitive) {
-            is_case_insensitive = false;
-            s1_c = Some(str1.clone());
-        }
-        else {
-            do str1.write |s|  {
-                let temp = (*s).case_insensitive.swap_unwrap();
-                (*s).case_insensitive = Some(temp.clone());
-                s1_c = Some(temp.clone());
-            }
+        if (str1_insensitive_is_none) {
+            self.lwc_intern_caseless_string(str1.clone());
         }
         
-        do str2.read |s| {
-            is_case_insensitive = (*s).is_case_insensitive;
-            if !is_case_insensitive && (*s).case_insensitive.is_none() {
-                string = copy s.string;
-                case_insensitive_is_none = true;
+        let str1_for_compare = match (do str1.read |s| {(*s).insensitive.is_none()}) {
+            true => str1.clone(),
+            false => do str1.read |s| {
+                (*s).insensitive.get_ref().clone()
             }
+        };
+
+        let str2_insensitive_is_none = 
+            do str2.read |s| {
+                (*s).insensitive.is_none()
+            };
+
+        if (str2_insensitive_is_none) {
+            self.lwc_intern_caseless_string(str2.clone());
         }
 
-        if (case_insensitive_is_none) {
-                let temp = self.__lwc_intern(string, true);
-                s2_c = Some(temp.clone());
-                do str2.write |s|  {
-                    (*s).case_insensitive = Some(temp.clone());
+        let str2_for_compare = match (do str2.read |s| {(*s).insensitive.is_none()}) {
+            true => str2.clone(),
+            false => do str2.read |s| {
+                (*s).insensitive.get_ref().clone()
             }
-        }
-        else if (is_case_insensitive) {
-            // is_case_insensitive = false;
-            s2_c = Some(str2.clone());
-        }
-        else {
-            do str2.write |s|  {
-                let temp = (*s).case_insensitive.swap_unwrap();
-                (*s).case_insensitive = Some(temp.clone());
-                s2_c = Some(temp.clone());
-            }
-        }
+        };
 
-        let s1 = s1_c.unwrap();
-        let s2 = s2_c.unwrap();
-
-        self.lwc_string_isequal(s1,s2)
+        self.lwc_string_isequal(str1_for_compare, str2_for_compare)
     }
 
-    
-}
+    pub fn lwc_iterate_strings(&mut self, cb: lwc_iteration_callback_fn, pw: *libc::c_void) {
+        for self.buckets.each |bucket| {
+            for bucket.each |entry| {
+                (*cb)(entry.clone(), pw);
+            }
+        }
+    }
+} // impl wapcaplet
 
 pub fn lwc_string_length(string: arc::RWARC<~lwc_string>) -> uint {
     do string.read |s| {
@@ -415,14 +387,14 @@ pub fn lwc_string_data(string: arc::RWARC<~lwc_string>) -> ~str {
 
 pub fn lwc()->arc::RWARC<~lwc> {
     
-    let mut tempBucketVector: ~([~[arc::RWARC<~lwc_string>]]) = ~[];
+    let mut temp_buckets: ~([~[arc::RWARC<~lwc_string>]]) = ~[];
     for uint::range(0, 4091) |_| {
         let bucket:~[arc::RWARC<~lwc_string>] = ~[];
-        tempBucketVector.push(bucket);
+        temp_buckets.push(bucket);
     }
 
     arc::RWARC(~lwc {
-        bucketVector:tempBucketVector
+        buckets:temp_buckets
     })
 }
 

@@ -32,7 +32,8 @@ fn fill_params() -> css_params {
 }
 
 fn css_create_fn() -> ~css{
-    let css = css_create(fill_params());
+    let mut lwc = wapcaplet::lwc();
+    let css = css_create(fill_params() , Some(lwc));
     css
 }
 
@@ -59,23 +60,49 @@ fn css(file_name: ~str) {
     }
     buf = r.read_bytes(len as uint);
     let error = css.css_stylesheet_append_data(buf);
+    // io::println(fmt!("error from css_stylesheet_append_data: %?" , error));
     match error {
         CSS_OK | CSS_NEEDDATA => {},
         _ => {assert!(false);}
     }
 
-    let (error , _) = css.css_stylesheet_data_done();
-
+    let mut error = css.css_stylesheet_data_done();
+    // io::println(fmt!("error from css_stylesheet_data_done: %?" , error));
     match error {
         CSS_OK | CSS_IMPORTS_PENDING => {},
         _ => {assert!(false);}
     }
 
-    match error {
-        CSS_IMPORTS_PENDING => {
-            // check for next_pending_import
-        },
-        _ =>{}
+    loop {
+        // io::println(fmt!("error from loop: %?" , error));
+        match error {
+            CSS_IMPORTS_PENDING => {
+                let (error1 , option_url , _) = css.css_stylesheet_next_pending_import();
+                match error1 {
+                    CSS_OK => {
+                        let mut params: css_params = fill_params();
+                        params.url = option_url.unwrap();
+                        let mut css_import = css_create_fn();
+                        let err = css_import.css_stylesheet_data_done();
+                        match err {
+                            CSS_OK => {},
+                            _ => {assert!(false);}
+                        }
+                        let err_register = css_import.css_stylesheet_register_import(Some(css_import.stylesheet));
+                        match err_register {
+                            CSS_OK => {},
+                            _ => {assert!(false);}
+                        }
+                        error = CSS_IMPORTS_PENDING;
+                    } 
+                    CSS_INVALID =>{},
+                    _ => {assert!(false);}
+                }
+            },
+            _ =>{
+                break;
+            }
+        }
     }
 } 
 
@@ -87,7 +114,7 @@ fn allzengarden() {
 
 #[test]
 fn badcomment() {
-    css(~"data/css/adcomment.css");
+    css(~"data/css/badcomment.css");
 }
 
 #[test]
