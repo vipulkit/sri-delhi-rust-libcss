@@ -779,13 +779,14 @@ pub impl css_language {
     }
 
     /**
-     * Add a namespace mapping
-     *
-     * \param c       Parsing context to add to
-     * \param prefix  Namespace prefix, or NULL for default namespace
-     * \param uri     Namespace URI
-     * \return CSS_OK on success, CSS_NOMEM on memory exhaustion.
-     */
+	* #Arguments:
+    *  'c'  - Parsing context to add to. 
+    *  'prefix' - Namespace prefix, or NULL for default namespace.
+    *  'uri'    - Namespace URI.
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    */
     pub fn addNamespace(&mut self, _prefix:Option<arc::RWARC<~lwc_string>>, uri:arc::RWARC<~lwc_string>) -> css_error {
         match _prefix {
             Some(prefix) => {
@@ -1170,13 +1171,14 @@ pub impl css_language {
     }
 
     /**
-     * Look up a namespace prefix
-     *
-     * \param c       Language parser context
-     * \param prefix  Namespace prefix to find, or NULL for none
-     * \param uri     Pointer to location to receive namespace URI
-     * \return CSS_OK on success, CSS_INVALID if prefix is not found
-     */
+	* #Arguments:
+    *  'c'  - Parsing context to add to. 
+    *  'prefix' - Namespace prefix, or NULL for default namespace.
+    *  'qname'    - 
+    * #Return Value:
+	* 'css_error' - CSS_OK on success,  
+                    CSS_INVALID if the input is not valid.
+    */
     pub fn lookupNamespace(&mut self, prefix:Option<arc::RWARC<~lwc_string>>, qname:@mut css_qname) -> css_error {
         let mut idx:uint=0;
         
@@ -1330,16 +1332,16 @@ pub impl css_language {
             if tokenIsChar(token, '=') {
                 tkn_type = CSS_SELECTOR_ATTRIBUTE_EQUAL;
             }
-            // else {
-            //  match token.token_type {
-            //      CSS_TOKEN_INCLUDES       => tkn_type = CSS_SELECTOR_ATTRIBUTE_INCLUDES, 
-            //      CSS_TOKEN_DASHMATCH      => tkn_type = CSS_SELECTOR_ATTRIBUTE_DASHMATCH,
-            //      CSS_TOKEN_PREFIXMATCH    => tkn_type = CSS_SELECTOR_ATTRIBUTE_PREFIX,
-            //      CSS_TOKEN_SUFFIXMATCH    => tkn_type = CSS_SELECTOR_ATTRIBUTE_SUFFIX,
-            //      CSS_TOKEN_SUBSTRINGMATCH => tkn_type = CSS_SELECTOR_ATTRIBUTE_SUBSTRING,
-            //      _                        => return (CSS_INVALID,None)
-            //  }
-            // }
+            else {
+                match token.token_type {
+                    CSS_TOKEN_INCLUDES       => tkn_type = CSS_SELECTOR_ATTRIBUTE_INCLUDES, 
+                    CSS_TOKEN_DASHMATCH      => tkn_type = CSS_SELECTOR_ATTRIBUTE_DASHMATCH,
+                    CSS_TOKEN_PREFIXMATCH    => tkn_type = CSS_SELECTOR_ATTRIBUTE_PREFIX,
+                    CSS_TOKEN_SUFFIXMATCH    => tkn_type = CSS_SELECTOR_ATTRIBUTE_SUFFIX,
+                    CSS_TOKEN_SUBSTRINGMATCH => tkn_type = CSS_SELECTOR_ATTRIBUTE_SUBSTRING,
+                    _                        => return (CSS_INVALID,None)
+                }
+            }
             consumeWhitespace(vector, ctx);
 
             if *ctx >= vector.len() {
@@ -1814,15 +1816,15 @@ pub impl css_language {
     // ===========================================================================================================
 
     /**
-    * Parse !important
-    *
-    * \param vector  Vector of tokens to process
-    * \param ctx     Pointer to vector iteration context
-    * \return (CSS_OK, result) on success along with result,
-    *         (CSS_INVALID, 0) if "S* ! S* important" is not at the start of the vector
-    *
-    * Post condition: \a *ctx is updated with the next token to process
-    *                 If the input is invalid, then \a *ctx remains unchanged.
+	* #Arguments:
+    *  'vector' - Vector of tokens to process.
+    *  'ctx'    - Pointer to vector iteration context.
+    * #Return Value:
+	* '(css_error, u8)' - (CSS_OK, result) on success along with result,  
+                    (CSS_INVALID, 0) if "S* ! S* important" is not at the start of the vector.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
     */
     pub fn css__parse_important(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_error,u8){
         
