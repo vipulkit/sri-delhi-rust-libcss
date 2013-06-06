@@ -438,14 +438,12 @@ impl css_stylesheet {
     }
 
     /**
-     * Create a style, with sheet pointer set into the style
-     *
-     * function css__stylesheet_style_create is changed , now style contains
-     * pointer to the sheet.
-     *
-     * \param self css_stylesheet
-     * \return css_style 
-     */
+    * Create a style, with sheet pointer set into the style
+	* #Arguments:
+    *  'self'  - css_stylesheet. 
+    * #Return Value:
+	*  'css_style' - css_style.
+    */
     pub fn css__stylesheet_style_create(sheet : @mut css_stylesheet) -> @mut css_style {
         if sheet.cached_style.is_none() {
             @mut css_style{ 
@@ -460,33 +458,31 @@ impl css_stylesheet {
     }
 
     /**
-     * Merge a style to a CSS style
-     * 
-     * \param target The style to merge to
-     * \param style  The style to merge
-     */
-    
+    * Merge a style to a CSS style
+	* #Arguments:
+    *  'target'  - The style to merge to. 
+    *  'style'  - The style to merge. 
+    */
     pub fn css__stylesheet_merge_style(target : @mut css_style, style: @mut css_style) {
         target.bytecode += copy style.bytecode;
     }
 
     /**
-     * Append a style to a CSS style
-     * 
-     * \param target The style to add to
-     * \param style  The style to add
-     */
-
+    * Append a style to a CSS style
+	* #Arguments:
+    *  'target'  - The style to add to. 
+    *  'style'  - The style to add. 
+    */
     pub fn css__stylesheet_style_append(target : @mut css_style, bytecode: u32) {
         target.bytecode.push(bytecode);
     }
     
-    /** append one or more css code entries to a style 
-     * 
-     * \param target The style to add to
-     * \param bytecodes vector of style to add
-     */
-     
+    /**
+    * Append a style to a CSS style
+	* #Arguments:
+    *  'target'  - The style to add to. 
+    *  'bytecodes'  - vector of style to add. 
+    */
     pub fn css__stylesheet_style_vappend(target : @mut css_style, bytecodes: &[u32] ) {
         target.bytecode += bytecodes;
     }
