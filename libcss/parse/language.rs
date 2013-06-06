@@ -1174,7 +1174,7 @@ pub impl css_language {
 	* #Arguments:
     *  'c'  - Parsing context to add to. 
     *  'prefix' - Namespace prefix, or NULL for default namespace.
-    *  'uri'    - Namespace URI.
+    *  'qname'    - 
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
@@ -1332,16 +1332,16 @@ pub impl css_language {
             if tokenIsChar(token, '=') {
                 tkn_type = CSS_SELECTOR_ATTRIBUTE_EQUAL;
             }
-            // else {
-            //  match token.token_type {
-            //      CSS_TOKEN_INCLUDES       => tkn_type = CSS_SELECTOR_ATTRIBUTE_INCLUDES, 
-            //      CSS_TOKEN_DASHMATCH      => tkn_type = CSS_SELECTOR_ATTRIBUTE_DASHMATCH,
-            //      CSS_TOKEN_PREFIXMATCH    => tkn_type = CSS_SELECTOR_ATTRIBUTE_PREFIX,
-            //      CSS_TOKEN_SUFFIXMATCH    => tkn_type = CSS_SELECTOR_ATTRIBUTE_SUFFIX,
-            //      CSS_TOKEN_SUBSTRINGMATCH => tkn_type = CSS_SELECTOR_ATTRIBUTE_SUBSTRING,
-            //      _                        => return (CSS_INVALID,None)
-            //  }
-            // }
+            else {
+                match token.token_type {
+                    CSS_TOKEN_INCLUDES       => tkn_type = CSS_SELECTOR_ATTRIBUTE_INCLUDES, 
+                    CSS_TOKEN_DASHMATCH      => tkn_type = CSS_SELECTOR_ATTRIBUTE_DASHMATCH,
+                    CSS_TOKEN_PREFIXMATCH    => tkn_type = CSS_SELECTOR_ATTRIBUTE_PREFIX,
+                    CSS_TOKEN_SUFFIXMATCH    => tkn_type = CSS_SELECTOR_ATTRIBUTE_SUFFIX,
+                    CSS_TOKEN_SUBSTRINGMATCH => tkn_type = CSS_SELECTOR_ATTRIBUTE_SUBSTRING,
+                    _                        => return (CSS_INVALID,None)
+                }
+            }
             consumeWhitespace(vector, ctx);
 
             if *ctx >= vector.len() {
@@ -1820,8 +1820,8 @@ pub impl css_language {
     *  'vector' - Vector of tokens to process.
     *  'ctx'    - Pointer to vector iteration context.
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
-                    CSS_INVALID if the input is not valid.
+	* '(css_error, u8)' - (CSS_OK, result) on success along with result,  
+                    (CSS_INVALID, 0) if "S* ! S* important" is not at the start of the vector.
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
