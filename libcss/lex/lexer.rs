@@ -1795,11 +1795,13 @@ impl css_lexer {
 
         if (char::is_digit_radix(c,16)) {
             // io::println("char::is_digit_radix(c,16)");
+            // io::println(fmt!("c== %?" , c));
             self.bytes_read_for_token += clen;
-
-            match (self.consume_unicode(char::to_digit(c, 16).unwrap() as u32)) {
+            let hex_value = char::to_digit(c, 16).unwrap();
+            // io::println(fmt!("hex_value== %? hex_value as u32 == %?" , hex_value , hex_value as u32));
+            match (self.consume_unicode(hex_value as u32)) {
                 CSS_OK => {
-                    /* continue */
+                    return CSS_OK;
                 }
                 x => {
                     self.bytes_read_for_token -= clen;
@@ -1831,7 +1833,7 @@ impl css_lexer {
             let (cptr , clen) = pu_peek_result.unwrap();
 
             c=cptr[0] as char;
-            // io::println(fmt!("consume_escape2: character read is %c" , c));
+            
             if (c=='\n') {
                 // io::println("c=='\n'");
                 self.APPEND(cptr, 1);
@@ -2045,7 +2047,8 @@ impl css_lexer {
 
             if error as int == PARSERUTILS_OK as int {
                 let (cptr , clen) = pu_peek_result.unwrap();
-                if char::is_digit_radix(cptr[0] as char, 16){
+                let c = cptr[0] as char;
+                if char::is_digit_radix(c, 16){
                     self.bytes_read_for_token += clen;
                     ucs = (ucs << 4) | u32::from_str_radix(str::from_char(cptr[0] as char), 16).unwrap();
                 }
@@ -2056,7 +2059,6 @@ impl css_lexer {
 
             count += 1;
         }
-
         if (ucs > 0x10FFFF || ucs <= 0x0008 || ucs == 0x000B ||
                 (0x000E <= ucs && ucs <= 0x001F) ||
                 (0x007F <= ucs && ucs <= 0x009F) ||
@@ -2092,6 +2094,7 @@ impl css_lexer {
                     return css_error_from_parserutils_error(error);
                 }
                 if error2 as int == PARSERUTILS_OK as int {
+
                     let (cptr2 , _) = pu_peek_result2.unwrap();
                     if (cptr2[0] as char == '\n') { // Potential CRLF 
                         self.bytes_read_for_token += 1;
@@ -2099,7 +2102,6 @@ impl css_lexer {
                 }
             }
         }
-
         let (pu_peek_result , error) = self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
         let mut (cptr , clen) = pu_peek_result.unwrap();
         let mut utf8data = utf8data_option.unwrap();

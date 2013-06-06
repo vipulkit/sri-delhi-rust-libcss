@@ -32,7 +32,8 @@ fn fill_params() -> css_params {
 }
 
 fn css_create_fn() -> ~css{
-    let css = css_create(fill_params());
+    let mut lwc = wapcaplet::lwc();
+    let css = css_create(fill_params() , Some(lwc));
     css
 }
 
@@ -64,7 +65,7 @@ fn css(file_name: ~str) {
         _ => {assert!(false);}
     }
 
-    let (error , _) = css.css_stylesheet_data_done();
+    let error = css.css_stylesheet_data_done();
 
     match error {
         CSS_OK | CSS_IMPORTS_PENDING => {},
@@ -73,7 +74,11 @@ fn css(file_name: ~str) {
 
     match error {
         CSS_IMPORTS_PENDING => {
-            // check for next_pending_import
+            // let (error1 , option_url , option_media) = css.css_stylesheet_next_pending_import();
+            // match error1 { 
+            //     CSS_OK||CSS_INVALID =>{},
+            //     _ => {assert!(false);}
+            // }
         },
         _ =>{}
     }
@@ -87,7 +92,7 @@ fn allzengarden() {
 
 #[test]
 fn badcomment() {
-    css(~"data/css/adcomment.css");
+    css(~"data/css/badcomment.css");
 }
 
 #[test]
