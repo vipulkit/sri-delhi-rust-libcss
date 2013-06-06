@@ -12,12 +12,12 @@ pub struct inputstream {
     utf8: ~[u8],        // Buffer containing UTF-8 data 
     cursor: uint,       // Byte offset of current position 
     had_eof: bool,      // Whether EOF has been reached 
-    raw: ~[u8],         // Buffer containing raw data 
-    done_first_chunk: bool,     // Whether the first chunk has been processed 
-    mibenum: u16,       // MIB enum for charset, or 0
-    encsrc: int,     // Charset source
-    input: ~filter, // Charset conversion filter
-    csdetect: Option<parserutils_charset_detect_func>
+    priv raw: ~[u8],         // Buffer containing raw data 
+    priv done_first_chunk: bool,     // Whether the first chunk has been processed 
+    priv mibenum: u16,       // MIB enum for charset, or 0
+    priv encsrc: int,     // Charset source
+    priv input: ~filter, // Charset conversion filter
+    priv csdetect: Option<parserutils_charset_detect_func>
 }
 
 pub fn inputstream(encoding: Option<~str>, charset_src: Option<int>, csdetect_instance: Option<parserutils_charset_detect_func>) ->  (Option<~inputstream> , parserutils_error) {
