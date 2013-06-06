@@ -75,10 +75,8 @@ fn lex(fileName: ~str) {
             finalstr = ~"";
             
             lexer.css__lexer_append_data(final_buf);
-            // lexer.data_done();
             final_buf = ~[];
             // io::println(fmt!("final_buf is %s",str::from_bytes(final_buf)));
-            let mut tok:css_token_type;
             loop {
                 let mut (error, token_option) = lexer.css__lexer_get_token();
                 match error {
