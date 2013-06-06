@@ -1,7 +1,6 @@
 extern mod std;
 extern mod css;
 extern mod parserutils ; 
-extern mod testutils;
 extern mod wapcaplet;
 
 use css::utils::errors::*;
@@ -9,9 +8,6 @@ use css::lex::lexer::*;
 use css::charset::csdetect::*;
 
 use parserutils::input::inputstream::*;
-
-// use core::str::*;
-use core::float::*;
 
 pub struct line_ctx_lex {
     buf:~[u8],
@@ -23,8 +19,6 @@ pub struct line_ctx_lex {
 }
 
 fn check_newline(x: &u8) -> bool { *x == ('\n' as u8) }
-
-static EXP_ENTRY_TEXT_LEN:int = (128);
 
 pub type  line_func =  
     ~extern fn(data:~str , pw:&mut line_ctx_lex) -> bool;
