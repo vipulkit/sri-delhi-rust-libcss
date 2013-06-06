@@ -96,10 +96,10 @@ pub struct css_select_rule_source {
 impl css_select_ctx {
 
     /**
-     * Create a selection context
-     *
-     * \return Pointer to created context
-     */
+    * Create a selection context
+    * #Return Value:
+	* 'css_select_ctx' - Pointer to created context.
+    */
     pub fn css_select_ctx_create() -> ~css_select_ctx {
         
         let mut result = ~css_select_ctx {
@@ -251,6 +251,29 @@ impl css_select_ctx {
         (CSS_OK,Some(self.sheets[index].sheet))
     } 
 
+    /**
+	* Select a style for the given node
+	* #Arguments:
+    *  'ctx'    - Selection context to use.
+    *  'node'  - Node to select style for. 
+    *  'media' - Currently active media types.
+    *  'inline_style' - Corresponding inline style for node, or NULL.
+    *  'handler' - Dispatch table of handler functions.
+    * #Return Value:
+	* '(css_error,Option<css_select_results>' - (CSS_OK, results) on success, (appropriate error, None) otherwise.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
+	* #Description:
+	* In computing the style, no reference is made to the parent node's
+	* style. Therefore, the resultant computed style is not ready for
+	* immediate use, as some properties may be marked as inherited.
+	* Use css_computed_style_compose() to obtain a fully computed style.
+	*
+	* This two-step approach to style computation is designed to allow
+	* the client to store the partially computed style and efficiently
+	* update the fully computed style for a node when layout changes.
+	*/
     pub fn css_select_style(&mut self,
                                 node:*libc::c_void,
                                 media:u64,
