@@ -154,7 +154,7 @@ pub impl css_parser {
     }
 
     pub fn css__parser_completed(&mut self) -> css_error {
-
+        self.lexer.css__lexer_append_data(~[]);
         loop {
             if self.state_stack.is_empty() {
                 break;
