@@ -8,12 +8,9 @@ use css::stylesheet::*;
 use css::parse::font_face::*;
 use css::bytecode::bytecode::*;
 use css::include::font_face::*;
+use css::include::fpmath::*;
 use css::include::properties::*;
 use wapcaplet::*;
-
-pub static CSS_RADIX_POINT : int = 10 ;
-pub static INT_MIN : int = int::min_value ;
-pub static INT_MAX : int = int::max_value ;
 
 pub fn dump_sheet(sheet: &css_stylesheet) -> ~str {
 	
@@ -73,13 +70,12 @@ fn dump_rule_selector(s:@mut css_rule_selector, depth:u32)->~str {
 		if i != (s.base.index -1) as u32 {
 			buf.push_char(',');
 			buf.push_char(' ');
-			
 		}
 		i += 1; 
 	}
-	buf.push_char('\n' );
+	buf.push_char('\n');
 	if s.style.is_some() {
-		dump_bytecode(s.style.unwrap(),&mut buf, depth +1);
+		buf = str::append(buf , dump_bytecode(s.style.unwrap() , depth +1));
 	}
 	return buf;
 }
@@ -317,23 +313,8 @@ fn dump_selector_detail(detail:@mut css_selector_detail, detail_next:bool )->~st
 	buf
 }
 
-pub fn css_int_to_fixed(a:int) -> i32 {
-
-	let mut xx:i64 = (a as i64) << CSS_RADIX_POINT;
-
-	if (xx < INT_MIN as i64) {
-		xx = INT_MIN as i64;
-	}
-
-	if (xx > INT_MAX as i64) {
-		xx = INT_MAX as i64;
-	}
-	
-	xx as i32
-}
-
-fn dump_bytecode(style:@mut css_style,buf:&mut ~str, depth:u32 ) {
-
+fn dump_bytecode(style:@mut css_style, depth:u32 ) -> ~str{
+~""
 }
 
 fn dump_number(val: i32 , buf: ~str) -> ~str {
