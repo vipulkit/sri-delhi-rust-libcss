@@ -96,10 +96,10 @@ pub struct css_select_rule_source {
 impl css_select_ctx {
 
     /**
-     * Create a selection context
-     *
-     * \return Pointer to created context
-     */
+    * Create a selection context
+    * #Return Value:
+	* 'css_select_ctx' - Pointer to created context.
+    */
     pub fn css_select_ctx_create() -> ~css_select_ctx {
         
         let mut result = ~css_select_ctx {
@@ -141,14 +141,15 @@ impl css_select_ctx {
 
 
     /**
-     * Append a stylesheet to a selection context
-     *
-     * \param self   The selection context to append to
-     * \param sheet   The sheet to append
-     * \param origin  Origin of the sheet
-     * \param media   Media types to which the sheet applies
-     * \return CSS_OK on success, appropriate error otherwise
-     */
+    * Append a stylesheet to a selection context
+	* #Arguments:
+	*  'self' - The selection context to append to.
+    *  'sheet'  - Stylesheet. 
+    *  'origin' - Origin of the sheet.
+    *  'media' - Vector of tokens to process.
+    * #Return Value:
+	* 'css_error' - CSS_OK on success, appropriate error otherwise.
+    */
     pub fn css_select_ctx_append_sheet(&mut self,
                                     sheet:@mut css_stylesheet,
                                     origin:css_origin,
@@ -159,15 +160,16 @@ impl css_select_ctx {
     }
 
     /**
-     * Insert a stylesheet into a selection context
-     * 
-     * \param self   The selection context to insert into
-     * \param sheet  Sheet to insert
-     * \param index  Index in context to insert sheet
-     * \param origin  Origin of the sheet
-     * \param media   Media types to which the sheet applies
-     * \return CSS_OK on success, appropriate error otherwise
-     */
+    * Insert a stylesheet into a selection context
+	* #Arguments:
+	*  'self' - The selection context to insert to.
+    *  'sheet'  - Stylesheet. 
+    *  'index' - Index in context to insert sheet.
+    *  'origin' - Origin of the sheet.
+    *  'media' - Vector of tokens to process.
+    * #Return Value:
+	* 'css_error' - CSS_OK on success, appropriate error otherwise.
+    */
     pub fn css_select_ctx_insert_sheet(&mut self,
                                     csheet:@mut css_stylesheet,
                                     index:uint,
@@ -198,12 +200,13 @@ impl css_select_ctx {
     }
 
     /**
-     * Remove a sheet from a selection context
-     *
-     * \param self   The selection context to remove from
-     * \param sheet  Sheet to remove
-     * \return CSS_OK on success, appropriate error otherwise
-     */
+    * Remove a sheet from a selection context
+	* #Arguments:
+	*  'self' - The selection context to remove from.
+    *  'sheet'  - Sheet to remove. 
+    * #Return Value:
+	* 'css_error' - CSS_OK on success, appropriate error otherwise.
+    */
     pub fn css_select_ctx_remove_sheet(&mut self, csheet:@mut css_stylesheet)-> css_error {
 
         let mut i = self.sheets.len() ;
@@ -219,23 +222,25 @@ impl css_select_ctx {
 
     
     /**
-     * Count the number of top-level sheets in a selection context
-     *
-     * \param self   The selection context to consider
-     * \return Count of sheets
-     */
+    * Count the number of top-level sheets in a selection context
+	* #Arguments:
+	*  'self' - The selection context to consider.
+    * #Return Value:
+	* 'uint' - Count of sheets.
+    */
     pub fn css_select_ctx_count_sheets(&mut self) -> uint {
 
         self.sheets.len()
     }
 
     /**
-     * Retrieve a sheet from a selection context
-     *
-     * \param self   The selection context to look in
-     * \param index  Index in context to look
-     * \return (CSS_OK,Some(sheet)) on success, appropriate (error,None) otherwise
-     */
+    * Retrieve a sheet from a selection context
+	* #Arguments:
+	*  'self' - The selection context to look in.
+	*  'index' - Index in context to look.
+    * #Return Value:
+	* '(css_error,Option<@mut css_stylesheet>)' - (CSS_OK,Some(sheet)) on success, appropriate (error,None) otherwise.
+    */
     pub fn css_select_ctx_get_sheet(&mut self, index:uint) 
                                 -> (css_error,Option<@mut css_stylesheet>) {
 
@@ -246,6 +251,29 @@ impl css_select_ctx {
         (CSS_OK,Some(self.sheets[index].sheet))
     } 
 
+    /**
+	* Select a style for the given node
+	* #Arguments:
+    *  'ctx'    - Selection context to use.
+    *  'node'  - Node to select style for. 
+    *  'media' - Currently active media types.
+    *  'inline_style' - Corresponding inline style for node, or NULL.
+    *  'handler' - Dispatch table of handler functions.
+    * #Return Value:
+	* '(css_error,Option<css_select_results>' - (CSS_OK, results) on success, (appropriate error, None) otherwise.
+    * #Post condition:
+	*   ctx is updated with the next token to process.
+    *   If the input is invalid, then ctx remains unchanged.
+	* #Description:
+	* In computing the style, no reference is made to the parent node's
+	* style. Therefore, the resultant computed style is not ready for
+	* immediate use, as some properties may be marked as inherited.
+	* Use css_computed_style_compose() to obtain a fully computed style.
+	*
+	* This two-step approach to style computation is designed to allow
+	* the client to store the partially computed style and efficiently
+	* update the fully computed style for a node when layout changes.
+	*/
     pub fn css_select_style(&mut self,
                                 node:*libc::c_void,
                                 media:u64,
@@ -507,23 +535,25 @@ impl css_select_ctx {
 
 
     /**
-     * Destroy a selection result set
-     *
-     * \param results  Result set to destroy
-     */
+    * Destroy a selection result set
+	* #Arguments:
+	*  'results' - Result set to destroy.
+    */
     pub fn css_select_results_destroy(results: &mut ~[@mut css_select_results] ) {
         results.clear() ;
         
     }
 
     /**
-     * Search a selection context for defined font faces
-     *
-     * \param self         Selection context
-     * \param media        Currently active media types
-     * \param font_family  Font family to search for
-     * \return (CSS_OK,Some(css_select_font_faces_results)) on success, appropriate (error,None) otherwise.
-     */
+    * Search a selection context for defined font faces
+	* #Arguments:
+	*  'self' - The selection context to look in.
+	*  'media' - Currently active media types.
+	*  'font_family' - Font family to search for.
+    * #Return Value:
+	* '(css_error,Option<@mut css_select_font_faces_results>)' - (
+			CSS_OK,Some(css_select_font_faces_results)) on success, appropriate (error,None) otherwise.
+    */
     pub fn css_select_font_faces(&mut self,
                                 media:u64,
                                 font_family:arc::RWARC<~lwc_string>) 
