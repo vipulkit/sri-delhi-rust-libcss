@@ -126,11 +126,11 @@ pub fn select_test(file:~str) {
 pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
 	let mut error : css_error ;
 	let mut len : uint ; 
-	if ( (data.len()>0) && (data[0] == ('#' as u8)) ) {
+	if ( data[0] == ('#' as u8) ) {
 
 		if( ctx.intree ) {
 
-			if( (data.len()>8) && (is_string_caseless_equal( data.slice(1,7), "errors")) ){
+			if( is_string_caseless_equal( data.slice(1,7), "errors") ){
 				ctx.intree = false;
 				ctx.insheet = false;
 				ctx.inerrors = true ;
@@ -148,7 +148,7 @@ pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
 		}
 		else if (ctx.insheet) {
 
-			if( (data.len()>6) && (is_string_caseless_equal( data.slice(1,6), "errors")) ){
+			if(is_string_caseless_equal( data.slice(1,6), "errors")){
 				len = unsafe { ctx.sheets.len() -1 } ;
 				assert!( 
 						match ctx.sheets[len].sheet.css_stylesheet_data_done() {
@@ -160,9 +160,9 @@ pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
 				ctx.inerrors = true ;
 				ctx.inexp = false;
 			}
-			else if (	(data.len()>2) && (is_string_caseless_equal( data.slice(1,2), "ua")) ||
-						(data.len()>4) && (is_string_caseless_equal( data.slice(1,4), "user")) ||
-						(data.len()>6) && (is_string_caseless_equal( data.slice(1,6), "author")) ) {
+			else if is_string_caseless_equal( data.slice(1,2), "ua") ||
+						is_string_caseless_equal( data.slice(1,4), "user") ||
+						is_string_caseless_equal( data.slice(1,6), "author") {
 				
 				len = unsafe { ctx.sheets.len() -1 } ;
 				assert!( 
@@ -201,7 +201,7 @@ pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
 		}
 		else {
 			/* Start state */
-			if( (data.len()>4) && (is_string_caseless_equal( data.slice(1,4), "tree")) ){
+			if(is_string_caseless_equal( data.slice(1,4), "tree")) {
 
 				css__parse_tree(ctx, data.slice(5, data.len()-1) );
 				ctx.intree = true;
