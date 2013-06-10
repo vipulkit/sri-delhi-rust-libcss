@@ -567,8 +567,10 @@ fn dump_counter(name: ~str , value: u32 , ptr: &mut ~str) {
 	else if val as int == LIST_STYLE_TYPE_SQUARE as int {
 		str::push_str(ptr , &", square");
 	}
-	else if (val as int == LIST_STYLE_TYPE_DECIMAL as int) 
-	|| (val as int == LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO as int) {
+	// else if (val as int == LIST_STYLE_TYPE_DECIMAL as int) {
+
+	// }
+	else if (val as int == LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO as int) {
 		str::push_str(ptr , &", decimal-leading-zero");
 	}
 	else if val as int == LIST_STYLE_TYPE_LOWER_ROMAN as int {
@@ -589,6 +591,9 @@ fn dump_counter(name: ~str , value: u32 , ptr: &mut ~str) {
 	else if val as int == LIST_STYLE_TYPE_ARMENIAN as int {
 		str::push_str(ptr , &", armenian");
 	}
+	else if val as int == LIST_STYLE_TYPE_GEORGIAN as int {
+		str::push_str(ptr , &", georgian");
+	}
 	else if val as int == LIST_STYLE_TYPE_LOWER_ALPHA as int {
 		str::push_str(ptr , &", lower-alpha");
 	}
@@ -603,4 +608,53 @@ fn dump_counter(name: ~str , value: u32 , ptr: &mut ~str) {
 
 fn dump_counters(name: ~str , separator: ~str , value: u32 , ptr: &mut ~str) {
 
+	str::push_str(ptr , &"counter(");
+	str::push_str(ptr , name);
+	str::push_str(ptr , separator);
+	let val = value >> CONTENT_COUNTER_STYLE_SHIFT;
+
+	if val as int == LIST_STYLE_TYPE_DISC as int {
+		str::push_str(ptr , &", disc");
+	}
+	else if val as int == LIST_STYLE_TYPE_CIRCLE as int {
+		str::push_str(ptr , &", circle");
+	}
+	else if val as int == LIST_STYLE_TYPE_SQUARE as int {
+		str::push_str(ptr , &", square");
+	}
+	// else if (val as int == LIST_STYLE_TYPE_DECIMAL as int) {}
+	else if (val as int == LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO as int) {
+		str::push_str(ptr , &", decimal-leading-zero");
+	}
+	else if val as int == LIST_STYLE_TYPE_LOWER_ROMAN as int {
+		str::push_str(ptr , &", lower-roman");
+	}
+	else if val as int == LIST_STYLE_TYPE_UPPER_ROMAN as int {
+		str::push_str(ptr , &", upper-roman");
+	}
+	else if val as int == LIST_STYLE_TYPE_LOWER_GREEK as int {
+		str::push_str(ptr , &", lower-greek");
+	}
+	else if val as int == LIST_STYLE_TYPE_LOWER_LATIN as int {
+		str::push_str(ptr , &", lower-latin");
+	}
+	else if val as int == LIST_STYLE_TYPE_UPPER_LATIN as int {
+		str::push_str(ptr , &", upper-latin");
+	}
+	else if val as int == LIST_STYLE_TYPE_ARMENIAN as int {
+		str::push_str(ptr , &", armenian");
+	}
+	else if val as int == LIST_STYLE_TYPE_GEORGIAN as int {
+		str::push_str(ptr , &", georgian");
+	}
+	else if val as int == LIST_STYLE_TYPE_LOWER_ALPHA as int {
+		str::push_str(ptr , &", lower-alpha");
+	}
+	else if val as int == LIST_STYLE_TYPE_UPPER_ALPHA as int {
+		str::push_str(ptr , &", upper-alpha");
+	}
+	else if val as int == LIST_STYLE_TYPE_NONE as int {
+		str::push_str(ptr , &", none");
+	}
+	ptr.push_char(')');
 }
