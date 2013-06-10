@@ -97,7 +97,7 @@ fn dump_rule_media(s:@mut css_rule_media, ptr: &mut ~str) {
 	str::push_str(ptr, &"| @media ");
 	ptr.push_char('\n');
 
-	let mut rule = s.base.next;
+	let mut rule = s.first_child;
 	
 	while rule.is_some() {
 		let rule_type = rule.unwrap();
@@ -107,7 +107,7 @@ fn dump_rule_media(s:@mut css_rule_media, ptr: &mut ~str) {
 				 rule = x.base.next;
 			},
 			_ =>{
-				// fail!();
+				fail!(~"Only selector type expected");
 			}
 		}
 	}
