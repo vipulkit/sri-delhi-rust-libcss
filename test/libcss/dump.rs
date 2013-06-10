@@ -97,12 +97,43 @@ fn dump_rule_import(s:@mut css_rule_import) -> ~str {
 	buf
 }
 
-fn dump_rule_media(s:@mut css_rule_media) -> ~str{
-~""
+fn dump_rule_media(s:@mut css_rule_media) -> ~str {
+	let mut buf = ~"";
+	buf = str::append(buf , ~"| @page");
+	buf.push_char('\n');
+
+	let mut rule = s.base.next;
+	
+	while rule.is_some() {
+		let rule_type = rule.unwrap();
+		match rule_type {
+			RULE_SELECTOR(x) => {
+				 buf = str::append(buf , dump_rule_selector(x  , 2));
+				 rule = x.base.next;
+			},
+			_ =>{
+				// fail!();
+			}
+		}
+	}
+
+	buf
 }
 
-fn dump_rule_page(s:@ mut css_rule_page) -> ~str{
-~""
+fn dump_rule_page(s:@ mut css_rule_page) -> ~str {
+	let mut buf = ~"";
+	buf = str::append(buf , ~"| @page ");
+
+	if s.selector.is_some() {
+		buf = str::append(buf , dump_selector_list(s.selector.unwrap()));
+	}
+
+	buf.push_char('\n');
+
+	if s.style.is_some() {
+		buf = str::append(buf , dump_bytecode(s.style.unwrap() , 2));
+	}	
+	buf
 }
 
 fn dump_rule_font_face(s:@mut css_rule_font_face) -> ~str{
@@ -314,6 +345,16 @@ fn dump_selector_detail(detail:@mut css_selector_detail, detail_next:bool )->~st
 }
 
 fn dump_bytecode(style:@mut css_style, depth:u32 ) -> ~str{
+	
+	let mut bytecode = copy style.bytecode;
+	let mut length: uint = (style.used * 4);
+	let mut offset: u32 = 0;
+	let mut op: css_properties_e;
+
+	while (offset as uint) < (length) {
+		
+	}
+
 ~""
 }
 
