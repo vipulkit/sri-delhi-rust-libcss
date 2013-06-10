@@ -7,6 +7,7 @@ extern mod wapcaplet;
 use css::stylesheet::*;
 use css::parse::font_face::*;
 use css::bytecode::bytecode::*;
+use css::bytecode::opcodes::*;
 use css::include::font_face::*;
 use css::include::fpmath::*;
 use css::include::properties::*;
@@ -548,5 +549,58 @@ fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
 
 		}
 	}
+
+}
+
+fn dump_counter(name: ~str , value: u32 , ptr: &mut ~str) {
+	
+	str::push_str(ptr , &"counter(");
+	str::push_str(ptr , name);
+	let val = value >> CONTENT_COUNTER_STYLE_SHIFT;
+
+	if val as int == LIST_STYLE_TYPE_DISC as int {
+		str::push_str(ptr , &", disc");
+	}
+	else if val as int == LIST_STYLE_TYPE_CIRCLE as int {
+		str::push_str(ptr , &", circle");
+	}
+	else if val as int == LIST_STYLE_TYPE_SQUARE as int {
+		str::push_str(ptr , &", square");
+	}
+	else if (val as int == LIST_STYLE_TYPE_DECIMAL as int) 
+	|| (val as int == LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO as int) {
+		str::push_str(ptr , &", decimal-leading-zero");
+	}
+	else if val as int == LIST_STYLE_TYPE_LOWER_ROMAN as int {
+		str::push_str(ptr , &", lower-roman");
+	}
+	else if val as int == LIST_STYLE_TYPE_UPPER_ROMAN as int {
+		str::push_str(ptr , &", upper-roman");
+	}
+	else if val as int == LIST_STYLE_TYPE_LOWER_GREEK as int {
+		str::push_str(ptr , &", lower-greek");
+	}
+	else if val as int == LIST_STYLE_TYPE_LOWER_LATIN as int {
+		str::push_str(ptr , &", lower-latin");
+	}
+	else if val as int == LIST_STYLE_TYPE_UPPER_LATIN as int {
+		str::push_str(ptr , &", upper-latin");
+	}
+	else if val as int == LIST_STYLE_TYPE_ARMENIAN as int {
+		str::push_str(ptr , &", armenian");
+	}
+	else if val as int == LIST_STYLE_TYPE_LOWER_ALPHA as int {
+		str::push_str(ptr , &", lower-alpha");
+	}
+	else if val as int == LIST_STYLE_TYPE_UPPER_ALPHA as int {
+		str::push_str(ptr , &", upper-alpha");
+	}
+	else if val as int == LIST_STYLE_TYPE_NONE as int {
+		str::push_str(ptr , &", none");
+	}
+	ptr.push_char(')');
+}
+
+fn dump_counters(name: ~str , separator: ~str , value: u32 , ptr: &mut ~str) {
 
 }
