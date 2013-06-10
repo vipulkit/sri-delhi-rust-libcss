@@ -27,7 +27,7 @@ extern mod css;
 extern mod testutils;
 
 use parserutils::input::inputstream::*;
-use parserutils::utils::errors::*;
+use css::utils::errors::*;
 
 use css::charset::csdetect::*;
 use css::lex::lexer::*;
@@ -40,17 +40,17 @@ fn main() {
 
 #[test]
 fn tests1() {
-    lexAuto(~"../data/lex/tests1.dat");
+    lexAuto(~"data/lex/tests1.dat");
 }
 
 #[test]
 fn tests2() {
-    lexAuto(~"../data/lex/tests2.dat");
+    lexAuto(~"data/lex/tests2.dat");
 }
 
 #[test]
 fn regression() {
-    lexAuto(~"../data/lex/regression.dat");
+    lexAuto(~"data/lex/regression.dat");
 }
 
 
@@ -145,73 +145,73 @@ fn run_test(data: ~[u8], exp: ~[~exp_entry]) {
 
     match(status) {
         PARSERUTILS_OK => {},
-        _ => {assert!(false);}
+        //_ => {assert!(false);}
     }
 
     let mut inputStream = inputStreamOption.unwrap();
     let mut lexer = css_lexer::css__lexer_create(inputStream);
 
-    lexer.lexer_append_data(data);
+    lexer.css__lexer_append_data(data);
 
     let mut i=0;
     loop {
-        let mut (tokOption, status) = lexer.get_token();
+        let mut (status, tokOption) = lexer.css__lexer_get_token();
         match status {
-            LEXER_OK => {
+            CSS_OK => {
                 let tok = tokOption.unwrap();
 
-                if !str::eq(&string_from_type(copy tok), &string_from_type(copy exp[i].token_type)) {
+                if string_from_type(tok.token_type) != string_from_type(exp[i].token_type) {
                     io::println(fmt!("Got token %?, Expected %?",
-                                    tok, exp[i].token_type));
+                                     tok, exp[i].token_type));
                 }
 
                 if exp[i].hasText {
-                    if !str::eq(&text_from_type(copy tok), &exp[i].text) {
+                    if str::from_bytes(copy tok.data.data) != exp[i].text {
                         io::println(fmt!("Got data %?, Expected %?",
-                                        tok, exp[i].text));
+                                         tok, exp[i].text));
                     }
                 }
                 i+=1;
+
+                match tok.token_type {
+                    CSS_TOKEN_EOF => {
+                        break;
+                    }
+                    _ => {}
+                }
             }
-            // FIXME: how do I check eof?
-            // CSS_TOKEN_EOF => {
-                // break;
-            // }
-            // FIXME: "unreachable pattern" error msg appears
             _ => {
                 break;
             }
         }
     }
-    lexer.data_done();
+    // FIXME: not implemented
+    //lexer.data_done();
 }
 
-// FIXME: comented are either
-// 1. not implemented
-// 2. has different data type.
 fn string_to_type(data: ~str) -> css_token_type {
     match data {
-        ~"IDENT"         => {return CSS_TOKEN_IDENT(data)},
-        ~"ATKEYWORD"     => {return CSS_TOKEN_ATKEYWORD(data)},
-        ~"STRING"        => {return CSS_TOKEN_STRING(data)},
+        ~"IDENT"         => {return CSS_TOKEN_IDENT},
+        ~"ATKEYWORD"     => {return CSS_TOKEN_ATKEYWORD},
+        ~"STRING"        => {return CSS_TOKEN_STRING},
         ~"INVALID"       => {return CSS_TOKEN_INVALID_STRING},
-        ~"HASH"          => {return CSS_TOKEN_HASH(data)},
-        //~"NUMBER"=> {return CSS_TOKEN_NUMBER(data)},
-        //~"PERCENTAGE"    => {return CSS_TOKEN_PERCENTAGE(data)},
-        //~"DIMENSION"     => {return CSS_TOKEN_DIMENSION(data)},
-        ~"URI"           => {return CSS_TOKEN_URI(data)},
-        //~"UNICODE-RANGE" => {return CSS_TOKEN_UNICODE_RANGE(data)},
+        ~"HASH"          => {return CSS_TOKEN_HASH},
+        ~"NUMBER"        => {return CSS_TOKEN_NUMBER},
+        ~"PERCENTAGE"    => {return CSS_TOKEN_PERCENTAGE},
+        ~"DIMENSION"     => {return CSS_TOKEN_DIMENSION},
+        ~"URI"           => {return CSS_TOKEN_URI},
+        ~"UNICODE-RANGE" => {return CSS_TOKEN_UNICODE_RANGE},
         ~"CDO"           => {return CSS_TOKEN_CDO},
         ~"CDC"           => {return CSS_TOKEN_CDC},
         ~"S"             => {return CSS_TOKEN_S},
-        //~"COMMENT"=> {return CSS_TOKEN_COMMENT(data)},
-        ~"FUNCTION"      => {return CSS_TOKEN_FUNCTION(data)},
-        //~"INCLUDES"      => {return CSS_TOKEN_INCLUDES(data)},
-        //~"DASHMATCH"=> {return CSS_TOKEN_DASHMATCH(data)},
-        //~"PREFIXMATCH"=> {return CSS_TOKEN_PREFIXMATCH(data)},
-        //~"SUFFIXMATCH"=> {return CSS_TOKEN_SUFFIXMATCH(data)},
-        //~"SUBSTRINGMATCH"=> {return CSS_TOKEN_SUBSTRINGMATCH(data)},
-        //~"CHAR"=> {return CSS_TOKEN_CHAR(data)},
+        ~"COMMENT"       => {return CSS_TOKEN_COMMENT},
+        ~"FUNCTION"      => {return CSS_TOKEN_FUNCTION},
+        ~"INCLUDES"      => {return CSS_TOKEN_INCLUDES},
+        ~"DASHMATCH"     => {return CSS_TOKEN_DASHMATCH},
+        ~"PREFIXMATCH"   => {return CSS_TOKEN_PREFIXMATCH},
+        ~"SUFFIXMATCH"   => {return CSS_TOKEN_SUFFIXMATCH},
+        ~"SUBSTRINGMATCH"=> {return CSS_TOKEN_SUBSTRINGMATCH},
+        ~"CHAR"          => {return CSS_TOKEN_CHAR},
         ~"EOF"           => {return CSS_TOKEN_EOF},
         _                => {fail!(~"Type mismatch");}
     }
@@ -220,32 +220,33 @@ fn string_to_type(data: ~str) -> css_token_type {
 
 fn string_from_type(token_type: css_token_type) -> ~str {
     match token_type {
-        CSS_TOKEN_IDENT(_x)       => {return ~"IDENT";},
-        CSS_TOKEN_ATKEYWORD(_x)   => {return ~"ATKEYWORD";},
-        CSS_TOKEN_HASH(_x)        => {return ~"HASH";},
-        CSS_TOKEN_FUNCTION(_x)    => {return ~"FUNCTION";},
-        CSS_TOKEN_STRING(_x)      => {return ~"STRING";},
+        CSS_TOKEN_IDENT           => {return ~"IDENT";},
+        CSS_TOKEN_ATKEYWORD       => {return ~"ATKEYWORD";},
+        CSS_TOKEN_HASH            => {return ~"HASH";},
+        CSS_TOKEN_FUNCTION        => {return ~"FUNCTION";},
+        CSS_TOKEN_STRING          => {return ~"STRING";},
         CSS_TOKEN_INVALID_STRING  => {return ~"INVALID_STRING";},
-        CSS_TOKEN_URI(_x)         => {return ~"URI";},
-        //CSS_TOKEN_UNICODE_RANGE(ch1 , ch2)=>{return ~"UNICODE_RANGE";},
-        CSS_TOKEN_CHAR(_x)        => {return ~"CHAR";},
-        //CSS_TOKEN_NUMBER(x)=>{return ~"NUMBER";},
-        //CSS_TOKEN_PERCENTAGE(x)=>{return ~"PERCENTAGE";},
-        //CSS_TOKEN_DIMENSION(x)   => {return ~"DIMENSION";},
+        CSS_TOKEN_URI             => {return ~"URI";},
+        CSS_TOKEN_UNICODE_RANGE   => {return ~"UNICODE_RANGE";},
+        CSS_TOKEN_CHAR            => {return ~"CHAR";},
+        CSS_TOKEN_NUMBER          => {return ~"NUMBER";},
+        CSS_TOKEN_PERCENTAGE      => {return ~"PERCENTAGE";},
+        CSS_TOKEN_DIMENSION       => {return ~"DIMENSION";},
         CSS_TOKEN_CDO             => {return ~"CDO";},
         CSS_TOKEN_CDC             => {return ~"CDC";},
         CSS_TOKEN_S               => {return ~"S";},
-        // CSS_TOKEN_COMMENT=>{return ~"COMMENT";},
-        // CSS_TOKEN_INCLUDES=>{return ~"INCLUDES";},
-        //CSS_TOKEN_DASHMATCH=>{return ~"DASHMATCH";},
-        //CSS_TOKEN_PREFIXMATCH=>{return ~"PREFIXMATCH";},
-        // CSS_TOKEN_SUFFIXMATCH=>{return ~"SUFFIXMATCH";},
-        //CSS_TOKEN_SUBSTRINGMATCH=>{return ~"SUBSTRINGMATCH";},
+        CSS_TOKEN_COMMENT         => {return ~"COMMENT";},
+        CSS_TOKEN_INCLUDES        => {return ~"INCLUDES";},
+        CSS_TOKEN_DASHMATCH       => {return ~"DASHMATCH";},
+        CSS_TOKEN_PREFIXMATCH     => {return ~"PREFIXMATCH";},
+        CSS_TOKEN_SUFFIXMATCH     => {return ~"SUFFIXMATCH";},
+        CSS_TOKEN_SUBSTRINGMATCH  => {return ~"SUBSTRINGMATCH";},
         CSS_TOKEN_EOF             => {return~"EOF";},
-        _                         => {fail!(~"Type mismatch")}
+        //_                         => {fail!(~"Type mismatch")}
     }
 }
 
+/*
 fn text_from_type(token_type: css_token_type) -> ~str {
     match token_type {
         CSS_TOKEN_IDENT(x)       => {return x},
@@ -273,3 +274,4 @@ fn text_from_type(token_type: css_token_type) -> ~str {
         _                         => {fail!(~"Type mismatch")}
     }
 }
+*/

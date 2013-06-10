@@ -32,7 +32,7 @@ fn allzengarden() {
 
 #[test]
 fn badcomment() {
-    css21(~"data/css/adcomment.css");
+    css21(~"data/css/badcomment.css");
 }
 
 #[test]
@@ -87,7 +87,7 @@ fn css21(filename: ~str) {
     let CHUNK_SIZE = 4096;
 
     for uint::range(0, ITERATIONS) |_i| {
-        let mut sheet = css_create(copy params); // FIXME: rename it to css_stylesheet_create()
+        let mut sheet = css_create(copy params, Some(wapcaplet::lwc())); // FIXME: rename it to css_stylesheet_create()
 
         let r: @Reader = io::file_reader(&Path(filename)).get();
 
@@ -117,7 +117,7 @@ fn css21(filename: ~str) {
             }
         }
 
-        let (error , _) = sheet.css_stylesheet_data_done();
+        let error = sheet.css_stylesheet_data_done();
         let mut importPending=false;
         match error {
             CSS_OK => {},
