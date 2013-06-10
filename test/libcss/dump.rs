@@ -13,6 +13,128 @@ use css::include::fpmath::*;
 use css::include::properties::*;
 use wapcaplet::*;
 
+/**
+ * Opcode names, indexed by opcode
+ */
+// pub static opcode_names: ~[~str] = ~[
+pub fn opcode_names() -> ~[~str] {
+
+	~[
+		~"azimuth",
+		~"background-attachment",
+		~"background-color",
+		~"background-image",
+		~"background-position",
+		~"background-repeat",
+		~"border-collapse",
+		~"border-spacing",
+		~"border-top-color",
+		~"border-right-color",
+		~"border-bottom-color",
+		~"border-left-color",
+		~"border-top-style",
+		~"border-right-style",
+		~"border-bottom-style",
+		~"border-left-style",
+		~"border-top-width",
+		~"border-right-width",
+		~"border-bottom-width",
+		~"border-left-width",
+		~"bottom",
+		~"caption-side",
+		~"clear",
+		~"clip",
+		~"color",
+		~"content",
+		~"counter-increment",
+		~"counter-reset",
+		~"cue-after",
+		~"cue-before",
+		~"cursor",
+		~"direction",
+		~"display",
+		~"elevation",
+		~"empty-cells",
+		~"float",
+		~"font-family",
+		~"font-size",
+		~"font-style",
+		~"font-variant",
+		~"font-weight",
+		~"height",
+		~"left",
+		~"letter-spacing",
+		~"line-height",
+		~"list-style-image",
+		~"list-style-position",
+		~"list-style-type",
+		~"margin-top",
+		~"margin-right",
+		~"margin-bottom",
+		~"margin-left",
+		~"max-height",
+		~"max-width",
+		~"min-height",
+		~"min-width",
+		~"orphans",
+		~"outline-color",
+		~"outline-style",
+		~"outline-width",
+		~"overflow",
+		~"padding-top",
+		~"padding-right",
+		~"padding-bottom",
+		~"padding-left",
+		~"page-break-after",
+		~"page-break-before",
+		~"page-break-inside",
+		~"pause-after",
+		~"pause-before",
+		~"pitch-range",
+		~"pitch",
+		~"play-during",
+		~"position",
+		~"quotes",
+		~"richness",
+		~"right",
+		~"speak-header",
+		~"speak-numeral",
+		~"speak-punctuation",
+		~"speak",
+		~"speech-rate",
+		~"stress",
+		~"table-layout",
+		~"text-align",
+		~"text-decoration",
+		~"text-indent",
+		~"text-transform",
+		~"top",
+		~"unicode-bidi",
+		~"vertical-align",
+		~"visibility",
+		~"voice-family",
+		~"volume",
+		~"white-space",
+		~"widows",
+		~"width",
+		~"word-spacing",
+		~"z-index",
+		~"opacity",
+		~"break-after",
+		~"break-before",
+		~"break-inside",
+		~"column-count",
+		~"column-fill",
+		~"column-gap",
+		~"column-rule-color",
+		~"column-rule-style",
+		~"column-rule-width",
+		~"column-span",
+		~"column-width",
+	]
+}
+
+
 pub fn dump_sheet(sheet: &css_stylesheet) -> ~str {
 	
 	let mut ptr: ~str = ~"";
@@ -302,12 +424,393 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 	
 	let mut bytecode = copy style.bytecode;
-	let mut length: uint = (style.used * 4);
-	let mut offset: u32 = 0;
-	let mut op: css_properties_e;
+	let mut op: css_properties_e = CSS_PROP_AZIMUTH; //initilaisation not needed
+	let mut value: u32 = 0;
+	let opcode_names = opcode_names();
 
-	while (offset as uint) < (length) {
+	for bytecode.each|&opv| {
+		op = getOpcode(opv);
+		ptr.push_char('|');
+
+		let mut i: u32 = 0;
+		while i<depth {
+			ptr.push_char(' ');
+			i+=1;
+		}
+		str::push_str(ptr , opcode_names[op as int]);
+		ptr.push_char(':');
+		ptr.push_char(' ');
 		
+		if isInherit(opv) {
+			str::push_str(ptr , &"inherit");
+		}
+		else {
+
+			value = getValue(opv) as u32;
+
+			if op as int == CSS_PROP_AZIMUTH as int {
+				let val = (value & !(AZIMUTH_BEHIND as u32));
+
+				if val as int == AZIMUTH_ANGLE as int {
+					// TODO
+				}
+				else if val as int == AZIMUTH_LEFTWARDS as int {
+					str::push_str(ptr , &"leftwards");
+				}
+				else if val as int == AZIMUTH_RIGHTWARDS as int {
+					str::push_str(ptr , &"rightwards");
+				}
+				else if val as int == AZIMUTH_LEFT_SIDE as int {
+					str::push_str(ptr , &"left-side");
+				}
+				else if val as int == AZIMUTH_FAR_LEFT as int {
+					str::push_str(ptr , &"far-left");
+				}
+				else if val as int == AZIMUTH_LEFT as int {
+					str::push_str(ptr , &"left");
+				}
+				else if val as int == AZIMUTH_CENTER_LEFT as int {
+					str::push_str(ptr , &"center-left");
+				}
+				else if val as int == AZIMUTH_CENTER as int {
+					str::push_str(ptr , &"center");
+				}
+				else if val as int == AZIMUTH_CENTER_RIGHT as int {
+					str::push_str(ptr , &"center-right");
+				}
+				else if val as int == AZIMUTH_RIGHT as int {
+					str::push_str(ptr , &"right");
+				}
+				else if val as int == AZIMUTH_FAR_RIGHT as int {
+					str::push_str(ptr , &"far-right");
+				}
+				else if val as int == AZIMUTH_RIGHT_SIDE as int {
+					str::push_str(ptr , &"right-side");
+				}
+
+				if (value & (AZIMUTH_BEHIND as u32) > 0) {
+					str::push_str(ptr , &"behind");
+				}
+			}
+
+			else if op as int == CSS_PROP_BACKGROUND_ATTACHMENT as int {
+				if value as int == BACKGROUND_ATTACHMENT_FIXED as int {
+					str::push_str(ptr , &"fixed");
+				}
+				else if value as int == BACKGROUND_ATTACHMENT_SCROLL as int {
+					str::push_str(ptr , &"scroll");
+				}
+			}
+
+			else if op as int == (CSS_PROP_BORDER_TOP_COLOR as int | CSS_PROP_BORDER_RIGHT_COLOR as int 
+			| CSS_PROP_BORDER_BOTTOM_COLOR as int | CSS_PROP_BORDER_LEFT_COLOR as int 
+			| CSS_PROP_BACKGROUND_COLOR as int | CSS_PROP_COLUMN_RULE_COLOR as int) {
+
+				// TODO
+				// assert!(BACKGROUND_COLOR_TRANSPARENT == )
+				// assert!(BACKGROUND_COLOR_CURRENT_COLOR == )
+				// assert!(BACKGROUND_COLOR_SET == )
+
+				if value as int == BACKGROUND_COLOR_TRANSPARENT as int {
+					str::push_str(ptr , &"transparent");
+				}
+
+				else if value as int == BACKGROUND_COLOR_CURRENT_COLOR as int {
+					str::push_str(ptr , &"currentColor");	
+				}
+				// TODO
+				// else if value as int == BACKGROUND_COLOR_SET as int {
+				// 	str::push_str(ptr , &"currentColor");	
+				// }
+			}
+			
+			else if op as int == (CSS_PROP_BACKGROUND_IMAGE as int | CSS_PROP_CUE_AFTER as int 
+			| CSS_PROP_CUE_BEFORE as int | CSS_PROP_LIST_STYLE_IMAGE as int 
+			| CSS_PROP_BACKGROUND_COLOR as int | CSS_PROP_COLUMN_RULE_COLOR as int) {
+				// some asserts
+
+				if value as int == BACKGROUND_IMAGE_NONE as int {
+					str::push_str(ptr , &"none");
+				}
+
+				else if value as int == BACKGROUND_IMAGE_URI as int {
+					// TODO
+				}
+			}
+
+			else if op as int == CSS_PROP_BACKGROUND_POSITION as int {
+
+				let val = value & 0xf0;
+
+				if val as int == BACKGROUND_POSITION_HORZ_SET as int {
+					// TODO
+				}
+
+				else if val as int == BACKGROUND_POSITION_HORZ_CENTER as int {
+					
+					str::push_str(ptr , &"center");
+				}
+
+
+				else if val as int == BACKGROUND_POSITION_HORZ_RIGHT as int {
+					
+					str::push_str(ptr , &"right");
+				}
+
+
+				else if val as int == BACKGROUND_POSITION_HORZ_LEFT as int {
+					
+					str::push_str(ptr , &"left");
+				}
+
+				ptr.push_char(' ');
+
+				let val = value & 0x0f;
+
+				if val as int == BACKGROUND_POSITION_VERT_SET as int {
+					// TODO
+				}
+
+				else if val as int == BACKGROUND_POSITION_VERT_CENTER as int {
+					
+					str::push_str(ptr , &"center");
+				}
+
+
+				else if val as int == BACKGROUND_POSITION_VERT_BOTTOM as int {
+					
+					str::push_str(ptr , &"bottom");
+				}
+
+
+				else if val as int == BACKGROUND_POSITION_VERT_TOP as int {
+					
+					str::push_str(ptr , &"top");
+				}
+			}
+
+			else if op as int == CSS_PROP_BACKGROUND_REPEAT as int {
+
+				if value as int == BACKGROUND_REPEAT_NO_REPEAT as int {
+					str::push_str(ptr , &"no-repeat");
+				}
+
+				else if value as int == BACKGROUND_REPEAT_REPEAT_X as int {
+					str::push_str(ptr , &"repeat-x");
+				}
+
+				else if value as int == BACKGROUND_REPEAT_REPEAT_Y as int {
+					str::push_str(ptr , &"repeat-y");
+				}
+
+				else if value as int == BACKGROUND_REPEAT_REPEAT as int {
+					str::push_str(ptr , &"repeat-repeat");
+				}
+			}
+
+			else if op as int == CSS_PROP_BORDER_COLLAPSE as int {
+				
+				if value as int == BORDER_COLLAPSE_SEPARATE as int {
+					str::push_str(ptr , &"separate");
+				}
+
+				else if value as int == BORDER_COLLAPSE_COLLAPSE as int {
+					str::push_str(ptr , &"collapse");
+				}
+			}
+
+			else if op as int == CSS_PROP_BORDER_SPACING as int {
+
+				if value as int == BORDER_SPACING_SET as int {
+					// TODO
+				}
+			}
+
+			else if op as int == (CSS_PROP_BORDER_TOP_STYLE as int | CSS_PROP_BORDER_RIGHT_STYLE as int | 
+			CSS_PROP_BORDER_BOTTOM_STYLE as int | CSS_PROP_BORDER_LEFT_STYLE as int | 
+			CSS_PROP_COLUMN_RULE_STYLE as int | CSS_PROP_OUTLINE_STYLE as int) {
+
+				// TODO some asserts
+
+				if value as int == BORDER_STYLE_NONE as int {
+					str::push_str(ptr , &"none");
+				}
+
+				else if value as int == BORDER_STYLE_HIDDEN as int {
+					str::push_str(ptr , &"hidden");
+				}
+
+				else if value as int == BORDER_STYLE_DOTTED as int {
+					str::push_str(ptr , &"dotted");
+				}
+
+				else if value as int == BORDER_STYLE_DASHED as int {
+					str::push_str(ptr , &"dashed");
+				}
+
+				else if value as int == BORDER_STYLE_SOLID as int {
+					str::push_str(ptr , &"solid");
+				}
+
+				else if value as int == BORDER_STYLE_DOUBLE as int {
+					str::push_str(ptr , &"double");
+				}
+
+				else if value as int == BORDER_STYLE_GROOVE as int {
+					str::push_str(ptr , &"groove");
+				}
+
+				else if value as int == BORDER_STYLE_RIDGE as int {
+					str::push_str(ptr , &"ridge");
+				}
+
+				else if value as int == BORDER_STYLE_INSET as int {
+					str::push_str(ptr , &"inset");
+				}
+
+				else if value as int == BORDER_STYLE_OUTSET as int {
+					str::push_str(ptr , &"outset");
+				}
+			}
+
+			else if op as int == (CSS_PROP_BORDER_TOP_WIDTH as int | CSS_PROP_BORDER_RIGHT_WIDTH as int | 
+			CSS_PROP_BORDER_BOTTOM_WIDTH as int | CSS_PROP_BORDER_LEFT_WIDTH as int | 
+			CSS_PROP_COLUMN_RULE_WIDTH as int | CSS_PROP_OUTLINE_WIDTH as int) {
+
+				// TODO asserts
+
+				if value as int == BORDER_WIDTH_SET as int {
+					// TODO
+				}
+
+				else if value as int == BORDER_WIDTH_THIN as int {
+					str::push_str(ptr , &"thin");
+				}
+
+				else if value as int == BORDER_WIDTH_MEDIUM as int {
+					str::push_str(ptr , &"medium");
+				}
+
+				else if value as int == BORDER_WIDTH_THICK as int {
+					str::push_str(ptr , &"thick");
+				}
+			}
+
+			else if op as int == (CSS_PROP_MARGIN_TOP as int | CSS_PROP_MARGIN_RIGHT as int | 
+			CSS_PROP_MARGIN_BOTTOM as int | CSS_PROP_MARGIN_LEFT as int | 
+			CSS_PROP_BOTTOM as int | CSS_PROP_LEFT as int | CSS_PROP_RIGHT as int | 
+			CSS_PROP_TOP as int | CSS_PROP_HEIGHT as int | CSS_PROP_WIDTH as int | 
+			CSS_PROP_COLUMN_WIDTH as int) {
+
+				// TODO asserts
+
+				if value as int == BOTTOM_SET as int {
+					// TODO
+				}
+
+				else if value as int == BOTTOM_AUTO as int {
+					str::push_str(ptr , &"auto");
+				}
+			}
+
+			else if op as int == (CSS_PROP_BREAK_AFTER as int | CSS_PROP_BREAK_BEFORE as int) {
+
+				// TODO Some asserts
+
+				if value as int == BREAK_AFTER_AUTO as int {
+					str::push_str(ptr , &"auto");
+				}
+
+				else if value as int == BREAK_AFTER_ALWAYS as int {
+					str::push_str(ptr , &"always");
+				}
+
+				else if value as int == BREAK_AFTER_AVOID as int {
+					str::push_str(ptr , &"avoid");
+				}
+
+				else if value as int == BREAK_AFTER_LEFT as int {
+					str::push_str(ptr , &"left");
+				}
+
+				else if value as int == BREAK_AFTER_RIGHT as int {
+					str::push_str(ptr , &"right");
+				}
+
+				else if value as int == BREAK_AFTER_PAGE as int {
+					str::push_str(ptr , &"page");
+				}
+
+				else if value as int == BREAK_AFTER_COLUMN as int {
+					str::push_str(ptr , &"column");
+				}
+
+				else if value as int == BREAK_AFTER_AVOID_PAGE as int {
+					str::push_str(ptr , &"avoid-page");
+				}
+
+				else if value as int == BREAK_AFTER_AVOID_COLUMN as int {
+					str::push_str(ptr , &"avoid-column");
+				}
+			}
+
+			else if op as int == CSS_PROP_BREAK_INSIDE as int {
+				
+				if value as int == BREAK_INSIDE_AUTO as int {
+					str::push_str(ptr , &"auto");
+				}
+
+				else if value as int == BREAK_INSIDE_AVOID as int {
+					str::push_str(ptr , &"avoid");
+				}
+
+				else if value as int == BREAK_INSIDE_AVOID_PAGE as int {
+					str::push_str(ptr , &"avoid-page");
+				}
+
+				else if value as int == BREAK_INSIDE_AVOID_COLUMN as int {
+					str::push_str(ptr , &"avoid-column");
+				}
+			}
+
+			else if op as int == CSS_PROP_CAPTION as int {
+				
+				if value as int == CAPTION_SIDE_TOP as int {
+					str::push_str(ptr , &"top");
+				}
+
+				else if value as int == CAPTION_SIDE_BOTTOM as int {
+					str::push_str(ptr , &"bottom");
+				}
+
+			}
+
+			else if op as int == CSS_PROP_CLEAR as int {
+				
+				if value as int == CLEAR_NONE as int {
+					str::push_str(ptr , &"none");
+				}
+
+				else if value as int == CLEAR_LEFT as int {
+					str::push_str(ptr , &"left");
+				}
+
+				else if value as int == CLEAR_RIGHT as int {
+					str::push_str(ptr , &"right");
+				}
+
+				else if value as int == CLEAR_BOTH as int {
+					str::push_str(ptr , &"both");
+				}
+			}
+
+			else if op as int == CSS_PROP_CLIP as int {
+				
+				// TODO
+			}
+			// TODO
+
+		}
 	}
 
 }
