@@ -400,8 +400,6 @@ impl css_stylesheet {
 	*	Add a string to a stylesheet's string vector.
 	* #Arguments:
     *  'strings' - The string to add.
-    *  'vector' - Vector of tokens to process.
-    *  'ctx'    - Pointer to vector iteration ctx.
     * #Return Value:
 	*   'uint' - index next to the index of insertion is returned.
 	*/
