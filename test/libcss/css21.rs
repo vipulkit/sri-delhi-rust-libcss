@@ -14,7 +14,7 @@ pub fn resolve_url(_:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc
     return (CSS_OK,Some(rel.clone()));
 }
 
-fn fill_params() -> css_params {
+fn css_create_params() -> css_params {
     let css_param = css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
@@ -31,9 +31,9 @@ fn fill_params() -> css_params {
     return css_param;
 }
 
-fn css_create_fn() -> ~css{
+fn create_css() -> ~css{
     let mut lwc = wapcaplet::lwc();
-    let css = css_create(fill_params() , Some(lwc));
+    let css = css_create(css_create_params() , Some(lwc));
     css
 }
 
@@ -42,7 +42,7 @@ fn main() {
 }
 
 fn css(file_name: ~str) {
-    let mut css = css_create_fn();
+    let mut css = create_css();
     let CHUNK_SIZE = 4096;
     let mut buf: ~[u8];
     let r:@Reader = io::file_reader(&Path(file_name)).get(); 
@@ -80,9 +80,9 @@ fn css(file_name: ~str) {
                 let (error1 , option_url , _) = css.css_stylesheet_next_pending_import();
                 match error1 {
                     CSS_OK => {
-                        let mut params: css_params = fill_params();
+                        let mut params: css_params = css_create_params();
                         params.url = option_url.unwrap();
-                        let mut css_import = css_create_fn();
+                        let mut css_import = create_css();
                         let err = css_import.css_stylesheet_data_done();
                         match err {
                             CSS_OK => {},

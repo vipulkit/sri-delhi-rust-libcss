@@ -169,7 +169,9 @@ pub struct css_rule_selector {
 
 pub struct css_rule_media {
     base:@mut css_rule,
-    media:u64
+    media:u64,
+    first_child:Option<CSS_RULE_DATA_TYPE>,                
+    last_child:Option<CSS_RULE_DATA_TYPE>                
 } 
 
 pub struct css_rule_font_face {
@@ -725,7 +727,9 @@ impl css_stylesheet {
             CSS_RULE_MEDIA=>    {   
                 let mut ret_rule = @mut css_rule_media{ 
                     base:base_rule,
-                    media:0
+                    media:0,
+                    first_child:None,
+                    last_child:None
                 };  
                 RULE_MEDIA(ret_rule) 
             },
@@ -952,29 +956,31 @@ impl css_stylesheet {
 
         match sheet._add_selectors(css_rule) {
             CSS_OK => {},
-            _=> return CSS_INVALID
+            x => return x
         }
 
         match parent_rule {
             Some(prule)=> {
                 match prule {
-                    RULE_MEDIA(_)=>{
+                    RULE_MEDIA(media_rule)=>{
                         base_rule.parent_rule = parent_rule;
-                        let mut base_media_prule = css_stylesheet::css__stylesheet_get_base_rule(prule);
+                        sheet.rule_count += 1;
+                        //let mut base_media_prule = css_stylesheet::css__stylesheet_get_base_rule(prule);
 
-                        match base_media_prule.prev {
+
+                        match media_rule.last_child {
                             None=>{
                                 base_rule.next = None;
                                 base_rule.prev = None;
-                                base_media_prule.next = Some(css_rule);
-                                base_media_prule.prev = Some(css_rule);
+                                media_rule.first_child = Some(css_rule);
+                                media_rule.last_child = Some(css_rule);
                             },
                             Some(last_child)=>{
                                 let mut last_child_base_rule = css_stylesheet::css__stylesheet_get_base_rule(last_child);
                                 last_child_base_rule.next = Some(css_rule);
-                                base_rule.prev = base_media_prule.prev ;
+                                base_rule.prev = Some(last_child) ;
                                 base_rule.next = None;
-                                base_media_prule.prev = Some(css_rule);
+                                media_rule.last_child = Some(css_rule);
                             }
                         }
                     },
@@ -983,6 +989,7 @@ impl css_stylesheet {
             },
             None=>{
                 base_rule.parent_stylesheet = Some(sheet);
+                sheet.rule_count += 1 ;
 
                 match sheet.last_rule {
                     None=>{
@@ -1054,7 +1061,8 @@ impl css_stylesheet {
     pub fn _add_selectors(&mut self, css_rule : CSS_RULE_DATA_TYPE) -> css_error {
         match css_rule {
             RULE_SELECTOR(x) => {
-                if x.base.parent_rule.is_some() {
+                if x.base.parent_rule.is_some() || 
+                        x.base.parent_stylesheet.is_some() {
                     return CSS_INVALID;
                 }
 
@@ -1083,11 +1091,12 @@ impl css_stylesheet {
                 CSS_OK
             },
             RULE_MEDIA(x) => {
-                if x.base.parent_rule.is_some() {
+                if x.base.parent_rule.is_some() || 
+                        x.base.parent_stylesheet.is_some() {
                     return CSS_INVALID;
                 }
 
-                let mut ptr = x.base.next;
+                let mut ptr = x.first_child;
                 loop {
                     match ptr {
                         None=> {
@@ -1159,7 +1168,7 @@ impl css_stylesheet {
 
             RULE_MEDIA(x)=> {
 
-                let mut ptr = x.base.next;
+                let mut ptr = x.first_child;
                 loop {
                     match ptr {
                         None=> {
