@@ -773,7 +773,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 				}
 			}
 
-			else if op as int == CSS_PROP_CAPTION as int {
+			else if op as int == CSS_PROP_CAPTION_SIDE as int {
 				
 				if value as int == CAPTION_SIDE_TOP as int {
 					str::push_str(ptr , &"top");
