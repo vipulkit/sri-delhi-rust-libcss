@@ -22,7 +22,7 @@ pub struct attribute {
 }
 
 pub struct node {
-	name:arc::RWARC<~lwc_string>,
+	name:Option<arc::RWARC<~lwc_string> >,
 	attrs:~[attribute],
 
 	parent:Option<@mut node>,
@@ -225,14 +225,159 @@ pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
 						_=>{false}
 					 });
 		}
-		else if ( ctx.inexp ) {
-			css__parse_expected(ctx, data );
-		}
+		// Not Needed
+		//else if ( ctx.inexp ) {
+		//	css__parse_expected(ctx, data );
+		//}
 	}
 	true 
 }
 
-pub fn css__parse_expected(ctx:@mut line_ctx, data:&str) {
+//Not Needed
+//pub fn css__parse_expected(ctx:@mut line_ctx, data:&str) {
+//
+//}
+
+pub fn isspace (ch:u8)-> bool {
+	if ( (ch==0x20 ) || (ch==0x09) || (ch==0x0a) || 
+			 (ch==0x0b) || (ch==0x0c) || (ch==0x0d) ){
+		true
+	}
+	else {
+		false
+	} 
+}
+
+pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
+	
+	let mut p = 0;
+	let end = data.len();
+
+	let mut value = None;
+	let mut namelen = 0;
+	let mut valuelen = 0;
+	let mut depth:u32 = 0;
+	let mut target = false;
+	let mut lwc_ins = lwc();
+
+	/* ' '{depth+1} [ <element> '*'? | <attr> ]
+	 * 
+	 * <element> ::= [^=*[:space:]]+
+	 * <attr>    ::= [^=*[:space:]]+ '=' [^[:space:]]*
+	 */
+
+	while (p < end && isspace(data[p])) {
+		depth += 1;
+		p += 1;
+	}
+	depth -= 1;
+
+	/* Get element/attribute name */
+	let name_begin = p;
+	while (p < end && data[p] != '=' as u8 && data[p] != '*' as u8  && isspace(data[p]) == false) {
+		namelen += 1;
+		p += 1;
+	}
+
+	let mut name = data.slice(name_begin,name_begin+namelen);
+
+	/* Skip whitespace */
+	while (p < end && isspace(data[p])){
+		p += 1;
+	}
+	
+	let mut value_begin = 0;
+
+	if (p < end && data[p] == '=' as u8 ) {
+		/* Attribute value */
+		p += 1;
+
+		value_begin = p;
+
+		while (p < end && isspace(data[p]) == false) {
+			valuelen += 1;
+			p += 1;
+		}
+	} else if (p < end && data[p] == '*' as u8 ) {
+		/* Element is target node */
+		target = true;
+	}
+
+	if valuelen > 0 {
+		value = Some(data.slice(value_begin, value_begin+valuelen));
+	}
+
+	if (value.is_none() ) {
+		/* We have an element, so create it */
+		let n : @mut node = @mut node {
+			name:None,
+			attrs:~[],
+			parent:None,
+			next:None,
+			prev:None,
+			children:None,
+			last_child:None
+		};					
+		do lwc_ins.write |l| {
+			n.name = Some(l.lwc_intern_string(name.to_owned()));
+		}
+
+		/* Insert it into tree */
+		if ctx.tree.is_none() {
+			ctx.tree = Some(n);
+		} 
+		else {
+			assert!(depth > 0);
+			assert!(depth <= ctx.depth + 1);
+
+			/* Find node to insert into */
+			while (depth <= ctx.depth) {
+				ctx.depth -= 1;
+				ctx.current = ctx.current.unwrap().parent;
+			}
+			let ctx_current = ctx.current.unwrap();	
+			/* Insert into current node */
+			if (ctx_current.children.is_none()) {
+				ctx_current.children = Some(n);
+				ctx_current.last_child = Some(n);
+			} else {
+				ctx_current.last_child.get_mut_ref().next = Some(n);
+				n.prev = ctx_current.last_child;
+
+				ctx_current.last_child = Some(n);
+			}
+		 	ctx.current = Some(ctx_current);	
+			n.parent = ctx.current;
+		}
+
+		ctx.current = Some(n);
+		ctx.depth = depth;
+
+		/* Mark the target, if it's us */
+		if (target) {
+			ctx.target = Some(n);
+		}
+
+	} 
+	else {
+		/* New attribute */
+
+		let mut lwc_name:Option<arc::RWARC<~lwc_string> > = None;
+		let mut lwc_value:Option<arc::RWARC<~lwc_string> > = None;
+
+		do lwc_ins.write |l| {
+			lwc_name = Some(l.lwc_intern_string(name.to_owned()));
+			lwc_value = Some(l.lwc_intern_string(value.get_ref().to_owned()));
+		}
+		
+		let mut attr: attribute = attribute{
+			name:lwc_name.unwrap(),
+			value:lwc_value.unwrap()
+		};
+
+		ctx.current.unwrap().attrs.push(attr);
+
+	}
 
 }
 
@@ -393,10 +538,6 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&str) {
 	}
 }
 
-pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
-
-
-}
 
 pub fn css__parse_sheet(ctx:@mut line_ctx,data:&str) {
 
