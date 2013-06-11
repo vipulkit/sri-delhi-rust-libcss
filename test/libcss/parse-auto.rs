@@ -36,6 +36,116 @@ pub struct line_ctx {
     inrule:bool
 }
 
+pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
+
+	io::println(fmt!("Strtol : strings are %? ====== %? ",a,b));
+    if ( a.len() != b.len() ) {
+        return false ;
+    }
+    
+    let mut i :uint = a.len() ;
+    for uint::range(0,i) |e| {
+        if a[e] == b[e] {
+            loop;
+        }
+
+        if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
+            if (a[e]+32) == b[e] {
+                loop;
+            }
+            else {
+                return false ;
+            }
+        }
+
+        if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
+            if (b[e]+32) == a[e] {
+                loop;
+            }
+            else {
+                return false ;
+            }
+        }
+        return false ;
+    }
+    return true ;
+}
+
+pub fn strtol(data:~str , data_used: &mut uint) -> Option<int> {
+
+	let mut res : i64  = 0 ;
+	let mut negative : bool = false ;
+
+	if *data_used >= data.len()  {
+		return None ;
+	}
+
+	if data[*data_used] == ('-' as u8) {
+		negative = true ;
+		*data_used += 1;
+	}
+	else if data[*data_used] == ('+' as u8) {
+		negative = false ;
+		*data_used += 1;
+	}
+	
+	while ( *data_used < data.len() ) {
+		if (data[*data_used] > 47 && data[*data_used]<58 ) {
+			res = res*10 + ( ( (data[*data_used] as u8) - 48 ) as i64);
+			*data_used += 1;
+
+			if( res >= (int::max_value as i64) ) {
+				fail!(~"\n Excedded maximum value of an integer") ;
+			}
+
+			loop ;
+		}	
+		else {
+			if negative {
+				res = -res ;
+			}
+			return Some(res as int) ;
+		}
+	}
+
+	if negative {
+		res = -res ;
+	}
+	Some(res as int)
+}
+
+pub fn strtoul(data:~str , data_used: &mut uint) -> Option<uint> {
+
+	let mut res : u64  = 0 ;
+
+	if *data_used >= data.len()  {
+		return None ;
+	}
+
+	if (data[*data_used] == ('-' as u8) ) || 
+			(data[*data_used] == ('+' as u8) ) {
+		*data_used += 1; // skip character
+	}
+	
+	while ( *data_used < data.len() ) {
+		if (data[*data_used] > 47 && data[*data_used]<58 ) {
+			res = res*10 + ( ( (data[*data_used] as u8) - 48 ) as u64);
+			*data_used += 1;
+
+			if( res >= (uint::max_value as u64) ) {
+				fail!(~"\n Excedded maximum value of an integer") ;
+			}
+
+			loop ;
+		}	
+		else {
+			return Some(res as uint) ;
+		}
+	}
+
+	Some(res as uint)
+}
+
 fn main() {
     io::println("parse-auto");
     // corresponding code now in parse_auto function, entry from test-cases
@@ -79,83 +189,6 @@ fn parse_auto(file: ~str) {
 	}
 }
 
-pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
-
-	//io::println(fmt!("\n Str1 is =%?=  , Str2 is =%?= ",a,b) );
-    if ( a.len() != b.len() ) {
-        return false ;
-    }
-    
-    let mut i :uint = a.len() ;
-    for uint::range(0,i) |e| {
-        if a[e] == b[e] {
-            loop;
-        }
-
-        if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
-            if (a[e]+32) == b[e] {
-                loop;
-            }
-            else {
-                return false ;
-            }
-        }
-
-        if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
-            if (b[e]+32) == a[e] {
-                loop;
-            }
-            else {
-                return false ;
-            }
-        }
-        return false ;
-    }
-    return true ;
-}
-
-pub fn strtol(data:~str , data_used: &mut uint) -> Option<int> {
-	let mut res : i64  = 0 ;
-	let mut negative : bool = false ;
-
-	if *data_used >= data.len()  {
-		return None ;
-	}
-
-	if data[*data_used] == ('-' as u8) {
-		negative = true ;
-		*data_used += 1;
-	}
-	else if data[*data_used] == ('+' as u8) {
-		negative = false ;
-		*data_used += 1;
-	}
-	
-	while ( *data_used < data.len() ) {
-		if (data[*data_used] > 47 && data[*data_used]<58 ) {
-			res = res*10 + ( ( (data[*data_used] as u8) - 48 ) as i64);
-			*data_used += 1;
-
-			if( res >= (int::max_value as i64) ) {
-				fail!(~"\n Excedded maximum value of an integer") ;
-			}
-
-			loop ;
-		}	
-		else {
-			if negative {
-				res = -res ;
-			}
-			return Some(res as int) ;
-		}
-	}
-
-	if negative {
-		res = -res ;
-	}
-	Some(res as int)
-}
-
 pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
 
 	let mut len : uint = 0 ;
@@ -168,14 +201,14 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
 			ctx.buf = ~[];
 		}
 
-		if (ctx.indata && data.len()>7 && 
+		if (ctx.indata && data.len()>=7 && 
 				(is_string_caseless_equal( data.slice(1,7), "errors")) ) {
 
 			ctx.indata = false;
 			ctx.inerrors = true;
 			ctx.inexp = false;
 		} 
-		else if (ctx.inerrors && data.len()>9 && 
+		else if (ctx.inerrors && data.len()>=9 && 
 				(is_string_caseless_equal( data.slice(1,9), "expected"))) {
 
 			ctx.indata = false;
@@ -183,7 +216,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
 			ctx.inexp = true;
 			ctx.inrule = false;
 		} 
-		else if (ctx.inexp && data.len()>5 && 
+		else if (ctx.inexp && data.len()>=5 && 
 				(is_string_caseless_equal( data.slice(1,5), "data"))) {
 
 			ctx.indata = true;
@@ -197,9 +230,9 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
 			}
 		} 
 		else {
-			ctx.indata = ( data.len()>5 && is_string_caseless_equal( data.slice(1,5), "data") );
-			ctx.inerrors = ( data.len()>7 && is_string_caseless_equal( data.slice(1,7), "errors"));
-			ctx.inexp = ( data.len()>9 && is_string_caseless_equal( data.slice(1,9), "expected"));
+			ctx.indata = ( data.len()>=5 && is_string_caseless_equal( data.slice(1,5), "data") );
+			ctx.inerrors = ( data.len()>=7 && is_string_caseless_equal( data.slice(1,7), "errors"));
+			ctx.inexp = ( data.len()>=9 && is_string_caseless_equal( data.slice(1,9), "expected"));
 		}
 	} 
 	else {
@@ -223,85 +256,117 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
 pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
 	let mut len : uint = 0 ;
+	let mut _goto_start_rule : bool = true  ;
 	if data.len()==0 || data[len] != ('|' as u8){
 		return;
 	}
-	if( ctx.inrule==false) {
-		len += 1;
 
-		if ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
-			 (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) && (data.len()>len) {
+	while _goto_start_rule {
+		_goto_start_rule = false ;
+
+		if( ctx.inrule==false) {
 			len += 1;
-		}
 
-		let mut num = strtol (copy data,&mut len);
-
-		if ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
-			 (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) && (data.len()>len) {
-			len += 1;
-		}
-
-		let min = if (data.len()-len-1) < 128 { (data.len()-len-1) } else { 128 } ;
-
-		let mut entry = @mut exp_entry{
-			ftype: if num.is_some() { num.get() } 
-				else {0} ,
-			name: data.slice(len,len+min).to_str() ,
-			bytecode:~[],
-			stringtab:~[]
-		};
-		len += min ;
-
-		ctx.exp.push(entry);
-		ctx.inrule = true;
-	}
-	else {
-		let mut explen = unsafe { ctx.exp.len()-1 };
-		let mut rule = ctx.exp[explen] ;
-
-		if( data[2] != (' ' as u8) ) {
-			ctx.inrule = false ;
-		}
-
-		while (len < data.len()) {
-
-			/* Skip whitespace */
 			while ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
-				 (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) )&& (data.len()>len) {
+				 (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) && (data.len()>len) {
 				len += 1;
 			}
 
-			if len == data.len() {
-				break ;
+			let mut num = strtol (copy data,&mut len);
+
+			while ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
+				 (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) && (data.len()>len) {
+				len += 1;
 			}
 
-			if data[len] == ('P' as u8) {
+			/* Append to list of expected rules */
+			let min = if (data.len()-len) <= 128 { (data.len()-len) } else { 128 } ;
 
-				let mut start = str::find_char( data.slice(len,data.len()-1) , '(') ;
+			let mut entry = @mut exp_entry{
+				ftype: if num.is_some() { num.get() } 
+					else {0} ,
+				name: data.slice(len,len+min).to_str() ,
+				bytecode:~[],
+				stringtab:~[]
+			};
+			len += min ;
 
-				if start.is_none() {
+			ctx.exp.push(entry);
+			ctx.inrule = true;
+		}
+		else {
+			let mut explen = unsafe { ctx.exp.len()-1 };
+			if explen < 0 {
+				fail!(~"No exp entry found");
+			}
+			let mut rule = ctx.exp[explen] ;
+
+			if( data[2] != (' ' as u8) ) {
+				ctx.inrule = false ;
+				_goto_start_rule = true ;
+				loop ;
+			}
+
+			len += 1;
+			while (len < data.len()) {
+
+				/* Skip whitespace */
+				while ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
+					 (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) )&& (data.len()>len) {
+					len += 1;
+				}
+
+				if len == data.len() {
 					break ;
 				}
 
-				let mut end = str::find_char( data.slice(start.get(),data.len()-1) , '(') ;
-				if end.is_none() {
-					break ;
+				if data[len] == ('P' as u8) {
+
+					let mut start = str::find_char( data.slice(len,data.len()) , '(') ;
+
+					if start.is_none() {
+						break ;
+					}
+
+					let mut end = str::find_char( data.slice(start.get(),data.len()) , '(') ;
+					if end.is_none() {
+						break ;
+					}
+						
+					let mut stentry = stentry{
+						off: 	(if unsafe{rule.bytecode.len()>0} {
+									rule.bytecode[ unsafe{rule.bytecode.len()-1}]
+								}
+								else { 
+									0
+						}) as uint,
+						string: data.slice( start.get()+1,end.get() ).to_str()
+					} ;
+
+					assert!( stentry.string.len()!=0 );
+					rule.stringtab.push(stentry) ;
 				}
-				
-				let mut stentry = stentry{
-					off:0,
-					string: data.slice( start.get(),end.get() ).to_str()
-				} ;
-				rule.stringtab.push(stentry) ;
-			}
-			else {
-				/* Assume hexnum */
-				let mut val = strtol(copy data,&mut len) ;
-				rule.bytecode.push(val.get_or_default(0) as u32) ;
+				else {
+					/* Assume hexnum */
+					let mut val = strtoul(copy data,&mut len) ;
+					/* Append to bytecode */
+					rule.bytecode.push(val.get_or_default(0) as u32) ;
+				}
 			}
 		}
 	}
+}
 
+pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
+
+	io::println(fmt!("    Data: %? ", data) );
+
+	io::println(fmt!("    Expected entry:") );
+	io::println(fmt!("	entry type:%d name:%s\n", e.ftype, copy e.name) );
+	io::println(fmt!("	bytecode ") );
+	for e.bytecode.each_mut |code| {
+		io::println(fmt!("%? ", code ));
+	}
 }
 
 pub fn run_test(ctx:@mut line_ctx) {
@@ -338,8 +403,9 @@ pub fn run_test(ctx:@mut line_ctx) {
 		/* Font resolution function */
 		font : None,
 	};
-	let mut lwc_instance = lwc() ;
 
+	let mut lwc_instance = lwc() ;
+	
 	let mut css_instance = css::css_create(copy params,Some(lwc_instance.clone())) ;
 
 	error = css_instance.css_stylesheet_append_data(copy (ctx.buf));
@@ -487,17 +553,7 @@ pub fn run_test(ctx:@mut line_ctx) {
 	io::println("PASS\n");
 }
 
-pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
 
-	io::println(fmt!("    Data: %? ", data) );
-
-	io::println(fmt!("    Expected entry:") );
-	io::println(fmt!("	entry type:%d name:%s\n", e.ftype, copy e.name) );
-	io::println(fmt!("	bytecode ") );
-	for e.bytecode.each_mut |code| {
-		io::println(fmt!("%? ", code ));
-	}
-}
 
 pub fn validate_rule_charset(s:@mut css_rule_charset, e:@mut exp_entry) -> bool {
 
