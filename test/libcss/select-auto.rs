@@ -14,7 +14,7 @@ use css::include::types::*;
 use css::utils::errors::*;
 use css::select::common::*;
 //use css::select::dispatch::*;
-//use css::stylesheet::*;
+use css::stylesheet::*;
 
 pub struct attribute {
 	name:arc::RWARC<~lwc_string>,
@@ -121,6 +121,28 @@ pub fn select_test(file:~str) {
 	if( ctx.tree.is_some() ) {
 		run_test(ctx);
 	}
+}
+
+pub fn resolve_url(base:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>){
+
+	(CSS_OK, None)
+}
+
+pub fn css_create_params() -> css_params {
+    let css_param = css_params {
+        params_version : CSS_PARAMS_VERSION_1,
+        level: CSS_LEVEL_21,
+        charset : Some(~"UTF-8"),
+        url : ~"foo",
+        title : ~"foo",
+        allow_quirks : false,
+        inline_style : false,
+        resolve : @resolve_url,
+        import : None,
+        color : None,
+        font : None
+    };
+    return css_param;
 }
 
 pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
@@ -381,6 +403,50 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 
 }
 
+pub fn css__parse_sheet(ctx:@mut line_ctx, data:&str) {
+
+	let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
+	let mut media : uint = CSS_MEDIA_ALL as uint;
+	let mut p : uint = 0;
+	let length : uint = data.len();
+	/* Find end of origin */
+	while p < length && !isspace(data[p]) {
+		p += 1;
+	}
+	
+	if p == 6 && is_string_caseless_equal( data.slice(1,6), "author"){
+		origin = CSS_ORIGIN_AUTHOR;
+	}
+	else if p == 4 && is_string_caseless_equal( data.slice(1,4), "user"){
+		origin = CSS_ORIGIN_USER;
+	}
+	else if p == 2 && is_string_caseless_equal( data.slice(1,2), "ua"){
+		origin = CSS_ORIGIN_UA;
+	}
+	else {
+			io::println("\n Unknown stylesheet origin");
+			assert!(false);
+	}
+	
+	/* Skip any whitespace */
+	while p < length && isspace(data[p]) {
+		p += 1;
+	}
+	
+	if p < length {
+		media = css__parse_media_list(data.slice(p, length - 1), ctx);
+	}
+	let params = css_create_params();
+	let sheet = css::css_create(params, None);
+	let sheet_ctx = @mut sheet_ctx {
+		sheet:sheet,
+		origin:origin,
+		media:media as u64
+	};
+	
+	ctx.sheets.push(sheet_ctx);
+}
+
 pub fn css__parse_media_list(data:&str , ctx:@mut line_ctx) -> uint {
 
 	// ' '	(0x20)	space (SPC)
@@ -536,11 +602,6 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&str) {
 	if length_processed < data2.len() {
 		css__parse_pseudo_list(data2.slice(length_processed,data2.len()-1),ctx);
 	}
-}
-
-
-pub fn css__parse_sheet(ctx:@mut line_ctx,data:&str) {
-
 }
 
 pub fn run_test(ctx:@mut line_ctx) {

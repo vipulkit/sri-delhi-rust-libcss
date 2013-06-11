@@ -55,7 +55,7 @@ pub struct css_params {
 }
 
 pub impl css {
-	pub fn css_create(params: css_params, lwc_instance: Option<arc::RWARC<~lwc>>) -> ~css {
+	pub fn css_create(params: css_params, lwc_instance: Option<arc::RWARC<~lwc>>) -> @mut css {
 		// create lwc
 		let lwc = 	if lwc_instance.is_none() { 
 						lwc()
@@ -104,7 +104,7 @@ pub impl css {
 		    true => css_parser::css__parser_create_for_inline_style(language, lexer, lwc.clone())
 		}; 
 
-		~ css {
+		@mut css {
 			lwc:lwc.clone(),
 			parser:parser.unwrap(),
 			stylesheet:stylesheet
