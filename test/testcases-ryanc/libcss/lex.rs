@@ -13,12 +13,15 @@
 FIXME
 inconsistent names: lex, lexer, css_lexer.
 
-get_token() => css__lexer_get_token()
-
 not implemented
 lexer.css__lexer_destroy();
 
-lexer_create() takes ~stream. cannot use stream afterward
+In rust we do not need
+token.data.data
+token.data.len
+
+
+Internal compile error
 */
 
 extern mod std;
@@ -28,8 +31,7 @@ extern mod css;
 use core::io::*;
 
 use parserutils::input::inputstream::*;
-// use parserutils::charset::aliases::*;
-use parserutils::utils::errors::*;
+use css::utils::errors::*;
 
 use css::charset::csdetect::*;
 use css::lex::lexer::*;
@@ -61,12 +63,10 @@ fn lex(file: ~str) {
         let (streamOption, PARSERUTILS_STATUS) = inputstream(Some(~"UTF-8"), Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
         match(PARSERUTILS_STATUS) {
             PARSERUTILS_OK=>{}
-            _ => {assert!(false);}
+            //_ => {assert!(false);}
         }
 
         let mut stream = streamOption.unwrap();
-
-        // FIXME: lexer_create() takes ~stream. cannot use stream afterward
         let mut lexer = css_lexer::css__lexer_create(stream);
         // FIXME: need to check the status of lexer
 
@@ -82,24 +82,18 @@ fn lex(file: ~str) {
             let buf = r.read_bytes(CHUNK_SIZE);
 
             assert!(buf.len() == CHUNK_SIZE);
-
-            //match(stream.parserutils_inputstream_append(buf)) {
-            //    PARSERUTILS_OK => {}
-            //    _ => {assert!(false);}
-            //}
-            // FIXME: Is it how to append data?
             // FIXME: Need to check the status
-            lexer.lexer_append_data(buf);
+            lexer.css__lexer_append_data(buf);
 
             len -= CHUNK_SIZE;
 
             loop {
-                let mut (tokOption, STATUS) = lexer.get_token();
-                match(STATUS) {
-                    LEXER_OK => {
+                let mut (status, tokOption) = lexer.css__lexer_get_token();
+                match(status) {
+                    CSS_OK => {
                         let tok = tokOption.unwrap();
-                        io::println(fmt!("%?", tok));
-                        match(tok) {
+                        //printToken(tok);
+                        match(tok.token_type) { // FIXME: token_type => type
                             CSS_TOKEN_EOF => {break;}
                             _ => {}
                         }
@@ -113,13 +107,8 @@ fn lex(file: ~str) {
             let read_size = r.read(buf, len);
             assert!(read_size == len);
 
-            //let STATUS = stream.parserutils_inputstream_append(buf);
-            //match(STATUS) {
-            //    PARSERUTILS_OK => {}
-            //    _ => {assert!(false);}
-            //}
             // FIXME: Need to check the status
-            lexer.lexer_append_data(buf);
+            lexer.css__lexer_append_data(buf);
 
             len = 0;
             assert!(len == 0); // to remove the warning;
@@ -135,12 +124,12 @@ fn lex(file: ~str) {
         */
 
         loop {
-            let (tokOption, STATUS) = lexer.get_token();
-            match(STATUS) {
-                LEXER_OK => {
+            let (status, tokOption) = lexer.css__lexer_get_token();
+            match(status) {
+                CSS_OK => {
                     let tok = tokOption.unwrap();
-                    io::println(fmt!("%?", tok));
-                    match(tok) {
+                    //printToken(tok);
+                    match(tok.token_type) {
                         CSS_TOKEN_EOF => {break;}
                         _ => {}
                     }
@@ -156,48 +145,42 @@ fn lex(file: ~str) {
 }
 
 // FIXME: change the name: css_token_type -> css_token
-fn printToken(token: css_token_type) {
+fn printToken(token: @mut css_token) {
     let mut toPrint;
 
-    // FIXME: token does not have line and col
-    //io::println(fmt!("[%d, %d] : ", token.line, token.col));
+    io::println(fmt!("[%?, %?] : ", token.line, token.col));
 
-    match token {
-        CSS_TOKEN_IDENT(x) => {
-            toPrint = ~"IDENT" + x;
+    match token.token_type {
+        CSS_TOKEN_IDENT => {
+            toPrint = fmt!("IDENT %?", token.data.data);
         },
-        CSS_TOKEN_ATKEYWORD(x) => {
-            toPrint = ~"ATKEYWORD " + x;
+        CSS_TOKEN_ATKEYWORD => {
+            toPrint = fmt!("ATKEYWORD %?", token.data.data);
         },
-        CSS_TOKEN_STRING(x) => {
-            toPrint = ~"STRING " + x;
+        CSS_TOKEN_STRING => {
+            toPrint = fmt!("STRING %?", token.data.data);
         },
-        // FIXME: invalid number of arg error msg
-        // CSS_TOKEN_INVALID_STRING(x) => {
-            // toPrint = ~"INVALID " + x;
-        // },
-        CSS_TOKEN_HASH(x) => {
-            toPrint = ~"HASH " + x;
+        CSS_TOKEN_INVALID_STRING => {
+            toPrint = fmt!("INVALID %?", token.data.data);
         },
-        // FIXME: invalid number of arg error msg
-        // CSS_TOKEN_NUMBER(x) => {
-            // toPrint = ~"NUMBER " + x;
-        // },
-        // FIXME: invalid number of arg error msg
-        // CSS_TOKEN_PERCENTAGE(x) => {
-            // toPrint = ~"PERCENTAGE " + x;
-        // },
-        // FIXME: invalid number of arg error msg
-        // CSS_TOKEN_DIMENSION(x) => {
-            // toPrint = ~"DIMENSION "+ x;
-        // },
-        CSS_TOKEN_URI(x) => {
-            toPrint = ~"URI " + x;
+        CSS_TOKEN_HASH => {
+            toPrint = fmt!("HASH %?", token.data.data);
         },
-        // FIXME: invalid number of arg error msg
-        // CSS_TOKEN_UNICODE_RANGE(x) => {
-            // toPrint = ~"UNICODE_RANGE " + x;
-        // },
+        CSS_TOKEN_NUMBER => {
+            toPrint = fmt!("NUMBER %?", token.data.data);
+        },
+        CSS_TOKEN_PERCENTAGE => {
+            toPrint = fmt!("PERCENTAGE %?", token.data.data);
+        },
+        CSS_TOKEN_DIMENSION => {
+            toPrint = fmt!("DIMENSION %?", token.data.data);
+        },
+        CSS_TOKEN_URI => {
+            toPrint = fmt!("URI %?", token.data.data);
+        },
+        CSS_TOKEN_UNICODE_RANGE => {
+            toPrint = fmt!("UNICODE_RANGE %?", token.data.data);
+        },
         CSS_TOKEN_CDO => {
             toPrint = ~"CDO";
         },
@@ -207,41 +190,37 @@ fn printToken(token: css_token_type) {
         CSS_TOKEN_S => {
             toPrint = ~"S";
         },
-        // FIXME: not defined
-        // CSS_TOKEN_COMMENT(x) => {
-            // toPrint = ~"COMMENT" + x;
-        // },
-        CSS_TOKEN_FUNCTION(x) => {
-            toPrint = ~"FUNCTION " + x;
+        CSS_TOKEN_COMMENT => {
+            toPrint = fmt!("COMMENT %?", token.data.data);
         },
-        //CSS_TOKEN_INCLUDES => {
-        //    toPrint = ~"INCLUDES";
-        //},
+        CSS_TOKEN_FUNCTION => {
+            toPrint = fmt!("FUNCTION %?", token.data.data);
+        },
+        CSS_TOKEN_INCLUDES => {
+           toPrint = fmt!("INCLUDES %?", token.data.data);
+        },
+        CSS_TOKEN_DASHMATCH => {
+            toPrint = ~"DASHMATCH";
+        },
+        CSS_TOKEN_PREFIXMATCH => {
+            toPrint = ~"PREFIXMATCH";
+        },
+        CSS_TOKEN_SUFFIXMATCH => {
+            toPrint = ~"SUFFIXMATCH";
+        },
+        CSS_TOKEN_SUBSTRINGMATCH => {
+            toPrint = ~"SUBSTRINGMATCH";
+        },
+        CSS_TOKEN_CHAR => {
+            toPrint = fmt!("CHAR %?", token.data.data);
+        },
+        CSS_TOKEN_EOF => {
+            toPrint = ~"EOF ";
+        }
         // FIXME: unreachable pattern
-        // CSS_TOKEN_DASHMATCH => {
-            // toPrint = ~"DASHMATCH";
-        // },
-        // CSS_TOKEN_PREFIXMATCH => {
-            // toPrint = ~"PREFIXMATCH";
-        // },
-        // CSS_TOKEN_SUFFIXMATCH => {
-            // toPrint = ~"SUFFIXMATCH";
-        // },
-        // CSS_TOKEN_SUBSTRINGMATCH => {
-            // toPrint = ~"SUBSTRINGMATCH";
-        // },
-        // FIXME: type mismatch
-        // CSS_TOKEN_CHAR(x) => {
-            // toPrint = ~"CHAR " + x
-        // },
-
-        // FIXME: unreachable pattern
-        // CSS_TOKEN_EOF => {
-            // toPrint = ~"EOF ";
-        // }
-        // CSS_TOKEN_LAST_INTERN_LOWER => {;}
-        // CSS_TOKEN_LAST_INTERN => {;}
-        _ => {fail!(~"Invalid type")}
+        //CSS_TOKEN_LAST_INTERN_LOWER => {}
+        CSS_TOKEN_LAST_INTERN => {}
+        // _ => {fail!(~"Invalid type")}
     }
     io::println(toPrint);
 

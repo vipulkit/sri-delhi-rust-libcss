@@ -2082,7 +2082,7 @@ impl css_lexer {
         }
 
         if error as int == PARSERUTILS_OK as int {
-            let mut (cptr , clen) = pu_peek_result.unwrap();
+            let mut (cptr , _) = pu_peek_result.unwrap();
             if (cptr[0] as char == '\r') { // Potential CRLF 
                 //let mut p_cr : u8 = _cptr[0];
                 let (pu_peek_result2 , error2) = 

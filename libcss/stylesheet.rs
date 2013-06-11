@@ -169,7 +169,9 @@ pub struct css_rule_selector {
 
 pub struct css_rule_media {
     base:@mut css_rule,
-    media:u64
+    media:u64,
+    first_child:Option<CSS_RULE_DATA_TYPE>,                
+    last_child:Option<CSS_RULE_DATA_TYPE>                
 } 
 
 pub struct css_rule_font_face {
@@ -393,6 +395,14 @@ pub fn compare_css_rdt(rule1: Option<CSS_RULE_DATA_TYPE>, rule2: Option<CSS_RULE
 
 impl css_stylesheet {
 
+    /**
+	* #Description:
+	*	Add a string to a stylesheet's string vector.
+	* #Arguments:
+    *  'strings' - The string to add.
+    * #Return Value:
+	*   'uint' - index next to the index of insertion is returned.
+	*/
     pub fn css__stylesheet_string_add(&mut self, string: ~str) -> uint {
 
         let mut i : uint = self.string_vector.len() ;
@@ -405,7 +415,16 @@ impl css_stylesheet {
         self.string_vector.push(string);
         self.string_vector.len()
     }
-    
+
+    /**
+	* #Description:
+	*	Get a string from a stylesheet's string vector.
+	* #Arguments:
+    *  'num' - The index of string to retrive.
+    * #Return Value:
+	*   '(css_error,Option<~str>)' - (CSS_BADPARM,None) if num param is not correct, 
+	*								else ( CSS_OK, option of the string. )
+	*/
     pub fn css__stylesheet_string_get(&mut self, num:uint) 
                                     -> (css_error,Option<~str>) {
 
@@ -468,7 +487,8 @@ impl css_stylesheet {
     }
 
     /**
-    * Append a style to a CSS style
+	* #Description:
+    *   Append a style to a CSS style
 	* #Arguments:
     *  'target'  - The style to add to. 
     *  'style'  - The style to add. 
@@ -478,7 +498,8 @@ impl css_stylesheet {
     }
     
     /**
-    * Append a style to a CSS style
+	* #Description:
+    *   Append a style to a CSS style
 	* #Arguments:
     *  'target'  - The style to add to. 
     *  'bytecodes'  - vector of style to add. 
@@ -487,6 +508,14 @@ impl css_stylesheet {
         target.bytecode += bytecodes;
     }
 
+    /**
+	* #Description:
+	*	Create an element selector.
+	* #Arguments:
+    *  'qname' - Qualified name of selector.
+    * #Return Value:
+	*   'css_selector' - Pointer to box containing selector object.
+	*/
     pub fn css__stylesheet_selector_create(&mut self, qname : css_qname ) -> @mut css_selector {
         let mut sel = @mut css_selector{  
             combinator:None, 
@@ -519,6 +548,19 @@ impl css_stylesheet {
         sel
     }
 
+    /**
+	* #Description:
+	*	Initialise a selector detail.
+	* #Arguments:
+    *  'sel_type' - The type of selector to create.
+    *  'qname' - Qualified name of selector.
+    *  'value_type' - type of the value.
+    *  'string_value' - Option<~str>
+    *  'ab_value' - Option<(i32,i32)>  css_selector_detail_value.
+    *  'negate' - Whether the detail match should be negated.
+    * #Return Value:
+	*   '(css_error, Option<@mut css_selector_detail>)' - (CSS_OK,Some(css_selector_detail)).
+	*/
     pub fn css__stylesheet_selector_detail_init (
         sel_type: css_selector_type,
         qname : css_qname, 
@@ -559,6 +601,15 @@ impl css_stylesheet {
         (CSS_OK,Some(detail)) 
     }
     
+    /**
+	* #Description:
+	*	Append a selector to the specifics chain of another selector.
+	* #Arguments:
+    *  'selector' - css_selector to which details get appended.
+    *  'detail' - The css_selector_detail to be appended.
+    * #Return Value:
+	*   'css_error' - CSS_OK on success, appropriate error otherwise.
+	*/
     pub fn css__stylesheet_selector_append_specific(selector : @mut css_selector, detail: @mut css_selector_detail)  -> css_error  {
         match detail.selector_type {
             CSS_SELECTOR_CLASS=> selector.specificity += CSS_SPECIFICITY_C, 
@@ -581,6 +632,19 @@ impl css_stylesheet {
         CSS_OK
     }
 
+    /**
+	* #Description:
+	*	Combine a pair of selectors.
+	* For example, given A + B, the combinator field of B would point at A, 
+	* with a combinator type of CSS_COMBINATOR_SIBLING. Thus, given B, we can
+	* find its combinator. It is not possible to find B given A.
+ 	* #Arguments:
+    *  'combinator_type' - combinator types of selectors to be combined.
+    *  'a' - css_selector.
+    *  'b' - css_selector.
+    * #Return Value:
+	*   'css_error' - CSS_OK on success, appropriate error otherwise.
+	*/
     pub fn css__stylesheet_selector_combine(combinator_type : css_combinator, a : @mut css_selector , 
                                             b : @mut css_selector) -> css_error {
         match b.combinator {
@@ -601,6 +665,14 @@ impl css_stylesheet {
         CSS_OK
     }
 
+    /**
+	* #Description:
+	*	Create a CSS rule.
+ 	* #Arguments:
+    *  'rule_type' - The rule type.
+    * #Return Value:
+	*   'CSS_RULE_DATA_TYPE' - .
+	*/
     pub fn css_stylesheet_rule_create(rule_type : css_rule_type ) -> CSS_RULE_DATA_TYPE  {
         let mut base_rule = @mut css_rule{ 
             parent_rule:None,
@@ -653,7 +725,9 @@ impl css_stylesheet {
             CSS_RULE_MEDIA=>    {   
                 let mut ret_rule = @mut css_rule_media{ 
                     base:base_rule,
-                    media:0
+                    media:0,
+                    first_child:None,
+                    last_child:None
                 };  
                 RULE_MEDIA(ret_rule) 
             },
@@ -678,6 +752,15 @@ impl css_stylesheet {
         }
     }
 
+    /**
+	* #Description:
+	*	Add a selector to a CSS rule.
+ 	* #Arguments:
+    *  'css_rule' - The rule to which selector to be added.
+    *  'selector' - The selector to be added.
+    * #Return Value:
+	*   'css_error' - CSS_OK on success, appropriate error otherwise.
+	*/
     pub fn css__stylesheet_rule_add_selector(css_rule : CSS_RULE_DATA_TYPE , selector : @mut css_selector) -> css_error {
 
         match css_rule {
@@ -690,6 +773,15 @@ impl css_stylesheet {
         }
     }
     
+    /**
+	* #Description:
+	*	Append a style to a CSS rule.
+ 	* #Arguments:
+    *  'css_rule' - The rule to which style to be appended.
+    *  'style' - The style to be appended.
+    * #Return Value:
+	*   'css_error' - CSS_OK on success, appropriate error otherwise.
+	*/
     pub fn css__stylesheet_rule_append_style(&mut self, css_rule : CSS_RULE_DATA_TYPE , style : @mut css_style) -> css_error {
         match css_rule {
             RULE_PAGE(page)=> {
@@ -717,6 +809,15 @@ impl css_stylesheet {
         CSS_OK
     }
 
+    /**
+	* #Description:
+	*	Set the encoding of a CSS rule.
+ 	* #Arguments:
+    *  'rule' - The rule whose encoding to be set to charset.
+    *  'charset' - the charset to be set.
+    * #Return Value:
+	*   'css_error' - CSS_OK on success, appropriate error otherwise.
+	*/
     pub fn css__stylesheet_rule_set_charset(css_rule : CSS_RULE_DATA_TYPE, charset: ~str) -> css_error {
         if charset.len() <= 0 {
             return CSS_BADPARM;
@@ -733,6 +834,16 @@ impl css_stylesheet {
         }
     }
 
+    /**
+	* #Description:
+	*	Set the necessary data to import a stylesheet associated with a rule.
+ 	* #Arguments:
+    *  'css_rule' - The rule whose data to be set.
+    *  'url_str' - the url to be set.
+    *  'media' - the media to be set.
+    * #Return Value:
+	*   'css_error' - CSS_OK on success, appropriate error otherwise.
+	*/
     pub fn css__stylesheet_rule_set_nascent_import(
         css_rule : CSS_RULE_DATA_TYPE, url_str:~str, media:u64) -> css_error {
 
@@ -748,6 +859,15 @@ impl css_stylesheet {
         }
     }
 
+    /**
+	* #Description:
+	*	Set the media of an @media rule.
+ 	* #Arguments:
+    *  'css_rule' - The rule whose data to be set.
+    *  'media' - the media to be set.
+    * #Return Value:
+	*   'css_error' - CSS_OK on success, appropriate error otherwise.
+	*/
     pub fn css__stylesheet_rule_set_media(
         css_rule : CSS_RULE_DATA_TYPE, media:u64) -> css_error {
 
@@ -815,6 +935,16 @@ impl css_stylesheet {
         }
     }
 
+    /**
+	* #Description:
+	*	Add a rule to a stylesheet.
+ 	* #Arguments:
+    *  'sheet' - The stylesheet to add to.
+    *  'css_rule' - The rule to add.
+    *  'parent_rule' - The parent rule, or None for a top-level rule.
+    * #Return Value:
+	*   'css_error' - CSS_OK on success, appropriate error otherwise.
+	*/
     pub fn css__stylesheet_add_rule(sheet : @mut css_stylesheet, css_rule : CSS_RULE_DATA_TYPE,
                                     parent_rule : Option<CSS_RULE_DATA_TYPE> ) -> css_error {
         
@@ -824,29 +954,31 @@ impl css_stylesheet {
 
         match sheet._add_selectors(css_rule) {
             CSS_OK => {},
-            _=> return CSS_INVALID
+            x => return x
         }
 
         match parent_rule {
             Some(prule)=> {
                 match prule {
-                    RULE_MEDIA(_)=>{
+                    RULE_MEDIA(media_rule)=>{
                         base_rule.parent_rule = parent_rule;
-                        let mut base_media_prule = css_stylesheet::css__stylesheet_get_base_rule(prule);
+                        sheet.rule_count += 1;
+                        //let mut base_media_prule = css_stylesheet::css__stylesheet_get_base_rule(prule);
 
-                        match base_media_prule.prev {
+
+                        match media_rule.last_child {
                             None=>{
                                 base_rule.next = None;
                                 base_rule.prev = None;
-                                base_media_prule.next = Some(css_rule);
-                                base_media_prule.prev = Some(css_rule);
+                                media_rule.first_child = Some(css_rule);
+                                media_rule.last_child = Some(css_rule);
                             },
                             Some(last_child)=>{
                                 let mut last_child_base_rule = css_stylesheet::css__stylesheet_get_base_rule(last_child);
                                 last_child_base_rule.next = Some(css_rule);
-                                base_rule.prev = base_media_prule.prev ;
+                                base_rule.prev = Some(last_child) ;
                                 base_rule.next = None;
-                                base_media_prule.prev = Some(css_rule);
+                                media_rule.last_child = Some(css_rule);
                             }
                         }
                     },
@@ -855,6 +987,7 @@ impl css_stylesheet {
             },
             None=>{
                 base_rule.parent_stylesheet = Some(sheet);
+                sheet.rule_count += 1 ;
 
                 match sheet.last_rule {
                     None=>{
@@ -876,6 +1009,15 @@ impl css_stylesheet {
         CSS_OK
     }
     
+    /**
+	* #Description:
+	*	Remove a rule from a stylesheet.
+ 	* #Arguments:
+    *  'sheet' - The sheet to remove from.
+    *  'css_rule' - The rule to remove.
+    * #Return Value:
+	*   'css_error' - CSS_OK on success, appropriate error otherwise.
+	*/
     pub fn css__stylesheet_remove_rule(sheet : @mut css_stylesheet, css_rule : CSS_RULE_DATA_TYPE) 
                                         -> css_error {
         match sheet._remove_selectors(css_rule) {
@@ -906,10 +1048,19 @@ impl css_stylesheet {
         CSS_OK
     }
 
+    /**
+	* #Description:
+	*	Add selectors in a rule to the hash.
+ 	* #Arguments:
+    *  'css_rule' - Rule to consider.
+    * #Return Value:
+	*   'css_error' - CSS_OK on success, appropriate error otherwise.
+	*/
     pub fn _add_selectors(&mut self, css_rule : CSS_RULE_DATA_TYPE) -> css_error {
         match css_rule {
             RULE_SELECTOR(x) => {
-                if x.base.parent_rule.is_some() {
+                if x.base.parent_rule.is_some() || 
+                        x.base.parent_stylesheet.is_some() {
                     return CSS_INVALID;
                 }
 
@@ -938,11 +1089,12 @@ impl css_stylesheet {
                 CSS_OK
             },
             RULE_MEDIA(x) => {
-                if x.base.parent_rule.is_some() {
+                if x.base.parent_rule.is_some() || 
+                        x.base.parent_stylesheet.is_some() {
                     return CSS_INVALID;
                 }
 
-                let mut ptr = x.base.next;
+                let mut ptr = x.first_child;
                 loop {
                     match ptr {
                         None=> {
@@ -988,6 +1140,14 @@ impl css_stylesheet {
         }
     }
 
+    /**
+	* #Description:
+	*	Remove selectors in a rule from the hash.
+ 	* #Arguments:
+    *  'css_rule' - Rule to consider.
+    * #Return Value:
+	*   'css_error' - CSS_OK on success, appropriate error otherwise.
+	*/
     pub fn _remove_selectors(&mut self, css_rule : CSS_RULE_DATA_TYPE) -> css_error {
 
         match css_rule {
@@ -1006,7 +1166,7 @@ impl css_stylesheet {
 
             RULE_MEDIA(x)=> {
 
-                let mut ptr = x.base.next;
+                let mut ptr = x.first_child;
                 loop {
                     match ptr {
                         None=> {
