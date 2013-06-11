@@ -38,7 +38,7 @@ pub struct line_ctx {
 
 pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
 
-	io::println(fmt!("Strtol : strings are %? ====== %? ",a,b));
+	//io::println(fmt!("Strtol : strings are %? ====== %? ",a,b));
     if ( a.len() != b.len() ) {
         return false ;
     }
@@ -405,7 +405,7 @@ pub fn run_test(ctx:@mut line_ctx) {
 	};
 
 	let mut lwc_instance = lwc() ;
-	
+
 	let mut css_instance = css::css_create(copy params,Some(lwc_instance.clone())) ;
 
 	error = css_instance.css_stylesheet_append_data(copy (ctx.buf));
@@ -484,6 +484,7 @@ pub fn run_test(ctx:@mut line_ctx) {
 				    	}
 				    	if validate_rule_selector(rule,ctx.exp[e]) {
 		    				report_fail(copy ctx.buf,copy ctx.exp[e]);
+		    				fail!(~"Validation of rule selector failed");
 		    			}
 				    	ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
 				    	e += 1 ;
@@ -553,42 +554,6 @@ pub fn run_test(ctx:@mut line_ctx) {
 	io::println("PASS\n");
 }
 
-
-
-pub fn validate_rule_charset(s:@mut css_rule_charset, e:@mut exp_entry) -> bool {
-
-	unsafe {
-		if( e.name.len() != s.encoding.len() ) {
-			return false ;
-		}
-		let mut i =0 ;
-		while ( i<s.encoding.len() ) {
-			if ( s.encoding[i] != e.name[i] ) {
-		    	return false ;
-		  	}
-		  	i += 1;
-		}
-		return true ;
-	}
-}
-
-pub fn validate_rule_import(s:@mut css_rule_import, e:@mut exp_entry) -> bool {
-
-  	unsafe {
-		if( e.name.len() < s.url.len() ) {
-			return false ;
-		}
-		let mut i =0 ;
-		while ( i<s.url.len() ) {
-			if ( s.url[i] != e.name[i] ) {
-		    	return false ;
-		    }
-		    i += 1;
-		}
-		true
-  	}
-} 
-
 pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bool {
 
 	let mut name : ~str = ~"" ;
@@ -597,7 +562,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
   	// Build selector string
   	for s.selectors.each_mut |&sel| {
   		dump_selector_list(sel,&mut ptr) ;
-  		name = name + ", " + ptr ;
+  		name = name + ptr + ", ";
   		ptr = ~"" ;
   	}
 
@@ -688,6 +653,40 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 	false
 }
 
+pub fn validate_rule_charset(s:@mut css_rule_charset, e:@mut exp_entry) -> bool {
+
+	unsafe {
+		if( e.name.len() != s.encoding.len() ) {
+			return false ;
+		}
+		let mut i =0 ;
+		while ( i<s.encoding.len() ) {
+			if ( s.encoding[i] != e.name[i] ) {
+		    	return false ;
+		  	}
+		  	i += 1;
+		}
+		return true ;
+	}
+}
+
+pub fn validate_rule_import(s:@mut css_rule_import, e:@mut exp_entry) -> bool {
+
+  	unsafe {
+		if( e.name.len() < s.url.len() ) {
+			return false ;
+		}
+		let mut i =0 ;
+		while ( i<s.url.len() ) {
+			if ( s.url[i] != e.name[i] ) {
+		    	return false ;
+		    }
+		    i += 1;
+		}
+		true
+  	}
+} 
+
 fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
 	if list.combinator.is_some() {
 		dump_selector_list(list.combinator.unwrap(),ptr);
@@ -726,7 +725,7 @@ fn dump_selector(selector:@mut css_selector, ptr:&mut ~str){
 	let mut d:~[@mut css_selector_detail] = copy selector.data;
 	let mut iter:uint = 0;
 	while iter < d.len() {
-		dump_selector_detail(d[iter], ptr, iter < d.len());
+		dump_selector_detail(d[iter], ptr, (iter != d.len()-1) );
 		iter += 1;
 	}	
 }
@@ -739,13 +738,14 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 	match detail.selector_type {
 		CSS_SELECTOR_ELEMENT=>{
 			unsafe{
-				if detail.qname.name.len() == 1 && detail.qname.name[0] == '*' as u8 && !detail_next {
+				if detail.qname.name.len() == 1 && 
+						detail.qname.name[0] == ('*' as u8) && 
+						!detail_next {
 			   	
 			   		str::push_str(ptr,copy detail.qname.name);
 			   	}
 			   	else if detail.qname.name.len() != 1 ||
-		        
-		           detail.qname.name[0] != '*' as u8 { 
+		           detail.qname.name[0] != ('*' as u8) { 
 		           str::push_str(ptr,copy detail.qname.name)
 			   	}
 			}

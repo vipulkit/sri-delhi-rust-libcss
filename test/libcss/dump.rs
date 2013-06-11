@@ -424,7 +424,7 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
     
     let mut bytecode = copy style.bytecode;
-    let mut op: css_properties_e = CSS_PROP_AZIMUTH; //initilaisation not needed
+    let mut op: css_properties_e = CSS_PROP_AZIMUTH;
     let mut value: u32 = 0;
     let opcode_names = opcode_names();
 
@@ -506,10 +506,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             | CSS_PROP_BORDER_BOTTOM_COLOR as int | CSS_PROP_BORDER_LEFT_COLOR as int 
             | CSS_PROP_BACKGROUND_COLOR as int | CSS_PROP_COLUMN_RULE_COLOR as int) {
 
-                // TODO
-                // assert!(BACKGROUND_COLOR_TRANSPARENT == )
-                // assert!(BACKGROUND_COLOR_CURRENT_COLOR == )
-                // assert!(BACKGROUND_COLOR_SET == )
+                assert!(BACKGROUND_COLOR_TRANSPARENT as int == BORDER_COLOR_TRANSPARENT as int);
+                assert!(BACKGROUND_COLOR_CURRENT_COLOR as int == BORDER_COLOR_CURRENT_COLOR as int);
+                assert!(BACKGROUND_COLOR_SET as int == BORDER_COLOR_SET as int);
 
                 if value as int == BACKGROUND_COLOR_TRANSPARENT as int {
                     str::push_str(ptr , &"transparent");
@@ -518,16 +517,21 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 else if value as int == BACKGROUND_COLOR_CURRENT_COLOR as int {
                     str::push_str(ptr , &"currentColor");   
                 }
-                // TODO
-                // else if value as int == BACKGROUND_COLOR_SET as int {
-                //  str::push_str(ptr , &"currentColor");   
-                // }
+                else if value as int == BACKGROUND_COLOR_SET as int {
+                    // TODO
+                }
             }
             
             else if op as int == (CSS_PROP_BACKGROUND_IMAGE as int | CSS_PROP_CUE_AFTER as int 
             | CSS_PROP_CUE_BEFORE as int | CSS_PROP_LIST_STYLE_IMAGE as int 
             | CSS_PROP_BACKGROUND_COLOR as int | CSS_PROP_COLUMN_RULE_COLOR as int) {
-                // some asserts
+                
+                assert!(BACKGROUND_IMAGE_NONE as int == CUE_AFTER_NONE as int);
+                assert!(BACKGROUND_IMAGE_URI as int == CUE_AFTER_URI as int);
+                assert!(BACKGROUND_IMAGE_NONE as int == CUE_BEFORE_NONE as int);
+                assert!(BACKGROUND_IMAGE_URI as int == CUE_BEFORE_URI as int);
+                assert!(BACKGROUND_IMAGE_NONE as int == LIST_STYLE_IMAGE_NONE as int);
+                assert!(BACKGROUND_IMAGE_URI as int == LIST_STYLE_IMAGE_URI as int);
 
                 if value as int == BACKGROUND_IMAGE_NONE as int {
                     str::push_str(ptr , &"none");
@@ -630,7 +634,26 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             CSS_PROP_BORDER_BOTTOM_STYLE as int | CSS_PROP_BORDER_LEFT_STYLE as int | 
             CSS_PROP_COLUMN_RULE_STYLE as int | CSS_PROP_OUTLINE_STYLE as int) {
 
-                // TODO some asserts
+                assert!(BORDER_STYLE_NONE as int == OUTLINE_STYLE_NONE as int);
+                assert!(BORDER_STYLE_NONE as int == COLUMN_RULE_STYLE_NONE as int);
+                assert!(BORDER_STYLE_HIDDEN as int == OUTLINE_STYLE_HIDDEN as int);
+                assert!(BORDER_STYLE_HIDDEN as int == COLUMN_RULE_STYLE_HIDDEN as int);
+                assert!(BORDER_STYLE_DOTTED as int == OUTLINE_STYLE_DOTTED as int);
+                assert!(BORDER_STYLE_DOTTED as int == COLUMN_RULE_STYLE_DOTTED as int);
+                assert!(BORDER_STYLE_DASHED as int == OUTLINE_STYLE_DASHED as int);
+                assert!(BORDER_STYLE_DASHED as int == COLUMN_RULE_STYLE_DASHED as int);
+                assert!(BORDER_STYLE_SOLID as int == OUTLINE_STYLE_SOLID as int);
+                assert!(BORDER_STYLE_SOLID as int == COLUMN_RULE_STYLE_SOLID as int);
+                assert!(BORDER_STYLE_DOUBLE as int == OUTLINE_STYLE_DOUBLE as int);
+                assert!(BORDER_STYLE_DOUBLE as int == COLUMN_RULE_STYLE_DOUBLE as int);
+                assert!(BORDER_STYLE_GROOVE as int == OUTLINE_STYLE_GROOVE as int);
+                assert!(BORDER_STYLE_GROOVE as int == COLUMN_RULE_STYLE_GROOVE as int);
+                assert!(BORDER_STYLE_RIDGE as int == OUTLINE_STYLE_RIDGE as int);
+                assert!(BORDER_STYLE_RIDGE as int == COLUMN_RULE_STYLE_RIDGE as int);
+                assert!(BORDER_STYLE_INSET as int == OUTLINE_STYLE_INSET as int);
+                assert!(BORDER_STYLE_INSET as int == COLUMN_RULE_STYLE_INSET as int);
+                assert!(BORDER_STYLE_OUTSET as int == OUTLINE_STYLE_OUTSET as int);
+                assert!(BORDER_STYLE_OUTSET as int == COLUMN_RULE_STYLE_OUTSET as int);
 
                 if value as int == BORDER_STYLE_NONE as int {
                     str::push_str(ptr , &"none");
@@ -677,7 +700,10 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             CSS_PROP_BORDER_BOTTOM_WIDTH as int | CSS_PROP_BORDER_LEFT_WIDTH as int | 
             CSS_PROP_COLUMN_RULE_WIDTH as int | CSS_PROP_OUTLINE_WIDTH as int) {
 
-                // TODO asserts
+                assert!(BORDER_WIDTH_SET as int == OUTLINE_WIDTH_SET as int);
+                assert!(BORDER_WIDTH_THIN as int == OUTLINE_WIDTH_THIN as int);
+                assert!(BORDER_WIDTH_MEDIUM as int == OUTLINE_WIDTH_MEDIUM as int);
+                assert!(BORDER_WIDTH_THICK as int == OUTLINE_WIDTH_THICK as int);
 
                 if value as int == BORDER_WIDTH_SET as int {
                     // TODO
@@ -702,7 +728,20 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             CSS_PROP_TOP as int | CSS_PROP_HEIGHT as int | CSS_PROP_WIDTH as int | 
             CSS_PROP_COLUMN_WIDTH as int) {
 
-                // TODO asserts
+                assert!(BOTTOM_SET as int == LEFT_SET as int);
+                assert!(BOTTOM_AUTO as int == LEFT_AUTO as int);
+                assert!(BOTTOM_SET as int == RIGHT_SET as int);
+                assert!(BOTTOM_AUTO as int == RIGHT_AUTO as int);
+                assert!(BOTTOM_SET as int == TOP_SET as int);
+                assert!(BOTTOM_AUTO as int == TOP_AUTO as int);
+                assert!(BOTTOM_SET as int == HEIGHT_SET as int);
+                assert!(BOTTOM_AUTO as int == HEIGHT_AUTO as int);
+                assert!(BOTTOM_SET as int == MARGIN_SET as int);
+                assert!(BOTTOM_AUTO as int == MARGIN_AUTO as int);
+                assert!(BOTTOM_SET as int == WIDTH_SET as int);
+                assert!(BOTTOM_AUTO as int == WIDTH_AUTO as int);
+                assert!(BOTTOM_SET as int == COLUMN_WIDTH_SET as int);
+                assert!(BOTTOM_AUTO as int == COLUMN_WIDTH_AUTO as int);
 
                 if value as int == BOTTOM_SET as int {
                     // TODO
@@ -715,7 +754,15 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
             else if op as int == (CSS_PROP_BREAK_AFTER as int | CSS_PROP_BREAK_BEFORE as int) {
 
-                // TODO Some asserts
+                assert!(BREAK_AFTER_AUTO as int == BREAK_BEFORE_AUTO as int);
+                assert!(BREAK_AFTER_ALWAYS as int == BREAK_BEFORE_ALWAYS as int);
+                assert!(BREAK_AFTER_AVOID as int == BREAK_BEFORE_AVOID as int);
+                assert!(BREAK_AFTER_LEFT as int == BREAK_BEFORE_LEFT as int);
+                assert!(BREAK_AFTER_RIGHT as int == BREAK_BEFORE_RIGHT as int);
+                assert!(BREAK_AFTER_PAGE as int == BREAK_BEFORE_PAGE as int);
+                assert!(BREAK_AFTER_COLUMN as int == BREAK_BEFORE_COLUMN as int);
+                assert!(BREAK_AFTER_AVOID_PAGE as int == BREAK_BEFORE_AVOID_PAGE as int);
+                assert!(BREAK_AFTER_AVOID_COLUMN as int == BREAK_BEFORE_AVOID_COLUMN as int);
 
                 if value as int == BREAK_AFTER_AUTO as int {
                     str::push_str(ptr , &"auto");
@@ -873,6 +920,10 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             }
 
             else if op as int == (CSS_PROP_COUNTER_INCREMENT as int | CSS_PROP_COUNTER_RESET as int) {
+                
+                assert!(COUNTER_INCREMENT_NONE as int == COUNTER_RESET_NONE as int);
+                assert!(COUNTER_INCREMENT_NAMED as int == COUNTER_RESET_NAMED as int);
+
                 // TODO
             }
 
@@ -1093,7 +1144,8 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
             else if op as int == (CSS_PROP_LETTER_SPACING as int | CSS_PROP_WORD_SPACING as int){
 
-                // TODO asserts
+                assert!(LETTER_SPACING_SET as int == WORD_SPACING_SET as int);
+                assert!(LETTER_SPACING_NORMAL as int == WORD_SPACING_NORMAL as int);
 
                 if value as int == LETTER_SPACING_SET as int {
                     // TODO
@@ -1177,7 +1229,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
             else if op as int == (CSS_PROP_MAX_HEIGHT as int | CSS_PROP_MAX_WIDTH as int){
 
-                // TODO asserts
+                assert!(MAX_HEIGHT_SET as int == MAX_WIDTH_SET as int);
+                assert!(MAX_HEIGHT_NONE as int == MAX_WIDTH_NONE as int);
+                
                 if value as int == MAX_HEIGHT_SET as int {
                     // TODO
                 }
@@ -1197,7 +1251,11 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             | CSS_PROP_PADDING_BOTTOM as int | CSS_PROP_PADDING_LEFT as int | CSS_PROP_MIN_HEIGHT as int | CSS_PROP_MIN_WIDTH as int 
             | CSS_PROP_PAUSE_AFTER as int | CSS_PROP_PAUSE_BEFORE as int | CSS_PROP_TEXT_INDENT as int){
 
-                // TODO asserts
+                assert!(MIN_HEIGHT_SET as int == MIN_WIDTH_SET as int);
+                assert!(MIN_HEIGHT_SET as int == PADDING_SET as int);
+                assert!(MIN_HEIGHT_SET as int == PAUSE_AFTER_SET as int);
+                assert!(MIN_HEIGHT_SET as int == PAUSE_BEFORE_SET as int);
+                assert!(MIN_HEIGHT_SET as int == TEXT_INDENT_SET as int);
 
                 if value as int == MIN_HEIGHT_SET as int {
                     // TODO
@@ -1207,7 +1265,10 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == (CSS_PROP_ORPHANS as int | CSS_PROP_PITCH_RANGE as int
             | CSS_PROP_RICHNESS as int | CSS_PROP_STRESS as int | CSS_PROP_WIDOWS as int) {
 
-                // TODO asserts
+                assert!(ORPHANS_SET as int == PITCH_RANGE_SET as int);
+                assert!(ORPHANS_SET as int == RICHNESS_SET as int);
+                assert!(ORPHANS_SET as int == STRESS_SET as int);
+                assert!(ORPHANS_SET as int == WIDOWS_SET as int);
 
                 if value as int == ORPHANS_SET as int {
                     // TODO
@@ -1244,7 +1305,12 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             }
 
             else if op as int == (CSS_PROP_PAGE_BREAK_AFTER as int | CSS_PROP_PAGE_BREAK_BEFORE as int) {
-                // TODO asserts
+                
+                assert!(PAGE_BREAK_AFTER_AUTO as int == PAGE_BREAK_BEFORE_AUTO as int);
+                assert!(PAGE_BREAK_AFTER_ALWAYS as int == PAGE_BREAK_BEFORE_ALWAYS as int);
+                assert!(PAGE_BREAK_AFTER_AVOID as int == PAGE_BREAK_BEFORE_AVOID as int);
+                assert!(PAGE_BREAK_AFTER_LEFT as int == PAGE_BREAK_BEFORE_LEFT as int);
+                assert!(PAGE_BREAK_AFTER_RIGHT as int == PAGE_BREAK_BEFORE_RIGHT as int);
 
                 if value as int == PAGE_BREAK_AFTER_AUTO as int {
                     str::push_str(ptr , &"auto");
@@ -1385,7 +1451,218 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
             }
 
+            else if op as int == CSS_PROP_SPEECH_RATE as int{
 
+                if value as int == SPEECH_RATE_SET as int {
+                    // TODO
+                }
+                else if value as int == SPEECH_RATE_X_SLOW as int {
+                    str::push_str(ptr , &"x-slow");
+                }
+                else if value as int == SPEECH_RATE_SLOW as int {
+                    str::push_str(ptr , &"slow");
+                }
+                else if value as int == SPEECH_RATE_MEDIUM as int {
+                    str::push_str(ptr , &"medium");
+                }
+                else if value as int == SPEECH_RATE_FAST as int {
+                    str::push_str(ptr , &"fast");
+                }
+                else if value as int == SPEECH_RATE_X_FAST as int {
+                    str::push_str(ptr , &"x-fast");
+                }
+                else if value as int == SPEECH_RATE_FASTER as int {
+                    str::push_str(ptr , &"faster");
+                }
+                else if value as int == SPEECH_RATE_SLOWER as int {
+                    str::push_str(ptr , &"slower");
+                }
+            }
+
+            else if op as int == CSS_PROP_TABLE_LAYOUT as int{
+
+                if value as int == TABLE_LAYOUT_AUTO as int {
+                    str::push_str(ptr , &"auto");
+                }
+                else if value as int == TABLE_LAYOUT_FIXED as int {
+                    str::push_str(ptr , &"fixed");
+                }
+            }
+
+            else if op as int == CSS_PROP_TEXT_ALIGN as int{
+
+                if value as int == TEXT_ALIGN_LEFT as int {
+                    str::push_str(ptr , &"left");
+                }
+                else if value as int == TEXT_ALIGN_RIGHT as int {
+                    str::push_str(ptr , &"right");
+                }
+                else if value as int == TEXT_ALIGN_CENTER as int {
+                    str::push_str(ptr , &"center");
+                }
+                else if value as int == TEXT_ALIGN_JUSTIFY as int {
+                    str::push_str(ptr , &"justify");
+                }
+                else if value as int == TEXT_ALIGN_LIBCSS_LEFT as int {
+                    str::push_str(ptr , &"-libcss-left");
+                }
+                else if value as int == TEXT_ALIGN_LIBCSS_CENTER as int {
+                    str::push_str(ptr , &"-libcss-center");
+                }
+                else if value as int == TEXT_ALIGN_LIBCSS_RIGHT as int {
+                    str::push_str(ptr , &"-libcss-right");
+                }
+            }
+
+            else if op as int == CSS_PROP_TEXT_DECORATION as int{
+
+                if value as int == TEXT_DECORATION_NONE as int {
+                    str::push_str(ptr , &"none");
+                }
+                if value as int == TEXT_DECORATION_UNDERLINE as int {
+                    str::push_str(ptr , &" underline");
+                }
+                if value as int == TEXT_DECORATION_OVERLINE as int {
+                    str::push_str(ptr , &" overline");
+                }
+                if value as int == TEXT_DECORATION_LINE_THROUGH as int {
+                    str::push_str(ptr , &" line-through");
+                }
+                if value as int == TEXT_DECORATION_BLINK as int {
+                    str::push_str(ptr , &"blink");
+                }
+            }
+
+            else if op as int == CSS_PROP_TEXT_TRANSFORM as int{
+
+                if value as int == TEXT_TRANSFORM_CAPITALIZE as int {
+                    str::push_str(ptr , &"capitalize");
+                }
+                else if value as int == TEXT_TRANSFORM_UPPERCASE as int {
+                    str::push_str(ptr , &"uppercase");
+                }
+                else if value as int == TEXT_TRANSFORM_LOWERCASE as int {
+                    str::push_str(ptr , &"lowercase");
+                }
+                else if value as int == TEXT_TRANSFORM_NONE as int {
+                    str::push_str(ptr , &"none");
+                }
+            }
+
+            else if op as int == CSS_PROP_UNICODE_BIDI as int{
+
+                if value as int == UNICODE_BIDI_NORMAL as int {
+                    str::push_str(ptr , &"normal");
+                }
+                else if value as int == UNICODE_BIDI_EMBED as int {
+                    str::push_str(ptr , &"embed");
+                }
+                else if value as int == UNICODE_BIDI_BIDI_OVERRIDE as int {
+                    str::push_str(ptr , &"bidi-override");
+                }
+            }
+
+            else if op as int == CSS_PROP_VERTICAL_ALIGN as int{
+
+                if value as int == VERTICAL_ALIGN_SET as int {
+                    // TODO
+                }
+                else if value as int == VERTICAL_ALIGN_BASELINE as int {
+                    str::push_str(ptr , &"baseline");
+                }
+                else if value as int == VERTICAL_ALIGN_SUB as int {
+                    str::push_str(ptr , &"sub");
+                }
+                else if value as int == VERTICAL_ALIGN_SUPER as int {
+                    str::push_str(ptr , &"super");
+                }
+                else if value as int == VERTICAL_ALIGN_TOP as int {
+                    str::push_str(ptr , &"top");
+                }
+                else if value as int == VERTICAL_ALIGN_TEXT_TOP as int {
+                    str::push_str(ptr , &"text-top");
+                }
+                else if value as int == VERTICAL_ALIGN_MIDDLE as int {
+                    str::push_str(ptr , &"middle");
+                }
+                else if value as int == VERTICAL_ALIGN_BOTTOM as int {
+                    str::push_str(ptr , &"bottom");
+                }
+                else if value as int == VERTICAL_ALIGN_TEXT_BOTTOM as int {
+                    str::push_str(ptr , &"text-bottom");
+                }
+            }
+
+            else if op as int == CSS_PROP_VOICE_FAMILY as int {
+                // TODO
+            }
+
+            else if op as int == CSS_PROP_VOLUME as int {
+                
+                if value as int == VOLUME_NUMBER as int {
+                    // TODO
+                }
+                else if value as int == VOLUME_DIMENSION as int {
+                    // TODO
+                }
+                else if value as int == VOLUME_SILENT as int {
+                    str::push_str(ptr , &"silent");
+                }
+                else if value as int == VOLUME_X_SOFT as int {
+                    str::push_str(ptr , &"x-soft");
+                }
+                else if value as int == VOLUME_SOFT as int {
+                    str::push_str(ptr , &"soft");
+                }
+                else if value as int == VOLUME_MEDIUM as int {
+                    str::push_str(ptr , &"medium");
+                }
+                else if value as int == VOLUME_LOUD as int {
+                    str::push_str(ptr , &"loud");
+                }
+                else if value as int == VOLUME_X_LOUD as int {
+                    str::push_str(ptr , &"loud");
+                }
+            }
+
+            else if op as int == CSS_PROP_VOLUME as int {
+
+                if value as int == WHITE_SPACE_NORMAL as int {
+                    str::push_str(ptr , &"normal");
+                }
+                else if value as int == WHITE_SPACE_PRE as int {
+                    str::push_str(ptr , &"pre");
+                }
+                else if value as int == WHITE_SPACE_NOWRAP as int {
+                    str::push_str(ptr , &"nowrap");
+                }
+                else if value as int == WHITE_SPACE_PRE_WRAP as int {
+                    str::push_str(ptr , &"pre-wrap");
+                }
+                else if value as int == WHITE_SPACE_PRE_LINE as int {
+                    str::push_str(ptr , &"pre-line");
+                }
+            }
+
+            else if op as int == CSS_PROP_Z_INDEX as int {
+
+                if value as int == Z_INDEX_SET as int {
+                    // TODO
+                }
+                else if value as int == Z_INDEX_AUTO as int {
+                    str::push_str(ptr , &"auto");
+                }
+            }
+
+            else {
+                let string = fmt!("Unknown opcode %x" , op as uint);
+                str::push_str(ptr , string);
+            }
+
+            if (isImportant(opv)) {
+                str::push_str(ptr , &" !important")
+            }
+            ptr.push_char('\n');
 
         }
     }
