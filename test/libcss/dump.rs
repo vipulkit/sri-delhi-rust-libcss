@@ -424,7 +424,7 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
     
     let mut bytecode = copy style.bytecode;
-    let mut op: css_properties_e = CSS_PROP_AZIMUTH; //initilaisation not needed
+    let mut op: css_properties_e = CSS_PROP_AZIMUTH;
     let mut value: u32 = 0;
     let opcode_names = opcode_names();
 
@@ -506,10 +506,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             | CSS_PROP_BORDER_BOTTOM_COLOR as int | CSS_PROP_BORDER_LEFT_COLOR as int 
             | CSS_PROP_BACKGROUND_COLOR as int | CSS_PROP_COLUMN_RULE_COLOR as int) {
 
-                // TODO
-                // assert!(BACKGROUND_COLOR_TRANSPARENT == )
-                // assert!(BACKGROUND_COLOR_CURRENT_COLOR == )
-                // assert!(BACKGROUND_COLOR_SET == )
+                assert!(BACKGROUND_COLOR_TRANSPARENT as int == BORDER_COLOR_TRANSPARENT as int);
+                assert!(BACKGROUND_COLOR_CURRENT_COLOR as int == BORDER_COLOR_CURRENT_COLOR as int);
+                assert!(BACKGROUND_COLOR_SET as int == BORDER_COLOR_SET as int);
 
                 if value as int == BACKGROUND_COLOR_TRANSPARENT as int {
                     str::push_str(ptr , &"transparent");
@@ -518,16 +517,21 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 else if value as int == BACKGROUND_COLOR_CURRENT_COLOR as int {
                     str::push_str(ptr , &"currentColor");   
                 }
-                // TODO
-                // else if value as int == BACKGROUND_COLOR_SET as int {
-                //  str::push_str(ptr , &"currentColor");   
-                // }
+                else if value as int == BACKGROUND_COLOR_SET as int {
+                    // TODO
+                }
             }
             
             else if op as int == (CSS_PROP_BACKGROUND_IMAGE as int | CSS_PROP_CUE_AFTER as int 
             | CSS_PROP_CUE_BEFORE as int | CSS_PROP_LIST_STYLE_IMAGE as int 
             | CSS_PROP_BACKGROUND_COLOR as int | CSS_PROP_COLUMN_RULE_COLOR as int) {
-                // some asserts
+                
+                assert!(BACKGROUND_IMAGE_NONE as int == CUE_AFTER_NONE as int);
+                assert!(BACKGROUND_IMAGE_URI as int == CUE_AFTER_URI as int);
+                assert!(BACKGROUND_IMAGE_NONE as int == CUE_BEFORE_NONE as int);
+                assert!(BACKGROUND_IMAGE_URI as int == CUE_BEFORE_URI as int);
+                assert!(BACKGROUND_IMAGE_NONE as int == LIST_STYLE_IMAGE_NONE as int);
+                assert!(BACKGROUND_IMAGE_URI as int == LIST_STYLE_IMAGE_URI as int);
 
                 if value as int == BACKGROUND_IMAGE_NONE as int {
                     str::push_str(ptr , &"none");
@@ -630,7 +634,26 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             CSS_PROP_BORDER_BOTTOM_STYLE as int | CSS_PROP_BORDER_LEFT_STYLE as int | 
             CSS_PROP_COLUMN_RULE_STYLE as int | CSS_PROP_OUTLINE_STYLE as int) {
 
-                // TODO some asserts
+                assert!(BORDER_STYLE_NONE as int == OUTLINE_STYLE_NONE as int);
+                assert!(BORDER_STYLE_NONE as int == COLUMN_RULE_STYLE_NONE as int);
+                assert!(BORDER_STYLE_HIDDEN as int == OUTLINE_STYLE_HIDDEN as int);
+                assert!(BORDER_STYLE_HIDDEN as int == COLUMN_RULE_STYLE_HIDDEN as int);
+                assert!(BORDER_STYLE_DOTTED as int == OUTLINE_STYLE_DOTTED as int);
+                assert!(BORDER_STYLE_DOTTED as int == COLUMN_RULE_STYLE_DOTTED as int);
+                assert!(BORDER_STYLE_DASHED as int == OUTLINE_STYLE_DASHED as int);
+                assert!(BORDER_STYLE_DASHED as int == COLUMN_RULE_STYLE_DASHED as int);
+                assert!(BORDER_STYLE_SOLID as int == OUTLINE_STYLE_SOLID as int);
+                assert!(BORDER_STYLE_SOLID as int == COLUMN_RULE_STYLE_SOLID as int);
+                assert!(BORDER_STYLE_DOUBLE as int == OUTLINE_STYLE_DOUBLE as int);
+                assert!(BORDER_STYLE_DOUBLE as int == COLUMN_RULE_STYLE_DOUBLE as int);
+                assert!(BORDER_STYLE_GROOVE as int == OUTLINE_STYLE_GROOVE as int);
+                assert!(BORDER_STYLE_GROOVE as int == COLUMN_RULE_STYLE_GROOVE as int);
+                assert!(BORDER_STYLE_RIDGE as int == OUTLINE_STYLE_RIDGE as int);
+                assert!(BORDER_STYLE_RIDGE as int == COLUMN_RULE_STYLE_RIDGE as int);
+                assert!(BORDER_STYLE_INSET as int == OUTLINE_STYLE_INSET as int);
+                assert!(BORDER_STYLE_INSET as int == COLUMN_RULE_STYLE_INSET as int);
+                assert!(BORDER_STYLE_OUTSET as int == OUTLINE_STYLE_OUTSET as int);
+                assert!(BORDER_STYLE_OUTSET as int == COLUMN_RULE_STYLE_OUTSET as int);
 
                 if value as int == BORDER_STYLE_NONE as int {
                     str::push_str(ptr , &"none");
@@ -677,7 +700,10 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             CSS_PROP_BORDER_BOTTOM_WIDTH as int | CSS_PROP_BORDER_LEFT_WIDTH as int | 
             CSS_PROP_COLUMN_RULE_WIDTH as int | CSS_PROP_OUTLINE_WIDTH as int) {
 
-                // TODO asserts
+                assert!(BORDER_WIDTH_SET as int == OUTLINE_WIDTH_SET as int);
+                assert!(BORDER_WIDTH_THIN as int == OUTLINE_WIDTH_THIN as int);
+                assert!(BORDER_WIDTH_MEDIUM as int == OUTLINE_WIDTH_MEDIUM as int);
+                assert!(BORDER_WIDTH_THICK as int == OUTLINE_WIDTH_THICK as int);
 
                 if value as int == BORDER_WIDTH_SET as int {
                     // TODO
@@ -702,7 +728,20 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             CSS_PROP_TOP as int | CSS_PROP_HEIGHT as int | CSS_PROP_WIDTH as int | 
             CSS_PROP_COLUMN_WIDTH as int) {
 
-                // TODO asserts
+                assert!(BOTTOM_SET as int == LEFT_SET as int);
+                assert!(BOTTOM_AUTO as int == LEFT_AUTO as int);
+                assert!(BOTTOM_SET as int == RIGHT_SET as int);
+                assert!(BOTTOM_AUTO as int == RIGHT_AUTO as int);
+                assert!(BOTTOM_SET as int == TOP_SET as int);
+                assert!(BOTTOM_AUTO as int == TOP_AUTO as int);
+                assert!(BOTTOM_SET as int == HEIGHT_SET as int);
+                assert!(BOTTOM_AUTO as int == HEIGHT_AUTO as int);
+                assert!(BOTTOM_SET as int == MARGIN_SET as int);
+                assert!(BOTTOM_AUTO as int == MARGIN_AUTO as int);
+                assert!(BOTTOM_SET as int == WIDTH_SET as int);
+                assert!(BOTTOM_AUTO as int == WIDTH_AUTO as int);
+                assert!(BOTTOM_SET as int == COLUMN_WIDTH_SET as int);
+                assert!(BOTTOM_AUTO as int == COLUMN_WIDTH_AUTO as int);
 
                 if value as int == BOTTOM_SET as int {
                     // TODO
@@ -715,7 +754,15 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
             else if op as int == (CSS_PROP_BREAK_AFTER as int | CSS_PROP_BREAK_BEFORE as int) {
 
-                // TODO Some asserts
+                assert!(BREAK_AFTER_AUTO as int == BREAK_BEFORE_AUTO as int);
+                assert!(BREAK_AFTER_ALWAYS as int == BREAK_BEFORE_ALWAYS as int);
+                assert!(BREAK_AFTER_AVOID as int == BREAK_BEFORE_AVOID as int);
+                assert!(BREAK_AFTER_LEFT as int == BREAK_BEFORE_LEFT as int);
+                assert!(BREAK_AFTER_RIGHT as int == BREAK_BEFORE_RIGHT as int);
+                assert!(BREAK_AFTER_PAGE as int == BREAK_BEFORE_PAGE as int);
+                assert!(BREAK_AFTER_COLUMN as int == BREAK_BEFORE_COLUMN as int);
+                assert!(BREAK_AFTER_AVOID_PAGE as int == BREAK_BEFORE_AVOID_PAGE as int);
+                assert!(BREAK_AFTER_AVOID_COLUMN as int == BREAK_BEFORE_AVOID_COLUMN as int);
 
                 if value as int == BREAK_AFTER_AUTO as int {
                     str::push_str(ptr , &"auto");
@@ -873,6 +920,10 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             }
 
             else if op as int == (CSS_PROP_COUNTER_INCREMENT as int | CSS_PROP_COUNTER_RESET as int) {
+                
+                assert!(COUNTER_INCREMENT_NONE as int == COUNTER_RESET_NONE as int);
+                assert!(COUNTER_INCREMENT_NAMED as int == COUNTER_RESET_NAMED as int);
+
                 // TODO
             }
 
@@ -1093,7 +1144,8 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
             else if op as int == (CSS_PROP_LETTER_SPACING as int | CSS_PROP_WORD_SPACING as int){
 
-                // TODO asserts
+                assert!(LETTER_SPACING_SET as int == WORD_SPACING_SET as int);
+                assert!(LETTER_SPACING_NORMAL as int == WORD_SPACING_NORMAL as int);
 
                 if value as int == LETTER_SPACING_SET as int {
                     // TODO
@@ -1177,7 +1229,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
             else if op as int == (CSS_PROP_MAX_HEIGHT as int | CSS_PROP_MAX_WIDTH as int){
 
-                // TODO asserts
+                assert!(MAX_HEIGHT_SET as int == MAX_WIDTH_SET as int);
+                assert!(MAX_HEIGHT_NONE as int == MAX_WIDTH_NONE as int);
+                
                 if value as int == MAX_HEIGHT_SET as int {
                     // TODO
                 }
@@ -1197,7 +1251,11 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             | CSS_PROP_PADDING_BOTTOM as int | CSS_PROP_PADDING_LEFT as int | CSS_PROP_MIN_HEIGHT as int | CSS_PROP_MIN_WIDTH as int 
             | CSS_PROP_PAUSE_AFTER as int | CSS_PROP_PAUSE_BEFORE as int | CSS_PROP_TEXT_INDENT as int){
 
-                // TODO asserts
+                assert!(MIN_HEIGHT_SET as int == MIN_WIDTH_SET as int);
+                assert!(MIN_HEIGHT_SET as int == PADDING_SET as int);
+                assert!(MIN_HEIGHT_SET as int == PAUSE_AFTER_SET as int);
+                assert!(MIN_HEIGHT_SET as int == PAUSE_BEFORE_SET as int);
+                assert!(MIN_HEIGHT_SET as int == TEXT_INDENT_SET as int);
 
                 if value as int == MIN_HEIGHT_SET as int {
                     // TODO
@@ -1207,7 +1265,10 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == (CSS_PROP_ORPHANS as int | CSS_PROP_PITCH_RANGE as int
             | CSS_PROP_RICHNESS as int | CSS_PROP_STRESS as int | CSS_PROP_WIDOWS as int) {
 
-                // TODO asserts
+                assert!(ORPHANS_SET as int == PITCH_RANGE_SET as int);
+                assert!(ORPHANS_SET as int == RICHNESS_SET as int);
+                assert!(ORPHANS_SET as int == STRESS_SET as int);
+                assert!(ORPHANS_SET as int == WIDOWS_SET as int);
 
                 if value as int == ORPHANS_SET as int {
                     // TODO
@@ -1244,7 +1305,12 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             }
 
             else if op as int == (CSS_PROP_PAGE_BREAK_AFTER as int | CSS_PROP_PAGE_BREAK_BEFORE as int) {
-                // TODO asserts
+                
+                assert!(PAGE_BREAK_AFTER_AUTO as int == PAGE_BREAK_BEFORE_AUTO as int);
+                assert!(PAGE_BREAK_AFTER_ALWAYS as int == PAGE_BREAK_BEFORE_ALWAYS as int);
+                assert!(PAGE_BREAK_AFTER_AVOID as int == PAGE_BREAK_BEFORE_AVOID as int);
+                assert!(PAGE_BREAK_AFTER_LEFT as int == PAGE_BREAK_BEFORE_LEFT as int);
+                assert!(PAGE_BREAK_AFTER_RIGHT as int == PAGE_BREAK_BEFORE_RIGHT as int);
 
                 if value as int == PAGE_BREAK_AFTER_AUTO as int {
                     str::push_str(ptr , &"auto");
