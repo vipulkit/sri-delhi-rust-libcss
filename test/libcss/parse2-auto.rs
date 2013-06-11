@@ -1,6 +1,7 @@
 extern mod std;
 extern mod css;
 extern mod wapcaplet;
+extern mod dump;
 
 use std::arc;
 use css::css::*;
@@ -8,6 +9,7 @@ use css::css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use wapcaplet::*;
+use dump::*;
 
 pub struct line_ctx {
     buf:~[u8],
@@ -64,7 +66,7 @@ fn main() {
     io::println("parse");
 }
 
-fn create_css() -> ~css{
+fn create_css() -> @mut css{
     let mut lwc = wapcaplet::lwc();
     let css = css_create(css_create_params() , Some(lwc));
     css
@@ -171,13 +173,13 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     }
 
     error = css.css_stylesheet_data_done();
-    // io::println(fmt!("error from css_stylesheet_data_done: %?" , error));
+    io::println(fmt!("error from css_stylesheet_data_done: %?" , error));
     match error {
         CSS_OK => {},
         _ => {assert!(false);}
     }
 
-    // dump_sheet(&css.stylesheet , buf);
+    buf = dump_sheet(css.stylesheet);
     // let exp_len = exp.len();
 
     // let mut bool_value = false;

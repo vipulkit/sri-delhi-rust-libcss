@@ -1,5 +1,5 @@
 
-extern mod std;	
+extern mod std; 
 extern mod testutils;
 extern mod parserutils; 
 extern mod css;
@@ -13,63 +13,63 @@ use core::str::*;
 use std::arc;
 
 fn testMain(fileName: ~str) {
-	let len = css__parse_filesize(copy fileName);
-	if len ==0 {
-		return;
-	}
-	
-	let ctx: @mut line_ctx_csdetect = @mut line_ctx_csdetect
-		{
-			buf:~[],
-			enc:~"",
-			indata:false,
-			inenc:false
-		};
-	ctx.buf.push(0);//why?
+    let len = css__parse_filesize(copy fileName);
+    if len ==0 {
+        return;
+    }
+    
+    let ctx: @mut line_ctx_csdetect = @mut line_ctx_csdetect
+        {
+            buf:~[],
+            enc:~"",
+            indata:false,
+            inenc:false
+        };
+    ctx.buf.push(0);//why?
 
-	assert!(css__parse_testfile(copy fileName, ~handle_line, CSDETECT(ctx)));
+    assert!(css__parse_testfile(copy fileName, ~handle_line, CSDETECT(ctx)));
 
 }
 
 pub fn handle_line(data:~str, pw:LINE_CTX_DATA_TYPE)-> bool {
-	let mut result = true;
+    let mut result = true;
 
-	let ctx :@mut line_ctx_csdetect;
+    let ctx :@mut line_ctx_csdetect;
 
-	match pw { CSDETECT(x) => ctx = x, LEX(_) => fail!(~"In File csdetect.rs, Function handle_line, argument LINE_CTX_DATA_TYPE contains incorrect struct line_ctx_lex") };
+    match pw { CSDETECT(x) => ctx = x, LEX(_) => fail!(~"In File csdetect.rs, Function handle_line, argument LINE_CTX_DATA_TYPE contains incorrect struct line_ctx_lex") };
 
-	if data.len() <= 0 {
-		io::println("error");
-		return true;
-	}
-	if data[0] == '#' as u8 {
-		if ctx.inenc {
-			unsafe {
-				if (vec::last(ctx.buf) == &('\n' as u8)) {
-					ctx.buf.pop();
-				}
-			}
-			result = run_test(copy ctx.buf, copy  ctx.enc);	
+    if data.len() <= 0 {
+        io::println("error");
+        return true;
+    }
+    if data[0] == '#' as u8 {
+        if ctx.inenc {
+            unsafe {
+                if (vec::last(ctx.buf) == &('\n' as u8)) {
+                    ctx.buf.pop();
+                }
+            }
+            result = run_test(copy ctx.buf, copy  ctx.enc); 
             ctx.buf = ~[];
             ctx.enc=~"";
-		}
-		ctx.indata = str::ends_with(data,&"data");
-		ctx.inenc = str::ends_with(data,&"encoding");
+        }
+        ctx.indata = str::ends_with(data,&"data");
+        ctx.inenc = str::ends_with(data,&"encoding");
 
-	}
- 	else {
-		if (ctx.indata) {
-			ctx.buf += data.to_bytes();
-		}
-		if (ctx.inenc) {
-			ctx.enc = (data);
-			 unsafe {
-			 	if (ctx.enc[ctx.enc.len() - 1] == '\n' as u8) {
-			 		pop_char(&mut ctx.enc);
-			 	}
-			 }	
-		}
-	}
+    }
+    else {
+        if (ctx.indata) {
+            ctx.buf += data.to_bytes();
+        }
+        if (ctx.inenc) {
+            ctx.enc = (data);
+             unsafe {
+                if (ctx.enc[ctx.enc.len() - 1] == '\n' as u8) {
+                    pop_char(&mut ctx.enc);
+                }
+             }  
+        }
+    }
 
     return result;
 }
@@ -78,7 +78,7 @@ pub fn run_test(data:~[u8],  expected_encoding:~str) -> bool {
     let alias_instance = alias();
     
     let expected_mibenum = 
-    	arc::get(&alias_instance).parserutils_charset_mibenum_from_name(copy expected_encoding);
+        arc::get(&alias_instance).parserutils_charset_mibenum_from_name(copy expected_encoding);
     
     let mut mibenum:u16 = 0;
     let alias_instance = alias();
@@ -93,7 +93,7 @@ pub fn run_test(data:~[u8],  expected_encoding:~str) -> bool {
     assert!(mibenum != 0);
 
     let detected_charset = 
-    	arc::get(&alias_instance).parserutils_charset_mibenum_to_name(mibenum).unwrap();
+        arc::get(&alias_instance).parserutils_charset_mibenum_to_name(mibenum).unwrap();
 
     io::println(fmt!(" Detected mibenum == %?, Expected mibenum == %? ", mibenum, expected_mibenum));
     io::println(fmt!(" Detected charset == %?, Source == %? Expected charset ==%?",detected_charset,srcOption.unwrap(), expected_encoding));    

@@ -135,12 +135,15 @@ pub fn opcode_names() -> ~[~str] {
 }
 
 
-pub fn dump_sheet(sheet: &css_stylesheet) -> ~str {
+pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
     
+    io::println("Entering: dump_sheet");
     let mut ptr: ~str = ~"";
     let mut rule: Option<CSS_RULE_DATA_TYPE> = sheet.rule_list ;
     
+    io::println(fmt!("rule == %?" , rule));
     while rule.is_some() {
+        io::println(fmt!("rule == %?" , rule.unwrap()));
         match rule.unwrap() {
 
             RULE_SELECTOR(css_rule_selector_x)=>{
@@ -175,7 +178,12 @@ pub fn dump_sheet(sheet: &css_stylesheet) -> ~str {
             }
         }
     }
+    
+    io::println(fmt!("ptr == %?" , ptr));
+
     ptr
+
+
 }
 
 fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
@@ -424,19 +432,28 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
     
     let mut bytecode = copy style.bytecode;
-    let mut op: css_properties_e = CSS_PROP_AZIMUTH;
-    let mut value: u32 = 0;
+    let mut op: css_properties_e;
+    let mut value: u32;
     let opcode_names = opcode_names();
+    let mut iterator = 0;
+    
+    // for bytecode.each|&opv| {
+    while iterator < bytecode.len() {
+    
+        let mut opv = bytecode[iterator];
 
-    for bytecode.each|&opv| {
+        io::println(fmt!("bytecode == %?" , bytecode));
+
         op = getOpcode(opv);
         ptr.push_char('|');
 
         let mut i: u32 = 0;
+        
         while i<depth {
             ptr.push_char(' ');
             i+=1;
         }
+        
         str::push_str(ptr , opcode_names[op as int]);
         ptr.push_char(':');
         ptr.push_char(' ');
@@ -449,10 +466,17 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             value = getValue(opv) as u32;
 
             if op as int == CSS_PROP_AZIMUTH as int {
+                
                 let val = (value & !(AZIMUTH_BEHIND as u32));
 
                 if val as int == AZIMUTH_ANGLE as int {
-                    // TODO
+
+                    let some_val: i32 = bytecode[iterator] as i32;
+                    iterator += 1;
+                    let unit: u32 = bytecode[iterator];
+                    iterator += 1;
+                    dump_unit(some_val , unit , ptr);
+
                 }
                 else if val as int == AZIMUTH_LEFTWARDS as int {
                     str::push_str(ptr , &"leftwards");
@@ -518,7 +542,11 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     str::push_str(ptr , &"currentColor");   
                 }
                 else if value as int == BACKGROUND_COLOR_SET as int {
-                    // TODO
+                    
+                    let colour: u32 = bytecode[iterator];
+                    iterator += 1;
+                    let string = fmt!("#%08x" , colour as uint);
+                    str::push_str(ptr , string);
                 }
             }
             
@@ -538,7 +566,18 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
 
                 else if value as int == BACKGROUND_IMAGE_URI as int {
-                    // TODO
+                    
+                    let snum = bytecode[iterator];
+
+                    let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                    iterator += 1;
+
+                    if option_string.is_some() {
+                        str::push_str(ptr , &"url('");
+                        str::push_str(ptr , option_string.unwrap());
+                        str::push_str(ptr , &"')");    
+                    }
+
                 }
             }
 
@@ -547,7 +586,12 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 let val = value & 0xf0;
 
                 if val as int == BACKGROUND_POSITION_HORZ_SET as int {
-                    // TODO
+
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+                    dump_unit(some_val , unit , ptr);
                 }
 
                 else if val as int == BACKGROUND_POSITION_HORZ_CENTER as int {
@@ -572,7 +616,12 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 let val = value & 0x0f;
 
                 if val as int == BACKGROUND_POSITION_VERT_SET as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+                    dump_unit(some_val , unit , ptr);
                 }
 
                 else if val as int == BACKGROUND_POSITION_VERT_CENTER as int {
