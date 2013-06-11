@@ -1385,7 +1385,218 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
             }
 
+            else if op as int == CSS_PROP_SPEECH_RATE as int{
 
+                if value as int == SPEECH_RATE_SET as int {
+                    // TODO
+                }
+                else if value as int == SPEECH_RATE_X_SLOW as int {
+                    str::push_str(ptr , &"x-slow");
+                }
+                else if value as int == SPEECH_RATE_SLOW as int {
+                    str::push_str(ptr , &"slow");
+                }
+                else if value as int == SPEECH_RATE_MEDIUM as int {
+                    str::push_str(ptr , &"medium");
+                }
+                else if value as int == SPEECH_RATE_FAST as int {
+                    str::push_str(ptr , &"fast");
+                }
+                else if value as int == SPEECH_RATE_X_FAST as int {
+                    str::push_str(ptr , &"x-fast");
+                }
+                else if value as int == SPEECH_RATE_FASTER as int {
+                    str::push_str(ptr , &"faster");
+                }
+                else if value as int == SPEECH_RATE_SLOWER as int {
+                    str::push_str(ptr , &"slower");
+                }
+            }
+
+            else if op as int == CSS_PROP_TABLE_LAYOUT as int{
+
+                if value as int == TABLE_LAYOUT_AUTO as int {
+                    str::push_str(ptr , &"auto");
+                }
+                else if value as int == TABLE_LAYOUT_FIXED as int {
+                    str::push_str(ptr , &"fixed");
+                }
+            }
+
+            else if op as int == CSS_PROP_TEXT_ALIGN as int{
+
+                if value as int == TEXT_ALIGN_LEFT as int {
+                    str::push_str(ptr , &"left");
+                }
+                else if value as int == TEXT_ALIGN_RIGHT as int {
+                    str::push_str(ptr , &"right");
+                }
+                else if value as int == TEXT_ALIGN_CENTER as int {
+                    str::push_str(ptr , &"center");
+                }
+                else if value as int == TEXT_ALIGN_JUSTIFY as int {
+                    str::push_str(ptr , &"justify");
+                }
+                else if value as int == TEXT_ALIGN_LIBCSS_LEFT as int {
+                    str::push_str(ptr , &"-libcss-left");
+                }
+                else if value as int == TEXT_ALIGN_LIBCSS_CENTER as int {
+                    str::push_str(ptr , &"-libcss-center");
+                }
+                else if value as int == TEXT_ALIGN_LIBCSS_RIGHT as int {
+                    str::push_str(ptr , &"-libcss-right");
+                }
+            }
+
+            else if op as int == CSS_PROP_TEXT_DECORATION as int{
+
+                if value as int == TEXT_DECORATION_NONE as int {
+                    str::push_str(ptr , &"none");
+                }
+                if value as int == TEXT_DECORATION_UNDERLINE as int {
+                    str::push_str(ptr , &" underline");
+                }
+                if value as int == TEXT_DECORATION_OVERLINE as int {
+                    str::push_str(ptr , &" overline");
+                }
+                if value as int == TEXT_DECORATION_LINE_THROUGH as int {
+                    str::push_str(ptr , &" line-through");
+                }
+                if value as int == TEXT_DECORATION_BLINK as int {
+                    str::push_str(ptr , &"blink");
+                }
+            }
+
+            else if op as int == CSS_PROP_TEXT_TRANSFORM as int{
+
+                if value as int == TEXT_TRANSFORM_CAPITALIZE as int {
+                    str::push_str(ptr , &"capitalize");
+                }
+                else if value as int == TEXT_TRANSFORM_UPPERCASE as int {
+                    str::push_str(ptr , &"uppercase");
+                }
+                else if value as int == TEXT_TRANSFORM_LOWERCASE as int {
+                    str::push_str(ptr , &"lowercase");
+                }
+                else if value as int == TEXT_TRANSFORM_NONE as int {
+                    str::push_str(ptr , &"none");
+                }
+            }
+
+            else if op as int == CSS_PROP_UNICODE_BIDI as int{
+
+                if value as int == UNICODE_BIDI_NORMAL as int {
+                    str::push_str(ptr , &"normal");
+                }
+                else if value as int == UNICODE_BIDI_EMBED as int {
+                    str::push_str(ptr , &"embed");
+                }
+                else if value as int == UNICODE_BIDI_BIDI_OVERRIDE as int {
+                    str::push_str(ptr , &"bidi-override");
+                }
+            }
+
+            else if op as int == CSS_PROP_VERTICAL_ALIGN as int{
+
+                if value as int == VERTICAL_ALIGN_SET as int {
+                    // TODO
+                }
+                else if value as int == VERTICAL_ALIGN_BASELINE as int {
+                    str::push_str(ptr , &"baseline");
+                }
+                else if value as int == VERTICAL_ALIGN_SUB as int {
+                    str::push_str(ptr , &"sub");
+                }
+                else if value as int == VERTICAL_ALIGN_SUPER as int {
+                    str::push_str(ptr , &"super");
+                }
+                else if value as int == VERTICAL_ALIGN_TOP as int {
+                    str::push_str(ptr , &"top");
+                }
+                else if value as int == VERTICAL_ALIGN_TEXT_TOP as int {
+                    str::push_str(ptr , &"text-top");
+                }
+                else if value as int == VERTICAL_ALIGN_MIDDLE as int {
+                    str::push_str(ptr , &"middle");
+                }
+                else if value as int == VERTICAL_ALIGN_BOTTOM as int {
+                    str::push_str(ptr , &"bottom");
+                }
+                else if value as int == VERTICAL_ALIGN_TEXT_BOTTOM as int {
+                    str::push_str(ptr , &"text-bottom");
+                }
+            }
+
+            else if op as int == CSS_PROP_VOICE_FAMILY as int {
+                // TODO
+            }
+
+            else if op as int == CSS_PROP_VOLUME as int {
+                
+                if value as int == VOLUME_NUMBER as int {
+                    // TODO
+                }
+                else if value as int == VOLUME_DIMENSION as int {
+                    // TODO
+                }
+                else if value as int == VOLUME_SILENT as int {
+                    str::push_str(ptr , &"silent");
+                }
+                else if value as int == VOLUME_X_SOFT as int {
+                    str::push_str(ptr , &"x-soft");
+                }
+                else if value as int == VOLUME_SOFT as int {
+                    str::push_str(ptr , &"soft");
+                }
+                else if value as int == VOLUME_MEDIUM as int {
+                    str::push_str(ptr , &"medium");
+                }
+                else if value as int == VOLUME_LOUD as int {
+                    str::push_str(ptr , &"loud");
+                }
+                else if value as int == VOLUME_X_LOUD as int {
+                    str::push_str(ptr , &"loud");
+                }
+            }
+
+            else if op as int == CSS_PROP_VOLUME as int {
+
+                if value as int == WHITE_SPACE_NORMAL as int {
+                    str::push_str(ptr , &"normal");
+                }
+                else if value as int == WHITE_SPACE_PRE as int {
+                    str::push_str(ptr , &"pre");
+                }
+                else if value as int == WHITE_SPACE_NOWRAP as int {
+                    str::push_str(ptr , &"nowrap");
+                }
+                else if value as int == WHITE_SPACE_PRE_WRAP as int {
+                    str::push_str(ptr , &"pre-wrap");
+                }
+                else if value as int == WHITE_SPACE_PRE_LINE as int {
+                    str::push_str(ptr , &"pre-line");
+                }
+            }
+
+            else if op as int == CSS_PROP_Z_INDEX as int {
+
+                if value as int == Z_INDEX_SET as int {
+                    // TODO
+                }
+                else if value as int == Z_INDEX_AUTO as int {
+                    str::push_str(ptr , &"auto");
+                }
+            }
+
+            else {
+                let string = fmt!("Unknown opcode %x" , op as uint);
+                str::push_str(ptr , string);
+            }
+
+            if (isImportant(opv)) {
+                str::push_str(ptr , &" !important")
+            }
+            ptr.push_char('\n');
 
         }
     }
