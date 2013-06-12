@@ -1,6 +1,7 @@
 extern mod std;
 extern mod css;
 extern mod wapcaplet;
+extern mod dump;
 
 use std::arc;
 use css::css::*;
@@ -8,6 +9,7 @@ use css::css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use wapcaplet::*;
+use dump::*;
 
 pub struct line_ctx {
     buf:~[u8],
@@ -64,7 +66,7 @@ fn main() {
     io::println("parse");
 }
 
-fn create_css() -> ~css{
+fn create_css() -> @mut css{
     let mut lwc = wapcaplet::lwc();
     let css = css_create(css_create_params() , Some(lwc));
     css
@@ -162,6 +164,9 @@ fn testMain(fileName: ~str) {
 }
 
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
+    io::println(fmt!("entering run_test"));
+    io::println(fmt!("data == %?" , data));
+    io::println(fmt!("exp == %?" , exp));
     let mut css = create_css();
     let mut buf: ~str = ~"";
     let mut error = css.css_stylesheet_append_data(data);
@@ -171,14 +176,24 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     }
 
     error = css.css_stylesheet_data_done();
-    // io::println(fmt!("error from css_stylesheet_data_done: %?" , error));
+    io::println(fmt!("error from css_stylesheet_data_done: %?" , error));
     match error {
         CSS_OK => {},
         _ => {assert!(false);}
     }
 
-    // dump_sheet(&css.stylesheet , buf);
-    // let exp_len = exp.len();
+    buf = dump_sheet(css.stylesheet);
+    let mut vec_buf = ~[];
+    for str::each_line(buf) |s| {
+        vec_buf.push(s.to_owned().to_bytes());
+    }
+
+    let exp_len = exp.len();
+    let buf_len = buf.len();
+
+
+
+    assert!(vec_buf == exp);
 
     // let mut bool_value = false;
     // let mut i = 0;

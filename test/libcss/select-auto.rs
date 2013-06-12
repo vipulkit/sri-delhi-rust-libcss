@@ -17,6 +17,7 @@ use css::select::common::*;
 use css::stylesheet::*;
 use css::select::select::*;
 
+
 fn node_name(node:*libc::c_void, qname:css_qname ) -> css_error {
 	CSS_OK
 }
@@ -245,7 +246,7 @@ fn node_count_siblings(node:*libc::c_void, same_name:bool, after:bool, count:@mu
 	let mut name: arc::RWARC<~lwc_string> ;
 	unsafe {
 		node1 = ::cast::transmute(node);
-		name = node1.name.clone();
+		name = (node1.name).get_ref().clone();
 	}
 	
 	if after {
@@ -254,7 +255,7 @@ fn node_count_siblings(node:*libc::c_void, same_name:bool, after:bool, count:@mu
 				let mut next_name: arc::RWARC<~lwc_string> ;
 				let mut temp_node = (copy node1.next).unwrap();
 				unsafe {
-					next_name = temp_node.name.clone();
+					next_name = temp_node.name.get_ref().clone();
 				}
 				do lwc().write |l| {
 					matched = l.lwc_string_caseless_isequal(name.clone(),next_name.clone()); 
@@ -275,7 +276,7 @@ fn node_count_siblings(node:*libc::c_void, same_name:bool, after:bool, count:@mu
 				let mut prev_name: arc::RWARC<~lwc_string> ;
 				let mut temp_node = (copy node1.prev).unwrap();
 				unsafe {
-					prev_name = temp_node.name.clone();
+					prev_name = temp_node.name.get_ref().clone();
 				}
 				do lwc().write |l| {
 					matched = l.lwc_string_caseless_isequal(name.clone(),prev_name.clone()); 
@@ -350,90 +351,13 @@ fn ua_default_for_property(property:u32, hint:@mut css_hint ) -> css_error {
 	CSS_OK
 }
 
-
-
-/*pub static select_handler: css_select_handler = css_select_handler{
-	node_name: @node_name,
-
-    node_classes: @node_classes,
-
-    node_id: @node_id,
-
-    named_ancestor_node: @named_ancestor_node,
-   
-    named_parent_node: @named_parent_node,
-    
-    named_sibling_node: @named_sibling_node,
-
-    named_generic_sibling_node: @named_generic_sibling_node,
-    
-    parent_node: @parent_node,
-
-    sibling_node: @sibling_node,
-
-    node_has_name: @node_has_name,
-
-    node_has_class: @node_has_class,
-
-    node_has_id: @node_has_id,
-
-    node_has_attribute: @node_has_attribute,
-    
-    //node_has_name: @node_has_name,
-
-    node_has_attribute_equal: @node_has_attribute_equal,
-   
-    node_has_attribute_dashmatch: @node_has_attribute_dashmatch,
-
-    node_has_attribute_includes: @node_has_attribute_includes,
-
-    node_has_attribute_prefix: @node_has_attribute_prefix,
-
-    node_has_attribute_suffix: @node_has_attribute_suffix,
-
-    node_has_attribute_substring: @node_has_attribute_substring,
-
-    node_is_root: @node_is_root,
-   
-    node_count_siblings: @node_count_siblings,
-    
-    node_is_empty: @node_is_empty,
-    
-    node_is_link: @node_is_link,
-
-    node_is_visited: @node_is_visited,
-
-    node_is_hover: @node_is_hover,
-
-    node_is_active: @node_is_active,
-
-    node_is_focus: @node_is_focus,
-
-    node_is_enabled: @node_is_enabled,
-
-    node_is_disabled: @node_is_disabled,
-
-    node_is_checked: @node_is_checked,
- 
-    node_is_target: @node_is_target,
-
-    node_is_lang: @node_is_lang,
-
-    node_presentational_hint: @node_presentational_hint,
-
-    compute_font_size: @compute_font_size,
-   
-    ua_default_for_property: @ua_default_for_property,
-    handler_version:1
-};*/
-
 pub struct attribute {
 	name:arc::RWARC<~lwc_string>,
 	value:arc::RWARC<~lwc_string>
 }
 
 pub struct node {
-	name:arc::RWARC<~lwc_string>,
+	name:Option<arc::RWARC<~lwc_string> >,
 	attrs:~[attribute],
 
 	parent:Option<@mut node>,
@@ -532,6 +456,28 @@ pub fn select_test(file:~str) {
 	if( ctx.tree.is_some() ) {
 		run_test(ctx);
 	}
+}
+
+pub fn resolve_url(base:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>){
+
+	(CSS_OK, None)
+}
+
+pub fn css_create_params() -> css_params {
+    let css_param = css_params {
+        params_version : CSS_PARAMS_VERSION_1,
+        level: CSS_LEVEL_21,
+        charset : Some(~"UTF-8"),
+        url : ~"foo",
+        title : ~"foo",
+        allow_quirks : false,
+        inline_style : false,
+        resolve : @resolve_url,
+        import : None,
+        color : None,
+        font : None
+    };
+    return css_param;
 }
 
 pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
@@ -636,15 +582,204 @@ pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
 						_=>{false}
 					 });
 		}
-		else if ( ctx.inexp ) {
-			css__parse_expected(ctx, data );
-		}
+		// Not Needed
+		//else if ( ctx.inexp ) {
+		//	css__parse_expected(ctx, data );
+		//}
 	}
 	true 
 }
 
-pub fn css__parse_expected(ctx:@mut line_ctx, data:&str) {
+//Not Needed
+//pub fn css__parse_expected(ctx:@mut line_ctx, data:&str) {
+//
+//}
 
+pub fn isspace (ch:u8)-> bool {
+	if ( (ch==0x20 ) || (ch==0x09) || (ch==0x0a) || 
+			 (ch==0x0b) || (ch==0x0c) || (ch==0x0d) ){
+		true
+	}
+	else {
+		false
+	} 
+}
+
+pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
+	
+	let mut p = 0;
+	let end = data.len();
+
+	let mut value = None;
+	let mut namelen = 0;
+	let mut valuelen = 0;
+	let mut depth:u32 = 0;
+	let mut target = false;
+	let mut lwc_ins = lwc();
+
+	/* ' '{depth+1} [ <element> '*'? | <attr> ]
+	 * 
+	 * <element> ::= [^=*[:space:]]+
+	 * <attr>    ::= [^=*[:space:]]+ '=' [^[:space:]]*
+	 */
+
+	while (p < end && isspace(data[p])) {
+		depth += 1;
+		p += 1;
+	}
+	depth -= 1;
+
+	/* Get element/attribute name */
+	let name_begin = p;
+	while (p < end && data[p] != '=' as u8 && data[p] != '*' as u8  && isspace(data[p]) == false) {
+		namelen += 1;
+		p += 1;
+	}
+
+	let mut name = data.slice(name_begin,name_begin+namelen);
+
+	/* Skip whitespace */
+	while (p < end && isspace(data[p])){
+		p += 1;
+	}
+	
+	let mut value_begin = 0;
+
+	if (p < end && data[p] == '=' as u8 ) {
+		/* Attribute value */
+		p += 1;
+
+		value_begin = p;
+
+		while (p < end && isspace(data[p]) == false) {
+			valuelen += 1;
+			p += 1;
+		}
+	} else if (p < end && data[p] == '*' as u8 ) {
+		/* Element is target node */
+		target = true;
+	}
+
+	if valuelen > 0 {
+		value = Some(data.slice(value_begin, value_begin+valuelen));
+	}
+
+	if (value.is_none() ) {
+		/* We have an element, so create it */
+		let n : @mut node = @mut node {
+			name:None,
+			attrs:~[],
+			parent:None,
+			next:None,
+			prev:None,
+			children:None,
+			last_child:None
+		};					
+		do lwc_ins.write |l| {
+			n.name = Some(l.lwc_intern_string(name.to_owned()));
+		}
+
+		/* Insert it into tree */
+		if ctx.tree.is_none() {
+			ctx.tree = Some(n);
+		} 
+		else {
+			assert!(depth > 0);
+			assert!(depth <= ctx.depth + 1);
+
+			/* Find node to insert into */
+			while (depth <= ctx.depth) {
+				ctx.depth -= 1;
+				ctx.current = ctx.current.unwrap().parent;
+			}
+			let ctx_current = ctx.current.unwrap();	
+			/* Insert into current node */
+			if (ctx_current.children.is_none()) {
+				ctx_current.children = Some(n);
+				ctx_current.last_child = Some(n);
+			} else {
+				ctx_current.last_child.get_mut_ref().next = Some(n);
+				n.prev = ctx_current.last_child;
+
+				ctx_current.last_child = Some(n);
+			}
+		 	ctx.current = Some(ctx_current);	
+			n.parent = ctx.current;
+		}
+
+		ctx.current = Some(n);
+		ctx.depth = depth;
+
+		/* Mark the target, if it's us */
+		if (target) {
+			ctx.target = Some(n);
+		}
+
+	} 
+	else {
+		/* New attribute */
+
+		let mut lwc_name:Option<arc::RWARC<~lwc_string> > = None;
+		let mut lwc_value:Option<arc::RWARC<~lwc_string> > = None;
+
+		do lwc_ins.write |l| {
+			lwc_name = Some(l.lwc_intern_string(name.to_owned()));
+			lwc_value = Some(l.lwc_intern_string(value.get_ref().to_owned()));
+		}
+		
+		let mut attr: attribute = attribute{
+			name:lwc_name.unwrap(),
+			value:lwc_value.unwrap()
+		};
+
+		ctx.current.unwrap().attrs.push(attr);
+
+	}
+
+}
+
+pub fn css__parse_sheet(ctx:@mut line_ctx, data:&str) {
+
+	let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
+	let mut media : uint = CSS_MEDIA_ALL as uint;
+	let mut p : uint = 0;
+	let length : uint = data.len();
+	/* Find end of origin */
+	while p < length && !isspace(data[p]) {
+		p += 1;
+	}
+	
+	if p == 6 && is_string_caseless_equal( data.slice(1,6), "author"){
+		origin = CSS_ORIGIN_AUTHOR;
+	}
+	else if p == 4 && is_string_caseless_equal( data.slice(1,4), "user"){
+		origin = CSS_ORIGIN_USER;
+	}
+	else if p == 2 && is_string_caseless_equal( data.slice(1,2), "ua"){
+		origin = CSS_ORIGIN_UA;
+	}
+	else {
+			io::println("\n Unknown stylesheet origin");
+			assert!(false);
+	}
+	
+	/* Skip any whitespace */
+	while p < length && isspace(data[p]) {
+		p += 1;
+	}
+	
+	if p < length {
+		media = css__parse_media_list(data.slice(p, length - 1), ctx);
+	}
+	let params = css_create_params();
+	let sheet:@mut css = css::css_create(params, None);
+	let sheet_ctx = @mut sheet_ctx {
+		sheet:sheet,
+		origin:origin,
+		media:media as u64
+	};
+	
+	ctx.sheets.push(sheet_ctx);
 }
 
 pub fn css__parse_media_list(data:&str , ctx:@mut line_ctx) -> uint {
@@ -804,15 +939,6 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&str) {
 	}
 }
 
-pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
-
-
-}
-
-pub fn css__parse_sheet(ctx:@mut line_ctx,data:&str) {
-
-}
-
 pub fn run_test( ctx:@mut line_ctx) {
 	let mut select: ~css_select_ctx;
 	let mut results: css_select_results;
@@ -933,9 +1059,11 @@ pub fn run_test( ctx:@mut line_ctx) {
 
 	
 }
+
 fn dump_computed_style(mut style:@mut css_computed_style, buf:&mut ~str) {
 
 }
+
 pub fn main() {
 	io::println(fmt!("\n Starting select-auto test cases "));
 }
@@ -979,5 +1107,3 @@ pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
 fn selection_test() {
 	select_test(~"data/select/tests1.dat");
 }
-
-
