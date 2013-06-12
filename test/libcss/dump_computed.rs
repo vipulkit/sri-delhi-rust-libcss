@@ -129,20 +129,6 @@ fn dump_css_unit(val: css_fixed , unit: css_unit , ptr: &mut ~str) {
 pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 	let ptr = buf;
 	let mut val:u8;
-	let mut color_option:Option<css_color> = None;
-	let mut url: ~str = ~"";
-	let mut len1 = 0;
-	let mut len2 = 0;
-	let mut unit1:css_unit = CSS_UNIT_PX;
-	let mut unit2:css_unit = CSS_UNIT_PX;
-	let rect:@mut css_computed_clip_rect = @mut css_computed_clip_rect { 
-					top:0, right:0, bottom:0, left:0, tunit:CSS_UNIT_PX, runit:CSS_UNIT_PX,
-					bunit:CSS_UNIT_PX, lunit:CSS_UNIT_PX, top_auto:true, right_auto:true,
-					bottom_auto:true, left_auto:true };
-	let mut content:Option<@mut css_computed_content_item> = None;
-	let mut counter:Option<@mut css_computed_counter> = None;
-	//lwc_string **string_list = NULL;
-	let mut zindex:i32 = 0;
 
 	/* background-attachment */
 	val = css_computed_background_attachment(style);
@@ -913,4 +899,238 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 		CSS_FONT_VARIANT_SMALL_CAPS =>
 			ptr.push_str("font-variant: small-caps\n"),
 	}		
+
+	/* font-weight */
+	let val = css_computed_font_weight(style);
+	let val_enum: css_font_weight_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_FONT_WEIGHT_INHERIT =>
+			ptr.push_str("font-weight: inherit\n"),
+		CSS_FONT_WEIGHT_NORMAL =>
+			ptr.push_str("font-weight: normal\n"),
+		CSS_FONT_WEIGHT_BOLD =>
+			ptr.push_str("font-weight: bold\n"),
+		CSS_FONT_WEIGHT_BOLDER =>
+			ptr.push_str("font-weight: bolder\n"),
+		CSS_FONT_WEIGHT_LIGHTER =>
+			ptr.push_str("font-weight: lighter\n"),
+		CSS_FONT_WEIGHT_100 =>
+			ptr.push_str("font-weight: 100\n"),
+		CSS_FONT_WEIGHT_200 =>
+			ptr.push_str("font-weight: 200\n"),
+		CSS_FONT_WEIGHT_300 =>
+			ptr.push_str("font-weight: 300\n"),
+		CSS_FONT_WEIGHT_400 =>
+			ptr.push_str("font-weight: 400\n"),
+		CSS_FONT_WEIGHT_500 =>
+			ptr.push_str("font-weight: 500\n"),
+		CSS_FONT_WEIGHT_600 =>
+			ptr.push_str("font-weight: 600\n"),
+		CSS_FONT_WEIGHT_700 =>
+			ptr.push_str("font-weight: 700\n"),
+		CSS_FONT_WEIGHT_800 =>
+			ptr.push_str("font-weight: 800\n"),
+		CSS_FONT_WEIGHT_900 =>
+			ptr.push_str("font-weight: 900\n")
+	}
+
+	/* height */
+	let (val,len1,unit1) = css_computed_height(style);
+	let val_enum: css_height_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_HEIGHT_INHERIT =>
+			ptr.push_str("height: inherit\n"),
+		CSS_HEIGHT_AUTO =>
+			ptr.push_str("height: auto\n"),
+		CSS_HEIGHT_SET => {
+			ptr.push_str("height: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+	/* left */
+	let (val,len1,unit1) = css_computed_left(style);
+	let val_enum: css_left_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_LEFT_INHERIT =>
+			ptr.push_str("left: inherit\n"),
+		CSS_LEFT_AUTO =>
+			ptr.push_str("left: auto\n"),
+		CSS_LEFT_SET => {
+			ptr.push_str("left: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},	
+	}
+	
+	/* letter-spacing */
+	let (val,len1,unit1) = css_computed_letter_spacing(style);
+	let val_enum: css_letter_spacing_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_LETTER_SPACING_INHERIT =>
+			ptr.push_str("letter-spacing: inherit\n"),
+		CSS_LETTER_SPACING_NORMAL =>
+			ptr.push_str("letter-spacing: normal\n"),
+		CSS_LETTER_SPACING_SET => {
+			ptr.push_str("letter-spacing: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		}	
+	}
+
+
+	/* line-height */
+	let (val,len1,unit1) = css_computed_line_height(style);
+	let val_enum: css_line_height_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_LINE_HEIGHT_INHERIT =>
+			ptr.push_str("line-height: inherit\n"),
+		CSS_LINE_HEIGHT_NORMAL =>
+			ptr.push_str("line-height: normal\n"),
+		CSS_LINE_HEIGHT_NUMBER => {
+			ptr.push_str("line-height: ");
+			dump_css_fixed(len1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+		CSS_LINE_HEIGHT_DIMENSION => {
+			ptr.push_str("line-height => ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+	/* list-style-image */
+	let (val,url) = css_computed_list_style_image(style);
+    	
+	if (val == CSS_LIST_STYLE_IMAGE_INHERIT as u8) {
+        	ptr.push_str("list-style-image: inherit\n");
+	} else if (url != ~"") {
+		ptr.push_str(fmt!("list-style-image => url('%s')\n",url));
+	} else if (val == CSS_LIST_STYLE_IMAGE_NONE as u8) {
+		ptr.push_str("list-style-image: none\n");
+	} 
+
+	/* list-style-position */
+	let val = css_computed_list_style_position(style);
+	let val_enum: css_list_style_position_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_LIST_STYLE_POSITION_INHERIT =>
+			ptr.push_str("list-style-position: inherit\n"),
+		CSS_LIST_STYLE_POSITION_INSIDE =>
+			ptr.push_str("list-style-position: inside\n"),
+		CSS_LIST_STYLE_POSITION_OUTSIDE =>
+			ptr.push_str("list-style-position: outside\n"),
+	}
+
+
+	/* list-style-type */
+	let val = css_computed_list_style_type(style);
+	let val_enum: css_list_style_type_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_LIST_STYLE_TYPE_INHERIT =>
+			ptr.push_str("list-style-type: inherit\n"),
+		CSS_LIST_STYLE_TYPE_DISC =>
+			ptr.push_str("list-style-type: disc\n"),
+		CSS_LIST_STYLE_TYPE_CIRCLE =>
+			ptr.push_str("list-style-type: circle\n"),
+		CSS_LIST_STYLE_TYPE_SQUARE =>
+			ptr.push_str("list-style-type: square\n"),
+		CSS_LIST_STYLE_TYPE_DECIMAL =>
+			ptr.push_str("list-style-type: decimal\n"),
+		CSS_LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO =>
+			ptr.push_str(
+					"list-style-type: decimal-leading-zero\n"),
+		CSS_LIST_STYLE_TYPE_LOWER_ROMAN =>
+			ptr.push_str("list-style-type: lower-roman\n"),
+		CSS_LIST_STYLE_TYPE_UPPER_ROMAN =>
+			ptr.push_str("list-style-type: upper-roman\n"),
+		CSS_LIST_STYLE_TYPE_LOWER_GREEK =>
+			ptr.push_str("list-style-type: lower-greek\n"),
+		CSS_LIST_STYLE_TYPE_LOWER_LATIN =>
+			ptr.push_str("list-style-type: lower-latin\n"),
+		CSS_LIST_STYLE_TYPE_UPPER_LATIN =>
+			ptr.push_str("list-style-type: upper-latin\n"),
+		CSS_LIST_STYLE_TYPE_ARMENIAN =>
+			ptr.push_str("list-style-type: armenian\n"),
+		CSS_LIST_STYLE_TYPE_GEORGIAN =>
+			ptr.push_str("list-style-type: georgian\n"),
+		CSS_LIST_STYLE_TYPE_LOWER_ALPHA =>
+			ptr.push_str("list-style-type: lower-alpha\n"),
+		CSS_LIST_STYLE_TYPE_UPPER_ALPHA =>
+			ptr.push_str("list-style-type: upper-alpha\n"),
+		CSS_LIST_STYLE_TYPE_NONE =>
+			ptr.push_str("list-style-type: none\n"),
+	}
+
+	/* margin-top */
+	let (val,len1,unit1) = css_computed_margin_top(style);
+	let val_enum: css_margin_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_MARGIN_INHERIT =>
+			ptr.push_str("margin-top: inherit\n"),
+		CSS_MARGIN_AUTO =>
+			ptr.push_str("margin-top: auto\n"),
+		CSS_MARGIN_SET => {
+			ptr.push_str("margin-top: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},	
+	}
+
+	/* margin-right */
+	let (val,len1,unit1) = css_computed_margin_right(style);
+	let val_enum: css_margin_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_MARGIN_INHERIT =>
+			ptr.push_str("margin-right: inherit\n"),
+		CSS_MARGIN_AUTO =>
+			ptr.push_str("margin-right: auto\n"),
+		CSS_MARGIN_SET => {
+			ptr.push_str("margin-right: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},	
+	}
+
+	/* margin-bottom */
+	let (val,len1,unit1) = css_computed_margin_bottom(style);
+	let val_enum: css_margin_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_MARGIN_INHERIT =>
+			ptr.push_str("margin-bottom: inherit\n"),
+		CSS_MARGIN_AUTO =>
+			ptr.push_str("margin-bottom: auto\n"),
+		CSS_MARGIN_SET => {
+			ptr.push_str("margin-bottom: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		}	
+	}
+
+	/* margin-left */
+	let (val,len1,unit1) = css_computed_margin_left(style);
+	let val_enum: css_margin_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_MARGIN_INHERIT =>
+			ptr.push_str("margin-left: inherit\n"),
+		CSS_MARGIN_AUTO =>
+			ptr.push_str("margin-left: auto\n"),
+		CSS_MARGIN_SET => {
+			ptr.push_str("margin-left: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
 }
