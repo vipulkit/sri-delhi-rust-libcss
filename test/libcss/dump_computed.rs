@@ -355,4 +355,82 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 			ptr.push_str("border-right-style: outset\n"),
 	}
 
+	/* border-bottom-style */
+	let val = css_computed_border_bottom_style(style);
+	let val_enum: css_border_style_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BORDER_STYLE_INHERIT =>
+			ptr.push_str("border-bottom-style: inherit\n"),
+		CSS_BORDER_STYLE_NONE =>
+			ptr.push_str("border-bottom-style: none\n"),
+		CSS_BORDER_STYLE_HIDDEN =>
+			ptr.push_str("border-bottom-style: hidden\n"),
+		CSS_BORDER_STYLE_DOTTED =>
+			ptr.push_str("border-bottom-style: dotted\n"),
+		CSS_BORDER_STYLE_DASHED =>
+			ptr.push_str("border-bottom-style: dashed\n"),
+		CSS_BORDER_STYLE_SOLID =>
+			ptr.push_str("border-bottom-style: solid\n"),
+		CSS_BORDER_STYLE_DOUBLE =>
+			ptr.push_str("border-bottom-style: double\n"),
+		CSS_BORDER_STYLE_GROOVE =>
+			ptr.push_str("border-bottom-style: groove\n"),
+		CSS_BORDER_STYLE_RIDGE =>
+			ptr.push_str("border-bottom-style: ridge\n"),
+		CSS_BORDER_STYLE_INSET =>
+			ptr.push_str("border-bottom-style: inset\n"),
+		CSS_BORDER_STYLE_OUTSET =>
+			ptr.push_str("border-bottom-style: outset\n"),
+	}
+
+
+	/* border-left-style */
+	let val = css_computed_border_left_style(style);
+	let val_enum: css_border_style_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BORDER_STYLE_INHERIT =>
+			ptr.push_str("border-left-style: inherit\n"),
+		CSS_BORDER_STYLE_NONE =>
+			ptr.push_str("border-left-style: none\n"),
+		CSS_BORDER_STYLE_HIDDEN =>
+			ptr.push_str("border-left-style: hidden\n"),
+		CSS_BORDER_STYLE_DOTTED =>
+			ptr.push_str("border-left-style: dotted\n"),
+		CSS_BORDER_STYLE_DASHED =>
+			ptr.push_str("border-left-style: dashed\n"),
+		CSS_BORDER_STYLE_SOLID =>
+			ptr.push_str("border-left-style: solid\n"),
+		CSS_BORDER_STYLE_DOUBLE =>
+			ptr.push_str("border-left-style: double\n"),
+		CSS_BORDER_STYLE_GROOVE =>
+			ptr.push_str("border-left-style: groove\n"),
+		CSS_BORDER_STYLE_RIDGE =>
+			ptr.push_str("border-left-style: ridge\n"),
+		CSS_BORDER_STYLE_INSET =>
+			ptr.push_str("border-left-style: inset\n"),
+		CSS_BORDER_STYLE_OUTSET =>
+			ptr.push_str("border-left-style: outset\n"),
+	}
+
+
+	/* border-top-width */
+	let (val,len1,unit1) = css_computed_border_top_width(style);
+	let val_enum: css_border_width_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BORDER_WIDTH_INHERIT =>
+			ptr.push_str("border-top-width: inherit\n"),
+		CSS_BORDER_WIDTH_THIN =>
+			ptr.push_str("border-top-width: thin\n"),
+		CSS_BORDER_WIDTH_MEDIUM =>
+			ptr.push_str("border-top-width: medium\n"),
+		CSS_BORDER_WIDTH_THICK =>
+			ptr.push_str("border-top-width: thick\n"),
+		CSS_BORDER_WIDTH_WIDTH => {
+			ptr.push_str("border-top-width: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+
 }
