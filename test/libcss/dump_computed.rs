@@ -731,4 +731,75 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 		CSS_CURSOR_PROGRESS =>
 			ptr.push_str(" progress\n"),
 	}
+
+	/* direction */
+	let val = css_computed_direction(style);
+	let val_enum: css_direction_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_DIRECTION_INHERIT =>
+			ptr.push_str("direction: inherit\n"),
+		CSS_DIRECTION_LTR =>
+			ptr.push_str("direction: ltr\n"),
+		CSS_DIRECTION_RTL =>
+			ptr.push_str("direction: rtl\n"),
+	}
+
+
+	/* display */
+	let val = css_computed_display_static(style);
+	let val_enum: css_display_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_DISPLAY_INHERIT =>
+			ptr.push_str("display: inherit\n"),
+		CSS_DISPLAY_INLINE =>
+			ptr.push_str("display: inline\n"),
+		CSS_DISPLAY_BLOCK =>
+			ptr.push_str("display: block\n"),
+		CSS_DISPLAY_LIST_ITEM =>
+			ptr.push_str("display: list-item\n"),
+		CSS_DISPLAY_RUN_IN =>
+			ptr.push_str("display: run-in\n"),
+		CSS_DISPLAY_INLINE_BLOCK =>
+			ptr.push_str("display: inline-block\n"),
+		CSS_DISPLAY_TABLE =>
+			ptr.push_str("display: table\n"),
+		CSS_DISPLAY_INLINE_TABLE =>
+			ptr.push_str("display: inline-table\n"),
+		CSS_DISPLAY_TABLE_ROW_GROUP =>
+			ptr.push_str("display: table-row-group\n"),
+		CSS_DISPLAY_TABLE_HEADER_GROUP =>
+			ptr.push_str("display: table-header-group\n"),
+		CSS_DISPLAY_TABLE_FOOTER_GROUP =>
+			ptr.push_str("display: table-footer-group\n"),
+		CSS_DISPLAY_TABLE_ROW =>
+			ptr.push_str("display: table-row\n"),
+		CSS_DISPLAY_TABLE_COLUMN_GROUP =>
+			ptr.push_str("display: table-column-group\n"),
+		CSS_DISPLAY_TABLE_COLUMN =>
+			ptr.push_str("display: table-column\n"),
+		CSS_DISPLAY_TABLE_CELL =>
+			ptr.push_str("display: table-cell\n"),
+		CSS_DISPLAY_TABLE_CAPTION =>
+			ptr.push_str("display: table-caption\n"),
+		CSS_DISPLAY_NONE =>
+			ptr.push_str("display: none\n"),
+	}
+
+
+	/* empty-cells */
+	let val = css_computed_empty_cells(style);
+	let val_enum: css_empty_cells_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_EMPTY_CELLS_INHERIT =>
+			ptr.push_str("empty-cells: inherit\n"),
+		CSS_EMPTY_CELLS_SHOW =>
+			ptr.push_str("empty-cells: show\n"),
+		CSS_EMPTY_CELLS_HIDE =>
+			ptr.push_str("empty-cells: hide\n"),
+	}
+
+
 }
