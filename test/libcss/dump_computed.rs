@@ -1003,4 +1003,70 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 			ptr.push_str("\n")
 		},
 	}
+
+	/* list-style-image */
+	let (val,url) = css_computed_list_style_image(style);
+    	
+	if (val == CSS_LIST_STYLE_IMAGE_INHERIT as u8) {
+        	ptr.push_str("list-style-image: inherit\n");
+	} else if (url != ~"") {
+		ptr.push_str(fmt!("list-style-image => url('%s')\n",url));
+	} else if (val == CSS_LIST_STYLE_IMAGE_NONE as u8) {
+		ptr.push_str("list-style-image: none\n");
+	} 
+
+	/* list-style-position */
+	let val = css_computed_list_style_position(style);
+	let val_enum: css_list_style_position_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_LIST_STYLE_POSITION_INHERIT =>
+			ptr.push_str("list-style-position: inherit\n"),
+		CSS_LIST_STYLE_POSITION_INSIDE =>
+			ptr.push_str("list-style-position: inside\n"),
+		CSS_LIST_STYLE_POSITION_OUTSIDE =>
+			ptr.push_str("list-style-position: outside\n"),
+	}
+
+
+	/* list-style-type */
+	let val = css_computed_list_style_type(style);
+	let val_enum: css_list_style_type_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_LIST_STYLE_TYPE_INHERIT =>
+			ptr.push_str("list-style-type: inherit\n"),
+		CSS_LIST_STYLE_TYPE_DISC =>
+			ptr.push_str("list-style-type: disc\n"),
+		CSS_LIST_STYLE_TYPE_CIRCLE =>
+			ptr.push_str("list-style-type: circle\n"),
+		CSS_LIST_STYLE_TYPE_SQUARE =>
+			ptr.push_str("list-style-type: square\n"),
+		CSS_LIST_STYLE_TYPE_DECIMAL =>
+			ptr.push_str("list-style-type: decimal\n"),
+		CSS_LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO =>
+			ptr.push_str(
+					"list-style-type: decimal-leading-zero\n"),
+		CSS_LIST_STYLE_TYPE_LOWER_ROMAN =>
+			ptr.push_str("list-style-type: lower-roman\n"),
+		CSS_LIST_STYLE_TYPE_UPPER_ROMAN =>
+			ptr.push_str("list-style-type: upper-roman\n"),
+		CSS_LIST_STYLE_TYPE_LOWER_GREEK =>
+			ptr.push_str("list-style-type: lower-greek\n"),
+		CSS_LIST_STYLE_TYPE_LOWER_LATIN =>
+			ptr.push_str("list-style-type: lower-latin\n"),
+		CSS_LIST_STYLE_TYPE_UPPER_LATIN =>
+			ptr.push_str("list-style-type: upper-latin\n"),
+		CSS_LIST_STYLE_TYPE_ARMENIAN =>
+			ptr.push_str("list-style-type: armenian\n"),
+		CSS_LIST_STYLE_TYPE_GEORGIAN =>
+			ptr.push_str("list-style-type: georgian\n"),
+		CSS_LIST_STYLE_TYPE_LOWER_ALPHA =>
+			ptr.push_str("list-style-type: lower-alpha\n"),
+		CSS_LIST_STYLE_TYPE_UPPER_ALPHA =>
+			ptr.push_str("list-style-type: upper-alpha\n"),
+		CSS_LIST_STYLE_TYPE_NONE =>
+			ptr.push_str("list-style-type: none\n"),
+	}
+
 }
