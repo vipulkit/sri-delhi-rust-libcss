@@ -1350,7 +1350,37 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 while value as int != FONT_FAMILY_END as int {
 
                     if value as int == (FONT_FAMILY_STRING as int | FONT_FAMILY_IDENT_LIST as int) {
-                        // TODO
+                        let snum = bytecode[iterator];
+                        iterator += 1;
+                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        
+                        if option_string.is_some() {
+                            ptr.push_char('\'');
+                            str::push_str(ptr , option_string.unwrap());
+                            ptr.push_char('\'');
+                        }
+                    }
+                    else if value as int == FONT_FAMILY_SERIF as int {
+                        str::push_str(ptr , &"serif");
+                    }
+                    else if value as int == FONT_FAMILY_SANS_SERIF as int {
+                        str::push_str(ptr , &"sans-serif");
+                    }
+                    else if value as int == FONT_FAMILY_CURSIVE as int {
+                        str::push_str(ptr , &"cursive");
+                    }
+                    else if value as int == FONT_FAMILY_FANTASY as int {
+                        str::push_str(ptr , &"fantasy");
+                    }
+                    else if value as int == FONT_FAMILY_MONOSPACE as int {
+                        str::push_str(ptr , &"monospace");
+                    }
+
+                    value = bytecode[iterator];
+                    iterator += 1;
+
+                    if value as int != FONT_FAMILY_END as int {
+                        str::push_str(ptr , &", ");
                     }
                 }
             }
@@ -1773,10 +1803,34 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
             }
 
+            // TODO review
             else if op as int == CSS_PROP_QUOTES as int{
 
                 if value as int == QUOTES_STRING as int {
-                    // TODO
+                    
+                    while value as int != QUOTES_NONE as int {
+                        
+                        let snum = bytecode[iterator];
+                        iterator += 1;
+                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+
+                        if option_string.is_some() {
+                            str::push_str(ptr , &" '");
+                            str::push_str(ptr , option_string.unwrap());
+                            str::push_str(ptr , &"' ");
+                        }
+
+                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+
+                        if option_string.is_some() {
+                            str::push_str(ptr , &" '");
+                            str::push_str(ptr , option_string.unwrap());
+                            str::push_str(ptr , &"' ");
+                        }
+                        iterator += 1;
+                        value = bytecode[iterator];
+                        iterator += 1;
+                    }
                 }
                 else if value as int == QUOTES_NONE as int {
                     str::push_str(ptr , &"none");
@@ -1977,7 +2031,38 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             }
 
             else if op as int == CSS_PROP_VOICE_FAMILY as int {
-                // TODO
+                
+                while value as int != VOICE_FAMILY_END as int {
+
+                    if value as int == (VOICE_FAMILY_STRING as int | VOICE_FAMILY_IDENT_LIST as int) {
+                        let snum = bytecode[iterator];
+                        iterator += 1;
+
+                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+
+                        if option_string.is_some() {
+                            ptr.push_char('\'');
+                            str::push_str(ptr , option_string.unwrap());
+                            ptr.push_char('\'');
+                        }
+                    }
+                    else if value as int == VOICE_FAMILY_MALE as int {
+                        str::push_str(ptr , &"male");
+                    }
+                    else if value as int == VOICE_FAMILY_FEMALE as int {
+                        str::push_str(ptr , &"female");
+                    }
+                    else if value as int == VOICE_FAMILY_CHILD as int {
+                        str::push_str(ptr , &"child");
+                    }
+
+                    value = bytecode[iterator];
+                    iterator += 1;
+
+                    if value as int != VOICE_FAMILY_END as int {
+                        str::push_str(ptr , &", ");
+                    }
+                }
             }
 
             else if op as int == CSS_PROP_VOLUME as int {
