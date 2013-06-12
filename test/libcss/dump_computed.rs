@@ -1133,4 +1133,149 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 		},
 	}
 
+	
+	/* max-width */
+	let (val, len1, unit1) = css_computed_max_width(style);
+	let val_enum: css_max_width_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_MAX_WIDTH_INHERIT =>
+			ptr.push_str("max-width: inherit\n"),
+		CSS_MAX_WIDTH_NONE =>
+			ptr.push_str("max-width: none\n"),
+		CSS_MAX_WIDTH_SET => {
+			ptr.push_str("max-width: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+
+	/* min-height */
+	let (val, len1, unit1) = css_computed_min_height(style);
+	let val_enum: css_min_height_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_MIN_HEIGHT_INHERIT =>
+			ptr.push_str("min-height: inherit\n"),
+		CSS_MIN_HEIGHT_SET => {
+			ptr.push_str("min-height: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+
+	/* min-width */
+	let (val, len1, unit1) = css_computed_min_width(style);
+	let val_enum: css_min_width_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+        CSS_MIN_WIDTH_INHERIT =>
+            ptr.push_str("min-width: inherit\n"),
+		CSS_MIN_WIDTH_SET => {
+			ptr.push_str("min-width: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+
+	/* opacity */
+	let (val, len1) = css_computed_opacity(style);
+	let val_enum: css_opacity_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+        	CSS_OPACITY_INHERIT => 
+			ptr.push_str("opacity: inherit\n"),
+		CSS_OPACITY_SET => {
+			ptr.push_str("opacity: ");
+			dump_css_fixed(len1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+
+	/* outline-color */
+	let (val,color) = css_computed_outline_color(style);
+	let val_enum: css_outline_color_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_OUTLINE_COLOR_INHERIT =>
+			ptr.push_str("outline-color: inherit\n"),
+		CSS_OUTLINE_COLOR_INVERT =>
+			ptr.push_str("outline-color: invert\n"),
+		CSS_OUTLINE_COLOR_COLOR =>
+			ptr.push_str(fmt!("outline-color: #%08x\n", color.unwrap() as uint)),
+		_ =>
+			{}
+	}
+
+
+	/* outline-style */
+	let val = css_computed_outline_style(style);
+	let val_enum: css_outline_style_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_OUTLINE_STYLE_INHERIT =>
+			ptr.push_str("outline-style: inherit\n"),
+		CSS_OUTLINE_STYLE_NONE =>
+			ptr.push_str("outline-style: none\n"),
+		CSS_OUTLINE_STYLE_DOTTED =>
+			ptr.push_str("outline-style: dotted\n"),
+		CSS_OUTLINE_STYLE_DASHED =>
+			ptr.push_str("outline-style: dashed\n"),
+		CSS_OUTLINE_STYLE_SOLID =>
+			ptr.push_str("outline-style: solid\n"),
+		CSS_OUTLINE_STYLE_DOUBLE =>
+			ptr.push_str("outline-style: double\n"),
+		CSS_OUTLINE_STYLE_GROOVE =>
+			ptr.push_str("outline-style: groove\n"),
+		CSS_OUTLINE_STYLE_RIDGE =>
+			ptr.push_str("outline-style: ridge\n"),
+		CSS_OUTLINE_STYLE_INSET =>
+			ptr.push_str("outline-style: inset\n"),
+		CSS_OUTLINE_STYLE_OUTSET =>
+			ptr.push_str("outline-style: outset\n"),
+	}
+
+
+	/* outline-width */
+	let (val, len1, unit1) = css_computed_outline_width(style);
+	let val_enum: css_outline_width_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_OUTLINE_WIDTH_INHERIT =>
+			ptr.push_str("outline-width: inherit\n"),
+		CSS_OUTLINE_WIDTH_THIN =>
+			ptr.push_str("outline-width: thin\n"),
+		CSS_OUTLINE_WIDTH_MEDIUM =>
+			ptr.push_str("outline-width: medium\n"),
+		CSS_OUTLINE_WIDTH_THICK =>
+			ptr.push_str("outline-width: thick\n"),
+		CSS_OUTLINE_WIDTH_WIDTH => {
+			ptr.push_str("outline-width: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+
+	/* overflow */
+	let val = css_computed_overflow(style);
+	let val_enum: css_overflow_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_OVERFLOW_INHERIT =>
+			ptr.push_str("overflow: inherit\n"),
+		CSS_OVERFLOW_VISIBLE =>
+			ptr.push_str("overflow: visible\n"),
+		CSS_OVERFLOW_HIDDEN =>
+			ptr.push_str("overflow: hidden\n"),
+		CSS_OVERFLOW_SCROLL =>
+			ptr.push_str("overflow: scroll\n"),
+		CSS_OVERFLOW_AUTO =>
+			ptr.push_str("overflow: auto\n"),
+	}
+
 }
