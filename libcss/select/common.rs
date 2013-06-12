@@ -710,7 +710,7 @@ pub struct css_select_handler {
 
     node_has_attribute: @extern fn(node:*libc::c_void, name:css_qname, matched:@mut bool) -> css_error,
     
-    node_has_name: @extern fn(node:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error,
+   // node_has_name: @extern fn(node:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error,
 
     node_has_attribute_equal: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
    
