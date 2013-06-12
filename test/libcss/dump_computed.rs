@@ -1278,4 +1278,33 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 			ptr.push_str("overflow: auto\n"),
 	}
 
+	/* padding-top */
+	let (val, len1, unit1) = css_computed_padding_top(style);
+	let val_enum: css_padding_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+        CSS_PADDING_INHERIT =>
+            ptr.push_str("padding-top => inherit\n"),
+		CSS_PADDING_SET => {
+			ptr.push_str("padding-top => ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+
+	/* padding-right */
+	let (val, len1, unit1) = css_computed_padding_right(style);
+	let val_enum: css_padding_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_PADDING_INHERIT =>
+			ptr.push_str("padding-right => inherit\n"),
+		CSS_PADDING_SET => {
+			ptr.push_str("padding-right => ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
 }
