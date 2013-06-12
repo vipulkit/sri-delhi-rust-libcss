@@ -1069,4 +1069,68 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 			ptr.push_str("list-style-type: none\n"),
 	}
 
+	/* margin-top */
+	let (val,len1,unit1) = css_computed_margin_top(style);
+	let val_enum: css_margin_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_MARGIN_INHERIT =>
+			ptr.push_str("margin-top: inherit\n"),
+		CSS_MARGIN_AUTO =>
+			ptr.push_str("margin-top: auto\n"),
+		CSS_MARGIN_SET => {
+			ptr.push_str("margin-top: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},	
+	}
+
+	/* margin-right */
+	let (val,len1,unit1) = css_computed_margin_right(style);
+	let val_enum: css_margin_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_MARGIN_INHERIT =>
+			ptr.push_str("margin-right: inherit\n"),
+		CSS_MARGIN_AUTO =>
+			ptr.push_str("margin-right: auto\n"),
+		CSS_MARGIN_SET => {
+			ptr.push_str("margin-right: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},	
+	}
+
+	/* margin-bottom */
+	let (val,len1,unit1) = css_computed_margin_bottom(style);
+	let val_enum: css_margin_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_MARGIN_INHERIT =>
+			ptr.push_str("margin-bottom: inherit\n"),
+		CSS_MARGIN_AUTO =>
+			ptr.push_str("margin-bottom: auto\n"),
+		CSS_MARGIN_SET => {
+			ptr.push_str("margin-bottom: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		}	
+	}
+
+	/* margin-left */
+	let (val,len1,unit1) = css_computed_margin_left(style);
+	let val_enum: css_margin_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_MARGIN_INHERIT =>
+			ptr.push_str("margin-left: inherit\n"),
+		CSS_MARGIN_AUTO =>
+			ptr.push_str("margin-left: auto\n"),
+		CSS_MARGIN_SET => {
+			ptr.push_str("margin-left: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
 }
