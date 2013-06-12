@@ -135,12 +135,15 @@ pub fn opcode_names() -> ~[~str] {
 }
 
 
-pub fn dump_sheet(sheet: &css_stylesheet) -> ~str {
+pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
     
+    io::println("Entering: dump_sheet");
     let mut ptr: ~str = ~"";
     let mut rule: Option<CSS_RULE_DATA_TYPE> = sheet.rule_list ;
     
+    io::println(fmt!("rule == %?" , rule));
     while rule.is_some() {
+        io::println(fmt!("rule == %?" , rule.unwrap()));
         match rule.unwrap() {
 
             RULE_SELECTOR(css_rule_selector_x)=>{
@@ -175,7 +178,12 @@ pub fn dump_sheet(sheet: &css_stylesheet) -> ~str {
             }
         }
     }
+    
+    io::println(fmt!("ptr == %?" , ptr));
+
     ptr
+
+
 }
 
 fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
@@ -424,19 +432,28 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
     
     let mut bytecode = copy style.bytecode;
-    let mut op: css_properties_e = CSS_PROP_AZIMUTH;
-    let mut value: u32 = 0;
+    let mut op: css_properties_e;
+    let mut value: u32;
     let opcode_names = opcode_names();
+    let mut iterator = 0;
+    
+    // for bytecode.each|&opv| {
+    while iterator < bytecode.len() {
+    
+        let mut opv = bytecode[iterator];
 
-    for bytecode.each|&opv| {
+        io::println(fmt!("bytecode == %?" , bytecode));
+
         op = getOpcode(opv);
         ptr.push_char('|');
 
         let mut i: u32 = 0;
+        
         while i<depth {
             ptr.push_char(' ');
             i+=1;
         }
+        
         str::push_str(ptr , opcode_names[op as int]);
         ptr.push_char(':');
         ptr.push_char(' ');
@@ -449,10 +466,17 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             value = getValue(opv) as u32;
 
             if op as int == CSS_PROP_AZIMUTH as int {
+                
                 let val = (value & !(AZIMUTH_BEHIND as u32));
 
                 if val as int == AZIMUTH_ANGLE as int {
-                    // TODO
+
+                    let some_val: i32 = bytecode[iterator] as i32;
+                    iterator += 1;
+                    let unit: u32 = bytecode[iterator];
+                    iterator += 1;
+                    dump_unit(some_val , unit , ptr);
+
                 }
                 else if val as int == AZIMUTH_LEFTWARDS as int {
                     str::push_str(ptr , &"leftwards");
@@ -518,7 +542,11 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     str::push_str(ptr , &"currentColor");   
                 }
                 else if value as int == BACKGROUND_COLOR_SET as int {
-                    // TODO
+                    
+                    let colour: u32 = bytecode[iterator];
+                    iterator += 1;
+                    let string = fmt!("#%08x" , colour as uint);
+                    str::push_str(ptr , string);
                 }
             }
             
@@ -538,7 +566,18 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
 
                 else if value as int == BACKGROUND_IMAGE_URI as int {
-                    // TODO
+                    
+                    let snum = bytecode[iterator];
+
+                    let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                    iterator += 1;
+
+                    if option_string.is_some() {
+                        str::push_str(ptr , &"url('");
+                        str::push_str(ptr , option_string.unwrap());
+                        str::push_str(ptr , &"')");    
+                    }
+
                 }
             }
 
@@ -547,7 +586,12 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 let val = value & 0xf0;
 
                 if val as int == BACKGROUND_POSITION_HORZ_SET as int {
-                    // TODO
+
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+                    dump_unit(some_val , unit , ptr);
                 }
 
                 else if val as int == BACKGROUND_POSITION_HORZ_CENTER as int {
@@ -572,7 +616,12 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 let val = value & 0x0f;
 
                 if val as int == BACKGROUND_POSITION_VERT_SET as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+                    dump_unit(some_val , unit , ptr);
                 }
 
                 else if val as int == BACKGROUND_POSITION_VERT_CENTER as int {
@@ -626,7 +675,18 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == CSS_PROP_BORDER_SPACING as int {
 
                 if value as int == BORDER_SPACING_SET as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator];
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+                    dump_unit(some_val as i32 , unit , ptr);
+
+                    let some_val = bytecode[iterator];
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+                    dump_unit(some_val as i32 , unit , ptr);
                 }
             }
 
@@ -706,7 +766,12 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 assert!(BORDER_WIDTH_THICK as int == OUTLINE_WIDTH_THICK as int);
 
                 if value as int == BORDER_WIDTH_SET as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator];
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+                    dump_unit(some_val as i32 , unit , ptr);
                 }
 
                 else if value as int == BORDER_WIDTH_THIN as int {
@@ -744,7 +809,12 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 assert!(BOTTOM_AUTO as int == COLUMN_WIDTH_AUTO as int);
 
                 if value as int == BOTTOM_SET as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator];
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+                    dump_unit(some_val as i32 , unit , ptr);
                 }
 
                 else if value as int == BOTTOM_AUTO as int {
@@ -853,7 +923,70 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
             else if op as int == CSS_PROP_CLIP as int {
                 
-                // TODO
+                if (value as int & CLIP_SHAPE_MASK as int) == CLIP_SHAPE_RECT as int {
+                    str::push_str(ptr , &"rect(");
+
+                    if (value as int & CLIP_RECT_TOP_AUTO as int) > 0 {
+
+                        str::push_str(ptr , &"auto");
+                    }
+                    else {
+
+                        let some_val = bytecode[iterator];
+                        iterator += 1;
+                        let unit = bytecode[iterator];
+                        iterator += 1;
+                        dump_unit(some_val as i32 , unit , ptr);
+                    }
+
+                    str::push_str(ptr , &", ");
+
+                    if (value as int & CLIP_RECT_RIGHT_AUTO as int) > 0 {
+
+                        str::push_str(ptr , &"auto");
+                    }
+                    else {
+
+                        let some_val = bytecode[iterator];
+                        iterator += 1;
+                        let unit = bytecode[iterator];
+                        iterator += 1;
+                        dump_unit(some_val as i32 , unit , ptr);
+                    }
+
+                    str::push_str(ptr , &", ");
+
+                    if (value as int & CLIP_RECT_BOTTOM_AUTO as int) > 0 {
+
+                        str::push_str(ptr , &"auto");
+                    }
+                    else {
+
+                        let some_val = bytecode[iterator];
+                        iterator += 1;
+                        let unit = bytecode[iterator];
+                        iterator += 1;
+                        dump_unit(some_val as i32 , unit , ptr);
+                    }
+
+                    str::push_str(ptr , &", ");
+
+                    if (value as int & CLIP_RECT_LEFT_AUTO as int) > 0 {
+
+                        str::push_str(ptr , &"auto");
+                    }
+                    else {
+
+                        let some_val = bytecode[iterator];
+                        iterator += 1;
+                        let unit = bytecode[iterator];
+                        iterator += 1;
+                        dump_unit(some_val as i32 , unit , ptr);
+                    }
+
+                    ptr.push_char(')');
+                }
+                str::push_str(ptr , &"auto");
             }
 
             else if op as int == CSS_PROP_COLOR as int {
@@ -867,14 +1000,21 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
 
                 else if value as int == COLOR_SET as int {
-                    // TODO
+                    
+                    let colour: u32 = bytecode[iterator];
+                    iterator += 1;
+                    let string = fmt!("#%08x" , colour as uint);
+                    str::push_str(ptr , string);
                 }
             }
 
             else if op as int == CSS_PROP_COLUMN_COUNT as int {
                 
                 if value as int == COLUMN_COUNT_SET as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator];
+                    iterator += 1;
+                    dump_number(some_val as i32 , ptr);
                 }
 
                 else if value as int == COLUMN_COUNT_AUTO as int {
@@ -896,7 +1036,12 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == CSS_PROP_COLUMN_GAP as int {
                 
                 if value as int == COLUMN_GAP_SET as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator];
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+                    dump_unit(some_val as i32 , unit , ptr);
                 }
 
                 else if value as int == COLUMN_GAP_NORMAL as int {
@@ -916,7 +1061,71 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             }
 
             else if op as int == CSS_PROP_CONTENT as int {
-                // TODO
+                
+                while value as int != CONTENT_NORMAL as int {
+
+                    let snum = bytecode[iterator];
+
+                    if (value as int & 0xff) == CONTENT_COUNTER as int {
+
+                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        iterator += 1;
+
+                        if option_string.is_some() {
+                            dump_counter(option_string.unwrap() , value , ptr);
+                        }
+                    }
+                    else if (value as int & 0xff) == CONTENT_COUNTER as int {
+
+                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        iterator += 1;
+                        let sep = bytecode[iterator];
+                        iterator += 1;
+
+                        if option_string.is_some() {
+                            dump_counters(option_string.unwrap() , fmt!("%?" , sep) , value , ptr);
+                        }
+                    }
+                    else if (value as int & 0xff) == (CONTENT_URI as int | CONTENT_ATTR as int | CONTENT_STRING as int) {
+
+                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+
+                        if value as int == CONTENT_URI as int {
+                            str::push_str(ptr , &"url(");
+                        }
+                        if value as int == CONTENT_ATTR as int {
+                            str::push_str(ptr , &"attr(");
+                        }
+                        if value as int == CONTENT_STRING as int {
+                            str::push_str(ptr , &")");
+                        }
+
+                        iterator += 1;
+
+                        if option_string.is_some() {
+                            ptr.push_char('\'');
+                            str::push_str(ptr , option_string.unwrap());
+                        }
+                    }
+                    else if (value as int & 0xff) == CONTENT_OPEN_QUOTE as int {
+                        str::push_str(ptr , "open-quote");
+                    }
+                    else if (value as int & 0xff) == CONTENT_CLOSE_QUOTE as int {
+                        str::push_str(ptr , "close-quote");
+                    }
+                    else if (value as int & 0xff) == CONTENT_NO_OPEN_QUOTE as int {
+                        str::push_str(ptr , "no-open-quote");
+                    }
+                    else if (value as int & 0xff) == CONTENT_NO_CLOSE_QUOTE as int {
+                        str::push_str(ptr , "no-close-quote");
+                    }
+                    value = bytecode[iterator];
+                    iterator += 1;
+
+                    if value as int != CONTENT_NORMAL as int {
+                        ptr.push_char(' ');
+                    }
+                } // end while
             }
 
             else if op as int == (CSS_PROP_COUNTER_INCREMENT as int | CSS_PROP_COUNTER_RESET as int) {
@@ -924,11 +1133,103 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 assert!(COUNTER_INCREMENT_NONE as int == COUNTER_RESET_NONE as int);
                 assert!(COUNTER_INCREMENT_NAMED as int == COUNTER_RESET_NAMED as int);
 
-                // TODO
+                if value as int == COUNTER_INCREMENT_NAMED as int {
+
+                    while value as int != COUNTER_INCREMENT_NONE as int {
+                        let snum = bytecode[iterator];
+                        iterator += 1;
+                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+
+                        if option_string.is_some() {
+                            str::push_str(ptr , option_string.unwrap());
+                        }
+
+                        let value = bytecode[iterator] as i32;
+                        iterator += 1;
+                        dump_number(value , ptr);
+
+                        let value = bytecode[iterator];
+                        iterator += 1;
+                        
+                        if value as int != COUNTER_INCREMENT_NONE as int {
+                            ptr.push_char(' ');
+                        }
+                    }
+                }
+
+                else if value as int == COUNTER_INCREMENT_NONE as int {
+                    str::push_str(ptr , &"none");
+                }
             }
 
             else if op as int == CSS_PROP_CURSOR as int {
-                // TODO
+                
+                while value as int == CURSOR_URI as int {
+                    let snum = bytecode[iterator];
+                    iterator += 1;
+                    let(_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+
+                    if option_string.is_some() {
+                        str::push_str(ptr , &"url('");
+                        str::push_str(ptr , option_string.unwrap());
+                        str::push_str(ptr , &"'), ");
+                    }
+
+                    value = bytecode[iterator];
+                    iterator += 1;
+                }
+
+                if value as int == CURSOR_AUTO as int {
+                    str::push_str(ptr , &"auto");
+                }
+                else if value as int == CURSOR_CROSSHAIR as int {
+                    str::push_str(ptr , &"crosshair");
+                }
+                else if value as int == CURSOR_DEFAULT as int {
+                    str::push_str(ptr , &"default");
+                }
+                else if value as int == CURSOR_POINTER as int {
+                    str::push_str(ptr , &"pointer");
+                }
+                else if value as int == CURSOR_MOVE as int {
+                    str::push_str(ptr , &"move");
+                }
+                else if value as int == CURSOR_E_RESIZE as int {
+                    str::push_str(ptr , &"e-resize");
+                }
+                else if value as int == CURSOR_NE_RESIZE as int {
+                    str::push_str(ptr , &"ne-resize");
+                }
+                else if value as int == CURSOR_NW_RESIZE as int {
+                    str::push_str(ptr , &"nw-resize");
+                }
+                else if value as int == CURSOR_N_RESIZE as int {
+                    str::push_str(ptr , &"n-resize");
+                }
+                else if value as int == CURSOR_SE_RESIZE as int {
+                    str::push_str(ptr , &"se-resize");
+                }
+                else if value as int == CURSOR_SW_RESIZE as int {
+                    str::push_str(ptr , &"sw-resize");
+                }
+                else if value as int == CURSOR_S_RESIZE as int {
+                    str::push_str(ptr , &"s-resize");
+                }
+                else if value as int == CURSOR_W_RESIZE as int {
+                    str::push_str(ptr , &"w-resize");
+                }
+                else if value as int == CURSOR_TEXT as int {
+                    str::push_str(ptr , &"text");
+                }
+                else if value as int == CURSOR_WAIT as int {
+                    str::push_str(ptr , &"wait");
+                }
+                else if value as int == CURSOR_HELP as int {
+                    str::push_str(ptr , &"help");
+                }
+                else if value as int == CURSOR_PROGRESS as int {
+                    str::push_str(ptr , &"progress");
+                }
             }
 
             else if op as int == CSS_PROP_DIRECTION as int {
@@ -996,7 +1297,13 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == CSS_PROP_ELEVATION as int {
 
                 if value as int == ELEVATION_ANGLE as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+
+                    dump_unit(some_val , unit , ptr);
                 }
                 else if value as int == ELEVATION_BELOW as int {
                     str::push_str(ptr , &"below");
@@ -1039,13 +1346,25 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             }
 
             else if op as int == CSS_PROP_FONT_FAMILY as int {
-                // TODO
+                
+                while value as int != FONT_FAMILY_END as int {
+
+                    if value as int == (FONT_FAMILY_STRING as int | FONT_FAMILY_IDENT_LIST as int) {
+                        // TODO
+                    }
+                }
             }
 
             else if op as int == CSS_PROP_FONT_SIZE as int {
 
                 if value as int == FONT_SIZE_DIMENSION as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+
+                    dump_unit(some_val , unit , ptr);
                 }
                 else if value as int == FONT_SIZE_XX_SMALL as int {
                     str::push_str(ptr , &"right");
@@ -1148,7 +1467,13 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 assert!(LETTER_SPACING_NORMAL as int == WORD_SPACING_NORMAL as int);
 
                 if value as int == LETTER_SPACING_SET as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+
+                    dump_unit(some_val , unit , ptr);
                 }
                 else if value as int == LETTER_SPACING_NORMAL as int {
                     str::push_str(ptr , &"normal");
@@ -1158,10 +1483,20 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == CSS_PROP_LINE_HEIGHT as int{
 
                 if value as int == LINE_HEIGHT_NUMBER as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+
+                    dump_number(some_val , ptr);
                 }
                 else if value as int == LINE_HEIGHT_DIMENSION as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+
+                    dump_unit(some_val , unit , ptr);
                 }
                 else if value as int == LINE_HEIGHT_NORMAL as int {
                     str::push_str(ptr , &"normal");
@@ -1233,7 +1568,13 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 assert!(MAX_HEIGHT_NONE as int == MAX_WIDTH_NONE as int);
                 
                 if value as int == MAX_HEIGHT_SET as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+
+                    dump_unit(some_val , unit , ptr);
                 }
                 else if value as int == MAX_HEIGHT_NONE as int {
                     str::push_str(ptr , &"none");
@@ -1243,7 +1584,11 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == CSS_PROP_OPACITY as int{
 
                 if value as int == OPACITY_SET as int {
-                    // TODO
+                   
+                   let some_val = bytecode[iterator] as i32;
+                   iterator += 1;
+
+                   dump_number(some_val , ptr);
                 }
             }
 
@@ -1258,7 +1603,13 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 assert!(MIN_HEIGHT_SET as int == TEXT_INDENT_SET as int);
 
                 if value as int == MIN_HEIGHT_SET as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+
+                    dump_unit(some_val , unit , ptr);
                 }
             }
 
@@ -1271,7 +1622,11 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 assert!(ORPHANS_SET as int == WIDOWS_SET as int);
 
                 if value as int == ORPHANS_SET as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+
+                    dump_number(some_val , ptr);
                 }
             }
 
@@ -1284,7 +1639,12 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     str::push_str(ptr , &"currentColor");
                 }
                 else if value as int == OUTLINE_COLOR_SET as int {
-                    // TODO
+                    
+                    let colour = bytecode[iterator];
+                    iterator += 1;
+
+                    let string = fmt!("#%08x" , colour as uint);
+                    str::push_str(ptr , string);
                 }
             }
 
@@ -1342,7 +1702,13 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == CSS_PROP_PITCH as int{
 
                 if value as int == PITCH_FREQUENCY as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+
+                    dump_unit(some_val , unit , ptr);
                 }
                 else if value as int == PITCH_X_LOW as int {
                     str::push_str(ptr , &"x-low");
@@ -1364,7 +1730,16 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == CSS_PROP_PLAY_DURING as int{
 
                 if value as int == PLAY_DURING_URI as int {
-                    // TODO
+                    
+                    let snum = bytecode[iterator];
+                    iterator += 1;
+                    let(_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+
+                    if option_string.is_some() {
+                        ptr.push_char('\'');
+                        str::push_str(ptr , option_string.unwrap());
+                        ptr.push_char('\'');
+                    }
                 }
                 else if value as int == PLAY_DURING_AUTO as int {
                     str::push_str(ptr , &"auto");
@@ -1454,7 +1829,10 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == CSS_PROP_SPEECH_RATE as int{
 
                 if value as int == SPEECH_RATE_SET as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    dump_number(some_val , ptr);
                 }
                 else if value as int == SPEECH_RATE_X_SLOW as int {
                     str::push_str(ptr , &"x-slow");
@@ -1565,7 +1943,12 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == CSS_PROP_VERTICAL_ALIGN as int{
 
                 if value as int == VERTICAL_ALIGN_SET as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator];
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+                    dump_unit(some_val as i32 , unit , ptr);
                 }
                 else if value as int == VERTICAL_ALIGN_BASELINE as int {
                     str::push_str(ptr , &"baseline");
@@ -1600,10 +1983,18 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == CSS_PROP_VOLUME as int {
                 
                 if value as int == VOLUME_NUMBER as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    dump_number(some_val , ptr);
                 }
                 else if value as int == VOLUME_DIMENSION as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    let unit = bytecode[iterator];
+                    iterator += 1;
+                    dump_unit(some_val , unit , ptr);
                 }
                 else if value as int == VOLUME_SILENT as int {
                     str::push_str(ptr , &"silent");
@@ -1647,7 +2038,10 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == CSS_PROP_Z_INDEX as int {
 
                 if value as int == Z_INDEX_SET as int {
-                    // TODO
+                    
+                    let some_val = bytecode[iterator] as i32;
+                    iterator += 1;
+                    dump_number(some_val , ptr);
                 }
                 else if value as int == Z_INDEX_AUTO as int {
                     str::push_str(ptr , &"auto");
