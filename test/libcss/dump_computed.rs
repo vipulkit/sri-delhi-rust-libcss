@@ -801,5 +801,116 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 			ptr.push_str("empty-cells: hide\n"),
 	}
 
+	/* float */
+	let val = css_computed_float(style);
+	let val_enum: css_float_e =  unsafe {cast::transmute(val as uint)}; 
 
+	match (val_enum) {
+		CSS_FLOAT_INHERIT =>
+			ptr.push_str("float: inherit\n"),
+		CSS_FLOAT_LEFT =>
+			ptr.push_str("float: left\n"),
+		CSS_FLOAT_RIGHT =>
+			ptr.push_str("float: right\n"),
+		CSS_FLOAT_NONE =>
+			ptr.push_str("float: none\n")
+	}
+
+	/* font-family */
+	let (val,string_list) = css_computed_font_family(style);
+	let mut string_list_index = 0;
+
+	if (val == CSS_FONT_FAMILY_INHERIT as u8) {
+                ptr.push_str("font-family: inherit\n");
+                
+        } else {
+		ptr.push_str("font-family:");
+		
+		if (string_list.len() != 0) {
+			while (string_list_index <  string_list.len()) {
+				ptr.push_str(fmt!(" \"%s\"",
+					string_list[string_list_index]));
+
+				string_list_index+=1;
+			}
+		}
+
+		let val_enum: css_font_family_e =  unsafe {cast::transmute(val as uint)}; 
+		match (val_enum) {
+			CSS_FONT_FAMILY_SERIF =>
+				ptr.push_str(" serif\n"),
+			CSS_FONT_FAMILY_SANS_SERIF =>
+				ptr.push_str(" sans-serif\n"),
+			CSS_FONT_FAMILY_CURSIVE =>
+				ptr.push_str(" cursive\n"),
+			CSS_FONT_FAMILY_FANTASY =>
+				ptr.push_str(" fantasy\n"),
+			CSS_FONT_FAMILY_MONOSPACE =>
+				ptr.push_str(" monospace\n"),
+			_ =>
+				{}
+		}
+		
+	}
+
+	/* font-size */
+	let (val,len1,unit1) = css_computed_font_size(style);
+	let val_enum: css_font_size_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_FONT_SIZE_INHERIT =>
+			ptr.push_str("font-size: inherit\n"),
+		CSS_FONT_SIZE_XX_SMALL =>
+			ptr.push_str("font-size: xx-small\n"),
+		CSS_FONT_SIZE_X_SMALL =>
+			ptr.push_str("font-size: x-small\n"),
+		CSS_FONT_SIZE_SMALL =>
+			ptr.push_str("font-size: small\n"),
+		CSS_FONT_SIZE_MEDIUM =>
+			ptr.push_str("font-size: medium\n"),
+		CSS_FONT_SIZE_LARGE =>
+			ptr.push_str("font-size: large\n"),
+		CSS_FONT_SIZE_X_LARGE =>
+			ptr.push_str("font-size: x-large\n"),
+		CSS_FONT_SIZE_XX_LARGE =>
+			ptr.push_str("font-size: xx-large\n"),
+		CSS_FONT_SIZE_LARGER =>
+			ptr.push_str("font-size: larger\n"),
+		CSS_FONT_SIZE_SMALLER =>
+			ptr.push_str("font-size: smaller\n"),
+		CSS_FONT_SIZE_DIMENSION => {
+			ptr.push_str("font-size: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		}	
+	}
+
+	/* font-style */
+	let val = css_computed_font_style(style);
+	let val_enum: css_font_style_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_FONT_STYLE_INHERIT =>
+			ptr.push_str("font-style: inherit\n"),
+		CSS_FONT_STYLE_NORMAL =>
+			ptr.push_str("font-style: normal\n"),
+		CSS_FONT_STYLE_ITALIC =>
+			ptr.push_str("font-style: italic\n"),
+		CSS_FONT_STYLE_OBLIQUE =>
+			ptr.push_str("font-style: oblique\n"),
+	}
+
+
+	/* font-variant */
+	let val = css_computed_font_variant(style);
+	let val_enum: css_font_variant_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_FONT_VARIANT_INHERIT =>
+			ptr.push_str("font-variant: inherit\n"),
+		CSS_FONT_VARIANT_NORMAL =>
+			ptr.push_str("font-variant: normal\n"),
+		CSS_FONT_VARIANT_SMALL_CAPS =>
+			ptr.push_str("font-variant: small-caps\n"),
+	}		
 }
