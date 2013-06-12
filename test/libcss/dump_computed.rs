@@ -129,20 +129,6 @@ fn dump_css_unit(val: css_fixed , unit: css_unit , ptr: &mut ~str) {
 pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 	let ptr = buf;
 	let mut val:u8;
-	let mut color_option:Option<css_color> = None;
-	let mut url: ~str = ~"";
-	let mut len1 = 0;
-	let mut len2 = 0;
-	let mut unit1:css_unit = CSS_UNIT_PX;
-	let mut unit2:css_unit = CSS_UNIT_PX;
-	let rect:@mut css_computed_clip_rect = @mut css_computed_clip_rect { 
-					top:0, right:0, bottom:0, left:0, tunit:CSS_UNIT_PX, runit:CSS_UNIT_PX,
-					bunit:CSS_UNIT_PX, lunit:CSS_UNIT_PX, top_auto:true, right_auto:true,
-					bottom_auto:true, left_auto:true };
-	let mut content:Option<@mut css_computed_content_item> = None;
-	let mut counter:Option<@mut css_computed_counter> = None;
-	//lwc_string **string_list = NULL;
-	let mut zindex:i32 = 0;
 
 	/* background-attachment */
 	val = css_computed_background_attachment(style);
@@ -913,4 +899,108 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 		CSS_FONT_VARIANT_SMALL_CAPS =>
 			ptr.push_str("font-variant: small-caps\n"),
 	}		
+
+	/* font-weight */
+	let val = css_computed_font_weight(style);
+	let val_enum: css_font_weight_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_FONT_WEIGHT_INHERIT =>
+			ptr.push_str("font-weight: inherit\n"),
+		CSS_FONT_WEIGHT_NORMAL =>
+			ptr.push_str("font-weight: normal\n"),
+		CSS_FONT_WEIGHT_BOLD =>
+			ptr.push_str("font-weight: bold\n"),
+		CSS_FONT_WEIGHT_BOLDER =>
+			ptr.push_str("font-weight: bolder\n"),
+		CSS_FONT_WEIGHT_LIGHTER =>
+			ptr.push_str("font-weight: lighter\n"),
+		CSS_FONT_WEIGHT_100 =>
+			ptr.push_str("font-weight: 100\n"),
+		CSS_FONT_WEIGHT_200 =>
+			ptr.push_str("font-weight: 200\n"),
+		CSS_FONT_WEIGHT_300 =>
+			ptr.push_str("font-weight: 300\n"),
+		CSS_FONT_WEIGHT_400 =>
+			ptr.push_str("font-weight: 400\n"),
+		CSS_FONT_WEIGHT_500 =>
+			ptr.push_str("font-weight: 500\n"),
+		CSS_FONT_WEIGHT_600 =>
+			ptr.push_str("font-weight: 600\n"),
+		CSS_FONT_WEIGHT_700 =>
+			ptr.push_str("font-weight: 700\n"),
+		CSS_FONT_WEIGHT_800 =>
+			ptr.push_str("font-weight: 800\n"),
+		CSS_FONT_WEIGHT_900 =>
+			ptr.push_str("font-weight: 900\n")
+	}
+
+	/* height */
+	let (val,len1,unit1) = css_computed_height(style);
+	let val_enum: css_height_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_HEIGHT_INHERIT =>
+			ptr.push_str("height: inherit\n"),
+		CSS_HEIGHT_AUTO =>
+			ptr.push_str("height: auto\n"),
+		CSS_HEIGHT_SET => {
+			ptr.push_str("height: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+	/* left */
+	let (val,len1,unit1) = css_computed_left(style);
+	let val_enum: css_left_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_LEFT_INHERIT =>
+			ptr.push_str("left: inherit\n"),
+		CSS_LEFT_AUTO =>
+			ptr.push_str("left: auto\n"),
+		CSS_LEFT_SET => {
+			ptr.push_str("left: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},	
+	}
+	
+	/* letter-spacing */
+	let (val,len1,unit1) = css_computed_letter_spacing(style);
+	let val_enum: css_letter_spacing_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_LETTER_SPACING_INHERIT =>
+			ptr.push_str("letter-spacing: inherit\n"),
+		CSS_LETTER_SPACING_NORMAL =>
+			ptr.push_str("letter-spacing: normal\n"),
+		CSS_LETTER_SPACING_SET => {
+			ptr.push_str("letter-spacing: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		}	
+	}
+
+
+	/* line-height */
+	let (val,len1,unit1) = css_computed_line_height(style);
+	let val_enum: css_line_height_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_LINE_HEIGHT_INHERIT =>
+			ptr.push_str("line-height: inherit\n"),
+		CSS_LINE_HEIGHT_NORMAL =>
+			ptr.push_str("line-height: normal\n"),
+		CSS_LINE_HEIGHT_NUMBER => {
+			ptr.push_str("line-height: ");
+			dump_css_fixed(len1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+		CSS_LINE_HEIGHT_DIMENSION => {
+			ptr.push_str("line-height => ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
 }
