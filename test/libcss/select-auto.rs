@@ -295,31 +295,67 @@ fn node_count_siblings(node:*libc::c_void, same_name:bool, after:bool, count:@mu
 }
     
 fn node_is_empty(node:*libc::c_void, matched:@mut bool) -> css_error {
-    CSS_OK
+
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = node1.children.is_none();
+	CSS_OK
 }
     
 fn node_is_link(node:*libc::c_void, matched:@mut bool) -> css_error {
-    CSS_OK
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = false;
+	CSS_OK
 }
 
 fn node_is_visited(node:*libc::c_void, matched:@mut bool) -> css_error {
-    CSS_OK
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = false;
+	CSS_OK
 }
 
 fn node_is_hover(node:*libc::c_void, matched:@mut bool) -> css_error {
-    CSS_OK
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = false;
+	CSS_OK
 }
 
 fn node_is_active(node:*libc::c_void, matched:@mut bool) -> css_error {
-    CSS_OK
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = false;
+	CSS_OK
 }
 
 fn node_is_focus(node:*libc::c_void, matched:@mut bool) -> css_error {
-    CSS_OK
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = false;
+	CSS_OK
 }
 
 fn node_is_enabled(node:*libc::c_void, matched:@mut bool) -> css_error {
-    CSS_OK
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = false;
+	CSS_OK
 }
 
 fn node_is_disabled(node:*libc::c_void, matched:@mut bool) -> css_error {
