@@ -15,6 +15,376 @@ use css::utils::errors::*;
 use css::select::common::*;
 //use css::select::dispatch::*;
 use css::stylesheet::*;
+use css::select::select::*;
+
+
+fn node_name(node:*libc::c_void, qname:css_qname ) -> css_error {
+	CSS_OK
+}
+
+fn node_classes(node:*libc::c_void, classes:~[~str] ) -> css_error {
+	CSS_OK
+}
+
+fn node_id(node:*libc::c_void, id:~str ) -> css_error {
+	CSS_OK
+}
+
+fn named_ancestor_node(node:*libc::c_void, qname:&mut css_qname, ancestor:**libc::c_void) -> css_error {
+	CSS_OK
+}
+   
+fn named_parent_node(node:*libc::c_void, qname:&mut css_qname, parent:**libc::c_void) -> css_error {
+	CSS_OK
+}
+    
+fn named_sibling_node(node:*libc::c_void, qname:&mut css_qname, sibling:**libc::c_void) -> css_error {
+	CSS_OK
+}
+
+fn named_generic_sibling_node(node:*libc::c_void, qname:&mut css_qname, sibling:**libc::c_void) -> css_error {
+	CSS_OK
+}
+    
+fn parent_node(node:*libc::c_void, parent:**libc::c_void) -> css_error {
+	CSS_OK
+}
+
+fn sibling_node(node:*libc::c_void, sibling:**libc::c_void) -> css_error {
+	CSS_OK
+}
+
+fn node_has_name(node:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error {
+	CSS_OK
+}
+
+fn node_has_class(node:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error {
+	CSS_OK
+}
+
+fn node_has_id(node:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error {
+	CSS_OK
+}
+
+fn node_has_attribute(node:*libc::c_void, name:css_qname, matched:@mut bool) -> css_error {
+	CSS_OK
+}
+    
+// fn node_has_name(node:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error {
+
+// }
+
+fn  node_has_attribute_equal(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error {
+	CSS_OK
+}
+   
+fn node_has_attribute_dashmatch(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error {
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	let mut i:u32 = 0 ;
+	let mut vlen = value.len();
+	*matched = false;
+	unsafe {
+		while (i as uint) < node1.attrs.len() {
+			*matched = str::eq(&lwc_string_data(node1.attrs[i].name.clone()),&qname.name);
+			if *matched {
+				break;
+			}
+			i += 1;
+		}
+	
+		if *matched {
+			let mut start = lwc_string_data(node1.attrs[i].value.clone());
+			let mut start_len :uint = 0;
+			let mut p:uint = 0;
+			let end:uint = start.len();
+			*matched =false;
+
+			while p < end {
+				if start[p] == '-' as u8 {
+					if (p - start_len == vlen) && 
+					(str::eq(&start.slice(start_len,start_len + vlen).to_owned().to_lower(),&value.to_lower())) {
+						*matched = true;
+						break;
+					}
+					start_len = p + 1;	
+				}
+				p +=1;
+			}
+		}
+	}
+	CSS_OK
+}
+
+fn node_has_attribute_includes(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error {
+	CSS_OK
+}
+
+fn node_has_attribute_prefix(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error {
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	let mut i:u32 = 0 ;
+	*matched = false;
+	unsafe {
+		while (i as uint) < node1.attrs.len() {
+			*matched = str::eq(&lwc_string_data(node1.attrs[i].name.clone()),&qname.name);
+			if *matched {
+				break;
+			}
+			i += 1;
+		}
+	
+		if *matched {
+			let mut len = lwc_string_length(node1.attrs[i].value.clone());
+			let mut data = lwc_string_data(node1.attrs[i].value.clone());
+			let vlen = value.len();
+			if len < vlen {
+				*matched = false;
+			}
+			else {
+				*matched = str::eq(&data.slice(0, vlen).to_owned().to_lower(),&value.to_lower());
+			}
+		}
+	}
+	CSS_OK
+}
+
+fn node_has_attribute_suffix(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error {
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	let mut i:u32 = 0 ;
+	*matched = false;
+	unsafe {
+		while (i as uint) < node1.attrs.len() {
+			*matched = str::eq(&lwc_string_data(node1.attrs[i].name.clone()),&qname.name);
+			if *matched {
+				break;
+			}
+			i += 1;
+		}
+	
+		if *matched {
+			let mut len = lwc_string_length(node1.attrs[i].value.clone());
+			let mut data = lwc_string_data(node1.attrs[i].value.clone());
+			let vlen = value.len();
+			let suffix_start = len - vlen;
+			if len < vlen {
+				*matched = false;
+			}
+			else {
+				*matched = str::eq(&data.slice(suffix_start,suffix_start + vlen).to_owned().to_lower(),&value/*.slice(0,vlen).to_owned()*/.to_lower());
+			}
+		}
+	}
+	
+
+	CSS_OK
+}
+
+fn node_has_attribute_substring(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error {
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	let mut i:u32 = 0 ;
+	*matched = false;
+	unsafe {
+		while (i as uint) < node1.attrs.len() {
+			*matched = str::eq(&lwc_string_data(node1.attrs[i].name.clone()),&qname.name);
+			if *matched {
+				break;
+			}
+			i += 1;
+		}
+		if *matched {
+			let mut len = lwc_string_length(node1.attrs[i].value.clone());
+			let mut data = lwc_string_data(node1.attrs[i].value.clone());
+			let vlen = value.len();
+			let last_start_len = len -vlen;
+			let last_start = data.slice(last_start_len,data.len()).to_owned();
+			if len < vlen {
+				*matched = false;
+			}
+			else {
+				let mut iter:uint = 0;
+				while iter < last_start_len {
+					if str::eq(&data.slice(iter,iter + vlen).to_owned().to_lower(),& value/*.slice(0,vlen).to_owned()*/.to_lower()) {
+						*matched =true;
+						break;
+					}
+					iter += 1;
+				}
+				if iter > last_start_len {
+					*matched = false;
+				}
+			}
+		}
+	}
+	CSS_OK
+}
+
+fn node_is_root(node:*libc::c_void, matched:@mut bool) -> css_error {
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = node1.parent.is_none();
+	CSS_OK
+}
+   
+fn node_count_siblings(node:*libc::c_void, same_name:bool, after:bool, count:@mut i32) -> css_error {
+	let mut cnt : i32 = 0;
+	let mut matched=  false;
+	//*matched =false;
+	let mut node1:@mut node;
+	let mut name: arc::RWARC<~lwc_string> ;
+	unsafe {
+		node1 = ::cast::transmute(node);
+		name = (node1.name).get_ref().clone();
+	}
+	
+	if after {
+		while node1.next.is_some() {
+			if same_name {
+				let mut next_name: arc::RWARC<~lwc_string> ;
+				let mut temp_node = (copy node1.next).unwrap();
+				unsafe {
+					next_name = temp_node.name.get_ref().clone();
+				}
+				do lwc().write |l| {
+					matched = l.lwc_string_caseless_isequal(name.clone(),next_name.clone()); 
+				}
+				if matched {
+					cnt += 1;
+				}
+			}
+			else {
+				cnt += 1;
+			}
+			node1 = node1.next.unwrap();
+		}
+	}
+	else {
+		while node1.prev.is_some() {
+			if same_name {
+				let mut prev_name: arc::RWARC<~lwc_string> ;
+				let mut temp_node = (copy node1.prev).unwrap();
+				unsafe {
+					prev_name = temp_node.name.get_ref().clone();
+				}
+				do lwc().write |l| {
+					matched = l.lwc_string_caseless_isequal(name.clone(),prev_name.clone()); 
+				}
+				if matched {
+					cnt += 1;
+				}
+			}
+			else {
+				cnt += 1;
+			}
+			node1 = node1.prev.unwrap();
+		}
+	}
+	*count = cnt;
+	CSS_OK
+}
+    
+fn node_is_empty(node:*libc::c_void, matched:@mut bool) -> css_error {
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = node1.children.is_none();
+	CSS_OK
+}
+    
+fn node_is_link(node:*libc::c_void, matched:@mut bool) -> css_error {
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = false;
+	CSS_OK
+}
+
+fn node_is_visited(node:*libc::c_void, matched:@mut bool) -> css_error {
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = false;
+	CSS_OK
+}
+
+fn node_is_hover(node:*libc::c_void, matched:@mut bool) -> css_error {
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = false;
+	CSS_OK
+}
+
+fn node_is_active(node:*libc::c_void, matched:@mut bool) -> css_error {
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = false;
+	CSS_OK
+}
+
+fn node_is_focus(node:*libc::c_void, matched:@mut bool) -> css_error {
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = false;
+	CSS_OK
+}
+
+fn node_is_enabled(node:*libc::c_void, matched:@mut bool) -> css_error {
+	let mut node1:@mut node;
+	unsafe {
+		node1 = ::cast::transmute(node);
+	}
+	*matched = false;
+	CSS_OK
+}
+
+fn node_is_disabled(node:*libc::c_void, matched:@mut bool) -> css_error {
+	CSS_OK
+}
+
+fn node_is_checked(node:*libc::c_void, matched:@mut bool) -> css_error {
+	CSS_OK
+}
+ 
+fn node_is_target(node:*libc::c_void, matched:@mut bool) -> css_error {
+	CSS_OK
+}
+
+fn node_is_lang(node:*libc::c_void, lang:~str, matched:@mut bool) -> css_error {
+	CSS_OK
+}
+
+fn node_presentational_hint(node:*libc::c_void, property:u32) -> (css_error,Option<@mut css_hint>) {
+	(CSS_OK,None)
+}
+
+fn compute_font_size(parent: Option<@mut css_hint>, size: Option<@mut css_hint>) -> css_error {
+	CSS_OK
+}
+   
+fn ua_default_for_property(property:u32, hint:@mut css_hint ) -> css_error {
+	CSS_OK
+}
 
 pub struct attribute {
 	name:arc::RWARC<~lwc_string>,
@@ -437,7 +807,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&str) {
 		media = css__parse_media_list(data.slice(p, length - 1), ctx);
 	}
 	let params = css_create_params();
-	let sheet = css::css_create(params, None);
+	let sheet:@mut css = css::css_create(params, None);
 	let sheet_ctx = @mut sheet_ctx {
 		sheet:sheet,
 		origin:origin,
@@ -604,7 +974,128 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&str) {
 	}
 }
 
-pub fn run_test(ctx:@mut line_ctx) {
+pub fn run_test( ctx:@mut line_ctx) {
+	let mut select: ~css_select_ctx;
+	let mut results: css_select_results;
+
+	let mut i:u32=0;
+	let mut buf:~str= ~"";
+	//let mut bufLen:uint;
+	let mut testnum: int;//TODO static
+
+	select = css_select_ctx::css_select_ctx_create();
+	unsafe {
+		while i < (ctx.sheets.len() as u32) {
+			match select.css_select_ctx_append_sheet(ctx.sheets[i].sheet.stylesheet,ctx.sheets[i].origin,ctx.sheets[i].media) {
+				CSS_OK => {},
+				_ => fail!()
+			}
+			i += 1;
+		}
+	}
+	let select_handler: @mut css_select_handler = @mut css_select_handler {
+	node_name: @node_name,
+
+    node_classes: @node_classes,
+
+    node_id: @node_id,
+
+    named_ancestor_node: @named_ancestor_node,
+   
+    named_parent_node: @named_parent_node,
+    
+    named_sibling_node: @named_sibling_node,
+
+    named_generic_sibling_node: @named_generic_sibling_node,
+    
+    parent_node: @parent_node,
+
+    sibling_node: @sibling_node,
+
+    node_has_name: @node_has_name,
+
+    node_has_class: @node_has_class,
+
+    node_has_id: @node_has_id,
+
+    node_has_attribute: @node_has_attribute,
+    
+    //node_has_name: @node_has_name,
+
+    node_has_attribute_equal: @node_has_attribute_equal,
+   
+    node_has_attribute_dashmatch: @node_has_attribute_dashmatch,
+
+    node_has_attribute_includes: @node_has_attribute_includes,
+
+    node_has_attribute_prefix: @node_has_attribute_prefix,
+
+    node_has_attribute_suffix: @node_has_attribute_suffix,
+
+    node_has_attribute_substring: @node_has_attribute_substring,
+
+    node_is_root: @node_is_root,
+   
+    node_count_siblings: @node_count_siblings,
+    
+    node_is_empty: @node_is_empty,
+    
+    node_is_link: @node_is_link,
+
+    node_is_visited: @node_is_visited,
+
+    node_is_hover: @node_is_hover,
+
+    node_is_active: @node_is_active,
+
+    node_is_focus: @node_is_focus,
+
+    node_is_enabled: @node_is_enabled,
+
+    node_is_disabled: @node_is_disabled,
+
+    node_is_checked: @node_is_checked,
+ 
+    node_is_target: @node_is_target,
+
+    node_is_lang: @node_is_lang,
+
+    node_presentational_hint: @node_presentational_hint,
+
+    compute_font_size: @compute_font_size,
+   
+    ua_default_for_property: @ua_default_for_property,
+    handler_version:1
+};//TODO
+	//testnum += 1;
+	unsafe {
+		let mut result = select.css_select_style(::cast::transmute(ctx.target.unwrap()),ctx.media as u64,None,select_handler);
+	    match result {
+	    	(CSS_OK,Some(x)) => results = x,
+	    	_=> fail!()
+	    }
+	}
+
+	assert!(results.styles[ctx.pseudo_element].is_some());
+	dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
+	let mut string:~str = copy ctx.exp;
+	string = string.slice(0,ctx.explen).to_owned().to_lower();
+	if 8192 - buf.len() !=  ctx.explen || str::eq(&buf.slice(0,ctx.explen).to_owned().to_lower(),&string) {
+		io::println(fmt!("Expected : %?, %?",copy ctx.explen,string));
+		io::println(fmt!("Result: %?,%?",8192-buf.len(),buf));
+	}
+	//css_select_ctx::css_select_results_destroy(&results);
+	ctx.tree = None;
+	ctx.current = None;
+	ctx.depth = 0;
+	//ctx->n_sheets = 0;
+	ctx.sheets= ~[];
+	ctx.target = None;
+
+	
+}
+
+fn dump_computed_style(mut style:@mut css_computed_style, buf:&mut ~str) {
 
 }
 
@@ -651,5 +1142,3 @@ pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
 fn selection_test() {
 	select_test(~"data/select/tests1.dat");
 }
-
-
