@@ -518,4 +518,137 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 		CSS_CAPTION_SIDE_BOTTOM =>
 			ptr.push_str("caption-side: bottom\n"),
 	}
+
+	/* clear */
+	let val = css_computed_clear(style);
+	let val_enum: css_clear_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_CLEAR_INHERIT =>
+			ptr.push_str("clear: inherit\n"),
+		CSS_CLEAR_NONE =>
+			ptr.push_str("clear: none\n"),
+		CSS_CLEAR_LEFT =>
+			ptr.push_str("clear: left\n"),
+		CSS_CLEAR_RIGHT =>
+			ptr.push_str("clear: right\n"),
+		CSS_CLEAR_BOTH =>
+			ptr.push_str("clear: both\n"),
+	}
+
+
+	/* clip */
+	let (val,rect_option) = css_computed_clip(style);
+	let rect = rect_option.unwrap();
+	let val_enum: css_clip_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_CLIP_INHERIT =>
+			ptr.push_str("clip: inherit\n"),
+		CSS_CLIP_AUTO =>
+			ptr.push_str("clip: auto\n"),
+		CSS_CLIP_RECT => {
+			ptr.push_str("clip: rect( ");
+			
+			if (rect.top_auto) {
+				ptr.push_str("auto");
+			}	
+			else {
+				dump_css_unit(rect.top, rect.tunit, ptr);
+			}			
+			ptr.push_str(", ");
+			
+			if (rect.right_auto) {
+				ptr.push_str("auto");
+			}
+			else {
+				dump_css_unit(rect.right, rect.runit, ptr);
+			}			
+			ptr.push_str(", ");
+			
+			if (rect.bottom_auto) {
+				ptr.push_str("auto");
+			}	
+			else {
+				dump_css_unit(rect.bottom, rect.bunit, ptr);
+			}			
+			ptr.push_str(", ");
+			
+			if (rect.left_auto) {
+				ptr.push_str("auto");
+			}	
+			else {
+				dump_css_unit(rect.left, rect.lunit, ptr);
+			}			
+			ptr.push_str(")\n")
+		},	
+	}
+
+
+	/* color */
+	let (val,color) = css_computed_color(style);
+        if (val == CSS_COLOR_INHERIT as u8) {
+                ptr.push_str("color: inherit\n");
+	} else if (val == CSS_COLOR_COLOR as u8) {
+		ptr.push_str(fmt!("color: #%08x\n", color.unwrap() as uint));
+	}
+
+	/* content */
+	let (val,content) = css_computed_content(style);
+	let val_enum: css_content_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_CONTENT_INHERIT =>
+			ptr.push_str("content: inherit\n"),
+		CSS_CONTENT_NONE =>
+			ptr.push_str("content: none\n"),
+		CSS_CONTENT_NORMAL =>
+			ptr.push_str("content: normal\n"),
+		CSS_CONTENT_SET => {
+			ptr.push_str("content:");
+			let mut content_index = 0;
+
+			while (content[content_index].item_type as uint != CSS_COMPUTED_CONTENT_NONE as uint) {
+				ptr.push_str(" ");
+
+			match (content[content_index].item_type) {
+				CSS_COMPUTED_CONTENT_STRING =>
+					ptr.push_str( fmt!(
+						"\"%s\"",
+						unsafe{copy *content[content_index].data.get_ref()})) ,
+				CSS_COMPUTED_CONTENT_URI =>
+					ptr.push_str( fmt!(
+						"uri(\"%s\")",
+						unsafe{copy *content[content_index].data.get_ref()})),
+				CSS_COMPUTED_CONTENT_COUNTER =>
+					ptr.push_str( fmt!(
+						"counter(%s)",
+						unsafe{copy  content[content_index].counters_data.get_ref().name})),
+				CSS_COMPUTED_CONTENT_COUNTERS =>
+					ptr.push_str( fmt!(
+						"counters(%s, \"%s\")",
+						unsafe{copy content[content_index].counters_data.get_ref().name},
+						unsafe{copy *content[content_index].counters_data.get_ref().sep.get_ref()})),
+				CSS_COMPUTED_CONTENT_ATTR =>
+					ptr.push_str( fmt!(
+						"attr(%s)",
+						unsafe{copy *content[content_index].data.get_ref()})),
+				CSS_COMPUTED_CONTENT_OPEN_QUOTE =>
+					ptr.push_str(
+						"open-quote"),
+				CSS_COMPUTED_CONTENT_CLOSE_QUOTE =>
+					ptr.push_str(
+						"close-quote"),
+				CSS_COMPUTED_CONTENT_NO_OPEN_QUOTE =>
+					ptr.push_str(
+						"no-open-quote"),
+				CSS_COMPUTED_CONTENT_NO_CLOSE_QUOTE =>
+					ptr.push_str(
+						"no-close-quote"),
+				_ => {}
+			}
+
+				content_index+=1;
+			}
+
+			ptr.push_str("\n")
+		}
+	}
 }
