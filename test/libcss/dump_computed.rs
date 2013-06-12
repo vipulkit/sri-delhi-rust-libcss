@@ -190,10 +190,10 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 	/* background-position */
 	let result:rect_result = css_computed_background_position(style);
 	if (result.result == CSS_BACKGROUND_POSITION_INHERIT as u8) {
-                ptr.push_str("background-position => inherit\n");
+                ptr.push_str("background-position: inherit\n");
     	}
 	else if (result.result == CSS_BACKGROUND_POSITION_SET as u8) {
-		ptr.push_str("background-position => ");
+		ptr.push_str("background-position: ");
 		
 		dump_css_unit(result.hlength, result.hunit, ptr);
 		ptr.push_str(" ");
@@ -201,5 +201,61 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 		dump_css_unit(result.vlength, result.vunit, ptr);
 		ptr.push_str("\n");
 		
+	}
+
+	/* background-repeat */
+	let val = css_computed_background_repeat(style);
+	let val_enum: css_background_repeat_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BACKGROUND_REPEAT_INHERIT =>
+			ptr.push_str("background-repeat: inherit\n"),
+		CSS_BACKGROUND_REPEAT_REPEAT_X =>
+			ptr.push_str("background-repeat: repeat-x\n"),
+		CSS_BACKGROUND_REPEAT_REPEAT_Y =>
+			ptr.push_str("background-repeat: repeat-y\n"),
+		CSS_BACKGROUND_REPEAT_REPEAT =>
+			ptr.push_str("background-repeat: repeat\n"),
+		CSS_BACKGROUND_REPEAT_NO_REPEAT =>
+			ptr.push_str("background-repeat: no-repeat\n"),
+	}
+
+
+	/* border-collapse */
+	let val = css_computed_border_collapse(style);
+	let val_enum: css_border_collapse_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BORDER_COLLAPSE_INHERIT =>
+			ptr.push_str("border-collapse: inherit\n"),
+		CSS_BORDER_COLLAPSE_SEPARATE =>
+			ptr.push_str("border-collapse: separate\n"),
+		CSS_BORDER_COLLAPSE_COLLAPSE =>
+			ptr.push_str("border-collapse: collapse\n"),
+	}
+
+
+	/* border-spacing */
+	let result = css_computed_border_spacing(style);
+	if (result.result == CSS_BORDER_SPACING_INHERIT as u8) {
+        	ptr.push_str("border-spacing: inherit\n");
+    	}	 
+	else if (result.result == CSS_BORDER_SPACING_SET as u8) {
+		ptr.push_str("border-spacing: ");
+		dump_css_unit(result.hlength, result.hunit, ptr);
+		ptr.push_str(" ");
+		dump_css_unit(result.vlength, result.vunit, ptr);
+		ptr.push_str("\n");
+		
+	}
+
+	/* border-top-color */
+	let (val,color) = css_computed_border_top_color(style);
+	let val_enum: css_border_color_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BORDER_COLOR_INHERIT =>
+			ptr.push_str("border-top-color: inherit\n"),
+		CSS_BORDER_COLOR_CURRENT_COLOR =>
+			ptr.push_str("border-top-color: currentColor\n"),
+		CSS_BORDER_COLOR_COLOR =>
+			ptr.push_str(fmt!("border-top-color: #%08x\n", color as uint)),
 	}
 }
