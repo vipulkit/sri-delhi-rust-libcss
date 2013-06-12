@@ -651,4 +651,84 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 			ptr.push_str("\n")
 		}
 	}
+
+	/* counter-increment */
+	let (val,counter) = css_computed_counter_increment(style);
+	let mut counter_index = 0;
+	if (val == CSS_COUNTER_INCREMENT_INHERIT as u8) {
+			ptr.push_str("counter-increment: inherit\n");
+	}
+	else if (counter.len() == 0) {
+		ptr.push_str("counter-increment: none\n");
+	} 
+	else {
+		ptr.push_str("counter-increment:");
+	
+		while (counter[counter_index].name != ~"") {
+			ptr.push_str(fmt!(" %s ",
+				copy counter[counter_index].name));
+			
+			dump_css_fixed(counter[counter_index].value, ptr);
+			
+			counter_index+=1;
+		}
+
+		ptr.push_str("\n");
+	}
+
+
+	/* cursor */
+	let (val,string_list_option) = css_computed_cursor(style);
+	ptr.push_str("cursor:");
+	let mut string_list_index = 0;
+
+	if (!string_list_option.is_none()) {
+		let string_list = string_list_option.unwrap();
+
+		while (string_list_index < string_list.len()) {
+			ptr.push_str(fmt!(" url('%s')",
+					string_list[string_list_index]));
+			string_list_index+=1;
+		}
+	}
+
+	let val_enum: css_cursor_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_CURSOR_INHERIT =>
+			ptr.push_str(" inherit\n"),
+		CSS_CURSOR_AUTO =>
+			ptr.push_str(" auto\n"),
+		CSS_CURSOR_CROSSHAIR =>
+			ptr.push_str(" crosshair\n"),
+		CSS_CURSOR_DEFAULT =>
+			ptr.push_str(" default\n"),
+		CSS_CURSOR_POINTER =>
+			ptr.push_str(" pointer\n"),
+		CSS_CURSOR_MOVE =>
+			ptr.push_str(" move\n"),
+		CSS_CURSOR_E_RESIZE =>
+			ptr.push_str(" e-resize\n"),
+		CSS_CURSOR_NE_RESIZE =>
+			ptr.push_str(" ne-resize\n"),
+		CSS_CURSOR_NW_RESIZE =>
+			ptr.push_str(" nw-resize\n"),
+		CSS_CURSOR_N_RESIZE =>
+			ptr.push_str(" n-resize\n"),
+		CSS_CURSOR_SE_RESIZE =>
+			ptr.push_str(" se-resize\n"),
+		CSS_CURSOR_SW_RESIZE =>
+			ptr.push_str(" sw-resize\n"),
+		CSS_CURSOR_S_RESIZE =>
+			ptr.push_str(" s-resize\n"),
+		CSS_CURSOR_W_RESIZE =>
+			ptr.push_str(" w-resize\n"),
+		CSS_CURSOR_TEXT =>
+			ptr.push_str(" text\n"),
+		CSS_CURSOR_WAIT =>
+			ptr.push_str(" wait\n"),
+		CSS_CURSOR_HELP =>
+			ptr.push_str(" help\n"),
+		CSS_CURSOR_PROGRESS =>
+			ptr.push_str(" progress\n"),
+	}
 }
