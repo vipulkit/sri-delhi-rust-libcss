@@ -237,7 +237,7 @@ pub impl css_parser {
             return parser_error;
         }
         let token = token_option.unwrap();
-
+        io::println(fmt!("Entering : eat_ws token.token_type == %?" , token.token_type));
         match token.token_type {
             CSS_TOKEN_S => {
                 return CSS_OK;
@@ -683,17 +683,17 @@ pub impl css_parser {
                         return parser_error;
                     }
                     let token = token_option.unwrap();
+                    parser.push_back(token);
 
                     match (token.token_type) {
                         CSS_TOKEN_EOF => {
-                            parser.push_back(token);
+                            
                             parser.done();
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
 
                         CSS_TOKEN_CHAR => {
                             let c = token.data.data[0] as char;
-                            parser.push_back(token);
                             if (c != '}' && c != ';') {
                                 /* If this can't possibly be the start of a decl-list, then
                                  * attempt to parse a declaration. This will catch any invalid
@@ -711,7 +711,6 @@ pub impl css_parser {
                         } /* CSS_TOKEN_CHAR */
 
                         _ => {
-                            parser.push_back(token);
                                 
                             let to = (sDeclaration as uint, Initial as uint);
                             let subsequent = (sRulesetEnd as uint, DeclList as uint);
@@ -724,7 +723,7 @@ pub impl css_parser {
 
                 1 /* DeclList */ =>  {
                     let to = (sDeclList as uint, Initial as uint);
-                    let subsequent = (sRuleset as uint, Brace as uint);
+                    let subsequent = (sRulesetEnd as uint, Brace as uint);
 
                     parser.transition(to,subsequent);
                     return CSS_OK;
@@ -737,6 +736,7 @@ pub impl css_parser {
                     }
                     let token = token_option.unwrap();
 
+                    io::println(fmt!("parse_ruleset_end: token.token_type == %?" , token.token_type));
                     match token.token_type {
                         CSS_TOKEN_EOF => {
                             parser.push_back(token);
@@ -749,7 +749,7 @@ pub impl css_parser {
                             if (c != '}') {
                                 /* This should never happen, as FOLLOW(decl-list)
                                  * contains only '}' */
-                                fail!();
+                                fail!(~"Expected }");
                             }
                             current_substate = WS as uint;
                         }
@@ -1361,8 +1361,8 @@ pub impl css_parser {
 
         let mut (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sDeclList as uint);
-
         while (true) {
+            io::println(fmt!("Entering: decl-list: current_substate == %?" , current_substate));
             match (current_substate) {
                 0 /* Initial */ => {
                     let (parser_error, token_option) = parser.get_token();
