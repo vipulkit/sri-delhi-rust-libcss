@@ -125,7 +125,7 @@ pub fn select_test(file:~str) {
 
 pub fn resolve_url(base:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>){
 
-	(CSS_OK, None)
+	(CSS_OK, Some(rel.clone()))
 }
 
 pub fn css_create_params() -> css_params {
@@ -607,6 +607,38 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&str) {
 pub fn run_test(ctx:@mut line_ctx) {
 
 }
+
+pub fn node_name(_:*libc::c_void, node:*libc::c_void, qname : @mut css_qname) -> css_error {
+
+	let node_box : @mut node;
+	unsafe {
+		node_box = ::cast::transmute(node);
+	}
+	
+	match node_box.name {
+		None => { 
+			qname.name = ~"";
+		}
+		Some(T) => {
+			qname.name = lwc_string_data(T.clone());
+		}
+	}
+
+	CSS_OK
+}
+
+/**
+pub fn(pw:*libc::c_void, n:*libc::c_void, classes:~[~str] ) -> css_error{
+	let mut node : @mut node;
+	let mut lc : @mut line_ctx;
+	unsafe {
+		node = ::cast::transmute(n);
+		lc = ::cast::transmute(pw);
+	}
+	
+	let mut i 
+}
+*/
 
 pub fn main() {
 	io::println(fmt!("\n Starting select-auto test cases "));
