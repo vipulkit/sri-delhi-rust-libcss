@@ -432,5 +432,90 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 		},
 	}
 
+	
+	/* border-right-width */
+	let (val, len1, unit1) = css_computed_border_right_width(style);
+	let val_enum: css_border_width_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BORDER_WIDTH_INHERIT =>
+			ptr.push_str("border-right-width: inherit\n"),
+		CSS_BORDER_WIDTH_THIN =>
+			ptr.push_str("border-right-width: thin\n"),
+		CSS_BORDER_WIDTH_MEDIUM =>
+			ptr.push_str("border-right-width: medium\n"),
+		CSS_BORDER_WIDTH_THICK =>
+			ptr.push_str("border-right-width: thick\n"),
+		CSS_BORDER_WIDTH_WIDTH => {
+			ptr.push_str("border-right-width: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
 
+
+	/* border-bottom-width */
+	let (val, len1, unit1) = css_computed_border_bottom_width(style);
+	let val_enum: css_border_width_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BORDER_WIDTH_INHERIT =>
+			ptr.push_str("border-bottom-width: inherit\n"),
+		CSS_BORDER_WIDTH_THIN =>
+			ptr.push_str("border-bottom-width: thin\n"),
+		CSS_BORDER_WIDTH_MEDIUM =>
+			ptr.push_str("border-bottom-width: medium\n"),
+		CSS_BORDER_WIDTH_THICK =>
+			ptr.push_str("border-bottom-width: thick\n"),
+		CSS_BORDER_WIDTH_WIDTH => {
+			ptr.push_str("border-bottom-width: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+
+	/* border-left-width */
+	let (val, len1, unit1) = css_computed_border_left_width(style);
+	let val_enum: css_border_width_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BORDER_WIDTH_INHERIT =>
+			ptr.push_str("border-left-width: inherit\n"),
+		CSS_BORDER_WIDTH_THIN =>
+			ptr.push_str("border-left-width: thin\n"),
+		CSS_BORDER_WIDTH_MEDIUM =>
+			ptr.push_str("border-left-width: medium\n"),
+		CSS_BORDER_WIDTH_THICK =>
+			ptr.push_str("border-left-width: thick\n"),
+		CSS_BORDER_WIDTH_WIDTH => {
+			ptr.push_str("border-left-width: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+	/* bottom */
+	let (val, len1, unit1) = css_computed_bottom(style);
+	let val_enum: css_bottom_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BOTTOM_INHERIT =>
+			ptr.push_str("bottom: inherit\n"),
+		CSS_BOTTOM_AUTO =>
+			ptr.push_str("bottom: auto\n"),
+		CSS_BOTTOM_SET => {
+			ptr.push_str("bottom: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		}
+	}
+
+	/* caption-side */
+	let val = css_computed_caption_side(style);
+	let val_enum: css_caption_side_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_CAPTION_SIDE_INHERIT =>
+			ptr.push_str("caption-side: inherit\n"),
+		CSS_CAPTION_SIDE_TOP =>
+			ptr.push_str("caption-side: top\n"),
+		CSS_CAPTION_SIDE_BOTTOM =>
+			ptr.push_str("caption-side: bottom\n"),
+	}
 }
