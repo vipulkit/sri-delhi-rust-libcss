@@ -258,4 +258,101 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 		CSS_BORDER_COLOR_COLOR =>
 			ptr.push_str(fmt!("border-top-color: #%08x\n", color as uint)),
 	}
+
+	/* border-right-color */
+	let (val,color) = css_computed_border_right_color(style);
+	let val_enum: css_border_color_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BORDER_COLOR_INHERIT =>
+			ptr.push_str("border-right-color: inherit\n"),
+		CSS_BORDER_COLOR_CURRENT_COLOR =>
+			ptr.push_str("border-right-color: currentColor\n"),
+		CSS_BORDER_COLOR_COLOR =>
+			ptr.push_str(fmt!("border-right-color: #%08x\n", color as uint)),
+	}
+
+
+	/* border-bottom-color */
+	let (val,color) = css_computed_border_bottom_color(style);
+	let val_enum: css_border_color_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BORDER_COLOR_INHERIT =>
+			ptr.push_str("border-bottom-color:  inherit\n"),
+		CSS_BORDER_COLOR_CURRENT_COLOR =>
+			ptr.push_str("border-bottom-color: currentColor\n"),
+		CSS_BORDER_COLOR_COLOR =>
+			ptr.push_str(fmt!("border-bottom-color: #%08x\n", color as uint)),
+	}
+
+
+	/* border-left-color */
+	let (val,color) = css_computed_border_left_color(style);
+	let val_enum: css_border_color_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BORDER_COLOR_INHERIT =>
+			ptr.push_str("border-left-color: inherit\n"),
+		CSS_BORDER_COLOR_CURRENT_COLOR =>
+			ptr.push_str("border-left-color: currentColor\n"),
+		CSS_BORDER_COLOR_COLOR =>
+			ptr.push_str(fmt!("border-left-color: #%08x\n", color as uint)),
+	}
+
+
+	/* border-top-style */
+	let val = css_computed_border_top_style(style);
+	let val_enum: css_border_style_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BORDER_STYLE_INHERIT =>
+			ptr.push_str("border-top-style: inherit\n"),
+		CSS_BORDER_STYLE_NONE =>
+			ptr.push_str("border-top-style: none\n"),
+		CSS_BORDER_STYLE_HIDDEN =>
+			ptr.push_str("border-top-style: hidden\n"),
+		CSS_BORDER_STYLE_DOTTED =>
+			ptr.push_str("border-top-style: dotted\n"),
+		CSS_BORDER_STYLE_DASHED =>
+			ptr.push_str("border-top-style: dashed\n"),
+		CSS_BORDER_STYLE_SOLID =>
+			ptr.push_str("border-top-style: solid\n"),
+		CSS_BORDER_STYLE_DOUBLE =>
+			ptr.push_str("border-top-style: double\n"),
+		CSS_BORDER_STYLE_GROOVE =>
+			ptr.push_str("border-top-style: groove\n"),
+		CSS_BORDER_STYLE_RIDGE =>
+			ptr.push_str("border-top-style: ridge\n"),
+		CSS_BORDER_STYLE_INSET =>
+			ptr.push_str("border-top-style: inset\n"),
+		CSS_BORDER_STYLE_OUTSET =>
+			ptr.push_str("border-top-style: outset\n"),
+	}
+
+
+	/* border-right-style */
+	let val = css_computed_border_right_style(style);
+	let val_enum: css_border_style_e =  unsafe {cast::transmute(val as uint)}; 
+	match (val_enum) {
+		CSS_BORDER_STYLE_INHERIT =>
+			ptr.push_str("border-right-style: inherit\n"),
+		CSS_BORDER_STYLE_NONE =>
+			ptr.push_str("border-right-style: none\n"),
+		CSS_BORDER_STYLE_HIDDEN =>
+			ptr.push_str("border-right-style: hidden\n"),
+		CSS_BORDER_STYLE_DOTTED =>
+			ptr.push_str("border-right-style: dotted\n"),
+		CSS_BORDER_STYLE_DASHED =>
+			ptr.push_str("border-right-style: dashed\n"),
+		CSS_BORDER_STYLE_SOLID =>
+			ptr.push_str("border-right-style: solid\n"),
+		CSS_BORDER_STYLE_DOUBLE =>
+			ptr.push_str("border-right-style: double\n"),
+		CSS_BORDER_STYLE_GROOVE =>
+			ptr.push_str("border-right-style: groove\n"),
+		CSS_BORDER_STYLE_RIDGE =>
+			ptr.push_str("border-right-style: ridge\n"),
+		CSS_BORDER_STYLE_INSET =>
+			ptr.push_str("border-right-style: inset\n"),
+		CSS_BORDER_STYLE_OUTSET =>
+			ptr.push_str("border-right-style: outset\n"),
+	}
+
 }
