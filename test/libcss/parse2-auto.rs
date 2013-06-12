@@ -164,6 +164,9 @@ fn testMain(fileName: ~str) {
 }
 
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
+    io::println(fmt!("entering run_test"));
+    io::println(fmt!("data == %?" , data));
+    io::println(fmt!("exp == %?" , exp));
     let mut css = create_css();
     let mut buf: ~str = ~"";
     let mut error = css.css_stylesheet_append_data(data);
@@ -180,7 +183,17 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     }
 
     buf = dump_sheet(css.stylesheet);
-    // let exp_len = exp.len();
+    let mut vec_buf = ~[];
+    for str::each_line(buf) |s| {
+        vec_buf.push(s.to_owned().to_bytes());
+    }
+
+    let exp_len = exp.len();
+    let buf_len = buf.len();
+
+
+
+    assert!(vec_buf == exp);
 
     // let mut bool_value = false;
     // let mut i = 0;
