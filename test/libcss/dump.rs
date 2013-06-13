@@ -18,7 +18,7 @@ use wapcaplet::*;
  */
 // pub static opcode_names: ~[~str] = ~[
 pub fn opcode_names() -> ~[~str] {
-
+    io::println("Entering : opcode_names");
     ~[
         ~"azimuth",
         ~"background-attachment",
@@ -138,12 +138,34 @@ pub fn opcode_names() -> ~[~str] {
 pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
     
     io::println("Entering: dump_sheet");
-    let mut ptr: ~str = ~"";
-    let mut rule: Option<CSS_RULE_DATA_TYPE> = sheet.rule_list ;
+
     
-    io::println(fmt!("rule == %?" , rule));
+    unsafe {
+        // io::println("Entering: unsafe");
+        // // io::println(fmt!("sheet.selectors == %?" , sheet.selectors));
+        // io::println(fmt!("sheet.rule_count == %?" , sheet.rule_count));
+        // // io::println(fmt!("sheet.last_rule == %?" , sheet.last_rule));
+        // io::println(fmt!("sheet.disabled == %?" , sheet.disabled));
+        // io::println(fmt!("sheet.url == %?" , sheet.url));
+        // io::println(fmt!("sheet.title == %?" , sheet.title));
+        // io::println(fmt!("sheet.level == %?" , sheet.level));
+        // io::println(fmt!("sheet.quirks_allowed == %?" , sheet.quirks_allowed));
+        // io::println(fmt!("sheet.quirks_used == %?" , sheet.quirks_used));
+        // io::println(fmt!("sheet.inline_style == %?" , sheet.inline_style));
+        // io::println(fmt!("sheet.cached_style == %?" , sheet.cached_style));
+        // io::println(fmt!("sheet.string_vector == %?" , sheet.string_vector));
+        // io::println(fmt!("sheet.resolve == %?" , sheet.resolve));
+        // io::println(fmt!("sheet.import == %?" , sheet.import));
+        // io::println(fmt!("sheet.font == %?" , sheet.font));
+        // io::println(fmt!("sheet.color == %?" , sheet.color));
+        
+        // io::println(fmt!("sheet.rule_list == %?" , sheet.rule_list));
+    }
+    let mut rule: Option<CSS_RULE_DATA_TYPE> = sheet.rule_list ;
+    let mut ptr: ~str = ~"";
+    //io::println(fmt!("rule == %?" , rule));
     while rule.is_some() {
-        io::println(fmt!("rule == %?" , rule.unwrap()));
+        //io::println(fmt!("rule == %?" , rule.unwrap()));
         match rule.unwrap() {
 
             RULE_SELECTOR(css_rule_selector_x)=>{
@@ -187,6 +209,7 @@ pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
 }
 
 fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
+    io::println("Entering: dump_rule_selector");
     let mut i = 0;
 
     ptr.push_char('|');
@@ -195,36 +218,46 @@ fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
         i += 1;
     }
     
-    i = 0;
-    while i < s.base.index {
-        dump_selector_list(s.selectors[i], ptr);
-        if i != (s.base.index -1) {
-            ptr.push_char(',');
-            ptr.push_char(' ');
+    unsafe { 
+        for s.selectors.eachi |i , &sel| {
+            dump_selector_list(sel, ptr);
+            
+            if !(i == s.selectors.len() - 1) {
+                ptr.push_char(',');
+                ptr.push_char(' ');
+            }
         }
-        i += 1; 
     }
     ptr.push_char('\n');
     if s.style.is_some() {
         dump_bytecode(s.style.unwrap() , ptr, depth +1);
     }
+
+    io::println(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_rule_charset(s:@mut css_rule_charset, ptr:&mut ~str) {
+    io::println("Entering: dump_rule_charset");
     str::push_str(ptr , &"| @charset(");
     str::push_str(ptr , copy s.encoding);
     ptr.push_char(')');
     ptr.push_char('\n');
+
+    io::println(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_rule_import(s:@mut css_rule_import, ptr:&mut ~str){
+    io::println("Entering: dump_rule_import");
     str::push_str(ptr , &"| @import url(");
     str::push_str(ptr, copy s.url);
     ptr.push_char('\n');
+
+    io::println(fmt!("ptr == %?" , ptr));
 }
 
 // TODO
 fn dump_rule_media(s:@mut css_rule_media, ptr: &mut ~str) {
+    io::println("Entering: dump_rule_media");
     str::push_str(ptr, &"| @media ");
     ptr.push_char('\n');
 
@@ -242,9 +275,12 @@ fn dump_rule_media(s:@mut css_rule_media, ptr: &mut ~str) {
             }
         }
     }
+
+    io::println(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_rule_page(s:@ mut css_rule_page, ptr:&mut ~str){
+    io::println("Entering: dump_rule_page");
     str::push_str(ptr , &"| @page ");
 
     if s.selector.is_some() {
@@ -256,17 +292,23 @@ fn dump_rule_page(s:@ mut css_rule_page, ptr:&mut ~str){
     if s.style.is_some() {
         dump_bytecode(s.style.unwrap() , ptr, 2);
     }   
+
+    io::println(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_rule_font_face(s:@mut css_rule_font_face, ptr:&mut ~str){
+    io::println("Entering: dump_rule_font_face");
     str::push_str(ptr , &"| @font-face ");
     if s.font_face.is_some() {
         dump_font_face(s.font_face.unwrap(), ptr);
     }
     ptr.push_char('\n');
+
+    io::println(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
+    io::println("Entering: dump_selector_list");
     if list.combinator.is_some() {
         dump_selector_list(list.combinator.unwrap(),ptr);
     }
@@ -298,19 +340,24 @@ fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
 
     }
     dump_selector(list, ptr);
+
+    io::println(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_selector(selector:@mut css_selector, ptr:&mut ~str){
+    io::println("Entering: dump_selector");
     let mut d:~[@mut css_selector_detail] = copy selector.data;
     let mut iter:uint = 0;
     while iter < d.len() {
         dump_selector_detail(d[iter], ptr, (iter != (d.len() - 1)));
         iter += 1;
     }   
+
+    io::println(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_next:bool ) {
-
+    io::println("Entering: dump_selector_detail");
     if detail.negate {
         str::push_str(ptr,&":not(");
     }
@@ -427,11 +474,15 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
     if detail.negate {
         ptr.push_char(')');
     }
+
+    io::println(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
     
+    io::println("Entering: dump_bytecode");
     let mut bytecode = copy style.bytecode;
+    io::println(fmt!("bytecode == %?" , bytecode));
     let mut op: css_properties_e;
     let mut value: u32;
     let opcode_names = opcode_names();
@@ -441,7 +492,8 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
     while iterator < bytecode.len() {
     
         let mut opv = bytecode[iterator];
-
+        io::println(fmt!("iterator == %?" , iterator));
+        io::println(fmt!("opv == %?" , opv));    
         io::println(fmt!("bytecode == %?" , bytecode));
 
         op = getOpcode(opv);
@@ -526,9 +578,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
             }
 
-            else if op as int == (CSS_PROP_BORDER_TOP_COLOR as int | CSS_PROP_BORDER_RIGHT_COLOR as int 
-            | CSS_PROP_BORDER_BOTTOM_COLOR as int | CSS_PROP_BORDER_LEFT_COLOR as int 
-            | CSS_PROP_BACKGROUND_COLOR as int | CSS_PROP_COLUMN_RULE_COLOR as int) {
+            else if (op as int == CSS_PROP_BORDER_TOP_COLOR as int || op as int == CSS_PROP_BORDER_RIGHT_COLOR as int 
+            || op as int == CSS_PROP_BORDER_BOTTOM_COLOR as int || op as int == CSS_PROP_BORDER_LEFT_COLOR as int 
+            || op as int == CSS_PROP_BACKGROUND_COLOR as int || op as int == CSS_PROP_COLUMN_RULE_COLOR as int) {
 
                 assert!(BACKGROUND_COLOR_TRANSPARENT as int == BORDER_COLOR_TRANSPARENT as int);
                 assert!(BACKGROUND_COLOR_CURRENT_COLOR as int == BORDER_COLOR_CURRENT_COLOR as int);
@@ -550,9 +602,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
             }
             
-            else if op as int == (CSS_PROP_BACKGROUND_IMAGE as int | CSS_PROP_CUE_AFTER as int 
-            | CSS_PROP_CUE_BEFORE as int | CSS_PROP_LIST_STYLE_IMAGE as int 
-            | CSS_PROP_BACKGROUND_COLOR as int | CSS_PROP_COLUMN_RULE_COLOR as int) {
+            else if op as int == CSS_PROP_BACKGROUND_IMAGE as int || op as int == CSS_PROP_CUE_AFTER as int 
+            || op as int == CSS_PROP_CUE_BEFORE as int || op as int == CSS_PROP_LIST_STYLE_IMAGE as int 
+            || op as int == CSS_PROP_BACKGROUND_COLOR as int || op as int == CSS_PROP_COLUMN_RULE_COLOR as int {
                 
                 assert!(BACKGROUND_IMAGE_NONE as int == CUE_AFTER_NONE as int);
                 assert!(BACKGROUND_IMAGE_URI as int == CUE_AFTER_URI as int);
@@ -690,9 +742,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
             }
 
-            else if op as int == (CSS_PROP_BORDER_TOP_STYLE as int | CSS_PROP_BORDER_RIGHT_STYLE as int | 
-            CSS_PROP_BORDER_BOTTOM_STYLE as int | CSS_PROP_BORDER_LEFT_STYLE as int | 
-            CSS_PROP_COLUMN_RULE_STYLE as int | CSS_PROP_OUTLINE_STYLE as int) {
+            else if op as int == CSS_PROP_BORDER_TOP_STYLE as int || op as int == CSS_PROP_BORDER_RIGHT_STYLE as int || 
+            op as int == CSS_PROP_BORDER_BOTTOM_STYLE as int || op as int == CSS_PROP_BORDER_LEFT_STYLE as int || 
+            op as int == CSS_PROP_COLUMN_RULE_STYLE as int || op as int == CSS_PROP_OUTLINE_STYLE as int {
 
                 assert!(BORDER_STYLE_NONE as int == OUTLINE_STYLE_NONE as int);
                 assert!(BORDER_STYLE_NONE as int == COLUMN_RULE_STYLE_NONE as int);
@@ -756,9 +808,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
             }
 
-            else if op as int == (CSS_PROP_BORDER_TOP_WIDTH as int | CSS_PROP_BORDER_RIGHT_WIDTH as int | 
-            CSS_PROP_BORDER_BOTTOM_WIDTH as int | CSS_PROP_BORDER_LEFT_WIDTH as int | 
-            CSS_PROP_COLUMN_RULE_WIDTH as int | CSS_PROP_OUTLINE_WIDTH as int) {
+            else if op as int == CSS_PROP_BORDER_TOP_WIDTH as int || op as int == CSS_PROP_BORDER_RIGHT_WIDTH as int || 
+            op as int == CSS_PROP_BORDER_BOTTOM_WIDTH as int || op as int == CSS_PROP_BORDER_LEFT_WIDTH as int || 
+            op as int == CSS_PROP_COLUMN_RULE_WIDTH as int || op as int == CSS_PROP_OUTLINE_WIDTH as int {
 
                 assert!(BORDER_WIDTH_SET as int == OUTLINE_WIDTH_SET as int);
                 assert!(BORDER_WIDTH_THIN as int == OUTLINE_WIDTH_THIN as int);
@@ -787,11 +839,11 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
             }
 
-            else if op as int == (CSS_PROP_MARGIN_TOP as int | CSS_PROP_MARGIN_RIGHT as int | 
-            CSS_PROP_MARGIN_BOTTOM as int | CSS_PROP_MARGIN_LEFT as int | 
-            CSS_PROP_BOTTOM as int | CSS_PROP_LEFT as int | CSS_PROP_RIGHT as int | 
-            CSS_PROP_TOP as int | CSS_PROP_HEIGHT as int | CSS_PROP_WIDTH as int | 
-            CSS_PROP_COLUMN_WIDTH as int) {
+            else if op as int == CSS_PROP_MARGIN_TOP as int || op as int == CSS_PROP_MARGIN_RIGHT as int || 
+            op as int == CSS_PROP_MARGIN_BOTTOM as int || op as int == CSS_PROP_MARGIN_LEFT as int || 
+            op as int == CSS_PROP_BOTTOM as int || op as int == CSS_PROP_LEFT as int || op as int == CSS_PROP_RIGHT as int || 
+            op as int == CSS_PROP_TOP as int || op as int == CSS_PROP_HEIGHT as int || op as int == CSS_PROP_WIDTH as int || 
+            op as int == CSS_PROP_COLUMN_WIDTH as int {
 
                 assert!(BOTTOM_SET as int == LEFT_SET as int);
                 assert!(BOTTOM_AUTO as int == LEFT_AUTO as int);
@@ -822,7 +874,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
             }
 
-            else if op as int == (CSS_PROP_BREAK_AFTER as int | CSS_PROP_BREAK_BEFORE as int) {
+            else if op as int == CSS_PROP_BREAK_AFTER as int || op as int == CSS_PROP_BREAK_BEFORE as int {
 
                 assert!(BREAK_AFTER_AUTO as int == BREAK_BEFORE_AUTO as int);
                 assert!(BREAK_AFTER_ALWAYS as int == BREAK_BEFORE_ALWAYS as int);
@@ -1086,7 +1138,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                             dump_counters(option_string.unwrap() , fmt!("%?" , sep) , value , ptr);
                         }
                     }
-                    else if (value as int & 0xff) == (CONTENT_URI as int | CONTENT_ATTR as int | CONTENT_STRING as int) {
+                    else if (value as int & 0xff) == CONTENT_URI as int || (value as int & 0xff) == CONTENT_ATTR as int || (value as int & 0xff) == CONTENT_STRING as int {
 
                         let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
 
@@ -1128,7 +1180,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 } // end while
             }
 
-            else if op as int == (CSS_PROP_COUNTER_INCREMENT as int | CSS_PROP_COUNTER_RESET as int) {
+            else if op as int == CSS_PROP_COUNTER_INCREMENT as int || op as int == CSS_PROP_COUNTER_RESET as int {
                 
                 assert!(COUNTER_INCREMENT_NONE as int == COUNTER_RESET_NONE as int);
                 assert!(COUNTER_INCREMENT_NAMED as int == COUNTER_RESET_NAMED as int);
@@ -1349,7 +1401,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 
                 while value as int != FONT_FAMILY_END as int {
 
-                    if value as int == (FONT_FAMILY_STRING as int | FONT_FAMILY_IDENT_LIST as int) {
+                    if value as int == FONT_FAMILY_STRING as int || value as int == FONT_FAMILY_IDENT_LIST as int {
                         let snum = bytecode[iterator];
                         iterator += 1;
                         let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
@@ -1491,7 +1543,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
             }
 
-            else if op as int == (CSS_PROP_LETTER_SPACING as int | CSS_PROP_WORD_SPACING as int){
+            else if op as int == CSS_PROP_LETTER_SPACING as int || op as int == CSS_PROP_WORD_SPACING as int{
 
                 assert!(LETTER_SPACING_SET as int == WORD_SPACING_SET as int);
                 assert!(LETTER_SPACING_NORMAL as int == WORD_SPACING_NORMAL as int);
@@ -1592,7 +1644,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
             }
 
-            else if op as int == (CSS_PROP_MAX_HEIGHT as int | CSS_PROP_MAX_WIDTH as int){
+            else if op as int == CSS_PROP_MAX_HEIGHT as int || op as int == CSS_PROP_MAX_WIDTH as int{
 
                 assert!(MAX_HEIGHT_SET as int == MAX_WIDTH_SET as int);
                 assert!(MAX_HEIGHT_NONE as int == MAX_WIDTH_NONE as int);
@@ -1622,9 +1674,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
             }
 
-            else if op as int == (CSS_PROP_PADDING_TOP as int | CSS_PROP_PADDING_RIGHT as int
-            | CSS_PROP_PADDING_BOTTOM as int | CSS_PROP_PADDING_LEFT as int | CSS_PROP_MIN_HEIGHT as int | CSS_PROP_MIN_WIDTH as int 
-            | CSS_PROP_PAUSE_AFTER as int | CSS_PROP_PAUSE_BEFORE as int | CSS_PROP_TEXT_INDENT as int){
+            else if op as int == CSS_PROP_PADDING_TOP as int || op as int == CSS_PROP_PADDING_RIGHT as int
+            || op as int == CSS_PROP_PADDING_BOTTOM as int || op as int == CSS_PROP_PADDING_LEFT as int || op as int == CSS_PROP_MIN_HEIGHT as int || op as int == CSS_PROP_MIN_WIDTH as int 
+            || op as int == CSS_PROP_PAUSE_AFTER as int || op as int == CSS_PROP_PAUSE_BEFORE as int || op as int == CSS_PROP_TEXT_INDENT as int{
 
                 assert!(MIN_HEIGHT_SET as int == MIN_WIDTH_SET as int);
                 assert!(MIN_HEIGHT_SET as int == PADDING_SET as int);
@@ -1643,8 +1695,8 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
             }
 
-            else if op as int == (CSS_PROP_ORPHANS as int | CSS_PROP_PITCH_RANGE as int
-            | CSS_PROP_RICHNESS as int | CSS_PROP_STRESS as int | CSS_PROP_WIDOWS as int) {
+            else if op as int == CSS_PROP_ORPHANS as int || op as int == CSS_PROP_PITCH_RANGE as int
+            || op as int == CSS_PROP_RICHNESS as int || op as int == CSS_PROP_STRESS as int || op as int == CSS_PROP_WIDOWS as int {
 
                 assert!(ORPHANS_SET as int == PITCH_RANGE_SET as int);
                 assert!(ORPHANS_SET as int == RICHNESS_SET as int);
@@ -1694,7 +1746,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
             }
 
-            else if op as int == (CSS_PROP_PAGE_BREAK_AFTER as int | CSS_PROP_PAGE_BREAK_BEFORE as int) {
+            else if op as int == CSS_PROP_PAGE_BREAK_AFTER as int || op as int == CSS_PROP_PAGE_BREAK_BEFORE as int {
                 
                 assert!(PAGE_BREAK_AFTER_AUTO as int == PAGE_BREAK_BEFORE_AUTO as int);
                 assert!(PAGE_BREAK_AFTER_ALWAYS as int == PAGE_BREAK_BEFORE_ALWAYS as int);
@@ -2034,7 +2086,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 
                 while value as int != VOICE_FAMILY_END as int {
 
-                    if value as int == (VOICE_FAMILY_STRING as int | VOICE_FAMILY_IDENT_LIST as int) {
+                    if value as int == VOICE_FAMILY_STRING as int || value as int == VOICE_FAMILY_IDENT_LIST as int {
                         let snum = bytecode[iterator];
                         iterator += 1;
 
@@ -2146,18 +2198,24 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
         }
     }
 
+    io::println(fmt!("ptr == %?" , ptr));
+
 }
 
 fn dump_number(val: i32 , ptr: &mut ~str){
+    io::println("Entering: dump_number");
     if css_int_to_fixed((val >> 10) as int) == val {
         str::push_str(ptr , fmt!("%?" , val >> 10));
     }
     else {
         dump_css_fixed(val , ptr);
     }
+
+    io::println(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_css_fixed(a: i32 , ptr: &mut ~str){
+    io::println("Entering: dump_css_fixed");
     let b: u32;
     if a < 0 {
         b = -a as u32;
@@ -2206,9 +2264,11 @@ fn dump_css_fixed(a: i32 , ptr: &mut ~str){
         flen += 1;
     }
     
+    io::println(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_unit(val: i32 , unit: u32 , ptr: &mut ~str) {
+    io::println("Entering: dump_unit");
     dump_number(val, ptr);
 
     match unit {
@@ -2262,10 +2322,12 @@ fn dump_unit(val: i32 , unit: u32 , ptr: &mut ~str) {
         },
         _ => {}
     }
+
+    io::println(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
-
+    io::println("Entering: dump_font_face");
     let mut style: u8;
     let mut weight: u8;
 
@@ -2386,10 +2448,12 @@ fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
         }
     }
 
+    io::println(fmt!("ptr == %?" , ptr));
+
 }
 
 fn dump_counter(name: ~str , value: u32 , ptr: &mut ~str) {
-    
+    io::println("Entering: dump_counter");
     str::push_str(ptr , &"counter(");
     str::push_str(ptr , name);
     let val = value >> CONTENT_COUNTER_STYLE_SHIFT;
@@ -2440,10 +2504,13 @@ fn dump_counter(name: ~str , value: u32 , ptr: &mut ~str) {
         str::push_str(ptr , &", none");
     }
     ptr.push_char(')');
+
+    io::println(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_counters(name: ~str , separator: ~str , value: u32 , ptr: &mut ~str) {
 
+    io::println("Entering: dump_counters");
     str::push_str(ptr , &"counter(");
     str::push_str(ptr , name);
     str::push_str(ptr , separator);
@@ -2493,4 +2560,6 @@ fn dump_counters(name: ~str , separator: ~str , value: u32 , ptr: &mut ~str) {
         str::push_str(ptr , &", none");
     }
     ptr.push_char(')');
+
+    io::println(fmt!("ptr == %?" , ptr));
 }
