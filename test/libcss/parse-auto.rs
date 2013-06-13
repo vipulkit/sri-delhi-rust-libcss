@@ -117,7 +117,7 @@ pub fn strtol(data:~str , data_used: &mut uint) -> Option<int> {
 pub fn strtoul(data:~str , data_used: &mut uint) -> Option<uint> {
 
 	let mut res : u64  = 0 ;
-
+	let orig = *data_used ;
 	if *data_used >= data.len()  {
 		return None ;
 	}
@@ -126,10 +126,41 @@ pub fn strtoul(data:~str , data_used: &mut uint) -> Option<uint> {
 			(data[*data_used] == ('+' as u8) ) {
 		*data_used += 1; // skip character
 	}
+	if (data[*data_used] == ('0' as u8) )  {
+		*data_used += 1; // skip character
+	}
+	if (data[*data_used] == ('x' as u8) ) || 
+			(data[*data_used] == ('X' as u8) ) {
+		*data_used += 1; // skip character
+	}
+	else {
+		*data_used = orig ;
+		return None ;
+	}
 	
 	while ( *data_used < data.len() ) {
 		if (data[*data_used] > 47 && data[*data_used]<58 ) {
-			res = res*10 + ( ( (data[*data_used] as u8) - 48 ) as u64);
+			res = res*16 + ( ( (data[*data_used] as u8) - 48 ) as u64);
+			*data_used += 1;
+
+			if( res >= (uint::max_value as u64) ) {
+				fail!(~"\n Excedded maximum value of an integer") ;
+			}
+
+			loop ;
+		}
+		else if  (data[*data_used] > 64 && data[*data_used] < 71 ) {
+			res = res*16 + ( ( (data[*data_used] as u8) - 55 ) as u64);
+			*data_used += 1;
+
+			if( res >= (uint::max_value as u64) ) {
+				fail!(~"\n Excedded maximum value of an integer") ;
+			}
+
+			loop ;
+		}
+		else if (data[*data_used] > 96 && data[*data_used]<103 ) {
+			res = res*16 + ( ( (data[*data_used] as u8) - 87 ) as u64);
 			*data_used += 1;
 
 			if( res >= (uint::max_value as u64) ) {
@@ -258,6 +289,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
 }
 
 pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
+	io::println("Entering: css__parse_expected");
 
 	let mut len : uint = 0 ;
 	let mut _goto_start_rule : bool = true  ;
@@ -266,13 +298,16 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 	}
 
 	while _goto_start_rule {
+		io::println("Entering: while _goto_start_rule");
 		_goto_start_rule = false ;
 
 		if( ctx.inrule==false) {
+			io::println("Entering: ctx.inrule==false");
 			len += 1;
 
 			while ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
 				 (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) && (data.len()>len) {
+				io::println("Entering: while {...} 1");
 				len += 1;
 			}
 
@@ -280,6 +315,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
 			while ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
 				 (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) && (data.len()>len) {
+				io::println("Entering: while {...} 2");
 				len += 1;
 			}
 
@@ -299,6 +335,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 			ctx.inrule = true;
 		}
 		else {
+			io::println("Entering: else");
 			let mut explen = unsafe { ctx.exp.len()-1 };
 			if explen < 0 {
 				fail!(~"No exp entry found");
@@ -313,10 +350,11 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
 			len += 1;
 			while (len < data.len()) {
+				io::println( fmt!("Entering: while =%?=%?=%?=",data.len(),len,data));
 
 				/* Skip whitespace */
 				while ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
-					 (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) )&& (data.len()>len) {
+					 (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) && (data.len()!=len) {
 					len += 1;
 				}
 
@@ -325,18 +363,19 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 				}
 
 				if data[len] == ('P' as u8) {
-
-					let mut start = str::find_char( data.slice(len,data.len()) , '(') ;
+					io::println( fmt!("Entering: if = %?=%?=",data,len));
+					let mut start = str::find_char_between( data ,'(' , len , data.len() ) ;
 
 					if start.is_none() {
-						break ;
+						assert!(false);
 					}
 
-					let mut end = str::find_char( data.slice(start.get(),data.len()) , '(') ;
+					len = start.get() ;
+					let mut end = str::find_char_between( data,')' ,len+1,data.len()) ;
 					if end.is_none() {
-						break ;
+						assert!(false);
 					}
-						
+					len = end.get()+1;	
 					let mut stentry = stentry{
 						off: 	(if unsafe{rule.bytecode.len()>0} {
 									rule.bytecode[ unsafe{rule.bytecode.len()-1}]
@@ -349,16 +388,22 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
 					assert!( stentry.string.len()!=0 );
 					rule.stringtab.push(stentry) ;
+					if len == data.len() {
+						break ;
+					}
 				}
 				else {
 					/* Assume hexnum */
+					io::println( fmt!("Entering: else 1= %?=%?=",data,len));
 					let mut val = strtoul(copy data,&mut len) ;
+					io::println( fmt!("Entering: else 2= %?=%?=%?=",data,len,val));
 					/* Append to bytecode */
 					rule.bytecode.push(val.get_or_default(0) as u32) ;
 				}
 			}
 		}
 	}
+	io::println("Exiting: css__parse_expected");
 }
 
 pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
@@ -374,6 +419,7 @@ pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
 }
 
 pub fn run_test(ctx:@mut line_ctx) {
+	io::println("Entering: run_test");
 
 	let mut error : css_error ;
 	let mut params = css_params {
@@ -553,7 +599,7 @@ pub fn run_test(ctx:@mut line_ctx) {
 	    }
 	}
 
-	assert!( e== unsafe { (ctx.exp.len()-1) } );
+	assert!( e == unsafe {ctx.exp.len()} );
 	
 	io::println("PASS\n");
 }
@@ -564,10 +610,17 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 	let mut ptr : ~str = ~"" ;
 
   	// Build selector string
-  	for s.selectors.each_mut |&sel| {
-  		dump_selector_list(sel,&mut ptr) ;
-  		name = name + ptr + ", ";
-  		ptr = ~"" ;
+  	unsafe {
+	  	for s.selectors.eachi |i,&sel| {
+	  		dump_selector_list(sel,&mut ptr) ;
+	  		if ( i != (s.selectors.len()-1) ) {
+	  			name = name + ptr + ", ";
+	  		}
+	  		else {
+	  			name = name + ptr ;
+	  		}
+	  		ptr = ~"" ;
+	  	}
   	}
 
   	/* Compare with expected selector */
@@ -578,82 +631,74 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 	}
 
 	// Now compare bytecode
-	if s.style.is_none() {
-		if unsafe {e.bytecode.len()} == 0 {
-			io::println(fmt!("FAIL: no bytecode created and no style created "));
-			return false ;
-		}
-		else {
-			io::println(fmt!("FAIL: no style found : style created,
-								but bytecode not found"));
-			return true ;
-		}
+	if (unsafe{e.bytecode.len()} != 0 && s.style.is_none()) {
+		io::println("FAIL No bytecode\n    Expected bytecode but none created\n");
+		return true;
 	}
-	else {
-		if unsafe { e.bytecode.len()} == 0 {
-			io::println(fmt!("FAIL: no bytecode found , but style created "));
+	else if (unsafe{e.bytecode.len()} == 0 && s.style.is_some()) {
+		io::println("FAIL Unexpected bytecode\n    No bytecode expected but some created\n");
+		return true;
+	}
+	else if (unsafe{e.bytecode.len()} != 0 && s.style.is_some()) {
+		let mut style = s.style.get() ;
+
+		if unsafe { style.bytecode.len() != e.bytecode.len() } {
+			io::println(fmt!("FAIL: bytecode length differs "));
 			return true ;
 		}
-		else {
-			let mut style = s.style.get() ;
 
-			if unsafe { style.bytecode.len() != e.bytecode.len() } {
-				io::println(fmt!("FAIL: bytecode length differs "));
-				return true ;
+		let mut i = 0 ;
+		let mut j = 0 ;
+
+		while i < unsafe {e.bytecode.len()} {
+
+			while j < unsafe { e.stringtab.len() } {
+				if (e.stringtab[j].off == i) {
+					break;
+				}
+				j += 1 ;
 			}
 
-			let mut i = 0 ;
-			let mut j = 0 ;
+			if (j != unsafe {e.stringtab.len()} ) {
+				/* String */
+				if( style.sheet.is_none() ) {
+					io::println("\n Stylsheet not found in sheet , need sheet ");
+	              	return false ;
+	            }
 
-			while i < unsafe {e.bytecode.len()} {
+	            let mut (res,op) = style.sheet.get().
+	            			css__stylesheet_string_get(style.bytecode[i] as uint);
 
-				while j < unsafe { e.stringtab.len() } {
-					if (e.stringtab[j].off == i) {
-						break;
-					}
-					j += 1 ;
-				}
+	            assert!( 	match res { 
+	            				CSS_OK=>{true} , 
+	            				_=>{false}
+	            		});
+	            let mut p = if op.is_some() { 
+	            				op.unwrap() 
+	            			}  
+	            			else { 
+	            				~"" 
+	            			} ;   
 
-				if (j != unsafe {e.stringtab.len()} ) {
-					/* String */
-					if( style.sheet.is_none() ) {
-						io::println("\n Stylsheet not found in sheet , need sheet ");
-		              	return false ;
-		            }
+	            if p != e.stringtab[j].string {
+	            	io::println(fmt!("FAIL: string differs got %?, expected %? ",
+	            			p , copy e.stringtab[j].string ) );
+	            }
 
-		            let mut (res,op) = style.sheet.get().
-		            			css__stylesheet_string_get(style.bytecode[i] as uint);
-
-		            assert!( 	match res { 
-		            				CSS_OK=>{true} , 
-		            				_=>{false}
-		            		});
-		            let mut p = if op.is_some() { 
-		            				op.unwrap() 
-		            			}  
-		            			else { 
-		            				~"" 
-		            			} ;   
-
-		            if p != e.stringtab[j].string {
-		            	io::println(fmt!("FAIL: string differs got %?, expected %? ",
-		            			p , copy e.stringtab[j].string ) );
-		            }
-
+				i += 1;
+			} 
+			else if style.bytecode[i] != e.bytecode[i] {
+				io::println(fmt!("FAIL Bytecode differs 
+								Bytecode differs at %?", i) );
+				while (i < unsafe {e.bytecode.len()} ) {
+					io::println(fmt!("%? ", copy style.bytecode[i]));
 					i += 1;
-				} 
-				else if style.bytecode[i] != e.bytecode[i] {
-					io::println(fmt!("FAIL Bytecode differs 
-									Bytecode differs at %?", i) );
-					while (i < unsafe {e.bytecode.len()} ) {
-						io::println(fmt!("%? ", copy style.bytecode[i]));
-						i += 1;
-					}
-					return true;
 				}
+				return true;
 			}
 		}
 	}
+	
 	false
 }
 
