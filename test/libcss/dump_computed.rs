@@ -1422,4 +1422,212 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 			{}
 	}	
 
+	/* text-decoration */
+	let val = css_computed_text_decoration(style);
+
+	if (val == CSS_TEXT_DECORATION_INHERIT as u8) {
+        	ptr.push_str("text-decoration: inherit\n");
+		
+	} else if (val == CSS_TEXT_DECORATION_NONE as u8) {
+		ptr.push_str("text-decoration: none\n");
+		
+	} else {
+		ptr.push_str("text-decoration:");
+		
+		if (val & CSS_TEXT_DECORATION_BLINK as u8 != 0) {
+			ptr.push_str(" blink");
+		}
+		
+		if (val & CSS_TEXT_DECORATION_LINE_THROUGH as u8 != 0) {
+			ptr.push_str(" line-through");
+		}
+		
+		if (val & CSS_TEXT_DECORATION_OVERLINE as u8 != 0) {
+			ptr.push_str(" overline");
+		}
+		
+		if (val & CSS_TEXT_DECORATION_UNDERLINE as u8 != 0) {
+			ptr.push_str(" underline");			
+		}
+
+		ptr.push_str("\n");
+		
+	}
+
+	/* text-indent */
+	let (val, len1, unit1) = css_computed_text_indent(style);
+	let val_enum: css_text_indent_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+	        CSS_TEXT_INDENT_INHERIT =>
+        		ptr.push_str("text-indent: inherit\n"),
+		CSS_TEXT_INDENT_SET => {
+			ptr.push_str("text-indent: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+
+	/* text-transform */
+	let val = css_computed_text_transform(style);
+	let val_enum: css_text_transform_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_TEXT_TRANSFORM_INHERIT =>
+			ptr.push_str("text-transform: inherit\n"),
+		CSS_TEXT_TRANSFORM_CAPITALIZE =>
+			ptr.push_str("text-transform: capitalize\n"),
+		CSS_TEXT_TRANSFORM_UPPERCASE =>
+			ptr.push_str("text-transform: uppercase\n"),
+		CSS_TEXT_TRANSFORM_LOWERCASE =>
+			ptr.push_str("text-transform: lowercase\n"),
+		CSS_TEXT_TRANSFORM_NONE =>
+			ptr.push_str("text-transform: none\n"),
+	}
+
+	/* top */
+	let (val, len1, unit1) = css_computed_top(style);
+	let val_enum: css_top_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_TOP_INHERIT =>
+			ptr.push_str("top: inherit\n"),
+		CSS_TOP_AUTO =>
+			ptr.push_str("top: auto\n"),
+		CSS_TOP_SET => {
+			ptr.push_str("top: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+	/* unicode-bidi */
+	let val = css_computed_unicode_bidi(style);
+	let val_enum: css_unicode_bidi_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_UNICODE_BIDI_INHERIT =>
+			ptr.push_str("unicode-bidi: inherit\n"),
+		CSS_UNICODE_BIDI_NORMAL =>
+			ptr.push_str("unicode-bidi: normal\n"),
+		CSS_UNICODE_BIDI_EMBED =>
+			ptr.push_str("unicode-bidi: embed\n"),
+		CSS_UNICODE_BIDI_BIDI_OVERRIDE =>
+			ptr.push_str("unicode-bidi: bidi-override\n"),
+	}
+
+	/* vertical-align */
+	let (val, len1, unit1) = css_computed_vertical_align(style);
+	let val_enum: css_vertical_align_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_VERTICAL_ALIGN_INHERIT =>
+			ptr.push_str("vertical-align: inherit\n"),
+		CSS_VERTICAL_ALIGN_BASELINE =>
+			ptr.push_str("vertical-align: baseline\n"),
+		CSS_VERTICAL_ALIGN_SUB =>
+			ptr.push_str("vertical-align: sub\n"),
+		CSS_VERTICAL_ALIGN_SUPER =>
+			ptr.push_str("vertical-align: super\n"),
+		CSS_VERTICAL_ALIGN_TOP =>
+			ptr.push_str("vertical-align: top\n"),
+		CSS_VERTICAL_ALIGN_TEXT_TOP =>
+			ptr.push_str("vertical-align: text-top\n"),
+		CSS_VERTICAL_ALIGN_MIDDLE =>
+			ptr.push_str("vertical-align: middle\n"),
+		CSS_VERTICAL_ALIGN_BOTTOM =>
+			ptr.push_str("vertical-align: bottom\n"),
+		CSS_VERTICAL_ALIGN_TEXT_BOTTOM =>
+			ptr.push_str("vertical-align: text-bottom\n"),
+		CSS_VERTICAL_ALIGN_SET => {
+			ptr.push_str("vertical-align: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+	/* visibility */
+	let val = css_computed_visibility(style);
+	let val_enum: css_visibility_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_VISIBILITY_INHERIT =>
+			ptr.push_str("visibility: inherit\n"),
+		CSS_VISIBILITY_VISIBLE =>
+			ptr.push_str("visibility: visible\n"),
+		CSS_VISIBILITY_HIDDEN =>
+			ptr.push_str("visibility: hidden\n"),
+		CSS_VISIBILITY_COLLAPSE =>
+			ptr.push_str("visibility: collapse\n"),
+	}
+
+
+	/* white-space */
+	let val = css_computed_white_space(style);
+	let val_enum: css_white_space_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_WHITE_SPACE_INHERIT =>
+			ptr.push_str("white-space: inherit\n"),
+		CSS_WHITE_SPACE_NORMAL =>
+			ptr.push_str("white-space: normal\n"),
+		CSS_WHITE_SPACE_PRE =>
+			ptr.push_str("white-space: pre\n"),
+		CSS_WHITE_SPACE_NOWRAP =>
+			ptr.push_str("white-space: nowrap\n"),
+		CSS_WHITE_SPACE_PRE_WRAP =>
+			ptr.push_str("white-space: pre-wrap\n"),
+		CSS_WHITE_SPACE_PRE_LINE =>
+			ptr.push_str("white-space: pre-line\n"),
+	}
+
+	
+	/* width */
+	let (val, len1, unit1) = css_computed_width(style);
+	let val_enum: css_width_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_WIDTH_INHERIT =>
+			ptr.push_str("width: inherit\n"),
+		CSS_WIDTH_AUTO =>
+			ptr.push_str("width: auto\n"),
+		CSS_WIDTH_SET => {
+			ptr.push_str("width: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+
+	/* word-spacing */
+	let (val, len1, unit1) = css_computed_word_spacing(style);
+	let val_enum: css_word_spacing_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_WORD_SPACING_INHERIT =>
+			ptr.push_str("word-spacing: inherit\n"),
+		CSS_WORD_SPACING_NORMAL =>
+			ptr.push_str("word-spacing: normal\n"),
+		CSS_WORD_SPACING_SET => {
+			ptr.push_str("word-spacing: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+
+	/* z-index */
+	let (val,zindex) = css_computed_z_index(style);
+	let val_enum: css_z_index_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_Z_INDEX_INHERIT =>
+			ptr.push_str("z-index: inherit\n"),
+		CSS_Z_INDEX_AUTO =>
+			ptr.push_str("z-index: auto\n"),
+		CSS_Z_INDEX_SET =>
+			ptr.push_str(fmt!("z-index: %d\n", zindex as int)),
+	}
+
 }
