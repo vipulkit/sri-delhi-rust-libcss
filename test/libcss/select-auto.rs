@@ -1087,7 +1087,7 @@ fn dump_computed_style(mut style:@mut css_computed_style, buf:&mut ~str) {
 
 }
 
-fn node_name(n:*libc::c_void, qname : @mut css_qname) -> css_error {
+fn node_name(n:*libc::c_void, qname : &mut css_qname) -> css_error {
 
 	let node : @mut node;
 	unsafe {

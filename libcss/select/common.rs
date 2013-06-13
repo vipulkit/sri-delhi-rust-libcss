@@ -684,7 +684,7 @@ pub enum css_select_handler_version {
 
 pub struct css_select_handler {
 
-    node_name: @extern fn( node:*libc::c_void, qname: @mut css_qname ) -> css_error,
+    node_name: @extern fn( node:*libc::c_void, qname: &mut css_qname ) -> css_error,
 
     node_classes: @extern fn(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[~str] ) -> css_error,
 
