@@ -210,7 +210,7 @@ fn parse_auto(file: ~str) {
 	for str::each_line_any(file_content) |line| {
 		let mut line_string : ~str = line.to_str() ;
 		str::push_char(&mut line_string,'\n') ;
-		
+		io::println(fmt!("Entering:v data is=%?=",line_string));
 		handle_line(line_string,ctx);
 	}
 	io::println(fmt!("Ctx ====================================\n%?\n==============================",ctx));
@@ -229,7 +229,12 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
 			io::println(fmt!("Ctx ====================================\n%?\n==============================",ctx));
 			run_test(ctx);
 
-			ctx.buf = ~[];
+			ctx.buf = ~[] ;
+			ctx.exp = ~[] ;
+			ctx.inerrors = false ;
+			ctx.indata = false ;
+			ctx.inexp = false ;
+			ctx.inrule = false ;
 		}
 
 		if (ctx.indata && data.len()>=7 && 
@@ -246,6 +251,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
 			ctx.inerrors = false;
 			ctx.inexp = true;
 			ctx.inrule = false;
+			//io::println(fmt!("Entering:v ctx in rule false 1=%?=",data));
 		} 
 		else if (ctx.inexp && data.len()>=5 && 
 				(is_string_caseless_equal( data.slice(1,5), "data"))) {
@@ -289,7 +295,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
 }
 
 pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
-	io::println("Entering: css__parse_expected");
+	io::println(fmt!("Entering:v css__parse_expected =%?= =%?=",data,ctx));
 
 	let mut len : uint = 0 ;
 	let mut _goto_start_rule : bool = true  ;
@@ -302,7 +308,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 		_goto_start_rule = false ;
 
 		if( ctx.inrule==false) {
-			io::println("Entering: ctx.inrule==false");
+			io::println("Entering:v ctx.inrule==false");
 			len += 1;
 
 			while ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
@@ -344,6 +350,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
 			if( data[2] != (' ' as u8) ) {
 				ctx.inrule = false ;
+				io::println(fmt!("Entering:v ctx in rule false 2=%?=",data));
 				_goto_start_rule = true ;
 				loop ;
 			}
