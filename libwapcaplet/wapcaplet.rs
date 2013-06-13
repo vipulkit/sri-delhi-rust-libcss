@@ -23,44 +23,37 @@ pub struct lwc {
 
 pub impl lwc {
 
-    priv fn dolower(c: u8 ) -> char {
-        if (c >= 'A' as u8 && c <= 'Z' as u8) {
-              return (c as char + 'a' - 'A');
+    #[inline(always)]
+    pub fn dolower(c: u8 ) -> u8 {
+        if (c > 64 && c < 91) {
+              return (c  + 32) ;
         }
-        else {
-            return c as char;
-        }
+        c
     }
 
-    priv fn lwc_calculate_hash(string: &str) -> u32 {
+    #[inline(always)]
+    pub fn lwc_calculate_hash(string: &str) -> u32 {
         let mut z: u32 = 0x811c9dc5;
-        let mut i: uint = 0;
-        let mut string_index = str::char_len(string);
-        while string_index>0 {
-            z = z*0x01000193;
-            z = (z^(string[i]) as u32);
-            string_index = string_index-1;
-            i = i+1; 
+        let string_index = str::char_len(string);
+        for uint::range(0, string_index) |i| { 
+            z *= 0x01000193;
+            z ^= (string[i] as u32) ;
         }
-        z = z%4091;
-        z
+        z%4091
     }
 
+    #[inline(always)]
     priv fn lwc_calculate_lcase_hash(string: &str) -> u32 {
         let mut z: u32 = 0x811c9dc5;
-        let mut i: uint = 0;
-        let mut string_index = str::char_len(string);
-
-        while string_index>0 {
-            z = z*0x01000193;
-            z = (z^lwc::dolower(string[i]) as u32);
-            string_index = string_index-1;
-            i = i+1;
+        let string_index = str::char_len(string);
+        for uint::range(0, string_index) |i| { 
+            z *= 0x01000193;
+            z ^=  (lwc::dolower(string[i]) as u32) ;
         }
-        z = z%4091;
-        z
+        z%4091
     }
 
+    #[inline(always)]
     priv fn lwc_lcase_strncmp(s1: &str, s2: &str, n: uint) -> int {
         let mut i: uint = 0;
         let mut t = n;
@@ -74,6 +67,7 @@ pub impl lwc {
         return 0;
     }
 
+    #[inline(always)]
     priv fn lwc_lcase_memcpy(target: &str, source: &str, n: uint) {
         let mut i: uint = 0;
         let mut t =n;
@@ -82,7 +76,7 @@ pub impl lwc {
         while t>0 {
             t = t - 1;
             i = i + 1;
-            str2[i] = lwc::dolower(str1[i]) as u8;
+            str2[i] = lwc::dolower(str1[i]) ;
         }
     }
 
@@ -109,7 +103,7 @@ pub impl lwc {
             dummy_lwc_string.clone()
         };
 
-        // io::println(fmt!("len of interned_string_list: %?", interned_string_list.len()));
+        //io::println(fmt!("len of interned_string_list: %?", interned_string_list.len()));
 
         let string_list_arc = arc::ARC(string_list);
         let p:PortSet<(uint, u32)> = PortSet();
@@ -134,7 +128,7 @@ pub impl lwc {
                     end_index = num_strings-1;
                 }
 
-                // io::println(fmt!("current_thread_number, start_index, end_index: %? %? %?", current_thread_number, start_index, end_index));
+                //io::println(fmt!("current_thread_number, start_index, end_index: %? %? %?", current_thread_number, start_index, end_index));
 
                 let mut send_count = 0;
 
@@ -144,7 +138,7 @@ pub impl lwc {
                     child_to_parent_channel.send((index, hash_value));
                     send_count += 1;
                 }
-                // io::println(fmt!("current_thread_number, send_count: %? %?", current_thread_number, send_count));
+                //io::println(fmt!("current_thread_number, send_count: %? %?", current_thread_number, send_count));
             }
             
             thread_number += 1;
@@ -158,8 +152,8 @@ pub impl lwc {
         for uint::range(0,num_strings) |_/*recv_count*/| {
             let mut (index, hash_value) = p.recv();
 
-            // io::println(fmt!("recv_count: %?", recv_count));
-            // io::println(fmt!("receiving (index,hash_value): (%?,%?)", index, hash_value));
+            // //io::println(fmt!("recv_count: %?", recv_count));
+            // //io::println(fmt!("receiving (index,hash_value): (%?,%?)", index, hash_value));
 
             let mut vector_index = self.buckets[hash_value].len();
 
@@ -200,39 +194,77 @@ pub impl lwc {
         interned_string_list
     }
 
-    pub fn lwc_intern_string(&mut self, string_to_intern: ~str) -> arc::RWARC<~lwc_string> {
-        self.__lwc_intern(string_to_intern, false)
+    pub fn lwc_intern_string(&mut self, string_to_intern: &str) -> arc::RWARC<~lwc_string> {
+
+        let hash_value = lwc::lwc_calculate_hash(string_to_intern);
+        let string_to_intern_actual = string_to_intern.to_owned();
+        
+        let vector_index = self.buckets[hash_value].len();
+        
+        if vector_index != 0 {
+            let mut found_flag : bool = false ;
+            for uint::range(0, vector_index) |j| {
+                found_flag = false;
+                do self.buckets[hash_value][j].write |l| {
+                    if ((*l).hash==hash_value) && ((*l).string == string_to_intern_actual) {
+                            found_flag = true;
+                    }
+                }
+                if (found_flag) {
+                    return self.buckets[hash_value][j].clone();
+                }       
+            }
+
+            let lwc_string_to_intern = arc::RWARC(~lwc_string {
+                string: string_to_intern_actual , 
+                hash: hash_value , 
+                insensitive: None
+            });
+            vec::push(&mut self.buckets[hash_value], lwc_string_to_intern.clone());
+            return lwc_string_to_intern;
+        }
+        else  {
+            let lwc_string_to_intern = arc::RWARC(~lwc_string {
+                string: string_to_intern_actual , 
+                hash: hash_value , 
+                insensitive: None
+            });
+            vec::push(&mut self.buckets[hash_value], lwc_string_to_intern.clone());
+            return lwc_string_to_intern;
+        }
     }
 
-    priv fn __lwc_intern(&mut self , string_to_intern: ~str, insensitive:bool) -> arc::RWARC<~lwc_string> {
-        
+    priv fn __lwc_intern(&mut self , string_to_intern: &str, insensitive:bool) -> arc::RWARC<~lwc_string> {
+        //io::println(fmt!("lwc_intern_string:: Timestamp 1 == %.3f usec", std::time::precise_time_ns() as float/ 1000f));
         let mut string_to_intern_actual : ~str; //= ~"";
-        let string_to_intern_lcase = str::to_lower(string_to_intern);
         let mut hash_value : u32;//= 0u32;
 
         match (insensitive) {
             false=> {
                 hash_value = lwc::lwc_calculate_hash(string_to_intern);
-                string_to_intern_actual = string_to_intern;
+                string_to_intern_actual = string_to_intern.to_owned();
             }
             true=> { 
                 hash_value = lwc::lwc_calculate_lcase_hash(string_to_intern);
-                string_to_intern_actual = string_to_intern_lcase;
+                string_to_intern_actual = str::to_lower(string_to_intern);
             }
         };
         
+        //io::println(fmt!("lwc_intern_string:: Timestamp 2 == %.3f usec", std::time::precise_time_ns() as float/ 1000f));
         let mut vector_index = self.buckets[hash_value].len();
 
         let copy_of_string_to_intern = copy string_to_intern_actual;
-
+        //io::println(fmt!("lwc_intern_string:: Timestamp 2.5 == %.3f usec", std::time::precise_time_ns() as float/ 1000f));
         let lwc_string_to_intern = arc::RWARC(~lwc_string {
             string: string_to_intern_actual , 
             hash: hash_value , 
             insensitive: None
         });
         
+        //io::println(fmt!("lwc_intern_string:: Timestamp 3 == %.3f usec", std::time::precise_time_ns() as float/ 1000f));
         if vector_index == 0 {
             vec::push(&mut self.buckets[hash_value], lwc_string_to_intern.clone());
+            //io::println(fmt!("lwc_intern_string:: Timestamp 4 == %.3f usec", std::time::precise_time_ns() as float/ 1000f));
             return lwc_string_to_intern;
         }
         else {
@@ -253,12 +285,15 @@ pub impl lwc {
                 
             }   
             vec::push(&mut self.buckets[hash_value], lwc_string_to_intern.clone());
+
+            //io::println(fmt!("lwc_intern_string:: Timestamp 5 == %.3f usec", std::time::precise_time_ns() as float/ 1000f));
             return lwc_string_to_intern;
         }
+
     }
     
     pub fn lwc_intern_substring(&mut self , substring_to_intern: arc::RWARC<~lwc_string> , ssoffset: u32, sslen: u32) -> Option<arc::RWARC<~lwc_string>> {
-        io::println("Inside lwc_intern_substring");
+        //io::println("Inside lwc_intern_substring");
         do substring_to_intern.read |l| {
             if (l.string.len() <= ssoffset as uint) || (l.string.len() <= (ssoffset+sslen) as uint) {
                 None
