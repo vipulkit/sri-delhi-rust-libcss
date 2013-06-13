@@ -8,7 +8,7 @@ rustc --test -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet css21
 rustc --test -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet parse.rs
 rustc -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet dump.rs
 rustc -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet dump_computed.rs
-rustc --test -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet -L . parse-auto.rs
+rustc --test -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet -L . parse-auto.rs -Z verbose -Z debug-info
 rustc --test -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet -L . parse2-auto.rs
 rustc --test -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet lex.rs
 rustc --test -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet -L . lex-auto.rs
