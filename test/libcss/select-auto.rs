@@ -18,39 +18,28 @@ use css::stylesheet::*;
 use css::select::select::*;
 
 
-fn node_name(node:*libc::c_void, qname:css_qname ) -> css_error {
-    CSS_OK
-}
 
-fn node_classes(node:*libc::c_void, classes:~[~str] ) -> css_error {
-    CSS_OK
-}
-
-fn node_id(node:*libc::c_void, id:~str ) -> css_error {
-    CSS_OK
-}
-
-fn named_ancestor_node(node:*libc::c_void, qname:&mut css_qname, ancestor:**libc::c_void) -> css_error {
+fn named_ancestor_node(node:*libc::c_void, qname:&mut css_qname, ancestor:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
    
-fn named_parent_node(node:*libc::c_void, qname:&mut css_qname, parent:**libc::c_void) -> css_error {
+fn named_parent_node(node:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
     
-fn named_sibling_node(node:*libc::c_void, qname:&mut css_qname, sibling:**libc::c_void) -> css_error {
+fn named_sibling_node(node:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
 
-fn named_generic_sibling_node(node:*libc::c_void, qname:&mut css_qname, sibling:**libc::c_void) -> css_error {
+fn named_generic_sibling_node(node:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
     
-fn parent_node(node:*libc::c_void, parent:**libc::c_void) -> css_error {
+fn parent_node(node:*libc::c_void, parent:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
 
-fn sibling_node(node:*libc::c_void, sibling:**libc::c_void) -> css_error {
+fn sibling_node(node:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
 
@@ -495,7 +484,7 @@ pub fn select_test(file:~str) {
 
 pub fn resolve_url(base:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>){
 
-    (CSS_OK, None)
+	(CSS_OK, Some(rel.clone()))
 }
 
 pub fn css_create_params() -> css_params {
@@ -776,42 +765,41 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 pub fn css__parse_sheet(ctx:@mut line_ctx, data:&str) {
 
     let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
-    let mut media : uint = CSS_MEDIA_ALL as uint;
     let mut p : uint = 0;
-    let length : uint = data.len();
+    let end : uint = data.len();
     /* Find end of origin */
-    while p < length && !isspace(data[p]) {
+    while p < end && !isspace(data[p]) {
         p += 1;
     }
     
-    if p == 6 && is_string_caseless_equal( data.slice(1,6), "author"){
+    if p == 6 && is_string_caseless_equal( data.slice(0,6), "author"){
         origin = CSS_ORIGIN_AUTHOR;
     }
-    else if p == 4 && is_string_caseless_equal( data.slice(1,4), "user"){
+    else if p == 4 && is_string_caseless_equal( data.slice(0,4), "user"){
         origin = CSS_ORIGIN_USER;
     }
-    else if p == 2 && is_string_caseless_equal( data.slice(1,2), "ua"){
+    else if p == 2 && is_string_caseless_equal( data.slice(0,2), "ua"){
         origin = CSS_ORIGIN_UA;
     }
     else {
-            io::println("\n Unknown stylesheet origin");
+			println("Unknown stylesheet origin");
             assert!(false);
     }
     
     /* Skip any whitespace */
-    while p < length && isspace(data[p]) {
+    while p < end && isspace(data[p]) {
         p += 1;
     }
     
-    if p < length {
-        media = css__parse_media_list(data.slice(p, length - 1), ctx);
+    if p < end {
+       css__parse_media_list(data.slice(p, end), ctx);
     }
     let params = css_create_params();
     let sheet:@mut css = css::css_create(params, None);
     let sheet_ctx = @mut sheet_ctx {
-        sheet:sheet,
-        origin:origin,
-        media:media as u64
+        sheet: sheet,
+        origin: origin,
+        media: ctx.media as u64
     };
     
     ctx.sheets.push(sheet_ctx);
@@ -1069,7 +1057,7 @@ pub fn run_test( ctx:@mut line_ctx) {
 };//TODO
     //testnum += 1;
     unsafe {
-        let mut result = select.css_select_style(::cast::transmute(ctx.target.unwrap()),ctx.media as u64,None,select_handler);
+        let mut result = select.css_select_style(::cast::transmute(ctx.target.unwrap()),ctx.media as u64,None, select_handler,::cast::transmute(ctx));
         match result {
             (CSS_OK,Some(x)) => results = x,
             _=> fail!()
@@ -1099,6 +1087,76 @@ fn dump_computed_style(mut style:@mut css_computed_style, buf:&mut ~str) {
 
 }
 
+fn node_name(n:*libc::c_void, qname : &mut css_qname) -> css_error {
+
+	let node : @mut node;
+	unsafe {
+		node = ::cast::transmute(n);
+		qname.name = lwc_string_data((node.name).get_ref().clone());
+	}
+
+	CSS_OK
+}
+
+fn node_classes(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[~str] ) -> css_error{
+	let mut node : @mut node;
+	let mut lc : @mut line_ctx;
+	unsafe {
+		node = ::cast::transmute(n);
+		lc = ::cast::transmute(pw);
+
+		let mut i = 0;
+		let n_attrs = node.attrs.len();
+		while i < n_attrs {
+			let mut matched = false;
+			do lwc().write |l| {
+				matched = l.lwc_string_caseless_isequal(node.attrs[i].name.clone(),lc.attr_class.clone()); 
+			}
+			
+			if matched {break;}
+			i += 1;
+		}
+		
+		if i != n_attrs {
+			classes.clear(); // as the next pushed val will be 1st elem.
+			classes.push(lwc_string_data(node.attrs[i].name.clone()));
+		}
+		else {
+			classes.clear();
+		}
+	}
+
+	CSS_OK
+}
+fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut ~str ) -> css_error{
+	let mut node : @mut node;
+	let mut lc : @mut line_ctx;
+	unsafe {
+		node = ::cast::transmute(n);
+		lc = ::cast::transmute(pw);
+
+		let mut i = 0;
+		let n_attrs = node.attrs.len();
+		while i < n_attrs {
+			let mut matched = false;
+			do lwc().write |l| {
+				matched = l.lwc_string_caseless_isequal(node.attrs[i].name.clone(),lc.attr_class.clone()); 
+			}
+
+			if matched {break;}
+			i += 1;
+		}
+		
+		if i != n_attrs {
+			*id = lwc_string_data(node.attrs[i].name.clone());
+		}
+		else {
+			*id = ~"";
+		}
+	}
+
+	CSS_OK
+}
 pub fn main() {
     io::println(fmt!("\n Starting select-auto test cases "));
 }

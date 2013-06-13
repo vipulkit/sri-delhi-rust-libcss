@@ -278,7 +278,8 @@ impl css_select_ctx {
                                 node:*libc::c_void,
                                 media:u64,
                                 inline_style:Option<@mut css_stylesheet>,
-                                handler:@mut css_select_handler) 
+                                handler:@mut css_select_handler,
+								pw:*libc::c_void) 
                                 -> (css_error,Option<css_select_results>) {
 
         if( node == ptr::null() || handler.handler_version != (CSS_SELECT_HANDLER_VERSION_1  as uint) ) {
@@ -336,7 +337,7 @@ impl css_select_ctx {
         /* Base element style is guaranteed to exist */
         state.results.styles.push(Some(css_computed_style_create()));
 
-        error = (*(handler.parent_node))(node, &parent);
+        error = (*(handler.parent_node))(node, &mut parent);
         match error {
             CSS_OK=>{},
             x =>  {
@@ -345,7 +346,7 @@ impl css_select_ctx {
         }
 
         /* Get node's name */
-        error = (*(handler.node_name))(node, copy state.element);
+        error = (*(handler.node_name))(node, &mut state.element);
         match error {
             CSS_OK=>{},
             x =>  {
@@ -354,7 +355,7 @@ impl css_select_ctx {
         }
 
         /* Get node's ID, if any */
-        error = (*(handler.node_id))(node, copy state.id);
+        error = (*(handler.node_id))(pw, node, &mut state.id);
         match error {
             CSS_OK=>{},
             x =>  {
@@ -366,8 +367,8 @@ impl css_select_ctx {
         /* \todo Do we really want to force the client to allocate a new array 
          * every time we call this? It seems hugely inefficient, given they can 
          * cache the data. */
-        error = (*(handler.node_classes))(node, 
-                copy state.classes);
+        error = (*(handler.node_classes))(pw, node, 
+                &mut state.classes);
         match error {
             CSS_OK=>{},
             x =>  {
@@ -1448,7 +1449,7 @@ impl css_select_ctx {
             match combinator_type {
                 CSS_COMBINATOR_ANCESTOR => {
                     error = (*state.handler.unwrap().named_ancestor_node)( 
-                            n, &mut selector.data[0].qname, &n);
+                            n, &mut selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1456,7 +1457,7 @@ impl css_select_ctx {
                 }   
                 CSS_COMBINATOR_PARENT => {
                     error = (*state.handler.unwrap().named_parent_node)( 
-                            n, &mut selector.data[0].qname, &n);
+                            n, &mut selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1464,7 +1465,7 @@ impl css_select_ctx {
                 }    
                 CSS_COMBINATOR_SIBLING => {
                     error = (*state.handler.unwrap().named_sibling_node)( 
-                            n, &mut selector.data[0].qname, &n);
+                            n, &mut selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1473,7 +1474,7 @@ impl css_select_ctx {
                     
                 CSS_COMBINATOR_GENERIC_SIBLING => {
                     error = (*state.handler.unwrap().named_generic_sibling_node)(
-                            n, &mut selector.data[0].qname, &n);
+                            n, &mut selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1723,7 +1724,7 @@ impl css_select_ctx {
             match (combinator_type) {
                 CSS_COMBINATOR_ANCESTOR | 
                 CSS_COMBINATOR_PARENT => {
-                    error = (*state.handler.unwrap().parent_node)(n, &n);
+                    error = (*state.handler.unwrap().parent_node)(n, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1731,7 +1732,7 @@ impl css_select_ctx {
                 }
                 CSS_COMBINATOR_SIBLING |
                 CSS_COMBINATOR_GENERIC_SIBLING => {
-                    error = (*state.handler.unwrap().sibling_node)(n, &n);
+                    error = (*state.handler.unwrap().sibling_node)(n, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
