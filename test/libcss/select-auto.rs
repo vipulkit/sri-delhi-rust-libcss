@@ -19,27 +19,27 @@ use css::select::select::*;
 
 
 
-fn named_ancestor_node(node:*libc::c_void, qname:&mut css_qname, ancestor:**libc::c_void) -> css_error {
+fn named_ancestor_node(node:*libc::c_void, qname:&mut css_qname, ancestor:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
    
-fn named_parent_node(node:*libc::c_void, qname:&mut css_qname, parent:**libc::c_void) -> css_error {
+fn named_parent_node(node:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
     
-fn named_sibling_node(node:*libc::c_void, qname:&mut css_qname, sibling:**libc::c_void) -> css_error {
+fn named_sibling_node(node:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
 
-fn named_generic_sibling_node(node:*libc::c_void, qname:&mut css_qname, sibling:**libc::c_void) -> css_error {
+fn named_generic_sibling_node(node:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
     
-fn parent_node(node:*libc::c_void, parent:**libc::c_void) -> css_error {
+fn parent_node(node:*libc::c_void, parent:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
 
-fn sibling_node(node:*libc::c_void, sibling:**libc::c_void) -> css_error {
+fn sibling_node(node:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
 

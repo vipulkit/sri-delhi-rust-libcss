@@ -95,3 +95,9 @@ pub static F_200: i32 = 0x00032000; /* 200 */
 pub static F_255: i32 = 0x0003FC00; /* 255 */
 pub static F_300: i32 = 0x0004b000; /* 300 */
 pub static F_400: i32 = 0x00064000; /* 400 */
+
+pub fn FLTTOFIX(a:float)->i32 {
+    a * ((1 << CSS_RADIX_POINT) as float) as i32
+}
+
+

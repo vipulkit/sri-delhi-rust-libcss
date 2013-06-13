@@ -337,7 +337,7 @@ impl css_select_ctx {
         /* Base element style is guaranteed to exist */
         state.results.styles.push(Some(css_computed_style_create()));
 
-        error = (*(handler.parent_node))(node, &parent);
+        error = (*(handler.parent_node))(node, &mut parent);
         match error {
             CSS_OK=>{},
             x =>  {
@@ -1449,7 +1449,7 @@ impl css_select_ctx {
             match combinator_type {
                 CSS_COMBINATOR_ANCESTOR => {
                     error = (*state.handler.unwrap().named_ancestor_node)( 
-                            n, &mut selector.data[0].qname, &n);
+                            n, &mut selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1457,7 +1457,7 @@ impl css_select_ctx {
                 }   
                 CSS_COMBINATOR_PARENT => {
                     error = (*state.handler.unwrap().named_parent_node)( 
-                            n, &mut selector.data[0].qname, &n);
+                            n, &mut selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1465,7 +1465,7 @@ impl css_select_ctx {
                 }    
                 CSS_COMBINATOR_SIBLING => {
                     error = (*state.handler.unwrap().named_sibling_node)( 
-                            n, &mut selector.data[0].qname, &n);
+                            n, &mut selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1474,7 +1474,7 @@ impl css_select_ctx {
                     
                 CSS_COMBINATOR_GENERIC_SIBLING => {
                     error = (*state.handler.unwrap().named_generic_sibling_node)(
-                            n, &mut selector.data[0].qname, &n);
+                            n, &mut selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1724,7 +1724,7 @@ impl css_select_ctx {
             match (combinator_type) {
                 CSS_COMBINATOR_ANCESTOR | 
                 CSS_COMBINATOR_PARENT => {
-                    error = (*state.handler.unwrap().parent_node)(n, &n);
+                    error = (*state.handler.unwrap().parent_node)(n, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1732,7 +1732,7 @@ impl css_select_ctx {
                 }
                 CSS_COMBINATOR_SIBLING |
                 CSS_COMBINATOR_GENERIC_SIBLING => {
-                    error = (*state.handler.unwrap().sibling_node)(n, &n);
+                    error = (*state.handler.unwrap().sibling_node)(n, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
