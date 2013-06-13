@@ -1283,10 +1283,10 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 	let val_enum: css_padding_e =  unsafe {cast::transmute(val as uint)}; 
 
 	match (val_enum) {
-        CSS_PADDING_INHERIT =>
-            ptr.push_str("padding-top => inherit\n"),
+        	CSS_PADDING_INHERIT =>
+			ptr.push_str("padding-top: inherit\n"),
 		CSS_PADDING_SET => {
-			ptr.push_str("padding-top => ");
+			ptr.push_str("padding-top: ");
 			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
 			ptr.push_str("\n")
 		},
@@ -1299,12 +1299,127 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 
 	match (val_enum) {
 		CSS_PADDING_INHERIT =>
-			ptr.push_str("padding-right => inherit\n"),
+			ptr.push_str("padding-right: inherit\n"),
 		CSS_PADDING_SET => {
-			ptr.push_str("padding-right => ");
+			ptr.push_str("padding-right: ");
 			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
 			ptr.push_str("\n")
 		},
 	}
+
+	/* padding-left */
+	let (val, len1, unit1) = css_computed_padding_left(style);
+	let val_enum: css_padding_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_PADDING_INHERIT =>
+			ptr.push_str("padding-left: inherit\n"),
+		CSS_PADDING_SET => {
+			ptr.push_str("padding-left: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		}
+	}
+
+
+	/* position */
+	let val = css_computed_position(style);
+	let val_enum: css_position_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_POSITION_INHERIT =>
+			ptr.push_str("position: inherit\n"),
+		CSS_POSITION_STATIC =>
+			ptr.push_str("position: static\n"),
+		CSS_POSITION_RELATIVE =>
+			ptr.push_str("position: relative\n"),
+		CSS_POSITION_ABSOLUTE =>
+			ptr.push_str("position: absolute\n"),
+		CSS_POSITION_FIXED =>
+			ptr.push_str("position: fixed\n"),
+	}
+
+	/* quotes */
+	let (val,string_list) = css_computed_quotes(style);
+	let mut string_list_index = 0;
+	if (val == CSS_QUOTES_STRING as u8 && string_list.len() != 0) {
+		ptr.push_str("quotes:");
+		
+		while (string_list_index < string_list.len()) {
+			ptr.push_str(fmt!(" \"%s\"",
+				string_list[string_list_index]));
+		
+			string_list_index += 1;
+		}
+		ptr.push_str("\n");
+	} else {
+		let val_enum: css_quotes_e =  unsafe {cast::transmute(val as uint)}; 
+		match (val_enum) {
+			CSS_QUOTES_INHERIT =>
+				ptr.push_str("quotes: inherit\n"),
+			CSS_QUOTES_NONE =>
+				ptr.push_str("quotes: none\n"),
+			_ =>
+				{}
+		}
+	}
+
+
+	/* right */
+	let (val, len1, unit1) = css_computed_right(style);
+	let val_enum: css_right_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_RIGHT_INHERIT =>
+			ptr.push_str("right: inherit\n"),
+		CSS_RIGHT_AUTO =>
+			ptr.push_str("right: auto\n"),
+		CSS_RIGHT_SET => {
+			ptr.push_str("right: ");
+			dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+			ptr.push_str("\n")
+		},
+	}
+
+	/* table-layout */
+	let val = css_computed_table_layout(style);
+	let val_enum: css_table_layout_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_TABLE_LAYOUT_INHERIT =>
+			ptr.push_str("table-layout: inherit\n"),
+		CSS_TABLE_LAYOUT_AUTO =>
+			ptr.push_str("table-layout: auto\n"),
+		CSS_TABLE_LAYOUT_FIXED =>
+			ptr.push_str("table-layout: fixed\n"),
+	}
+
+
+	/* text-align */
+	let val = css_computed_text_align(style);
+	let val_enum: css_text_align_e =  unsafe {cast::transmute(val as uint)}; 
+
+	match (val_enum) {
+		CSS_TEXT_ALIGN_INHERIT =>
+			ptr.push_str("text-align: inherit\n"),
+		CSS_TEXT_ALIGN_LEFT =>
+			ptr.push_str("text-align: left\n"),
+		CSS_TEXT_ALIGN_RIGHT =>
+			ptr.push_str("text-align: right\n"),
+		CSS_TEXT_ALIGN_CENTER =>
+			ptr.push_str("text-align: center\n"),
+		CSS_TEXT_ALIGN_JUSTIFY =>
+			ptr.push_str("text-align: justify\n"),
+		CSS_TEXT_ALIGN_DEFAULT =>
+			ptr.push_str("text-align: default\n"),
+		CSS_TEXT_ALIGN_LIBCSS_LEFT =>
+			ptr.push_str("text-align: -libcss-left\n"),
+		CSS_TEXT_ALIGN_LIBCSS_CENTER =>
+			ptr.push_str("text-align: -libcss-center\n"),
+		CSS_TEXT_ALIGN_LIBCSS_RIGHT =>
+			ptr.push_str("text-align: -libcss-right\n"),
+		_ =>
+			{}
+	}	
 
 }
