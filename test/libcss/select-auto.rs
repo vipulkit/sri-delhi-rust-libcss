@@ -116,10 +116,9 @@ pub fn select_test(file:~str) {
 	}
 
 	for str::each_line_any(file_content) |line| { 
-        	let mut line_string: ~str = line.to_str(); 
-		line_string.push_char('\n');
-		io::println(fmt!("%?",line_string)); 
-	        handle_line(line_string,ctx);
+        let mut line_string: ~str = line.to_str(); 
+		line_string.push_char('\n'); 
+	    handle_line(&mut line_string,ctx);
     	}	
 
 	if( ctx.tree.is_some() ) {
@@ -153,9 +152,10 @@ pub fn main() {
 	io::println(fmt!("\n Starting select-auto test cases "));
 }
 
-pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
+pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
 	let mut error : css_error ;
 	let mut len : uint ; 
+	data[0] = '0'  as u8;
 	if ( data[0] == ('#' as u8) ) {
 	    if( ctx.intree ) {
 
@@ -167,7 +167,7 @@ pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
             }
             else {
                 /* Assume start of stylesheet */
-                css__parse_sheet(ctx, data.slice(1,data.len()-1) );
+                css__parse_sheet(ctx, data,1);
 
                 ctx.intree = false;
                 ctx.insheet = true;
@@ -199,7 +199,7 @@ pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
                             CSS_OK=>{true},
                             _=>{false}
                         });
-                css__parse_sheet(ctx, data.slice(1,data.len()-1) );
+                css__parse_sheet(ctx, data,1);
             }
             else {
                 len = unsafe { ctx.sheets.len() -1 } ;
@@ -232,7 +232,7 @@ pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
             /* Start state */
             if(data.len()>=4 && is_string_caseless_equal(data.slice(1,4), "tree")) {
 
-                css__parse_tree(ctx, data.slice(5, data.len()-1) );
+                css__parse_tree(ctx, data, 5 );
                 ctx.intree = true;
                 ctx.insheet = false;
                 ctx.inerrors = false ;
@@ -273,22 +273,8 @@ pub fn isspace (ch:u8)-> bool {
 	} 
 }
 
-pub fn css__parse_tree(ctx:@mut line_ctx, data:&str) {
-	/* [ <media_list> <pseudo>? ] ? */
-	ctx.media = CSS_MEDIA_ALL as u32;
-	ctx.pseudo_element = CSS_PSEUDO_ELEMENT_NONE as u32;
+pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
 
-	/* Consume any leading whitespace */
-	let mut data2 = data.trim_left();
-
-	let mut length_processed : uint = 0 ;
-	if (data2.len()>0) {
-		length_processed = css__parse_media_list(data2,ctx);
-	}
-
-	if length_processed < data2.len() {
-		css__parse_pseudo_list(data2.slice(length_processed,data2.len()-1),ctx);
-	}
 }
 
 pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
@@ -424,10 +410,10 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 
 }
 
-pub fn css__parse_sheet(ctx:@mut line_ctx, data:&str) {
+pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
 
     let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
-    let mut p : uint = 0;
+    let mut p : uint = index;
     let end : uint = data.len();
     /* Find end of origin */
     while p < end && !isspace(data[p]) {
@@ -454,7 +440,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&str) {
     }
     
     if p < end {
-       css__parse_media_list(data.slice(p, end), ctx);
+       css__parse_media_list(data,p,ctx);
     }
     let params = css_create_params();
     let sheet:@mut css = css::css_create(params, None);
@@ -468,7 +454,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&str) {
 }
 
 
-pub fn css__parse_media_list(data:&str , ctx:@mut line_ctx) -> uint {
+pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> uint {
 
 	// ' '	(0x20)	space (SPC)
 	// '\t'	(0x09)	horizontal tab (TAB)
@@ -476,7 +462,7 @@ pub fn css__parse_media_list(data:&str , ctx:@mut line_ctx) -> uint {
 	// '\v'	(0x0b)	vertical tab (VT)
 	// '\f'	(0x0c)	feed (FF)
 	// '\r'	(0x0d)	carriage return (CR)
-	let mut len : uint = 0 ;
+	let mut len : uint = index ;
 	let mut result : u64 = 0 ;
 	while len < data.len() {
 
@@ -554,7 +540,7 @@ pub fn css__parse_media_list(data:&str , ctx:@mut line_ctx) -> uint {
 	len
 }
 
-pub fn css__parse_pseudo_list(data:&str,ctx:@mut line_ctx) -> uint {
+pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> uint {
 	
 
 	/*
