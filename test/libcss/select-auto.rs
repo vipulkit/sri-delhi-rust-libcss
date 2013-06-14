@@ -560,6 +560,8 @@ pub fn css__parse_media_list(data:&str , ctx:@mut line_ctx) -> uint {
 }
 
 pub fn css__parse_pseudo_list(data:&str,ctx:@mut line_ctx) -> uint {
+	
+
 	/*
 	const char *p = *data;
 	const char *end = p + *len;
@@ -956,76 +958,76 @@ fn node_has_name(pw:*libc::c_void, n:*libc::c_void, qname:css_qname, matched:@mu
 }
 
 fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error {
-	// let mut node1:@mut node;
-	// let mut ctx: @mut  line_ctx;
-	// let mut i:u32 = 0 ;
-	// unsafe {
-	// 	node1 = ::cast::transmute(n);
-	// 	ctx = ::cast::transmute(pw);
-	// }
-	// //unsafe {
+	let mut node1:@mut node;
+	let mut ctx: @mut  line_ctx;
+	let mut i:u32 = 0 ;
+	unsafe {
+		node1 = ::cast::transmute(n);
+		ctx = ::cast::transmute(pw);
+	}
+	unsafe {
 		
-	// 	while (i as uint) < node1.attrs.len() {
-	// 		let mut amatched: bool;
-	// 		do lwc().write |l| {
-	// 				amatched = l.lwc_string_caseless_isequal(node1.attrs[i].name.clone(),ctx.attr_class.clone()); 
-	// 			}
-	// 		if amatched {
-	// 			break;
-	// 		}
-	// 		i += 1;
-	// 	}
+		while (i as uint) < node1.attrs.len() {
+			let mut amatched: bool = false;
+			do lwc().write |l| {
+					amatched = l.lwc_string_caseless_isequal(node1.attrs[i].name.clone(),ctx.attr_class.clone()); 
+				}
+			if amatched {
+				break;
+			}
+			i += 1;
+		}
 
-	// 	/* Classes are case-sensitive in HTML */
-	// 	let mut condition_match : bool;
-	// 	do lwc().write |l| {
-	// 		condition_match = l.lwc_string_caseless_isequal(name.clone(), node1.attrs[i].value.clone());
-	// 	}
+		/* Classes are case-sensitive in HTML */
+		let mut condition_match : bool = false;
+		do lwc().write |l| {
+			condition_match = l.lwc_string_caseless_isequal(name.clone(), node1.attrs[i].value.clone());
+		}
 		
-	// 	if i != (node1.attrs.len() ) && condition_match {
-	// 		*matched = true;
-	// 	}
-	// 	else {
-	// 		*matched = false;
-	// 	}
-	//}
+		if (i != node1.attrs.len() as u32) && condition_match {
+			*matched = true;
+		}
+		else {
+			*matched = false;
+		}
+	}
 	CSS_OK
 }
 
 fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error {
-	// let mut node1:@mut node;
-	// let mut ctx: @mut  line_ctx;
-	// let mut i:u32 = 0 ;
-	// unsafe {
-	// 	node1 = ::cast::transmute(n);
-	// 	ctx = ::cast::transmute(pw);
-	// }
-	// //unsafe {
+	let mut node1:@mut node;
+	let mut ctx: @mut  line_ctx;
+	let mut i:u32 = 0 ;
+	unsafe {
+		node1 = ::cast::transmute(n);
+		ctx = ::cast::transmute(pw);
+	}
+	unsafe {
 		
-	// 	while (i as uint) < node1.attrs.len() {
-	// 		let mut amatched: bool;
-	// 		do lwc().write |l| {
-	// 				amatched = l.lwc_string_caseless_isequal(node1.attrs[i].name.clone(),ctx.attr_id.clone()); 
-	// 			}
-	// 		if amatched {
-	// 			break;
-	// 		}
-	// 		i += 1;
-	// 	}
+		while (i as uint) < node1.attrs.len() {
+			let mut amatched: bool = false;
+			do lwc().write |l| {
+					amatched = l.lwc_string_caseless_isequal(node1.attrs[i].name.clone(),ctx.attr_id.clone()); 
+				}
+			if amatched {
+				break;
+			}
+			i += 1;
+		}
 
-	// 	/* IDs are case-sensitive in HTML */
-	// 	let mut condition_match : bool;
-	// 	do lwc().write |l| {
-	// 		condition_match = l.lwc_string_caseless_isequal(name.clone(), node1.attrs[i].value.clone());
-	// 	}
+		/* IDs are case-sensitive in HTML */
+		let mut condition_match : bool = false;
+		do lwc().write |l| {
+			condition_match = l.lwc_string_caseless_isequal(name.clone(), node1.attrs[i].value.clone());
+		}
 		
-	// 	if i != (node1.attrs.len() ) && condition_match {
-	// 		*matched = true;
-	// 	}
-	// 	else {
-	// 		*matched = false;
-	// 	}
-	//}
+		if i != (node1.attrs.len()as u32 ) && condition_match {
+			*matched = true;
+		}
+		else {
+			*matched = false;
+		}
+	}
 	CSS_OK
 }
 
