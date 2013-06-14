@@ -347,7 +347,7 @@ impl css_select_ctx {
         }
 
         /* Get node's name */
- //       error = (*(handler.node_name))(node, copy state.element);
+        error = (*(handler.node_name))(node, &mut state.element);
         match error {
             CSS_OK=>{},
             x =>  {
