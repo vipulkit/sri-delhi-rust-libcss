@@ -299,7 +299,8 @@ impl css_select_ctx {
             },    
             current_pseudo:CSS_PSEUDO_ELEMENT_NONE,  
             computed:css_computed_style_create(),   
-            handler:Some(handler),    
+            handler:Some(handler), 
+            pw:pw,   
             sheet:None,   
             current_origin:CSS_ORIGIN_UA,  
             current_specificity:0,   
@@ -1869,16 +1870,16 @@ impl css_select_ctx {
                     /* Only need to test this inside not(), since
                      * it will have been considered as a named node
                      * otherwise. */
-                    error = (*state.handler.unwrap().node_has_name)( node,
+                    error = (*state.handler.unwrap().node_has_name)(state.pw, node,
                             copy detail.qname, matched);
                 }
             }
             CSS_SELECTOR_CLASS => {
-                error = (*state.handler.unwrap().node_has_class)( node,
+                error = (*state.handler.unwrap().node_has_class)(state.pw, node,
                         lwc_name.clone(), matched);
             }       
             CSS_SELECTOR_ID => {
-                error = (*state.handler.unwrap().node_has_id)( node,
+                error = (*state.handler.unwrap().node_has_id)(state.pw, node,
                         lwc_name.clone(), matched);
             }
             CSS_SELECTOR_PSEUDO_CLASS => {
