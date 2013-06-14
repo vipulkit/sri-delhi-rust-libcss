@@ -17,9 +17,11 @@ use css::select::common::*;
 //use css::select::dispatch::*;
 use css::stylesheet::*;
 use css::select::select::*;
+
 use css::include::properties::*;
 use css::include::fpmath::*;
 use Dump_computed::*;
+
 
 pub struct attribute {
 	name:arc::RWARC<~lwc_string>,
@@ -130,7 +132,7 @@ pub fn select_test(file:~str) {
 
 pub fn resolve_url(base:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>){
 
-	(CSS_OK, None)
+	(CSS_OK, Some(rel.clone()))
 }
 
 pub fn css_create_params() -> css_params {
@@ -147,7 +149,7 @@ pub fn css_create_params() -> css_params {
         color : None,
         font : None
     };
-    return css_param;
+     return css_param;
 }
 
 pub fn main() {
@@ -261,7 +263,7 @@ pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
 		//	css__parse_expected(ctx, data );
 		//}
 	}
-	true 
+	 true 
 }
 
 
@@ -429,47 +431,47 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 
 pub fn css__parse_sheet(ctx:@mut line_ctx, data:&str) {
 
-	let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
-	let mut media : uint = CSS_MEDIA_ALL as uint;
-	let mut p : uint = 0;
-	let length : uint = data.len();
-	/* Find end of origin */
-	while p < length && !isspace(data[p]) {
-		p += 1;
-	}
-	
-	if p == 6 && is_string_caseless_equal( data.slice(1,6), "author"){
-		origin = CSS_ORIGIN_AUTHOR;
-	}
-	else if p == 4 && is_string_caseless_equal( data.slice(1,4), "user"){
-		origin = CSS_ORIGIN_USER;
-	}
-	else if p == 2 && is_string_caseless_equal( data.slice(1,2), "ua"){
-		origin = CSS_ORIGIN_UA;
-	}
-	else {
-			io::println("\n Unknown stylesheet origin");
-			assert!(false);
-	}
-	
-	/* Skip any whitespace */
-	while p < length && isspace(data[p]) {
-		p += 1;
-	}
-	
-	if p < length {
-		media = css__parse_media_list(data.slice(p, length - 1), ctx);
-	}
-	let params = css_create_params();
-	let sheet:@mut css = css::css_create(params, None);
-	let sheet_ctx = @mut sheet_ctx {
-		sheet:sheet,
-		origin:origin,
-		media:media as u64
-	};
-	
-	ctx.sheets.push(sheet_ctx);
+    let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
+    let mut p : uint = 0;
+    let end : uint = data.len();
+    /* Find end of origin */
+    while p < end && !isspace(data[p]) {
+        p += 1;
+    }
+    
+    if p == 6 && is_string_caseless_equal( data.slice(0,6), "author"){
+        origin = CSS_ORIGIN_AUTHOR;
+    }
+    else if p == 4 && is_string_caseless_equal( data.slice(0,4), "user"){
+        origin = CSS_ORIGIN_USER;
+    }
+    else if p == 2 && is_string_caseless_equal( data.slice(0,2), "ua"){
+        origin = CSS_ORIGIN_UA;
+    }
+    else {
+			println("Unknown stylesheet origin");
+            assert!(false);
+    }
+    
+    /* Skip any whitespace */
+    while p < end && isspace(data[p]) {
+        p += 1;
+    }
+    
+    if p < end {
+       css__parse_media_list(data.slice(p, end), ctx);
+    }
+    let params = css_create_params();
+    let sheet:@mut css = css::css_create(params, None);
+    let sheet_ctx = @mut sheet_ctx {
+        sheet: sheet,
+        origin: origin,
+        media: ctx.media as u64
+    };
+    
+    ctx.sheets.push(sheet_ctx);
 }
+
 
 pub fn css__parse_media_list(data:&str , ctx:@mut line_ctx) -> uint {
 
@@ -616,26 +618,26 @@ pub fn css__parse_pseudo_list(data:&str,ctx:@mut line_ctx) -> uint {
 //}
 
 pub fn run_test( ctx:@mut line_ctx) {
-	let mut select: ~css_select_ctx;
-	let mut results: css_select_results;
+    let mut select: ~css_select_ctx;
+    let mut results: css_select_results;
 
-	let mut i:u32=0;
-	let mut buf:~str= ~"";
-	//let mut bufLen:uint;
-	let mut testnum: int;//TODO static
+    let mut i:u32=0;
+    let mut buf:~str= ~"";
+    //let mut bufLen:uint;
+    let mut testnum: int;//TODO static
 
-	select = css_select_ctx::css_select_ctx_create();
-	unsafe {
-		while i < (ctx.sheets.len() as u32) {
-			match select.css_select_ctx_append_sheet(ctx.sheets[i].sheet.stylesheet,ctx.sheets[i].origin,ctx.sheets[i].media) {
-				CSS_OK => {},
-				_ => fail!()
-			}
-			i += 1;
-		}
-	}
-	let select_handler: @mut css_select_handler = @mut css_select_handler {
-	node_name: @node_name,
+    select = css_select_ctx::css_select_ctx_create();
+    unsafe {
+        while i < (ctx.sheets.len() as u32) {
+            match select.css_select_ctx_append_sheet(ctx.sheets[i].sheet.stylesheet,ctx.sheets[i].origin,ctx.sheets[i].media) {
+                CSS_OK => {},
+                _ => fail!()
+            }
+            i += 1;
+        }
+    }
+    let select_handler: @mut css_select_handler = @mut css_select_handler {
+    node_name: @node_name,
 
     node_classes: @node_classes,
 
@@ -708,35 +710,37 @@ pub fn run_test( ctx:@mut line_ctx) {
     ua_default_for_property: @ua_default_for_property,
     handler_version:1
 };//TODO
-	//testnum += 1;
-	unsafe {
-		let mut result = select.css_select_style(::cast::transmute(ctx.target.unwrap()),ctx.media as u64,None,select_handler);
-	    match result {
-	    	(CSS_OK,Some(x)) => results = x,
-	    	_=> fail!()
-	    }
-	}
+    //testnum += 1;
+    unsafe {
+        let mut result = select.css_select_style(::cast::transmute(ctx.target.unwrap()),ctx.media as u64,None, select_handler,::cast::transmute(ctx));
+        match result {
+            (CSS_OK,Some(x)) => results = x,
+            _=> fail!()
+        }
+    }
 
-	assert!(results.styles[ctx.pseudo_element].is_some());
-	dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
-	let mut string:~str = copy ctx.exp;
-	string = string.slice(0,ctx.explen).to_owned().to_lower();
-	if 8192 - buf.len() !=  ctx.explen || str::eq(&buf.slice(0,ctx.explen).to_owned().to_lower(),&string) {
-		io::println(fmt!("Expected : %?, %?",copy ctx.explen,string));
-		io::println(fmt!("Result: %?,%?",8192-buf.len(),buf));
-	}
-	//css_select_ctx::css_select_results_destroy(&results);
-	ctx.tree = None;
-	ctx.current = None;
-	ctx.depth = 0;
-	//ctx->n_sheets = 0;
-	ctx.sheets= ~[];
-	ctx.target = None;
+    assert!(results.styles[ctx.pseudo_element].is_some());
+    dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
+    let mut string:~str = copy ctx.exp;
+    string = string.slice(0,ctx.explen).to_owned().to_lower();
+    if 8192 - buf.len() !=  ctx.explen || str::eq(&buf.slice(0,ctx.explen).to_owned().to_lower(),&string) {
+        io::println(fmt!("Expected : %?, %?",copy ctx.explen,string));
+        io::println(fmt!("Result: %?,%?",8192-buf.len(),buf));
+    }
+    //css_select_ctx::css_select_results_destroy(&results);
+    ctx.tree = None;
+    ctx.current = None;
+    ctx.depth = 0;
+    //ctx->n_sheets = 0;
+    ctx.sheets= ~[];
+    ctx.target = None;
 
-	
-}
+    
+ }
 
-fn node_name(n:*libc::c_void, qname:css_qname ) -> css_error {
+
+ fn node_name(n:*libc::c_void, qname : &mut css_qname) -> css_error {
+
 	let node : @mut node;
 	unsafe {
 		node = ::cast::transmute(n);
@@ -1024,6 +1028,7 @@ fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:arc::RWARC<~lwc_string>, 
 	//}
 	CSS_OK
 }
+
 
 fn node_has_attribute(n:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error {
 	let mut node1:@mut node;
@@ -1527,7 +1532,6 @@ fn compute_font_size(parent: Option<@mut css_hint>, size: Option<@mut css_hint>)
 }
 
 
-
 pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
 
     if ( a.len() != b.len() ) {
@@ -1565,12 +1569,11 @@ pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
 
 #[test]
 fn selection_test() {
+
 	select_test(~"data/select/tests1.dat");
 }
 
 
 
 
-/*pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 
-}*/

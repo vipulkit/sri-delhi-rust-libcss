@@ -278,7 +278,8 @@ impl css_select_ctx {
                                 node:*libc::c_void,
                                 media:u64,
                                 inline_style:Option<@mut css_stylesheet>,
-                                handler:@mut css_select_handler) 
+                                handler:@mut css_select_handler,
+								pw:*libc::c_void) 
                                 -> (css_error,Option<css_select_results>) {
 
         if( node == ptr::null() || handler.handler_version != (CSS_SELECT_HANDLER_VERSION_1  as uint) ) {
@@ -298,7 +299,8 @@ impl css_select_ctx {
             },    
             current_pseudo:CSS_PSEUDO_ELEMENT_NONE,  
             computed:css_computed_style_create(),   
-            handler:Some(handler),    
+            handler:Some(handler), 
+            pw:pw,   
             sheet:None,   
             current_origin:CSS_ORIGIN_UA,  
             current_specificity:0,   
@@ -345,7 +347,7 @@ impl css_select_ctx {
         }
 
         /* Get node's name */
-        error = (*(handler.node_name))(node, copy state.element);
+        error = (*(handler.node_name))(node, &mut state.element);
         match error {
             CSS_OK=>{},
             x =>  {
@@ -354,7 +356,7 @@ impl css_select_ctx {
         }
 
         /* Get node's ID, if any */
-        error = (*(handler.node_id))(node, copy state.id);
+        error = (*(handler.node_id))(pw, node, &mut state.id);
         match error {
             CSS_OK=>{},
             x =>  {
@@ -366,8 +368,8 @@ impl css_select_ctx {
         /* \todo Do we really want to force the client to allocate a new array 
          * every time we call this? It seems hugely inefficient, given they can 
          * cache the data. */
-        error = (*(handler.node_classes))(node, 
-                copy state.classes);
+        error = (*(handler.node_classes))(pw, node, 
+                &mut state.classes);
         match error {
             CSS_OK=>{},
             x =>  {
@@ -1868,16 +1870,16 @@ impl css_select_ctx {
                     /* Only need to test this inside not(), since
                      * it will have been considered as a named node
                      * otherwise. */
-                    error = (*state.handler.unwrap().node_has_name)( node,
+                    error = (*state.handler.unwrap().node_has_name)(state.pw, node,
                             copy detail.qname, matched);
                 }
             }
             CSS_SELECTOR_CLASS => {
-                error = (*state.handler.unwrap().node_has_class)( node,
+                error = (*state.handler.unwrap().node_has_class)(state.pw, node,
                         lwc_name.clone(), matched);
             }       
             CSS_SELECTOR_ID => {
-                error = (*state.handler.unwrap().node_has_id)( node,
+                error = (*state.handler.unwrap().node_has_id)(state.pw, node,
                         lwc_name.clone(), matched);
             }
             CSS_SELECTOR_PSEUDO_CLASS => {
