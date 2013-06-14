@@ -684,34 +684,32 @@ pub enum css_select_handler_version {
 
 pub struct css_select_handler {
 
-    node_name: @extern fn(node:*libc::c_void, qname:css_qname ) -> css_error,
+    node_name: @extern fn( node:*libc::c_void, qname: &mut css_qname ) -> css_error,
 
-    node_classes: @extern fn(node:*libc::c_void, classes:~[~str] ) -> css_error,
+    node_classes: @extern fn(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[~str] ) -> css_error,
 
-    node_id: @extern fn(node:*libc::c_void, id:~str ) -> css_error,
+    node_id: @extern fn(pw:*libc::c_void, node:*libc::c_void, id:&mut ~str ) -> css_error,
 
-    named_ancestor_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, ancestor:**libc::c_void) -> css_error,
+    named_ancestor_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, ancestor:*mut*libc::c_void) -> css_error,
    
-    named_parent_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, parent:**libc::c_void) -> css_error,
+    named_parent_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_void) -> css_error,
     
-    named_sibling_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, sibling:**libc::c_void) -> css_error,
+    named_sibling_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error,
 
-    named_generic_sibling_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, sibling:**libc::c_void) -> css_error,
+    named_generic_sibling_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error,
     
-    parent_node: @extern fn(node:*libc::c_void, parent:**libc::c_void) -> css_error,
+    parent_node: @extern fn(node:*libc::c_void, parent:*mut*libc::c_void) -> css_error,
 
-    sibling_node: @extern fn(node:*libc::c_void, sibling:**libc::c_void) -> css_error,
+    sibling_node: @extern fn(node:*libc::c_void, sibling:*mut*libc::c_void) -> css_error,
 
-    node_has_name: @extern fn(node:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error,
+    node_has_name: @extern fn(pw:*libc::c_void,node:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error,
 
-    node_has_class: @extern fn(node:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error,
+    node_has_class: @extern fn(pw:*libc::c_void, node:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error,
 
-    node_has_id: @extern fn(node:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error,
+    node_has_id: @extern fn(pw:*libc::c_void, node:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error,
 
     node_has_attribute: @extern fn(node:*libc::c_void, name:css_qname, matched:@mut bool) -> css_error,
     
-   // node_has_name: @extern fn(node:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error,
-
     node_has_attribute_equal: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
    
     node_has_attribute_dashmatch: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
@@ -760,7 +758,6 @@ pub struct css_select_handler {
 }
 
 pub struct css_select_state {
-    //TODO : void *node;        
     node:*libc::c_void,
     media:u64,         
     results:css_select_results,
@@ -768,7 +765,7 @@ pub struct css_select_state {
     computed:@mut css_computed_style,  
 
     handler:Option<@mut css_select_handler>,    
-
+    pw:*libc::c_void,
     sheet:Option<@mut css_stylesheet>,   
 
     current_origin:css_origin, 
