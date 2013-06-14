@@ -20,6 +20,8 @@ use utils::errors::*;
 *  'ctx'    - Pointer to vector iteration ctx.
 */
 pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
+
+    io::println("Entering: consumeWhitespace");
     loop {
         if *ctx < vector.len() {
             match vector[*ctx].token_type {
@@ -52,6 +54,7 @@ pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
 */
 pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_token] , ctx: @mut uint , default_unit: u32) -> (Option<i32> , Option<u32>, css_error) {
 
+    io::println("Entering: css__parse_unit_specifier");
     let mut token:&@css_token;
     let mut unit_retVal:u32;
     let orig_ctx = *ctx;
@@ -136,6 +139,8 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
 }
 
 pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bool) -> (i32 , uint) {
+    
+    io::println("Entering: css__number_from_lwc_string");
     let mut ret_value = 0;
     let mut consumed_length = 0;
 
@@ -155,6 +160,8 @@ pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bo
                 CSS_INVALID if the input is not valid.
 */
 pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<u32>,css_error) {
+    
+    io::println("Entering: css__parse_unit_keyword");
     let mut unit = UNIT_GRAD;
     let len:uint= ptr.len() - index;
     let ptr_lower = ptr.to_lower();
@@ -228,6 +235,7 @@ pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<u32>,css_error)
 
 pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool) -> (i32 , uint){
 
+    io::println("Entering: css__number_from_string");
     let mut length = data.len();
     // let mut ptr = copy data;
     let mut sign = 1;
@@ -334,6 +342,8 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
 }
 
 pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->bool {
+    
+    io::println("Entering: is_css_inherit");
     match token.token_type {
         CSS_TOKEN_IDENT => {
              return strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint);
@@ -357,381 +367,385 @@ pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->boo
 *   If the input is invalid, then ctx remains unchanged.
 */
 pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_error) {
+    
+    io::println("Entering: css__parse_color_specifier");
     let mut token:&@css_token;
     let mut ret_value: u16 = 0;
     let mut ret_result: u32 = 0;
-    let mut goto_flag = false;
     let orig_ctx = *ctx;
 
     consumeWhitespace(vector , ctx);
     if *ctx >= vector.len() {
         return (None , None , CSS_INVALID)
     }
+    
+    /* IDENT(<colour name>) | 
+     * HASH(rgb | rrggbb) |
+     * FUNCTION(rgb) [ [ NUMBER | PERCENTAGE ] ',' ] {3} ')'
+     * FUNCTION(rgba) [ [ NUMBER | PERCENTAGE ] ',' ] {4} ')'
+     * FUNCTION(hsl) ANGLE ',' PERCENTAGE ',' PERCENTAGE  ')'
+     * FUNCTION(hsla) ANGLE ',' PERCENTAGE ',' PERCENTAGE ',' NUMBER ')'
+     *
+     * For quirks, NUMBER | DIMENSION | IDENT, too
+     * I.E. "123456" -> NUMBER, "1234f0" -> DIMENSION, "f00000" -> IDENT
+     */
+
     token = &vector[*ctx];
     *ctx = *ctx + 1;
 
-    match token.token_type {
-        CSS_TOKEN_IDENT => {
-            if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , TRANSPARENT as uint) {
-                ret_value = COLOR_TRANSPARENT ;
-                ret_result = 0;
-                return (Some(ret_value) , Some(ret_result) , CSS_OK);
+    if token.token_type as int != CSS_TOKEN_IDENT as int && token.token_type as int != CSS_TOKEN_HASH as int 
+        && token.token_type as int != CSS_TOKEN_FUNCTION as int {
+
+        if (sheet.quirks_allowed== false || (token.token_type as int != CSS_TOKEN_NUMBER as int 
+            && token.token_type as int != CSS_TOKEN_DIMENSION as int ))
+        {
+            *ctx = orig_ctx;
+            return (None , None , CSS_INVALID);
+        } 
+    }
+
+    if token.token_type as int == CSS_TOKEN_IDENT as int  {
+        if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , TRANSPARENT as uint) {
+            ret_value = COLOR_TRANSPARENT ;
+            ret_result = 0;
+            return (Some(ret_value) , Some(ret_result) , CSS_OK);
+        }
+        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , CURRENTCOLOR as uint) {
+            ret_value = COLOR_CURRENT_COLOR ;
+            ret_result = 0;
+            return (Some(ret_value) , Some(ret_result) , CSS_OK);
+        }
+
+        let (_ , error) = css__parse_named_color(sheet , strings , token.idata.get_ref().clone());
+        
+        if error as int != CSS_OK as int && sheet.quirks_allowed {
+            let(_ , error) = css__parse_hash_colour(token.idata.get_ref().clone());
+            
+            if error as int == CSS_OK as int {
+                sheet.quirks_used = true;
             }
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , CURRENTCOLOR as uint) {
-                ret_value = COLOR_CURRENT_COLOR ;
-                ret_result = 0;
-                return (Some(ret_value) , Some(ret_result) , CSS_OK);
+        }
+
+        if error as int != CSS_OK as int {
+            *ctx = orig_ctx;
+            return (None , None , CSS_INVALID);
+        }
+    }
+
+    else if (token.token_type as int ==  CSS_TOKEN_HASH as int || token.token_type as int ==  CSS_TOKEN_NUMBER as int ||
+        token.token_type as int ==  CSS_TOKEN_DIMENSION as int)
+    {
+        let(_ , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
+        match error_from_hash {
+            CSS_OK => {},
+            _ => {
+                *ctx = orig_ctx;
+                return (None , None , CSS_INVALID);
             }
-            let (_ , error) = css__parse_named_color(sheet , strings , token.idata.get_ref().clone());
-            match error {
-                CSS_OK => {},
-                _ => {
-                    if sheet.quirks_allowed {
-                        let(_ , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
-                        match error_from_hash {
-                            CSS_OK => sheet.quirks_used = true,
-                            _ => {
-                                goto_flag = true;
-                            }
-                        }
-                    }
-                    else {
-                        goto_flag = true;
-                    }
-                }
-            }
-        },
+        }
+    }
+    else if (token.token_type as int ==  CSS_TOKEN_FUNCTION as int) {
+        let r:@mut u8 = @mut 0;
+        let g:@mut u8 = @mut 0;
+        let b:@mut u8 = @mut 0;
+        let a:@mut u8 = @mut 0xff;
+        let mut colour_channels: int = 0;
+        if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RGB as uint) {
+            colour_channels = 3;
+        }
+        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RGBA as uint) {
+            colour_channels = 4;
+        }
+        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HSL as uint) {
+            colour_channels = 5;
+        }
+        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HSLA as uint) {
+            colour_channels = 6;
+        }
 
-        CSS_TOKEN_HASH => {
-            let(_ , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
-            match error_from_hash {
-                CSS_OK => {},
-                _ => {
-                    goto_flag = true;
-                }
-            }
-        },
-        CSS_TOKEN_FUNCTION => {
-            let r:@mut u8 = @mut 0;
-            let g:@mut u8 = @mut 0;
-            let b:@mut u8 = @mut 0;
-            let a:@mut u8 = @mut 0xff;
-            let mut colour_channels: int = 0;
-            if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RGB as uint) {
-                colour_channels = 3;
-            }
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RGBA as uint) {
-                colour_channels = 4;
-            }
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HSL as uint) {
-                colour_channels = 5;
-            }
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HSLA as uint) {
-                colour_channels = 6;
-            }
+        if colour_channels ==3 || colour_channels == 4 {
+            let mut i: int =0;
+            let mut valid: Option<css_token_type> = None;
+            let components: ~[@mut u8] = ~[r, g, b, a];
+            let mut component: @mut u8;
+            while i < colour_channels {
+                
+                let mut intval: i32;
+                let mut int_only: bool;
 
-            if colour_channels ==3 || colour_channels == 4 {
-                let mut i: int =0;
-                let mut valid: Option<css_token_type> = None;
-                let components: ~[@mut u8] = ~[r, g, b, a];
-                let mut component: @mut u8;
-                while i < colour_channels {
-                    
-                    let mut intval: i32;
-                    let mut int_only: bool;
-
-                    component = components[i];
-                    consumeWhitespace(vector , ctx);
-
-                    token = &vector[*ctx];
-                    match token.token_type {
-                        CSS_TOKEN_NUMBER => {},
-                        CSS_TOKEN_PERCENTAGE => {},
-                        _ => {
-                            goto_flag = true;
-                        }
-                    }
-                    if i==0 {
-
-                        valid = Some(copy token.token_type);
-                    }
-
-                     else if (
-                        i<3 &&
-                        match token.token_type {
-                            CSS_TOKEN_NUMBER => false,
-                            _=>true
-                        }
-                        ) {
-                        goto_flag = true;
-                     }
-
-                   
-
-                    if i<3 {
-                        int_only = match valid {
-                         Some(CSS_TOKEN_NUMBER )=> true,
-                         _=> false
-                        };
-                    }
-                    else {
-                        int_only = false;
-                    }
-                    let (num , consumed_index) = css__number_from_lwc_string(token.idata.get_ref().clone() , int_only);
-
-                    if consumed_index != lwc_string_length(token.idata.get_ref().clone()) {
-                        goto_flag = true;
-                    }
-                     match valid {
-                        Some(CSS_TOKEN_NUMBER)=>{
-                            if (i==3) {
-                                intval = css_multiply_fixed((num as i32), F_255 as i32)>> CSS_RADIX_POINT;
-                                //FIXTOINT(FMUL(num, F_255));
-                            }
-                            else {
-                                intval = num as i32 >> CSS_RADIX_POINT;
-                                //FIXTOINT(num);
-                            }
-                        },
-                        _=>{
-                            intval = (css_divide_fixed(css_multiply_fixed((num as i32), F_255 as i32), F_100 as i32 )) >> CSS_RADIX_POINT;
-                            //FIXTOINT(FDIV(FMUL(num, F_255), F_100));
-                        }
-                     }
-
-                    if intval > 255 {
-                        *component = 255;
-                    }
-                    else if intval < 0 {
-                        *component = 0;
-                    }
-                    else {
-                        *component = intval as u8;
-                    }
-
-                    *ctx = *ctx + 1;
-                    consumeWhitespace(vector , ctx);
-
-                    token = &vector[*ctx];
-                     if *ctx >= vector.len() {
-                        goto_flag = true;
-                     }
-                    if (i != (colour_channels - 1) && tokenIsChar(token , ',')) {
-                        *ctx = *ctx + 1;
-                    }
-                    else if (i == (colour_channels - 1) && tokenIsChar(token , ')')) {
-                        *ctx = *ctx + 1;
-                    }
-                    else {
-                        goto_flag = true;
-                    }
-                    i = i + 1;
-                }
-            }
-            else if colour_channels == 5 || colour_channels == 6 {
-                let mut hue: i32;
-                let mut sat: i32;
-                let mut lit: i32;
-                let mut alpha: i32 = 255;
-
+                component = components[i];
                 consumeWhitespace(vector , ctx);
 
                 token = &vector[*ctx];
-                *ctx = *ctx + 1;
-                if *ctx >= vector.len() {
-                    goto_flag = true
-                }
                 match token.token_type {
                     CSS_TOKEN_NUMBER => {},
-                    _ => goto_flag = true
-                }
-                let mut (hue_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
-                hue = hue_res as i32;
-                if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref().clone()) {
-                    goto_flag = true;
-                }
-                while hue < 0 {
-                    hue += F_360 as i32;
-                }
-                while hue >= F_360 as i32 {
-                    hue -= F_360 as i32;
-                }
-
-                consumeWhitespace(vector , ctx);
-                
-                token = &vector[*ctx];
-                *ctx = *ctx + 1;
-                if *ctx >= vector.len() {
-                    goto_flag = true
-                }
-                if !tokenIsChar(token , ',') {
-                    goto_flag = true;
-                }
-
-                consumeWhitespace(vector , ctx);
-                
-                token = &vector[*ctx];
-                *ctx = *ctx + 1;
-                if *ctx >= vector.len() {
-                    goto_flag = true
-                }
-                match token.token_type {
                     CSS_TOKEN_PERCENTAGE => {},
                     _ => {
-                        goto_flag = true
+                        *ctx = orig_ctx;
+                        return (None , None , CSS_INVALID);
                     }
                 }
-                let mut (sat_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
-                sat = sat_res as i32;
-                if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref().clone()) {
-                    goto_flag = true;
+                if i==0 {
+
+                    valid = Some(copy token.token_type);
                 }
 
-                if sat < css_int_to_fixed(0) {
-                    sat = css_int_to_fixed(0);
-                }
-                else if sat > css_int_to_fixed(100) {
-                    sat = css_int_to_fixed(100);
-                }
-
-                consumeWhitespace(vector, ctx);
-
-                token = &vector[*ctx];
-                *ctx = *ctx + 1;
-
-                if !tokenIsChar(token , ',') {
-                    goto_flag = true;
-                }
-
-                consumeWhitespace(vector , ctx);
-
-                token = &vector[*ctx];
-                *ctx = *ctx + 1;
-
-                match token.token_type {
-                    CSS_TOKEN_PERCENTAGE => {},
-                    _ => {
-                        goto_flag = true
-                    }
-                }
-                let mut (lit_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
-                lit = lit_res as i32;
-                if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref().clone()) {
-                    goto_flag = true;
-                }
-
-                if lit < css_int_to_fixed(0) {
-                    lit = css_int_to_fixed(0);
-                }
-                else if lit > css_int_to_fixed(100) {
-                    lit = css_int_to_fixed(100);
-                }
-
-                consumeWhitespace(vector , ctx);
-
-                token = &vector[*ctx];
-                *ctx = *ctx + 1;
-
-                if colour_channels == 6 {
-                    if !tokenIsChar(token , ',') {
-                        goto_flag = true;
-                    }
-                    consumeWhitespace(vector , ctx);
-
-                    token = &vector[*ctx];
-                    *ctx = *ctx + 1;
-
+                else if (
+                    i<3 &&
                     match token.token_type {
-                        CSS_TOKEN_NUMBER => {},
-                        _ => {
-                            goto_flag = true
-                        }
+                        CSS_TOKEN_NUMBER => false,
+                        _=>true
                     }
-                    let mut (alpha_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
-                    alpha = alpha_res as i32;
-                    if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref().clone()) {
-                        goto_flag = true;
-                    }
-
-                    alpha = css_int_to_fixed(css_multiply_fixed(alpha as i32 , F_255 as i32) as int) as i32;
-                    consumeWhitespace(vector , ctx);
-
-                    token = &vector[*ctx];
-                    *ctx = *ctx + 1;
+                    ) {
+                    *ctx = orig_ctx;
+                    return (None , None , CSS_INVALID);
                 }
-                if !tokenIsChar(token , ',') {
-                    goto_flag = true;
-                }
-                let (ra , ga , ba) = HSL_to_RGB(hue as i32, sat as i32, lit as i32);
-                *r = ra;
-                *g = ga;
-                *b = ba;
 
-                if alpha > 255 {
-                    *a = 255;
-                }
-                else if alpha < 0 {
-                    *a = 0;
+               
+
+                if i<3 {
+                    int_only = match valid {
+                     Some(CSS_TOKEN_NUMBER )=> true,
+                     _=> false
+                    };
                 }
                 else {
-                    *a = alpha as u8;
+                    int_only = false;
                 }
+                let (num , consumed_index) = css__number_from_lwc_string(token.idata.get_ref().clone() , int_only);
+
+                if consumed_index != lwc_string_length(token.idata.get_ref().clone()) {
+                    *ctx = orig_ctx;
+                    return (None , None , CSS_INVALID);
+                }
+                match valid {
+                    Some(CSS_TOKEN_NUMBER)=>{
+                        if (i==3) {
+                            intval = css_multiply_fixed((num as i32), F_255 as i32)>> CSS_RADIX_POINT;
+                            //FIXTOINT(FMUL(num, F_255));
+                        }
+                        else {
+                            intval = num as i32 >> CSS_RADIX_POINT;
+                            //FIXTOINT(num);
+                        }
+                    },
+                    _=>{
+                        intval = (css_divide_fixed(css_multiply_fixed((num as i32), F_255 as i32), F_100 as i32 )) >> CSS_RADIX_POINT;
+                        //FIXTOINT(FDIV(FMUL(num, F_255), F_100));
+                    }
+                }
+
+                if intval > 255 {
+                    *component = 255;
+                }
+                else if intval < 0 {
+                    *component = 0;
+                }
+                else {
+                    *component = intval as u8;
+                }
+
+                *ctx = *ctx + 1;
+                consumeWhitespace(vector , ctx);
+
+                token = &vector[*ctx];
+                 if *ctx >= vector.len() {
+                    *ctx = orig_ctx;
+                    return (None , None , CSS_INVALID);     
+                 }
+                if (i != (colour_channels - 1) && tokenIsChar(token , ',')) {
+                    *ctx = *ctx + 1;
+                }
+                else if (i == (colour_channels - 1) && tokenIsChar(token , ')')) {
+                    *ctx = *ctx + 1;
+                }
+                else {
+                    *ctx = orig_ctx;
+                    return (None , None , CSS_INVALID);
+                }
+                i = i + 1;
+            }
+        }
+        else if colour_channels == 5 || colour_channels == 6 {
+            let mut hue: i32;
+            let mut sat: i32;
+            let mut lit: i32;
+            let mut alpha: i32 = 255;
+
+            consumeWhitespace(vector , ctx);
+
+            token = &vector[*ctx];
+            *ctx = *ctx + 1;
+            if *ctx >= vector.len() {
+                *ctx = orig_ctx;
+                return (None , None , CSS_INVALID);
+            }
+            match token.token_type {
+                CSS_TOKEN_NUMBER => {},
+                _ => {
+                    *ctx = orig_ctx;
+                    return (None , None , CSS_INVALID);
+                }
+            }
+            let mut (hue_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
+            hue = hue_res as i32;
+            if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref().clone()) {
+                *ctx = orig_ctx;
+                return (None , None , CSS_INVALID);
+            }
+            while hue < 0 {
+                hue += F_360 as i32;
+            }
+            while hue >= F_360 as i32 {
+                hue -= F_360 as i32;
+            }
+
+            consumeWhitespace(vector , ctx);
+            
+            token = &vector[*ctx];
+            *ctx = *ctx + 1;
+            if *ctx >= vector.len() {
+                *ctx = orig_ctx;
+                return (None , None , CSS_INVALID);
+            }
+            if !tokenIsChar(token , ',') {
+                *ctx = orig_ctx;
+                return (None , None , CSS_INVALID);
+            }
+
+            consumeWhitespace(vector , ctx);
+            
+            token = &vector[*ctx];
+            *ctx = *ctx + 1;
+            if *ctx >= vector.len() {
+                *ctx = orig_ctx;
+                return (None , None , CSS_INVALID);
+            }
+            match token.token_type {
+                CSS_TOKEN_PERCENTAGE => {},
+                _ => {
+                    *ctx = orig_ctx;
+                    return (None , None , CSS_INVALID);
+                }
+            }
+            let mut (sat_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
+            sat = sat_res as i32;
+            if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref().clone()) {
+                *ctx = orig_ctx;
+                return (None , None , CSS_INVALID);
+            }
+
+            if sat < css_int_to_fixed(0) {
+                sat = css_int_to_fixed(0);
+            }
+            else if sat > css_int_to_fixed(100) {
+                sat = css_int_to_fixed(100);
+            }
+
+            consumeWhitespace(vector, ctx);
+
+            token = &vector[*ctx];
+            *ctx = *ctx + 1;
+
+            if !tokenIsChar(token , ',') {
+                *ctx = orig_ctx;
+                return (None , None , CSS_INVALID);
+            }
+
+            consumeWhitespace(vector , ctx);
+
+            token = &vector[*ctx];
+            *ctx = *ctx + 1;
+
+            match token.token_type {
+                CSS_TOKEN_PERCENTAGE => {},
+                _ => {
+                    *ctx = orig_ctx;
+                    return (None , None , CSS_INVALID);
+                }
+            }
+            let mut (lit_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
+            lit = lit_res as i32;
+            if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref().clone()) {
+                *ctx = orig_ctx;
+                return (None , None , CSS_INVALID);
+            }
+
+            if lit < css_int_to_fixed(0) {
+                lit = css_int_to_fixed(0);
+            }
+            else if lit > css_int_to_fixed(100) {
+                lit = css_int_to_fixed(100);
+            }
+
+            consumeWhitespace(vector , ctx);
+
+            token = &vector[*ctx];
+            *ctx = *ctx + 1;
+
+            if colour_channels == 6 {
+                if !tokenIsChar(token , ',') {
+                    *ctx = orig_ctx;
+                    return (None , None , CSS_INVALID);
+                }
+                consumeWhitespace(vector , ctx);
+
+                token = &vector[*ctx];
+                *ctx = *ctx + 1;
+
+                match token.token_type {
+                    CSS_TOKEN_NUMBER => {},
+                    _ => {
+                        *ctx = orig_ctx;
+                        return (None , None , CSS_INVALID);
+                    }
+                }
+                let mut (alpha_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
+                alpha = alpha_res as i32;
+                if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref().clone()) {
+                    *ctx = orig_ctx;
+                    return (None , None , CSS_INVALID);
+                }
+
+                alpha = ((css_multiply_fixed(alpha as i32 , F_255 as i32) as int) >> CSS_RADIX_POINT) as i32;
+                consumeWhitespace(vector , ctx);
+
+                token = &vector[*ctx];
+                *ctx = *ctx + 1;
+            }
+            if !tokenIsChar(token , ')') {
+                *ctx = orig_ctx;
+                return (None , None , CSS_INVALID);
+            }
+            let (ra , ga , ba) = HSL_to_RGB(hue as i32, sat as i32, lit as i32);
+            *r = ra;
+            *g = ga;
+            *b = ba;
+
+            if alpha > 255 {
+                *a = 255;
+            }
+            else if alpha < 0 {
+                *a = 0;
             }
             else {
-                goto_flag = true;
+                *a = alpha as u8;
             }
+        }
+        else {
+            *ctx = orig_ctx;
+            return (None , None , CSS_INVALID);
+        }
 
-            ret_result = (*a << 24 | *r << 16 | *g << 8 | *b) as u32;
-            ret_value = COLOR_SET ;
-        },
-        _=>{
-            if (sheet.quirks_allowed== false ||
-                match token.token_type {
-                    CSS_TOKEN_NUMBER=> false,
-                    CSS_TOKEN_DIMENSION =>false,
-                    _=> true,
-                }) {
-                goto_flag =true;
-            } 
-        }
+        ret_result = (*a << 24 | *r << 16 | *g << 8 | *b) as u32;
+        ret_value = COLOR_SET ;
     }
-    if sheet.quirks_allowed {
-        match token.token_type {
-            CSS_TOKEN_NUMBER => {
-                let(_ , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
-                match error_from_hash {
-                    CSS_OK => {
-                        sheet.quirks_used = true
-                    },
-                    _ => {
-                        goto_flag = true;
-                    }
-                }
-            },
-            CSS_TOKEN_DIMENSION => {
-                let(_ , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
-                match error_from_hash {
-                    CSS_OK => {
-                        sheet.quirks_used = true
-                    },
-                    _ => {
-                        goto_flag = true;
-                    }
-                }
-            },
-            _ => {
-                goto_flag = true;
-            }
-        }
-    }
+
     else {
-        goto_flag = true;
+        *ctx = orig_ctx;
+        return (None , None , CSS_INVALID);
     }
 
-    if goto_flag {
-        *ctx = orig_ctx;
-        return (None , None , CSS_INVALID); 
-    }
     (Some(ret_value) , Some(ret_result) , CSS_OK)
 }
 
@@ -748,6 +762,8 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
 *   If the input is invalid, then ctx remains unchanged.
 */
 pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error){
+
+    io::println("Entering: css__parse_hash_colour");
     let mut result_val: u32;
     let mut r: u8;
     let mut g: u8;
@@ -790,6 +806,8 @@ pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , c
 * 'bool' - True if the token matches, false otherwise.
 */
 pub fn tokenIsChar(token:&@css_token, c:char) -> bool {
+    
+    io::println("Entering: tokenIsChar");
     let result = false;
 
     match token.token_type {
@@ -848,6 +866,8 @@ pub fn charToHex(c: u8) -> u32 {
 * 'b(u8)' - blue component.
 */
 pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
+
+    io::println("Entering: HSL_to_RGB");
     let min_rgb: i32;
     let max_rgb: i32;
     let chroma: i32;
@@ -963,6 +983,8 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
                 CSS_INVALID if the input is not valid.
 */
 fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error){
+    
+    io::println("Entering: css__parse_named_color");
     let mut result_val: u32;
     let colourmap: ~[u32] = ~[
         0xfff0f8ff, /* ALICEBLUE */
@@ -1126,7 +1148,7 @@ fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propst
         index +=1;
     }
 
-    if index == YELLOWGREEN as uint + 1 {
+    if index <= YELLOWGREEN as uint + 1 {
         result_val = colourmap[(index - (ALICEBLUE as uint))];
         return (Some(result_val) , CSS_OK);
     }

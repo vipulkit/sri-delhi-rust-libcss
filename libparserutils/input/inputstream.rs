@@ -74,7 +74,7 @@ impl inputstream {
         PARSERUTILS_OK
     }
 
-    pub fn parserutils_inputstream_append(&mut self, data: ~[u8]) -> parserutils_error {
+    pub fn parserutils_inputstream_append(&mut self, data: &[u8]) -> parserutils_error {
         // io::println("Entering: parserutils_inputstream_append");
         if data.len()==0 {
             self.had_eof = true;
@@ -84,7 +84,7 @@ impl inputstream {
         PARSERUTILS_OK
     }
 
-    pub fn parserutils_inputstream_insert(&mut self, data: ~[u8])-> parserutils_error {
+    pub fn parserutils_inputstream_insert(&mut self, data: &[u8])-> parserutils_error {
         // io::println("Entering: parserutils_inputstream_insert");
         if data.len()==0 && (self.utf8.len() < self.cursor) {
             return PARSERUTILS_BADPARM;
@@ -231,6 +231,7 @@ impl inputstream {
     }
 
     pub fn IS_ASCII(&mut self , data:u8) -> bool {
+        //io::println(fmt!("Entering: IS_ASCII:: data == %?", data));
         ((data & 0x80) == 0)
     }
 
@@ -354,10 +355,11 @@ impl inputstream {
 
 
     pub fn parserutils_inputstream_peek_slow(&mut self , offset: uint)-> (Option<(~[u8],uint)>,parserutils_error) {
-            // io::println("Entering: parserutils_inputstream_peek_slow");
+        //io::println("Entering: parserutils_inputstream_peek_slow");
         let len: uint;
 
         if self.raw.len() == 0 {
+            //io::println("Entering: parserutils_inputstream_peek_slow:: self.raw.len() == 0");
             if self.had_eof {
                 return (None,PARSERUTILS_EOF);
             }
@@ -403,17 +405,21 @@ impl inputstream {
             }
         }
 
+        //io::println("Exiting: parserutils_inputstream_peek_slow");
         return (Some((requested_data,len)),PARSERUTILS_OK);
+
     }
 
  
     pub fn parserutils_inputstream_peek(&mut self, offset: uint)-> (Option<(~[u8],uint)>,parserutils_error) {
-        // io::println("Entering: parserutils_inputstream_peek");
+        //io::println("Entering: parserutils_inputstream_peek");
         let mut ptr:~[u8];
         let mut len :uint;
         
-        if self.cursor + offset < self.utf8.len() {
+        //io::println(fmt!("parserutils_inputstream_peek:: self.cursor == %?, offset == %?, self.utf8.len() == %?", self.cursor, offset, self.utf8.len()));
 
+        if self.cursor + offset < self.utf8.len() {
+            //io::println("Entering: parserutils_inputstream_peek:: self.cursor + offset < self.utf8.len()");
             if self.IS_ASCII(self.utf8[self.cursor + offset]) {
                 ptr = slice(self.utf8, self.cursor + offset, self.utf8.len()).to_owned();
                 // ascii char length is 1
@@ -434,7 +440,7 @@ impl inputstream {
                 return(Some((ptr , len)) , PARSERUTILS_OK);
             }
         }
-        // io::println("parserutils_inputstream_peek: before peek_slow");
+        //io::println("parserutils_inputstream_peek: before peek_slow");
         return self.parserutils_inputstream_peek_slow(offset);
     }
 }
