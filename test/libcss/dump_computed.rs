@@ -1,4 +1,4 @@
-#[link(name ="Dump_computed", vers = "0.1")];
+#[link(name ="dumpcomputed", vers = "0.1")];
 #[crate_type="lib"];
 
 extern mod css;

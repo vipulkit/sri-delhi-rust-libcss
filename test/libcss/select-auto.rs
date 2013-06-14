@@ -1,6 +1,7 @@
 extern mod std;
 extern mod css;
 extern mod wapcaplet;
+extern mod dumpcomputed;
 
 use std::arc;
 use css::css::*;
@@ -16,6 +17,7 @@ use css::select::common::*;
 //use css::select::dispatch::*;
 use css::stylesheet::*;
 use css::select::select::*;
+use dumpcomputed::*;
 
 
 
@@ -469,8 +471,10 @@ pub fn select_test(file:~str) {
     }
 
     for str::each_line_any(file_content) |line| { 
-        //io::println(fmt!("%?",line)); 
-        handle_line(line,ctx);
+        let mut line_string: ~str = line.to_str(); 
+	line_string.push_char('\n');
+	io::println(fmt!("%?",line_string)); 
+        handle_line(line_string,ctx);
     }
 
     if( ctx.tree.is_some() ) {
@@ -507,7 +511,7 @@ pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
 
         if( ctx.intree ) {
 
-            if( is_string_caseless_equal( data.slice(1,7), "errors") ){
+            if( data.len() >= 7 && is_string_caseless_equal(data.slice(1,7), "errors") ){
                 ctx.intree = false;
                 ctx.insheet = false;
                 ctx.inerrors = true ;
@@ -525,7 +529,7 @@ pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
         }
         else if (ctx.insheet) {
 
-            if(is_string_caseless_equal( data.slice(1,6), "errors")){
+            if(data.len() >= 6 && is_string_caseless_equal(data.slice(1,6), "errors")){
                 len = unsafe { ctx.sheets.len() -1 } ;
                 assert!( 
                         match ctx.sheets[len].sheet.css_stylesheet_data_done() {
@@ -537,9 +541,9 @@ pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
                 ctx.inerrors = true ;
                 ctx.inexp = false;
             }
-            else if is_string_caseless_equal( data.slice(1,2), "ua") ||
-                        is_string_caseless_equal( data.slice(1,4), "user") ||
-                        is_string_caseless_equal( data.slice(1,6), "author") {
+            else if data.len() >= 2 && is_string_caseless_equal(data.slice(1,2), "ua") ||
+                        data.len() >= 4 && is_string_caseless_equal(data.slice(1,4), "user") ||
+                        data.len() >= 6 && is_string_caseless_equal(data.slice(1,6), "author") {
                 
                 len = unsafe { ctx.sheets.len() -1 } ;
                 assert!( 
@@ -578,7 +582,7 @@ pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
         }
         else {
             /* Start state */
-            if(is_string_caseless_equal( data.slice(1,4), "tree")) {
+            if(data.len()>=4 && is_string_caseless_equal(data.slice(1,4), "tree")) {
 
                 css__parse_tree(ctx, data.slice(5, data.len()-1) );
                 ctx.intree = true;
@@ -610,10 +614,6 @@ pub fn handle_line(data:&str , ctx:@mut line_ctx) -> bool {
     true 
 }
 
-//Not Needed
-//pub fn css__parse_expected(ctx:@mut line_ctx, data:&str) {
-//
-//}
 
 pub fn isspace (ch:u8)-> bool {
     if ( (ch==0x20 ) || (ch==0x09) || (ch==0x0a) || 
@@ -768,13 +768,13 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&str) {
         p += 1;
     }
     
-    if p == 6 && is_string_caseless_equal( data.slice(0,6), "author"){
+    if p == 6 && data.len() >= 6 && is_string_caseless_equal(data.slice(0,6), "author"){
         origin = CSS_ORIGIN_AUTHOR;
     }
-    else if p == 4 && is_string_caseless_equal( data.slice(0,4), "user"){
+    else if p == 4 && data.len() >= 4 && is_string_caseless_equal(data.slice(0,4), "user"){
         origin = CSS_ORIGIN_USER;
     }
-    else if p == 2 && is_string_caseless_equal( data.slice(0,2), "ua"){
+    else if p == 2 && data.len() >= 2 && is_string_caseless_equal(data.slice(0,2), "ua"){
         origin = CSS_ORIGIN_UA;
     }
     else {
@@ -822,37 +822,37 @@ pub fn css__parse_media_list(data:&str , ctx:@mut line_ctx) -> uint {
             }
         }
 
-        if ( (data.len()>(10+len)) && is_string_caseless_equal( data.slice(len,len+10), "projection") ) {
+        if ( (data.len()>(10+len)) && data.len() >= len+10 && is_string_caseless_equal(data.slice(len,len+10), "projection") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(8+len)) && is_string_caseless_equal( data.slice(len,len+8), "handheld") ) {
+        else if ( (data.len()>(8+len)) && data.len() >= len+8 && is_string_caseless_equal(data.slice(len,len+8), "handheld") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(8+len)) && is_string_caseless_equal( data.slice(len,len+8), "embossed") ) {
+        else if ( (data.len()>(8+len)) && data.len() >= len+8 && is_string_caseless_equal(data.slice(len,len+8), "embossed") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(7+len)) && is_string_caseless_equal( data.slice(len,len+7), "braille") ) {
+        else if ( (data.len()>(7+len)) && data.len() >= len+7 && is_string_caseless_equal(data.slice(len,len+7), "braille") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(6+len)) && is_string_caseless_equal( data.slice(len,len+6), "speech") ) {
+        else if ( (data.len()>(6+len)) && data.len() >= len+6 && is_string_caseless_equal(data.slice(len,len+6), "speech") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(6+len)) && is_string_caseless_equal( data.slice(len,len+6), "screen") ) {
+        else if ( (data.len()>(6+len)) && data.len() >= len+6 && is_string_caseless_equal(data.slice(len,len+6), "screen") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(5+len)) && is_string_caseless_equal( data.slice(len,len+5), "print") ) {
+        else if ( (data.len()>(5+len)) && data.len() >= len+5 && is_string_caseless_equal(data.slice(len,len+5), "print") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(5+len)) && is_string_caseless_equal( data.slice(len,len+5), "aural") ) {
+        else if ( (data.len()>(5+len)) && data.len() >= len+5 && is_string_caseless_equal(data.slice(len,len+5), "aural") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(3+len)) && is_string_caseless_equal( data.slice(len,len+3), "tty") ) {
+        else if ( (data.len()>(3+len)) && data.len() >= len+3 && is_string_caseless_equal(data.slice(len,len+3), "tty") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(3+len)) && is_string_caseless_equal( data.slice(len,len+3), "all") ) {
+        else if ( (data.len()>(3+len)) && data.len() >= len+3 && is_string_caseless_equal(data.slice(len,len+3), "all") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(2+len)) && is_string_caseless_equal( data.slice(len,len+2), "tv") ) {
+        else if ( (data.len()>(2+len)) && data.len() >= len+2 && is_string_caseless_equal(data.slice(len,len+2), "tv") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
         else {
@@ -1004,8 +1004,6 @@ pub fn run_test( ctx:@mut line_ctx) {
 
     node_has_attribute: @node_has_attribute,
     
-    //node_has_name: @node_has_name,
-
     node_has_attribute_equal: @node_has_attribute_equal,
    
     node_has_attribute_dashmatch: @node_has_attribute_dashmatch,
@@ -1079,10 +1077,6 @@ pub fn run_test( ctx:@mut line_ctx) {
     
 }
 
-fn dump_computed_style(mut style:@mut css_computed_style, buf:&mut ~str) {
-
-}
-
 fn node_name(n:*libc::c_void, qname : &mut css_qname) -> css_error {
 
 	let node : @mut node;
@@ -1154,7 +1148,7 @@ fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut ~str ) -> css_error{
 	CSS_OK
 }
 pub fn main() {
-    io::println(fmt!("\n Starting select-auto test cases "));
+    io::println("\n Starting select-auto test cases ");
 }
 
 pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
