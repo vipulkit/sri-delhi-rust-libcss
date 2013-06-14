@@ -255,7 +255,7 @@ impl css_lexer {
 
     pub fn emit_token(&mut self , input_token_type: Option<css_token_type>) -> (css_error, Option<@mut css_token>) {
 
-        // // io::println("entering emit_token");
+        // io::println("entering emit_token");
         let mut t = self.token.swap_unwrap();
         let _data = css_token_data {
             data: ~[],
@@ -1106,11 +1106,12 @@ impl css_lexer {
     pub fn s(&mut self) -> (css_error, Option<@mut css_token>) {
         // io::println("entering : s");
         /* S = wc*
-     * 
-     * The first whitespace character has been consumed.
-     */
+         * 
+         * The first whitespace character has been consumed.
+         */
 
         let error = self.consume_w_chars();
+        // io::println(fmt!("s:: error == %?", error));
         if (error as int != CSS_OK as int) {
             return (error, None);
         }

@@ -351,7 +351,7 @@ pub impl css_parser {
     fn update_current_substate(&mut self, new_substate:uint) {
         io::println("Entering update_current_substate");
         io::println(fmt!("update_current_substate: state stack1 == %?" , self.state_stack));
-        let (current_state,current_substate) = self.state_stack.pop();
+        let (current_state,_) = self.state_stack.pop();
         self.state_stack.push((current_state, new_substate));
         io::println(fmt!("update_current_substate: state stack2 == %?" , self.state_stack));
     }
@@ -1277,10 +1277,13 @@ pub impl css_parser {
             AfterValue1 = 3 
         };
 
+        /* declaration -> property ':' ws value1 */
+
         let mut (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sDeclaration as uint);
 
         while (true) {
+            io::println(fmt!("parse_declaration:: current_substate == %?", current_substate));
             match (current_substate) {
                 0 /* Initial */ => {
                     parser.tokens.clear();
@@ -1366,7 +1369,7 @@ pub impl css_parser {
 
                         return CSS_OK;
                     }
-
+                    io::println(fmt!("parse_declaration:: AfterValue1:: parser.tokens == %?", parser.tokens));
                     parser.language.language_handle_event(CSS_PARSER_DECLARATION, &parser.tokens);
                     break;
                 } /* AfterValue1 */
@@ -1387,6 +1390,10 @@ pub impl css_parser {
             Initial = 0, 
             WS = 1 
         };
+
+        /* decl-list -> ';' ws decl-list-end
+         *           ->
+         */
 
         let mut (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sDeclList as uint);
@@ -1461,6 +1468,10 @@ pub impl css_parser {
             AfterDeclaration = 1 
         };
 
+        /* decl-list-end -> declaration decl-list 
+         *               -> decl-list
+         */
+        
         let mut (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sDeclListEnd as uint);
 
@@ -1512,6 +1523,8 @@ pub impl css_parser {
             Initial = 0, 
             WS = 1 
         };
+
+        /* property -> IDENT ws */
 
         let mut (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sProperty as uint);
@@ -1643,6 +1656,8 @@ pub impl css_parser {
             AfterValue = 1 
         };
         
+        /* value1 -> value value0 */
+        
         let mut (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sValue1 as uint);
 
@@ -1694,7 +1709,7 @@ pub impl css_parser {
             }
         } /* match current_substate */
 
-        let to = (sValue as uint, Initial as uint);
+        let to = (sValue0 as uint, Initial as uint);
 
         parser.transition_no_ret(to);
         CSS_OK
@@ -1706,7 +1721,12 @@ pub impl css_parser {
             Initial = 0, 
             WS = 1 
         };
-        
+
+        /* value  -> any
+         *        -> block
+         *        -> ATKEYWORD ws
+         */
+
         let mut (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sValue as uint);
 
@@ -1973,12 +1993,12 @@ pub impl css_parser {
                             match(c) {
                                 '(' => { 
                                     parser.match_char=')';
-                                    current_substate = WS as uint;
+                                    // current_substate = WS as uint;
                                     parser.update_current_substate(WS as uint);
                                 },
                                 '[' => {
                                     parser.match_char=']';
-                                    current_substate = WS as uint;
+                                    // current_substate = WS as uint;
                                     parser.update_current_substate(WS as uint);
                                 },
                                 _ => {
@@ -1988,7 +2008,7 @@ pub impl css_parser {
                         }
                         CSS_TOKEN_FUNCTION => {
                             parser.match_char = ')';
-                            current_substate = WS as uint;
+                            // current_substate = WS as uint;
                             parser.update_current_substate(WS as uint);
                         }
                         _ => {
@@ -2366,7 +2386,7 @@ pub impl css_parser {
                 } /* Initial */
 
                 1 /* WS */ => {
-                    current_substate = WS as uint; // TODO review
+                    // current_substate = WS as uint; // TODO review
                     parser.update_current_substate(WS as uint);
                     let eat_ws_result = parser.eat_ws();
                     match (eat_ws_result) {
@@ -2457,8 +2477,8 @@ pub impl css_parser {
             } /* match current_substate */
         } /* while */
 
-        parser.done();
-        CSS_OK
+        // parser.done();
+        // CSS_OK
     } /* parse_IS_body_0 */
 
     fn parse_IS_body(parser: &mut css_parser) -> css_error {

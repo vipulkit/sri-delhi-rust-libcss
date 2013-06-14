@@ -274,7 +274,35 @@ pub fn isspace (ch:u8)-> bool {
 }
 
 pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
+	let mut p = index;
+	let mut end = data.len() ;
+	//size_t left;
 
+	/* [ <media_list> <pseudo>? ] ? */
+
+	ctx.media = CSS_MEDIA_ALL as u32;
+	ctx.pseudo_element = CSS_PSEUDO_ELEMENT_NONE as u32;
+
+	/* Consume any leading whitespace */
+	while ( (data[p]==0x20) || (data[p]==0x09) || (data[p]==0x0a) || 
+		 (data[p]==0x0b) || (data[p]==0x0c) || (data[p]==0x0d) ) && (p<end) {
+		//io::println("Entering: while {...} 1");
+		p += 1;
+	}
+
+	if (p < end) {
+		//left = end - p;
+
+		p = css__parse_media_list(data,p, ctx);
+
+		//end = p + left;
+	}
+
+	if (p < end) {
+		//left = end - p;
+
+		css__parse_pseudo_list(data , p ,ctx);
+	}
 }
 
 pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
@@ -440,7 +468,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
     }
     
     if p < end {
-       css__parse_media_list(data,p,ctx);
+       p = css__parse_media_list(data,p,ctx);
     }
     let params = css_create_params();
     let sheet:@mut css = css::css_create(params, None);

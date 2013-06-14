@@ -530,7 +530,10 @@ pub fn run_test(ctx:@mut line_ctx) {
 	let mut ptr = css_instance.stylesheet.rule_list ;
 	loop {
 		match ptr {
-			None=>{ break },
+			None=>{ 
+				assert!( e == unsafe {ctx.exp.len()} );
+				return ;
+			},
 			Some(crule) => {
 				match crule {
 				    RULE_SELECTOR(rule) => {
@@ -606,25 +609,29 @@ pub fn run_test(ctx:@mut line_ctx) {
 	    }
 	}
 
-	assert!( e == unsafe {ctx.exp.len()} );
+	// assert!( e == unsafe {ctx.exp.len()} );
 	
-	io::println("PASS\n");
+	// io::println("PASS\n");
 }
 
 pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bool {
 
+	io::println("Entering: validate_rule_selector");
 	let mut name : ~str = ~"" ;
 	let mut ptr : ~str = ~"" ;
 
   	// Build selector string
   	unsafe {
+  		io::println("Entering: validate_rule_selector: unsafe");
 	  	for s.selectors.eachi |i,&sel| {
 	  		dump_selector_list(sel,&mut ptr) ;
 	  		if ( i != (s.selectors.len()-1) ) {
 	  			name = name + ptr + ", ";
+	  			io::println(fmt!("if name == %?" , name));
 	  		}
 	  		else {
 	  			name = name + ptr ;
+	  			io::println(fmt!("else name == %?" , name));
 	  		}
 	  		ptr = ~"" ;
 	  	}
@@ -658,8 +665,9 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 		let mut j = 0 ;
 
 		while i < unsafe {e.bytecode.len()} {
-
+			unsafe {io::println(fmt!("Entering: while i < unsafe {e.bytecode.len()} i == %?  , e.bytecode.len() == %?" , i , e.bytecode.len()));}
 			while j < unsafe { e.stringtab.len() } {
+				io::println("Entering: while j < unsafe { e.stringtab.len() }");
 				if (e.stringtab[j].off == i) {
 					break;
 				}
@@ -667,6 +675,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 			}
 
 			if (j != unsafe {e.stringtab.len()} ) {
+				unsafe{io::println(fmt!("Entering: j != unsafe {e.stringtab.len()} e.stringtab == %?" , e.stringtab));}
 				/* String */
 				if( style.sheet.is_none() ) {
 					io::println("\n Stylsheet not found in sheet , need sheet ");
@@ -703,6 +712,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 				}
 				return true;
 			}
+			i += 1;
 		}
 	}
 	
