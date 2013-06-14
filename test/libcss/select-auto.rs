@@ -542,56 +542,63 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> u
 
 pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> uint {
 	
+	let mut string = data.slice(index, data.len()).to_owned();
+    *data = data.slice(0,index).to_owned();
 
-	/*
-	const char *p = *data;
-	const char *end = p + *len;
+    let mut p:uint = 0;
+    let mut end:uint = string.len();
 
-	// <pseudo> [ ',' <pseudo> ]* 
+    /* <pseudo> [ ',' <pseudo> ]* */
 
-	*element = CSS_PSEUDO_ELEMENT_NONE;
+    ctx.pseudo_element = CSS_PSEUDO_ELEMENT_NONE as u32;
 
-	while (p < end) {
-		const char *start = p;
 
-		// consume a pseudo 
-		while (isspace(*p) == false && *p != ',')
-			p++;
+    while p < end {
+    	let mut start:uint = p;
 
-		// Pseudo elements 
-		if (p - start == 12 &&
-				strncasecmp(start, "first-letter", 12) == 0)
-			*element = CSS_PSEUDO_ELEMENT_FIRST_LETTER;
-		else if (p - start == 10 &&
-				strncasecmp(start, "first-line", 10) == 0)
-			*element = CSS_PSEUDO_ELEMENT_FIRST_LINE;
-		else if (p - start == 6 &&
-				strncasecmp(start, "before", 6) == 0)
-			*element = CSS_PSEUDO_ELEMENT_BEFORE;
-		else if (p - start == 5 &&
-				strncasecmp(start, "after", 5) == 0)
-			*element = CSS_PSEUDO_ELEMENT_AFTER;
-		else
-			assert(0 && "Unknown pseudo");
+    	/* consume a pseudo */
+    	while string[p] != ' ' as u8  && string[p] != ',' as u8 {
+    		p += 1;
+    	}
 
-		// Consume whitespace 
-		while (p < end && isspace(*p))
-			p++;
+    	/* Pseudo elements */
+    	if p - start == 12 && is_string_caseless_equal(string.slice(start,start + 12)/*.to_owned()*/,~"first-letter") {
+    		ctx.pseudo_element = CSS_PSEUDO_ELEMENT_FIRST_LETTER as u32;
+    	}
+    	else if p - start == 10 && is_string_caseless_equal(string.slice(start,start + 10)/*.to_owned()*/,~"first-line") {
+    		ctx.pseudo_element = CSS_PSEUDO_ELEMENT_FIRST_LINE as u32;
+    	}
+    	else if p - start == 6 && is_string_caseless_equal(string.slice(start,start + 6)/*.to_owned()*/,~"before") {
+    		ctx.pseudo_element = CSS_PSEUDO_ELEMENT_BEFORE as u32;
+    	}
+    	else if p - start == 5 && is_string_caseless_equal(string.slice(start,start + 5)/*.to_owned()*/,~"after") {
+    		ctx.pseudo_element = CSS_PSEUDO_ELEMENT_AFTER as u32;
+    	}
+    	else {
+    		fail!(~"Unknown pseudo");
+    	}
 
-		// Stop if we've reached the end 
-		if (p == end || *p != ',')
+    	/* Consume whitespace */
+    	while p < end || string[p] == ' ' as u8 {
+    		p += 1;
+    	}
+
+		/* Stop if we've reached the end */
+		if p == end || string[p] != ',' as u8 {
 			break;
+		}
 
-		// Consume comma
-		p++;
+		/* Consume comma */
+		p += 1;
 
-		// Consume whitespace 
-		while (p < end && isspace(*p))
-			p++;
-	}
+		/* Consume whitespace */
+		while p < end && string[p] == ' ' as u8 {
+			p += 1;
+		}
 
-	*data = p;
-	*len = end - p; */
+    }
+	*data += string.slice(p,/*string.len()*/end).to_owned();
+	
 	0
 }
 
