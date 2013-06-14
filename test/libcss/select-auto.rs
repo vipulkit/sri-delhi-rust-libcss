@@ -43,15 +43,15 @@ fn sibling_node(node:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
 
-fn node_has_name(node:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error {
+fn node_has_name(pw:*libc::c_void, node:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error {
     CSS_OK
 }
 
-fn node_has_class(node:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error {
+fn node_has_class(pw:*libc::c_void, node:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error {
     CSS_OK
 }
 
-fn node_has_id(node:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error {
+fn node_has_id(pw:*libc::c_void, node:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error {
     CSS_OK
 }
 
@@ -59,10 +59,6 @@ fn node_has_attribute(node:*libc::c_void, name:css_qname, matched:@mut bool) -> 
     CSS_OK
 }
     
-// fn node_has_name(node:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error {
-
-// }
-
 fn  node_has_attribute_equal(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error {
     CSS_OK
 }
