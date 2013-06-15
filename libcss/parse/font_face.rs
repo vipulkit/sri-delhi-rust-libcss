@@ -43,6 +43,35 @@ pub fn font_face_parse_font_family(sheet:@mut css_stylesheet, strings:&mut ~css_
 }
 
 
+/**
+ * Parse a descriptor in an @font-face rule
+ *
+ * \param c           Parsing context
+ * \param descriptor  Token for this descriptor
+ * \param vector      Vector of tokens to process
+ * \param ctx	      Pointer to vector iteration context
+ * \param rule	      Rule to process descriptor into
+ * \return CSS_OK on success,
+ *         CSS_BADPARM on bad parameters,
+ *         CSS_INVALID on invalid syntax,
+ *         CSS_NOMEM on memory exhaustion
+ */
+/**
+* #Description:
+*   Initialise a selector detail.
+* #Arguments:
+*  'descriptor' - Token for this descriptor.
+*  'strings' - css propstrings.
+*  'vector' - Vector of tokens to process.
+*  'ctx' - Pointer to vector iteration context.
+*  'curRule' - Rule to process descriptor into.
+*  'lwc_instance' - .
+* #Return Value:
+*   'css_error' - CSS_OK on success,
+          CSS_BADPARM on bad parameters,
+          CSS_INVALID on invalid syntax,
+          appropriate error otherwise..
+*/
 pub fn css__parse_font_descriptor(sheet:@mut css_stylesheet, descriptor:&@css_token, strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, 
     curRule:@mut css_rule_font_face, lwc_instance:arc::RWARC<~lwc>) -> css_error {
     

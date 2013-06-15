@@ -57,7 +57,17 @@ pub struct css_parser {
 
 pub impl css_parser {
 
-    /* constructor */
+    /**
+    * #Description:
+    *   Create a CSS parser (internal).
+    * #Arguments:
+    *  'language' - 
+    *  'lexer' - 
+    *  'lwc' - 
+    *  'initial' - 
+    * #Return Value:
+    *   'Option<~css_parser>' - location to receive parser instance.
+    */
     fn css__parser_create_internal(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>, initial:(uint, uint) ) 
         -> Option<~css_parser> {
 
@@ -113,7 +123,16 @@ pub impl css_parser {
         Some (parser)
     }
 
-    /* public constructors */
+    /**
+    * #Description:
+    *   Create a CSS parser.
+    * #Arguments:
+    *  'language' - 
+    *  'lexer' - 
+    *  'lwc' - 
+    * #Return Value:
+    *   'Option<~css_parser>' - location to receive parser instance.
+    */
     pub fn css__parser_create(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>) 
         -> Option<~css_parser> {
         io::println("Entering: css__parser_create");
@@ -122,6 +141,16 @@ pub impl css_parser {
         css_parser::css__parser_create_internal(language, lexer, lwc, initial)
     }
 
+    /**
+    * #Description:
+    *   Create a CSS parser for an inline style.
+    * #Arguments:
+    *  'language' - 
+    *  'lexer' - 
+    *  'lwc' - 
+    * #Return Value:
+    *   'Option<~css_parser>' - location to receive parser instance.
+    */
     pub fn css__parser_create_for_inline_style(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>) 
         -> Option<~css_parser> {
         io::println("Entering: css__parser_create_for_inline_style");
@@ -131,6 +160,14 @@ pub impl css_parser {
     }
 
 
+    /**
+    * #Description:
+    *   Parse a chunk of data using a CSS parser.
+    * #Arguments:
+    *  'data' -  Pointer to the chunk to parse. 
+    * #Return Value:
+    *   'css_error' - CSS_OK on success, appropriate error otherwise.
+    */
     pub fn css__parser_parse_chunk(&mut self, data: ~[u8]) -> css_error {
         io::println("Entering: css__parser_parse_chunk");
         self.lexer.css__lexer_append_data(data);
@@ -160,6 +197,12 @@ pub impl css_parser {
         CSS_OK
     }
 
+    /**
+    * #Description:
+    *   Inform a CSS parser that all data has been received.
+    * #Return Value:
+    *   'css_error' - CSS_OK on success, appropriate error otherwise.
+    */
     pub fn css__parser_completed(&mut self) -> css_error {
         io::println("Entering: css__parser_completed ");
         self.lexer.css__lexer_append_data(~[]);
@@ -187,6 +230,13 @@ pub impl css_parser {
     /* the functionality should be implemented by each calling function */
     /* pub fn expect(&mut self, css_token_type token_type) -> css_error */
 
+    /**
+    * #Description:
+    *   Transition to a new state, ensuring return to the one specified.
+    * #Arguments:
+    *  'to' -  Destination state. 
+    *  'subsequent' -  The state to return to. 
+    */
     fn transition(&mut self, to:(uint,uint), subsequent:(uint,uint))
     {
         io::println(fmt!("Entering: transition : to == %? , subsequent == %?",to,subsequent));
@@ -205,6 +255,14 @@ pub impl css_parser {
         self.parse_error = false;
     }
 
+    /**
+    * #Description:
+    *   Transition to a new state, returning to previous state on stack.
+    * #Arguments:
+    *  'to' -  Destination state. 
+    * #Return Value:
+    *   'css_error' - CSS_OK on success, appropriate error otherwise.
+    */
     fn transition_no_ret(&mut self, to:(uint,uint))
     {
         io::println(fmt!("Entering: transition_no_ret : to == %?",to));
@@ -220,6 +278,10 @@ pub impl css_parser {
         self.parse_error = false;
     }
 
+    /**
+    * #Description:
+    *   Return to previous state on the stack.
+    */
     fn done(&mut self)
     {
         io::println("Entering: done");
@@ -229,6 +291,12 @@ pub impl css_parser {
         io::println(fmt!("done::state_stack 2 == %?", self.state_stack));
     }
 
+    /**
+    * #Description:
+    *   Eat whitespace tokens.
+    * #Return Value:
+    *   'css_error' - CSS_OK on success, appropriate error otherwise.
+    */
     fn eat_ws(&mut self) -> css_error
     {
         io::println("Entering: eat_ws");
@@ -249,6 +317,12 @@ pub impl css_parser {
         }
     }
 
+    /**
+    * #Description:
+    *   Push a token back on the input.
+    * #Arguments:
+    *  'token' -  The token to push back. 
+    */
     fn push_back(&mut self, token: @css_token) {
         io::println("Entering: push_back");
         // io::println("Entering: push_back");
@@ -274,6 +348,12 @@ pub impl css_parser {
         interned_string.unwrap()
     }
 
+    /**
+    * #Description:
+    *   Retrieve the next token in the input.
+    * #Return Value:
+    *   '(css_error, Option<@css_token>)' - (CSS_OK, location to receive token) on success, (appropriate error, None) otherwise.
+    */
     fn get_token(&mut self) -> (css_error, Option<@css_token>) {
 
         io::println("Entering: get_token");
