@@ -1248,6 +1248,12 @@ pub enum css_hash_type {
 
 impl css_selector_hash {
 
+	/**
+	* #Description:
+	*  Create a hash.
+	* #Return Value:
+	*  'css_selector_hash' - Hash table of selectors.
+	*/
     pub fn css__selector_hash_create() -> @mut css_selector_hash {
         let mut hash = @mut css_selector_hash{ 
                         default_slots:(1<<6),
@@ -1265,6 +1271,14 @@ impl css_selector_hash {
         hash
     }
     
+	/**
+	* #Description:
+	*  Retrieve the first class name in a selector, or empty if none.
+	* #Arguments:
+	*  'selector '  - Selector to consider. 
+	* #Return Value:
+	*  '~str' - class name.
+	*/
     pub fn _class_name(selector : @mut css_selector) 
                         -> ~str {
 
@@ -1282,6 +1296,14 @@ impl css_selector_hash {
         ~""
     }
 
+	/**
+	* #Description:
+	*  Retrieve the first ID name in a selector, or empty if none.
+	* #Arguments:
+	*  'selector '  - Selector to consider. 
+	* #Return Value:
+	*  '~str' - ID name.
+	*/
     pub fn _id_name(selector : @mut css_selector) 
                         -> ~str {
 
@@ -1300,6 +1322,14 @@ impl css_selector_hash {
     }
 
 
+	/**
+	* #Description:
+	*  Name hash function -- case-insensitive FNV.
+	* #Arguments:
+	*  'name '  - Name to hash. 
+	* #Return Value:
+	*  'uint' - hash value.
+	*/
     pub fn _hash_name( string: ~str ) -> uint {
 
         let mut z: uint = 0x811c9dc5;
@@ -1315,6 +1345,14 @@ impl css_selector_hash {
         z
     }
     
+	/**
+	* #Description:
+	*  Insert an item into the hash table.
+	* #Arguments:
+	*  'selector'  - css selector. 
+	* #Return Value:
+	*  'css_error' - CSS_OK on success, appropriate error otherwise.
+	*/
     pub fn css__selector_hash_insert(&mut self, selector : @mut css_selector) 
                                     -> css_error {
         unsafe {
@@ -1356,6 +1394,16 @@ impl css_selector_hash {
     }
 
     
+	/**
+	* #Description:
+	*  Insert a selector into a hash chain.
+	* #Arguments:
+	*  'hash_type'  - hash type. 
+	*  'index'  - index of insertion. 
+	*  'selector'  - selector to be inserted. 
+	* #Return Value:
+	*  'css_error' - CSS_OK on success, appropriate error otherwise.
+	*/
     pub fn _insert_into_chain(&mut self, 
                             hash_type : css_hash_type,
                             index:uint,
@@ -1436,6 +1484,14 @@ impl css_selector_hash {
         CSS_OK
     }
 
+	/**
+	* #Description:
+	*  Remove an item from a hash.
+	* #Arguments:
+	*  'selector'  - css selector. 
+	* #Return Value:
+	*  'css_error' - CSS_OK on success, appropriate error otherwise.
+	*/
     pub fn css__selector_hash_remove(&mut self, selector : @mut css_selector) 
                                     -> css_error {
         unsafe {
@@ -1476,6 +1532,16 @@ impl css_selector_hash {
         }
     }
 
+	/**
+	* #Description:
+	*  Remove a selector from a hash chain.
+	* #Arguments:
+	*  'hash_type'  - hash type. 
+	*  'head'  - Head of chain to remove from. 
+	*  'selector'  - selector to remove. 
+	* #Return Value:
+	*  'css_error' - CSS_OK on success, CSS_INVALID  if selector not found in chain.
+	*/
     pub fn _remove_from_chain(&mut self, 
                             hash_type : css_hash_type,
                             index:uint,
@@ -1564,6 +1630,14 @@ impl css_selector_hash {
         return true ;
     }
 
+	/**
+	* #Description:
+	*  Find the first selector that matches name.
+	* #Arguments:
+	*  'name'  - name to find. 
+	* #Return Value:
+	*  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
+	*/
     pub fn css__selector_hash_find(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_error) {
 
         let mut mask  = self.default_slots-1 ;
@@ -1601,6 +1675,14 @@ impl css_selector_hash {
     }
     
 
+	/**
+	* #Description:
+	*  Find the first selector that has a class that matches name.
+	* #Arguments:
+	*  'name'  - name to find. 
+	* #Return Value:
+	*  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
+	*/
     pub fn css__selector_hash_find_by_class(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_error) {
 
         let mut mask  = self.default_slots-1 ;
@@ -1636,6 +1718,14 @@ impl css_selector_hash {
         }
     }
 
+	/**
+	* #Description:
+	*  Find the first selector that has an ID that matches name.
+	* #Arguments:
+	*  'name'  - name to find. 
+	* #Return Value:
+	*  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
+	*/
     pub fn css__selector_hash_find_by_id(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_error) {
 
         let mut mask  = self.default_slots-1 ;
@@ -1672,6 +1762,12 @@ impl css_selector_hash {
     }
 
 
+	/**
+	* #Description:
+	*  Find the first universal selector.
+	* #Return Value:
+	*  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
+	*/
     pub fn css__selector_hash_find_universal(&mut self) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = self.universal[0] ;
@@ -1685,6 +1781,14 @@ impl css_selector_hash {
         }
     }
 
+	/**
+	* #Description:
+	*  Find the next selector that matches.
+	* #Arguments:
+	*  'current'  - Current item. 
+	* #Return Value:
+	*  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
+	*/
     pub fn _iterate_elements(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
@@ -1714,6 +1818,14 @@ impl css_selector_hash {
         }
     }
 
+	/**
+	* #Description:
+	*  Find the next selector that matches.
+	* #Arguments:
+	*  'current'  - Current item. 
+	* #Return Value:
+	*  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
+	*/
     pub fn _iterate_classes(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
@@ -1742,6 +1854,14 @@ impl css_selector_hash {
         }
     }
 
+	/**
+	* #Description:
+	*  Find the next selector that matches.
+	* #Arguments:
+	*  'current'  - Current item. 
+	* #Return Value:
+	*  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
+	*/
     pub fn _iterate_ids(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
@@ -1770,6 +1890,14 @@ impl css_selector_hash {
         }
     }
 
+	/**
+	* #Description:
+	*  Find the next selector that matches.
+	* #Arguments:
+	*  'current'  - Current item. 
+	* #Return Value:
+	*  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
+	*/
     pub fn _iterate_universal(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         if current.next.is_some() {
