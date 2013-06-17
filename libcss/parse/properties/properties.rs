@@ -4613,6 +4613,9 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
         }
 
         consumeWhitespace(vector , ctx);
+        if (*ctx >= vector.len()) {
+            break;
+        }
         token = &vector[*ctx];
         if  tokenIsChar(token , ',') {
             if *ctx >= vector.len() {
