@@ -985,11 +985,13 @@ pub impl css_properties {
         else {
             let mut num_lengths :int;
             let (length_opt,unit_opt,result) = css__parse_unit_specifier(sheet, vector, ctx, UNIT_PX as u32);
-            length.push(length_opt.unwrap() as i32);
-            unit.push(unit_opt.unwrap());
+
             error =result;
             match error {
                 CSS_OK=> {
+                    length.push(length_opt.unwrap() as i32);
+                    unit.push(unit_opt.unwrap());
+                    
                     if (unit[0] & UNIT_ANGLE as u32) > 0  || (unit[0] & UNIT_TIME as u32) > 0  || 
                         (unit[0] & UNIT_FREQ as u32) > 0  || (unit[0] & UNIT_PCT as u32 ) > 0 {
 
@@ -2258,7 +2260,7 @@ pub impl css_properties {
     fn css__parse_cue(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
         io::println("Entering: css__parse_cue");
-        io::println(fmt!("css__parse_cue: style1 == %?" , style));
+        //io::println(fmt!("css__parse_cue: style1 == %?" , style));
         let orig_ctx = *ctx;
         let mut error: css_error;
         let mut token:&@css_token;
@@ -2692,10 +2694,12 @@ pub impl css_properties {
             }
         else {
             let (unit_ret,length_ret,error) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_DEG as u32);
-            length = length_ret.unwrap() as i32;
-            unit = unit_ret.unwrap() as u32;
+            
             match error {
                 CSS_OK=>{
+                    length = length_ret.unwrap() as i32;
+                    unit = unit_ret.unwrap() as u32;
+
                     if ((unit & UNIT_ANGLE as u32) ==0) {
                         *ctx = orig_ctx;
                         return CSS_INVALID;
@@ -3869,14 +3873,14 @@ pub impl css_properties {
         match error {
             CSS_OK=> {
                 consumeWhitespace(vector, ctx);
-
-                token = &vector[*ctx];
+                
                 if (*ctx >= vector.len() )  {
                     /* no second token, re-parse the first */
                     *ctx = orig_ctx;
                     error =  css__parse_pause_after(sheet, strings, vector, ctx, style);
                 } 
                 else {
+                    token = &vector[*ctx];
                     /* second token - might be useful */
                     if ( is_css_inherit(strings, token)) {
                         /* another bogus inherit */

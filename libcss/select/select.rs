@@ -2203,7 +2203,7 @@ impl css_select_ctx {
     pub fn cascade_style(style:@mut css_style, state:@mut css_select_state) -> css_error {
         let mut s = style;
 
-        while (s.used > 0) {
+        while (unsafe { s.used < s.bytecode.len()} ) {
             let mut op: u32;
             let mut error : css_error ;
             let mut opv = peek_bytecode(s);

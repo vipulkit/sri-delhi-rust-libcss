@@ -556,9 +556,8 @@ pub fn run_test(ctx:@mut line_ctx) {
 				    			ctx.exp[e].ftype , (CSS_RULE_SELECTOR as int) )) ;
 				    		fail!(~"Expected type differs") ;
 				    	}
-				    	if validate_rule_charset(rule,ctx.exp[e]) {
-		    				report_fail(copy ctx.buf,copy ctx.exp[e]);
-		    			}
+				    	validate_rule_charset(rule,ctx.exp[e]);
+						
 				    	ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
 				    	e += 1 ;
 				    	loop ;
@@ -569,9 +568,8 @@ pub fn run_test(ctx:@mut line_ctx) {
 				    			ctx.exp[e].ftype ,(CSS_RULE_SELECTOR as int)  ) );
 				    		fail!(~"Expected type differs") ;
 				    	}
-				    	if validate_rule_import(rule,ctx.exp[e])  {
-		    				report_fail(copy ctx.buf,copy ctx.exp[e]);
-		    			}
+				    	validate_rule_import(rule,ctx.exp[e]);
+						
 				    	ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
 				    	e += 1 ;
 				    	loop ;
@@ -728,7 +726,7 @@ pub fn validate_rule_charset(s:@mut css_rule_charset, e:@mut exp_entry) -> bool 
 		let mut i =0 ;
 		while ( i<s.encoding.len() ) {
 			if ( s.encoding[i] != e.name[i] ) {
-		    	return false ;
+		    	fail!(~"Mismatched charsets") ;
 		  	}
 		  	i += 1;
 		}
@@ -745,7 +743,7 @@ pub fn validate_rule_import(s:@mut css_rule_import, e:@mut exp_entry) -> bool {
 		let mut i =0 ;
 		while ( i<s.url.len() ) {
 			if ( s.url[i] != e.name[i] ) {
-		    	return false ;
+		    	fail!(~"Mismatched URLs") ;
 		    }
 		    i += 1;
 		}

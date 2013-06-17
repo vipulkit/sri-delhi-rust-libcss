@@ -60,16 +60,11 @@ pub impl css_parser {
     /**
     * #Description:
     *   Create a CSS parser (internal).
-
     * #Arguments:
     *  'language' - 
-	
     *  'lexer' - 
-    
-	*  'lwc' - 
-    
-	*  'initial' - 
-
+    *  'lwc' - 
+    *  'initial' - 
     * #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
     */
@@ -131,13 +126,11 @@ pub impl css_parser {
     /**
     * #Description:
     *   Create a CSS parser.
-	
     * #Arguments:
     *  'language' - 
     *  'lexer' - 
     *  'lwc' - 
-    
-	* #Return Value:
+    * #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
     */
     pub fn css__parser_create(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>) 
@@ -151,12 +144,10 @@ pub impl css_parser {
     /**
     * #Description:
     *   Create a CSS parser for an inline style.
-
     * #Arguments:
     *  'language' - 
     *  'lexer' - 
     *  'lwc' - 
-
     * #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
     */
@@ -172,10 +163,8 @@ pub impl css_parser {
     /**
     * #Description:
     *   Parse a chunk of data using a CSS parser.
-
     * #Arguments:
     *  'data' -  Pointer to the chunk to parse. 
-
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
@@ -211,7 +200,6 @@ pub impl css_parser {
     /**
     * #Description:
     *   Inform a CSS parser that all data has been received.
-
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
@@ -245,7 +233,6 @@ pub impl css_parser {
     /**
     * #Description:
     *   Transition to a new state, ensuring return to the one specified.
-
     * #Arguments:
     *  'to' -  Destination state. 
     *  'subsequent' -  The state to return to. 
@@ -271,10 +258,8 @@ pub impl css_parser {
     /**
     * #Description:
     *   Transition to a new state, returning to previous state on stack.
-
     * #Arguments:
     *  'to' -  Destination state. 
-
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
@@ -309,7 +294,6 @@ pub impl css_parser {
     /**
     * #Description:
     *   Eat whitespace tokens.
-
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
@@ -336,7 +320,6 @@ pub impl css_parser {
     /**
     * #Description:
     *   Push a token back on the input.
-
     * #Arguments:
     *  'token' -  The token to push back. 
     */
@@ -368,7 +351,6 @@ pub impl css_parser {
     /**
     * #Description:
     *   Retrieve the next token in the input.
-
     * #Return Value:
     *   '(css_error, Option<@css_token>)' - (CSS_OK, location to receive token) on success, (appropriate error, None) otherwise.
     */
@@ -2224,6 +2206,7 @@ pub impl css_parser {
 
             match token.token_type {
                 CSS_TOKEN_EOF => {
+                    /* Push the last token (';', '}' or EOF) back */
                     parser.push_back(token);
                     break;
                 }/* CSS_TOKEN_EOF */
@@ -2232,29 +2215,39 @@ pub impl css_parser {
                     let c = token.data.data[0] as char;
                     match (c) {
                         '{' | '}' | '[' | ']' | '(' | ')' | ';' => {
+                            /* If the stack is empty, then we're done if we've got
+                             * either a ';' or '}' */
                             if (parser.open_items_stack.is_empty()
                                 && (c==';' || c=='}')) {
+                                /* Push the last token (';', '}' or EOF) back */
                                 parser.push_back(token);
                                 break;
                             }
 
+                            /* Regardless, if we've got a semicolon, ignore it */
                             if (c==';') {
                                 loop;
                             }
 
-                            let match_char = parser.open_items_stack[parser.open_items_stack.len()-1];
-
-                            let want_char = match c {
-                                '}' => '{',
-                                ']' => '[',
-                                ')' => '(',
-                                _ => fail!()
+                            /* Get corresponding start tokens for end tokens */
+                            let want_char : Option<char> = match c {
+                                '}' => Some('{'),
+                                ']' => Some('['),
+                                ')' => Some('('),
+                                _ => None
                             };
+                            
+                            /* Either pop off the stack, if we've matched the 
+                             * current item, or push the start token on */
+                            if (!parser.open_items_stack.is_empty()) {
+                                let match_char = parser.open_items_stack.pop();
 
-                            if (match_char == want_char) {
-                                parser.open_items_stack.pop();
+                                if (match_char != want_char.get()) {
+                                    parser.open_items_stack.push(match_char);
+                                }
+                                
                             }
-                            else {
+                            else if want_char.is_none() {
                                 parser.open_items_stack.push(c);
                             }
                         }
@@ -2268,8 +2261,9 @@ pub impl css_parser {
                 }
             } /* match token_type */
         } /* while */
-        
-        // paser.push_back(token);
+
+        /* Discard the tokens we've read */
+        parser.tokens.clear();
 
         parser.done();
         CSS_OK
