@@ -67,12 +67,14 @@ fn main() {
 }
 
 fn create_css() -> @mut css{
+    io::println("Entering: create_css");
     let mut lwc = wapcaplet::lwc();
     let css = css_create(css_create_params() , Some(lwc));
     css
 }
 
 pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
+    io::println("Entering: handle_line");
     let mut data : ~[u8] = args ;
     // unsafe{io::println(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
     if  (data.len() == 0) {
@@ -128,7 +130,7 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
 }
 
 fn testMain(fileName: ~str) {
-    // io::println(~"testMain : "+ fileName);
+    io::println(~"testMain : "+ fileName);
     let ctx: @mut line_ctx = @mut line_ctx
     {
         mut buf:~[],
@@ -166,9 +168,9 @@ fn testMain(fileName: ~str) {
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     io::println(fmt!("entering run_test"));
     io::println(fmt!("data == %?" , data));
-    io::println(fmt!("exp == %?" , exp));
+    // io::println(fmt!("exp == %?" , exp));
     let mut css = create_css();
-    let mut buf: ~str = ~"";
+    let mut buf: ~str;
     let mut error = css.css_stylesheet_append_data(data);
     match error {
         CSS_OK | CSS_NEEDDATA => {},
@@ -183,38 +185,40 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     }
 
     buf = dump_sheet(css.stylesheet);
-    let mut vec_buf = ~[];
+    let mut vec = ~[];
     for str::each_line(buf) |s| {
-        vec_buf.push(s.to_owned().to_bytes());
+        vec.push(s.to_owned().to_bytes());
     }
 
-    let exp_len = exp.len();
-    let buf_len = buf.len();
+    let mut vec_buffer = copy exp;
+
+    let vec_1 = copy vec_buffer[0];
+
+    vec::reverse(vec_buffer);
+
+    vec_buffer.pop();
+    vec::reverse(vec_buffer);
+
+    let mut expected_buffer = copy exp;
+
+    let exp_1 = copy expected_buffer[0];
+
+    vec::reverse(expected_buffer);
+
+    expected_buffer.pop();
+    vec::reverse(expected_buffer);
+
+    let mut exp = vec::concat(expected_buffer);
+    let mut vec = vec::concat(vec_buffer);
+
+
+    io::println(fmt!("vec == %?" , vec));
+    io::println(fmt!("exp == %?" , exp));
 
 
 
-    assert!(vec_buf == exp);
-
-    // let mut bool_value = false;
-    // let mut i = 0;
-    // let mut index = 0;
-    // loop {
-    //     while i < exp.len() {
-    //         if exp[index][i] != data[i] {
-    //             bool_value = false;
-    //         }
-    //         else {
-    //             bool_value = true;
-    //         }
-    //     }
-
-    //     if (((2*exp_len)-buf.len())!=0) || (!bool_value) {
-    //         assert!(false);
-    //     }
-    //     index += 1;
-    //     if (index == exp.len()) {break;}
-    // }
-    
+    assert!(vec_1 == exp_1);
+    assert!(vec == exp);
 
 }
 
