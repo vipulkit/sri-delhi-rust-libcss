@@ -809,6 +809,8 @@ pub impl css_properties {
         let mut prev_ctx: uint;
         let mut side_count: u32 = 0;
 
+        io::println(fmt!("css__parse_border_color:: ctx (1) == %?", *ctx));
+
         if *ctx >= vector.len() {
             return CSS_INVALID;
         }
@@ -832,15 +834,23 @@ pub impl css_properties {
                 *ctx = orig_ctx;
                 return CSS_INVALID;
             }
+            io::println(fmt!("css__parse_border_color:: ctx (2) == %?", *ctx));
             let (side_val,side_color , result) = css__parse_color_specifier(sheet , strings , vector , ctx);
+            io::println(fmt!("css__parse_border_color:: ctx (3) == %?", *ctx));
 
             match result {
                 CSS_OK => {
                     side_count += 1;
                     consumeWhitespace(vector , ctx);
-                    token=&vector[*ctx];
+                    
                     side_val_vec.push(side_val.unwrap());
                     side_color_vec.push(side_color.unwrap());
+
+                    if *ctx >= vector.len() {
+                        break;
+                    }
+
+                    token=&vector[*ctx];
                 },
                 _ => {
                     break
