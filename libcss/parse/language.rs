@@ -250,7 +250,7 @@ pub impl css_language {
                         return CSS_INVALID;
                     }
                     
-                    if *ctx >= vector.len() {
+                    if !(*ctx >= vector.len()) {
                         return CSS_INVALID
                     }
 
