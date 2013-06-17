@@ -290,11 +290,22 @@ pub fn  try_ascii_compatible_charset(data : &~[u8], alias_arc: arc::ARC<~alias>)
     (Some(mibenum),PARSERUTILS_OK)
 }
 
+/**
+* #Description:
+*   Inspect the beginning of a buffer of data for the presence of a
+	UTF Byte Order Mark and/or an @charset rule.
+
+* #Arguments:
+*  'data' - Buffer containing data.
+
+*  'alias_arc' - 
+   
+* #Return Value:
+*   '(Option<u16>, Option<int>, parserutils_error)' - 
+*/
 pub fn css_charset_read_bom_or_charset(data : &~[u8], alias_arc: arc::ARC<~alias>) -> (Option<u16>, parserutils_error) {
-    // io::println("Entering: css_charset_read_bom_or_charset");
-    //let mut err : parserutils_error ;
+
     let mut charset : u16  = 0;
-    //let mut parser : @alias = alias();
 
     if (data.len()<4) {
         return (None, PARSERUTILS_BADPARM);
@@ -349,10 +360,25 @@ pub fn css_charset_read_bom_or_charset(data : &~[u8], alias_arc: arc::ARC<~alias
     }
     
 
+/**
+* #Description:
+*   Create a lexer instance.
+
+* #Arguments:
+*  'data' - Pointer to buffer containing data.
+
+*  'mibenum' - location containing current MIB enum.
+
+*  'input_source' - location containing current charset source.
+
+*  'alias_arc' - 
+   
+* #Return Value:
+*   '(Option<u16>, Option<int>, parserutils_error)' - 
+*/
 pub fn css__charset_extract(data : &~[u8] , mibenum : u16 , input_source : int /* css_charset_source */, alias_arc: arc::ARC<~alias>)
                                 -> (Option<u16>, Option<int>, parserutils_error) {   
 
-    // io::println("Entering: css__charset_extract");
     let source:css_charset_source = {
         unsafe {
             cast::transmute(input_source)
