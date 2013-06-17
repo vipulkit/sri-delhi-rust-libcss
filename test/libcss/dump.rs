@@ -496,7 +496,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
         io::println(fmt!("opv == %?" , opv));    
         io::println(fmt!("bytecode == %?" , bytecode));
 
+        iterator += 1;
         op = getOpcode(opv);
+        io::println(fmt!("op == %?" , op));    
         ptr.push_char('|');
 
         let mut i: u32 = 0;
@@ -511,11 +513,13 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
         ptr.push_char(' ');
         
         if isInherit(opv) {
+
             str::push_str(ptr , &"inherit");
         }
         else {
-
+            io::println("Entering: else of isInherit(opv)");
             value = getValue(opv) as u32;
+            io::println(fmt!("dump_bytecode:: value == %?" , value));
 
             if op as int == CSS_PROP_AZIMUTH as int {
                 

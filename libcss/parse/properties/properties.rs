@@ -744,6 +744,7 @@ pub impl css_properties {
         let mut error: css_error;
 
         error = css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_TOP);
+        io::println(fmt!("css__parse_border_side: error1 == %?" , error));
         match error {
             CSS_OK => {},
             _=> {
@@ -754,6 +755,7 @@ pub impl css_properties {
 
         *ctx = orig_ctx;
         error = css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_RIGHT);
+        io::println(fmt!("css__parse_border_side: error2 == %?" , error));
         match error {
             CSS_OK => {},
             _=> {
@@ -764,6 +766,7 @@ pub impl css_properties {
 
         *ctx = orig_ctx;
         error = css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_BOTTOM);
+        io::println(fmt!("css__parse_border_side: error3 == %?" , error));
         match error {
             CSS_OK => {},
             _=> {
@@ -774,6 +777,7 @@ pub impl css_properties {
 
         *ctx = orig_ctx;
         error = css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_LEFT);
+        io::println(fmt!("css__parse_border_side: error4 == %?" , error));
         match error {
             CSS_OK => {},
             _=> {
@@ -4659,7 +4663,11 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
     let width_style: @mut css_style;
     let mut token: &@css_token;
 
+    io::println(fmt!("css__parse_border_side:: vector == %?" , vector));
+    io::println(fmt!("css__parse_border_side:: ctx == %?  vector.len == %?" , ctx , vector.len()));
+
     if *ctx >= vector.len() {
+        io::println("Entering: css__parse_border_side :: *ctx >= vector.len()");
         return CSS_INVALID;
     }
 
@@ -4669,6 +4677,8 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
         css_stylesheet::css_stylesheet_style_inherit(result_style , unsafe{cast::transmute(CSS_PROP_BORDER_TOP_COLOR as uint + side as uint)});
         css_stylesheet::css_stylesheet_style_inherit(result_style, unsafe{cast::transmute(CSS_PROP_BORDER_TOP_STYLE as uint + side as uint)});
         css_stylesheet::css_stylesheet_style_inherit(result_style, unsafe{cast::transmute(CSS_PROP_BORDER_TOP_WIDTH as uint + side as uint)});
+        *ctx = *ctx + 1;
+        return CSS_OK;
     }
     
     *ctx = *ctx + 1;
@@ -4679,10 +4689,13 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
      let mut error:css_error;
     /* Attempt to parse the various longhand properties */
     loop {
+        io::println("Entering: css__parse_border_side :: loop");
         prev_ctx = *ctx;
         error = CSS_OK;
         
+        io::println(fmt!("in loop :: css__parse_border_side:: ctx == %?  vector.len == %?" , ctx , vector.len()));
         if *ctx >= vector.len() {
+            io::println("Entering: css__parse_border_side :: *ctx >= vector.len()2");
             *ctx = orig_ctx;
             return CSS_INVALID
         }
@@ -4690,6 +4703,7 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
         token = &vector[*ctx];
         
         if is_css_inherit(strings , token) {
+            io::println("Entering: css__parse_border_side :: is_css_inherit(strings , token)");
             *ctx = orig_ctx;
             return CSS_INVALID;
         }
