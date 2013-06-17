@@ -82,9 +82,11 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
             let data = lwc_string_data(token.idata.get_ref().clone());
 
             let (unit , result) = css__parse_unit_keyword(data , consumed_index);
+            io::println(fmt!("css__parse_unit_specifier:: result == %?", result));
             match result {
                 CSS_OK => {},
                 _ => {
+                    io::println("Exiting: css__parse_unit_specifier (1)");
                     *ctx = orig_ctx;
                     return (None , None , result);
                 }
