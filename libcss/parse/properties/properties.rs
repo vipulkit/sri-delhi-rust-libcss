@@ -439,9 +439,9 @@ pub impl css_properties {
             css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_BACKGROUND_IMAGE);
             css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_BACKGROUND_POSITION);
             css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_BACKGROUND_REPEAT);
-            // if *ctx >= vector.len() {
-            //     return CSS_INVALID   
-            // }
+            if *ctx >= vector.len() {
+                return CSS_INVALID   
+            }
             // token = &vector[*ctx];
             *ctx +=1; //Iterate
             return CSS_OK
