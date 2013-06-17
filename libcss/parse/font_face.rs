@@ -44,19 +44,6 @@ pub fn font_face_parse_font_family(sheet:@mut css_stylesheet, strings:&mut ~css_
 
 
 /**
- * Parse a descriptor in an @font-face rule
- *
- * \param c           Parsing context
- * \param descriptor  Token for this descriptor
- * \param vector      Vector of tokens to process
- * \param ctx	      Pointer to vector iteration context
- * \param rule	      Rule to process descriptor into
- * \return CSS_OK on success,
- *         CSS_BADPARM on bad parameters,
- *         CSS_INVALID on invalid syntax,
- *         CSS_NOMEM on memory exhaustion
- */
-/**
 * #Description:
 *   Initialise a selector detail.
 * #Arguments:
@@ -325,12 +312,17 @@ pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut 
 }
 
 /**
- * Set a font-faces array of srcs.
- *
- * \param font_face  The font-face 
- * \param srcs       The array of css_font_face_srcs
- * \return CSS_OK
- */
+* #Description:
+*   Set a font-faces array of srcs.
+
+* #Arguments:
+*  'font_face' - The font-face .
+
+*  'srcs' - The vector of css_font_face_srcs.
+
+* #Return Value:
+*   'css_error' - CSS_OK .
+*/
 pub fn css__font_face_set_srcs(font_face:@mut css_font_face, srcs:~[~css_font_face_src]) -> css_error {
     font_face.srcs = srcs;
             
@@ -338,13 +330,17 @@ pub fn css__font_face_set_srcs(font_face:@mut css_font_face, srcs:~[~css_font_fa
 }
 
 /**
- * Set a font-face's font-family name
- *
- * \param font_face    The font-face
- * \param font_family  Font-family name
- * \return CSS_OK
- *         
- */
+* #Description:
+*   Set a font-face's font-family name.
+
+* #Arguments:
+*  'font_face' - The font-face .
+
+*  'font_family' - Font-family name.
+
+* #Return Value:
+*   'css_error' - CSS_OK .
+*/
 pub fn css__font_face_set_font_family(font_face: @mut css_font_face, font_family:~str, lwc_instance:arc::RWARC<~lwc>) -> css_error {
     // if (font_face.font_family != NULL)
     do lwc_instance.write |l|{
