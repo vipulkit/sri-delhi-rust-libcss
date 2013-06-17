@@ -192,20 +192,33 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
 
     let mut vec_buffer = copy exp;
 
-    let vec_1 = copy vec_buffer[0];
+    let mut vec_1 = ~[];
+    if !vec_buffer.is_empty() {
+        vec_1 = copy vec_buffer[0];
+    }
+    
 
     vec::reverse(vec_buffer);
 
-    vec_buffer.pop();
+    if !vec_buffer.is_empty() {
+        vec_buffer.pop();
+    }
+    
     vec::reverse(vec_buffer);
 
     let mut expected_buffer = copy exp;
 
-    let exp_1 = copy expected_buffer[0];
+    let mut exp_1 = ~[];
+    if !expected_buffer.is_empty() {
+        exp_1 = copy expected_buffer[0];
+    }
 
     vec::reverse(expected_buffer);
 
-    expected_buffer.pop();
+    if !expected_buffer.is_empty() {
+        expected_buffer.pop();
+    }
+    
     vec::reverse(expected_buffer);
 
     let mut exp = vec::concat(expected_buffer);
