@@ -405,9 +405,11 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Add a string to a stylesheet's string vector.
+	
     * #Arguments:
     *  'strings' - The string to add.
-    * #Return Value:
+    
+	* #Return Value:
     *   'uint' - index next to the index of insertion is returned.
     */
     pub fn css__stylesheet_string_add(&mut self, string: ~str) -> uint {
@@ -426,9 +428,11 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Get a string from a stylesheet's string vector.
+	
     * #Arguments:
     *  'num' - The index of string to retrive.
-    * #Return Value:
+    
+	* #Return Value:
     *   '(css_error,Option<~str>)' - (CSS_BADPARM,None) if num param is not correct, 
     *                               else ( CSS_OK, option of the string. )
     */
@@ -468,9 +472,11 @@ impl css_stylesheet {
 
     /**
     * Create a style, with sheet pointer set into the style
+	
     * #Arguments:
     *  'self'  - css_stylesheet. 
-    * #Return Value:
+    
+	* #Return Value:
     *  'css_style' - css_style.
     */
     pub fn css__stylesheet_style_create(sheet : @mut css_stylesheet) -> @mut css_style {
@@ -501,7 +507,8 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Append a style to a CSS style
-    * #Arguments:
+    
+	* #Arguments:
     *  'target'  - The style to add to. 
     *  'style'  - The style to add. 
     */
@@ -513,7 +520,8 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Append a style to a CSS style
-    * #Arguments:
+    
+	* #Arguments:
     *  'target'  - The style to add to. 
     *  'bytecodes'  - vector of style to add. 
     */
@@ -525,9 +533,11 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Create an element selector.
-    * #Arguments:
+    
+	* #Arguments:
     *  'qname' - Qualified name of selector.
-    * #Return Value:
+    
+	* #Return Value:
     *   'css_selector' - Pointer to box containing selector object.
     */
     pub fn css__stylesheet_selector_create(&mut self, qname : css_qname ) -> @mut css_selector {
@@ -566,14 +576,16 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Initialise a selector detail.
-    * #Arguments:
+    
+	* #Arguments:
     *  'sel_type' - The type of selector to create.
     *  'qname' - Qualified name of selector.
     *  'value_type' - type of the value.
     *  'string_value' - Option<~str>
     *  'ab_value' - Option<(i32,i32)>  css_selector_detail_value.
     *  'negate' - Whether the detail match should be negated.
-    * #Return Value:
+    
+	* #Return Value:
     *   '(css_error, Option<@mut css_selector_detail>)' - (CSS_OK,Some(css_selector_detail)).
     */
     pub fn css__stylesheet_selector_detail_init (
@@ -620,10 +632,12 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Append a selector to the specifics chain of another selector.
-    * #Arguments:
+    
+	* #Arguments:
     *  'selector' - css_selector to which details get appended.
     *  'detail' - The css_selector_detail to be appended.
-    * #Return Value:
+    
+	* #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_selector_append_specific(selector : @mut css_selector, detail: @mut css_selector_detail)  -> css_error  {
@@ -656,11 +670,13 @@ impl css_stylesheet {
     * For example, given A + B, the combinator field of B would point at A, 
     * with a combinator type of CSS_COMBINATOR_SIBLING. Thus, given B, we can
     * find its combinator. It is not possible to find B given A.
-    * #Arguments:
+    
+	* #Arguments:
     *  'combinator_type' - combinator types of selectors to be combined.
     *  'a' - css_selector.
     *  'b' - css_selector.
-    * #Return Value:
+    
+	* #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_selector_combine(combinator_type : css_combinator, a : @mut css_selector , 
@@ -688,9 +704,11 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Create a CSS rule.
-    * #Arguments:
+    
+	* #Arguments:
     *  'rule_type' - The rule type.
-    * #Return Value:
+    
+	* #Return Value:
     *   'CSS_RULE_DATA_TYPE' - .
     */
     pub fn css_stylesheet_rule_create(rule_type : css_rule_type ) -> CSS_RULE_DATA_TYPE  {
@@ -777,10 +795,12 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Add a selector to a CSS rule.
-    * #Arguments:
+    
+	* #Arguments:
     *  'css_rule' - The rule to which selector to be added.
     *  'selector' - The selector to be added.
-    * #Return Value:
+    
+	* #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_add_selector(css_rule : CSS_RULE_DATA_TYPE , selector : @mut css_selector) -> css_error {
@@ -798,10 +818,12 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Append a style to a CSS rule.
-    * #Arguments:
+    
+	* #Arguments:
     *  'css_rule' - The rule to which style to be appended.
     *  'style' - The style to be appended.
-    * #Return Value:
+    
+	* #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_append_style(&mut self, css_rule : CSS_RULE_DATA_TYPE , style : @mut css_style) -> css_error {
@@ -836,10 +858,12 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Set the encoding of a CSS rule.
-    * #Arguments:
+    
+	* #Arguments:
     *  'rule' - The rule whose encoding to be set to charset.
     *  'charset' - the charset to be set.
-    * #Return Value:
+    
+	* #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_set_charset(css_rule : CSS_RULE_DATA_TYPE, charset: ~str) -> css_error {
@@ -863,11 +887,13 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Set the necessary data to import a stylesheet associated with a rule.
-    * #Arguments:
+    
+	* #Arguments:
     *  'css_rule' - The rule whose data to be set.
     *  'url_str' - the url to be set.
     *  'media' - the media to be set.
-    * #Return Value:
+    
+	* #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_set_nascent_import(
@@ -889,10 +915,12 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Set the media of an @media rule.
-    * #Arguments:
+    
+	* #Arguments:
     *  'css_rule' - The rule whose data to be set.
     *  'media' - the media to be set.
-    * #Return Value:
+    
+	* #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_set_media(
@@ -969,10 +997,12 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Add a rule to a stylesheet.
-    * #Arguments:
+   
+   * #Arguments:
     *  'sheet' - The stylesheet to add to.
     *  'css_rule' - The rule to add.
     *  'parent_rule' - The parent rule, or None for a top-level rule.
+
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
@@ -1045,9 +1075,11 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Remove a rule from a stylesheet.
+
     * #Arguments:
     *  'sheet' - The sheet to remove from.
     *  'css_rule' - The rule to remove.
+
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
@@ -1086,8 +1118,10 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Add selectors in a rule to the hash.
+
     * #Arguments:
     *  'css_rule' - Rule to consider.
+
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
@@ -1180,8 +1214,10 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Remove selectors in a rule from the hash.
+
     * #Arguments:
     *  'css_rule' - Rule to consider.
+
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
@@ -1251,6 +1287,7 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Create a hash.
+
 	* #Return Value:
 	*  'css_selector_hash' - Hash table of selectors.
 	*/
@@ -1274,8 +1311,10 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Retrieve the first class name in a selector, or empty if none.
+
 	* #Arguments:
 	*  'selector '  - Selector to consider. 
+
 	* #Return Value:
 	*  '~str' - class name.
 	*/
@@ -1299,8 +1338,10 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Retrieve the first ID name in a selector, or empty if none.
+
 	* #Arguments:
 	*  'selector '  - Selector to consider. 
+
 	* #Return Value:
 	*  '~str' - ID name.
 	*/
@@ -1325,8 +1366,10 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Name hash function -- case-insensitive FNV.
+
 	* #Arguments:
 	*  'name '  - Name to hash. 
+
 	* #Return Value:
 	*  'uint' - hash value.
 	*/
@@ -1348,8 +1391,10 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Insert an item into the hash table.
+
 	* #Arguments:
 	*  'selector'  - css selector. 
+
 	* #Return Value:
 	*  'css_error' - CSS_OK on success, appropriate error otherwise.
 	*/
@@ -1397,10 +1442,12 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Insert a selector into a hash chain.
+
 	* #Arguments:
 	*  'hash_type'  - hash type. 
 	*  'index'  - index of insertion. 
 	*  'selector'  - selector to be inserted. 
+
 	* #Return Value:
 	*  'css_error' - CSS_OK on success, appropriate error otherwise.
 	*/
@@ -1487,8 +1534,10 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Remove an item from a hash.
+
 	* #Arguments:
 	*  'selector'  - css selector. 
+
 	* #Return Value:
 	*  'css_error' - CSS_OK on success, appropriate error otherwise.
 	*/
@@ -1535,10 +1584,12 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Remove a selector from a hash chain.
+
 	* #Arguments:
 	*  'hash_type'  - hash type. 
 	*  'head'  - Head of chain to remove from. 
 	*  'selector'  - selector to remove. 
+
 	* #Return Value:
 	*  'css_error' - CSS_OK on success, CSS_INVALID  if selector not found in chain.
 	*/
@@ -1633,8 +1684,10 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Find the first selector that matches name.
+
 	* #Arguments:
 	*  'name'  - name to find. 
+
 	* #Return Value:
 	*  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
 	*/
@@ -1678,8 +1731,10 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Find the first selector that has a class that matches name.
+
 	* #Arguments:
 	*  'name'  - name to find. 
+
 	* #Return Value:
 	*  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
 	*/
@@ -1721,8 +1776,10 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Find the first selector that has an ID that matches name.
+
 	* #Arguments:
 	*  'name'  - name to find. 
+
 	* #Return Value:
 	*  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
 	*/
@@ -1765,6 +1822,7 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Find the first universal selector.
+
 	* #Return Value:
 	*  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
 	*/
@@ -1784,8 +1842,10 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Find the next selector that matches.
+
 	* #Arguments:
 	*  'current'  - Current item. 
+
 	* #Return Value:
 	*  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
 	*/
@@ -1821,8 +1881,10 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Find the next selector that matches.
+
 	* #Arguments:
 	*  'current'  - Current item. 
+
 	* #Return Value:
 	*  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
 	*/
@@ -1857,8 +1919,10 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Find the next selector that matches.
+
 	* #Arguments:
 	*  'current'  - Current item. 
+
 	* #Return Value:
 	*  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
 	*/
@@ -1893,8 +1957,10 @@ impl css_selector_hash {
 	/**
 	* #Description:
 	*  Find the next selector that matches.
+
 	* #Arguments:
 	*  'current'  - Current item. 
+
 	* #Return Value:
 	*  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
 	*/

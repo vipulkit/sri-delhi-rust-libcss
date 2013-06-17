@@ -60,11 +60,16 @@ pub impl css_parser {
     /**
     * #Description:
     *   Create a CSS parser (internal).
+
     * #Arguments:
     *  'language' - 
+	
     *  'lexer' - 
-    *  'lwc' - 
-    *  'initial' - 
+    
+	*  'lwc' - 
+    
+	*  'initial' - 
+
     * #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
     */
@@ -126,11 +131,13 @@ pub impl css_parser {
     /**
     * #Description:
     *   Create a CSS parser.
+	
     * #Arguments:
     *  'language' - 
     *  'lexer' - 
     *  'lwc' - 
-    * #Return Value:
+    
+	* #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
     */
     pub fn css__parser_create(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>) 
@@ -144,10 +151,12 @@ pub impl css_parser {
     /**
     * #Description:
     *   Create a CSS parser for an inline style.
+
     * #Arguments:
     *  'language' - 
     *  'lexer' - 
     *  'lwc' - 
+
     * #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
     */
@@ -163,8 +172,10 @@ pub impl css_parser {
     /**
     * #Description:
     *   Parse a chunk of data using a CSS parser.
+
     * #Arguments:
     *  'data' -  Pointer to the chunk to parse. 
+
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
@@ -200,6 +211,7 @@ pub impl css_parser {
     /**
     * #Description:
     *   Inform a CSS parser that all data has been received.
+
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
@@ -233,6 +245,7 @@ pub impl css_parser {
     /**
     * #Description:
     *   Transition to a new state, ensuring return to the one specified.
+
     * #Arguments:
     *  'to' -  Destination state. 
     *  'subsequent' -  The state to return to. 
@@ -258,8 +271,10 @@ pub impl css_parser {
     /**
     * #Description:
     *   Transition to a new state, returning to previous state on stack.
+
     * #Arguments:
     *  'to' -  Destination state. 
+
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
@@ -294,6 +309,7 @@ pub impl css_parser {
     /**
     * #Description:
     *   Eat whitespace tokens.
+
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
@@ -320,6 +336,7 @@ pub impl css_parser {
     /**
     * #Description:
     *   Push a token back on the input.
+
     * #Arguments:
     *  'token' -  The token to push back. 
     */
@@ -351,6 +368,7 @@ pub impl css_parser {
     /**
     * #Description:
     *   Retrieve the next token in the input.
+
     * #Return Value:
     *   '(css_error, Option<@css_token>)' - (CSS_OK, location to receive token) on success, (appropriate error, None) otherwise.
     */

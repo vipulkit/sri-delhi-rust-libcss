@@ -111,6 +111,17 @@ pub struct css_lexer {
 // }
 
 impl css_lexer {
+
+    /**
+    * #Description:
+    *   Create a lexer instance.
+	
+    * #Arguments:
+    *  'inputstream' - The inputstream to read from
+    
+	* #Return Value:
+    *   'css_lexer' - location to receive lexer instance.
+    */
     pub fn css__lexer_create(inputstream: ~inputstream) -> ~css_lexer {
         let _data = css_token_data {
             data: ~[],
@@ -151,6 +162,20 @@ impl css_lexer {
         self.input.parserutils_inputstream_append(input_data);
     }
 
+    /**
+    * #Description:
+    *   Retrieve a token from a lexer.
+	* The returned token object is owned by the lexer. However, the client is
+	* permitted to modify the data members of the token. The token must not be
+	* freed by the client (it may not have been allocated in the first place),
+	* nor may any of the pointers contained within it. The client may, if they
+	* wish, overwrite any data member of the returned token object -- the lexer
+	* does not depend on these remaining constant. This allows the client code
+    * to efficiently implement a push-back buffer with interned string data.
+	
+	* #Return Value:
+    *   '(css_error , Option<@mut css_token>)' - (CSS_OK,location to receive lexer instance), (appropriate error, None) otherwise.
+    */
     pub fn css__lexer_get_token(&mut self) -> (css_error , Option<@mut css_token>){
         let mut start_again = false;
 
@@ -239,6 +264,14 @@ impl css_lexer {
         self.current_col += len;
     }
 
+    /**
+    * #Description:
+    *   Append some data to the current token.
+	
+    * #Arguments:
+    *  'data' - The data to append.
+    *  'len' - Length, in bytes, of data.
+    */
     pub fn append_to_token_data(&mut self , data: &[u8], len: uint) {
         
         // // io::println("entering append_to_token_data");
@@ -253,6 +286,16 @@ impl css_lexer {
         self.token.get_mut_ref().data.len += len;
     }
 
+    /**
+    * #Description:
+    *   Prepare a token for consumption and emit it to the client.
+	
+    * #Arguments:
+    *  'input_token_type' - The type of token to emit.
+
+	* #Return Value:
+    *   '(css_error , Option<@mut css_token>)' - (CSS_OK,location to receive receive pointer to token), (appropriate error, None) otherwise.
+    */
     pub fn emit_token(&mut self , input_token_type: Option<css_token_type>) -> (css_error, Option<@mut css_token>) {
 
         // io::println("entering emit_token");

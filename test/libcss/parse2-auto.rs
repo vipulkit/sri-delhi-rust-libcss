@@ -224,85 +224,85 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
 
 
 #[test]
-fn parse2_au() {
+fn au() {
     testMain(~"data/parse2/au.dat");
 }
 
 #[test]
-fn parse2_bg() {
+fn bg() {
     testMain(~"data/parse2/bg.dat");
 }
 
 #[test]
-fn parse2_bgpos() {
+fn bgpos() {
     testMain(~"data/parse2/bgpos.dat");
 }
 
 #[test]
-fn parse2_border() {
+fn border() {
     testMain(~"data/parse2/border.dat");
 }
 
 #[test]
-fn parse2_comments() {
+fn comments() {
     testMain(~"data/parse2/comments.dat");
 }
 
 #[test]
-fn parse2_eof() {
+fn eof() {
     testMain(~"data/parse2/eof.dat");
 }
 
 #[test]
-fn parse2_font() {
+fn font() {
     testMain(~"data/parse2/font.dat");
 }
 
 #[test]
-fn parse2_illegal_values() {
+fn illegal_values() {
     testMain(~"data/parse2/illegal-values.dat");
 }
 
 #[test]
-fn parse2_list() {
+fn list() {
     testMain(~"data/parse2/list.dat");
 }
 
 #[test]
-fn parse2_malformed_declarations() {
+fn malformed_declarations() {
     testMain(~"data/parse2/malformed-declarations.dat");
 }
 
 #[test]
-fn parse2_margin() {
+fn margin() {
     testMain(~"data/parse2/margin.dat");
 }
 
 #[test]
-fn parse2_multicol() {
+fn multicol() {
     testMain(~"data/parse2/multicol.dat");
 }
 
 #[test]
-fn parse2_outline() {
+fn outline() {
     testMain(~"data/parse2/outline.dat");
 }
 
 #[test]
-fn parse2_padding() {
+fn padding() {
     testMain(~"data/parse2/padding.dat");
 }
 
 #[test]
-fn parse2_selectors() {
+fn selectors() {
     testMain(~"data/parse2/selectors.dat");
 }
 
 #[test]
-fn parse2_tests1() {
+fn tests1() {
     testMain(~"data/parse2/tests1.dat");
 }
 #[test]
-fn parse2_unknown_properties() {
+fn unknown_properties() {
     testMain(~"data/parse2/unknown-properties.dat");
 }
