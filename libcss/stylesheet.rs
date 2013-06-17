@@ -1143,15 +1143,16 @@ impl css_stylesheet {
                                 i += 1;
                                 loop;
                             } ,
-                            _=> {
-                                while (i>0){
+                            y => {
+                                i -= 1;
+                                while (i>=0){
                                     // Ignore errors
-                                    i -= 1;
                                     self.selectors.css__selector_hash_remove(x.selectors[i]);
+                                    i -= 1;
                                 }
                                 // Remove zeroth element
                                 //self.selectors.css__selector_hash_remove(x.selectors[i]);
-                                return CSS_INVALID;
+                                return y;
                             }
                         }
                     }
@@ -1172,33 +1173,28 @@ impl css_stylesheet {
                             return CSS_OK
                         },
                         Some(current_rule) => {
-                            match current_rule {
-                                RULE_SELECTOR(_)=>{
-                                    match(self._add_selectors(current_rule)) {
-                                        CSS_OK => {
-                                            ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
-                                            loop;
-                                        }
-
-                                        _ => {
-
-                                            let mut rptr = current_rule ;
-                                            loop {
-                                                match css_stylesheet::css__stylesheet_get_base_rule(rptr).prev {
-                                                    Some(y)=> { 
-                                                        self._remove_selectors(y);
-                                                        rptr = y;
-                                                        loop;
-                                                    },
-                                                    None=> { return CSS_INVALID },
-                                                }
+                        
+                            match self._add_selectors(current_rule) {
+                                CSS_OK=>{
+                                    ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                                    loop ;
+                                },
+                                x => {
+                                    /* Failed, revert our changes */
+                                    ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).prev;
+                                    loop {
+                                        match ptr {
+                                            None=>{
+                                                break ;
+                                            }
+                                            Some(prev_rule)=>{
+                                                self._remove_selectors(prev_rule) ;
+                                                ptr = css_stylesheet::css__stylesheet_get_base_rule(prev_rule).prev;
+                                                loop ;
                                             }
                                         }
                                     }
-                                },
-                                _=>{
-                                    ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
-                                    loop;
+                                    return x ;
                                 }
                             }
                         }
@@ -1230,8 +1226,12 @@ impl css_stylesheet {
                 for x.selectors.each_mut |&selector| {
 
                     match self.selectors.css__selector_hash_remove(selector) {
-                        CSS_OK=> loop ,
-                        _=> return CSS_INVALID
+                        CSS_OK=>{
+                            loop;
+                        },
+                        x => { 
+                            return x ;
+                        } 
                     }
                 }
 
@@ -1247,19 +1247,12 @@ impl css_stylesheet {
                             return CSS_OK ;
                         },
                         Some(base_rule)=>{
-                            match base_rule {
-                                RULE_SELECTOR(_)=>{
-                                    match self._remove_selectors(base_rule) {
-                                        CSS_OK => {
-                                            ptr = css_stylesheet::css__stylesheet_get_base_rule(base_rule).next;
-                                        },
-                                        x => { 
-                                            return x ;
-                                        }
-                                    }
-                                },
-                                _=> {
+                            match self._remove_selectors(base_rule) {
+                                CSS_OK => {
                                     ptr = css_stylesheet::css__stylesheet_get_base_rule(base_rule).next;
+                                },
+                                x => { 
+                                    return x ;
                                 }
                             }
                         }
@@ -1506,13 +1499,13 @@ impl css_selector_hash {
                         }
                     }
 
-                    prev = search ;
                     search = 
                         match search.next {
                             None=>{
                                 break ;
                             },
                             Some(next_ptr)=>{
+                                prev = search ;
                                 first_pos = false ;
                                 next_ptr
                             }
