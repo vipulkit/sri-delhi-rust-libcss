@@ -1188,6 +1188,7 @@ pub type  compute_absolute_color_set =
 /**
 * #Description:
 * 	Create a computed style.
+
 * #Return Value:
 * 	'css_computed_style' - Pointer to box containing css_computed_style object.
 */
@@ -1276,9 +1277,12 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 /**
 * #Description:
 *  Initialize a computed style.
+
 * #Arguments:
 *  'style'  - Computed style to populate. 
+
 *  'fn_handler' - pointer to box containing handler function.
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -1358,11 +1362,16 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
 /**
 * #Description:
 *  Compose two computed styles.
+
 * #Arguments:
 *  'parent'  - Parent style. 
+
 *  'child' - Child style.
+
 *  'compute_font_size' - Function to compute an absolute font size.
+
 *  'result' - Pointer to style to compose into.
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -1425,10 +1434,14 @@ pub fn css_computed_style_compose(parent: @mut css_computed_style,
 /**
 * #Description:
 *  Compose two computed styles.
+
 * #Arguments:
 *  'parent'  - Parent style, or None for tree root. 
+
 *  'style' - Computed style to process.
+
 *  'compute_font_size' - Function to compute an absolute font size.
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -1757,10 +1770,14 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
 /**
 * #Description:
 *  Compute colour values, replacing any set to currentColor with the computed value of colour.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 *  'getfn' - Accessors for colour value.
+
 *  'setfn' - Mutator for colour value.
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -1784,8 +1801,10 @@ pub fn  compute_absolute_color(style: @mut css_computed_style,
 /**
 * #Description:
 *  Compute border colours, replacing any set to currentColor with the computed value of colour.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -1825,9 +1844,12 @@ pub fn compute_border_colors(style: @mut css_computed_style) -> css_error {
 /**
 * #Description:
 *  Compute absolute border widths.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 *  'ex_size'  - Ex size in ems. 
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -1874,11 +1896,16 @@ pub fn  compute_absolute_border_width(style: @mut css_computed_style,
 /**
 * #Description:
 *  Compute absolute border side widths.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 *  'ex_size'  - Ex size, in ems. 
+
 *  'getfn'  - Function to read length. 
+
 *  'setfn'  - Function to write length. 
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -1918,9 +1945,12 @@ pub fn  compute_absolute_border_side_width(style: @mut css_computed_style,
 /**
 * #Description:
 *  Compute absolute border side widths.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 *  'ex_size'  - Ex size, in ems. 
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -1988,9 +2018,12 @@ pub fn compute_absolute_clip(style: @mut css_computed_style,
 /**
 * #Description:
 *  Compute absolute line-height.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 *  'ex_size'  - Ex size, in ems. 
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -2019,9 +2052,12 @@ pub fn compute_absolute_line_height(style: @mut css_computed_style,
 /**
 * #Description:
 *  Compute the absolute values of {top,right,bottom,left}.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 *  'ex_size'  - Ex size, in ems. 
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -2065,9 +2101,12 @@ pub fn compute_absolute_sides(style: @mut css_computed_style,
 /**
 * #Description:
 *  Compute absolute margins.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 *  'ex_size'  - Ex size, in ems. 
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -2110,9 +2149,12 @@ pub fn compute_absolute_margins(style: @mut css_computed_style,
 /**
 * #Description:
 *  Compute absolute padding.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 *  'ex_size'  - Ex size, in ems. 
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -2155,9 +2197,12 @@ pub fn compute_absolute_padding(style: @mut css_computed_style,
 /**
 * #Description:
 *  Compute absolute vertical-align.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 *  'ex_size'  - Ex size, in ems. 
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -2185,11 +2230,16 @@ pub fn compute_absolute_vertical_align(style: @mut css_computed_style,
 /**
 * #Description:
 *  Compute the absolute value of length.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 *  'ex_size'  - Ex size, in ems. 
+
 *  'getfn'  - Function to read length. 
+
 *  'setfn'  - Function to write length. 
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -2218,11 +2268,16 @@ pub fn compute_absolute_length(style: @mut css_computed_style,
 /**
 * #Description:
 *  Compute the absolute value of length or auto.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 *  'ex_size'  - Ex size, in ems. 
+
 *  'getfn'  - Function to read length. 
+
 *  'setfn'  - Function to write length. 
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -2257,11 +2312,16 @@ pub fn compute_absolute_length_auto(style: @mut css_computed_style,
 /**
 * #Description:
 *  Compute the absolute value of length or none.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 *  'ex_size'  - Ex size, in ems. 
+
 *  'getfn'  - Function to read length. 
+
 *  'setfn'  - Function to write length. 
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -2296,11 +2356,16 @@ pub fn compute_absolute_length_none(style: @mut css_computed_style,
 /**
 * #Description:
 *  Compute the absolute value of length or normal.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 *  'ex_size'  - Ex size, in ems. 
+
 *  'getfn'  - Function to read length. 
+
 *  'setfn'  - Function to write length. 
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
@@ -2335,11 +2400,16 @@ pub fn  compute_absolute_length_normal(style: @mut css_computed_style,
 /**
 * #Description:
 *  Compute the absolute value of length pair.
+
 * #Arguments:
 *  'style'  - The style to process. 
+
 *  'ex_size'  - Ex size, in ems. 
+
 *  'getfn'  - Function to read length. 
+
 *  'setfn'  - Function to write length. 
+
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */

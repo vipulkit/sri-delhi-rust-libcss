@@ -744,6 +744,7 @@ pub impl css_properties {
         let mut error: css_error;
 
         error = css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_TOP);
+        io::println(fmt!("css__parse_border_side: error1 == %?" , error));
         match error {
             CSS_OK => {},
             _=> {
@@ -754,6 +755,7 @@ pub impl css_properties {
 
         *ctx = orig_ctx;
         error = css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_RIGHT);
+        io::println(fmt!("css__parse_border_side: error2 == %?" , error));
         match error {
             CSS_OK => {},
             _=> {
@@ -764,6 +766,7 @@ pub impl css_properties {
 
         *ctx = orig_ctx;
         error = css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_BOTTOM);
+        io::println(fmt!("css__parse_border_side: error3 == %?" , error));
         match error {
             CSS_OK => {},
             _=> {
@@ -774,6 +777,7 @@ pub impl css_properties {
 
         *ctx = orig_ctx;
         error = css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_LEFT);
+        io::println(fmt!("css__parse_border_side: error4 == %?" , error));
         match error {
             CSS_OK => {},
             _=> {
@@ -805,6 +809,8 @@ pub impl css_properties {
         let mut prev_ctx: uint;
         let mut side_count: u32 = 0;
 
+        io::println(fmt!("css__parse_border_color:: ctx (1) == %?", *ctx));
+
         if *ctx >= vector.len() {
             return CSS_INVALID;
         }
@@ -822,21 +828,30 @@ pub impl css_properties {
 
         let mut side_val_vec: ~[u16] = ~[]; 
         let mut side_color_vec: ~[u32] = ~[];
+
         loop {
             prev_ctx = *ctx;
             if is_css_inherit(strings , token) {
                 *ctx = orig_ctx;
                 return CSS_INVALID;
             }
+            io::println(fmt!("css__parse_border_color:: ctx (2) == %?", *ctx));
             let (side_val,side_color , result) = css__parse_color_specifier(sheet , strings , vector , ctx);
+            io::println(fmt!("css__parse_border_color:: ctx (3) == %?", *ctx));
 
             match result {
                 CSS_OK => {
                     side_count += 1;
                     consumeWhitespace(vector , ctx);
-                    token=&vector[*ctx];
+                    
                     side_val_vec.push(side_val.unwrap());
                     side_color_vec.push(side_color.unwrap());
+
+                    if *ctx >= vector.len() {
+                        break;
+                    }
+
+                    token=&vector[*ctx];
                 },
                 _ => {
                     break
@@ -1201,7 +1216,9 @@ pub impl css_properties {
             return CSS_OK;
         }
         let mut prev_ctx: uint;
+
         loop {
+            io::println("Entering: css__parse_border_width:  loop");
             prev_ctx = *ctx;
             if is_css_inherit(strings , token) {
                 *ctx = orig_ctx;
@@ -1215,6 +1232,8 @@ pub impl css_properties {
                 ) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THIN as uint) {
 
                 side_val.push(BORDER_WIDTH_THIN);
+                side_unit.push(0);
+                side_length.push(0);
                 *ctx = *ctx + 1;
                 error = CSS_OK;
             }
@@ -1226,6 +1245,8 @@ pub impl css_properties {
                 ) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MEDIUM as uint) {
                 
                 side_val.push(BORDER_WIDTH_MEDIUM);
+                side_unit.push(0);
+                side_length.push(0);
                 *ctx = *ctx + 1;
                 error = CSS_OK;
             }
@@ -1235,12 +1256,27 @@ pub impl css_properties {
             }) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , THICK as uint) {
                 
                 side_val.push(BORDER_WIDTH_THICK);
+                side_unit.push(0);
+                side_length.push(0);
                 *ctx = *ctx + 1;
                 error = CSS_OK;
             }
             else {
                 side_val.push(BORDER_WIDTH_SET);
-                let (_ , _ , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
+                let (length , unit , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
+                if length.is_some() {
+                    side_length.push(length.unwrap());
+                }
+                else {
+                    side_length.push(0);
+                }
+                if unit.is_some() {
+                    side_unit.push(unit.unwrap());
+                }
+                else {
+                    side_unit.push(0);    
+                }
+                
                 match result {
                     CSS_OK => {
                         if (side_unit[side_count] == (UNIT_PCT as u32)) {
@@ -1290,59 +1326,121 @@ pub impl css_properties {
         match side_count {
             1 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_WIDTH , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+                
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_WIDTH , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_WIDTH , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_WIDTH , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
             },
             2 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_WIDTH , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_WIDTH , 0 , side_val[1]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                
+                if side_val[1] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_WIDTH , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_WIDTH , 0 , side_val[1]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                
+                if side_val[1] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                }
+
             },
             3 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_WIDTH , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_WIDTH , 0 , side_val[1]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                
+                if side_val[1] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_WIDTH , 0 , side_val[2]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
+                
+                if side_val[2] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_WIDTH , 0 , side_val[1]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                
+                if side_val[1] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                }
+
             },
             4 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_WIDTH , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_WIDTH , 0 , side_val[1]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                
+                if side_val[1] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_WIDTH , 0 , side_val[2]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
+                
+                if side_val[2] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_WIDTH , 0 , side_val[3]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[3] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[3] as u32);
+                
+                if side_val[3] == BORDER_WIDTH_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[3] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[3] as u32);
+                }
             },
             _ => {
                 *ctx = orig_ctx;
@@ -3172,7 +3270,10 @@ pub impl css_properties {
                 return CSS_INVALID;
             }
         }
-        let (list_type , _) = css__parse_list_style_type_value(strings , token);
+        let (list_type , error) = css__parse_list_style_type_value(strings , token);
+        if error as int != CSS_OK as int {
+            return CSS_INVALID;
+        }
         css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_LIST_STYLE_TYPE , flags , list_type.unwrap());
         CSS_OK
     }
@@ -3230,13 +3331,28 @@ pub impl css_properties {
             }) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
 
                 side_val.push(MARGIN_AUTO);
+                side_unit.push(0);
+                side_length.push(0);
                 *ctx = *ctx + 1;
                 error = CSS_OK;
             }
             else {
                 side_val.push(MARGIN_SET );
-                let (_ , _ , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
-                
+                let (length , unit , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
+                if length.is_some() {
+                    side_length.push(length.unwrap());
+                }
+                else {
+                    side_length.push(0);
+                }
+
+                if unit.is_some() {
+                    side_unit.push(unit.unwrap());
+                } 
+                else {
+                    side_unit.push(0);
+                }
+
                 match result {
                     CSS_OK => {
                         if (side_unit[side_count] & (UNIT_ANGLE as u32)) > 0 {
@@ -3275,59 +3391,123 @@ pub impl css_properties {
         match side_count {
             1 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_TOP , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+
+                if side_val[0] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+                
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_RIGHT , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_BOTTOM , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_LEFT , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+
             },
             2 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_TOP , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_RIGHT , 0 , side_val[1]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                
+                if side_val[1] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_BOTTOM , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_LEFT , 0 , side_val[1]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                
+                if side_val[1] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                }
+
             },
             3 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_TOP , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_RIGHT , 0 , side_val[1]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                
+                if side_val[1] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_BOTTOM , 0 , side_val[2]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
+                
+                if side_val[2] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_LEFT , 0 , side_val[1]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                
+                if side_val[1] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                }
+
             },
             4 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_TOP , 0 , side_val[0]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                
+                if side_val[0] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[0] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[0] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_RIGHT , 0 , side_val[1]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                
+                if side_val[1] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[1] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[1] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_BOTTOM , 0 , side_val[2]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
+                
+                if side_val[2] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[2] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[2] as u32);
+                }
+
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_MARGIN_LEFT , 0 , side_val[3]);
-                css_stylesheet::css__stylesheet_style_append(style , side_length[3] as u32);
-                css_stylesheet::css__stylesheet_style_append(style , side_unit[3] as u32);
+                
+                if side_val[3] == MARGIN_SET {
+                    css_stylesheet::css__stylesheet_style_append(style , side_length[3] as u32);
+                    css_stylesheet::css__stylesheet_style_append(style , side_unit[3] as u32);
+                }
+
             },
             _ => {
                 *ctx = orig_ctx;
@@ -4599,6 +4779,9 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
         }
 
         consumeWhitespace(vector , ctx);
+        if (*ctx >= vector.len()) {
+            break;
+        }
         token = &vector[*ctx];
         if  tokenIsChar(token , ',') {
             if *ctx >= vector.len() {
@@ -4659,7 +4842,11 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
     let width_style: @mut css_style;
     let mut token: &@css_token;
 
+    io::println(fmt!("css__parse_border_side:: vector == %?" , vector));
+    io::println(fmt!("css__parse_border_side:: ctx == %?  vector.len == %?" , ctx , vector.len()));
+
     if *ctx >= vector.len() {
+        io::println("Entering: css__parse_border_side :: *ctx >= vector.len()");
         return CSS_INVALID;
     }
 
@@ -4669,6 +4856,8 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
         css_stylesheet::css_stylesheet_style_inherit(result_style , unsafe{cast::transmute(CSS_PROP_BORDER_TOP_COLOR as uint + side as uint)});
         css_stylesheet::css_stylesheet_style_inherit(result_style, unsafe{cast::transmute(CSS_PROP_BORDER_TOP_STYLE as uint + side as uint)});
         css_stylesheet::css_stylesheet_style_inherit(result_style, unsafe{cast::transmute(CSS_PROP_BORDER_TOP_WIDTH as uint + side as uint)});
+        *ctx = *ctx + 1;
+        return CSS_OK;
     }
     
     *ctx = *ctx + 1;
@@ -4679,10 +4868,13 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
      let mut error:css_error;
     /* Attempt to parse the various longhand properties */
     loop {
+        io::println("Entering: css__parse_border_side :: loop");
         prev_ctx = *ctx;
         error = CSS_OK;
         
+        io::println(fmt!("in loop :: css__parse_border_side:: ctx == %?  vector.len == %?" , ctx , vector.len()));
         if *ctx >= vector.len() {
+            io::println("Entering: css__parse_border_side :: *ctx >= vector.len()2");
             *ctx = orig_ctx;
             return CSS_INVALID
         }
@@ -4690,6 +4882,7 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
         token = &vector[*ctx];
         
         if is_css_inherit(strings , token) {
+            io::println("Entering: css__parse_border_side :: is_css_inherit(strings , token)");
             *ctx = orig_ctx;
             return CSS_INVALID;
         }

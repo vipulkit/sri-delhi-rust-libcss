@@ -67,12 +67,14 @@ fn main() {
 }
 
 fn create_css() -> @mut css{
+    io::println("Entering: create_css");
     let mut lwc = wapcaplet::lwc();
     let css = css_create(css_create_params() , Some(lwc));
     css
 }
 
 pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
+    io::println("Entering: handle_line");
     let mut data : ~[u8] = args ;
     // unsafe{io::println(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
     if  (data.len() == 0) {
@@ -128,7 +130,7 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
 }
 
 fn testMain(fileName: ~str) {
-    // io::println(~"testMain : "+ fileName);
+    io::println(~"testMain : "+ fileName);
     let ctx: @mut line_ctx = @mut line_ctx
     {
         mut buf:~[],
@@ -166,9 +168,9 @@ fn testMain(fileName: ~str) {
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     io::println(fmt!("entering run_test"));
     io::println(fmt!("data == %?" , data));
-    io::println(fmt!("exp == %?" , exp));
+    // io::println(fmt!("exp == %?" , exp));
     let mut css = create_css();
-    let mut buf: ~str = ~"";
+    let mut buf: ~str;
     let mut error = css.css_stylesheet_append_data(data);
     match error {
         CSS_OK | CSS_NEEDDATA => {},
@@ -183,122 +185,137 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     }
 
     buf = dump_sheet(css.stylesheet);
-    let mut vec_buf = ~[];
+    let mut vec = ~[];
     for str::each_line(buf) |s| {
-        vec_buf.push(s.to_owned().to_bytes());
+        vec.push(s.to_owned().to_bytes());
     }
 
-    let exp_len = exp.len();
-    let buf_len = buf.len();
+    let mut vec_buffer = copy exp;
 
-
-
-    assert!(vec_buf == exp);
-
-    // let mut bool_value = false;
-    // let mut i = 0;
-    // let mut index = 0;
-    // loop {
-    //     while i < exp.len() {
-    //         if exp[index][i] != data[i] {
-    //             bool_value = false;
-    //         }
-    //         else {
-    //             bool_value = true;
-    //         }
-    //     }
-
-    //     if (((2*exp_len)-buf.len())!=0) || (!bool_value) {
-    //         assert!(false);
-    //     }
-    //     index += 1;
-    //     if (index == exp.len()) {break;}
-    // }
+    let mut vec_1 = ~[];
+    if !vec_buffer.is_empty() {
+        vec_1 = copy vec_buffer[0];
+    }
     
+
+    vec::reverse(vec_buffer);
+
+    if !vec_buffer.is_empty() {
+        vec_buffer.pop();
+    }
+    
+    vec::reverse(vec_buffer);
+
+    let mut expected_buffer = copy exp;
+
+    let mut exp_1 = ~[];
+    if !expected_buffer.is_empty() {
+        exp_1 = copy expected_buffer[0];
+    }
+
+    vec::reverse(expected_buffer);
+
+    if !expected_buffer.is_empty() {
+        expected_buffer.pop();
+    }
+    
+    vec::reverse(expected_buffer);
+
+    let mut exp = vec::concat(expected_buffer);
+    let mut vec = vec::concat(vec_buffer);
+
+
+    io::println(fmt!("vec == %?" , vec));
+    io::println(fmt!("exp == %?" , exp));
+
+
+
+    assert!(vec_1 == exp_1);
+    assert!(vec == exp);
 
 }
 
 
 #[test]
-fn parse2_au() {
+fn au() {
     testMain(~"data/parse2/au.dat");
 }
 
 #[test]
-fn parse2_bg() {
+fn bg() {
     testMain(~"data/parse2/bg.dat");
 }
 
 #[test]
-fn parse2_bgpos() {
+fn bgpos() {
     testMain(~"data/parse2/bgpos.dat");
 }
 
 #[test]
-fn parse2_border() {
+fn border() {
     testMain(~"data/parse2/border.dat");
 }
 
 #[test]
-fn parse2_comments() {
+fn comments() {
     testMain(~"data/parse2/comments.dat");
 }
 
 #[test]
-fn parse2_eof() {
+fn eof() {
     testMain(~"data/parse2/eof.dat");
 }
 
 #[test]
-fn parse2_font() {
+fn font() {
     testMain(~"data/parse2/font.dat");
 }
 
 #[test]
-fn parse2_illegal_values() {
+fn illegal_values() {
     testMain(~"data/parse2/illegal-values.dat");
 }
 
 #[test]
-fn parse2_list() {
+fn list() {
     testMain(~"data/parse2/list.dat");
 }
 
 #[test]
-fn parse2_malformed_declarations() {
+fn malformed_declarations() {
     testMain(~"data/parse2/malformed-declarations.dat");
 }
 
 #[test]
-fn parse2_margin() {
+fn margin() {
     testMain(~"data/parse2/margin.dat");
 }
 
 #[test]
-fn parse2_multicol() {
+fn multicol() {
     testMain(~"data/parse2/multicol.dat");
 }
 
 #[test]
-fn parse2_outline() {
+fn outline() {
     testMain(~"data/parse2/outline.dat");
 }
 
 #[test]
-fn parse2_padding() {
+fn padding() {
     testMain(~"data/parse2/padding.dat");
 }
 
 #[test]
-fn parse2_selectors() {
+fn selectors() {
     testMain(~"data/parse2/selectors.dat");
 }
 
 #[test]
-fn parse2_tests1() {
+fn tests1() {
     testMain(~"data/parse2/tests1.dat");
 }
 #[test]
-fn parse2_unknown_properties() {
+fn unknown_properties() {
     testMain(~"data/parse2/unknown-properties.dat");
 }
