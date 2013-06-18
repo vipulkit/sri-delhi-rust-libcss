@@ -171,7 +171,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' - 
@@ -180,11 +180,11 @@ pub impl css_properties {
 
     *  'ctx'    - Pointer to vector iteration ctx.
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_azimuth(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -196,164 +196,163 @@ pub impl css_properties {
         let mut return_length_val = None;
         let mut return_unit_val = None;
 
+        /* angle | [ IDENT(left-side, far-left, left, center-left, center, 
+         *         center-right, right, far-right, right-side) || 
+         *     IDENT(behind) 
+         *   ] 
+         *   | IDENT(leftwards, rightwards, inherit)
+         */
+
         if *ctx >= vector.len() {
+            io::println("Exiting: css__parse_azimuth (1)");
             return CSS_INVALID;
         }
         
         let mut token=&vector[*ctx];
-        if ( 
-            match (token.token_type) {
-                CSS_TOKEN_IDENT  => true,
-                _=> false
-            } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) 
-        ) {
+
+        if (token.token_type as int == CSS_TOKEN_IDENT as int 
+            && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint)) {
             *ctx += 1;
             flags = FLAG_INHERIT as u8 ;
         }
-        else if ( 
-            match (token.token_type) {
-                CSS_TOKEN_IDENT  => true,
-                _=> false
-            } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFTWARDS as uint)
-        ) {
+        else if (token.token_type as int == CSS_TOKEN_IDENT as int 
+            && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFTWARDS as uint)) {
             *ctx += 1;
             value = AZIMUTH_LEFTWARDS ;
         }        
-        else if ( 
-            match (token.token_type) {
-                CSS_TOKEN_IDENT  => true,
-                _=> false
-            } && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHTWARDS as uint) 
-        ) {
+        else if (token.token_type as int == CSS_TOKEN_IDENT as int 
+            && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHTWARDS as uint)) {
             *ctx += 1;
             value = AZIMUTH_RIGHTWARDS ;
         }
-        else if ( 
-            match (token.token_type) {
-                CSS_TOKEN_IDENT  => true,
-                _=> false
-            } 
-        ) {
+        else if (token.token_type as int == CSS_TOKEN_IDENT as int) {
+            io::println("Entering: css__parse_azimuth:: token.token_type as int == CSS_TOKEN_IDENT as int ");
+
+            *ctx += 1;
+            /* Now, we may have one of the other keywords or behind,
+             * potentially followed by behind or other keyword, 
+             * respectively */
+
             if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT_SIDE as uint) {
                 value = AZIMUTH_LEFT_SIDE ;
             }
-
-            else if ( 
-            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_LEFT as uint) 
-            ) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_LEFT as uint)) {
                 value = AZIMUTH_FAR_LEFT ;
             }
-            else if ( 
-            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT as uint) 
-            ) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT as uint)) {
                 value = AZIMUTH_LEFT ;
             }
-            else if ( 
-             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER_LEFT as uint) 
-            ) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER_LEFT as uint)) {
                 value = AZIMUTH_CENTER_LEFT ;
             }
-            else if ( 
-             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER as uint) 
-            ) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER as uint)) {
                 value = AZIMUTH_CENTER;
             }
-            else if ( 
-             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),CENTER_RIGHT as uint) 
-            ) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),CENTER_RIGHT as uint)) {
                 value = AZIMUTH_CENTER_RIGHT;
             }
-            else if ( 
-             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT as uint) 
-            ) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT as uint)) {
                 value = AZIMUTH_RIGHT;
             }
-            else if ( 
-             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_RIGHT as uint) 
-            ) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_RIGHT as uint)) {
                 value = AZIMUTH_FAR_RIGHT;
             }
-            else if ( 
-             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT_SIDE as uint) 
-            ) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT_SIDE as uint)) {
                 value = AZIMUTH_RIGHT_SIDE;
             }
-            else if ( 
-             strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BEHIND as uint) 
-            ) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BEHIND as uint)) {
+                io::println("Entering: css__parse_azimuth :: BEHIND ");
                 value = AZIMUTH_BEHIND;
             }
             else {
                 *ctx = orig_ctx;
+                io::println("Exiting: css__parse_azimuth (2)");
                 return CSS_INVALID;
             }
+            
+            io::println(fmt!("css__parse_azimuth:: ctx (1) == %?", *ctx));
             consumeWhitespace(vector, ctx);
-            token=&vector[*ctx];
+            io::println(fmt!("css__parse_azimuth:: ctx (2) == %?", *ctx));
+            /* Get potential following token */
+            /* parserutils_vector_peek(vector, *ctx); */
+            let mut token_null = false;
+            
+            io::println(fmt!("css__parse_azimuth:: ctx (3) == %?", *ctx));
+            if *ctx >= vector.len() {
+                io::println("Entering: css__parse_azimuth:: token_null = true");
+                token_null = true;
+            }
+            else {
+                token=&vector[*ctx];
+                io::println(fmt!("css__parse_azimuth:: token == %?", token));
+            }
 
-            if (
-                match (token.token_type) {
-                    CSS_TOKEN_IDENT  => true,
-                    _=> false
-                } && value == AZIMUTH_BEHIND
-            ) {
+            if (!token_null && token.token_type as int == CSS_TOKEN_IDENT as int && value == AZIMUTH_BEHIND) {
+                /* parserutils_vector_iterate(vector, ctx); */
                 *ctx += 1;
+                io::println("Entering: css__parse_azimuth:: !token_null && token.token_type as int == CSS_TOKEN_IDENT as int && value == AZIMUTH_BEHIND");
+                
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT_SIDE as uint) {
+                    io::println("Entering: css__parse_azimuth:: LEFT_SIDE");
                     value |= AZIMUTH_LEFT_SIDE;
                 }
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_LEFT as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_LEFT as uint) {
+                    io::println("Entering: css__parse_azimuth:: FAR_LEFT");
                     value |= AZIMUTH_FAR_LEFT;
                 }
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT as uint) {
+                    io::println("Entering: css__parse_azimuth:: LEFT");
                     value |= AZIMUTH_LEFT;
                 }
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER_LEFT as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER_LEFT as uint) {
+                    io::println("Entering: css__parse_azimuth:: CENTER_LEFT");
                     value |= AZIMUTH_CENTER_LEFT;
                 }
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER as uint) {
+                    io::println("Entering: css__parse_azimuth:: CENTER");
                     value |=  AZIMUTH_CENTER;
                 }
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER_RIGHT as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER_RIGHT as uint) {
+                    io::println("Entering: css__parse_azimuth:: CENTER_RIGHT");
                     value |= AZIMUTH_CENTER_RIGHT;
                 }
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT as uint) {
+                    io::println("Entering: css__parse_azimuth:: RIGHT");
                     value |= AZIMUTH_RIGHT;
                 }
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_RIGHT as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_RIGHT as uint) {
+                    io::println("Entering: css__parse_azimuth:: FAR_RIGHT");
                     value |= AZIMUTH_FAR_RIGHT;
                 }
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT_SIDE as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT_SIDE as uint) {
+                    io::println("Entering: css__parse_azimuth:: RIGHT_SIDE");
                     value |= AZIMUTH_RIGHT_SIDE;
                 }
                 else {
-                *ctx = orig_ctx;
-                return CSS_INVALID;
+                    *ctx = orig_ctx;
+                    io::println("Exiting: css__parse_azimuth (3)");
+                    return CSS_INVALID;
                 }
             }
-            else if  (
-                match (token.token_type) {
-                    CSS_TOKEN_IDENT  => true,
-                    _=> false
-                }&& value != AZIMUTH_BEHIND
-            ) {
+            else if  (!token_null && token.token_type as int == CSS_TOKEN_IDENT as int && value != AZIMUTH_BEHIND) {
+
                 *ctx += 1;
+                
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BEHIND as uint) {
                     value |= AZIMUTH_BEHIND;
                 }
                 else {
                     *ctx = orig_ctx;
+                    io::println("Exiting: css__parse_azimuth (4)");
                     return CSS_INVALID;
                 }
             } 
-            else if (
-                match (token.token_type) {
-                    CSS_TOKEN_IDENT  => false,
-                    _=> true
-                } && value == AZIMUTH_BEHIND
-            ) {
+            else if ((token_null || token.token_type as int != CSS_TOKEN_IDENT as int) && value == AZIMUTH_BEHIND) {
+                io::println("Entering: css__parse_azimuth:: (token_null || token.token_type as int != CSS_TOKEN_IDENT as int) && value == AZIMUTH_BEHIND");
                 value |= AZIMUTH_CENTER;
             }
         } 
-        else{
+        else {
             let (length_val , unit_val , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_DEG as u32);
             return_length_val = length_val;
             return_unit_val = unit_val;
@@ -361,28 +360,33 @@ pub impl css_properties {
                 CSS_OK => {},
                 _ => {
                     *ctx = orig_ctx;
+                    io::println("Exiting: css__parse_azimuth (5)");
                     return result;
                 }
             }
             if (unit_val.unwrap() & UNIT_ANGLE as u32) == 0 {
                 *ctx = orig_ctx;
+                io::println("Exiting: css__parse_azimuth (6)");
                 return CSS_INVALID;
             }
             if (unit_val.unwrap() == UNIT_DEG as u32) {
                 if ((length_val.unwrap() < -F_360) || (length_val.unwrap() > F_360)) {
                     *ctx = orig_ctx;
+                    io::println("Exiting: css__parse_azimuth (7)");
                     return CSS_INVALID;
                 }
             }
             else if (unit_val.unwrap() == UNIT_GRAD as u32) {
                 if ((length_val.unwrap() < -F_400) || (length_val.unwrap() > F_400)) {
                     *ctx = orig_ctx;
+                    io::println("Exiting: css__parse_azimuth (8)");
                     return CSS_INVALID;
                 }
             } 
             else if (unit_val.unwrap() == UNIT_RAD as u32) {
                 if ((length_val.unwrap() < -F_2PI) || (length_val.unwrap() > F_2PI)) {
                     *ctx = orig_ctx;
+                    io::println("Exiting: css__parse_azimuth (9)");
                     return CSS_INVALID;
                 }
             }
@@ -394,12 +398,14 @@ pub impl css_properties {
         if (((flags & FLAG_INHERIT as u8) == 0) && (value == AZIMUTH_ANGLE)) {
             css_stylesheet::css__stylesheet_style_vappend(style, [return_length_val.unwrap() as u32 , return_unit_val.unwrap() as u32]);
         }
+
+        io::println("Exiting: css__parse_azimuth (10)");
         CSS_OK
     }
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -411,11 +417,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     pub fn css__parse_background(sheet:@mut css_stylesheet, strings: &mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, result:@mut css_style) -> css_error {
@@ -556,7 +562,7 @@ pub impl css_properties {
  
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -568,11 +574,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_background_position(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,
@@ -738,7 +744,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -750,11 +756,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_border(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -805,7 +811,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -817,11 +823,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_border_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -964,7 +970,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -976,11 +982,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_border_spacing(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -1071,7 +1077,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -1083,11 +1089,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_border_style(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -1210,7 +1216,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -1222,11 +1228,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_border_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -1489,7 +1495,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -1501,11 +1507,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_clip(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -1636,7 +1642,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -1648,11 +1654,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_columns(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -1736,7 +1742,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -1748,11 +1754,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_column_rule(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -1859,7 +1865,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -1871,11 +1877,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_content(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, result: @mut css_style)->css_error {
@@ -2304,7 +2310,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -2316,11 +2322,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_cue(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -2380,7 +2386,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -2392,11 +2398,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_cursor(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -2676,7 +2682,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -2688,11 +2694,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_elevation(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -2820,7 +2826,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -2832,11 +2838,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_font(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -3047,7 +3053,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -3059,11 +3065,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     pub fn css__parse_font_family(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token], ctx: @mut uint, result: @mut css_style) -> css_error {
@@ -3116,7 +3122,7 @@ pub impl css_properties {
 
  
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -3128,11 +3134,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_font_weight(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -3210,7 +3216,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -3222,11 +3228,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_list_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -3329,7 +3335,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -3341,11 +3347,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_list_style_type(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -3392,7 +3398,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -3404,11 +3410,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_margin(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -3636,7 +3642,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -3648,11 +3654,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_opacity(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -3702,7 +3708,7 @@ pub impl css_properties {
 
     
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -3714,11 +3720,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_outline(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -3823,7 +3829,7 @@ pub impl css_properties {
 
     
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -3835,11 +3841,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_padding(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -3975,7 +3981,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -3987,11 +3993,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_pause(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -4052,7 +4058,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -4064,11 +4070,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_play_during(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -4172,7 +4178,7 @@ pub impl css_properties {
 
     
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -4184,11 +4190,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_quotes(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -4279,7 +4285,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -4291,11 +4297,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_text_decoration(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
@@ -4391,7 +4397,7 @@ pub impl css_properties {
 
 
     /**
-	* #Arguments:
+    * #Arguments:
     *  'sheet'  - Stylesheet. 
 
     *  'strings' -  Prop_string
@@ -4403,11 +4409,11 @@ pub impl css_properties {
     *  'results' -  css_style
 
     * #Return Value:
-	* 'css_error' - CSS_OK on success,  
+    * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
 
     * #Post condition:
-	*   ctx is updated with the next token to process.
+    *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_voice_family(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token], ctx: @mut uint, result: @mut css_style) -> css_error {
@@ -4535,7 +4541,7 @@ pub fn css__parse_list_style_type_value(strings: &mut ~css_propstrings , token:&
 *  'ident' - IDENT to consider.
 
 * #Return Value:
-* 	True if IDENT is reserved, false otherwise.
+*   True if IDENT is reserved, false otherwise.
 */
 pub fn font_family_reserved(strings:&mut ~css_propstrings, ident:&@css_token) -> bool {
 
@@ -4557,7 +4563,7 @@ pub fn font_family_reserved(strings:&mut ~css_propstrings, ident:&@css_token) ->
 *  'first' - Whether the token is the first.
 
 * #Return Value:
-* 	Bytecode value.
+*   Bytecode value.
 */
 pub fn font_family_value(strings:&mut ~css_propstrings, token:&@css_token, first:bool) -> u32 {
     
@@ -4604,7 +4610,7 @@ pub fn font_family_value(strings:&mut ~css_propstrings, token:&@css_token, first
 *  'style' - css_style.
 *  'system_font' - css_system_font.
 * #Return Value:
-* 	'css_error'.
+*   'css_error'.
 */
 pub fn parse_system_font(sheet: @mut css_stylesheet , strings:&mut ~css_propstrings , style: @mut css_style , system_font: css_system_font) -> css_error{
     
@@ -4722,7 +4728,7 @@ pub fn parse_system_font(sheet: @mut css_stylesheet , strings:&mut ~css_propstri
 *  'system_font' - css_system_font.
 
 * #Return Value:
-* 	'bool' - True if IDENT is reserved, false otherwise.
+*   'bool' - True if IDENT is reserved, false otherwise.
 */
 pub fn voice_family_reserved(strings: &mut ~css_propstrings, ident:&@css_token) -> bool {
     
@@ -4741,7 +4747,7 @@ pub fn voice_family_reserved(strings: &mut ~css_propstrings, ident:&@css_token) 
 *  'system_font' - css_system_font.
 
 * #Return Value:
-* 	'u32' - Bytecode value.
+*   'u32' - Bytecode value.
 */
 pub fn voice_family_value(strings: &mut ~css_propstrings, token:&@css_token, first:bool) -> u32
 {
@@ -4785,12 +4791,12 @@ pub fn voice_family_value(strings: &mut ~css_propstrings, token:&@css_token, fir
 *  'reserved' - 
 
 * #Return Value:
-* 	'result' - Option of ~str (Some(x) if CSS_OK else None).
-*	'css_error' - CSS_OK on success, 
-			CSS_INVALID if the input is not valid
+*   'result' - Option of ~str (Some(x) if CSS_OK else None).
+*   'css_error' - CSS_OK on success, 
+            CSS_INVALID if the input is not valid
 
 * #Post Condition:
-* 	ctx is updated with the next token to process
+*   ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, reserved:Option<reserved_fn>)
@@ -4825,12 +4831,12 @@ pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings:
 *  'reserved' - Callback to determine if an identifier is reserved.
 
 * #Return Value:
-* 	'result' - Option of ~str (Some(x) if CSS_OK else None).
-*	'css_error' - CSS_OK on success, 
-			CSS_INVALID if the input is not valid
+*   'result' - Option of ~str (Some(x) if CSS_OK else None).
+*   'css_error' - CSS_OK on success, 
+            CSS_INVALID if the input is not valid
 
 * #Post Condition:
-* 	ctx is updated with the next token to process
+*   ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token],
@@ -4904,11 +4910,11 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
 *  'style' - 
 
 * #Return Value:
-*	'css_error' - CSS_OK on success, 
-			CSS_INVALID if the input is not valid
+*   'css_error' - CSS_OK on success, 
+            CSS_INVALID if the input is not valid
 
 * #Post Condition:
-* 	ctx is updated with the next token to process
+*   ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token], 
@@ -5029,11 +5035,11 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
 *  'side' - 
 
 * #Return Value:
-*	'css_error' - CSS_OK on success, 
-			CSS_INVALID if the input is not valid
+*   'css_error' - CSS_OK on success, 
+            CSS_INVALID if the input is not valid
 
 * #Post Condition:
-* 	ctx is updated with the next token to process
+*   ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_error { 
@@ -5165,11 +5171,11 @@ Moved Autogenerated Parse/Properties functions for removing circular dependency
 *  'result' - resulting style.
 
 * #Return Value:
-*	'css_error' - CSS_OK on success, 
-			CSS_INVALID if the input is not valid
+*   'css_error' - CSS_OK on success, 
+            CSS_INVALID if the input is not valid
 
 * #Post Condition:
-* 	ctx is updated with the next token to process
+*   ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__parse_border_top(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings,
@@ -5193,11 +5199,11 @@ pub fn css__parse_border_top(sheet:@mut css_stylesheet, strings:&mut ~css_propst
 
 *  'side' - 
 * #Return Value:
-*	'css_error' - CSS_OK on success, 
-			CSS_INVALID if the input is not valid
+*   'css_error' - CSS_OK on success, 
+            CSS_INVALID if the input is not valid
 
 * #Post Condition:
-* 	ctx is updated with the next token to process
+*   ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__parse_border_bottom(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings,
@@ -5222,11 +5228,11 @@ pub fn css__parse_border_bottom(sheet:@mut css_stylesheet, strings:&mut ~css_pro
 *  'side' - 
 
 * #Return Value:
-*	'css_error' - CSS_OK on success, 
-			CSS_INVALID if the input is not valid
+*   'css_error' - CSS_OK on success, 
+            CSS_INVALID if the input is not valid
 
 * #Post Condition:
-* 	ctx is updated with the next token to process
+*   ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__parse_border_left(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings,
@@ -5251,11 +5257,11 @@ pub fn css__parse_border_left(sheet:@mut css_stylesheet, strings:&mut ~css_props
 *  'side' - 
 
 * #Return Value:
-*	'css_error' - CSS_OK on success, 
-			CSS_INVALID if the input is not valid
+*   'css_error' - CSS_OK on success, 
+            CSS_INVALID if the input is not valid
 
 * #Post Condition:
-* 	ctx is updated with the next token to process
+*   ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__parse_border_right(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings,
