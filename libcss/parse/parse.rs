@@ -1695,6 +1695,13 @@ pub impl css_parser {
                                 parser.done();
                                 return CSS_OK;
                             }
+							parser.push_back(token);
+                            
+                            let to = ( sValue as uint, Initial as uint );
+                            let subsequent = ( sValue0 as uint, AfterValue as uint );
+
+                            parser.transition(to, subsequent);
+                            return CSS_OK;
                         } /* CSS_TOKEN_CHAR */
 
                         _ => {

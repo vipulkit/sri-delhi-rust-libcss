@@ -623,7 +623,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
   	// Build selector string
   	unsafe {
   		io::println("Entering: validate_rule_selector: unsafe");
-		io::println(fmt!("Parsed Rule List:%?",copy s.selectors));
+		io::println(fmt!("Parsed Rule List:%?",copy s.selectors.len()));
 	  	for s.selectors.eachi |i,&sel| {
 	  		dump_selector_list(sel,&mut ptr) ;
 	  		if ( i != (s.selectors.len()-1) ) {
@@ -663,10 +663,11 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 		}
 
 		let mut i = 0 ;
-		let mut j = 0 ;
+		let mut j;
 
 		while i < unsafe {e.bytecode.len()} {
 			unsafe {io::println(fmt!("Entering: while i < unsafe {e.bytecode.len()} i == %?  , e.bytecode.len() == %?" , i , e.bytecode.len()));}
+			j = 0;
 			while j < unsafe { e.stringtab.len() } {
 				io::println("Entering: while j < unsafe { e.stringtab.len() }");
 				if (e.stringtab[j].off == i) {
