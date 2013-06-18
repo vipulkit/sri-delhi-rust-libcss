@@ -288,6 +288,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
 			}
 
 			css__parse_expected(ctx, data);
+			io::println(fmt!("ctx == %?",copy ctx.exp));
 		}
 	}
 
@@ -516,7 +517,7 @@ pub fn run_test(ctx:@mut line_ctx) {
 
 				pending_imports = true ;
 			}
-			_=>{}	
+			_=>{ pending_imports = false ;}	
 		}
 	}
 	let mut e : uint = 0;
@@ -528,6 +529,7 @@ pub fn run_test(ctx:@mut line_ctx) {
 	}
 
 	let mut ptr = css_instance.stylesheet.rule_list ;
+		
 	loop {
 		match ptr {
 			None=>{ 
@@ -621,6 +623,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
   	// Build selector string
   	unsafe {
   		io::println("Entering: validate_rule_selector: unsafe");
+		io::println(fmt!("Parsed Rule List:%?",copy s.selectors));
 	  	for s.selectors.eachi |i,&sel| {
 	  		dump_selector_list(sel,&mut ptr) ;
 	  		if ( i != (s.selectors.len()-1) ) {
@@ -720,6 +723,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 pub fn validate_rule_charset(s:@mut css_rule_charset, e:@mut exp_entry) -> bool {
 
 	unsafe {
+		io::println(fmt!("Parsed Rule List:%?",copy s.encoding));
 		if( e.name.len() != s.encoding.len() ) {
 			return false ;
 		}
@@ -737,6 +741,7 @@ pub fn validate_rule_charset(s:@mut css_rule_charset, e:@mut exp_entry) -> bool 
 pub fn validate_rule_import(s:@mut css_rule_import, e:@mut exp_entry) -> bool {
 
   	unsafe {
+		io::println(fmt!("Parsed Rule List:%?",copy s.url));
 		if( e.name.len() < s.url.len() ) {
 			return false ;
 		}
