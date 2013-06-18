@@ -814,7 +814,9 @@ pub fn tokenIsChar(token:&@css_token, c:char) -> bool {
 
     match token.token_type {
         CSS_TOKEN_CHAR => {   
+                io::println("Entering: tokenIsChar: before get_ref 1");
                 if lwc_string_length(token.idata.get_ref().clone()) == 1 {
+                    io::println("Entering: tokenIsChar: before get_ref 2");
                     let mut token_char = lwc_string_data(token.idata.get_ref().clone()).char_at(0);
 
                     // Ensure lowercomparison 

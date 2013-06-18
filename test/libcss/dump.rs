@@ -1198,12 +1198,12 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         if option_string.is_some() {
                             str::push_str(ptr , option_string.unwrap());
                         }
-
-                        let value = bytecode[iterator] as i32;
+                        ptr.push_char(' ');
+                        let val = bytecode[iterator] as i32;
                         iterator += 1;
-                        dump_number(value , ptr);
+                        dump_number(val , ptr);
 
-                        let value = bytecode[iterator];
+                        value = bytecode[iterator] as u32;
                         iterator += 1;
                         
                         if value as int != COUNTER_INCREMENT_NONE as int {
