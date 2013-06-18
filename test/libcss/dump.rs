@@ -2226,7 +2226,7 @@ fn dump_css_fixed(a: i32 , ptr: &mut ~str){
     else {
         b = a as u32;
     }
-    let mut unitpart:u32 = b >> 0;
+    let mut unitpart:u32 = b >> 10;
     let mut fracpart:u32 = ((b & 0x3ff)*1000 + 500)/(1 << 10);
     let mut flen: uint = 0;
     let mut tmp: ~[char] = ~[];
