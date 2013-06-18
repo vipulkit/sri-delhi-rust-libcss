@@ -1135,9 +1135,9 @@ impl css_stylesheet {
                     return CSS_INVALID;
                 }
 
-                let mut i : uint = 0 ;
+                let mut i : int = 0 ;
                 unsafe {
-                    while (i<x.selectors.len()) {
+                    while (i< (x.selectors.len() as int) ) {
                         match self.selectors.css__selector_hash_insert(x.selectors[i]) {
                             CSS_OK=> { 
                                 i += 1;
