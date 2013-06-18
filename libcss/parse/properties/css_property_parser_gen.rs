@@ -117,7 +117,7 @@ pub fn output_token_type_check(fp:@Writer, do_token_check:bool, IDENT:~[keyval],
                   
         if !vec::is_empty(IDENT) {
             str::push_str(&mut output, "\tif ");
-            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_IDENT => true, _ => false})");
+            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_IDENT => false, _ => true})");
             prev = true;
         }
         if !vec::is_empty(URI) {

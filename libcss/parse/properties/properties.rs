@@ -4073,7 +4073,7 @@ pub impl css_properties {
                             open_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone())) as u32;
                             consumeWhitespace(vector, ctx);
                             
-                            if (*ctx < vector.len()) {
+                            if (*ctx >= vector.len()) {
                                 *ctx = orig_ctx;
                                 return CSS_INVALID;
                             } 
@@ -4098,7 +4098,7 @@ pub impl css_properties {
                             css_stylesheet::css__stylesheet_style_append(style, close_snumber);
 
                             first =false;
-                            if (*ctx < vector.len()) {
+                            if (*ctx >= vector.len()) {
                                 break;
                             }
                             token=&vector[*ctx];
@@ -4108,7 +4108,7 @@ pub impl css_properties {
                                     break;
                                 }
                             }
-                            if (*ctx < vector.len()) {
+                            if (*ctx >= vector.len()) {
                                 break;
                             } 
                             token=&vector[*ctx];
