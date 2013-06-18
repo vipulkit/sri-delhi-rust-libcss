@@ -1313,9 +1313,9 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
         next_reject:128-1,             
         props: ~[~[]] 
     };
-    for uint::range(0,CSS_N_PROPERTIES as uint) |outer| {
+    for uint::range(0,CSS_N_PROPERTIES as uint) |_| {
         let mut prop_vec : ~[@mut prop_state] = ~[] ;
-        for uint::range(0,CSS_PSEUDO_ELEMENT_COUNT as uint) |inner| {
+        for uint::range(0,CSS_PSEUDO_ELEMENT_COUNT as uint) |_| {
             let mut pstate = @mut prop_state{
                 specificity:0,
                 set:false,
