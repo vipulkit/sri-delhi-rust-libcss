@@ -922,37 +922,37 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 }
 
 #[test]
-fn parse_tests1() {
+fn tests1() {
 	parse_auto(~"data/parse/tests1.dat");
 }
 
 #[test]
-fn parse_atrules() {
+fn atrules() {
 	parse_auto(~"data/parse/atrules.dat");
 }
 
 #[test]
-fn parse_colours() {
+fn colours() {
 	parse_auto(~"data/parse/colours.dat");
 }
 
 #[test]
-fn parse_colours_hsl() {
+fn colours_hsl() {
 	parse_auto(~"data/parse/colours-hsl.dat");
 }
 
 #[test]
-fn parse_nth() {
+fn nth() {
 	parse_auto(~"data/parse/nth.dat");
 }
 
 #[test]
-fn parse_properties() {
+fn properties() {
 	parse_auto(~"data/parse/properties.dat");
 }
 
 #[test]
-fn parse_selectors() {
+fn selectors() {
 	parse_auto(~"data/parse/selectors.dat");
 }
 
