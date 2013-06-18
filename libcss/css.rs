@@ -111,10 +111,29 @@ pub impl css {
 		}
 	}
 
+    /**
+    * #Description:
+    *   Append source data to a stylesheet.
+	
+    * #Arguments:
+    *  'data' - The data to append.
+    
+	* #Return Value:
+    *   'css_error' - CSS_OK on success, appropriate error otherwise.
+    */
 	pub fn css_stylesheet_append_data(&mut self, data:~[u8]) -> css_error {
 		self.parser.css__parser_parse_chunk(data)
 	}
 
+    /**
+    * #Description:
+    *   Flag that the last of a stylesheet's data has been seen.
+	
+	* #Return Value:
+    *   'css_error' - CSS_OK on success,
+					  CSS_IMPORTS_PENDING if there are imports pending,
+					  appropriate error otherwise.
+    */
 	pub fn css_stylesheet_data_done(&mut self) -> css_error {
 		let error = self.parser.css__parser_completed();
 		match error {
@@ -162,43 +181,116 @@ pub impl css {
 		CSS_OK
 	}
 
+    /**
+    * #Description:
+    *   Set a stylesheet's disabled state.
+	
+    * #Arguments:
+    *  'disabled' - The new disabled state.
+    
+	* #Return Value:
+    *   'css_error' - CSS_OK on success, appropriate error otherwise.
+    */
 	pub fn css_stylesheet_set_disabled(&mut self, disabled:bool ) -> css_error {
 
 	    self.stylesheet.disabled = disabled;
 	    CSS_OK
 	}
 
+    /**
+    * #Description:
+    *   Get disabled status of a stylesheet.
+	
+	* #Return Value:
+    *   '(css_error,~bool)' - (CSS_OK , disabled state flag).
+    */
 	pub fn css_stylesheet_get_disabled(&mut self) -> (css_error,bool) {
 
 	    (CSS_OK,self.stylesheet.disabled)
 	}
 
+    /**
+    * #Description:
+    *   Determine whether quirky parsing was permitted on a stylesheet.
+	
+	* #Return Value:
+    *   '(css_error,~bool)' - (CSS_OK , quirks allowed flag).
+    */
 	pub fn css_stylesheet_quirks_allowed(&mut self) -> (css_error,bool) {
 
 	    (CSS_OK,self.stylesheet.quirks_allowed)
 	}
 
+    /**
+    * #Description:
+    *   Determine whether quirky parsing was used on a stylesheet.
+	
+	* #Return Value:
+    *   '(css_error,~bool)' - (CSS_OK , quirks used flag).
+    */
 	pub fn css_stylesheet_used_quirks(&mut self) -> (css_error,bool) {
 
 	    (CSS_OK,self.stylesheet.quirks_used)
 	}
 
+    /**
+    * #Description:
+    *   Retrieve the title associated with a stylesheet.
+	
+	* #Return Value:
+    *   '(css_error,~str)' - (CSS_OK , title).
+    */
 	pub fn css_stylesheet_get_title(&mut self) -> (css_error,~str) {
 
 	    (CSS_OK,copy self.stylesheet.title)
 	}
 
+    /**
+    * #Description:
+    *   Retrieve the URL associated with a stylesheet.
+	
+	* #Return Value:
+    *   '(css_error,~str)' - (CSS_OK , url).
+    */
 	pub fn css_stylesheet_get_url(&mut self) -> (css_error,~str) {
 
 	    (CSS_OK,copy self.stylesheet.url)
 	}
 
+    /**
+    * #Description:
+    *   Retrieve the language level of a stylesheet.
+	
+	* #Return Value:
+    *   '(css_error,css_language_level)' - (CSS_OK , level).
+    */
 	pub fn css_stylesheet_get_language_level(&mut self) -> 
 	                                (css_error,css_language_level) {
 
 	    (CSS_OK,self.stylesheet.level)  
 	}
 
+    /**
+    * #Description:
+    *   Retrieve the next pending import for the parent stylesheet.
+	* The client must resolve the absolute URL of the imported stylesheet,
+	* using the parent's URL as the base. It must then fetch the imported
+	* stylesheet, and parse it to completion, including fetching any stylesheets
+	* it may import. The resultant sheet must then be registered with the
+	* parent using css_stylesheet_register_import().
+	*
+	* The client must then call this function again, to determine if there
+	* are any further imports for the parent stylesheet, and, if so,
+	* process them as described above.
+	*
+	* If the client is unable to fetch an imported stylesheet, it must
+	* register an empty stylesheet with the parent in its place.
+    
+	* #Return Value:
+    *   '(css_error,Option<~str>,Option<u64>)' - (CSS_OK, URL of imported stylesheet, applicable media types for 
+														imported stylesheet) on success, 
+												(appropriate error, None, None) otherwise.
+    */
 	pub fn css_stylesheet_next_pending_import(&mut self) -> 
 	                            (css_error,Option<~str>,Option<u64>) {
 
@@ -237,6 +329,16 @@ pub impl css {
 	    (CSS_INVALID,None,None) 
 	}
 
+    /**
+    * #Description:
+    *   Register an imported stylesheet with its parent.
+	
+    * #Arguments:
+    *  'import' - Imported sheet.
+    
+	* #Return Value:
+    *   'css_error' - CSS_OK on success, CSS_INVALID if there are no outstanding imports, appropriate error otherwise.
+    */
 	pub fn css_stylesheet_register_import(&mut self, import:Option<@mut css_stylesheet>) 
 	    -> css_error {
 	    	io::println("Entering: css_stylesheet_register_import");

@@ -173,12 +173,16 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' - 
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -397,13 +401,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -548,13 +558,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -724,13 +740,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -785,13 +807,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -938,13 +966,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -1039,13 +1073,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -1172,13 +1212,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -1445,13 +1491,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -1586,13 +1638,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -1680,13 +1738,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -1797,13 +1861,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -2236,13 +2306,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -2306,13 +2382,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -2596,13 +2678,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -2734,13 +2822,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -2955,13 +3049,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -3018,13 +3118,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -3106,13 +3212,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -3219,13 +3331,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -3276,13 +3394,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -3514,13 +3638,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -3574,13 +3704,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -3689,13 +3825,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -3835,13 +3977,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -3906,13 +4054,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -4020,13 +4174,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -4121,13 +4281,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -4227,13 +4393,19 @@ pub impl css_properties {
     /**
 	* #Arguments:
     *  'sheet'  - Stylesheet. 
+
     *  'strings' -  Prop_string
+
     *  'vector' - Vector of tokens to process.
+
     *  'ctx'    - Pointer to vector iteration ctx.
+
     *  'results' -  css_style
+
     * #Return Value:
 	* 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
     * #Post condition:
 	*   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
@@ -4289,11 +4461,15 @@ pub impl css_properties {
 /**
 * #Arguments:
 *  'strings' -  css_propstrings
+
 *  'token' - tokens to process.
+
 * #Return Value:
 * 'value' - Option of u16 (Some(x) if CSS_OK else None)
+
 * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
+
 * #Post condition:
 *   ctx is updated with the next token to process.
 *   If the input is invalid, then ctx remains unchanged.
@@ -4355,7 +4531,9 @@ pub fn css__parse_list_style_type_value(strings: &mut ~css_propstrings , token:&
 /**
 * #Arguments:
 *  'strings' -  css_propstrings
+
 *  'ident' - IDENT to consider.
+
 * #Return Value:
 * 	True if IDENT is reserved, false otherwise.
 */
@@ -4373,8 +4551,11 @@ pub fn font_family_reserved(strings:&mut ~css_propstrings, ident:&@css_token) ->
 /**
 * #Arguments:
 *  'strings' -  Propstrings
+
 *  'token' - Token to consider.
+
 *  'first' - Whether the token is the first.
+
 * #Return Value:
 * 	Bytecode value.
 */
@@ -4535,8 +4716,11 @@ pub fn parse_system_font(sheet: @mut css_stylesheet , strings:&mut ~css_propstri
 /**
 * #Arguments:
 *  'strings' -  css_propstrings.
+
 *  'ident' - IDENT to consider.
+
 *  'system_font' - css_system_font.
+
 * #Return Value:
 * 	'bool' - True if IDENT is reserved, false otherwise.
 */
@@ -4551,8 +4735,11 @@ pub fn voice_family_reserved(strings: &mut ~css_propstrings, ident:&@css_token) 
 /**
 * #Arguments:
 *  'strings' -  css_propstrings.
+
 *  'token' - token to consider.
+
 *  'system_font' - css_system_font.
+
 * #Return Value:
 * 	'u32' - Bytecode value.
 */
@@ -4588,14 +4775,20 @@ pub fn voice_family_value(strings: &mut ~css_propstrings, token:&@css_token, fir
 /**
 * #Arguments:
 *  'sheet' -  Stylesheet.
+
 *  'strings' -  css_propstrings.
+
 *  'vector' - Vector of tokens to process.
+
 *  'ctx' - Pointer to vector iteration ctx.
+
 *  'reserved' - 
+
 * #Return Value:
 * 	'result' - Option of ~str (Some(x) if CSS_OK else None).
 *	'css_error' - CSS_OK on success, 
 			CSS_INVALID if the input is not valid
+
 * #Post Condition:
 * 	ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
@@ -4624,13 +4817,18 @@ pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings:
 /**
 * #Arguments:
 *  'strings' -  css_propstrings.
+
 *  'vector' - Vector of tokens to process.
+
 *  'ctx' - Pointer to vector iteration ctx.
+
 *  'reserved' - Callback to determine if an identifier is reserved.
+
 * #Return Value:
 * 	'result' - Option of ~str (Some(x) if CSS_OK else None).
 *	'css_error' - CSS_OK on success, 
 			CSS_INVALID if the input is not valid
+
 * #Post Condition:
 * 	ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
@@ -4692,15 +4890,23 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
 /**
 * #Arguments:
 *  'sheet' -  Stylesheet.
+
 *  'strings' -  css_propstrings.
+
 *  'vector' - Vector of tokens to process.
+
 *  'ctx' - Pointer to vector iteration ctx.
+
 *  'reserved' - 
+
 *  'get_value' - Callback to retrieve bytecode value for a token.
+
 *  'style' - 
+
 * #Return Value:
 *	'css_error' - CSS_OK on success, 
 			CSS_INVALID if the input is not valid
+
 * #Post Condition:
 * 	ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
@@ -4811,14 +5017,21 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
 /**
 * #Arguments:
 *  'sheet' -  Stylesheet.
+
 *  'strings' -  css_propstrings.
+
 *  'vector' - Vector of tokens to process.
+
 *  'ctx' - Pointer to vector iteration ctx.
+
 *  'result_style' - resulting style.
+
 *  'side' - 
+
 * #Return Value:
 *	'css_error' - CSS_OK on success, 
 			CSS_INVALID if the input is not valid
+
 * #Post Condition:
 * 	ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
@@ -4942,13 +5155,19 @@ Moved Autogenerated Parse/Properties functions for removing circular dependency
 /**
 * #Arguments:
 *  'sheet' -  Stylesheet.
+
 *  'strings' -  css_propstrings.
+
 *  'vector' - Vector of tokens to process.
+
 *  'ctx' - Pointer to vector iteration ctx.
+
 *  'result' - resulting style.
+
 * #Return Value:
 *	'css_error' - CSS_OK on success, 
 			CSS_INVALID if the input is not valid
+
 * #Post Condition:
 * 	ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
@@ -4963,14 +5182,20 @@ pub fn css__parse_border_top(sheet:@mut css_stylesheet, strings:&mut ~css_propst
 /**
 * #Arguments:
 *  'sheet' -  Stylesheet.
+
 *  'strings' -  css_propstrings.
+
 *  'vector' - Vector of tokens to process.
+
 *  'ctx' - Pointer to vector iteration ctx.
+
 *  'result' - resulting style.
+
 *  'side' - 
 * #Return Value:
 *	'css_error' - CSS_OK on success, 
 			CSS_INVALID if the input is not valid
+
 * #Post Condition:
 * 	ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
@@ -4985,14 +5210,21 @@ pub fn css__parse_border_bottom(sheet:@mut css_stylesheet, strings:&mut ~css_pro
 /**
 * #Arguments:
 *  'sheet' -  Stylesheet.
+
 *  'strings' -  css_propstrings.
+
 *  'vector' - Vector of tokens to process.
+
 *  'ctx' - Pointer to vector iteration ctx.
+
 *  'result' - resulting style.
+
 *  'side' - 
+
 * #Return Value:
 *	'css_error' - CSS_OK on success, 
 			CSS_INVALID if the input is not valid
+
 * #Post Condition:
 * 	ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
@@ -5007,14 +5239,21 @@ pub fn css__parse_border_left(sheet:@mut css_stylesheet, strings:&mut ~css_props
 /**
 * #Arguments:
 *  'sheet' -  Stylesheet.
+
 *  'strings' -  css_propstrings.
+
 *  'vector' - Vector of tokens to process.
+
 *  'ctx' - Pointer to vector iteration ctx.
+
 *  'result' - resulting style.
+
 *  'side' - 
+
 * #Return Value:
 *	'css_error' - CSS_OK on success, 
 			CSS_INVALID if the input is not valid
+
 * #Post Condition:
 * 	ctx is updated with the next token to process
         If the input is invalid, then \a ctx remains unchanged.
