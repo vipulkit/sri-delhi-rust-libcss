@@ -259,9 +259,9 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
                      });
         }
         // Not Needed
-        else if ( ctx.inexp ) {
-          css__parse_expected(ctx, data.slice(1,data.len()-1) );
-        }
+       // else if ( ctx.inexp ) {
+       //   css__parse_expected(ctx, data.slice(1,data.len()-1) );
+       // }
     }
     true 
 }
@@ -322,7 +322,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 	let mut valuelen = 0;
 	let mut depth:u32 = 0;
 	let mut target = false;
-	let mut lwc_ins = ctx.lwc_ins.clone() ;
+	let mut lwc_ins = unsafe { ctx.lwc_instance.clone() };
 
 	/* ' '{depth+1} [ <element> '*'? | <attr> ]
 	 * 
@@ -338,12 +338,12 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 
 	/* Get element/attribute name */
 	let name_begin = p;
-	while ( (p < end) && (data[p] != '=' as u8) && (data[p] != '*') as u8  && (isspace(data[p]) == false) ){
+	while ( (p < end) && (data[p] != '=' as u8) && (data[p] != '*' as u8)  && (isspace(data[p]) == false) ){
 		namelen += 1;
 		p += 1;
 	}
 
-	//let mut name = data.slice(name_begin,name_begin+namelen);
+	let mut name = data.slice(name_begin,name_begin+namelen);
 
 	/* Skip whitespace */
 	while (p < end && isspace(data[p])){
@@ -571,7 +571,7 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> u
 		}	
 	}
 	
-	ctx.media = result as u32 ;
+	ctx.media = result as u64 ;
 	len
 }
 
