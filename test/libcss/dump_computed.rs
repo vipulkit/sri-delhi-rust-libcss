@@ -11,6 +11,7 @@ use css::include::properties::*;
 use css::include::fpmath::*;
 
 fn dump_css_fixed(f: css_fixed , ptr: &mut ~str){
+    io::println(fmt!("\n Entering dump_css_fixed ")) ;
     let abs_f: u32;
     if f < 0 {
         abs_f = -f as u32;
@@ -18,7 +19,7 @@ fn dump_css_fixed(f: css_fixed , ptr: &mut ~str){
     else {
         abs_f = f as u32;
     }
-    let mut unitpart:u32 = abs_f >> 0;
+    let mut unitpart:u32 = abs_f >> 10;
     let mut fracpart:u32 = ((abs_f & 0x3ff)*1000 + 500)/(1 << 10);
     let mut flen: uint = 0;
     let mut tmp: ~[char] = ~[];
@@ -62,6 +63,7 @@ fn dump_css_fixed(f: css_fixed , ptr: &mut ~str){
 }
 
 fn dump_css_number(val: css_fixed , ptr: &mut ~str){
+      io::println(fmt!("\n Entering dump_css_number ")) ;
     if css_int_to_fixed((val >> 10) as int) == val {
         str::push_str(ptr , fmt!("%?" , val >> 10));
     }
@@ -71,6 +73,7 @@ fn dump_css_number(val: css_fixed , ptr: &mut ~str){
 }
 
 fn dump_css_unit(val: css_fixed , unit: css_unit , ptr: &mut ~str) {
+      io::println(fmt!("\n Entering dump_css_unit ")) ;
     dump_css_number(val, ptr);
 
     match unit {
@@ -127,6 +130,7 @@ fn dump_css_unit(val: css_fixed , unit: css_unit , ptr: &mut ~str) {
 
 
 pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
+      io::println(fmt!("\n Entering dump_computed_style ")) ;
     let ptr = buf;
     let mut val:u8;
 

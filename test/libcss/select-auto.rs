@@ -56,7 +56,7 @@ pub struct line_ctx {
 
 	sheets:~[@mut sheet_ctx],
 
-	media:u32,
+	media:u64,
 	pseudo_element:u32,
 	target:Option<@mut node>,
 	
@@ -153,12 +153,13 @@ pub fn main() {
 }
 
 pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
+
 	let mut error : css_error ;
 	let mut len : uint ; 
-	data[0] = '0'  as u8;
 	if ( data[0] == ('#' as u8) ) {
+		io::println(fmt!("# encountered "));
 	    if( ctx.intree ) {
-
+	    	io::println(fmt!("ctx intree"));
             if( data.len() >= 7 && is_string_caseless_equal(data.slice(1,7), "errors") ){
                 ctx.intree = false;
                 ctx.insheet = false;
@@ -176,8 +177,8 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
             }
         }
         else if (ctx.insheet) {
-
-            if(data.len() >= 6 && is_string_caseless_equal(data.slice(1,6), "errors")){
+        	io::println(fmt!("ctx insheet"));
+            if(data.len() >= 7 && is_string_caseless_equal(data.slice(1,7), "errors")){
                 len = unsafe { ctx.sheets.len() -1 } ;
                 assert!( 
                         match ctx.sheets[len].sheet.css_stylesheet_data_done() {
@@ -189,9 +190,9 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
                 ctx.inerrors = true ;
                 ctx.inexp = false;
             }
-            else if data.len() >= 2 && is_string_caseless_equal(data.slice(1,2), "ua") ||
-                        data.len() >= 4 && is_string_caseless_equal(data.slice(1,4), "user") ||
-                        data.len() >= 6 && is_string_caseless_equal(data.slice(1,6), "author") {
+            else if data.len() >= 3 && is_string_caseless_equal(data.slice(1,3), "ua") ||
+                        data.len() >= 5 && is_string_caseless_equal(data.slice(1,5), "user") ||
+                        data.len() >= 7 && is_string_caseless_equal(data.slice(1,7), "author") {
                 
                 len = unsafe { ctx.sheets.len() -1 } ;
                 assert!( 
@@ -212,16 +213,18 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
             }
         }
         else if (ctx.inerrors) {
+        	io::println(fmt!("in ctx errors"));
             ctx.intree = false;
             ctx.insheet = false;
             ctx.inerrors = false;
             ctx.inexp = true;
         }
         else if (ctx.inexp) {
+        	io::println(fmt!("in ctx inexp"));
             /* This marks end of testcase, so run it */
             run_test(ctx);
 	
-	    ctx.expused = 0;
+	    	ctx.expused = 0;
 
             ctx.intree = false;
             ctx.insheet = false;
@@ -230,8 +233,9 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
         }
         else {
             /* Start state */
-            if(data.len()>=4 && is_string_caseless_equal(data.slice(1,4), "tree")) {
-
+            io::println(fmt!("in ctx tree ==== "));
+            if(data.len()>=5 && is_string_caseless_equal(data.slice(1,5), "tree")) {
+            	io::println(fmt!("entering for parse tree"));
                 css__parse_tree(ctx, data, 5 );
                 ctx.intree = true;
                 ctx.insheet = false;
@@ -255,9 +259,9 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
                      });
         }
         // Not Needed
-        //else if ( ctx.inexp ) {
-        //  css__parse_expected(ctx, data );
-        //}
+        else if ( ctx.inexp ) {
+          css__parse_expected(ctx, data.slice(1,data.len()-1) );
+        }
     }
     true 
 }
@@ -274,13 +278,15 @@ pub fn isspace (ch:u8)-> bool {
 }
 
 pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
+
+	io::println(fmt!("\n Entering css__parse_tree ")) ;
 	let mut p = index;
 	let mut end = data.len() ;
 	//size_t left;
 
 	/* [ <media_list> <pseudo>? ] ? */
 
-	ctx.media = CSS_MEDIA_ALL as u32;
+	ctx.media = CSS_MEDIA_ALL as u64;
 	ctx.pseudo_element = CSS_PSEUDO_ELEMENT_NONE as u32;
 
 	/* Consume any leading whitespace */
@@ -307,6 +313,7 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
 
 pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 	
+	io::println(fmt!("\n Entering css__parse_tree_data ")) ;
 	let mut p = 0;
 	let end = data.len();
 
@@ -315,7 +322,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 	let mut valuelen = 0;
 	let mut depth:u32 = 0;
 	let mut target = false;
-	let mut lwc_ins = lwc();
+	let mut lwc_ins = ctx.lwc_ins.clone() ;
 
 	/* ' '{depth+1} [ <element> '*'? | <attr> ]
 	 * 
@@ -331,12 +338,12 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 
 	/* Get element/attribute name */
 	let name_begin = p;
-	while (p < end && data[p] != '=' as u8 && data[p] != '*' as u8  && isspace(data[p]) == false) {
+	while ( (p < end) && (data[p] != '=' as u8) && (data[p] != '*') as u8  && (isspace(data[p]) == false) ){
 		namelen += 1;
 		p += 1;
 	}
 
-	let mut name = data.slice(name_begin,name_begin+namelen);
+	//let mut name = data.slice(name_begin,name_begin+namelen);
 
 	/* Skip whitespace */
 	while (p < end && isspace(data[p])){
@@ -345,7 +352,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 	
 	let mut value_begin = 0;
 
-	if (p < end && data[p] == '=' as u8 ) {
+	if (p < end && (data[p] == ('=' as u8)) ) {
 		/* Attribute value */
 		p += 1;
 
@@ -355,7 +362,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 			valuelen += 1;
 			p += 1;
 		}
-	} else if (p < end && data[p] == '*' as u8 ) {
+	} else if (p < end && (data[p] == ('*' as u8)) ) {
 		/* Element is target node */
 		target = true;
 	}
@@ -439,7 +446,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 }
 
 pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
-
+	io::println(fmt!("\n Entering css__parse_sheet ")) ;
     let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
     let mut p : uint = index;
     let end : uint = data.len();
@@ -483,7 +490,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
 
 
 pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> uint {
-
+	io::println(fmt!("\n Entering css__parse_media_list ")) ;
 	// ' '	(0x20)	space (SPC)
 	// '\t'	(0x09)	horizontal tab (TAB)
 	// '\n'	(0x0a)	newline (LF)
@@ -570,6 +577,7 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> u
 
 pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> uint {
 	
+	io::println(fmt!("\n Entering css__parse_pseudo_list ")) ;
 	let mut string = data.slice(index, data.len()).to_owned();
     *data = data.slice(0,index).to_owned();
 
@@ -636,6 +644,7 @@ pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> u
 //}
 
 pub fn run_test( ctx:@mut line_ctx) {
+	io::println(fmt!("\n Entering run test ")) ;
     let mut select: ~css_select_ctx;
     let mut results: css_select_results;
 
@@ -1462,6 +1471,7 @@ fn ua_default_for_property(property:u32, hint:@mut css_hint ) -> css_error {
 
 
 fn compute_font_size(parent: Option<@mut css_hint>, size: Option<@mut css_hint>) -> css_error {
+	io::println(fmt!("\n Entering compute ")) ;
 	let mut parent_value:@mut css_hint;
 	let mut size_val : @mut css_hint;
 	let mut sizes:~[@mut css_hint_length] =
