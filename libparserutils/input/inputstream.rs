@@ -19,7 +19,17 @@ pub struct inputstream {
     priv input: ~filter, // Charset conversion filter
     priv csdetect: Option<parserutils_charset_detect_func>
 }
-
+ /**
+    * Create an input stream
+    * #Arguments:
+    *  'encoding' - The encoding source of stream and filter.
+    *  'charset_src'  -  Some of Document charset, or None to autodetect. 
+    *  'csdetect_instance' - Charset detection function to auto-detect charset and encoding, or None
+    * #Return Value:
+    * '(Option<~inputstream> , parserutils_error)' - 
+    *       Option<~inputstream>  => if input stream is created successfully Some(input stream) else None
+    *       parserutils_error => PARSERUTILS_OK if no errors, otherwise appropriate error is returned
+    */
 pub fn inputstream(encoding: Option<~str>, charset_src: Option<int>, csdetect_instance: Option<parserutils_charset_detect_func>) ->  (Option<~inputstream> , parserutils_error) {
 
     let mut stream: ~inputstream;
@@ -58,9 +68,18 @@ pub fn inputstream(encoding: Option<~str>, charset_src: Option<int>, csdetect_in
     }
     (Some(stream) , PARSERUTILS_OK)
 }
-
+//////////////////////////////////////////////////////////////////
+// Start of input stream internal functions
+//////////////////////////////////////////////////////////////////
 impl inputstream {
 
+/**
+    * Destroy an input stream
+    * #Arguments:
+    *  'self' - The input stream instance on which the function is called.
+    * #Return Value:
+    * 'parserutils_error' - return PARSERUTILS_OK on success, appropriate error otherwise
+    */
     pub fn parserutils_inputstream_destroy(&mut self)-> parserutils_error {
         self.input.parserutils__filter_destroy();
         self.utf8 = ~[] ;
@@ -74,6 +93,14 @@ impl inputstream {
         PARSERUTILS_OK
     }
 
+ /**
+    * Append data to an input stream
+    * #Arguments:
+    *  'self' - The input stream instance on which the function is called, to which data is appended
+    *  'data'  -  Data to append (in document charset), or ~[] to flag EOF 
+    * #Return Value:
+    * 'parserutils_error' - return PARSERUTILS_OK on success, appropriate error otherwise
+    */
     pub fn parserutils_inputstream_append(&mut self, data: &[u8]) -> parserutils_error {
         // io::println("Entering: parserutils_inputstream_append");
         if data.len()==0 {
@@ -84,6 +111,14 @@ impl inputstream {
         PARSERUTILS_OK
     }
 
+/**
+    * Insert data into stream at current cursor location
+    * #Arguments:
+    *  'self' - The input stream instance on which the function is called, to which data is appended after the current cursor position
+    *  'data'  -  Data to insert (UTF-8 encoded) 
+    * #Return Value:
+    * 'parserutils_error' - return PARSERUTILS_OK on success, appropriate error otherwise
+    */
     pub fn parserutils_inputstream_insert(&mut self, data: &[u8])-> parserutils_error {
         // io::println("Entering: parserutils_inputstream_insert");
         if data.len()==0 && (self.utf8.len() < self.cursor) {
@@ -97,10 +132,38 @@ impl inputstream {
         PARSERUTILS_OK
     }
 
+/**
+    * Read the encoding scheme and source charset of the input stream
+    * #Arguments:
+    *  'self' - The input stream instance on which the function is called, for which the source charset is to be determined
+    * #Return Value:
+    * '(Option<~str>,int)' - 
+    *           Option<~str> => the encoding scheme read
+    *           int => the source charset ..
+    *                        CSS_CHARSET_DEFAULT=0,
+    *                        CSS_CHARSET_REFERRED=1,
+    *                        CSS_CHARSET_METADATA=2,
+    *                        CSS_CHARSET_DOCUMENT=3,
+    *                        CSS_CHARSET_DICTATED=4
+    */
     pub fn parserutils_inputstream_read_charset(&mut self)-> (Option<~str>,int) {
         // io::println("Entering: parserutils_inputstream_read_charset");
         (arc::get(&self.input.instance).parserutils_charset_mibenum_to_name(self.mibenum),self.encsrc)
     }
+
+/**
+    *  Change the source charset of the input stream
+    * #Arguments:
+    *  'self' - The input stream instance on which the function is called, for which the source charset is to be changed
+    *  'enc'  - the encoding scheme to be updated
+    *  'source' - the source charset to be updated
+    * #Return Value:
+    * return PARSERUTILS_OK on success,
+    *         PARSERUTILS_BADPARM on invalid parameters,
+    *         PARSERUTILS_INVALID if called after data has been read from stream,
+    *         PARSERUTILS_BADENCODING if the encoding is unsupported,
+    *         PARSERUTILS_NOMEM on memory exhaustion.
+    */
 
     pub fn parserutils_inputstream_change_charset(&mut self, enc:~str, source:int)-> parserutils_error {
         // io::println("Entering: parserutils_inputstream_change_charset");
@@ -130,6 +193,13 @@ impl inputstream {
         filter_set_encoding_result
     }
 
+/**
+    *  Strip a BOM from a buffer in the given encoding
+    * #Arguments:
+    *  'self' - The input stream instance on which the function is called, from which BOM is to be removed
+    * #Return Value:
+    * return PARSERUTILS_OK on success, appropriate error otherwise
+    */
     pub fn parserutils_inputstream_strip_bom(&mut self)-> parserutils_error {
         // io::println("Entering: parserutils_inputstream_strip_bom");
         let UTF32_BOM_LEN =4;
@@ -230,11 +300,28 @@ impl inputstream {
         return PARSERUTILS_OK;
     }
 
+/**
+    *  determines if the data in the input stream passed is of valid ascii type
+    * #Arguments:
+    *  'self' - The input stream instance on which the function is called, from which BOM is to be removed
+    *   'data' - the array whose elements are to be verified
+    * #Return Value:
+    *   'bool' - true if data is valid ascii 
+    */
     pub fn IS_ASCII(&mut self , data:u8) -> bool {
         //io::println(fmt!("Entering: IS_ASCII:: data == %?", data));
         ((data & 0x80) == 0)
     }
 
+
+/**
+    *  Advance the stream's current position
+    * #Arguments:
+    *  'self' - The input stream instance on which the function is called, whose cursor position is to be updated
+    *  'bytes' - the number of bytes to advance
+    * #Return Value:
+    * return PARSERUTILS_OK on success, appropriate error otherwise
+    */
     pub fn parserutils_inputstream_advance(&mut self, bytes:uint) -> parserutils_error {
         // io::println("Entering: parserutils_inputstream_advance");
         if bytes > (self.utf8.len() - self.cursor) {
@@ -249,6 +336,14 @@ impl inputstream {
         PARSERUTILS_OK
     }
 
+
+/**
+    *  Refill the UTF-8 buffer from the raw buffer of input stream
+    * #Arguments:
+    *  'self' - The input stream instance on which the function is called, whose utf8 buffer is refilled with raw buffer
+    * #Return Value:
+    *   return PARSERUTILS_OK on success, appropriate error otherwise
+    */
     pub fn parserutils_inputstream_refill_buffer(&mut self) -> parserutils_error {
         // io::println("Entering: parserutils_inputstream_refill_buffer");
         if (self.done_first_chunk == false) {
@@ -353,7 +448,26 @@ impl inputstream {
         return PARSERUTILS_OK;
     }
 
-
+/**
+    *  Look at the character in the stream that starts at
+    * offset bytes from the cursor (slow version) and 
+    * return data from that offset and length of data
+    * #Arguments:
+    *  'self' - The input stream instance on which the function is called,
+    *           whose utf8 buffer is refilled with raw buffer
+    *  'offset' - Byte offset of start of character
+    * #Return Value:
+    *   '(Option<(~[u8],uint)>,parserutils_error)'
+    *          ~[u8] => array of data to return
+    *          uint  => length of character
+    *          parserutils_error => 
+    *               PARSERUTILS_OK on success,
+    *               _NEEDDATA on reaching the end of available input,
+    *               _EOF on reaching the end of all input,
+    *               _BADENCODING if the input cannot be decoded,
+    *               _NOMEM on memory exhaustion,
+    *               _BADPARM if bad parameters are passed.
+    */
     pub fn parserutils_inputstream_peek_slow(&mut self , offset: uint)-> (Option<(~[u8],uint)>,parserutils_error) {
         //io::println("Entering: parserutils_inputstream_peek_slow");
         let len: uint;
@@ -410,7 +524,28 @@ impl inputstream {
 
     }
 
- 
+
+
+/**
+    *  Look at the character in the stream that starts at
+    * offset bytes from the cursor (slow version) and 
+    * return data from that offset and length of data
+    * #Arguments:
+    *  'self' - The input stream instance on which the function is called,
+    *           whose utf8 buffer is refilled with raw buffer
+    *  'offset' - Byte offset of start of character
+    * #Return Value:
+    *   '(Option<(~[u8],uint)>,parserutils_error)'
+    *          ~[u8] => array of data to return
+    *          uint  => length of character
+    *          parserutils_error => 
+    *               PARSERUTILS_OK on success,
+    *               _NEEDDATA on reaching the end of available input,
+    *               _EOF on reaching the end of all input,
+    *               _BADENCODING if the input cannot be decoded,
+    *               _NOMEM on memory exhaustion,
+    *               _BADPARM if bad parameters are passed.
+    */ 
     pub fn parserutils_inputstream_peek(&mut self, offset: uint)-> (Option<(~[u8],uint)>,parserutils_error) {
         //io::println("Entering: parserutils_inputstream_peek");
         let mut ptr:~[u8];
