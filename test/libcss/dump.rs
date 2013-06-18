@@ -18,7 +18,6 @@ use wapcaplet::*;
  */
 // pub static opcode_names: ~[~str] = ~[
 pub fn opcode_names() -> ~[~str] {
-    io::println("Entering : opcode_names");
     ~[
         ~"azimuth",
         ~"background-attachment",
@@ -482,7 +481,6 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
     
     io::println("Entering: dump_bytecode");
     let mut bytecode = copy style.bytecode;
-    io::println(fmt!("bytecode == %?" , bytecode));
     let mut op: css_properties_e;
     let mut value: u32;
     let opcode_names = opcode_names();
@@ -517,7 +515,6 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             str::push_str(ptr , &"inherit");
         }
         else {
-            io::println("Entering: else of isInherit(opv)");
             value = getValue(opv) as u32;
             io::println(fmt!("dump_bytecode:: value == %?" , value));
 
@@ -1193,18 +1190,20 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                     while value as int != COUNTER_INCREMENT_NONE as int {
                         let snum = bytecode[iterator];
-                        iterator += 1;
+                        
                         let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
 
+                        iterator += 1;
+                        
                         if option_string.is_some() {
                             str::push_str(ptr , option_string.unwrap());
                         }
-
-                        let value = bytecode[iterator] as i32;
+                        ptr.push_char(' ');
+                        let val = bytecode[iterator] as i32;
                         iterator += 1;
-                        dump_number(value , ptr);
+                        dump_number(val , ptr);
 
-                        let value = bytecode[iterator];
+                        value = bytecode[iterator] as u32;
                         iterator += 1;
                         
                         if value as int != COUNTER_INCREMENT_NONE as int {

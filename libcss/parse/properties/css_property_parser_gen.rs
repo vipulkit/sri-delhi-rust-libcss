@@ -117,7 +117,7 @@ pub fn output_token_type_check(fp:@Writer, do_token_check:bool, IDENT:~[keyval],
                   
         if !vec::is_empty(IDENT) {
             str::push_str(&mut output, "\tif ");
-            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_IDENT => true, _ => false})");
+            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_IDENT => false, _ => true})");
             prev = true;
         }
         if !vec::is_empty(URI) {
@@ -158,9 +158,12 @@ pub fn output_ident(fp:@Writer, only_ident:bool, parseid:&keyval, IDENT:~[keyval
         }
         str::push_str(&mut output, fmt!("\tstrings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), %s as uint) {\n",i.key));
         if i.key == ~"INHERIT" {
+            str::push_str(&mut output, fmt!("\t\tio::println(\"Entering: inherit case\");\n"));
             str::push_str(&mut output, fmt!("\t\tcss_stylesheet::css_stylesheet_style_inherit(result, %s)\n", parseid.val));
+
         } 
         else {
+            str::push_str(&mut output, fmt!("\t\tio::println(\"Entering: none case\");\n"));
             str::push_str(&mut output, fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, %s)\n",  parseid.val, i.val));
         }
         str::push_str(&mut output,"\t} \n\telse ");
@@ -297,12 +300,14 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
         let mut output : ~str = ~"{\n"; 
             
             str::push_str(&mut output,fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s);\n", parseid.val,kvlist[0].val));
-            str::push_str(&mut output,"\t\twhile (*ctx < vector.len()) && (match (&vector[*ctx]).token_type {CSS_TOKEN_IDENT => true, _ => false}) {\n");
-            str::push_str(&mut output,"\t\t\ttoken=&vector[*ctx];\n");
-            str::push_str(&mut output,"\t\t\tlet mut num:css_fixed;\n");
-            str::push_str(&mut output,"\t\t\tlet mut pctx:uint;\n\n");
+            str::push_str(&mut output,"\t\t\tio::println(fmt!(\"*ctx == %? , vector.len() == %?\" , *ctx , vector.len()));\n");
             str::push_str(&mut output,"\t\t\tlet mut token_null=false;\n\n");
+            str::push_str(&mut output,"\t\twhile !token_null && (match token.token_type {CSS_TOKEN_IDENT => true, _ => false}) {\n");
+            str::push_str(&mut output,"\t\t\tio::println(\"Entering: while (*ctx < vector.len()) && (match\");\n");
+            str::push_str(&mut output,"\t\t\tlet mut num:css_fixed = 0;\n");
+            str::push_str(&mut output,"\t\t\tlet mut pctx:uint;\n\n");
             str::push_str(&mut output,"\t\t\tlet snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone()));\n");
+            str::push_str(&mut output,"\t\t\tio::println(fmt!(\"snumber== %?\" , snumber));\n");
             str::push_str(&mut output,"\t\t\tcss_stylesheet::css__stylesheet_style_append(result, snumber as u32);\n"); 
             str::push_str(&mut output,"\t\t\tconsumeWhitespace(vector, ctx);\n\n");
             str::push_str(&mut output,"\t\t\tpctx = *ctx;\n");
@@ -314,12 +319,11 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             str::push_str(&mut output,"\t\t\t\t*ctx += 1 //Iterate\n");
             str::push_str(&mut output,"\t\t\t}\n");
             str::push_str(&mut output,"\t\t\tif !token_null && (match token.token_type { CSS_TOKEN_NUMBER => true, _ => false}) {\n");
-            str::push_str(&mut output,"\t\t\t\tlet (ret_num, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);\n");
+            str::push_str(&mut output,"\t\t\t\tlet (num, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);\n");
             str::push_str(&mut output,"\t\t\t\tif consumed != lwc_string_length(token.idata.get_ref().clone()) {\n");
             str::push_str(&mut output,"\t\t\t\t\t*ctx = orig_ctx;\n");
             str::push_str(&mut output,"\t\t\t\t\treturn CSS_INVALID\n");
             str::push_str(&mut output,"\t\t\t\t}\n");
-            str::push_str(&mut output,"\t\t\t\tnum = css_int_to_fixed(ret_num as int);\n\n");
             str::push_str(&mut output,"\t\t\t\tconsumeWhitespace(vector, ctx);\n\n");
             str::push_str(&mut output,"\t\t\t\tpctx = *ctx;\n");
             str::push_str(&mut output,"\t\t\t\tif *ctx >= vector.len() {\n");
