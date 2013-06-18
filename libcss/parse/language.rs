@@ -708,73 +708,72 @@ pub impl css_language {
         io::println("Entering: parseMediaList");
         let mut ret:u64 = 0;
 
-        if *ctx >= vector.len() {
-            return CSS_INVALID
-        }
-
-        let mut token = &vector[*ctx];
-        *ctx += 1; //Iterate
+        if *ctx < vector.len() {
                 
-        loop {
-            if match token.token_type { CSS_TOKEN_IDENT => false, _ => true} {
-                return CSS_INVALID
-            }
+			let mut token = &vector[*ctx];
+			*ctx += 1; //Iterate
+					
+			loop {
+				if match token.token_type { CSS_TOKEN_IDENT => false, _ => true} {
+					return CSS_INVALID
+				}
 
-            if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), AURAL as uint) {
-                ret |= CSS_MEDIA_AURAL as u64;
-            } 
-            else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BRAILLE as uint) {
-                ret |= CSS_MEDIA_BRAILLE as u64;
-            }
-            else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), EMBOSSED as uint) {
-                ret |= CSS_MEDIA_EMBOSSED as u64;
-            }
-            else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HANDHELD as uint) {
-                ret |= CSS_MEDIA_HANDHELD as u64;
-            }
-            else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), PRINT as uint) {
-                ret |= CSS_MEDIA_PRINT as u64;
-            }
-            else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), PROJECTION as uint) {
-                ret |= CSS_MEDIA_PROJECTION as u64;
-            }
-            else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SCREEN as uint) {
-               ret |= CSS_MEDIA_SCREEN as u64;
-            }
-            else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SPEECH as uint) {
-                ret |= CSS_MEDIA_SPEECH as u64;
-            }
-            else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), TTY as uint) {
-                ret |= CSS_MEDIA_TTY as u64;
-            }
-            else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), TV as uint) {
-                ret |= CSS_MEDIA_TV as u64;
-            }
-            else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ALL as uint) {
-                ret |= CSS_MEDIA_ALL as u64;
-            }
-            else {
-                return CSS_INVALID;   
-            }
-                
-            consumeWhitespace(vector, ctx);
+				if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), AURAL as uint) {
+					ret |= CSS_MEDIA_AURAL as u64;
+				} 
+				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BRAILLE as uint) {
+					ret |= CSS_MEDIA_BRAILLE as u64;
+				}
+				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), EMBOSSED as uint) {
+					ret |= CSS_MEDIA_EMBOSSED as u64;
+				}
+				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HANDHELD as uint) {
+					ret |= CSS_MEDIA_HANDHELD as u64;
+				}
+				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), PRINT as uint) {
+					ret |= CSS_MEDIA_PRINT as u64;
+				}
+				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), PROJECTION as uint) {
+					ret |= CSS_MEDIA_PROJECTION as u64;
+				}
+				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SCREEN as uint) {
+				   ret |= CSS_MEDIA_SCREEN as u64;
+				}
+				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SPEECH as uint) {
+					ret |= CSS_MEDIA_SPEECH as u64;
+				}
+				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), TTY as uint) {
+					ret |= CSS_MEDIA_TTY as u64;
+				}
+				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), TV as uint) {
+					ret |= CSS_MEDIA_TV as u64;
+				}
+				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ALL as uint) {
+					ret |= CSS_MEDIA_ALL as u64;
+				}
+				else {
+					return CSS_INVALID;   
+				}
+					
+				consumeWhitespace(vector, ctx);
 
-            if *ctx >= vector.len() {
-               break;
-            }
+				if *ctx >= vector.len() {
+				   break;
+				}
 
-            token = &vector[*ctx];
-            *ctx += 1; //Iterate
-            
+				token = &vector[*ctx];
+				*ctx += 1; //Iterate
+				
 
-            if !tokenIsChar(token, ',') {
-                return CSS_INVALID;
-            }
-                
+				if !tokenIsChar(token, ',') {
+					return CSS_INVALID;
+				}
+					
 
-            consumeWhitespace(vector, ctx);
-        }
-
+				consumeWhitespace(vector, ctx);
+			}
+		}
+		
         /* If, after parsing the media list, we still have no media, 
          * then it must be ALL. */
         if ret == 0 {
