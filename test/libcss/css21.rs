@@ -60,21 +60,20 @@ fn css(file_name: ~str) {
     }
     buf = r.read_bytes(len as uint);
     let error = css.css_stylesheet_append_data(buf);
-    // io::println(fmt!("error from css_stylesheet_append_data: %?" , error));
     match error {
         CSS_OK | CSS_NEEDDATA => {},
         _ => {assert!(false);}
     }
 
     let mut error = css.css_stylesheet_data_done();
-    // io::println(fmt!("error from css_stylesheet_data_done: %?" , error));
+
+
     match error {
         CSS_OK | CSS_IMPORTS_PENDING => {},
         _ => {assert!(false);}
     }
 
     loop {
-        // io::println(fmt!("error from loop: %?" , error));
         match error {
             CSS_IMPORTS_PENDING => {
                 let (error1 , option_url , _) = css.css_stylesheet_next_pending_import();
@@ -88,14 +87,14 @@ fn css(file_name: ~str) {
                             CSS_OK => {},
                             _ => {assert!(false);}
                         }
-                        let err_register = css_import.css_stylesheet_register_import(Some(css_import.stylesheet));
+                        let err_register = css.css_stylesheet_register_import(Some(css_import.stylesheet));
                         match err_register {
                             CSS_OK => {},
                             _ => {assert!(false);}
                         }
                         error = CSS_IMPORTS_PENDING;
                     } 
-                    CSS_INVALID =>{},
+                    CSS_INVALID =>{break;},
                     _ => {assert!(false);}
                 }
             },
