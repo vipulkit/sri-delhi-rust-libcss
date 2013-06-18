@@ -89,11 +89,9 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
             let data = lwc_string_data(token.idata.get_ref().clone());
 
             let (unit , result) = css__parse_unit_keyword(data , consumed_index);
-            io::println(fmt!("css__parse_unit_specifier:: result == %?", result));
             match result {
                 CSS_OK => {},
                 _ => {
-                    io::println("Exiting: css__parse_unit_specifier (1)");
                     *ctx = orig_ctx;
                     return (None , None , result);
                 }
@@ -433,10 +431,10 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
             return (Some(ret_value) , Some(ret_result) , CSS_OK);
         }
 
-        let (_ , error) = css__parse_named_color(sheet , strings , token.idata.get_ref().clone());
+        let (ret_result , error) = css__parse_named_color(sheet , strings , token.idata.get_ref().clone());
         
         if error as int != CSS_OK as int && sheet.quirks_allowed {
-            let(_ , error) = css__parse_hash_colour(token.idata.get_ref().clone());
+            let(ret_result , error) = css__parse_hash_colour(token.idata.get_ref().clone());
             
             if error as int == CSS_OK as int {
                 sheet.quirks_used = true;
@@ -449,12 +447,17 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
         }
     }
 
-    else if (token.token_type as int ==  CSS_TOKEN_HASH as int || token.token_type as int ==  CSS_TOKEN_NUMBER as int ||
-        token.token_type as int ==  CSS_TOKEN_DIMENSION as int)
+    else if (token.token_type as int ==  CSS_TOKEN_HASH as int || (sheet.quirks_allowed && token.token_type as int ==  CSS_TOKEN_NUMBER as int) ||
+        (sheet.quirks_allowed && token.token_type as int ==  CSS_TOKEN_DIMENSION as int))
     {
-        let(_ , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
+        let(ret_result , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
+
         match error_from_hash {
-            CSS_OK => {},
+            CSS_OK => {
+                if token.token_type as int != CSS_TOKEN_HASH as int {
+                    sheet.quirks_used = true;
+                }
+            },
             _ => {
                 *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
@@ -834,9 +837,7 @@ pub fn tokenIsChar(token:&@css_token, c:char) -> bool {
 
     match token.token_type {
         CSS_TOKEN_CHAR => {   
-                io::println("Entering: tokenIsChar: before get_ref 1");
                 if lwc_string_length(token.idata.get_ref().clone()) == 1 {
-                    io::println("Entering: tokenIsChar: before get_ref 2");
                     let mut token_char = lwc_string_data(token.idata.get_ref().clone()).char_at(0);
 
                     // Ensure lowercomparison 
