@@ -239,9 +239,10 @@ pub impl css {
 
 	pub fn css_stylesheet_register_import(&mut self, import:Option<@mut css_stylesheet>) 
 	    -> css_error {
-
+	    	io::println("Entering: css_stylesheet_register_import");
 
 	    if import.is_none() {
+	    	// io::println("Entering: import.is_none()");
 	        return CSS_BADPARM ;
 	    }
 
@@ -253,6 +254,7 @@ pub impl css {
 	            },
 	            Some(current_rule) => {
 	                match current_rule {
+
 	                    RULE_IMPORT(irule)=>{
 	                        if irule.sheet.is_none() {
 	                            irule.sheet = import ;
