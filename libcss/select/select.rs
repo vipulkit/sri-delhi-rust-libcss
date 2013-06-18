@@ -285,10 +285,10 @@ impl css_select_ctx {
         if( node == ptr::null() || handler.handler_version != (CSS_SELECT_HANDLER_VERSION_1  as uint) ) {
             return (CSS_BADPARM,None) ;
         }
-        let mut i = 0 ;
-        let mut j = 0 ;
+        let mut i : int ;
+        let mut j :int;
         let mut error : css_error ;
-        let mut results : Option<css_select_results> = None ;
+        //let mut results : Option<css_select_results>  ;
         let mut parent : *libc::c_void = ptr::null() ;
 
         let mut state: @mut css_select_state = @mut css_select_state {
@@ -315,9 +315,9 @@ impl css_select_ctx {
             next_reject:128-1,             
             props: ~[~[]] 
         };
-        for uint::range(0,CSS_N_PROPERTIES as uint) |outer| {
+        for uint::range(0,CSS_N_PROPERTIES as uint) |_| {
             let mut prop_vec : ~[@mut prop_state] = ~[] ;
-            for uint::range(0,CSS_PSEUDO_ELEMENT_COUNT as uint) |inner| {
+            for uint::range(0,CSS_PSEUDO_ELEMENT_COUNT as uint) |_| {
                 let mut pstate = @mut prop_state{
                     specificity:0,
                     set:false,
@@ -976,7 +976,7 @@ impl css_select_ctx {
                     /* Find next sheet to process */
                     if (sp > 0) {
                         sp -= 1;
-                        rule = css_stylesheet::css__stylesheet_get_base_rule(import_stack[sp]).next;
+                        ptr = css_stylesheet::css__stylesheet_get_base_rule(import_stack[sp]).next;
                         s = css_stylesheet::css__stylesheet_get_base_rule(import_stack[sp]).parent_stylesheet;
                     } 
                     else {
@@ -1068,7 +1068,7 @@ impl css_select_ctx {
 
     pub fn _selector_less_specific(refer:@mut css_selector, cand:@mut css_selector) -> bool {
 
-        let mut result : bool = true;
+        let mut result : bool ;
 
         // if (cand == NULL)
         //  return false;
@@ -1198,7 +1198,7 @@ impl css_select_ctx {
         let mut class_selectors_option_list : ~[Option<@mut css_selector>] = ~[] ;
         let mut univ_selectors_hash_entry : Option<@mut hash_entry> = None ;
         let mut univ_selectors_option : Option<@mut css_selector> = None ;
-        let mut error : css_error ;
+        //let mut error : css_error ;
 
         /* Find hash chain that applies to current node */
         let mut (sel,error) = sheet.selectors.css__selector_hash_find(copy state.element.name);
@@ -1530,7 +1530,7 @@ impl css_select_ctx {
         let mut may_optimise = true;
         let mut rejected_by_cache : @mut bool = @mut true ;
         let mut pseudo : css_pseudo_element = CSS_PSEUDO_ELEMENT_NONE ;
-        let mut error : css_error = CSS_OK;
+        let mut error : css_error ;
         let mut universal_string = self.universal.swap_unwrap().clone() ;
         self.universal = Some(universal_string.clone()) ;     
         
@@ -1781,7 +1781,7 @@ impl css_select_ctx {
         detail :&~[@mut css_selector_detail], state : @mut css_select_state, 
         matched : @mut bool, pseudo_element : Option<@mut css_pseudo_element>) -> css_error {
 
-        let mut error : css_error = CSS_OK;
+        let mut error : css_error ;
         let mut pseudo : css_pseudo_element = CSS_PSEUDO_ELEMENT_NONE;
         let mut index:uint = 0;
 

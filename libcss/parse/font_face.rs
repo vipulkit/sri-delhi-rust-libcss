@@ -62,8 +62,18 @@ pub fn font_face_parse_font_family(sheet:@mut css_stylesheet, strings:&mut ~css_
 pub fn css__parse_font_descriptor(sheet:@mut css_stylesheet, descriptor:&@css_token, strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, 
     curRule:@mut css_rule_font_face, lwc_instance:arc::RWARC<~lwc>) -> css_error {
     
-    let font_face:Option<@mut css_font_face> = curRule.font_face;
-    
+    let mut font_face:Option<@mut css_font_face> = curRule.font_face;
+
+    if !font_face.is_some() {
+        curRule.font_face = Some(@mut css_font_face {
+            font_family: None,
+            srcs:~[],
+            bits:~[((CSS_FONT_WEIGHT_NORMAL as int << 2 ) as int| (CSS_FONT_STYLE_NORMAL) as int) as u8]
+        });
+    }
+
+    font_face = curRule.font_face;
+
     if strings.lwc_string_caseless_isequal(descriptor.idata.get_ref().clone(), FONT_FAMILY as uint) {
         return font_face_parse_font_family(sheet, strings, vector, ctx, *font_face.get_ref(), lwc_instance)
     }
@@ -234,6 +244,7 @@ pub fn font_face_parse_font_weight(strings:&mut ~css_propstrings, vector:&~[@css
 
 pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, 
     location_type:@mut css_font_face_location_type, format:@mut css_font_face_format, lwc_instance:arc::RWARC<~lwc>) -> (css_error, Option<arc::RWARC<~lwc_string>>) {
+
     let mut token: &@css_token;
     let mut location:Option<arc::RWARC<~lwc_string>> = None;
     /* spec-or-name    ::= font-face-spec | font-face-name

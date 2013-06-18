@@ -40,12 +40,18 @@ pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
 /**
 * #Arguments:
 *  'sheet'  - Stylesheet. 
+
 *  'vector' - Vector of tokens to process.
+
 *  'ctx'    - Pointer to current vector iteration context.
+
 *  'default_unit'    - The default unit to use if none specified.
+
 * #Return Value:
 * 'length' - Option of i32(Some(x) if CSS_OK else None).
+
 * 'unit' - Option of u32(Some(x) if CSS_OK else None).
+
 * 'css_error' - CSS_OK on success,  
                 CSS_INVALID if the input is not valid.
 * #Post condition:
@@ -155,9 +161,11 @@ pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bo
 /**
 * #Arguments:
 *  'ptr'  - keyword string. 
+
 *  'index' - index of string from where we have to parse.
 * #Return Value:
 * 'unit' - Option of u32(Some(x) if CSS_OK else None).
+
 * 'css_error' - CSS_OK on success,  
                 CSS_INVALID if the input is not valid.
 */
@@ -357,14 +365,20 @@ pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->boo
 /**
 * #Arguments:
 *  'sheet'  - Stylesheet. 
+
 *  'vector' - Vector of tokens to process.
+
 *  'ctx'    - Pointer to current vector iteration context.
+
 * #Return Value:
 * 'value' - Option of u16(Some(x) if CSS_OK else None).
+
 * 'result' - Option of u16(Some(x) if CSS_OK else None) (AARRGGBB).
+
 * 'css_error' - CSS_OK on success,  
                 CSS_INVALID if the input is not valid.
-* #Post condition:
+
+				* #Post condition:
 *   ctx is updated with the next token to process.
 *   If the input is invalid, then ctx remains unchanged.
 */
@@ -755,10 +769,13 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
 /**
 * #Arguments:
 *  'data'  - arc of colour string(lwc_string). 
+
 * #Return Value:
 * 'result' - Option of u32 (AARRGGBB) (some(x) if CSS_OK else None).
+
 * 'css_error' - CSS_OK on success,  
                 CSS_INVALID if the input is not valid.
+
 * #Post condition:
 *   ctx is updated with the next token to process.
 *   If the input is invalid, then ctx remains unchanged.
@@ -803,7 +820,9 @@ pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , c
 /**
 * #Arguments:
 *  'token'  - The token to consider. 
+
 *  'c'  - The character to match (lowerASCII only). 
+
 * #Return Value:
 * 'bool' - True if the token matches, false otherwise.
 */
@@ -814,7 +833,9 @@ pub fn tokenIsChar(token:&@css_token, c:char) -> bool {
 
     match token.token_type {
         CSS_TOKEN_CHAR => {   
+                io::println("Entering: tokenIsChar: before get_ref 1");
                 if lwc_string_length(token.idata.get_ref().clone()) == 1 {
+                    io::println("Entering: tokenIsChar: before get_ref 2");
                     let mut token_char = lwc_string_data(token.idata.get_ref().clone()).char_at(0);
 
                     // Ensure lowercomparison 
@@ -860,11 +881,16 @@ pub fn charToHex(c: u8) -> u32 {
 /**
 * #Arguments:
 *  'hue'  - Hue in degrees 0..360. 
+
 *  'sat'  - Saturation value in percent 0..100. 
+
 *  'lit'  - Lightness value in percent 0..100. 
+
 * #Return Value:
 * 'r(u8)' - red component.
+
 * 'g(u8)' - green component.
+
 * 'b(u8)' - blue component.
 */
 pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
@@ -979,8 +1005,10 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 /**
 * #Arguments:
 *  'data'  - arc of colour string(lwc_string). 
+
 * #Return Value:
 * 'result' - Option of u32 (AARRGGBB) (some(x) if CSS_OK else None).
+
 * 'css_error' - CSS_OK on success,  
                 CSS_INVALID if the input is not valid.
 */
