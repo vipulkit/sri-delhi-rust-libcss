@@ -182,7 +182,7 @@ fn main() {
     // corresponding code now in parse_auto function, entry from test-cases
 }
 
-fn auto(file: ~str) {
+fn parse_auto(file: ~str) {
 
 	let file_content_result = io::read_whole_file_str(&Path(file)) ;
 	let mut file_content : ~str ;
