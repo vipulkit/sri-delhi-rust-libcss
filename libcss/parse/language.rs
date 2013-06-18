@@ -67,6 +67,18 @@ pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~c
 
 pub impl css_language {
     
+	/**
+	* #Description:
+	*   Handler for core parser events.
+
+	* #Arguments:
+	*  'event_type' - The event type.
+
+	*  'tokens' - Vector of tokens read since last event.
+
+	* #Return Value:
+	*   'css_error' - CSS_OK on success, CSS_INVALID to indicate parse error.
+	*/
     pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:&~[@css_token])
         -> css_error {
         io::println("Entering: language_handle_event");
