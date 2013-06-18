@@ -416,14 +416,13 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
 pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
 
-	io::println(fmt!("    Data: %? ", data) );
-
-	io::println(fmt!("    Expected entry:") );
-	io::println(fmt!("	entry type:%d name:%s\n", e.ftype, copy e.name) );
-	io::println(fmt!("	bytecode ") );
-	for e.bytecode.each_mut |code| {
-		io::println(fmt!("%? ", code ));
+	io::println(fmt!("Data == %? ", str::from_bytes(data)));
+	io::println(fmt!("Expected entry type == %d, name == %s", e.ftype, copy e.name) );
+	io::print(fmt!("Expected bytecode == ") );
+	for e.bytecode.each_mut |&code| {
+		io::print(fmt!("%? ", code ));
 	}
+	io::println("\n")
 }
 
 pub fn run_test(ctx:@mut line_ctx) {

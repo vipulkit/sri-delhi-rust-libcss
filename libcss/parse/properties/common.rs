@@ -26,6 +26,7 @@ pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
         if *ctx < vector.len() {
             match vector[*ctx].token_type {
                 CSS_TOKEN_S => {
+                    io::println("Entering: consumeWhitespace:: CSS_TOKEN_S");
                     *ctx = *ctx+1
                 },
                 _ => return
