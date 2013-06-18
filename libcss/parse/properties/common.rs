@@ -446,13 +446,16 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
         }
     }
 
-    else if (token.token_type as int ==  CSS_TOKEN_HASH as int || token.token_type as int ==  CSS_TOKEN_NUMBER as int ||
-        token.token_type as int ==  CSS_TOKEN_DIMENSION as int)
+    else if (token.token_type as int ==  CSS_TOKEN_HASH as int || (sheet.quirks_allowed && token.token_type as int ==  CSS_TOKEN_NUMBER as int) ||
+        (sheet.quirks_allowed && token.token_type as int ==  CSS_TOKEN_DIMENSION as int))
     {
         let(ret_result , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
+
         match error_from_hash {
             CSS_OK => {
-                sheet.quirks_used = true;
+                if token.token_type as int != CSS_TOKEN_HASH as int {
+                    sheet.quirks_used = true;
+                }
             },
             _ => {
                 *ctx = orig_ctx;
