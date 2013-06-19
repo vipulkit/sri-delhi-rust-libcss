@@ -1054,8 +1054,8 @@ pub impl css_properties {
                     }//end of *ctx < vector.len()
                     if (num_lengths == 1) {
                      /* Only one length specified. Use for both axes. */
-                        length[1] = length[0];
-                        unit[1] = unit[0];
+                        length.push(length[0]);
+                        unit.push(unit[0]);
                     }
 
                     /* Lengths must not be negative */

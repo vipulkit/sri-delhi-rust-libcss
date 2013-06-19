@@ -680,7 +680,7 @@ pub impl css_language {
     pub fn parseSelectorList(&mut self, tokens:&~[@css_token], curRule: CSS_RULE_DATA_TYPE) -> css_error {
         io::println("Entering: parseSelectorList");
         let ctx: @mut uint = @mut 0u;
-        
+        io::println(fmt!("parseSelectorList:: tokens == %?", tokens));
         loop {
             /* Strip any leading whitespace (can happen if in nested block) */
             consumeWhitespace(tokens, ctx);
@@ -975,11 +975,13 @@ pub impl css_language {
             return (CSS_INVALID, None)
         }        
         
+        let token = &vector[*ctx];
+
         let mut selector : @mut css_selector;
         let qname: @mut css_qname = @mut css_qname{ name:~"", ns:~""};
 
         //match ( vector[*ctx].token_type as uint ==    CSS_TOKEN_IDENT as uint )
-        if tokenIsChar(&vector[*ctx], '*') || tokenIsChar(&vector[*ctx], '|') {
+        if token.token_type as int == CSS_TOKEN_IDENT as int ||  tokenIsChar(token, '*') || tokenIsChar(token, '|') {
             
             /* Have type selector */
             match self.parseTypeSelector(vector, ctx, qname) {
@@ -1176,6 +1178,7 @@ pub impl css_language {
                 match css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_ID, qname, 
                                             CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false) {
                     (CSS_OK, res) => {
+                        io::println(fmt!("parseSpecific:: css__stylesheet_selector_detail_init result == %?", res));
                         *ctx +=1;
                         (CSS_OK, res) 
                     } 
@@ -1407,7 +1410,7 @@ pub impl css_language {
     }
 
 
-    pub fn  parsePseudo(&mut self, vector:&~[@css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn parsePseudo(&mut self, vector:&~[@css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<@mut css_selector_detail>) {
         io::println("Entering: parsePseudo");
         let mut token:&@css_token;
         //let mut tkn_type = CSS_SELECTOR_PSEUDO_CLASS;
@@ -1419,7 +1422,7 @@ pub impl css_language {
         let qname:@mut css_qname=@mut css_qname{ns:~"", name:~""};
         /* pseudo    -> ':' ':'? [ IDENT | FUNCTION ws any1 ws ')' ] */
 
-        let mut detail_value_string = ~"";
+        let mut detail_value_string:Option<~str> = None;
 
         if *ctx >= vector.len() {
                 return (CSS_INVALID, None)
@@ -1502,7 +1505,7 @@ pub impl css_language {
                         _ => return (CSS_INVALID, None)
                      } 
                         
-                    detail_value_string = lwc_string_data(token.idata.get_ref().clone());
+                    detail_value_string = Some(lwc_string_data(token.idata.get_ref().clone()));
                     value_type = CSS_SELECTOR_DETAIL_VALUE_STRING;
 
                     consumeWhitespace(vector, ctx);
@@ -1547,7 +1550,7 @@ pub impl css_language {
                             CSS_OK => {
                                 selector_type = CSS_SELECTOR_ELEMENT;
 
-                                detail_value_string = ~"";
+                                detail_value_string = None;
                                 value_type = CSS_SELECTOR_DETAIL_VALUE_STRING;
                             },
                             x => return (x, None)
@@ -1596,7 +1599,7 @@ pub impl css_language {
         
         }
 
-        return css_stylesheet::css__stylesheet_selector_detail_init(selector_type,copy *qname, value_type, Some(detail_value_string), None, negate);
+        return css_stylesheet::css__stylesheet_selector_detail_init(selector_type,copy *qname, value_type, detail_value_string, None, negate);
     }
 
     pub fn  parseNth(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_error,Option<@mut css_selector_detail>) {
