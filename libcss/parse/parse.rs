@@ -715,6 +715,7 @@ pub impl css_parser {
                             parser.language.language_handle_event(CSS_PARSER_START_RULESET, &parser.tokens)
                         ) {
                             CSS_INVALID => {
+                                io::println("Entering: language.language_handle_event(CSS_PARSER_START_RULESET, &parser.tokens) => CSS_INVALID");
                                 parser.parse_error = true;
                             }
                             _ => {

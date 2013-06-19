@@ -401,14 +401,15 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Add a string to a stylesheet's string vector.
-	
+    
     * #Arguments:
     *  'strings' - The string to add.
     
-	* #Return Value:
+    * #Return Value:
     *   'uint' - index next to the index of insertion is returned.
     */
     pub fn css__stylesheet_string_add(&mut self, string: ~str) -> uint {
+        io::println("Entering: css__stylesheet_string_add");
         let mut i : uint = self.string_vector.len() ;
         while(i!=0) {
             i -= 1;
@@ -423,16 +424,17 @@ impl css_stylesheet {
     /**
     * #Description:
     *   Get a string from a stylesheet's string vector.
-	
+    
     * #Arguments:
     *  'num' - The index of string to retrive.
     
-	* #Return Value:
+    * #Return Value:
     *   '(css_error,Option<~str>)' - (CSS_BADPARM,None) if num param is not correct, 
     *                               else ( CSS_OK, option of the string. )
     */
     pub fn css__stylesheet_string_get(&mut self, num:uint) 
                                     -> (css_error,Option<~str>) {
+        io::println("Entering: css__stylesheet_string_get");
 
         if( (self.string_vector.len() < num) || (num == 0) ) {
             return (CSS_BADPARM,None) ;
@@ -445,6 +447,7 @@ impl css_stylesheet {
                                         opcode:css_properties_e,
                                         flags:u8,
                                         value:u16 ) {
+        io::println("Entering: css__stylesheet_style_appendOPV");
         css_stylesheet::css__stylesheet_style_append(
             style,
             buildOPV(opcode,flags,value)
@@ -454,6 +457,7 @@ impl css_stylesheet {
     pub fn css_stylesheet_style_inherit(
                                         style: @mut css_style,
                                         opcode:css_properties_e) {
+        io::println("Entering: css_stylesheet_style_inherit");
 
         css_stylesheet::css__stylesheet_style_append(
             style,
@@ -463,14 +467,15 @@ impl css_stylesheet {
 
     /**
     * Create a style, with sheet pointer set into the style
-	
+    
     * #Arguments:
     *  'self'  - css_stylesheet. 
     
-	* #Return Value:
+    * #Return Value:
     *  'css_style' - css_style.
     */
     pub fn css__stylesheet_style_create(sheet : @mut css_stylesheet) -> @mut css_style {
+        io::println("Entering: css__stylesheet_style_create");
         if sheet.cached_style.is_none() {
             @mut css_style{ 
                 bytecode:~[],
@@ -490,6 +495,7 @@ impl css_stylesheet {
     *  'style'  - The style to merge. 
     */
     pub fn css__stylesheet_merge_style(target : @mut css_style, style: @mut css_style) {
+        io::println("Entering: css__stylesheet_merge_style");
         target.bytecode += copy style.bytecode;
     }
 
@@ -497,11 +503,12 @@ impl css_stylesheet {
     * #Description:
     *   Append a style to a CSS style
     
-	* #Arguments:
+    * #Arguments:
     *  'target'  - The style to add to. 
     *  'style'  - The style to add. 
     */
     pub fn css__stylesheet_style_append(target : @mut css_style, bytecode: u32) {
+        io::println("Entering: css__stylesheet_style_append");
         target.bytecode.push(bytecode);
     }
     
@@ -509,11 +516,12 @@ impl css_stylesheet {
     * #Description:
     *   Append a style to a CSS style
     
-	* #Arguments:
+    * #Arguments:
     *  'target'  - The style to add to. 
     *  'bytecodes'  - vector of style to add. 
     */
     pub fn css__stylesheet_style_vappend(target : @mut css_style, bytecodes: &[u32] ) {
+        io::println("Entering: css__stylesheet_style_vappend");
         target.bytecode += bytecodes;
     }
 
@@ -521,13 +529,14 @@ impl css_stylesheet {
     * #Description:
     *   Create an element selector.
     
-	* #Arguments:
+    * #Arguments:
     *  'qname' - Qualified name of selector.
     
-	* #Return Value:
+    * #Return Value:
     *   'css_selector' - Pointer to box containing selector object.
     */
     pub fn css__stylesheet_selector_create(&mut self, qname : css_qname ) -> @mut css_selector {
+        io::println("Entering: css__stylesheet_selector_create");
         let mut sel = @mut css_selector{  
             combinator:None, 
             rule:None, 
@@ -563,7 +572,7 @@ impl css_stylesheet {
     * #Description:
     *   Initialise a selector detail.
     
-	* #Arguments:
+    * #Arguments:
     *  'sel_type' - The type of selector to create.
     *  'qname' - Qualified name of selector.
     *  'value_type' - type of the value.
@@ -571,7 +580,7 @@ impl css_stylesheet {
     *  'ab_value' - Option<(i32,i32)>  css_selector_detail_value.
     *  'negate' - Whether the detail match should be negated.
     
-	* #Return Value:
+    * #Return Value:
     *   '(css_error, Option<@mut css_selector_detail>)' - (CSS_OK,Some(css_selector_detail)).
     */
     pub fn css__stylesheet_selector_detail_init (
@@ -583,6 +592,7 @@ impl css_stylesheet {
         negate:bool
     )  -> (css_error, Option<@mut css_selector_detail>) 
     {
+        io::println("Entering: css__stylesheet_selector_detail_init");
         let detail : @mut css_selector_detail = @mut css_selector_detail{
             qname:qname,
             selector_type:sel_type,
@@ -618,14 +628,15 @@ impl css_stylesheet {
     * #Description:
     *   Append a selector to the specifics chain of another selector.
     
-	* #Arguments:
+    * #Arguments:
     *  'selector' - css_selector to which details get appended.
     *  'detail' - The css_selector_detail to be appended.
     
-	* #Return Value:
+    * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_selector_append_specific(selector : @mut css_selector, detail: @mut css_selector_detail)  -> css_error  {
+        io::println("Entering: css__stylesheet_selector_append_specific");
         
         match detail.selector_type {
             CSS_SELECTOR_CLASS=> selector.specificity += CSS_SPECIFICITY_C, 
@@ -655,17 +666,18 @@ impl css_stylesheet {
     * with a combinator type of CSS_COMBINATOR_SIBLING. Thus, given B, we can
     * find its combinator. It is not possible to find B given A.
     
-	* #Arguments:
+    * #Arguments:
     *  'combinator_type' - combinator types of selectors to be combined.
     *  'a' - css_selector.
     *  'b' - css_selector.
     
-	* #Return Value:
+    * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_selector_combine(combinator_type : css_combinator, a : @mut css_selector , 
                                             b : @mut css_selector) -> css_error {
         
+        io::println("Entering: css__stylesheet_selector_combine");
         match b.combinator {
             Some(_)=> return CSS_INVALID,
             None=> {}
@@ -688,13 +700,15 @@ impl css_stylesheet {
     * #Description:
     *   Create a CSS rule.
     
-	* #Arguments:
+    * #Arguments:
     *  'rule_type' - The rule type.
     
-	* #Return Value:
+    * #Return Value:
     *   'CSS_RULE_DATA_TYPE' - .
     */
     pub fn css_stylesheet_rule_create(rule_type : css_rule_type ) -> CSS_RULE_DATA_TYPE  {
+
+        io::println("Entering: css_stylesheet_rule_create");
         
         let mut base_rule = @mut css_rule{ 
             parent_rule:None,
@@ -778,14 +792,16 @@ impl css_stylesheet {
     * #Description:
     *   Add a selector to a CSS rule.
     
-	* #Arguments:
+    * #Arguments:
     *  'css_rule' - The rule to which selector to be added.
     *  'selector' - The selector to be added.
     
-	* #Return Value:
+    * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_add_selector(css_rule : CSS_RULE_DATA_TYPE , selector : @mut css_selector) -> css_error {
+        io::println("Entering: css__stylesheet_rule_add_selector");
+        io::println(fmt!("css__stylesheet_rule_add_selector:: selector == %?", selector));
         match css_rule {
             RULE_SELECTOR(x)=> {
                 selector.rule = Some(css_rule);
@@ -800,15 +816,15 @@ impl css_stylesheet {
     * #Description:
     *   Append a style to a CSS rule.
     
-	* #Arguments:
+    * #Arguments:
     *  'css_rule' - The rule to which style to be appended.
     *  'style' - The style to be appended.
     
-	* #Return Value:
+    * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_append_style(&mut self, css_rule : CSS_RULE_DATA_TYPE , style : @mut css_style) -> css_error {
-
+        io::println("Entering: css__stylesheet_rule_append_style");
         match css_rule {
             RULE_PAGE(page)=> {
                 if page.style.is_none() {
@@ -839,14 +855,15 @@ impl css_stylesheet {
     * #Description:
     *   Set the encoding of a CSS rule.
     
-	* #Arguments:
+    * #Arguments:
     *  'rule' - The rule whose encoding to be set to charset.
     *  'charset' - the charset to be set.
     
-	* #Return Value:
+    * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_set_charset(css_rule : CSS_RULE_DATA_TYPE, charset: ~str) -> css_error {
+        io::println("Entering: css__stylesheet_rule_set_charset");
         
         if charset.len() <= 0 {
             return CSS_BADPARM;
@@ -867,17 +884,17 @@ impl css_stylesheet {
     * #Description:
     *   Set the necessary data to import a stylesheet associated with a rule.
     
-	* #Arguments:
+    * #Arguments:
     *  'css_rule' - The rule whose data to be set.
     *  'url_str' - the url to be set.
     *  'media' - the media to be set.
     
-	* #Return Value:
+    * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_set_nascent_import(
         css_rule : CSS_RULE_DATA_TYPE, url_str:~str, media:u64) -> css_error {
-
+        io::println("Entering: css__stylesheet_rule_set_nascent_import");
         match css_rule {
             RULE_IMPORT(x) => {
                 x.url = url_str;
@@ -894,15 +911,16 @@ impl css_stylesheet {
     * #Description:
     *   Set the media of an @media rule.
     
-	* #Arguments:
+    * #Arguments:
     *  'css_rule' - The rule whose data to be set.
     *  'media' - the media to be set.
     
-	* #Return Value:
+    * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_set_media(
         css_rule : CSS_RULE_DATA_TYPE, media:u64) -> css_error {
+        io::println("Entering: css__stylesheet_rule_set_media");
         match css_rule {
             RULE_MEDIA(x) => {
                 x.media=media;
@@ -916,6 +934,7 @@ impl css_stylesheet {
 
     pub fn css__stylesheet_rule_set_page_selector(
         css_rule : CSS_RULE_DATA_TYPE, selector:@mut css_selector) -> css_error {
+        io::println("Entering: css__stylesheet_rule_set_page_selector");
         match css_rule {
             RULE_PAGE(x) => {
                 x.selector= Some(selector);
@@ -983,7 +1002,7 @@ impl css_stylesheet {
     pub fn css__stylesheet_add_rule(sheet : @mut css_stylesheet, css_rule : CSS_RULE_DATA_TYPE,
                                     parent_rule : Option<CSS_RULE_DATA_TYPE> ) -> css_error {
         
-        
+        io::println("Entering: css__stylesheet_add_rule");
         let mut base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
 
         base_rule.index = sheet.rule_count;
@@ -1058,7 +1077,7 @@ impl css_stylesheet {
     */
     pub fn css__stylesheet_remove_rule(sheet : @mut css_stylesheet, css_rule : CSS_RULE_DATA_TYPE) 
                                         -> css_error {
-        
+        io::println("Entering: css__stylesheet_remove_rule");
         match sheet._remove_selectors(css_rule) {
             CSS_OK=>{},
             _=>return CSS_INVALID
@@ -1098,7 +1117,7 @@ impl css_stylesheet {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn _add_selectors(&mut self, css_rule : CSS_RULE_DATA_TYPE) -> css_error {
-        
+        io::println("Entering: _add_selectors");
         match css_rule {
             RULE_SELECTOR(x) => {
                 if x.base.parent_rule.is_some() || 
@@ -1189,7 +1208,7 @@ impl css_stylesheet {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn _remove_selectors(&mut self, css_rule : CSS_RULE_DATA_TYPE) -> css_error {
-
+        io::println("Entering: _remove_selectors");
         match css_rule {
             RULE_SELECTOR(x) => {
 
@@ -1247,13 +1266,13 @@ pub enum css_hash_type {
 
 impl css_selector_hash {
 
-	/**
-	* #Description:
-	*  Create a hash.
+    /**
+    * #Description:
+    *  Create a hash.
 
-	* #Return Value:
-	*  'css_selector_hash' - Hash table of selectors.
-	*/
+    * #Return Value:
+    *  'css_selector_hash' - Hash table of selectors.
+    */
     pub fn css__selector_hash_create() -> @mut css_selector_hash {
         let mut hash = @mut css_selector_hash{ 
                         default_slots:(1<<6),
@@ -1271,16 +1290,16 @@ impl css_selector_hash {
         hash
     }
     
-	/**
-	* #Description:
-	*  Retrieve the first class name in a selector, or empty if none.
+    /**
+    * #Description:
+    *  Retrieve the first class name in a selector, or empty if none.
 
-	* #Arguments:
-	*  'selector '  - Selector to consider. 
+    * #Arguments:
+    *  'selector '  - Selector to consider. 
 
-	* #Return Value:
-	*  '~str' - class name.
-	*/
+    * #Return Value:
+    *  '~str' - class name.
+    */
     pub fn _class_name(selector : @mut css_selector) 
                         -> ~str {
 
@@ -1298,16 +1317,16 @@ impl css_selector_hash {
         ~""
     }
 
-	/**
-	* #Description:
-	*  Retrieve the first ID name in a selector, or empty if none.
+    /**
+    * #Description:
+    *  Retrieve the first ID name in a selector, or empty if none.
 
-	* #Arguments:
-	*  'selector '  - Selector to consider. 
+    * #Arguments:
+    *  'selector '  - Selector to consider. 
 
-	* #Return Value:
-	*  '~str' - ID name.
-	*/
+    * #Return Value:
+    *  '~str' - ID name.
+    */
     pub fn _id_name(selector : @mut css_selector) 
                         -> ~str {
 
@@ -1326,16 +1345,16 @@ impl css_selector_hash {
     }
 
 
-	/**
-	* #Description:
-	*  Name hash function -- case-insensitive FNV.
+    /**
+    * #Description:
+    *  Name hash function -- case-insensitive FNV.
 
-	* #Arguments:
-	*  'name '  - Name to hash. 
+    * #Arguments:
+    *  'name '  - Name to hash. 
 
-	* #Return Value:
-	*  'uint' - hash value.
-	*/
+    * #Return Value:
+    *  'uint' - hash value.
+    */
     pub fn _hash_name( string: ~str ) -> uint {
 
         let mut z: uint = 0x811c9dc5;
@@ -1351,16 +1370,16 @@ impl css_selector_hash {
         z
     }
     
-	/**
-	* #Description:
-	*  Insert an item into the hash table.
+    /**
+    * #Description:
+    *  Insert an item into the hash table.
 
-	* #Arguments:
-	*  'selector'  - css selector. 
+    * #Arguments:
+    *  'selector'  - css selector. 
 
-	* #Return Value:
-	*  'css_error' - CSS_OK on success, appropriate error otherwise.
-	*/
+    * #Return Value:
+    *  'css_error' - CSS_OK on success, appropriate error otherwise.
+    */
     pub fn css__selector_hash_insert(&mut self, selector : @mut css_selector) 
                                     -> css_error {
         unsafe {
@@ -1402,18 +1421,18 @@ impl css_selector_hash {
     }
 
     
-	/**
-	* #Description:
-	*  Insert a selector into a hash chain.
+    /**
+    * #Description:
+    *  Insert a selector into a hash chain.
 
-	* #Arguments:
-	*  'hash_type'  - hash type. 
-	*  'index'  - index of insertion. 
-	*  'selector'  - selector to be inserted. 
+    * #Arguments:
+    *  'hash_type'  - hash type. 
+    *  'index'  - index of insertion. 
+    *  'selector'  - selector to be inserted. 
 
-	* #Return Value:
-	*  'css_error' - CSS_OK on success, appropriate error otherwise.
-	*/
+    * #Return Value:
+    *  'css_error' - CSS_OK on success, appropriate error otherwise.
+    */
     pub fn _insert_into_chain(&mut self, 
                             hash_type : css_hash_type,
                             index:uint,
@@ -1494,16 +1513,16 @@ impl css_selector_hash {
         CSS_OK
     }
 
-	/**
-	* #Description:
-	*  Remove an item from a hash.
+    /**
+    * #Description:
+    *  Remove an item from a hash.
 
-	* #Arguments:
-	*  'selector'  - css selector. 
+    * #Arguments:
+    *  'selector'  - css selector. 
 
-	* #Return Value:
-	*  'css_error' - CSS_OK on success, appropriate error otherwise.
-	*/
+    * #Return Value:
+    *  'css_error' - CSS_OK on success, appropriate error otherwise.
+    */
     pub fn css__selector_hash_remove(&mut self, selector : @mut css_selector) 
                                     -> css_error {
         unsafe {
@@ -1544,18 +1563,18 @@ impl css_selector_hash {
         }
     }
 
-	/**
-	* #Description:
-	*  Remove a selector from a hash chain.
+    /**
+    * #Description:
+    *  Remove a selector from a hash chain.
 
-	* #Arguments:
-	*  'hash_type'  - hash type. 
-	*  'head'  - Head of chain to remove from. 
-	*  'selector'  - selector to remove. 
+    * #Arguments:
+    *  'hash_type'  - hash type. 
+    *  'head'  - Head of chain to remove from. 
+    *  'selector'  - selector to remove. 
 
-	* #Return Value:
-	*  'css_error' - CSS_OK on success, CSS_INVALID  if selector not found in chain.
-	*/
+    * #Return Value:
+    *  'css_error' - CSS_OK on success, CSS_INVALID  if selector not found in chain.
+    */
     pub fn _remove_from_chain(&mut self, 
                             hash_type : css_hash_type,
                             index:uint,
@@ -1644,16 +1663,16 @@ impl css_selector_hash {
         return true ;
     }
 
-	/**
-	* #Description:
-	*  Find the first selector that matches name.
+    /**
+    * #Description:
+    *  Find the first selector that matches name.
 
-	* #Arguments:
-	*  'name'  - name to find. 
+    * #Arguments:
+    *  'name'  - name to find. 
 
-	* #Return Value:
-	*  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
-	*/
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
+    */
     pub fn css__selector_hash_find(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_error) {
 
         let mut mask  = self.default_slots-1 ;
@@ -1691,16 +1710,16 @@ impl css_selector_hash {
     }
     
 
-	/**
-	* #Description:
-	*  Find the first selector that has a class that matches name.
+    /**
+    * #Description:
+    *  Find the first selector that has a class that matches name.
 
-	* #Arguments:
-	*  'name'  - name to find. 
+    * #Arguments:
+    *  'name'  - name to find. 
 
-	* #Return Value:
-	*  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
-	*/
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
+    */
     pub fn css__selector_hash_find_by_class(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_error) {
 
         let mut mask  = self.default_slots-1 ;
@@ -1736,16 +1755,16 @@ impl css_selector_hash {
         }
     }
 
-	/**
-	* #Description:
-	*  Find the first selector that has an ID that matches name.
+    /**
+    * #Description:
+    *  Find the first selector that has an ID that matches name.
 
-	* #Arguments:
-	*  'name'  - name to find. 
+    * #Arguments:
+    *  'name'  - name to find. 
 
-	* #Return Value:
-	*  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
-	*/
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
+    */
     pub fn css__selector_hash_find_by_id(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_error) {
 
         let mut mask  = self.default_slots-1 ;
@@ -1782,13 +1801,13 @@ impl css_selector_hash {
     }
 
 
-	/**
-	* #Description:
-	*  Find the first universal selector.
+    /**
+    * #Description:
+    *  Find the first universal selector.
 
-	* #Return Value:
-	*  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
-	*/
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
+    */
     pub fn css__selector_hash_find_universal(&mut self) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = self.universal[0] ;
@@ -1802,16 +1821,16 @@ impl css_selector_hash {
         }
     }
 
-	/**
-	* #Description:
-	*  Find the next selector that matches.
+    /**
+    * #Description:
+    *  Find the next selector that matches.
 
-	* #Arguments:
-	*  'current'  - Current item. 
+    * #Arguments:
+    *  'current'  - Current item. 
 
-	* #Return Value:
-	*  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
-	*/
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
+    */
     pub fn _iterate_elements(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
@@ -1841,16 +1860,16 @@ impl css_selector_hash {
         }
     }
 
-	/**
-	* #Description:
-	*  Find the next selector that matches.
+    /**
+    * #Description:
+    *  Find the next selector that matches.
 
-	* #Arguments:
-	*  'current'  - Current item. 
+    * #Arguments:
+    *  'current'  - Current item. 
 
-	* #Return Value:
-	*  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
-	*/
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
+    */
     pub fn _iterate_classes(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
@@ -1879,16 +1898,16 @@ impl css_selector_hash {
         }
     }
 
-	/**
-	* #Description:
-	*  Find the next selector that matches.
+    /**
+    * #Description:
+    *  Find the next selector that matches.
 
-	* #Arguments:
-	*  'current'  - Current item. 
+    * #Arguments:
+    *  'current'  - Current item. 
 
-	* #Return Value:
-	*  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
-	*/
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
+    */
     pub fn _iterate_ids(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
@@ -1917,16 +1936,16 @@ impl css_selector_hash {
         }
     }
 
-	/**
-	* #Description:
-	*  Find the next selector that matches.
+    /**
+    * #Description:
+    *  Find the next selector that matches.
 
-	* #Arguments:
-	*  'current'  - Current item. 
+    * #Arguments:
+    *  'current'  - Current item. 
 
-	* #Return Value:
-	*  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
-	*/
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
+    */
     pub fn _iterate_universal(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         if current.next.is_some() {

@@ -1034,8 +1034,19 @@ pub impl css_properties {
 
                     if *ctx < vector.len() {
                         let (length_opt,unit_opt,result) = css__parse_unit_specifier(sheet, vector, ctx, UNIT_PX as u32);
-                        length.push(length_opt.unwrap() as i32);
-                        unit.push(unit_opt.unwrap());
+                        if length_opt.is_some() {
+                            length.push(length_opt.unwrap() as i32);    
+                        }
+                        else {
+                            length.push(0);
+                        }
+                        if unit_opt.is_some() {
+                            unit.push(unit_opt.unwrap());    
+                        }
+                        else {
+                            unit.push(0);
+                        }
+                        
                         error =result;
                          match error {
                             CSS_OK=> {
@@ -1054,8 +1065,8 @@ pub impl css_properties {
                     }//end of *ctx < vector.len()
                     if (num_lengths == 1) {
                      /* Only one length specified. Use for both axes. */
-                        length[1] = length[0];
-                        unit[1] = unit[0];
+                        length.push(length[0]);
+                        unit.push(unit[0]);
                     }
 
                     /* Lengths must not be negative */

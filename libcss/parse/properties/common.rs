@@ -69,6 +69,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
     consumeWhitespace(vector , ctx);
 
     if *ctx >= vector.len() {
+        io::println("Exiting: css__parse_unit_specifier (1)");
         return (None , None , CSS_INVALID)
     }
     token = &vector[*ctx];
@@ -78,6 +79,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
         CSS_TOKEN_DIMENSION|CSS_TOKEN_NUMBER|CSS_TOKEN_PERCENTAGE => {},
         _ => {
             *ctx = orig_ctx;
+            io::println("Exiting: css__parse_unit_specifier (2)");
             return(None , None , CSS_INVALID);
         }
     }
@@ -88,11 +90,12 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
         CSS_TOKEN_DIMENSION => {
             let data = lwc_string_data(token.idata.get_ref().clone());
 
-            let (unit , result) = css__parse_unit_keyword(data , consumed_index);
+            let (unit , result) = css__parse_unit_keyword(data.slice(consumed_index, data.len()));
             match result {
                 CSS_OK => {},
                 _ => {
                     *ctx = orig_ctx;
+                    io::println("Exiting: css__parse_unit_specifier (3)");
                     return (None , None , result);
                 }
             }
@@ -105,6 +108,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
                 }
                 else {
                     *ctx = orig_ctx;
+                    io::println("Exiting: css__parse_unit_specifier (4)");
                     return (None , None , CSS_INVALID);
                 }
             }
@@ -113,6 +117,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
                 let tmp_ctx = ctx;
                 consumeWhitespace(vector , tmp_ctx);
                 if *ctx >= vector.len() {
+                    io::println("Exiting: css__parse_unit_specifier (5)");
                     return (None , None , CSS_INVALID)
                 }
                 token = &vector[*tmp_ctx];
@@ -120,7 +125,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
 
                 match token.token_type {
                     CSS_TOKEN_IDENT => {
-                        let (unit , result) = css__parse_unit_keyword(lwc_string_data(token.idata.get_ref().clone()) , 0);
+                        let (unit , result) = css__parse_unit_keyword(lwc_string_data(token.idata.get_ref().clone()));
                         match  result {
                             CSS_OK => {
                                 sheet.quirks_used = true;
@@ -137,11 +142,13 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
         //CSS_TOKEN_PERCENTAGE
         _ => {
             if lwc_string_length(token.idata.get_ref().clone()) != consumed_index {
+                io::println("Exiting: css__parse_unit_specifier (6)");
                 return (None , None , CSS_INVALID);
             }
             unit_retVal = UNIT_PCT as u32;
         }
     }
+    io::println("Exiting: css__parse_unit_specifier (7)");
     return(Some(num) , Some(unit_retVal) , CSS_OK);
 }
 
@@ -168,13 +175,13 @@ pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bo
 * 'css_error' - CSS_OK on success,  
                 CSS_INVALID if the input is not valid.
 */
-pub fn css__parse_unit_keyword(ptr:~str , index: uint)-> (Option<u32>,css_error) {
+pub fn css__parse_unit_keyword(ptr:&str)-> (Option<u32>,css_error) {
     
     io::println("Entering: css__parse_unit_keyword");
+    io::println(fmt!("css__parse_unit_keyword:: ptr == %s", copy ptr));
     let mut unit = UNIT_GRAD;
-    let len:uint= ptr.len() - index;
     let ptr_lower = ptr.to_lower();
-    match(len) {
+    match(ptr_lower.len()) {
         4=> if (ptr_lower == ~"grad") {
                 unit= UNIT_GRAD;    
             },
