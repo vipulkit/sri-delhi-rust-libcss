@@ -4300,6 +4300,7 @@ pub impl css_properties {
         let mut token: &@css_token;
 
         if *ctx >= vector.len() {
+            io::println("Exiting: css__parse_text_decoration (1)");
             return CSS_INVALID;
         }
         token=&vector[*ctx];
@@ -4315,7 +4316,7 @@ pub impl css_properties {
                 }
                 else {
                     let mut value: u16 = 0 ;
-                    while (*ctx < vector.len()) {
+                    loop {
                         if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), UNDERLINE as uint) {
                             if ((value & TEXT_DECORATION_UNDERLINE ) == 0) {
                                 value |= TEXT_DECORATION_UNDERLINE ;
@@ -4323,6 +4324,7 @@ pub impl css_properties {
                             
                             else {
                                 *ctx = orig_ctx;
+                                io::println("Exiting: css__parse_text_decoration (2)");
                                 return CSS_INVALID;
                             }
                         }
@@ -4332,6 +4334,7 @@ pub impl css_properties {
                             }
                             else {
                                 *ctx = orig_ctx;
+                                io::println("Exiting: css__parse_text_decoration (3)");
                                 return CSS_INVALID;
                             }
                         }
@@ -4341,6 +4344,7 @@ pub impl css_properties {
                             }
                             else {
                                 *ctx = orig_ctx;
+                                io::println("Exiting: css__parse_text_decoration (4)");
                                 return CSS_INVALID;
 
                             }
@@ -4351,11 +4355,13 @@ pub impl css_properties {
                             }
                             else {
                                 *ctx = orig_ctx;
+                                io::println("Exiting: css__parse_text_decoration (5)");
                                 return CSS_INVALID;
                             }
                         }
                         else {
                             *ctx = orig_ctx;
+                            io::println("Exiting: css__parse_text_decoration (6)");
                             return CSS_INVALID;
                         }
                         consumeWhitespace(vector, ctx);
@@ -4363,24 +4369,28 @@ pub impl css_properties {
                         if *ctx >= vector.len() {
                             break;
                         }
-
                         token=&vector[*ctx];
-                        *ctx += 1;
+
                         match (token.token_type) {
                             CSS_TOKEN_IDENT  => {},
                             _=> {
                                 break;
                             }
                         }
-                        css_stylesheet::css__stylesheet_style_appendOPV(style,  CSS_PROP_TEXT_DECORATION, 0, value);
+
+                        *ctx += 1;
                     }
+
+                    css_stylesheet::css__stylesheet_style_appendOPV(style,  CSS_PROP_TEXT_DECORATION, 0, value);
                 }
             },
             _=> {
                 *ctx = orig_ctx;
+                io::println("Exiting: css__parse_text_decoration (7)");
                 return CSS_INVALID;
             }
         }
+        io::println("Exiting: css__parse_text_decoration (8)");
         CSS_OK
     }
 
