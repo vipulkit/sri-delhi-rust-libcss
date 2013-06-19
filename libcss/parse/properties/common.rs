@@ -149,6 +149,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
         }
     }
     io::println("Exiting: css__parse_unit_specifier (7)");
+    io::println(fmt!("css__parse_unit_specifier:: num == %?, unit_retVal == %?", num, unit_retVal));
     return(Some(num) , Some(unit_retVal) , CSS_OK);
 }
 

@@ -2712,98 +2712,73 @@ pub impl css_properties {
         let mut token:&@css_token;
 
         if *ctx >= vector.len() {
+            io::println("Exiting: css__parse_elevation (1)");
             return CSS_INVALID;
         }
         token=&vector[*ctx];
         
-        if (
-            match token.token_type {
-                CSS_TOKEN_IDENT =>true,
-                _=>false
-            } && 
-            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) 
-        ) {
+        if (token.token_type as int == CSS_TOKEN_IDENT as int&& 
+            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint)) {
             *ctx += 1;
             flags = FLAG_INHERIT as u8;
         }
-        else if (
-            match token.token_type {
-                CSS_TOKEN_IDENT =>true,
-                 _=>false
-            } &&
-            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BELOW as uint)
-            ) {
+        else if (token.token_type as int == CSS_TOKEN_IDENT as int &&
+            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BELOW as uint)) {
                 *ctx += 1;
                 value = ELEVATION_BELOW ;
             }
-        else if (
-            match token.token_type {
-                CSS_TOKEN_IDENT =>true,
-                 _=>false
-            } &&
-         strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEVEL as uint)
-         ) {
+        else if (token.token_type as int == CSS_TOKEN_IDENT as int &&
+         strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEVEL as uint)) {
                 *ctx += 1;
                 value = ELEVATION_LEVEL ;
             }
-        else if (
-            match token.token_type {
-                CSS_TOKEN_IDENT =>true,
-                 _=>false
-            } &&
-            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ABOVE as uint)
-            ) {
+        else if (token.token_type as int == CSS_TOKEN_IDENT as int &&
+            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ABOVE as uint)) {
                 *ctx += 1;
                 value = ELEVATION_ABOVE ;
             }
-        else if (
-            match token.token_type {
-                CSS_TOKEN_IDENT =>true,
-                 _=>false
-            } &&
-            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HIGHER as uint) 
-            ){
+        else if (token.token_type as int == CSS_TOKEN_IDENT as int &&
+            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HIGHER as uint)){
                 *ctx += 1;
                 value = ELEVATION_HIGHER ;
             }
-        else if (
-            match token.token_type {
-                CSS_TOKEN_IDENT =>true,
-                 _=>false
-            } &&
-            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LOWER as uint)
-            ) {
+        else if (token.token_type as int == CSS_TOKEN_IDENT as int &&
+            strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LOWER as uint)) {
                 *ctx += 1;
                 value = ELEVATION_LOWER ;
             }
         else {
-            let (unit_ret,length_ret,error) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_DEG as u32);
+            let (length_ret,unit_ret,error) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_DEG as u32);
             
             match error {
                 CSS_OK=>{
-                    length = length_ret.unwrap() as i32;
-                    unit = unit_ret.unwrap() as u32;
+                    length = length_ret.unwrap();
+                    unit = unit_ret.unwrap();
 
-                    if ((unit & UNIT_ANGLE as u32) ==0) {
+                    if ((unit & UNIT_ANGLE) ==0) {
                         *ctx = orig_ctx;
+                        io::println("Exiting: css__parse_elevation (2)");
                         return CSS_INVALID;
                     }
                     /* Valid angles lie between -90 and 90 degrees */
                     if (unit == UNIT_DEG as u32) {
                         if (length < -F_90 as i32 || length > F_90 as i32) {
                             *ctx = orig_ctx;
+                            io::println("Exiting: css__parse_elevation (3)");
                             return CSS_INVALID;
                         }
                     } 
                     else if (unit == UNIT_GRAD as u32) {
                         if (length < -F_100  as i32|| length > F_100 as i32) {
                             *ctx = orig_ctx;
+                            io::println("Exiting: css__parse_elevation (4)");
                             return CSS_INVALID;
                         }
                     } 
                     else if (unit == UNIT_RAD as u32) {
                         if (length < -F_PI_2  as i32|| length > F_PI_2 as i32) {
                             *ctx = orig_ctx;
+                            io::println("Exiting: css__parse_elevation (5)");
                             return CSS_INVALID;
                         }
                     }
@@ -2818,9 +2793,10 @@ pub impl css_properties {
            
         css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_ELEVATION, flags, value);
 
-        if (((flags & FLAG_INHERIT as u8) > 0) && (value == ELEVATION_ANGLE )) {
-            css_stylesheet::css__stylesheet_style_vappend(style, [length as u32 , unit as u32]);
+        if (((flags & FLAG_INHERIT as u8) == 0) && (value == ELEVATION_ANGLE )) {
+            css_stylesheet::css__stylesheet_style_vappend(style, [length as u32, unit]);
         }
+        io::println("Exiting: css__parse_elevation (6)");
         CSS_OK
     }
 
