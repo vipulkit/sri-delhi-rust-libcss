@@ -867,7 +867,7 @@ pub impl css_language {
         let mut style: @mut css_style;
         let mut index = AZIMUTH as uint;
 
-        while (index < Z_INDEX as uint) {
+        while (index <= Z_INDEX as uint) {
             if self.strings.lwc_string_caseless_isequal(property.idata.get_ref().clone() , index) {
                 break
             }
