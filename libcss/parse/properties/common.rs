@@ -439,10 +439,17 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
             return (Some(ret_value) , Some(ret_result) , CSS_OK);
         }
 
-        let (ret_result , error) = css__parse_named_color(sheet , strings , token.idata.get_ref().clone());
+        let (_ret_result , error) = css__parse_named_color(sheet , strings , token.idata.get_ref().clone());
         
+        if _ret_result.is_some() {
+            ret_result = _ret_result.unwrap();
+        }
+
         if error as int != CSS_OK as int && sheet.quirks_allowed {
-            let(ret_result , error) = css__parse_hash_colour(token.idata.get_ref().clone());
+            let(_ret_result , error) = css__parse_hash_colour(token.idata.get_ref().clone());
+            if _ret_result.is_some() {
+                ret_result = _ret_result.unwrap();
+            }
             
             if error as int == CSS_OK as int {
                 sheet.quirks_used = true;
@@ -458,7 +465,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
     else if (token.token_type as int ==  CSS_TOKEN_HASH as int || (sheet.quirks_allowed && token.token_type as int ==  CSS_TOKEN_NUMBER as int) ||
         (sheet.quirks_allowed && token.token_type as int ==  CSS_TOKEN_DIMENSION as int))
     {
-        let(ret_result , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
+        let(_ret_result , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
 
         match error_from_hash {
             CSS_OK => {
@@ -470,6 +477,9 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                 *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
+        }
+        if _ret_result.is_some() {
+            ret_result = _ret_result.unwrap();
         }
     }
     else if (token.token_type as int ==  CSS_TOKEN_FUNCTION as int) {
