@@ -296,7 +296,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
 }
 
 pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
-	io::println(fmt!("Entering:v css__parse_expected =%?= =%?=",data,ctx));
+	io::println(fmt!("Entering:v css__parse_expected =%?=",data));
 
 	let mut len : uint = 0 ;
 	let mut _goto_start_rule : bool = true  ;
@@ -338,6 +338,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 			};
 			len += min ;
 
+			unsafe { io::println(fmt!("Entry created is =%?=%?=",copy entry.name,entry.ftype)); }
 			ctx.exp.push(entry);
 			ctx.inrule = true;
 		}
@@ -393,7 +394,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 						}) as uint,
 						string: data.slice( start.get()+1,end.get() ).to_str()
 					} ;
-
+					unsafe {io::println( fmt!("Entry created is =%?=%?=",stentry.off,copy stentry.string));}
 					assert!( stentry.string.len()!=0 );
 					rule.stringtab.push(stentry) ;
 					if len == data.len() {
@@ -401,6 +402,15 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 					}
 				}
 				else {
+					/* Skip whitespace */
+					while (data.len()!=len) && ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
+						 (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) {
+						len += 1;
+					}
+
+					if len == data.len() {
+						break ;
+					}
 					/* Assume hexnum */
 					io::println( fmt!("Entering: else 1= %?=%?=",data,len));
 					let mut val = strtoul(copy data,&mut len) ;
@@ -926,34 +936,34 @@ fn tests1() {
 	parse_auto(~"data/parse/tests1.dat");
 }
 
-#[test]
-fn atrules() {
-	parse_auto(~"data/parse/atrules.dat");
-}
+// #[test]
+// fn atrules() {
+// 	parse_auto(~"data/parse/atrules.dat");
+// }
 
-#[test]
-fn colours() {
-	parse_auto(~"data/parse/colours.dat");
-}
+// #[test]
+// fn colours() {
+// 	parse_auto(~"data/parse/colours.dat");
+// }
 
-#[test]
-fn colours_hsl() {
-	parse_auto(~"data/parse/colours-hsl.dat");
-}
+// #[test]
+// fn colours_hsl() {
+// 	parse_auto(~"data/parse/colours-hsl.dat");
+// }
 
-#[test]
-fn nth() {
-	parse_auto(~"data/parse/nth.dat");
-}
+// #[test]
+// fn nth() {
+// 	parse_auto(~"data/parse/nth.dat");
+// }
 
-#[test]
-fn properties() {
-	parse_auto(~"data/parse/properties.dat");
-}
+// #[test]
+// fn properties() {
+// 	parse_auto(~"data/parse/properties.dat");
+// }
 
-#[test]
-fn selectors() {
-	parse_auto(~"data/parse/selectors.dat");
-}
+// #[test]
+// fn selectors() {
+// 	parse_auto(~"data/parse/selectors.dat");
+// }
 
 /////////////////////////////////////////

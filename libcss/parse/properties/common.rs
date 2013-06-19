@@ -187,7 +187,7 @@ pub fn css__parse_unit_keyword(ptr:&str)-> (Option<u32>,css_error) {
                 unit= UNIT_GRAD;    
             },
         3=> {
-            if (ptr_lower == ~"KHz") {
+            if (ptr_lower == ~"khz") {
                 unit= UNIT_KHZ;    
             }
             else if (ptr_lower == ~"deg") {
@@ -201,7 +201,7 @@ pub fn css__parse_unit_keyword(ptr:&str)-> (Option<u32>,css_error) {
             }
         },
         2=> {
-            if (ptr_lower == ~"Hz") {
+            if (ptr_lower == ~"hz") {
                 unit= UNIT_HZ;    
             }
             else if (ptr_lower == ~"ms") {
