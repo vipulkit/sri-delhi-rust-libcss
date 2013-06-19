@@ -936,34 +936,34 @@ fn tests1() {
 	parse_auto(~"data/parse/tests1.dat");
 }
 
-// #[test]
-// fn atrules() {
-// 	parse_auto(~"data/parse/atrules.dat");
-// }
+#[test]
+fn atrules() {
+ 	parse_auto(~"data/parse/atrules.dat");
+}
 
-// #[test]
-// fn colours() {
-// 	parse_auto(~"data/parse/colours.dat");
-// }
+#[test]
+fn colours() {
+ 	parse_auto(~"data/parse/colours.dat");
+}
 
-// #[test]
-// fn colours_hsl() {
-// 	parse_auto(~"data/parse/colours-hsl.dat");
-// }
+#[test]
+fn colours_hsl() {
+ 	parse_auto(~"data/parse/colours-hsl.dat");
+}
 
-// #[test]
-// fn nth() {
-// 	parse_auto(~"data/parse/nth.dat");
-// }
+#[test]
+fn nth() {
+ 	parse_auto(~"data/parse/nth.dat");
+}
 
-// #[test]
-// fn properties() {
-// 	parse_auto(~"data/parse/properties.dat");
-// }
+#[test]
+fn properties() {
+ 	parse_auto(~"data/parse/properties.dat");
+}
 
-// #[test]
-// fn selectors() {
-// 	parse_auto(~"data/parse/selectors.dat");
-// }
+#[test]
+fn selectors() {
+ 	parse_auto(~"data/parse/selectors.dat");
+}
 
 /////////////////////////////////////////
