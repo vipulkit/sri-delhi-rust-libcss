@@ -782,13 +782,14 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
 		io::println(fmt!("a= %?, r= %?, g= %?, b= %?", *a, *r, *g, *b));
 		io::println(fmt!("a= %?, r= %?, g= %?, b= %?", *a as u32 << 24, *r as u32 << 16, *g as u32 << 8, *b as u32));
         ret_result = (*a as u32 << 24 | *r as u32 << 16 | *g as u32 << 8 | *b as u32);
-        ret_value = COLOR_SET ;
+        
     }
 
     else {
         *ctx = orig_ctx;
         return (None , None , CSS_INVALID);
     }
+	ret_value = COLOR_SET ;
 	io::println(fmt!("Return value= %?, result= %?", ret_value, ret_result));
     (Some(ret_value) , Some(ret_result) , CSS_OK)
 }
@@ -823,10 +824,12 @@ pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , c
         r = charToHex(input_string[0]) as u8;
         g = charToHex(input_string[1]) as u8;
         b = charToHex(input_string[2]) as u8;
+		io::println(fmt!("r=%?, g=%?, b=%? ",r, g, b));
 
         r |= (r << 4);
         g |= (g << 4);
         b |= (b << 4);
+		
     }
     else if (input_length == 6 && isHex(input_string[0]) && isHex(input_string[1]) &&   isHex(input_string[2]) && isHex(input_string[3]) && isHex(input_string[4]) && isHex(input_string[5])) {
         r = (charToHex(input_string[0]) << 4) as u8;
@@ -839,9 +842,11 @@ pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , c
     else {
         return(None , CSS_INVALID)
     }
-
-    result_val = ((a << 24) | (r << 16) | (g << 8) | b) as u32;
-
+	io::println(fmt!("r=%?, g=%?, b=%? ",r, g, b));
+	
+    result_val = (a as u32 << 24) | (r as u32 << 16) | (g as u32 << 8) | b as u32;
+	
+	io::println(fmt!("result_val=%?",result_val));
     return (Some(result_val) , CSS_OK);
 }
 
