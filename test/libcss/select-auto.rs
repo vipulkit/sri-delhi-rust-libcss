@@ -41,8 +41,8 @@ pub struct sheet_ctx {
 }
 
 pub struct line_ctx {
-	explen:uint,
-	expused:uint,
+	//explen:uint,
+	//expused:uint,
 	exp:~str,
 
 	intree:bool,
@@ -77,8 +77,8 @@ pub fn select_test(file:~str) {
     }
 
 	let mut ctx : @mut line_ctx = @mut line_ctx{
-		explen:0,
-		expused:0,
+		//explen:0,
+		//expused:0,
 		exp:~"",
 
 		intree:false,
@@ -110,14 +110,15 @@ pub fn select_test(file:~str) {
 		},
 		Err(y) => {
 			file_content = ~"" ;
-			io::println(fmt!("\n Error opening file :%?",y));
+			io::println(fmt!("\n Error opening file ===============:%?",y));
 			assert!(false) ;
 		}
 	}
 
 	for str::each_line_any(file_content) |line| { 
         let mut line_string: ~str = line.to_str(); 
-		line_string.push_char('\n'); 
+		line_string.push_char('\n');
+		io::println(fmt!("Handling line =%?=",copy line_string));
 	    handle_line(&mut line_string,ctx);
     	}	
 
@@ -224,7 +225,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
             /* This marks end of testcase, so run it */
             run_test(ctx);
 	
-	    	ctx.expused = 0;
+	    	//ctx.expused = 0;
 
             ctx.intree = false;
             ctx.insheet = false;
@@ -455,17 +456,17 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
         p += 1;
     }
     
-    if p == 6 && data.len() >= 6 && is_string_caseless_equal(data.slice(0,6), "author"){
+    if p-index == 6 && is_string_caseless_equal(data.slice(index,p), "author"){
         origin = CSS_ORIGIN_AUTHOR;
     }
-    else if p == 4 && data.len() >= 4 && is_string_caseless_equal(data.slice(0,4), "user"){
+    else if p-index == 4 && is_string_caseless_equal(data.slice(index,p), "user"){
         origin = CSS_ORIGIN_USER;
     }
-    else if p == 2 && data.len() >= 2 && is_string_caseless_equal(data.slice(0,2), "ua"){
+    else if p-index == 2 && is_string_caseless_equal(data.slice(index,p), "ua"){
         origin = CSS_ORIGIN_UA;
     }
     else {
-			println("Unknown stylesheet origin");
+	println("Unknown stylesheet origin");
             assert!(false);
     }
     
@@ -644,7 +645,7 @@ pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> u
 //}
 
 pub fn run_test( ctx:@mut line_ctx) {
-	io::println(fmt!("\n Entering run test ")) ;
+	//io::println(fmt!("\n Entering run test =%?=",ctx)) ;
     let mut select: ~css_select_ctx;
     let mut results: css_select_results;
 
@@ -654,6 +655,7 @@ pub fn run_test( ctx:@mut line_ctx) {
     let mut testnum: int;//TODO static
 
     select = css_select_ctx::css_select_ctx_create();
+
     unsafe {
         while i < (ctx.sheets.len() as u32) {
             match select.css_select_ctx_append_sheet(ctx.sheets[i].sheet.stylesheet,ctx.sheets[i].origin,ctx.sheets[i].media) {
@@ -747,10 +749,9 @@ pub fn run_test( ctx:@mut line_ctx) {
     assert!(results.styles[ctx.pseudo_element].is_some());
     dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
     let mut string:~str = copy ctx.exp;
-    string = string.slice(0,ctx.explen).to_owned().to_lower();
-    if 8192 - buf.len() !=  ctx.explen || str::eq(&buf.slice(0,ctx.explen).to_owned().to_lower(),&string) {
-        io::println(fmt!("Expected : %?, %?",copy ctx.explen,string));
-        io::println(fmt!("Result: %?,%?",8192-buf.len(),buf));
+    if str::eq( &buf.to_owned().to_lower(), &string.to_lower() ) {
+        io::println(fmt!("Expected : %? ",string));
+        io::println(fmt!("Result: %?",buf));
     }
     //css_select_ctx::css_select_results_destroy(&results);
     ctx.tree = None;
@@ -760,7 +761,6 @@ pub fn run_test( ctx:@mut line_ctx) {
     ctx.sheets= ~[];
     ctx.target = None;
 
-    
  }
 
 

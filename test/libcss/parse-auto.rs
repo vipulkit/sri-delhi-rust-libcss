@@ -361,8 +361,8 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 				io::println( fmt!("Entering: while =%?=%?=%?=",data.len(),len,data));
 
 				/* Skip whitespace */
-				while ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
-					 (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) && (data.len()!=len) {
+				while (data.len()!=len) && ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
+					 (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) {
 					len += 1;
 				}
 
@@ -524,6 +524,7 @@ pub fn run_test(ctx:@mut line_ctx) {
 	if (css_instance.stylesheet.rule_count != unsafe {ctx.exp.len()} ) {
 		io::println(fmt!("Got %u rules. Expected %u\n",
 				css_instance.stylesheet.rule_count , unsafe{ctx.exp.len()}) );
+		report_fail(copy ctx.buf,copy ctx.exp[e]);
 		fail!(~"Unexpected number of rules ") ;
 	}
 
