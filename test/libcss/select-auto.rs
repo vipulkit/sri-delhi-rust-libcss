@@ -455,17 +455,17 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
         p += 1;
     }
     
-    if p == 6 && data.len() >= 6 && is_string_caseless_equal(data.slice(0,6), "author"){
+    if p-index == 6 && is_string_caseless_equal(data.slice(index,p), "author"){
         origin = CSS_ORIGIN_AUTHOR;
     }
-    else if p == 4 && data.len() >= 4 && is_string_caseless_equal(data.slice(0,4), "user"){
+    else if p-index == 4 && is_string_caseless_equal(data.slice(index,p), "user"){
         origin = CSS_ORIGIN_USER;
     }
-    else if p == 2 && data.len() >= 2 && is_string_caseless_equal(data.slice(0,2), "ua"){
+    else if p-index == 2 && is_string_caseless_equal(data.slice(index,p), "ua"){
         origin = CSS_ORIGIN_UA;
     }
     else {
-			println("Unknown stylesheet origin");
+	println("Unknown stylesheet origin");
             assert!(false);
     }
     
