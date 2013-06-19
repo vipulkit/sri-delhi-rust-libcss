@@ -1925,26 +1925,36 @@ pub impl css_properties {
         } 
         else {
 
-                /* Macro to output the value marker, awkward because we need to check
-                 * first to determine how the value is constructed.
-                 */
-                let CSS_APPEND = |first, CSSVAL| css_stylesheet::css__stylesheet_style_append(result, if first {buildOPV(CSS_PROP_CONTENT, 0, CSSVAL)} else {CSSVAL as u32});
+            /* Macro to output the value marker, awkward because we need to check
+             * first to determine how the value is constructed.
+             */
+            let CSS_APPEND = |first, CSSVAL| css_stylesheet::css__stylesheet_style_append(result, if first {buildOPV(CSS_PROP_CONTENT, 0, CSSVAL)} else {CSSVAL as u32});
 
-                let mut first = true;
-                let mut prev_ctx = orig_ctx;
+            let mut first = true;
+            let mut prev_ctx = orig_ctx;
 
-                /* [
-                 *   IDENT(open-quote, close-quote, no-open-quote,
-                 *         no-close-quote) |
-                 *   STRING |
-                 *   URI |
-                 *   FUNCTION(attr) IDENT ')' |
-                 *   FUNCTION(counter) IDENT IDENT? ')' |
-                 *   FUNCTION(counters) IDENT STRING IDENT? ')'
-                 * ]+
-                 */
+            /* [
+             *   IDENT(open-quote, close-quote, no-open-quote,
+             *         no-close-quote) |
+             *   STRING |
+             *   URI |
+             *   FUNCTION(attr) IDENT ')' |
+             *   FUNCTION(counter) IDENT IDENT? ')' |
+             *   FUNCTION(counters) IDENT STRING IDENT? ')'
+             * ]+
+             */
+
+            let mut token_null = false;
+            if *ctx >= vector.len() {
+                token_null = true;
+            } 
 
             loop {
+
+                if token_null {
+                    break;
+                }
+
                 if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),
                  OPEN_QUOTE as uint) {
                     CSS_APPEND(first, CONTENT_OPEN_QUOTE )
@@ -2028,7 +2038,7 @@ pub impl css_properties {
                 }
                 else if match token.token_type {CSS_TOKEN_FUNCTION  => true, _ => false} &&
                        strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), COUNTER as uint) {
-                                       
+
                     let mut opv = CONTENT_COUNTER as u32;
 
                     consumeWhitespace(vector, ctx);
@@ -2115,7 +2125,7 @@ pub impl css_properties {
                     }
                     
                     token=&vector[*ctx];
-                    
+                    *ctx += 1;
                     if !tokenIsChar(token, ')') {
                         *ctx = orig_ctx;
                         return CSS_INVALID;
@@ -2136,20 +2146,20 @@ pub impl css_properties {
 
                     /* Expect IDENT */
                     if *ctx >= vector.len() {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID
+                    }
+                        
+                    token=&vector[*ctx];
+                    *ctx += 1; //Iterate
+
+                    match token.token_type { 
+                        CSS_TOKEN_IDENT  => {},
+                        _ => {
                             *ctx = orig_ctx;
                             return CSS_INVALID
                         }
-                        
-                        token=&vector[*ctx];
-                        *ctx += 1; //Iterate
-
-                        match token.token_type { 
-                            CSS_TOKEN_IDENT  => {},
-                            _ => {
-                                *ctx = orig_ctx;
-                                return CSS_INVALID
-                            }
-                        }   
+                    }   
                     
                     let name = token.idata.get_ref().clone();
 
@@ -2199,7 +2209,6 @@ pub impl css_properties {
                     }
                     
                     token=&vector[*ctx];
-                    *ctx += 1; //Iterate
 
                     if !tokenIsChar(token, ',') && !tokenIsChar(token, ')') {
                         *ctx = orig_ctx;
@@ -2257,6 +2266,7 @@ pub impl css_properties {
                     token=&vector[*ctx];
                     *ctx += 1; //Iterate
 
+
                     if !tokenIsChar(token, ')') {
                         *ctx = orig_ctx;
                         return CSS_INVALID
@@ -2296,7 +2306,6 @@ pub impl css_properties {
                 first = false;
 
                 consumeWhitespace(vector, ctx);
-
                 prev_ctx = *ctx;
                 
                 if *ctx >= vector.len() {
@@ -2306,6 +2315,7 @@ pub impl css_properties {
                 token=&vector[*ctx];
                 *ctx += 1; //Iterate
             } /* loop */
+
 
             /* Write list terminator */
             css_stylesheet::css__stylesheet_style_append(result, CONTENT_NORMAL as u32);
