@@ -1551,6 +1551,7 @@ pub impl css_properties {
                 }
             },
             CSS_TOKEN_FUNCTION  => {
+
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , RECT as uint) {
                     let mut i: int = 0;
                     let mut value: u16 = CLIP_SHAPE_RECT ;
@@ -1637,9 +1638,11 @@ pub impl css_properties {
                     }
                     css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_CLIP , 0 , value);
 
+                    i = 0;
                     while i < num_lengths {
+
                         css_stylesheet::css__stylesheet_style_vappend(style,[ length[i] as u32, unit[i]]);
-                        num_lengths += 1;
+                        i += 1;
                     }
                 }
             },
