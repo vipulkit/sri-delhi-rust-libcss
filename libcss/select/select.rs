@@ -155,8 +155,8 @@ impl css_select_ctx {
                                     origin:css_origin,
                                     media:u64) 
                                     -> css_error {
-        let n_sheets = self.sheets.len();
-        self.css_select_ctx_insert_sheet(sheet, n_sheets, origin,media)
+        //let n_sheets = self.sheets.len();
+        self.css_select_ctx_insert_sheet(sheet,origin,media)
     }
 
     /**
@@ -172,7 +172,7 @@ impl css_select_ctx {
     */
     pub fn css_select_ctx_insert_sheet(&mut self,
                                     csheet:@mut css_stylesheet,
-                                    index:uint,
+                                    //index:uint,
                                     corigin:css_origin,
                                     cmedia:u64) 
                                     -> css_error {
@@ -185,9 +185,9 @@ impl css_select_ctx {
     
         /* Index must be in the range [0, n_sheets]
          * The latter being equivalent to append */
-        if index > self.sheets.len()    {
-            return CSS_INVALID;
-        }   
+        // if index > self.sheets.len()    {
+        //     return CSS_INVALID;
+        // }   
             
         let mut select_sheet = @mut css_select_sheet{
             sheet:csheet,
@@ -195,7 +195,7 @@ impl css_select_ctx {
             media:cmedia
         };
 
-        self.sheets.insert(index, select_sheet);
+        self.sheets.push(select_sheet);
         CSS_OK
     }
 
@@ -285,7 +285,7 @@ impl css_select_ctx {
         if( node == ptr::null() || handler.handler_version != (CSS_SELECT_HANDLER_VERSION_1  as uint) ) {
             return (CSS_BADPARM,None) ;
         }
-        let mut i : int ;
+        let mut i : int  ;
         let mut j :int;
         let mut error : css_error ;
         //let mut results : Option<css_select_results>  ;
@@ -313,11 +313,11 @@ impl css_select_ctx {
             n_classes:0,             
             reject_cache: ~[],       
             next_reject:128-1,             
-            props: ~[~[]] 
+            props: ~[] 
         };
-        for uint::range(0,CSS_N_PROPERTIES as uint) |_| {
+        for uint::range(0,(CSS_N_PROPERTIES as uint)) |_| {
             let mut prop_vec : ~[@mut prop_state] = ~[] ;
-            for uint::range(0,CSS_PSEUDO_ELEMENT_COUNT as uint) |_| {
+            for uint::range(0,(CSS_PSEUDO_ELEMENT_COUNT as uint)) |_| {
                 let mut pstate = @mut prop_state{
                     specificity:0,
                     set:false,
@@ -331,12 +331,13 @@ impl css_select_ctx {
         }
 
         i = CSS_PSEUDO_ELEMENT_COUNT as int ;
-        while (i>0) {
+        while (i>=0) {
             state.results.styles.push(None) ;
+            i -= 1;
         }
 
         /* Base element style is guaranteed to exist */
-        state.results.styles.push(Some(css_computed_style_create()));
+        state.results.styles[0] = (Some(css_computed_style_create()));
 
         error = (*(handler.parent_node))(node, &mut parent);
         match error {
@@ -450,8 +451,8 @@ impl css_select_ctx {
         state.computed = state.results.styles[CSS_PSEUDO_ELEMENT_NONE as uint].get();
         i = 0 ;
         while (i<(CSS_N_PROPERTIES as int)) {
-            let mut prop = 
-                    state.props[i][CSS_PSEUDO_ELEMENT_NONE as uint];
+            let mut prop2 = copy state.props[i] ;
+            let mut prop = prop2[CSS_PSEUDO_ELEMENT_NONE as uint];
 
             /* Apply presentational hints if the property is unset or 
              * the existing property value did not come from an author 
