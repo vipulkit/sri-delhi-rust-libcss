@@ -110,9 +110,11 @@ pub fn lwc_thread_safe() -> arc::RWARC<~lwc> {
 
 
 // Is strings are equal
-#[inline(always)]
 pub fn lwc_string_isequal(first:lwc_string , second:lwc_string) -> bool {
-	(first.position==second.position)
+	(first.position==second.position) && 
+	(first.hash_case==second.hash_case) &&
+	(first.slot_num==second.slot_num) &&
+	(first.hash_icase==second.hash_icase)
 }
 
 impl lwc {
@@ -120,6 +122,9 @@ impl lwc {
 		self.lwc_intern_string(data)
 	}
 
+	// Todo : Invalidate the remaining refrence of this instance 
+	// Or
+	// Return error during access from the invalid refrence
 	pub fn lwc_string_unref(&mut self, string:lwc_string) -> bool {
 		let pos = string.position ;
 		let slot = string.slot_num ;
@@ -161,7 +166,7 @@ impl lwc {
 	pub fn lwc_intern_string(&mut self,data:&str) -> lwc_string {
 		let (hash,lhash)  = lwc_calculate_hash(data) ;
 		let slot : uint = (lhash & 0xFFFF ) as uint ;
-		let final_lhash = (lhash & 0xFFFFFFFFFFFF0000) | ((data.len() as u8) as u64) ; 
+		let final_lhash = (lhash & 0xFFFFFFFFFFFF0000) | ((data.len() as u16) as u64) ; 
 		let mut pos : uint = 0 ;
 
 		for self.hash_buck[slot].hashes.eachi |i,&elem| {
@@ -170,7 +175,7 @@ impl lwc {
 				if self.hash_buck[slot].lhashes[i] == final_lhash {
 					pos = self.hash_buck[slot].position[i] ;
 					if str::eq_slice(data,self.buck[pos]) {
-						//io::println(fmt!("    Found  =%?=%?=%?=",hash,slot,final_lhash));
+						//io::println(fmt!("    Found  =%?=%?=%?=%?=",hash,slot,final_lhash,lhash));
 						//io::println(fmt!("Strings are =%?=%?=",data,self.buck[pos]));
 						return lwc_string{hash_case:hash,hash_icase:final_lhash,position:pos,slot_num:slot} ;
 					}
@@ -188,9 +193,9 @@ impl lwc {
 			self.buck[pos] = data.to_owned() ;
 		}
 		self.hash_buck[slot].position.push(pos) ;
-		//io::println(fmt!("Not Found  =%?=%?=%?=",hash,slot,final_lhash));
+		//io::println(fmt!("Not Found  =%?=%?=%?=%?=",hash,slot,final_lhash,lhash));
 		//io::println(fmt!("Strings inserted is =%?=",data));
-		return lwc_string{hash_case:hash,hash_icase:lhash,position:pos,slot_num:slot} ;
+		return lwc_string{hash_case:hash,hash_icase:final_lhash,position:pos,slot_num:slot} ;
 	}
 
 	// Is strings are caseless equal
