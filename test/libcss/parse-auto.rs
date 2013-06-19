@@ -416,14 +416,13 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
 pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
 
-	io::println(fmt!("    Data: %? ", data) );
-
-	io::println(fmt!("    Expected entry:") );
-	io::println(fmt!("	entry type:%d name:%s\n", e.ftype, copy e.name) );
-	io::println(fmt!("	bytecode ") );
-	for e.bytecode.each_mut |code| {
-		io::println(fmt!("%? ", code ));
+	io::println(fmt!("Data == %? ", str::from_bytes(data)));
+	io::println(fmt!("Expected entry type == %d, name == %s", e.ftype, copy e.name) );
+	io::print(fmt!("Expected bytecode == ") );
+	for e.bytecode.each_mut |&code| {
+		io::print(fmt!("%? ", code ));
 	}
+	io::println("\n")
 }
 
 pub fn run_test(ctx:@mut line_ctx) {
@@ -922,37 +921,37 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 }
 
 #[test]
-fn parse_tests1() {
+fn tests1() {
 	parse_auto(~"data/parse/tests1.dat");
 }
 
 #[test]
-fn parse_atrules() {
+fn atrules() {
 	parse_auto(~"data/parse/atrules.dat");
 }
 
 #[test]
-fn parse_colours() {
+fn colours() {
 	parse_auto(~"data/parse/colours.dat");
 }
 
 #[test]
-fn parse_colours_hsl() {
+fn colours_hsl() {
 	parse_auto(~"data/parse/colours-hsl.dat");
 }
 
 #[test]
-fn parse_nth() {
+fn nth() {
 	parse_auto(~"data/parse/nth.dat");
 }
 
 #[test]
-fn parse_properties() {
+fn properties() {
 	parse_auto(~"data/parse/properties.dat");
 }
 
 #[test]
-fn parse_selectors() {
+fn selectors() {
 	parse_auto(~"data/parse/selectors.dat");
 }
 

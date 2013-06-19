@@ -880,15 +880,16 @@ pub impl css_language {
 
         style = css_stylesheet::css__stylesheet_style_create(self.sheet) ;
         unsafe {
-            io::println(fmt!("parseProperty: style1.bytecode == %?" , style.bytecode));
+            io::println(fmt!("parseProperty:: style.bytecode (1) == %?" , style.bytecode));
         }
         (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , &mut self.strings , vector , ctx , style);
         unsafe {
-            io::println(fmt!("parseProperty: style2.bytecode == %?" , style.bytecode));
+            io::println(fmt!("parseProperty:: style.bytecode (2)== %?" , style.bytecode));
         }
         let (status,flags) = self.css__parse_important(vector , ctx);
-        if match status { CSS_OK => false, _ => true} {
-            return CSS_INVALID;
+        if status as int != CSS_OK as int {
+            io::println("Exiting: parseProperty (1)");
+            return status;
         }
         consumeWhitespace(vector , ctx);
 
@@ -900,6 +901,7 @@ pub impl css_language {
             self.css__make_style_important(style);
         }
 
+        io::println("Exiting: parseProperty (2)");
         /* Append style to rule */
         match self.sheet.css__stylesheet_rule_append_style(curRule, style) {
             CSS_OK => CSS_OK,
@@ -1865,10 +1867,12 @@ pub impl css_language {
         consumeWhitespace(vector, ctx);
 
         if *ctx >= vector.len() {
+            io::println("Exiting: css__parse_important (1)");
             return (CSS_OK,flags)
         }
         
         let mut token = &vector[*ctx];
+        io::println(fmt!("css__parse_important:: token == %?", token));
         *ctx += 1; //Iterate
         
         if  tokenIsChar(token, '!') {
@@ -1877,6 +1881,7 @@ pub impl css_language {
 
             if *ctx >= vector.len() || match vector[*ctx].token_type { CSS_TOKEN_IDENT => false, _ => true} {
                 *ctx = orig_ctx;
+                io::println("Exiting: css__parse_important (2)");
                 return (CSS_INVALID,flags)
             }
                         
@@ -1887,13 +1892,15 @@ pub impl css_language {
                 flags |= FLAG_IMPORTANT as u8;
             } else {
                 *ctx = orig_ctx;
+                io::println("Exiting: css__parse_important (3)");
                 return (CSS_INVALID, flags);
             }
         } else {
             *ctx = orig_ctx;
+            io::println("Exiting: css__parse_important (4)");
             return (CSS_INVALID,flags);
         }
-
+        io::println("Exiting: css__parse_important (5)");
         return (CSS_OK,flags);
     }
 
