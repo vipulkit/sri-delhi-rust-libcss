@@ -418,7 +418,11 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
             return (None , None , CSS_INVALID);
         } 
     }
-
+	unsafe {
+		io::println(fmt!("Token = %?", token));
+		io::println(fmt!("sheet.quirks_allowed = %?", sheet.quirks_allowed));
+	}
+	
     if token.token_type as int == CSS_TOKEN_IDENT as int  {
         if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , TRANSPARENT as uint) {
             ret_value = COLOR_TRANSPARENT ;
@@ -737,11 +741,12 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                 *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
+			io::println(fmt!("hue= %?, sat= %?, lit= %?", hue as i32, sat as i32, lit as i32));
             let (ra , ga , ba) = HSL_to_RGB(hue as i32, sat as i32, lit as i32);
             *r = ra;
             *g = ga;
             *b = ba;
-
+			io::println(fmt!("ra= %?, ga= %?, ba= %?", ra, ga, ba));
             if alpha > 255 {
                 *a = 255;
             }
@@ -756,8 +761,9 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
             *ctx = orig_ctx;
             return (None , None , CSS_INVALID);
         }
-
-        ret_result = (*a << 24 | *r << 16 | *g << 8 | *b) as u32;
+		io::println(fmt!("a= %?, r= %?, g= %?, b= %?", *a, *r, *g, *b));
+		io::println(fmt!("a= %?, r= %?, g= %?, b= %?", *a as u32 << 24, *r as u32 << 16, *g as u32 << 8, *b as u32));
+        ret_result = (*a as u32 << 24 | *r as u32 << 16 | *g as u32 << 8 | *b as u32);
         ret_value = COLOR_SET ;
     }
 
@@ -765,7 +771,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
         *ctx = orig_ctx;
         return (None , None , CSS_INVALID);
     }
-
+	io::println(fmt!("Return value= %?, result= %?", ret_value, ret_result));
     (Some(ret_value) , Some(ret_result) , CSS_OK)
 }
 
@@ -922,10 +928,12 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
     else {
         max_rgb = css_divide_fixed(css_subtract_fixed(css_multiply_fixed(css_add_fixed(lit, sat), F_100 as i32), css_multiply_fixed(lit, sat)), F_100 as i32);
     }
-
+	io::println(fmt!("max_rgb= %?", max_rgb));
+	
     /* Compute min(r,g,b) */
     min_rgb = css_subtract_fixed(css_multiply_fixed(lit, css_int_to_fixed(2)), max_rgb);
-
+	io::println(fmt!("min_rgb= %?", min_rgb));
+	
     /* We know that the value of at least one of the components is 
      * max(r,g,b) and that the value of at least one of the other
      * components is min(r,g,b).
@@ -948,26 +956,36 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 
     /* Chroma is the difference between min and max */
     chroma = css_subtract_fixed(max_rgb, min_rgb);
-
+	io::println(fmt!("chroma= %?", chroma));
+	
     /* Compute which sextant the hue lies in (truncates result) */
-    let hue_sextant = css_divide_fixed(css_multiply_fixed(hue, css_int_to_fixed(6)), F_360 as i32);
-    sextant = (hue_sextant as int) >> CSS_RADIX_POINT;
+    let hue = css_divide_fixed(css_multiply_fixed(hue, css_int_to_fixed(6)), F_360 as i32);
+    sextant = (hue as int) >> CSS_RADIX_POINT;
+	io::println(fmt!("hue= %?", hue));
+	io::println(fmt!("sextant= %?", sextant));
 
     /* Compute offset of hue from start of sextant */
     relative_hue = css_subtract_fixed(hue, css_int_to_fixed(sextant));
-
+	io::println(fmt!("relative_hue= %?", relative_hue));
+	
     /* Scale offset by chroma */
     scaled_hue = css_multiply_fixed(relative_hue, chroma);
-
+	io::println(fmt!("scaled_hue= %?", scaled_hue));
+	
     /* Compute potential values of the third colour component */
     mid1 = css_add_fixed(min_rgb, scaled_hue);
     mid2 = css_subtract_fixed(max_rgb, scaled_hue);
-
+	io::println(fmt!("mid1= %?", mid1));
+	io::println(fmt!("mid2= %?", mid2));
+	
     match sextant {
         0 => {
             let r = (css_divide_fixed(css_multiply_fixed((max_rgb), F_255 as i32), F_100 as i32 )) >> CSS_RADIX_POINT;
-            let g = (css_divide_fixed(css_multiply_fixed((mid1), F_255 as i32), F_100 as i32    )) >> CSS_RADIX_POINT;
+            io::println(fmt!("r= %?", r));
+			let g = (css_divide_fixed(css_multiply_fixed((mid1), F_255 as i32), F_100 as i32    )) >> CSS_RADIX_POINT;
+			io::println(fmt!("g= %?", g));
             let b = (css_divide_fixed(css_multiply_fixed((min_rgb), F_255 as i32), F_100 as i32 )) >> CSS_RADIX_POINT;
+			io::println(fmt!("b= %?", b));
             return (r as u8 , g as u8 , b as u8);
         },
         1 => {

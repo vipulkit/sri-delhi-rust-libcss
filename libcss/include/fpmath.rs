@@ -1,6 +1,7 @@
 pub static CSS_RADIX_POINT : int = 10 ;
 pub static INT_MIN : int = int::min_value ;
 pub static INT_MAX : int = int::max_value ;
+pub static I32_MAX : i32 = 2147483647 ;
 
 pub fn css_int_to_fixed(a:int) -> i32 {
 
@@ -32,7 +33,10 @@ pub fn css_divide_fixed(x : i32, y : i32) -> i32 {
 }
 
 pub fn css_multiply_fixed(x: i32 , y: i32) -> i32 {
-    let mut xx: i64 = (x as i64)*((y as i64) >> CSS_RADIX_POINT);
+    io::println(fmt!("x = %?", x));
+	io::println(fmt!("y = %?", y));
+	
+	let mut xx: i64 = ((x as i64)*(y as i64)) >> CSS_RADIX_POINT;
     
     if xx < (INT_MIN as i64) {
         xx = INT_MIN as i64;
@@ -41,7 +45,8 @@ pub fn css_multiply_fixed(x: i32 , y: i32) -> i32 {
     if xx > (INT_MAX as i64) {
         xx = INT_MAX as i64;
     }
-    
+    io::println(fmt!("xx = %?", xx));
+	io::println(fmt!("res_xx = %?", xx as i32));
     xx as i32
 }
 
@@ -62,16 +67,24 @@ pub fn css_add_fixed(x: i32 , y: i32) -> i32 {
 }
 
 pub fn css_subtract_fixed(x: i32 , y: i32) -> i32{
-    let mut ux: i32 = x;
+    io::println(fmt!("x = %?", x));
+	io::println(fmt!("y = %?", y));
+	let mut ux: i32 = x;
     let mut uy: i32 = y;
     let mut res = ux - uy;
     
-    ux = (ux >> 31) + INT_MAX as i32;
-    
+    ux = (ux >> 31) + I32_MAX;
+	io::println(fmt!("INT_MAX = %?", I32_MAX));
+	io::println(fmt!("INT_MAX = %?", 0x7FFF));
+    io::println(fmt!("ux = %?", ux));
     /* Force compiler to use cmovns instruction */
-    if (((ux ^ uy) & (ux ^ res)) < 0) {
+    io::println(fmt!("ux ^ uy = %?", ux ^ uy));
+	io::println(fmt!("ux ^ res = %?", ux ^ res));
+	io::println(fmt!("(ux ^ uy) & (ux ^ res) = %?", (ux ^ uy) & (ux ^ res)));
+	if (((ux ^ uy) & (ux ^ res)) < 0) {
         res = ux;
     }
+        
         
     return res;
 }
