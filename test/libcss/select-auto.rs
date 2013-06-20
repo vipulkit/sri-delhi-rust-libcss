@@ -398,9 +398,9 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 			/* Find node to insert into */
 			while (depth <= ctx.depth) {
 				ctx.depth -= 1;
-				ctx.current = ctx.current.unwrap().parent;
+				ctx.current = ctx.current.get().parent;
 			}
-			let ctx_current = ctx.current.unwrap();	
+			let ctx_current = ctx.current.get();	
 			/* Insert into current node */
 			if (ctx_current.children.is_none()) {
 				ctx_current.children = Some(n);
@@ -746,6 +746,7 @@ pub fn run_test( ctx:@mut line_ctx) {
         }
     }
 
+    io::println(fmt!(" CSS Selection result is =%?=",results));
     assert!(results.styles[ctx.pseudo_element].is_some());
     dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
     let mut string:~str = copy ctx.exp;
