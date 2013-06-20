@@ -4997,21 +4997,23 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
         }
 
         consumeWhitespace(vector , ctx);
-        if (*ctx >= vector.len()) {
+        
+		if (*ctx >= vector.len()) {
             break;
         }
+		
         token = &vector[*ctx];
         if  tokenIsChar(token , ',') {
-            if *ctx >= vector.len() {
-                break;
-            }
             *ctx = *ctx + 1;
-            consumeWhitespace(vector , ctx);
-            token = &vector[*ctx];
-            if *ctx >= vector.len() {
+            
+			consumeWhitespace(vector , ctx);
+            
+			if *ctx >= vector.len() {
                 *ctx = orig_ctx;
                 return CSS_INVALID;
             }
+			token = &vector[*ctx]; //peek
+            
             match token.token_type {
                 CSS_TOKEN_IDENT |CSS_TOKEN_STRING  => {},
                 _ => {
@@ -5023,10 +5025,18 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
         else {
             break;
         }
-        first = false;
-        prev_ctx = *ctx;
-        token = &vector[*ctx];
-        *ctx += 1;
+        
+		first = false;
+        
+		prev_ctx = *ctx;
+        
+		if *ctx >= vector.len(){
+			break;
+		}
+		else {
+			token = &vector[*ctx];
+			*ctx += 1; //Iterate
+		}
     }
 
     CSS_OK
