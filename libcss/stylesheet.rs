@@ -537,6 +537,7 @@ impl css_stylesheet {
     */
     pub fn css__stylesheet_selector_create(&mut self, qname : css_qname ) -> @mut css_selector {
         io::println("Entering: css__stylesheet_selector_create");
+        io::println(fmt!("css__stylesheet_selector_create:: qname == %?", qname));
         let mut sel = @mut css_selector{  
             combinator:None, 
             rule:None, 
