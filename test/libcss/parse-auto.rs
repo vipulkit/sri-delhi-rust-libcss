@@ -835,7 +835,9 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
                     }
                 } ,
                 _=>{
+                    ptr.push_char('(' );
                     str::push_str(ptr,fmt!("%?n+%?",copy detail.a,copy detail.b));
+                    ptr.push_char(')' );
                 }
             }
         },

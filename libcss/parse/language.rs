@@ -1521,25 +1521,31 @@ pub impl css_language {
                 }, 
                 NTH_CHILD | NTH_LAST_CHILD  | NTH_OF_TYPE  | NTH_LAST_OF_TYPE  => {
                     /* an + b */
-                    match self.parseNth(vector, ctx) {
+                    match self.parseNth(vector, ctx, qname) {
                         (CSS_OK, Some(specific)) => {
                             
                             specific.selector_type = selector_type;
                             // Iterate to the next location
                             if *ctx >= vector.len() {
+                                io::println("Exiting: parsePseudo (Nth 1)");
                                 return (CSS_INVALID, None)
                             }
                                         
                             token = &vector[*ctx];
                             *ctx += 1 ; 
-                            
+                            io::println(fmt!("parsePseudo (Nth) :: token == %?", token));
                             if !tokenIsChar(token, ')') {
+                                io::println("Exiting: parsePseudo (Nth 2)");
                                 return (CSS_INVALID, None)
                             }
 
+                            io::println("Exiting: parsePseudo (Nth 3)");
                             return (CSS_OK,Some(specific))
                         },  
-                        (error,_) => return (error,None)
+                        (error,_) => { 
+                            io::println("Exiting: parsePseudo (Nth 4)");
+                            return (error,None); 
+                        }
                     }
                     
                 },  
@@ -1611,13 +1617,13 @@ pub impl css_language {
         return css_stylesheet::css__stylesheet_selector_detail_init(selector_type,copy *qname, value_type, detail_value_string, None, negate);
     }
 
-    pub fn  parseNth(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn parseNth(&mut self, vector:&~[@css_token], ctx:@mut uint, qname:@mut css_qname) -> (css_error,Option<@mut css_selector_detail>) {
         io::println("Entering: parseNth");
         let mut token:&@css_token;
         let mut negate:bool = false;
-        let qname:css_qname = css_qname{ name:~"", ns:~""};
+        //let qname:css_qname = css_qname{ name:~"", ns:~""};
         let mut value: @mut css_selector_detail = @mut css_selector_detail{
-            qname:qname,
+            qname:copy *qname,
             selector_type:CSS_SELECTOR_PSEUDO_CLASS,
             combinator_type:CSS_COMBINATOR_NONE,  
             value_type:CSS_SELECTOR_DETAIL_VALUE_NTH,
@@ -1637,10 +1643,12 @@ pub impl css_language {
 
         // Vector Iterate
         if *ctx >= vector.len() {
+            io::println("Exiting: parseNth (1)");
             return (CSS_INVALID, None)
         }
             
         token = &vector[*ctx];
+        *ctx += 1;
                         
         match token.token_type { 
             CSS_TOKEN_IDENT | CSS_TOKEN_DIMENSION => {
@@ -1666,7 +1674,7 @@ pub impl css_language {
                                         
                     let mut a:i32;
                     let mut b:i32 = 0;
-                    let mut sign:int = 1;
+                    let mut sign:i32 = 1;
                     let mut had_sign = false;
                     let mut had_b = false;
 
@@ -1680,6 +1688,7 @@ pub impl css_language {
                     }) {
                         if len < 2 {
                             if (data[data_index + 0] != 'n' as u8) && (data[data_index + 0] != 'N' as u8)   {
+                                io::println("Exiting: parseNth (2)");
                                 return (CSS_INVALID, None)
                             }
                                 
@@ -1691,7 +1700,8 @@ pub impl css_language {
                         } 
                         else {
                             if (data[data_index + 0] != '-' as u8) || ((data[data_index + 1] != 'n' as u8) && (data[data_index + 1] != 'N' as u8))
-                            {
+                            {   
+                                io::println("Exiting: parseNth (3)");
                                 return (CSS_INVALID, None)  
                             }
                                 
@@ -1703,13 +1713,19 @@ pub impl css_language {
                         }
 
                         if len > 0 {
+                            io::println("Entering: parseNth:: len > 0");
+                            io::println(fmt!("parseNth:: len == %?", len));
+                            io::println(fmt!("parseNth:: data == %?", data));
+
                             if (data[data_index + 0] != '-' as u8)
                             {
+                                io::println("Exiting: parseNth (4)");
                                 return (CSS_INVALID, None)
                             }
                                 
 
                             /* -n- */
+                            io::println("parseNth:: -n-");
                             sign = -1;
                             had_sign = true;
 
@@ -1717,15 +1733,18 @@ pub impl css_language {
                                 /* Reject additional sign */
                                 if (data[data_index + 1] == '-' as u8) || (data[data_index + 1] == '+' as u8)
                                 {
+                                    io::println("Exiting: parseNth (5)");
                                     return (CSS_INVALID, None)
                                 }
                                     
 
                                 /* -n-b */
+                                io::println("parseNth:: -n-b");
                                 let (ret_b,consumed) = css__number_from_string( data, @mut (data_index + 1), true);
                                 b = ret_b;
                                 if consumed != len - 1
-                                {
+                                {   
+                                    io::println("Exiting: parseNth (6)");
                                     return (CSS_INVALID, None)
                                 }
 
@@ -1738,12 +1757,14 @@ pub impl css_language {
                         let mut (ret_a, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
                         a = ret_a;
                         if consumed == 0 || ((data[data_index + consumed] != 'n' as u8) && (data[data_index + consumed] != 'N' as u8)) {
+                            io::println("Exiting: parseNth (7)");
                             return (CSS_INVALID, None)
                         }
 
                         consumed += 1;
                         if len - consumed > 0 {
                             if (data[data_index + consumed] != '-' as u8) {
+                                io::println("Exiting: parseNth (8)");
                                 return (CSS_INVALID, None)
                             }
 
@@ -1757,6 +1778,7 @@ pub impl css_language {
 
                                 /* Reject additional sign */
                                 if (data[data_index + consumed] == '-' as u8) ||    (data[data_index + consumed] == '+' as u8) {
+                                    io::println("Exiting: parseNth (9)");
                                     return (CSS_INVALID, None)
                                 }
 
@@ -1766,6 +1788,7 @@ pub impl css_language {
                                 let (ret_b,consumed) = css__number_from_string( data, @mut (data_index + bstart), true);
                                 b= ret_b;
                                 if consumed != len - bstart {
+                                    io::println("Exiting: parseNth (10)");
                                     return (CSS_INVALID, None)
                                 }
 
@@ -1775,6 +1798,7 @@ pub impl css_language {
                     }
 
                     if had_b == false {
+                        io::println("Entering: parseNth:: if had_b == false");
                         consumeWhitespace(vector, ctx);
 
                         /* Look for optional b : [ [ CHAR ws ]? NUMBER ws ]? */
@@ -1804,6 +1828,7 @@ pub impl css_language {
                         /* Expect NUMBER */
                         if *ctx < vector.len() && (match token.token_type 
                             { CSS_TOKEN_NUMBER => true, _ => false }) {
+                            io::println("Entering: parseNth:: /* Expect NUMBER */");
 
                             *ctx += 1;
 
@@ -1816,39 +1841,49 @@ pub impl css_language {
 
                                 if data.char_at(data_index + 0) == '-' || data.char_at(data_index + 0) == '+'
                                 {
+                                    io::println("Exiting: parseNth (11)");
                                     return (CSS_INVALID,None)   
                                 }                                   
                             }
 
                             let (ret_b,consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
                             b = ret_b;
+                            io::println(fmt!("parseNth:: b == %?", b));
                             if consumed != lwc_string_length(token.idata.get_ref().clone())
                             {
+                                io::println("Exiting: parseNth (12)");
                                 return (CSS_INVALID, None)
                             }
                         }
                     }
 
-                    value.a = a << 10;
-                    value.b = b << 10 * sign;
+                    value.a = a >> 10;
+                    value.b = (b >> 10) * sign;
+
+                    io::println(fmt!("parseNth:: value == %?", value));
                 }
             },
             CSS_TOKEN_NUMBER  => {
-                
+                io::println("Entering: parseNth:: CSS_TOKEN_NUMBER");
                 let (ret_val,consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
                 if consumed != lwc_string_length(token.idata.get_ref().clone())
                 {
+                    io::println("Exiting: parseNth (13)");
                     return (CSS_INVALID, None)
                 }   
 
                 value.a = 0;
-                value.b = ret_val << 10;
+                value.b = ret_val >> 10;
             } ,
-            _  => return (CSS_INVALID, None)
+            _  =>  {
+                io::println("Exiting: parseNth (14)");
+                return (CSS_INVALID, None);
+            }
         }
     
 
         consumeWhitespace(vector, ctx);
+        io::println("Exiting: parseNth (15)");
         return (CSS_OK,Some(value))
     }
     // ===========================================================================================================
