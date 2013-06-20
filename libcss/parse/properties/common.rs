@@ -253,8 +253,8 @@ pub fn css__parse_unit_keyword(ptr:&str)-> (Option<u32>,css_error) {
 pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool) -> (i32 , uint){
 
     io::println("Entering: css__number_from_string");
-    let mut length = data.len();
-    // let mut ptr = copy data;
+    let mut length = data.len() - *data_index;
+    let orig_data_index = *data_index;
     let mut sign = 1;
     let mut intpart: i32 = 0;
     let mut fracpart: i32 = 0;
@@ -263,10 +263,10 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
     //let mut data_index = 0;
     let mut consumed_length = 0;
     
-    if length - *data_index ==0 {
+    if length <=0 {
         return (ret_value , consumed_length);
     }
-
+		
     // number = [+-]? ([0-9]+ | [0-9]* '.' [0-9]+) 
 
     // Extract sign, if any 
@@ -275,16 +275,15 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
         length -= 1;
         *data_index += 1;
     }
-
     else if data[0 + *data_index] == '+' as u8 {
         length -=1;
         *data_index += 1;
     }
 
+	/* Ensure we have either a digit or a '.' followed by a digit */
     if length == 0 {
         return (ret_value , consumed_length);
     }
-
     else {
         if data[0 + *data_index] == '.' as u8 {
             if length ==1 || (data[1 + *data_index] < ('0' as u8)) || (('9' as u8) < data[1 + *data_index]) {
@@ -296,11 +295,15 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
         }
     }
 
+	/* Now extract intpart, assuming base 10 */
     while length>0 {
+		/* Stop on first non-digit */
         if (data[0 + *data_index] < ('0' as u8))||(('9' as u8) < data[0 + *data_index]) {
             break
         }
-        if intpart < (1<<22) {
+		
+		/* Prevent overflow of 'intpart'; proper clamping below */
+        if intpart < (1i32<<22) {
             intpart *= 10;
             intpart += (data[0 + *data_index] as i32) - ('0' as i32);
         }
@@ -308,13 +311,16 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
         length -= 1;
     }
 
+	/* And fracpart, again, assuming base 10 */
     if int_only == false && length > 1 && (data[0 + *data_index] == '.' as u8) && ('0' as u8 <= data[1 + *data_index] && data[1 + *data_index] <= '9' as u8) {
         *data_index += 1; 
         length -= 1;
+		
         while length >0 {
             if ((data[0 + *data_index] < '0' as u8))|| (('9' as u8) < data[0 + *data_index]) {
                 break
             }
+			
             if pwr < 1000000 {
                 pwr *= 10;
                 fracpart *= 10;
@@ -323,31 +329,33 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
             *data_index += 1;
             length -= 1;
         }
-        fracpart = ((1 << 10) * fracpart + pwr/2) / pwr;
-        if fracpart >= (1 << 10) {
+        fracpart = ((1i32 << 10) * fracpart + pwr/2) / pwr;
+        if fracpart >= (1i32 << 10) {
             intpart += 1;
-            fracpart &= (1 << 10) - 1;
+            fracpart &= (1i32 << 10) - 1;
         }
     }
 
-    consumed_length = *data_index;
+    consumed_length = *data_index - orig_data_index;
 
     if sign > 0 {
-        if intpart >= (1 << 21) {
-            intpart = (1 << 21) - 1;
-            fracpart = (1 << 10) - 1;
+        /* If the result is larger than we can represent,
+		 * then clamp to the maximum value we can store. */
+		if intpart >= (1i32 << 21) {
+            intpart = (1i32 << 21) - 1;
+            fracpart = (1i32 << 10) - 1;
         }
     }
-
     else {
-         // If the negated result is smaller than we can represent then clamp to the minimum value we can store. 
-        if intpart >= (1 << 21) {
-            intpart = -(1 << 21);
+        /* If the negated result is smaller than we can represent
+		 * then clamp to the minimum value we can store. */
+        if intpart >= (1i32 << 21) {
+            intpart = -(1i32 << 21);
             fracpart = 0;
         }
         else {
             intpart = -intpart;
-            if fracpart > 0 {
+            if fracpart != 0 {
                 fracpart = (1 << 10) - fracpart;
                 intpart -= 1;
             }
