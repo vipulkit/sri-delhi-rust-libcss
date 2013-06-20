@@ -495,7 +495,7 @@ impl css_select_ctx {
 			
 			match computed_opt {
 				Some(T) => {
-					state.computed = computed_opt.get();
+					state.computed = T;
 				}
 				None => {
 					j += 1; 
