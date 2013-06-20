@@ -893,9 +893,11 @@ pub impl css_language {
         }
         consumeWhitespace(vector , ctx);
 
-        // if tokens.len() > *ctx {     
-        //      let ident =&tokens[*ctx];
-        //  *ctx = *ctx + 1;
+        if *ctx < vector.len() {
+            return CSS_INVALID;
+        }
+
+        *ctx += 1;
 
         if (flags != 0) {
             self.css__make_style_important(style);
@@ -904,8 +906,14 @@ pub impl css_language {
         io::println("Exiting: parseProperty (2)");
         /* Append style to rule */
         match self.sheet.css__stylesheet_rule_append_style(curRule, style) {
-            CSS_OK => CSS_OK,
-            x => x
+            CSS_OK => {
+                io::println("Exiting: parseProperty (3)");
+                CSS_OK
+            },
+            x => {
+                io::println("Exiting: parseProperty (4)");
+                x
+            }
         }
     }
 
