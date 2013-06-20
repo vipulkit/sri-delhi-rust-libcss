@@ -136,7 +136,6 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 
     /* background-attachment */
     val = css_computed_background_attachment(style);
-
     let val_enum: css_background_attachment_e =  unsafe {cast::transmute(val as uint)}; 
     match val_enum {
         CSS_BACKGROUND_ATTACHMENT_INHERIT  =>
@@ -176,7 +175,6 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
         //wrote = 0; Do Nothing
     }
 
-
     /* background-position */
     let result:rect_result = css_computed_background_position(style);
 
@@ -194,7 +192,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
         
     }
 
-    /* background-repeat */
+   /* background-repeat */
     let val = css_computed_background_repeat(style);
     let val_enum: css_background_repeat_e =  unsafe {cast::transmute(val as uint)}; 
 
@@ -224,7 +222,6 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
         CSS_BORDER_COLLAPSE_COLLAPSE =>
             ptr.push_str("border-collapse: collapse\n"),
     }
-
 
     /* border-spacing */
     let result = css_computed_border_spacing(style);
@@ -280,7 +277,6 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
         CSS_BORDER_COLOR_COLOR =>
             ptr.push_str(fmt!("border-bottom-color: #%08x\n", color as uint)),
     }
-
 
     /* border-left-color */
     let (val,color) = css_computed_border_left_color(style);
@@ -435,7 +431,6 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
         },
     }
 
-    
     /* border-right-width */
     let (val, len1, unit1) = css_computed_border_right_width(style);
     let val_enum: css_border_width_e =  unsafe {cast::transmute(val as uint)};
@@ -544,12 +539,31 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
             ptr.push_str("clear: both\n"),
     }
 
-
     /* clip */
+	let mut rect : @mut css_computed_clip_rect = 
+        @mut css_computed_clip_rect{
+            top:0,
+            right:0,
+            bottom:0,
+            left:0,
+            tunit:CSS_UNIT_PX,
+            runit:CSS_UNIT_PX,
+            bunit:CSS_UNIT_PX,
+            lunit:CSS_UNIT_PX,
+            top_auto:false,
+            right_auto:false,
+            bottom_auto:false,
+            left_auto:false
+    } ;
+	
+	
     let (val,rect_option) = css_computed_clip(style);
-    let rect = rect_option.unwrap();
-    let val_enum: css_clip_e =  unsafe {cast::transmute(val as uint)};
+	match rect_option{
+		Some(T) => {rect = T;}
+		None => {}
+	}
 
+    let val_enum: css_clip_e =  unsafe {cast::transmute(val as uint)};
     match (val_enum) {
         CSS_CLIP_INHERIT =>
             ptr.push_str("clip: inherit\n"),
