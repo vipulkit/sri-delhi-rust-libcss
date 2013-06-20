@@ -4436,7 +4436,7 @@ pub impl css_properties {
     
         io::println("Entering: css__parse_voice_family");
         let orig_ctx = *ctx;
-       
+		io::println(fmt!("ctx == %?", *ctx));
         /* [ IDENT+ | STRING ] [ ',' [ IDENT+ | STRING ] ]* | IDENT(inherit)
          * 
          * In the case of IDENT+, any whitespace between tokens is collapsed to
@@ -4475,6 +4475,7 @@ pub impl css_properties {
             }
             css_stylesheet::css__stylesheet_style_append(result, VOICE_FAMILY_END as u32);
         }
+		io::println(fmt!("ctx == %?", *ctx));
         CSS_OK
     }
       
@@ -4863,16 +4864,21 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
     let mut token: &@css_token;
     let mut token_buffer_string: ~str = ~"";
 
-    if *ctx >= vector.len() {
+    /* We know this token exists, and is an IDENT */
+	//Iterate
+	if *ctx >= vector.len() {
+		*ctx +=1;
         return (CSS_INVALID , None);
     }
 
     token = &vector[*ctx];
     *ctx += 1;
-
+	
+	/* Consume all subsequent IDENT or S tokens */
     loop {
         match token.token_type {
-            CSS_TOKEN_IDENT  => {
+            /* IDENT -- if reserved, reject style */
+			CSS_TOKEN_IDENT  => {
                 match reserved {
                     None => {},
                     Some(reserved_function) => {
@@ -4885,6 +4891,7 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
                 token_buffer_string.push_str(lwc_string_data(token.idata.get_ref().clone()));
             },
             CSS_TOKEN_S => {
+				/* S */
                 token_buffer_string.push_str(~" ");
             },
             _ => {
@@ -4892,17 +4899,21 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
             }
         }
         if *ctx >= vector.len() {
-            break;
+            *ctx+=1;
+			break;
         }
-
-        token = &vector[*ctx];
-        *ctx += 1;
+		else{
+			token = &vector[*ctx];
+			*ctx += 1;
+		}	
     }
-
+	
+	/* Rewind context by one step if we consumed an unacceptable token */
     if *ctx >= vector.len() {
         *ctx -= 1;
     }
-    
+	
+    /* Strip trailing whitespace */
     token_buffer_string.trim_right();
 
     return (CSS_OK , Some(token_buffer_string));
