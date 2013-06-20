@@ -1790,7 +1790,7 @@ impl css_select_ctx {
          * (Named elements are handled by match_named_combinator, so the
          * element selector detail always matches here.) */
 
-        if(detail.len() > index){
+        if(detail.len() - 1 > index){
             index += 1;
         }
         else {
@@ -2204,7 +2204,7 @@ impl css_select_ctx {
     pub fn cascade_style(style:@mut css_style, state:@mut css_select_state) -> css_error {
         let mut s = style;
 
-        while (unsafe { s.used < s.bytecode.len()} ) {
+        while (unsafe { s.used + 1 < s.bytecode.len()} ) {
             let mut op: u32;
             let mut error : css_error ;
             let mut opv = peek_bytecode(s);
@@ -2212,7 +2212,6 @@ impl css_select_ctx {
             advance_bytecode(s);
 
             op = getOpcode(opv) as u32;
-
             let mut dispatch_cascade = dispatch_table::get_cascade_ptr(op as uint) ;
             error =  dispatch_cascade(opv, s, state);
 
