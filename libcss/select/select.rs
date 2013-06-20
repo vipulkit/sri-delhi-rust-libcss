@@ -399,7 +399,7 @@ impl css_select_ctx {
             i += 1 ;
         }
        
-        /* Consider any inline style for the node */
+	   /* Consider any inline style for the node */
         if (inline_style.is_some()) {
             let mut  sel = 
                         inline_style.get().rule_list;
@@ -491,7 +491,17 @@ impl css_select_ctx {
         j = (CSS_PSEUDO_ELEMENT_NONE as int) + 1;
         while ( j < (CSS_PSEUDO_ELEMENT_COUNT as int) ) {
             state.current_pseudo = unsafe { cast::transmute(j)};
-            state.computed = state.results.styles[j].get();
+			let computed_opt = state.results.styles[j];
+			
+			match computed_opt {
+				Some(T) => {
+					state.computed = computed_opt.get();
+				}
+				None => {
+					j += 1; 
+					loop;
+				}
+			}
 
             /* Skip non-existent pseudo elements */
             // if (state.computed == NULL)
