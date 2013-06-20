@@ -1666,7 +1666,7 @@ pub impl css_language {
                                         
                     let mut a:i32;
                     let mut b:i32 = 0;
-                    let mut sign:int = 1;
+                    let mut sign:i32 = 1;
                     let mut had_sign = false;
                     let mut had_b = false;
 
@@ -1705,6 +1705,10 @@ pub impl css_language {
                         }
 
                         if len > 0 {
+                            io::println("Entering: parseNth:: len > 0");
+                            io::println(fmt!("parseNth:: len == %?", len));
+                            io::println(fmt!("parseNth:: data == %?", data));
+
                             if (data[data_index + 0] != '-' as u8)
                             {
                                 io::println("Exiting: parseNth (4)");
@@ -1713,6 +1717,7 @@ pub impl css_language {
                                 
 
                             /* -n- */
+                            io::println("parseNth:: -n-");
                             sign = -1;
                             had_sign = true;
 
@@ -1726,6 +1731,7 @@ pub impl css_language {
                                     
 
                                 /* -n-b */
+                                io::println("parseNth:: -n-b");
                                 let (ret_b,consumed) = css__number_from_string( data, @mut (data_index + 1), true);
                                 b = ret_b;
                                 if consumed != len - 1
@@ -1784,6 +1790,7 @@ pub impl css_language {
                     }
 
                     if had_b == false {
+                        io::println("Entering: parseNth:: if had_b == false");
                         consumeWhitespace(vector, ctx);
 
                         /* Look for optional b : [ [ CHAR ws ]? NUMBER ws ]? */
@@ -1813,6 +1820,7 @@ pub impl css_language {
                         /* Expect NUMBER */
                         if *ctx < vector.len() && (match token.token_type 
                             { CSS_TOKEN_NUMBER => true, _ => false }) {
+                            io::println("Entering: parseNth:: /* Expect NUMBER */");
 
                             *ctx += 1;
 
@@ -1832,6 +1840,7 @@ pub impl css_language {
 
                             let (ret_b,consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
                             b = ret_b;
+                            io::println(fmt!("parseNth:: b == %?", b));
                             if consumed != lwc_string_length(token.idata.get_ref().clone())
                             {
                                 io::println("Exiting: parseNth (12)");
@@ -1840,12 +1849,14 @@ pub impl css_language {
                         }
                     }
 
-                    value.a = a << 10;
-                    value.b = b << 10 * sign;
+                    value.a = a >> 10;
+                    value.b = (b >> 10) * sign;
+
+                    io::println(fmt!("parseNth:: value == %?", value));
                 }
             },
             CSS_TOKEN_NUMBER  => {
-                
+                io::println("Entering: parseNth:: CSS_TOKEN_NUMBER");
                 let (ret_val,consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
                 if consumed != lwc_string_length(token.idata.get_ref().clone())
                 {
@@ -1854,7 +1865,7 @@ pub impl css_language {
                 }   
 
                 value.a = 0;
-                value.b = ret_val << 10;
+                value.b = ret_val >> 10;
             } ,
             _  =>  {
                 io::println("Exiting: parseNth (14)");
