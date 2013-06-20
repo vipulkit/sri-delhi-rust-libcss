@@ -1592,9 +1592,8 @@ pub impl css_parser {
                         return parser_error;
                     }
                     let token = token_option.unwrap();
-                    let c = token.data.data[0] as char;
                     
-                    if (token.token_type as int != CSS_TOKEN_CHAR as int) || (c != ';' && c != '}') {
+                    if (token.token_type as int != CSS_TOKEN_CHAR as int) || (token.data.data[0] != ';' as u8 && token.data.data[0] != '}' as u8) {
                         
                         parser.push_back(token);
                         let to = (sDeclaration as uint, Initial as uint);
