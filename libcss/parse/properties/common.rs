@@ -518,7 +518,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                 component = components[i];
                 consumeWhitespace(vector , ctx);
 				
-				if *ctx < vector.len(){
+				if *ctx >= vector.len() {
 					*ctx = orig_ctx;
 					return (None , None , CSS_INVALID);
 				}
