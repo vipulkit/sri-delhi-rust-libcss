@@ -1091,11 +1091,12 @@ pub impl css_language {
         token = &vector[*ctx];
         
         if !tokenIsChar(token, '|') {
-             prefix = Some(token.idata.get_ref().clone());
+            prefix = Some(token.idata.get_ref().clone());
             *ctx += 1; //Iterate
+            token = &vector[*ctx]; 
         }
 
-        if ( *ctx < vector.len() && tokenIsChar(&vector[*ctx], '|')) {
+        if ( *ctx < vector.len() && tokenIsChar(token, '|')) {
             
             /* Have namespace prefix */
             *ctx += 1; //Iterate
@@ -1104,10 +1105,12 @@ pub impl css_language {
             if *ctx >= vector.len() || ( match vector[*ctx].token_type { CSS_TOKEN_IDENT => false, _ => true} && !tokenIsChar(&vector[*ctx], '*') ) {
                 return CSS_INVALID
             }
+
+            token = &vector[*ctx]; 
             *ctx += 1; //Iterate
 
             match self.lookupNamespace(prefix, qname) {
-                CSS_OK  => qname.name = lwc_string_data(vector[*ctx].idata.get_ref().clone()),
+                CSS_OK  => qname.name = lwc_string_data(token.idata.get_ref().clone()),
                 error   => return error
             }   
         } 
@@ -1120,10 +1123,9 @@ pub impl css_language {
 
 
             qname.name = match prefix {
-                            Some(x) => lwc_string_data(x),
-                            None => ~""
-                        }
-            
+                Some(x) => lwc_string_data(x),
+                None => ~""
+            }
         }
         
         return CSS_OK
@@ -1225,11 +1227,16 @@ pub impl css_language {
         let mut idx:uint=0;
         
         match prefix {
-            None => qname.ns = ~"",
+            None => {
+                io::println("Entering: lookupNamespace (1)");
+                qname.ns = ~""
+            },
             Some(value) => {
+                io::println("Entering: lookupNamespace (2)");
                 for self.namespaces.each |ns| {
                     match ns.prefix {
                         Some(_) => {
+                            io::println("Entering: lookupNamespace (3)");
                             let ns_prefix = ns.prefix.get_ref().clone();
                             if (
                                 do self.lwc_instance.clone().read |l| {
@@ -1248,8 +1255,14 @@ pub impl css_language {
                 }   
 
                 match self.namespaces[idx].uri {
-                    Some(_)=> qname.ns = lwc_string_data(self.namespaces[idx].uri.get_ref().clone()),
-                    None => qname.ns = ~""
+                    Some(_)=> {
+                        io::println("Entering: lookupNamespace (4)");
+                        qname.ns = lwc_string_data(self.namespaces[idx].uri.get_ref().clone())
+                    },
+                    None => {
+                        io::println("Entering: lookupNamespace (5)");
+                        qname.ns = ~""
+                    }
                 }
             }
         }   
