@@ -3093,19 +3093,21 @@ pub impl css_properties {
         let token = &vector[*ctx];
         *ctx +=1; //Iterate
         
-        if match token.token_type { CSS_TOKEN_IDENT  | CSS_TOKEN_STRING  => false, _ => true } {
+        if (token.token_type as int != CSS_TOKEN_IDENT as int)  && (token.token_type as int != CSS_TOKEN_STRING as int) {
             *ctx = orig_ctx;
             return CSS_INVALID
         }
 
-        if match token.token_type { CSS_TOKEN_IDENT  => true, _ => false } && 
-        strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
+        if (token.token_type as int == CSS_TOKEN_IDENT as int ) 
+            && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
             
             css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_FONT_FAMILY)
         } 
         else {
             *ctx = orig_ctx;
+            io::println(fmt!("css__parse_font_family :: *ctx (1) == %?" , *ctx));
             let error = css__comma_list_to_style(sheet , strings , vector , ctx , Some(@font_family_reserved) , Some(@font_family_value) , result);
+            io::println(fmt!("css__parse_font_family :: *ctx (2) == %?" , *ctx));
             match error {
                 CSS_OK => {},
                 _ => {
@@ -4088,90 +4090,98 @@ pub impl css_properties {
         let mut value: u16 = 0;
         let mut uri_snumber: u32 = 0;
 
+
         if *ctx >= vector.len() {
             return CSS_INVALID;
         }
         token=&vector[*ctx];
         *ctx += 1;
 
-        match token.token_type {
-            CSS_TOKEN_IDENT  => {
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint) {
-                    flags = flags | FLAG_INHERIT as u8;
-                }
-                else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , NONE as uint) {
-                    value = PLAY_DURING_NONE as u16;
-                }
-                else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
-                    value = PLAY_DURING_AUTO as u16;
-                }
-                else {
-                    *ctx = orig_ctx;
-                    return CSS_INVALID;
-                }
-            },
-            CSS_TOKEN_URI  => {
-                let mut modifiers:int = 0;
-                value = PLAY_DURING_URI as u16;
+        if (token.token_type as int != CSS_TOKEN_IDENT as int) && (token.token_type as int != CSS_TOKEN_URI as int) {
+            *ctx = orig_ctx;
+            return CSS_INVALID;
+        }
 
-                let mut uri:arc::RWARC<~lwc_string>;
-                match (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone()) {
-                    (CSS_OK, Some(x)) => {
-                        uri =x;
-                    },
-                    (error,_) => {
-                        *ctx = orig_ctx;
-                        return error;
-                    }
-                }
-                uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri)) as u32;
-
-                while modifiers < 2 {
-                    consumeWhitespace(vector, ctx);
-
-                    if *ctx >= vector.len() {
-                        return CSS_INVALID;
-                    }
-
-                    token=&vector[*ctx];
-
-                    match token.token_type {
-                        CSS_TOKEN_IDENT  => {
-                            if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MIX as uint) {
-                                if value & (PLAY_DURING_MIX as u16) == 0 {
-                                    value |= (PLAY_DURING_MIX as u16);
-                                }
-                                else {
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                            }
-                            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , REPEAT as uint) {
-                                if value & (PLAY_DURING_REPEAT as u16) == 0 {
-                                    value |= (PLAY_DURING_REPEAT as u16);
-                                }
-                                else {
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                            }
-                            else {
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            }
-                            *ctx = *ctx + 1;
-                        }
-                        _ => {}
-                    }
-                    modifiers += 1;
-                }
-            },
-            _ => {
+        if (token.token_type as int == CSS_TOKEN_IDENT as int) {
+            if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint) {
+                flags = flags | FLAG_INHERIT as u8;
+            }
+            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , NONE as uint) {
+                value = PLAY_DURING_NONE as u16;
+            }
+            else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , AUTO as uint) {
+                value = PLAY_DURING_AUTO as u16;
+            }
+            else {
                 *ctx = orig_ctx;
                 return CSS_INVALID;
             }
         }
+        else {
+            let mut modifiers:int = 0;
+            value = PLAY_DURING_URI as u16;
+            let mut uri:arc::RWARC<~lwc_string>;
+            match (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone()) {
+                (CSS_OK, Some(x)) => {
+                    uri =x;
+                },
+                (error,_) => {
+                    *ctx = orig_ctx;
+                    return error;
+                }
+            }
+            uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri)) as u32;
+
+            while modifiers < 2 {
+                consumeWhitespace(vector, ctx);
+
+                let mut token_null = false;
+
+                if *ctx >= vector.len() {
+                    token_null = true;
+                } 
+                else {
+                    token=&vector[*ctx];
+                }
+
+                
+
+                if !token_null && token.token_type as int == CSS_TOKEN_IDENT as int {
+                    if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , MIX as uint) {
+                        if (value & (PLAY_DURING_MIX as u16)) == 0 {
+                            value |= (PLAY_DURING_MIX as u16);
+                        }
+                        else {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                    }
+                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , REPEAT as uint) {
+                        if (value & (PLAY_DURING_REPEAT as u16)) == 0 {
+                            value |= (PLAY_DURING_REPEAT as u16);
+                        }
+                        else {
+                            *ctx = orig_ctx;
+                            return CSS_INVALID;
+                        }
+                    }
+                    else {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
+                    }
+
+                    *ctx = *ctx + 1;
+
+                    if *ctx >= vector.len() {
+                        token_null = true;
+                    }
+                }
+
+                modifiers += 1;
+            }
+        }
         css_stylesheet::css__stylesheet_style_appendOPV(style ,CSS_PROP_PLAY_DURING , flags , value);
+
         if ((flags & FLAG_INHERIT as u8)==0 && (value & PLAY_DURING_TYPE_MASK as u16)==PLAY_DURING_URI as u16) {
             css_stylesheet::css__stylesheet_style_append(style , uri_snumber);
         }
@@ -4933,11 +4943,14 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
     ctx: @mut uint , reserved:Option<reserved_fn> , get_value: Option<get_value_fn> , style: @mut css_style) -> css_error {
 
     io::println("Entering: css__comma_list_to_style");
+    io::println(fmt!("Entering: css__comma_list_to_style :: *ctx == %?" , *ctx));
     let orig_ctx = *ctx;
     let mut prev_ctx = orig_ctx;
     let mut token: &@css_token;
     let mut first = true;
     let mut value: u32 = 0;
+
+    let mut token_null = false;
 
     if *ctx >= vector.len() {
         return CSS_INVALID;
@@ -4946,7 +4959,8 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
     token = &vector[*ctx];
     *ctx += 1;
 
-    loop {
+
+    while !token_null {
         match token.token_type {
             CSS_TOKEN_IDENT  => {
                 match get_value {
@@ -4997,21 +5011,24 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
         }
 
         consumeWhitespace(vector , ctx);
+
         if (*ctx >= vector.len()) {
-            break;
+            token_null = true;
         }
+
         token = &vector[*ctx];
-        if  tokenIsChar(token , ',') {
-            if *ctx >= vector.len() {
-                break;
-            }
+        if  !token_null && tokenIsChar(token , ',') {
+
             *ctx = *ctx + 1;
             consumeWhitespace(vector , ctx);
-            token = &vector[*ctx];
+            
             if *ctx >= vector.len() {
                 *ctx = orig_ctx;
                 return CSS_INVALID;
-            }
+            }            
+
+            token = &vector[*ctx];
+            
             match token.token_type {
                 CSS_TOKEN_IDENT |CSS_TOKEN_STRING  => {},
                 _ => {
@@ -5025,9 +5042,15 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
         }
         first = false;
         prev_ctx = *ctx;
+
+        if *ctx >= vector.len() {
+            token_null = true;
+        }
+
         token = &vector[*ctx];
         *ctx += 1;
     }
+    io::println(fmt!("Exiting: css__comma_list_to_style :: *ctx == %?" , *ctx));
 
     CSS_OK
 }
