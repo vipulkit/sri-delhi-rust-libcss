@@ -1483,15 +1483,16 @@ pub impl css_language {
         if in_not && (match selector_type {CSS_SELECTOR_PSEUDO_ELEMENT => true, _ => false} || match self.strings.pseudo_class_list[lut_idx] {NOT => true, _  => false} ) {
             return (CSS_INVALID, None)  
         }   
-
+		
+		
         if match token.token_type { CSS_TOKEN_FUNCTION => true, _ => false} {
             
-            let mut fun_type = match selector_type{ CSS_SELECTOR_PSEUDO_ELEMENT => self.strings.pseudo_element_list[lut_idx],_ => self.strings.pseudo_class_list[lut_idx]} ;
+            let mut fun_type:index_property = unsafe { cast::transmute(lut_idx) };
 
             consumeWhitespace(vector, ctx);
-
+			
             match fun_type {
-                LANG => {
+                LANG  => {
                     /* IDENT */
                     if *ctx >= vector.len() {
                         return (CSS_INVALID, None)
@@ -1510,7 +1511,7 @@ pub impl css_language {
 
                     consumeWhitespace(vector, ctx);
                 }, 
-                NTH_CHILD | NTH_LAST_CHILD | NTH_OF_TYPE | NTH_LAST_OF_TYPE => {
+                NTH_CHILD | NTH_LAST_CHILD  | NTH_OF_TYPE  | NTH_LAST_OF_TYPE  => {
                     /* an + b */
                     match self.parseNth(vector, ctx) {
                         (CSS_OK, Some(specific)) => {
