@@ -4210,7 +4210,7 @@ pub impl css_properties {
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_quotes(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
-        
+            
         io::println("Entering: css__parse_quotes");
         let orig_ctx:uint = *ctx;
         if *ctx >= vector.len() {
@@ -4219,78 +4219,75 @@ pub impl css_properties {
 
         let mut token = &vector[*ctx];
         *ctx += 1;
-        
-        match (token.token_type) {
-            CSS_TOKEN_IDENT  => {
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
-                    css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_QUOTES);
-                }
-                else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NONE as uint)  {
-                    css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_QUOTES, 0, QUOTES_NONE );
-                }
-            },
-            CSS_TOKEN_STRING  => {
-                let mut first: bool =true;
+
+        if (token.token_type as int != CSS_TOKEN_IDENT as int) && (token.token_type as int != CSS_TOKEN_STRING as int ) {
+            *ctx = orig_ctx;
+            return CSS_INVALID;
+        }
+
+        if (token.token_type as int == CSS_TOKEN_IDENT as int) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), INHERIT as uint) {
+            css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_QUOTES);
+        }
+        else if (token.token_type as int == CSS_TOKEN_IDENT as int) && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NONE as uint) {
+            css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_QUOTES, 0, QUOTES_NONE );
+        }
+        else if (token.token_type as int == CSS_TOKEN_STRING as int){
+            let mut first: bool =true;
+            let mut token_null = false;
+            
+            while !token_null && token.token_type as int == CSS_TOKEN_STRING as int {
+
+                let mut open_snumber:u32;
+                let mut close_snumber:u32;
+                open_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone())) as u32;
+                consumeWhitespace(vector, ctx);
                 
-                loop {
+                if (*ctx >= vector.len()) {
+                    *ctx = orig_ctx;
+                    return CSS_INVALID;
+                } 
 
-                    match token.token_type {
-                        CSS_TOKEN_STRING =>{
-                            let mut open_snumber:u32;
-                            let mut close_snumber:u32;
-                            open_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone())) as u32;
-                            consumeWhitespace(vector, ctx);
-                            
-                            if (*ctx >= vector.len()) {
-                                *ctx = orig_ctx;
-                                return CSS_INVALID;
-                            } 
-
-                            token=&vector[*ctx];
-                            *ctx += 1;
-                            match token.token_type {
-                                CSS_TOKEN_STRING  => {},
-                                _=> {
-                                    *ctx = orig_ctx;
-                                    return CSS_INVALID;
-                                }
-                            }
-                            close_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone())) as u32;
-                            consumeWhitespace(vector, ctx); 
-                            match first {
-                                true => css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_QUOTES, 0, QUOTES_STRING ),
-                                false=> css_stylesheet::css__stylesheet_style_append(style, QUOTES_STRING as u32)
-                            }
-                            
-                            css_stylesheet::css__stylesheet_style_append(style, open_snumber);
-                            css_stylesheet::css__stylesheet_style_append(style, close_snumber);
-
-                            first =false;
-                            if (*ctx >= vector.len()) {
-                                break;
-                            }
-                            token=&vector[*ctx];
-                            match token.token_type {
-                                CSS_TOKEN_STRING  => {},
-                                _=> {
-                                    break;
-                                }
-                            }
-                            if (*ctx >= vector.len()) {
-                                break;
-                            } 
-                            token=&vector[*ctx];
-                            *ctx += 1;
-                        },
-                        _=>break
+                token=&vector[*ctx];
+                *ctx += 1;
+                match token.token_type {
+                    CSS_TOKEN_STRING  => {},
+                    _=> {
+                        *ctx = orig_ctx;
+                        return CSS_INVALID;
                     }
-                    css_stylesheet::css__stylesheet_style_append(style, QUOTES_NONE as u32);
                 }
-            },
-            _=>  {
-                *ctx = orig_ctx;
-                return CSS_INVALID;
+                close_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone())) as u32;
+                consumeWhitespace(vector, ctx); 
+                match first {
+                    true => css_stylesheet::css__stylesheet_style_append(style,buildOPV(CSS_PROP_QUOTES, 0, QUOTES_STRING)),
+                    false=> css_stylesheet::css__stylesheet_style_append(style, QUOTES_STRING as u32)
+                }
+                
+                css_stylesheet::css__stylesheet_style_append(style, open_snumber);
+                css_stylesheet::css__stylesheet_style_append(style, close_snumber);
+
+                first =false;
+                if (*ctx >= vector.len()) {
+                    break;
+                }
+                token=&vector[*ctx];
+                match token.token_type {
+                    CSS_TOKEN_STRING  => {},
+                    _=> {
+                        break;
+                    }
+                }
+                if (*ctx >= vector.len()) {
+                    break;
+                } 
+                token=&vector[*ctx];
+                *ctx += 1;
             }
+            css_stylesheet::css__stylesheet_style_append(style, QUOTES_NONE as u32);
+        }
+        else {
+            *ctx = orig_ctx;
+            return CSS_INVALID;
         }
         CSS_OK
     }
@@ -4943,14 +4940,11 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
     ctx: @mut uint , reserved:Option<reserved_fn> , get_value: Option<get_value_fn> , style: @mut css_style) -> css_error {
 
     io::println("Entering: css__comma_list_to_style");
-    io::println(fmt!("Entering: css__comma_list_to_style :: *ctx == %?" , *ctx));
     let orig_ctx = *ctx;
     let mut prev_ctx = orig_ctx;
     let mut token: &@css_token;
     let mut first = true;
     let mut value: u32 = 0;
-
-    let mut token_null = false;
 
     if *ctx >= vector.len() {
         return CSS_INVALID;
@@ -4959,8 +4953,7 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
     token = &vector[*ctx];
     *ctx += 1;
 
-
-    while !token_null {
+    loop {
         match token.token_type {
             CSS_TOKEN_IDENT  => {
                 match get_value {
@@ -5011,24 +5004,21 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
         }
 
         consumeWhitespace(vector , ctx);
-
         if (*ctx >= vector.len()) {
-            token_null = true;
+            break;
         }
-
         token = &vector[*ctx];
-        if  !token_null && tokenIsChar(token , ',') {
-
+        if  tokenIsChar(token , ',') {
+            if *ctx >= vector.len() {
+                break;
+            }
             *ctx = *ctx + 1;
             consumeWhitespace(vector , ctx);
-            
+            token = &vector[*ctx];
             if *ctx >= vector.len() {
                 *ctx = orig_ctx;
                 return CSS_INVALID;
-            }            
-
-            token = &vector[*ctx];
-            
+            }
             match token.token_type {
                 CSS_TOKEN_IDENT |CSS_TOKEN_STRING  => {},
                 _ => {
@@ -5042,15 +5032,9 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
         }
         first = false;
         prev_ctx = *ctx;
-
-        if *ctx >= vector.len() {
-            token_null = true;
-        }
-
         token = &vector[*ctx];
         *ctx += 1;
     }
-    io::println(fmt!("Exiting: css__comma_list_to_style :: *ctx == %?" , *ctx));
 
     CSS_OK
 }
