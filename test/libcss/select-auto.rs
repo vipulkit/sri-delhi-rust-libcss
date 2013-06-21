@@ -2,6 +2,7 @@ extern mod std;
 extern mod css;
 extern mod wapcaplet;
 extern mod dumpcomputed;
+extern mod dump2;
 
 use std::arc;
 use css::css::*;
@@ -13,6 +14,7 @@ use css::select::common::*;
 use css::stylesheet::*;
 use css::select::select::*;
 use dumpcomputed::*;
+use dump2::dump_sheet;
 
 use css::include::properties::*;
 use css::include::fpmath::*;
@@ -323,20 +325,20 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 	let mut valuelen = 0;
 	let mut depth:u32 = 0;
 	let mut target = false;
-	let mut lwc_ins = unsafe { ctx.lwc_instance.clone() };
 
 	/* ' '{depth+1} [ <element> '*'? | <attr> ]
 	 * 
 	 * <element> ::= [^=*[:space:]]+
 	 * <attr>    ::= [^=*[:space:]]+ '=' [^[:space:]]*
 	 */
-
+	 //io::println(fmt!("\n Before while  ")) ;
 	while (p < end && isspace(data[p])) {
 		depth += 1;
 		p += 1;
 	}
 	depth -= 1;
 
+	//io::println(fmt!("\n Before attribute name  ")) ;
 	/* Get element/attribute name */
 	let name_begin = p;
 	while ( (p < end) && (data[p] != '=' as u8) && (data[p] != '*' as u8)  && (isspace(data[p]) == false) ){
@@ -346,6 +348,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 
 	let mut name = data.slice(name_begin,name_begin+namelen);
 
+	//io::println(fmt!("\n Before while  2")) ;
 	/* Skip whitespace */
 	while (p < end && isspace(data[p])){
 		p += 1;
@@ -353,6 +356,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 	
 	let mut value_begin = 0;
 
+	//io::println(fmt!("\n Before attribute value  ")) ;
 	if (p < end && (data[p] == ('=' as u8)) ) {
 		/* Attribute value */
 		p += 1;
@@ -368,10 +372,12 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 		target = true;
 	}
 
+	//io::println(fmt!("\n Before 3  ")) ;
 	if valuelen > 0 {
 		value = Some(data.slice(value_begin, value_begin+valuelen));
 	}
 
+	//io::println(fmt!("\n Before 4  ")) ;
 	if (value.is_none() ) {
 		/* We have an element, so create it */
 		let n : @mut node = @mut node {
@@ -382,9 +388,11 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 			prev:None,
 			children:None,
 			last_child:None
-		};					
-		do lwc_ins.write |l| {
-			n.name = Some(l.lwc_intern_string(name.to_owned()));
+		};
+		unsafe {					
+			do ctx.lwc_instance.write |l| {
+				n.name = Some(l.lwc_intern_string(name.to_owned()));
+			}
 		}
 
 		/* Insert it into tree */
@@ -395,23 +403,29 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 			assert!(depth > 0);
 			assert!(depth <= ctx.depth + 1);
 
+			//io::println(fmt!("\n Before while  3")) ;
 			/* Find node to insert into */
 			while (depth <= ctx.depth) {
 				ctx.depth -= 1;
 				ctx.current = ctx.current.get().parent;
 			}
-			let ctx_current = ctx.current.get();	
+			//let ctx_current = ctx.current.get();	
+			//io::println(fmt!("\n Before insert into current node  ")) ;
 			/* Insert into current node */
-			if (ctx_current.children.is_none()) {
-				ctx_current.children = Some(n);
-				ctx_current.last_child = Some(n);
+			if (ctx.current.get().children.is_none()) {
+				//io::println(fmt!("\n Before insert into current node == if statement ")) ;
+				ctx.current.get().children = Some(n);
+				ctx.current.get().last_child = Some(n);
 			} else {
-				ctx_current.last_child.get_mut_ref().next = Some(n);
-				n.prev = ctx_current.last_child;
-
-				ctx_current.last_child = Some(n);
+				//io::println(fmt!("\n Before insert into current node == else statement ")) ;
+				ctx.current.get().last_child.get().next = Some(n);
+				//io::println(fmt!("\n Before insert into current node == else statement 2")) ;
+				n.prev = ctx.current.get().last_child;
+				//io::println(fmt!("\n Before insert into current node == else statement 3")) ;
+				ctx.current.get().last_child = Some(n);
 			}
-		 	ctx.current = Some(ctx_current);	
+			//io::println(fmt!("\n Before final updation  ")) ;
+		 	ctx.current = Some(ctx.current.get());	
 			n.parent = ctx.current;
 		}
 
@@ -426,15 +440,17 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 	} 
 	else {
 		/* New attribute */
-
+		io::println(fmt!("\n Before else  ")) ;
 		let mut lwc_name:Option<arc::RWARC<~lwc_string> > = None;
 		let mut lwc_value:Option<arc::RWARC<~lwc_string> > = None;
-
-		do lwc_ins.write |l| {
-			lwc_name = Some(l.lwc_intern_string(name.to_owned()));
-			lwc_value = Some(l.lwc_intern_string(value.get_ref().to_owned()));
+		unsafe {
+			do ctx.lwc_instance.write |l| {
+				lwc_name = Some(l.lwc_intern_string(name.to_owned()));
+				lwc_value = Some(l.lwc_intern_string(value.get_ref().to_owned()));
+			}
 		}
-		
+
+		io::println(fmt!("\n Before attributes unwrap  ")) ;
 		let mut attr: attribute = attribute{
 			name:lwc_name.unwrap(),
 			value:lwc_value.unwrap()
@@ -491,7 +507,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
 
 
 pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> uint {
-	io::println(fmt!("\n Entering css__parse_media_list ")) ;
+	io::println(fmt!("\n Entering css__parse_media_list =%?=%?=",data,index)) ;
 	// ' '	(0x20)	space (SPC)
 	// '\t'	(0x09)	horizontal tab (TAB)
 	// '\n'	(0x0a)	newline (LF)
@@ -501,47 +517,53 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> u
 	let mut len : uint = index ;
 	let mut result : u64 = 0 ;
 	while len < data.len() {
-
+		let mut start = len ;
 		/* consume a medium */
-		if ( (data[len]!=0x20) && (data[len]!=0x09) && (data[len]!=0x0a) && 
-			 (data[len]!=0x0b) && (data[len]!=0x0c) && (data[len]!=0x0d)  && data.len()>len) {
+		while data.len()>len && !((data[len]==0x20) || (data[len]==0x09) ||  (data[len]==0x0a) || 
+			 (data[len]==0x0b) ||  (data[len]==0x0c) ||  (data[len]==0x0d))   {
+
 			if( data[len]!= (',' as u8)) {
 				len += 1;
 				loop ;
 			}
+			else {
+				break ;
+			}
 		}
 
-        if ( (data.len()>(10+len)) && data.len() >= len+10 && is_string_caseless_equal(data.slice(len,len+10), "projection") ) {
+		io::println(fmt!("\n slice left is =%?=%?=%?=%?=",copy data.slice(start,data.len()),len,start,data.len() )) ;
+
+        if ( (len-start)==10 && is_string_caseless_equal(data.slice(start,start+10), "projection") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(8+len)) && data.len() >= len+8 && is_string_caseless_equal(data.slice(len,len+8), "handheld") ) {
+        else if ( (len-start)==8 && is_string_caseless_equal(data.slice(start,start+8), "handheld") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(8+len)) && data.len() >= len+8 && is_string_caseless_equal(data.slice(len,len+8), "embossed") ) {
+        else if ( (len-start)==8 && is_string_caseless_equal(data.slice(start,start+8), "embossed") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(7+len)) && data.len() >= len+7 && is_string_caseless_equal(data.slice(len,len+7), "braille") ) {
+        else if ( (len-start)==7 && is_string_caseless_equal(data.slice(start,start+7), "braille") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(6+len)) && data.len() >= len+6 && is_string_caseless_equal(data.slice(len,len+6), "speech") ) {
+        else if ( (len-start)==6 && is_string_caseless_equal(data.slice(start,start+6), "speech") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(6+len)) && data.len() >= len+6 && is_string_caseless_equal(data.slice(len,len+6), "screen") ) {
+        else if ( (len-start)==6 && is_string_caseless_equal(data.slice(start,start+6), "screen") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(5+len)) && data.len() >= len+5 && is_string_caseless_equal(data.slice(len,len+5), "print") ) {
+        else if ( (len-start)==5 && is_string_caseless_equal(data.slice(start,start+5), "print") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(5+len)) && data.len() >= len+5 && is_string_caseless_equal(data.slice(len,len+5), "aural") ) {
+        else if ( (len-start)==5 && is_string_caseless_equal(data.slice(start,start+5), "aural") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(3+len)) && data.len() >= len+3 && is_string_caseless_equal(data.slice(len,len+3), "tty") ) {
+        else if ( (len-start)==3 && is_string_caseless_equal(data.slice(start,start+3), "tty") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(3+len)) && data.len() >= len+3 && is_string_caseless_equal(data.slice(len,len+3), "all") ) {
+        else if ( (len-start)==3 && is_string_caseless_equal(data.slice(start,start+3), "all") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
-        else if ( (data.len()>(2+len)) && data.len() >= len+2 && is_string_caseless_equal(data.slice(len,len+2), "tv") ) {
+        else if ( (len-start)==2 && is_string_caseless_equal(data.slice(start,start+2), "tv") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
         else {
@@ -551,23 +573,22 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> u
         }
 
 		/* Consume whitespace */
-		while ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
-			 	(data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) && data.len()>len {
+		while data.len()>len && ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
+			 	(data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) )  {
 				len += 1;
 		}
 
 		/* Stop if we've reached the end */
-		if ( data.len() <= len ) {
+		if ( data.len() <= len ) ||  (data[len] != (',' as u8) ) {
 			break;
 		}
 
-		if data[len] == (',' as u8) {
-			len += 1;
-		}
+		/* Consume comma */
+		len += 1;
 
 		/* Consume whitespace */
-		while ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
-			 	(data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) && data.len()>len {
+		while data.len()>len && ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
+			 	(data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) )  {
 				len += 1;
 		}	
 	}
@@ -658,6 +679,14 @@ pub fn run_test( ctx:@mut line_ctx) {
 
     unsafe {
         while i < (ctx.sheets.len() as u32) {
+
+
+	        let mut ds_sheet = dump_sheet(ctx.sheets[i].sheet.stylesheet);
+	        io::println("\n=================================================");
+	        io::println("Dumpping Stylesheet before appending to selector");
+	        io::println(fmt!("%?",ds_sheet));
+	        io::println("=================================================\n");
+
             match select.css_select_ctx_append_sheet(ctx.sheets[i].sheet.stylesheet,ctx.sheets[i].origin,ctx.sheets[i].media) {
                 CSS_OK => {},
                 _ => fail!()
@@ -737,17 +766,18 @@ pub fn run_test( ctx:@mut line_ctx) {
     ua_default_for_property: @ua_default_for_property,
     handler_version:1
 };//TODO
-    //testnum += 1;
+    // testnum += 1;
     unsafe {
-        let mut result = select.css_select_style(::cast::transmute(ctx.target.unwrap()),ctx.media as u64,None, select_handler,::cast::transmute(ctx));
-        match result {
-            (CSS_OK,Some(x)) => results = x,
-            _=> fail!()
-        }
+    	let mut result = select.css_select_style(::cast::transmute(ctx.target.unwrap()),ctx.media as u64,None, select_handler,::cast::transmute(ctx));
+    	match result {
+    	    (CSS_OK,Some(x)) => results = x,
+   		       _=> fail!(~"During css_select_style in select-auto")
+    	}
     }
 
     io::println(fmt!(" CSS Selection result is =%?=",results));
     assert!(results.styles[ctx.pseudo_element].is_some());
+
     dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
     let mut string:~str = copy ctx.exp;
     if str::eq( &buf.to_owned().to_lower(), &string.to_lower() ) {
