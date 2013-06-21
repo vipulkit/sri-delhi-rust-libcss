@@ -1,6 +1,7 @@
 extern mod std;
 extern mod css;
 extern mod wapcaplet;
+extern mod dump;
 
 use core::io::*;
 use std::arc;
@@ -9,6 +10,7 @@ use css::css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use wapcaplet::*;
+use dump::*;
 
 pub fn resolve_url(_:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>) {
     return (CSS_OK,Some(rel.clone()));
@@ -38,6 +40,7 @@ fn create_css() -> @mut css{
 }
 
 fn main() {
+    css(~"data/css/blocks.css");
     io::println("css21");   
 }
 
@@ -48,6 +51,7 @@ fn css(file_name: ~str) {
     let r:@Reader = io::file_reader(&Path(file_name)).get(); 
     r.seek(0 , SeekEnd);
     let mut len = r.tell();
+    let mut origlen = len; 
     r.seek(0 , SeekSet);
     while len>CHUNK_SIZE {
         buf = r.read_bytes(CHUNK_SIZE as uint);
@@ -103,6 +107,19 @@ fn css(file_name: ~str) {
             }
         }
     }
+
+    let outsize = if 16384 > (origlen*8) {
+        16384
+    }
+    else {
+        origlen*8
+    };
+
+    let mut buf: ~str;
+
+    buf = dump_sheet(css.stylesheet);
+    // io::println(buf);
+
 } 
 
 
