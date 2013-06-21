@@ -772,7 +772,7 @@ fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
         },
         CSS_COMBINATOR_GENERIC_SIBLING=>{
             ptr.push_char(' ');
-            ptr.push_char('+');
+            ptr.push_char('~');
             ptr.push_char(' ');
         }
 
@@ -782,15 +782,17 @@ fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
 
 fn dump_selector(selector:@mut css_selector, ptr:&mut ~str){
     let mut d:~[@mut css_selector_detail] = copy selector.data;
-    let mut iter:uint = 0;
+    io::println(fmt!("Selector Data:%?",d));
+  	let mut iter:uint = 0;
     while iter < d.len() {
+		io::println(fmt!("Selector Data len:%?, Iter:%?",d.len(), iter));
         dump_selector_detail(d[iter], ptr, (iter != d.len()-1) );
         iter += 1;
     }   
 }
 
 fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_next:bool ) {
-
+	io::println(fmt!("Detail == %?",detail));
     if detail.negate {
         str::push_str(ptr,&":not(");
     }
