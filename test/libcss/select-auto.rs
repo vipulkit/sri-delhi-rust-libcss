@@ -314,7 +314,6 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
 
 pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 	
-	io::println(fmt!("\n Entering css__parse_tree_data ")) ;
 	let mut p = 0;
 	let end = data.len();
 
@@ -407,7 +406,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 				ctx_current.last_child = Some(n);
 			} else {
 				ctx_current.last_child.get_mut_ref().next = Some(n);
-				n.prev = ctx_current.last_child;
+				n.prev = Some(*(ctx_current.last_child.get_mut_ref()));
 
 				ctx_current.last_child = Some(n);
 			}
@@ -441,7 +440,6 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 		};
 
 		ctx.current.unwrap().attrs.push(attr);
-
 	}
 
 }
