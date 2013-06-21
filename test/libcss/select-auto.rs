@@ -172,7 +172,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
             else {
                 /* Assume start of stylesheet */
                 css__parse_sheet(ctx, data,1);
-
+                io::println(fmt!("Sheet parsed 1"));
                 ctx.intree = false;
                 ctx.insheet = true;
                 ctx.inerrors = false;
@@ -204,6 +204,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
                             _=>{false}
                         });
                 css__parse_sheet(ctx, data,1);
+                io::println(fmt!("Sheet parsed 2"));
             }
             else {
                 len = unsafe { ctx.sheets.len() -1 } ;
@@ -495,14 +496,17 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
        p = css__parse_media_list(data,p,ctx);
     }
     let params = css_create_params();
-    let sheet:@mut css = css::css_create(params, None);
-    let sheet_ctx = @mut sheet_ctx {
+
+    let sheet:@mut css = css::css_create(params, None   );
+    io::println("Sheet created in select-auto ");
+    let mut sheet_ctx_ins = @mut sheet_ctx {
         sheet: sheet,
         origin: origin,
         media: ctx.media as u64
     };
     
-    ctx.sheets.push(sheet_ctx);
+    ctx.sheets.push(sheet_ctx_ins) ;
+    io::println("Sheet pushed in select-auto ");
 }
 
 
