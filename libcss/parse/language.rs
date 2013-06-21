@@ -178,7 +178,7 @@ pub impl css_language {
         }
 
         let mut entry:context_entry = context_entry {
-            event_type: CSS_PARSER_START_STYLESHEET, 
+            event_type: CSS_PARSER_START_RULESET, 
             data:Some(curRule)
         };
         self.context.push(entry);
@@ -945,24 +945,21 @@ pub impl css_language {
                                  * special case, if we've got an ancestor combinator and there 
                                  * are no further tokens, or if the next token is a comma,
                                  * we ignore the supposed combinator and continue. */
-                                match *comb {
-                                    CSS_COMBINATOR_ANCESTOR => {
-                                        if *ctx >= vector.len() || tokenIsChar(&vector[*ctx],',') {
-                                            loop
+                                if (*comb as uint == CSS_COMBINATOR_ANCESTOR as uint &&
+										(*ctx >= vector.len() || tokenIsChar(&vector[*ctx],',') )) {
+                                    loop;
+                                }
+                                
+                                match self.parseSimpleSelector(vector, ctx) {
+                                    (CSS_OK, Some(other_selector)) => {   
+										result = other_selector;
+                                        match css_stylesheet::css__stylesheet_selector_combine(*comb, selector, other_selector) {
+                                            CSS_OK => { selector = other_selector}
+                                            x => return (x,None)
                                         }
                                     },
-                                    _ => {
-                                        match self.parseSimpleSelector(vector, ctx) {
-                                            (CSS_OK, Some(other_selector)) => {   
-                                                match css_stylesheet::css__stylesheet_selector_combine(*comb, selector, other_selector) {
-                                                    CSS_OK => { result = other_selector}
-                                                    x => return (x,None)
-                                                }
-                                            },
-                                            (x,y) => return(x,y)
-                                        } // End of match parseSimpleSelector
-                                    }       
-                                } // End of match comb
+                                    (x,y) => return(x,y)
+                                } // End of match parseSimpleSelector
                             },  
                             x => return (x, Some(selector))
                         }// End of outer match parseCombinator
@@ -1039,7 +1036,8 @@ pub impl css_language {
             } 
 
             token = &vector[*ctx];
-            if tokenIsChar(token, '+') {
+            io::println(fmt!("parseCombinator :: token == %?", token));
+			if tokenIsChar(token, '+') {
                 *comb = CSS_COMBINATOR_SIBLING
             }   
             else if tokenIsChar(token,  '>') {
@@ -1089,14 +1087,22 @@ pub impl css_language {
         } 
         
         token = &vector[*ctx];
-        
+        let mut token_null = false;
+		
         if !tokenIsChar(token, '|') {
             prefix = Some(token.idata.get_ref().clone());
-            *ctx += 1; //Iterate
-            token = &vector[*ctx]; 
+            		
+			*ctx += 1; //Iterate
+            
+			if (*ctx < vector.len()){
+				token = &vector[*ctx]; // peek
+			}
+			else {
+				token_null = true;
+			}
         }
 
-        if ( *ctx < vector.len() && tokenIsChar(token, '|')) {
+        if ( !token_null && tokenIsChar(token, '|')) {
             
             /* Have namespace prefix */
             *ctx += 1; //Iterate
@@ -1121,11 +1127,12 @@ pub impl css_language {
                 None => qname.ns = self.strings.lwc_string_data(UNIVERSAL as uint)
             }
 
-
+			io::println(fmt!("prefix=%?",prefix));
             qname.name = match prefix {
                 Some(x) => lwc_string_data(x),
                 None => ~""
-            }
+            };
+			io::println(fmt!("qname=%?",qname));
         }
         
         return CSS_OK
@@ -1370,8 +1377,9 @@ pub impl css_language {
         let qname:@mut css_qname=@mut css_qname{ns:~"", name:~""};
         match self.lookupNamespace(prefix, qname) { CSS_OK  => {}, error   => return (error,None)}   
 
-        qname.name = lwc_string_data(vector[*ctx].idata.get_ref().clone());
-
+        qname.name = lwc_string_data(token.idata.get_ref().clone());
+		io::println(fmt!("Qname=%?",copy qname.name));
+		
         consumeWhitespace(vector, ctx);
 
         if *ctx >= vector.len() {
@@ -1501,7 +1509,7 @@ pub impl css_language {
         }   
 
         /* :not() and pseudo elements are not permitted in :not() */
-        if in_not && (match selector_type {CSS_SELECTOR_PSEUDO_ELEMENT => true, _ => false} || match self.strings.pseudo_class_list[lut_idx] {NOT => true, _  => false} ) {
+        if in_not && (match selector_type {CSS_SELECTOR_PSEUDO_ELEMENT => true, _ => false} || lut_idx == NOT as uint) {
             return (CSS_INVALID, None)  
         }   
 		
