@@ -766,24 +766,24 @@ pub fn run_test( ctx:@mut line_ctx) {
     ua_default_for_property: @ua_default_for_property,
     handler_version:1
 };//TODO
-    //testnum += 1;
-    // unsafe {
-    //     let mut result = select.css_select_style(::cast::transmute(ctx.target.unwrap()),ctx.media as u64,None, select_handler,::cast::transmute(ctx));
-    //     match result {
-    //         (CSS_OK,Some(x)) => results = x,
-    //         _=> fail!()
-    //     }
-    // }
+    // testnum += 1;
+    unsafe {
+    	let mut result = select.css_select_style(::cast::transmute(ctx.target.unwrap()),ctx.media as u64,None, select_handler,::cast::transmute(ctx));
+    	match result {
+    	    (CSS_OK,Some(x)) => results = x,
+   		       _=> fail!(~"During css_select_style in select-auto")
+    	}
+    }
 
-    // io::println(fmt!(" CSS Selection result is =%?=",results));
-    // assert!(results.styles[ctx.pseudo_element].is_some());
+    io::println(fmt!(" CSS Selection result is =%?=",results));
+    assert!(results.styles[ctx.pseudo_element].is_some());
 
-    // dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
-    // let mut string:~str = copy ctx.exp;
-    // if str::eq( &buf.to_owned().to_lower(), &string.to_lower() ) {
-    //     io::println(fmt!("Expected : %? ",string));
-    //     io::println(fmt!("Result: %?",buf));
-    // }
+    dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
+    let mut string:~str = copy ctx.exp;
+    if str::eq( &buf.to_owned().to_lower(), &string.to_lower() ) {
+        io::println(fmt!("Expected : %? ",string));
+        io::println(fmt!("Result: %?",buf));
+    }
     //css_select_ctx::css_select_results_destroy(&results);
     ctx.tree = None;
     ctx.current = None;
