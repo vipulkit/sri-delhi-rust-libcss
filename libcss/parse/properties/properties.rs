@@ -1944,12 +1944,6 @@ pub impl css_properties {
              * ]+
              */
 
-
-            let mut token_null = false;
-            if *ctx >= vector.len() {
-                token_null = true;
-            } 
-
             loop {
 
                 if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),
@@ -4168,12 +4162,8 @@ pub impl css_properties {
                     }
 
                     *ctx = *ctx + 1;
-
-                    if *ctx >= vector.len() {
-                        token_null = true;
-                    }
                 }
-
+                
                 modifiers += 1;
             }
         }
