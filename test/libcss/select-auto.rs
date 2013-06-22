@@ -123,13 +123,15 @@ pub fn select_test(file:~str) {
 		io::println(fmt!("Handling line =%?=",copy line_string));
 	    handle_line(&mut line_string,ctx);
     	}	
-
+	
+	
 	if( ctx.tree.is_some() ) {
 		run_test(ctx);
 	}
+	
 }
 
-pub fn resolve_url(base:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>){
+pub fn resolve_url(_:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>){
 
 	(CSS_OK, Some(rel.clone()))
 }
@@ -676,8 +678,8 @@ pub fn run_test( ctx:@mut line_ctx) {
 
     let mut i:u32=0;
     let mut buf:~str= ~"";
-    //let mut bufLen:uint;
-    let mut testnum: int;//TODO static
+    
+    
 
     select = css_select_ctx::css_select_ctx_create();
 
@@ -769,8 +771,7 @@ pub fn run_test( ctx:@mut line_ctx) {
    
     ua_default_for_property: @ua_default_for_property,
     handler_version:1
-};//TODO
-    // testnum += 1;
+};
     unsafe {
     	let mut result = select.css_select_style(::cast::transmute(ctx.target.unwrap()),ctx.media as u64,None, select_handler,::cast::transmute(ctx));
     	match result {
@@ -784,15 +785,16 @@ pub fn run_test( ctx:@mut line_ctx) {
 
     dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
     let mut string:~str = copy ctx.exp;
-    if str::eq( &buf.to_owned().to_lower(), &string.to_lower() ) {
-        io::println(fmt!("Expected : %? ",string));
-        io::println(fmt!("Result: %?",buf));
+    if !str::eq( &buf.to_owned().to_lower(), &string.to_lower() ) {
+        io::println(fmt!("Expected : %s ",string));
+        io::println(fmt!("Result: %s",buf));
+		fail!(~"Test Failed: Mismatched result ");
     }
-    //css_select_ctx::css_select_results_destroy(&results);
+	
+	
     ctx.tree = None;
     ctx.current = None;
     ctx.depth = 0;
-    //ctx->n_sheets = 0;
     ctx.sheets= ~[];
     ctx.target = None;
 
@@ -998,7 +1000,7 @@ fn sibling_node(n:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
 	CSS_OK
 }
 
-fn node_has_name(pw:*libc::c_void, n:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error {
+fn node_has_name(_:*libc::c_void, n:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error {
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
@@ -1320,7 +1322,7 @@ fn node_has_attribute_substring(n:*libc::c_void, qname:css_qname,value:~str, mat
 			let mut data = lwc_string_data(node1.attrs[i].value.clone());
 			let vlen = value.len();
 			let last_start_len = len -vlen;
-			let last_start = data.slice(last_start_len,data.len()).to_owned();
+			
 			if len < vlen {
 				*matched = false;
 			}
