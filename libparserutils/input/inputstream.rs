@@ -6,13 +6,14 @@ use input::parserutils_filter::*;
 use utils::errors::*;
 
 pub type  parserutils_charset_detect_func =  
-    ~extern fn(data: &~[u8], mibenum:u16, source:int, arc:arc::ARC<~alias>) -> (Option<u16>, Option<int>, parserutils_error);
+    ~extern fn(data: &[u8], mibenum:u16, source:int, arc:arc::ARC<~alias>) -> (Option<u16>, Option<int>, parserutils_error);
 
 pub struct inputstream {
     utf8: ~[u8],        // Buffer containing UTF-8 data 
     cursor: uint,       // Byte offset of current position 
     had_eof: bool,      // Whether EOF has been reached 
     priv raw: ~[u8],         // Buffer containing raw data 
+    priv raw_cursor: uint,
     priv done_first_chunk: bool,     // Whether the first chunk has been processed 
     priv mibenum: u16,       // MIB enum for charset, or 0
     priv encsrc: int,     // Charset source
@@ -52,6 +53,7 @@ pub fn inputstream(encoding: Option<~str>, charset_src: Option<int>, csdetect_in
                 cursor: 0,
                 had_eof: false,
                 raw: ~[],
+                raw_cursor: 0,
                 done_first_chunk: false,
                 mibenum: arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(copy stream_encoding),
                 encsrc: stream_charset_src,
@@ -84,6 +86,7 @@ impl inputstream {
         self.input.parserutils__filter_destroy();
         self.utf8 = ~[] ;
         self.raw = ~[] ;
+        self.raw_cursor = 0;
         self.cursor = 0 ;
         self.had_eof = false ;
         self.done_first_chunk = false ;
@@ -217,7 +220,7 @@ impl inputstream {
         match(result) {
             ~"UTF-8" => {
                 if (self.raw.len() >= UTF8_BOM_LEN) && self.raw[0] == 0xEF && self.raw[1] == 0xBB && self.raw[2] == 0xBF {
-                    self.raw= slice(self.raw,UTF8_BOM_LEN,self.raw.len()).to_owned();
+                    self.raw_cursor += UTF8_BOM_LEN;
                     return PARSERUTILS_OK;
                 } 
             },
@@ -229,7 +232,7 @@ impl inputstream {
 
                 if self.raw.len() >= UTF32_BOM_LEN {
                     if self.raw[0] == 0x00 && self.raw[1] == 0x00 && self.raw[2] == 0xFE && self.raw[3] == 0xFF {
-                        self.raw= slice(self.raw,UTF32_BOM_LEN,self.raw.len()).to_owned();
+                        self.raw_cursor += UTF32_BOM_LEN;
                         return PARSERUTILS_OK;
                     }
                     else if self.raw[0] == 0xFF && self.raw[1] == 0xFE && self.raw[2] == 0x00 && self.raw[3] == 0x00 {
@@ -238,7 +241,7 @@ impl inputstream {
                             return PARSERUTILS_BADPARM;
                         }
                         
-                        self.raw= slice(self.raw,UTF32_BOM_LEN,self.raw.len()).to_owned();
+                        self.raw_cursor += UTF32_BOM_LEN;
                         return PARSERUTILS_OK;
                     }
                 }
@@ -252,7 +255,7 @@ impl inputstream {
 
                 if self.raw.len() >= UTF16_BOM_LEN {
                     if self.raw[0] == 0xFE && self.raw[1] == 0xFF {
-                        self.raw= slice(self.raw,UTF16_BOM_LEN,self.raw.len()).to_owned();
+                        self.raw_cursor += UTF16_BOM_LEN;
                         return PARSERUTILS_OK;
                     }
                     else if self.raw[0] == 0xFF && self.raw[1] == 0xFE {
@@ -261,35 +264,33 @@ impl inputstream {
                             return PARSERUTILS_BADPARM;
                         }
 
-                        self.raw= slice(self.raw,UTF16_BOM_LEN,self.raw.len()).to_owned();
+                        self.raw_cursor += UTF16_BOM_LEN;
                         return PARSERUTILS_OK;
                     }
                 }
             },
             ~"UTF-16BE" => {
                 if self.raw.len() >= UTF16_BOM_LEN && self.raw[0] == 0xFE && self.raw[1] == 0xFF {
-                    self.raw= slice(self.raw,UTF16_BOM_LEN,self.raw.len()).to_owned();
+                    self.raw_cursor += UTF16_BOM_LEN;
                     return PARSERUTILS_OK;
                 }
             },
             ~"UTF-16LE" => {
                 if self.raw.len() >= UTF16_BOM_LEN && self.raw[0] == 0xFF && self.raw[1] == 0xFE {
-                    
-
-                    self.raw= slice(self.raw,UTF16_BOM_LEN,self.raw.len()).to_owned();
+                    self.raw_cursor += UTF16_BOM_LEN;
                     return PARSERUTILS_OK;
                 }
             },
             
             ~"UTF-32BE" => {
                 if self.raw.len() >= UTF32_BOM_LEN && self.raw[0] == 0x00 && self.raw[1] == 0x00 && self.raw[2] == 0xFE && self.raw[3] == 0xFF {
-                    self.raw= slice(self.raw,UTF32_BOM_LEN,self.raw.len()).to_owned();
+                    self.raw_cursor += UTF32_BOM_LEN;
                     return PARSERUTILS_OK;
                 }
             },
             ~"UTF-32LE" => {
                 if self.raw.len() >= UTF32_BOM_LEN && self.raw[0] == 0xFF && self.raw[1] == 0xFE && self.raw[2] == 0x00 && self.raw[3] == 0x00 {
-                    self.raw= slice(self.raw,UTF32_BOM_LEN,self.raw.len()).to_owned();
+                    self.raw_cursor += UTF32_BOM_LEN;
                     return PARSERUTILS_OK;
                 }
             },
@@ -350,7 +351,7 @@ impl inputstream {
 
             match(self.csdetect) {
                 Some(copy f) => {
-                    let (charsetOption,srcOption,error)= (*f)(&self.raw, self.mibenum, self.encsrc, self.input.instance.clone());
+                    let (charsetOption,srcOption,error)= (*f)(self.raw.slice(self.raw_cursor, self.raw.len()), self.mibenum, self.encsrc, self.input.instance.clone());
 
                     match error {
                         PARSERUTILS_OK => {
@@ -381,7 +382,6 @@ impl inputstream {
 
             match(self.parserutils_inputstream_strip_bom()) {
                 PARSERUTILS_OK => {
-                    //self.done_first_chunk = true;
                 },
                 _ => {
                     // io::println("parserutils_inputstream_refill_buffer: match self.parserutils_inputstream_strip_bom => _");
@@ -396,7 +396,6 @@ impl inputstream {
                 Some(x) => {
                     match self.input.filter_set_encoding(x) {
                         PARSERUTILS_OK => {
-                            //self.done_first_chunk = true; 
                         },
                         _ => {
                          return PARSERUTILS_BADENCODING;
@@ -417,8 +416,8 @@ impl inputstream {
        
       
          // Try to fill utf8 buffer from the raw data
-        let mut processedLen:uint;
-        match(self.input.parserutils__filter_process_chunk(self.raw)) {
+        let mut processed_length:uint;
+        match(self.input.parserutils__filter_process_chunk(self.raw.slice(self.raw_cursor, self.raw.len()))) {
             (PARSERUTILS_OK, outbuf, len_processed) => {
                  
                     if (!self.done_first_chunk) {
@@ -436,15 +435,14 @@ impl inputstream {
                 else {
                     self.utf8 += outbuf;
                 }
-                //self.utf8 += processed_chunk.outbuf;
-                processedLen = len_processed as uint
+                processed_length = len_processed as uint
             },
             (y, _, _ ) => {
                 return y
             }
         }
 
-        self.raw= slice(self.raw,processedLen,self.raw.len()).to_owned();
+        self.raw_cursor += processed_length;
         return PARSERUTILS_OK;
     }
 
@@ -471,7 +469,7 @@ impl inputstream {
         //io::println("Entering: parserutils_inputstream_peek_slow");
         let len: uint;
 
-        if self.raw.len() == 0 {
+        if (self.raw.len() <= self.raw_cursor) {
             //io::println("Entering: parserutils_inputstream_peek_slow:: self.raw.len() == 0");
             if self.had_eof {
                 return (None,PARSERUTILS_EOF);

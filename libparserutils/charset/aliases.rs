@@ -17,7 +17,7 @@ pub struct alias {
     alias_map: ~LinearMap<~str,u16>
 }
 
-pub fn memcmp(str1 : &~[u8] , str2 : &[u8] , len : uint ) -> int {
+pub fn memcmp(str1 : &[u8] , str2 : &[u8] , len : uint ) -> int {
     let mut i : uint = 0 ;
     while ( i<len ) {
         if str1[i] != str2[i] {
