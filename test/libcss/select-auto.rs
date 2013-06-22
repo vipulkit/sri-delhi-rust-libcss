@@ -123,12 +123,10 @@ pub fn select_test(file:~str) {
 		io::println(fmt!("Handling line =%?=",copy line_string));
 	    handle_line(&mut line_string,ctx);
     	}	
-	
-	
+
 	if( ctx.tree.is_some() ) {
 		run_test(ctx);
 	}
-	
 }
 
 pub fn resolve_url(_:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>){
@@ -498,15 +496,15 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
        p = css__parse_media_list(data,p,ctx);
     }
     let params = css_create_params();
-
-    let sheet:@mut css = css::css_create(params, None   );
+    let mut lwc_ins = unsafe {ctx.lwc_instance.clone() } ;
+    let sheet:@mut css = css::css_create(params, Some(lwc_ins.clone()) );
     io::println("Sheet created in select-auto ");
     let mut sheet_ctx_ins = @mut sheet_ctx {
         sheet: sheet,
         origin: origin,
         media: ctx.media as u64
     };
-    
+    io::println("Before pushing Sheet ");
     ctx.sheets.push(sheet_ctx_ins) ;
     io::println("Sheet pushed in select-auto ");
 }
@@ -678,9 +676,7 @@ pub fn run_test( ctx:@mut line_ctx) {
 
     let mut i:u32=0;
     let mut buf:~str= ~"";
-    
-    
-
+ 
     select = css_select_ctx::css_select_ctx_create();
 
     unsafe {
@@ -772,6 +768,7 @@ pub fn run_test( ctx:@mut line_ctx) {
     ua_default_for_property: @ua_default_for_property,
     handler_version:1
 };
+
     unsafe {
     	let mut result = select.css_select_style(::cast::transmute(ctx.target.unwrap()),ctx.media as u64,None, select_handler,::cast::transmute(ctx));
     	match result {
@@ -780,24 +777,26 @@ pub fn run_test( ctx:@mut line_ctx) {
     	}
     }
 
-    io::println(fmt!(" CSS Selection result is =%?=",results));
+    
     assert!(results.styles[ctx.pseudo_element].is_some());
-
     dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
+
+    io::println(fmt!(" CSS Selection result is =%?=%?=",results,copy ctx.exp));
     let mut string:~str = copy ctx.exp;
-    if !str::eq( &buf.to_owned().to_lower(), &string.to_lower() ) {
-        io::println(fmt!("Expected : %s ",string));
-        io::println(fmt!("Result: %s",buf));
-		fail!(~"Test Failed: Mismatched result ");
+    if !str::eq( &buf.to_owned().to_lower(), &(copy string).to_lower() ) {
+        io::println(fmt!("Expected : %? ",string));
+        io::println(fmt!("Result: %?",buf));
+        fail!(~"Select result mismatched with exepected");
     }
-	
-	
+    else {
+    	io::println(fmt!("Result: Test case passed"));	
+    }
+
     ctx.tree = None;
     ctx.current = None;
     ctx.depth = 0;
     ctx.sheets= ~[];
     ctx.target = None;
-
  }
 
 
@@ -1322,7 +1321,7 @@ fn node_has_attribute_substring(n:*libc::c_void, qname:css_qname,value:~str, mat
 			let mut data = lwc_string_data(node1.attrs[i].value.clone());
 			let vlen = value.len();
 			let last_start_len = len -vlen;
-			
+			//let last_start = data.slice(last_start_len,data.len()).to_owned();
 			if len < vlen {
 				*matched = false;
 			}
