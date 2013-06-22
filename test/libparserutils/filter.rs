@@ -28,12 +28,12 @@ fn main(){
                 //let mut processedLen:uint;
 
                 match(Filter.parserutils__filter_process_chunk(inbuf)) { 
-                    (processed_chunk , PARSERUTILS_OK) => {
-                        outbuf += processed_chunk.outbuf;
+                    (PARSERUTILS_OK, f_outbuf , _) => {
+                        outbuf += f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
-                    (_ , _) => {                        
+                    (_ , _, _) => {                        
                         assert!(false)
                     }
                 }
@@ -49,12 +49,12 @@ fn main(){
                 outbuf = ~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf)) { 
-                    (processed_chunk , PARSERUTILS_OK) => {
-                        outbuf += processed_chunk.outbuf;
+                    (PARSERUTILS_OK, f_outbuf, _) => {
+                        outbuf += f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
-                    (_ , _) => {                    
+                    (_ , _, _) => {                    
                         assert!(false)
                     }
                 }
@@ -72,12 +72,12 @@ fn main(){
                 outbuf=~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf)) { 
-                    (processed_chunk , PARSERUTILS_OK) => {
-                        outbuf += processed_chunk.outbuf;
+                    (PARSERUTILS_OK, f_outbuf, _) => {
+                        outbuf += f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
-                    (_ , _) => {                        
+                    (_ , _, _) => {                        
                         assert!(false);
                     }
                 }
@@ -94,22 +94,22 @@ fn main(){
                 outbuf = ~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
-                    (processed_chunk , PARSERUTILS_OK) => {
-                        outbuf += processed_chunk.outbuf;
+                    (PARSERUTILS_OK, f_outbuf, _) => {
+                        outbuf += f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
-                    (_ , _) => {                        
+                    (_ , _, _) => {                        
                         assert!(false);
                     }
                 }
                 match(Filter.parserutils__filter_process_chunk(inbuf)) { 
-                    (processed_chunk , PARSERUTILS_OK) => {
-                        outbuf = copy processed_chunk.outbuf;
+                    (PARSERUTILS_OK, f_outbuf, _) => {
+                        outbuf = f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
-                    (_ , _) => {                        
+                    (_ , _, _) => {                        
                         assert!(false);   
                     }
                 }
@@ -129,24 +129,24 @@ fn main(){
                 outbuf=~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
-                    (processed_chunk , PARSERUTILS_OK) => {
-                        outbuf += processed_chunk.outbuf;
+                    (PARSERUTILS_OK, f_outbuf, _) => {
+                        outbuf += f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
-                    (_ , _) => {                        
+                    (_ , _, _) => {                        
                         assert!(false);
                     }
                 }
 
                 outbuf=~[];
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()).to_owned())) { 
-                    (processed_chunk , PARSERUTILS_OK) => {
-                        outbuf += processed_chunk.outbuf;
+                    (PARSERUTILS_OK, f_outbuf, _) => {
+                        outbuf += f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
-                    (_ , _) => {                        
+                    (_ , _, _) => {                        
                         assert!(false);  
                     }
                 }  //hell\xef\xbf\xbd\xef\xbf\xbdo!"
@@ -165,12 +165,12 @@ fn main(){
                 outbuf=~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-5).to_owned())) { 
-                    (processed_chunk , PARSERUTILS_OK) => {
-                        outbuf += processed_chunk.outbuf;
+                    (PARSERUTILS_OK, f_outbuf, _) => {
+                        outbuf += f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
-                    (_ , _) => {    
+                    (_ , _, _) => {    
                         assert!(false)
                     }
                 }
@@ -178,12 +178,12 @@ fn main(){
                 outbuf=~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
-                    (processed_chunk , PARSERUTILS_OK) => {
-                        outbuf += processed_chunk.outbuf;
+                    (PARSERUTILS_OK, f_outbuf, _) => {
+                        outbuf += f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
-                    (_ , _) => {    
+                    (_ , _, _) => {    
                         assert!(false)
                     }
                 }
@@ -191,12 +191,12 @@ fn main(){
                 outbuf=~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf)) { 
-                    (processed_chunk , PARSERUTILS_OK) => {
-                        outbuf += processed_chunk.outbuf;
+                    (PARSERUTILS_OK, f_outbuf, _) => {
+                        outbuf += f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
-                    (_ , _) => {
+                    (_ , _, _) => {
                         assert!(false)
                     }
                 }
@@ -217,34 +217,34 @@ fn main(){
                 outbuf=~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-4).to_owned())) { 
-                    (processed_chunk , PARSERUTILS_OK) => {
-                        outbuf += processed_chunk.outbuf;
+                    (PARSERUTILS_OK, f_outbuf, _) => {
+                        outbuf += f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
-                    (_ , _) => {            
+                    (_ , _, _) => {            
                         assert!(false);
                     }
                 }
                 outbuf=~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
-                    (processed_chunk , PARSERUTILS_OK) => {
-                        outbuf += processed_chunk.outbuf;
+                    (PARSERUTILS_OK, f_outbuf, _) => {
+                        outbuf += f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                     },
-                    (_ , _) => {
+                    (_ , _, _) => {
                         assert!(false);
                     }
                 }
                 outbuf=~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf)) { 
-                    (processed_chunk , PARSERUTILS_OK) => {
-                        outbuf += processed_chunk.outbuf;
+                    (PARSERUTILS_OK, f_outbuf, _) => {
+                        outbuf += f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));                                   
                     },
-                    (_ , _) => {
+                    (_ , _, _) => {
                         assert!(false);
                     }
                 }
