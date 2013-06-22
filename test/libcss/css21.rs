@@ -40,7 +40,7 @@ fn create_css() -> @mut css{
 }
 
 fn main() {
-    css(~"data/css/blocks.css");
+    // css(~"data/css/blocks.css");
     io::println("css21");   
 }
 
@@ -118,8 +118,11 @@ fn css(file_name: ~str) {
     let mut buf: ~str;
 
     buf = dump_sheet(css.stylesheet);
-    // io::println(buf);
-
+    let outlen = buf.len();
+    let written = outsize - outlen;
+    // io::println(fmt!("written == %? , outsize - outlen == %?" , written , outsize-outlen));
+    assert!(written == outsize-outlen);
+    
 } 
 
 
@@ -134,26 +137,26 @@ fn badcomment() {
 }
 
 #[test]
-fn Blocks() {
+fn blocks() {
     css(~"data/css/blocks.css");
 }
 
 #[test]
-fn Color() {
+fn color() {
     css(~"data/css/color.css");
 }
 
 #[test]
-fn Fontface() {
+fn fontface() {
     css(~"data/css/fontface.css");
 }
 
 #[test]
-fn Malformed() {
+fn malformed() {
     css(~"data/css/malformed.css");
 }
 
 #[test]
-fn Simple() {
+fn simple() {
     css(~"data/css/simple.css");
 }
