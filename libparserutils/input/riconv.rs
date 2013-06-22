@@ -50,42 +50,30 @@ pub fn safe_riconv_open( tocode: &str , fromcode : &str ) -> u64 {
     }
 }
 
-pub fn safe_riconv (hnd : u64, inbuf : ~[u8] ) -> ~chunk_result {
+pub fn safe_riconv (hnd : u64, inbuf : &[u8] ) -> (~[u8], u64, int) {
     unsafe {
-        let mut result = ~chunk_result{ outbuf:~[] , len_processed:0 , err_state:0 , ret_val:0};
         let mut err : int = 0 ;
         if inbuf.len()==0 {
-            let null_len : size_t = 0 ;
-            result.ret_val = iconv_wrapper::rust_iconv(hnd, &ptr::null()  , &null_len , &ptr::null() , &null_len , &err ) ;
-            result.outbuf = ~[] ;
-            result.len_processed = 0 ;
-            result.err_state=err ;
-            return result ;
+            (~[], 0, 0)
         }
-        
         else {
             let c_insize : size_t = inbuf.len() as  u64;
             let c_outsize : size_t = (c_insize+1)*4 ;
-            //let c_input : * u8 = iconv_wrapper::AllocateBuffer(c_insize as int );
-            //copy_rust_to_c(copy inbuf, c_input, c_insize as uint );
+
             let mut c_output : *u8 = iconv_wrapper::AllocateBuffer( c_outsize as libc::c_int );
 
             let mut c_inargs = c_insize ;
             
-            //let mut initLength=c_insize;
             let mut c_ouargs = c_outsize ;
-            //let mut c_inbuf = c_input ;
             let mut c_oubuf = c_output ;
 
-            result.ret_val = iconv_wrapper::rust_iconv(hnd , &vec::raw::to_ptr(inbuf) /*c_input*/, &c_inargs  , &c_output , &c_ouargs , &err ) ;
-            result.outbuf = vec::from_buf(c_oubuf,(c_outsize- c_ouargs)as uint); ;
-            result.len_processed=c_insize-c_inargs ;
+            iconv_wrapper::rust_iconv(hnd , &vec::raw::to_ptr(inbuf) /*c_input*/, &c_inargs  , &c_output , &c_ouargs , &err ) ;
+            let outbuf = vec::from_buf(c_oubuf,(c_outsize- c_ouargs)as uint); ;
+            let len_processed=c_insize-c_inargs ;
            
-            result.err_state=err ;
-            //iconv_wrapper::DeallocateBuffer(c_inbuf);
             iconv_wrapper::DeallocateBuffer(c_oubuf);
+            (outbuf, len_processed, err)
         }
-        result
     }
 }
 

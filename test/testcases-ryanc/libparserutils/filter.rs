@@ -64,11 +64,11 @@ fn filter() {
     let mut out: ~[u8] = ~[];
 
     match(input.parserutils__filter_process_chunk(in)) {
-        (chunk, PARSERUTILS_OK) => {
-            out = copy chunk.outbuf;
+        (PARSERUTILS_OK, outbuf, _) => {
+            out = outbuf;
             io::println(fmt!("'%s'", str::from_bytes(out)));
         },
-        (_, _) => {assert!(false);}
+        (_, _, _) => {assert!(false);}
     }
 
     assert_eq!(str::from_bytes(out), ~"hell\xc2\xa0o!");
@@ -95,11 +95,11 @@ fn filter() {
     /* Input does loose decoding, converting to U+FFFD if illegal
        input is encountered */
     match(input.parserutils__filter_process_chunk(in)) {
-        (chunk, PARSERUTILS_OK) => {
-            out = copy chunk.outbuf;
+        (PARSERUTILS_OK, outbuf, _) => {
+            out = outbuf;
             io::println(fmt!("'%s'", str::from_bytes(out)));
         },
-        (_, _) => {assert!(false);}
+        (_, _, _) => {assert!(false);}
     }
 
     match(input.parserutils__filter_reset()) {
@@ -115,21 +115,21 @@ fn filter() {
     let mut in: ~[u8] = "hell\xc2\xa0o!".to_bytes();
     let mut inlen = in.len()-3;
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
-        (chunk, PARSERUTILS_OK) => {
-            out = copy chunk.outbuf;
+        (PARSERUTILS_OK, outbuf, _) => {
+            out = outbuf;
             io::println(fmt!("'%s'", str::from_bytes(out)));
         },
-        (_, _) => {assert!(false);}
+        (_, _, _) => {assert!(false);}
     }
 
     inlen+=3;
 
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
-        (chunk, PARSERUTILS_OK) => {
-            out = copy chunk.outbuf;
+        (PARSERUTILS_OK, outbuf, _) => {
+            out = outbuf;
             io::println(fmt!("'%s'", str::from_bytes(out)));
         },
-        (_, _) => {assert!(false);}
+        (_, _, _) => {assert!(false);}
     }
 
     match(input.parserutils__filter_reset()) {
@@ -157,11 +157,11 @@ fn filter() {
     let mut inlen = in.len()-3;
 
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
-        (chunk, PARSERUTILS_OK) => {
-            out = copy chunk.outbuf;
+        (PARSERUTILS_OK, outbuf, _) => {
+            out = outbuf;
             io::println(fmt!("'%s'", str::from_bytes(out)));
         },
-        (_, _) => {assert!(false);}
+        (_, _, _) => {assert!(false);}
     }
 
     inlen+=3;
@@ -170,11 +170,11 @@ fn filter() {
      * input is encountered */
 
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
-        (chunk, PARSERUTILS_OK) => {
-            out = copy chunk.outbuf;
+        (PARSERUTILS_OK, outbuf, _) => {
+            out = outbuf;
             io::println(fmt!("'%s'", str::from_bytes(out)));
         },
-        (_, _) => {assert!(false);}
+        (_, _, _) => {assert!(false);}
     }
 
     match(input.parserutils__filter_reset()) {
@@ -191,31 +191,31 @@ fn filter() {
     let mut inlen = in.len()-5;
 
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
-        (chunk, PARSERUTILS_OK) => {
-            out = copy chunk.outbuf;
+        (PARSERUTILS_OK, outbuf, _) => {
+            out = outbuf;
             io::println(fmt!("'%s'", str::from_bytes(out)));
         },
-        (_, _) => {assert!(false);}
+        (_, _, _) => {assert!(false);}
     }
 
     inlen+=2;
 
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
-        (chunk, PARSERUTILS_OK) => {
-            out = copy chunk.outbuf;
+        (PARSERUTILS_OK, outbuf, _) => {
+            out = outbuf;
             io::println(fmt!("'%s'", str::from_bytes(out)));
         },
-        (_, _) => {assert!(false);}
+        (_, _, _) => {assert!(false);}
     }
 
     inlen+=3;
 
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
-        (chunk, PARSERUTILS_OK) => {
-            out = copy chunk.outbuf;
+        (PARSERUTILS_OK, outbuf, _) => {
+            out = outbuf;
             io::println(fmt!("'%s'", str::from_bytes(out)));
         },
-        (_, _) => {assert!(false);}
+        (_, _, _) => {assert!(false);}
     }
 
     match(input.parserutils__filter_reset()) {
@@ -233,31 +233,31 @@ fn filter() {
     let mut inlen = in.len()-4;
 
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
-        (chunk, PARSERUTILS_OK) => {
-            out = copy chunk.outbuf;
+        (PARSERUTILS_OK, outbuf, _) => {
+            out = outbuf;
             io::println(fmt!("'%s'", str::from_bytes(out)));
         },
-        (_, _) => {assert!(false);}
+        (_, _, _) => {assert!(false);}
     }
 
     inlen+=1;
 
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
-        (chunk, PARSERUTILS_OK) => {
-            out = copy chunk.outbuf;
+        (PARSERUTILS_OK, outbuf, _) => {
+            out = outbuf;
             io::println(fmt!("'%s'", str::from_bytes(out)));
         },
-        (_, _) => {assert!(false);}
+        (_, _, _) => {assert!(false);}
     }
 
     inlen+=3;
 
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
-        (chunk, PARSERUTILS_OK) => {
-            out = copy chunk.outbuf;
+        (PARSERUTILS_OK, outbuf, _) => {
+            out = outbuf;
             io::println(fmt!("'%s'", str::from_bytes(out)));
         },
-        (_, _) => {assert!(false);}
+        (_, _, _) => {assert!(false);}
     }
 
     match(input.parserutils__filter_reset()) {

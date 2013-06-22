@@ -105,16 +105,17 @@ impl filter {
         }   
     }
 
-    pub fn parserutils__filter_process_chunk(&mut self, inbuf : ~[u8] ) -> (~riconv::chunk_result, parserutils_error) {
+    pub fn parserutils__filter_process_chunk(&mut self, inbuf : &[u8] ) -> (parserutils_error, ~[u8], u64) {
                 
-        let iconv_result = riconv::safe_riconv(self.iconv_h, inbuf);
+        let (outbuf, len_processed, err_state) = riconv::safe_riconv(self.iconv_h, inbuf);
+        
         let mut status : parserutils_error ;
 
-        if iconv_result.len_processed==0 {
-            if iconv_result.err_state==1 {
+        if len_processed==0 {
+            if err_state==1 {
                 status = PARSERUTILS_NOMEM;
             } 
-            else if iconv_result.err_state==2 {
+            else if err_state==2 {
                 status = PARSERUTILS_BADPARM;
             }
             else {
@@ -124,7 +125,7 @@ impl filter {
         else {
             status = PARSERUTILS_OK;
         }
-        (iconv_result, status)
+        (status, outbuf, len_processed)
     }
 }
 

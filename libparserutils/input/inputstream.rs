@@ -418,28 +418,28 @@ impl inputstream {
       
          // Try to fill utf8 buffer from the raw data
         let mut processedLen:uint;
-        match(self.input.parserutils__filter_process_chunk(copy self.raw)) { //TODO :: remove copy
-            (processed_chunk , PARSERUTILS_OK) => {
+        match(self.input.parserutils__filter_process_chunk(self.raw)) {
+            (PARSERUTILS_OK, outbuf, len_processed) => {
                  
                     if (!self.done_first_chunk) {
                         self.done_first_chunk = true;
-                        if processed_chunk.outbuf[0]== 0xFF && processed_chunk.outbuf[1]== 0xFE && processed_chunk.outbuf[2]== 0x00 && processed_chunk.outbuf[3]== 0x00{
-                            self.utf8 += slice(processed_chunk.outbuf,4,processed_chunk.outbuf.len()).to_owned();
+                        if outbuf[0]== 0xFF && outbuf[1]== 0xFE && outbuf[2]== 0x00 && outbuf[3]== 0x00{
+                            self.utf8 += slice(outbuf,4,outbuf.len()).to_owned();
                         }
-                        else if processed_chunk.outbuf[0]== 0xFF && processed_chunk.outbuf[1]== 0xFE {
-                            self.utf8 += slice(processed_chunk.outbuf,2,processed_chunk.outbuf.len()).to_owned();
+                        else if outbuf[0]== 0xFF && outbuf[1]== 0xFE {
+                            self.utf8 += slice(outbuf,2,outbuf.len()).to_owned();
                         }
                         else {
-                            self.utf8 += processed_chunk.outbuf;
+                            self.utf8 += outbuf;
                         }
                 }
                 else {
-                    self.utf8 += processed_chunk.outbuf;
+                    self.utf8 += outbuf;
                 }
                 //self.utf8 += processed_chunk.outbuf;
-                processedLen = processed_chunk.len_processed as uint
+                processedLen = len_processed as uint
             },
-            (_ , y) => {
+            (y, _, _ ) => {
                 return y
             }
         }
