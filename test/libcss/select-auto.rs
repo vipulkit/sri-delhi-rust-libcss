@@ -262,14 +262,19 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
                         CSS_OK=>{true},
                         CSS_NEEDDATA=>{true},
                         _=>{false}
-                     });
+                    });
         }
-        // Not Needed
-       // else if ( ctx.inexp ) {
-       //   css__parse_expected(ctx, data.slice(1,data.len()-1) );
-       // }
+	    else if (ctx.inexp) {
+	        css__parse_expected(ctx, data.slice(0,data.len()-1) );
+	    }
     }
     true 
+}
+
+fn css__parse_expected(ctx: @mut line_ctx , data: &str) {
+
+	ctx.exp += data;
+	ctx.exp += &"\n";
 }
 
 
@@ -495,7 +500,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
     }
     
     if p < end {
-       p = css__parse_media_list(data,p,ctx);
+       css__parse_media_list(data,p,ctx);
     }
     let params = css_create_params();
 
