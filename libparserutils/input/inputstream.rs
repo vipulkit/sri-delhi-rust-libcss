@@ -465,7 +465,6 @@ impl inputstream {
     *               _NEEDDATA on reaching the end of available input,
     *               _EOF on reaching the end of all input,
     *               _BADENCODING if the input cannot be decoded,
-    *               _NOMEM on memory exhaustion,
     *               _BADPARM if bad parameters are passed.
     */
     pub fn parserutils_inputstream_peek_slow(&mut self , offset: uint)-> (Option<(~[u8],uint)>,parserutils_error) {
@@ -543,7 +542,6 @@ impl inputstream {
     *               _NEEDDATA on reaching the end of available input,
     *               _EOF on reaching the end of all input,
     *               _BADENCODING if the input cannot be decoded,
-    *               _NOMEM on memory exhaustion,
     *               _BADPARM if bad parameters are passed.
     */ 
     pub fn parserutils_inputstream_peek(&mut self, offset: uint)-> (Option<(~[u8],uint)>,parserutils_error) {
