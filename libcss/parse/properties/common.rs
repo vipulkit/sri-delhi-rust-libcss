@@ -401,7 +401,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
     
     io::println("Entering: css__parse_color_specifier");
     let mut token:&@css_token;
-    let mut ret_value: u16 = 0;
+    let mut ret_value: u16;
     let mut ret_result: u32 = 0;
     let orig_ctx = *ctx;
 
