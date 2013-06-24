@@ -2230,7 +2230,10 @@ impl css_select_ctx {
         let mut s = style;
 
         io::println(fmt!("Entering cascade_style")) ;
-        while (unsafe { s.used + 1 < s.bytecode.len()} ) {
+		unsafe{
+			io::println(fmt!("s_used=%?, s_len=%?", s.used, s.bytecode.len())) ;
+		}	
+        while (unsafe { s.used  < s.bytecode.len()} ) {
             let mut op: u32;
             let mut error : css_error ;
             let mut opv = peek_bytecode(s);
@@ -2238,7 +2241,8 @@ impl css_select_ctx {
             advance_bytecode(s);
 
             op = getOpcode(opv) as u32;
-            let mut dispatch_cascade = dispatch_table::get_cascade_ptr(op as uint) ;
+            io::println(fmt!("op=%?, opv=%?, op_m=%?", op, opv, op as uint));
+			let mut dispatch_cascade = dispatch_table::get_cascade_ptr(op as uint) ;
             error =  dispatch_cascade(opv, s, state);
 
             match error {
