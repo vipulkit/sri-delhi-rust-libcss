@@ -949,17 +949,19 @@ impl css_select_ctx {
                 unsafe {
                     match (origin) {
                         CSS_ORIGIN_UA => {
+                            state.ua_font_faces.font_faces.push(rule.font_face.get());
                             faces.font_faces.push_all(state.ua_font_faces.font_faces);
                         },
                         CSS_ORIGIN_USER => {
+                            state.user_font_faces.font_faces.push(rule.font_face.get());
                             faces.font_faces.push_all(state.user_font_faces.font_faces);
                         },
                         CSS_ORIGIN_AUTHOR => {
+                            state.author_font_faces.font_faces.push(rule.font_face.get());
                             faces.font_faces.push_all(state.author_font_faces.font_faces);
                         }
                     }
                 }
-                faces.font_faces.push(rule.font_face.get());
             }
         }
         CSS_OK

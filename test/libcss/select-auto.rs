@@ -263,7 +263,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
                     });
         }
 	    else if (ctx.inexp) {
-	        css__parse_expected(ctx, data.slice(0,data.len()-1) );
+	        css__parse_expected(ctx, data.slice(0,data.len()) );
 	    }
     }
     true 
@@ -272,7 +272,6 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
 fn css__parse_expected(ctx: @mut line_ctx , data: &str) {
 
 	ctx.exp += data;
-	ctx.exp += &"\n";
 }
 
 
