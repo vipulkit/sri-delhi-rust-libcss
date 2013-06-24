@@ -2102,7 +2102,9 @@ pub fn  css__cascade_color(opv:u32, style:@mut css_style, state:@mut css_select_
 
 	if !inherit {
 		match getValue(opv) {
-			COLOR_TRANSPARENT => value = CSS_COLOR_COLOR,	
+			COLOR_TRANSPARENT => {
+				value = CSS_COLOR_COLOR
+			},	
 			COLOR_CURRENT_COLOR => {
 				value = CSS_COLOR_INHERIT; //color: currentColor always computes to inherit 
 				inherit = true
@@ -2126,19 +2128,38 @@ pub fn  css__cascade_color(opv:u32, style:@mut css_style, state:@mut css_select_
 
 pub fn css__set_color_from_hint(hint:@mut css_hint, style:@mut css_computed_style) 
 								-> css_error {
-	set_color(style, hint.status, hint.color.unwrap()) ;
+	set_color(style, hint.status, hint.color.get()) ;
 	CSS_OK
 }
 
-pub fn css__initial_color(_:@mut css_select_state) -> css_error {
+pub fn css__initial_color(state:@mut css_select_state) -> css_error {
 		
-	// TO DO
-	// match state.handler.ua_default_for_property(CSS_PROP_COLOR) {
-	// 	(CSS_OK,hint) => css__set_color_from_hint(hint, state.computed),
-	// 	(error, _) => return error
-	// }
+	let mut hint = @mut css_hint{
+		        hint_type:HINT_LENGTH,
+		        status:0,
+		        clip:None,
+		        content:None,
+		        counters:None,
+		        length:None,
+		        position:None,
+		        color:None,
+		        fixed:None,
+		        integer:None,
+		        string:None,
+		        strings:None
+	};
 
-	CSS_OK	
+	let mut error : css_error ;
+			
+	error = (*(state.handler.get().ua_default_for_property))(CSS_PROP_COLOR as u32,hint);
+	match  error {
+		CSS_OK=>{},
+		x => { 
+			return x ;
+		}
+	}
+
+	css__set_color_from_hint(hint,state.computed)	
 }
 
 pub fn css__compose_color(parent:@mut css_computed_style, 
@@ -2148,12 +2169,12 @@ pub fn css__compose_color(parent:@mut css_computed_style,
 	
 	let (color_type, color) = css_computed_color(child);
 	
-	if color_type == CSS_COLOR_INHERIT as u8{
+	if color_type == (CSS_COLOR_INHERIT as u8) {
 		let (p_color_type, p_color) = css_computed_color(parent);
-		set_color(result, p_color_type, p_color.unwrap());
+		set_color(result, p_color_type, p_color.get_or_default(color.get_or_default(0)));
 	}
 	else {
-		set_color(result, color_type, color.unwrap());
+		set_color(result, color_type, color.get_or_default(0));
 	}
 	CSS_OK
 }
