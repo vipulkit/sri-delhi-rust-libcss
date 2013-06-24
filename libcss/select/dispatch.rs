@@ -45,15 +45,6 @@ static prop_dispatch : &'static[&'static prop_table] = &[
 
 
 	&prop_table { 
-		cascade:css__cascade_azimuth ,
-		set_from_hint:css__set_azimuth_from_hint ,
-		initial:css__initial_azimuth ,
-		compose:css__compose_azimuth ,
-		inherited:1 ,
-		group:GROUP_AURAL ,
-	} ,
-	   
-	&prop_table { 
 		cascade:css__cascade_background_attachment ,
 		set_from_hint:css__set_background_attachment_from_hint ,
 		initial:css__initial_background_attachment ,

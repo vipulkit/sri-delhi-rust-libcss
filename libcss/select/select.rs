@@ -1105,7 +1105,7 @@ impl css_select_ctx {
                                 -> bool {
 
         io::println(fmt!("Entering _selector_less_specific")) ;
-        let mut result : bool = true ;
+        let mut result : bool;
 
         if (cand.is_none()) {
             return false;
@@ -1406,15 +1406,14 @@ impl css_select_ctx {
                                 s:@mut css_selector) {
 
         io::println(fmt!("Entering update_reject_cache")) ;
-        let mut detail : uint = 0 ;
         let mut  next_detail : Option<@mut css_selector_detail> = None;
 
-    unsafe {
+        unsafe {
             if (s.data.len() > 1 ) {
                 next_detail = Some(s.data[1]);
             }
 
-        if (    (state.next_reject < 0) ||
+            if ( (state.next_reject < 0) ||
 
                 (match comb {   
                     CSS_COMBINATOR_ANCESTOR => { false },
@@ -1439,11 +1438,11 @@ impl css_select_ctx {
                         true  
                     }
                 }) 
-        ) {
+            ) {
 
-            return ;
+                return ;
+            }
         }
-    }
 
         /* Insert */
         let mut item : reject_item = reject_item{
@@ -2230,7 +2229,11 @@ impl css_select_ctx {
         let mut s = style;
 
         io::println(fmt!("Entering cascade_style")) ;
-        while (unsafe { s.used + 1 < s.bytecode.len()} ) {
+
+		unsafe{
+			io::println(fmt!("s_used=%?, s_len=%?", s.used, s.bytecode.len())) ;
+		}	
+        while (unsafe { s.used  < s.bytecode.len()} ) {
             let mut op: u32;
             let mut error : css_error ;
             let mut opv = peek_bytecode(s);
@@ -2238,7 +2241,8 @@ impl css_select_ctx {
             advance_bytecode(s);
 
             op = getOpcode(opv) as u32;
-            let mut dispatch_cascade = dispatch_table::get_cascade_ptr(op as uint) ;
+            io::println(fmt!("op=%?, opv=%?, op_m=%?", op, opv, op as uint));
+			let mut dispatch_cascade = dispatch_table::get_cascade_ptr(op as uint) ;
             error =  dispatch_cascade(opv, s, state);
 
             match error {
