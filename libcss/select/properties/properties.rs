@@ -2096,6 +2096,7 @@ pub fn css__compose_break_after(_:@mut css_computed_style,
 ///////////////////////////////////////////////////////////////////
 pub fn  css__cascade_color(opv:u32, style:@mut css_style, state:@mut css_select_state) -> css_error {
 	
+println("color test: inside css__cascade_color");
 	let mut inherit = isInherit(opv);
 	let mut value = CSS_COLOR_INHERIT;
 	let mut color = 0;
@@ -2126,12 +2127,14 @@ pub fn  css__cascade_color(opv:u32, style:@mut css_style, state:@mut css_select_
 
 pub fn css__set_color_from_hint(hint:@mut css_hint, style:@mut css_computed_style) 
 								-> css_error {
+println("color test: inside css__set_color_from_hint");
 	set_color(style, hint.status, hint.color.unwrap()) ;
 	CSS_OK
 }
 
 pub fn css__initial_color(_:@mut css_select_state) -> css_error {
 		
+println("color test: inside css__initial_color");
 	// TO DO
 	// match state.handler.ua_default_for_property(CSS_PROP_COLOR) {
 	// 	(CSS_OK,hint) => css__set_color_from_hint(hint, state.computed),
@@ -2146,6 +2149,7 @@ pub fn css__compose_color(parent:@mut css_computed_style,
 						result:@mut css_computed_style) 
 						-> css_error {
 	
+println("color test: inside css__compose_color");
 	let (color_type, color) = css_computed_color(child);
 	
 	if color_type == CSS_COLOR_INHERIT as u8{
