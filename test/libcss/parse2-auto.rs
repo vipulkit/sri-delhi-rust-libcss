@@ -33,7 +33,7 @@ fn match_vec_u8(expected_data: &[u8] , found_string: &str) -> bool {
 
     let mut found_string_vector = str::to_bytes(found_string);
     if found_string_vector.len() != expected_data.len() {
-        // io::println("lenghts don't match");
+        // debug!("lenghts don't match");
         return false;
     }
 
@@ -63,22 +63,22 @@ pub fn css_create_params() -> css_params {
 }
 
 fn main() {
-    io::println("parse");
+    debug!("parse");
 }
 
 fn create_css() -> @mut css{
-    io::println("Entering: create_css");
+    debug!("Entering: create_css");
     let mut lwc = wapcaplet::lwc();
     let css = css_create(css_create_params() , Some(lwc));
     css
 }
 
 pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
-    io::println("Entering: handle_line");
+    debug!("Entering: handle_line");
     let mut data : ~[u8] = args ;
-    // unsafe{io::println(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
+    // unsafe{debug!(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
     if  (data.len() == 0) {
-        // io::println("error");
+        // debug!("error");
         return true;
     }
 
@@ -130,7 +130,7 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
 }
 
 fn testMain(fileName: ~str) {
-    io::println(~"testMain : "+ fileName);
+    debug!(~"testMain : "+ fileName);
     let ctx: @mut line_ctx = @mut line_ctx
     {
         mut buf:~[],
@@ -150,7 +150,7 @@ fn testMain(fileName: ~str) {
         },
         Err(_) => {
             file_content = ~[] ;
-            io::println(fmt!("\n Error opening file"));
+            debug!(fmt!("\n Error opening file"));
             assert!(false) ;
         }
     }        
@@ -166,9 +166,9 @@ fn testMain(fileName: ~str) {
 }
 
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
-    io::println(fmt!("entering run_test"));
-    io::println(fmt!("data == %?" , data));
-    // io::println(fmt!("exp == %?" , exp));
+    debug!(fmt!("entering run_test"));
+    debug!(fmt!("data == %?" , data));
+    // debug!(fmt!("exp == %?" , exp));
     let mut css = create_css();
     let mut buf: ~str;
     let mut error = css.css_stylesheet_append_data(data);
@@ -178,7 +178,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     }
 
     error = css.css_stylesheet_data_done();
-    io::println(fmt!("error from css_stylesheet_data_done: %?" , error));
+    debug!(fmt!("error from css_stylesheet_data_done: %?" , error));
     match error {
         CSS_OK => {},
         _ => {assert!(false);}
@@ -225,8 +225,8 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     let mut vec = vec::concat(vec_buffer);
 
 
-    io::println(fmt!("vec == %?" , vec));
-    io::println(fmt!("exp == %?" , exp));
+    debug!(fmt!("vec == %?" , vec));
+    debug!(fmt!("exp == %?" , exp));
 
 
 

@@ -341,10 +341,10 @@ pub impl css {
     */
 	pub fn css_stylesheet_register_import(&mut self, import:Option<@mut css_stylesheet>) 
 	    -> css_error {
-	    	io::println("Entering: css_stylesheet_register_import");
+	    	debug!("Entering: css_stylesheet_register_import");
 
 	    if import.is_none() {
-	    	// io::println("Entering: import.is_none()");
+	    	// debug!("Entering: import.is_none()");
 	        return CSS_BADPARM ;
 	    }
 

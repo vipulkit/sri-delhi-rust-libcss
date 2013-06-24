@@ -136,35 +136,35 @@ pub fn opcode_names() -> ~[~str] {
 
 pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
     
-    io::println("Entering: dump_sheet");
+    debug!("Entering: dump_sheet");
 
     
     unsafe {
-        // io::println("Entering: unsafe");
-        // // io::println(fmt!("sheet.selectors == %?" , sheet.selectors));
-        // io::println(fmt!("sheet.rule_count == %?" , sheet.rule_count));
-        // // io::println(fmt!("sheet.last_rule == %?" , sheet.last_rule));
-        // io::println(fmt!("sheet.disabled == %?" , sheet.disabled));
-        // io::println(fmt!("sheet.url == %?" , sheet.url));
-        // io::println(fmt!("sheet.title == %?" , sheet.title));
-        // io::println(fmt!("sheet.level == %?" , sheet.level));
-        // io::println(fmt!("sheet.quirks_allowed == %?" , sheet.quirks_allowed));
-        // io::println(fmt!("sheet.quirks_used == %?" , sheet.quirks_used));
-        // io::println(fmt!("sheet.inline_style == %?" , sheet.inline_style));
-        // io::println(fmt!("sheet.cached_style == %?" , sheet.cached_style));
-        // io::println(fmt!("sheet.string_vector == %?" , sheet.string_vector));
-        // io::println(fmt!("sheet.resolve == %?" , sheet.resolve));
-        // io::println(fmt!("sheet.import == %?" , sheet.import));
-        // io::println(fmt!("sheet.font == %?" , sheet.font));
-        // io::println(fmt!("sheet.color == %?" , sheet.color));
+        // debug!("Entering: unsafe");
+        // // debug!(fmt!("sheet.selectors == %?" , sheet.selectors));
+        // debug!(fmt!("sheet.rule_count == %?" , sheet.rule_count));
+        // // debug!(fmt!("sheet.last_rule == %?" , sheet.last_rule));
+        // debug!(fmt!("sheet.disabled == %?" , sheet.disabled));
+        // debug!(fmt!("sheet.url == %?" , sheet.url));
+        // debug!(fmt!("sheet.title == %?" , sheet.title));
+        // debug!(fmt!("sheet.level == %?" , sheet.level));
+        // debug!(fmt!("sheet.quirks_allowed == %?" , sheet.quirks_allowed));
+        // debug!(fmt!("sheet.quirks_used == %?" , sheet.quirks_used));
+        // debug!(fmt!("sheet.inline_style == %?" , sheet.inline_style));
+        // debug!(fmt!("sheet.cached_style == %?" , sheet.cached_style));
+        // debug!(fmt!("sheet.string_vector == %?" , sheet.string_vector));
+        // debug!(fmt!("sheet.resolve == %?" , sheet.resolve));
+        // debug!(fmt!("sheet.import == %?" , sheet.import));
+        // debug!(fmt!("sheet.font == %?" , sheet.font));
+        // debug!(fmt!("sheet.color == %?" , sheet.color));
         
-        // io::println(fmt!("sheet.rule_list == %?" , sheet.rule_list));
+        // debug!(fmt!("sheet.rule_list == %?" , sheet.rule_list));
     }
     let mut rule: Option<CSS_RULE_DATA_TYPE> = sheet.rule_list ;
     let mut ptr: ~str = ~"";
-    //io::println(fmt!("rule == %?" , rule));
+    //debug!(fmt!("rule == %?" , rule));
     while rule.is_some() {
-        //io::println(fmt!("rule == %?" , rule.unwrap()));
+        //debug!(fmt!("rule == %?" , rule.unwrap()));
         match rule.unwrap() {
 
             RULE_SELECTOR(css_rule_selector_x)=>{
@@ -200,7 +200,7 @@ pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
         }
     }
     
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 
     ptr
 
@@ -208,7 +208,7 @@ pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
 }
 
 fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
-    io::println("Entering: dump_rule_selector");
+    debug!("Entering: dump_rule_selector");
     let mut i = 0;
 
     ptr.push_char('|');
@@ -232,31 +232,31 @@ fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
         dump_bytecode(s.style.unwrap() , ptr, depth +1);
     }
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_rule_charset(s:@mut css_rule_charset, ptr:&mut ~str) {
-    io::println("Entering: dump_rule_charset");
+    debug!("Entering: dump_rule_charset");
     str::push_str(ptr , &"| @charset(");
     str::push_str(ptr , copy s.encoding);
     ptr.push_char(')');
     ptr.push_char('\n');
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_rule_import(s:@mut css_rule_import, ptr:&mut ~str){
-    io::println("Entering: dump_rule_import");
+    debug!("Entering: dump_rule_import");
     str::push_str(ptr , &"| @import url(");
     str::push_str(ptr, copy s.url);
     ptr.push_char('\n');
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 }
 
 // TODO
 fn dump_rule_media(s:@mut css_rule_media, ptr: &mut ~str) {
-    io::println("Entering: dump_rule_media");
+    debug!("Entering: dump_rule_media");
     str::push_str(ptr, &"| @media ");
     ptr.push_char('\n');
 
@@ -275,11 +275,11 @@ fn dump_rule_media(s:@mut css_rule_media, ptr: &mut ~str) {
         }
     }
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_rule_page(s:@ mut css_rule_page, ptr:&mut ~str){
-    io::println("Entering: dump_rule_page");
+    debug!("Entering: dump_rule_page");
     str::push_str(ptr , &"| @page ");
 
     if s.selector.is_some() {
@@ -292,22 +292,22 @@ fn dump_rule_page(s:@ mut css_rule_page, ptr:&mut ~str){
         dump_bytecode(s.style.unwrap() , ptr, 2);
     }   
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_rule_font_face(s:@mut css_rule_font_face, ptr:&mut ~str){
-    io::println("Entering: dump_rule_font_face");
+    debug!("Entering: dump_rule_font_face");
     str::push_str(ptr , &"| @font-face ");
     if s.font_face.is_some() {
         dump_font_face(s.font_face.unwrap(), ptr);
     }
     ptr.push_char('\n');
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
-    io::println("Entering: dump_selector_list");
+    debug!("Entering: dump_selector_list");
     if list.combinator.is_some() {
         dump_selector_list(list.combinator.unwrap(),ptr);
     }
@@ -340,11 +340,11 @@ fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
     }
     dump_selector(list, ptr);
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_selector(selector:@mut css_selector, ptr:&mut ~str){
-    io::println("Entering: dump_selector");
+    debug!("Entering: dump_selector");
     let mut d:~[@mut css_selector_detail] = copy selector.data;
     let mut iter:uint = 0;
     while iter < d.len() {
@@ -352,11 +352,11 @@ fn dump_selector(selector:@mut css_selector, ptr:&mut ~str){
         iter += 1;
     }   
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_next:bool ) {
-    io::println("Entering: dump_selector_detail");
+    debug!("Entering: dump_selector_detail");
     if detail.negate {
         str::push_str(ptr,&":not(");
     }
@@ -474,12 +474,12 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
         ptr.push_char(')');
     }
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
     
-    io::println("Entering: dump_bytecode");
+    debug!("Entering: dump_bytecode");
     let mut bytecode = copy style.bytecode;
     let mut op: css_properties_e;
     let mut value: u32;
@@ -490,13 +490,13 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
     while iterator < bytecode.len() {
     
         let mut opv = bytecode[iterator];
-        io::println(fmt!("iterator == %?" , iterator));
-        io::println(fmt!("opv == %?" , opv));    
-        io::println(fmt!("bytecode == %?" , bytecode));
+        debug!(fmt!("iterator == %?" , iterator));
+        debug!(fmt!("opv == %?" , opv));    
+        debug!(fmt!("bytecode == %?" , bytecode));
 
         iterator += 1;
         op = getOpcode(opv);
-        io::println(fmt!("op == %?" , op));    
+        debug!(fmt!("op == %?" , op));    
         ptr.push_char('|');
 
         let mut i: u32 = 0;
@@ -516,7 +516,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
         }
         else {
             value = getValue(opv) as u32;
-            io::println(fmt!("dump_bytecode:: value == %?" , value));
+            debug!(fmt!("dump_bytecode:: value == %?" , value));
 
             if op as int == CSS_PROP_AZIMUTH as int {
                 
@@ -2201,12 +2201,12 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
         }
     }
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 
 }
 
 fn dump_number(val: i32 , ptr: &mut ~str){
-    io::println("Entering: dump_number");
+    debug!("Entering: dump_number");
     if css_int_to_fixed((val >> 10) as int) == val {
         str::push_str(ptr , fmt!("%?" , val >> 10));
     }
@@ -2214,11 +2214,11 @@ fn dump_number(val: i32 , ptr: &mut ~str){
         dump_css_fixed(val , ptr);
     }
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_css_fixed(a: i32 , ptr: &mut ~str){
-    io::println("Entering: dump_css_fixed");
+    debug!("Entering: dump_css_fixed");
     let b: u32;
     if a < 0 {
         b = -a as u32;
@@ -2267,11 +2267,11 @@ fn dump_css_fixed(a: i32 , ptr: &mut ~str){
         flen += 1;
     }
     
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_unit(val: i32 , unit: u32 , ptr: &mut ~str) {
-    io::println("Entering: dump_unit");
+    debug!("Entering: dump_unit");
     dump_number(val, ptr);
 
     match unit {
@@ -2326,11 +2326,11 @@ fn dump_unit(val: i32 , unit: u32 , ptr: &mut ~str) {
         _ => {}
     }
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
-    io::println("Entering: dump_font_face");
+    debug!("Entering: dump_font_face");
     let mut style: u8;
     let mut weight: u8;
 
@@ -2451,12 +2451,12 @@ fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
         }
     }
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 
 }
 
 fn dump_counter(name: ~str , value: u32 , ptr: &mut ~str) {
-    io::println("Entering: dump_counter");
+    debug!("Entering: dump_counter");
     str::push_str(ptr , &"counter(");
     str::push_str(ptr , name);
     let val = value >> CONTENT_COUNTER_STYLE_SHIFT;
@@ -2508,12 +2508,12 @@ fn dump_counter(name: ~str , value: u32 , ptr: &mut ~str) {
     }
     ptr.push_char(')');
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 }
 
 fn dump_counters(name: ~str , separator: ~str , value: u32 , ptr: &mut ~str) {
 
-    io::println("Entering: dump_counters");
+    debug!("Entering: dump_counters");
     str::push_str(ptr , &"counter(");
     str::push_str(ptr , name);
     str::push_str(ptr , separator);
@@ -2564,5 +2564,5 @@ fn dump_counters(name: ~str , separator: ~str , value: u32 , ptr: &mut ~str) {
     }
     ptr.push_char(')');
 
-    io::println(fmt!("ptr == %?" , ptr));
+    debug!(fmt!("ptr == %?" , ptr));
 }
