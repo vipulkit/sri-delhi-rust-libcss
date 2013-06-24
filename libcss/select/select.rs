@@ -1105,7 +1105,7 @@ impl css_select_ctx {
                                 -> bool {
 
         io::println(fmt!("Entering _selector_less_specific")) ;
-        let mut result : bool = true ;
+        let mut result : bool;
 
         if (cand.is_none()) {
             return false;
@@ -1406,15 +1406,14 @@ impl css_select_ctx {
                                 s:@mut css_selector) {
 
         io::println(fmt!("Entering update_reject_cache")) ;
-        let mut detail : uint = 0 ;
         let mut  next_detail : Option<@mut css_selector_detail> = None;
 
-    unsafe {
+        unsafe {
             if (s.data.len() > 1 ) {
                 next_detail = Some(s.data[1]);
             }
 
-        if (    (state.next_reject < 0) ||
+            if ( (state.next_reject < 0) ||
 
                 (match comb {   
                     CSS_COMBINATOR_ANCESTOR => { false },
@@ -1439,11 +1438,11 @@ impl css_select_ctx {
                         true  
                     }
                 }) 
-        ) {
+            ) {
 
-            return ;
+                return ;
+            }
         }
-    }
 
         /* Insert */
         let mut item : reject_item = reject_item{
@@ -2230,6 +2229,7 @@ impl css_select_ctx {
         let mut s = style;
 
         io::println(fmt!("Entering cascade_style")) ;
+
 		unsafe{
 			io::println(fmt!("s_used=%?, s_len=%?", s.used, s.bytecode.len())) ;
 		}	

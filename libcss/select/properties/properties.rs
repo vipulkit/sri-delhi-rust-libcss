@@ -2185,12 +2185,12 @@ pub fn css__compose_color(parent:@mut css_computed_style,
 pub fn css__cascade_column_count(opv:u32, style:@mut css_style, 
 		state:@mut css_select_state ) -> css_error {
 
-	let mut count = 0;
+	// let mut count = 0;
 
 	if !isInherit(opv) {
 		match getValue(opv) {
 			COLUMN_COUNT_SET => {
-				count = peek_bytecode(style);
+				// count = peek_bytecode(style);
 				advance_bytecode(style);
 			},	
 			COLUMN_COUNT_AUTO => {
@@ -2271,15 +2271,15 @@ pub fn css__compose_column_fill(_:@mut css_computed_style, _:@mut css_computed_s
 pub fn css__cascade_column_gap(opv:u32, style:@mut css_style, 
 		state:@mut css_select_state ) -> css_error {
 
-	let mut length = 0;
-	let mut unit = UNIT_PX;
+	// let mut length = 0;
+	// let mut unit = UNIT_PX;
 
 	if !isInherit(opv) {
 		match getValue(opv) {
 			COLUMN_GAP_SET => {
-				length = peek_bytecode(style);
+				// length = peek_bytecode(style);
 				advance_bytecode(style);
-				unit = peek_bytecode(style);
+				// unit = peek_bytecode(style);
 				advance_bytecode(style)
 			},
 			COLUMN_GAP_NORMAL => {
@@ -2320,12 +2320,12 @@ pub fn css__compose_column_gap(_:@mut css_computed_style, _:@mut css_computed_st
 pub fn css__cascade_column_rule_color(opv:u32, style:@mut css_style, 
 		state:@mut css_select_state ) -> css_error {
 
-	let mut color = 0;
+	// let mut color = 0;
 	
 	if !isInherit(opv) {
 		match getValue(opv) {
 			COLUMN_RULE_COLOR_SET => {
-				color = peek_bytecode(style);
+				// color = peek_bytecode(style);
 				advance_bytecode(style)
 			},
 			COLUMN_RULE_COLOR_TRANSPARENT | COLUMN_RULE_COLOR_CURRENT_COLOR => {
@@ -2412,15 +2412,15 @@ pub fn css__compose_column_rule_style(_:@mut css_computed_style,
 pub fn css__cascade_column_rule_width(opv:u32, style:@mut css_style, 
 		state:@mut css_select_state ) -> css_error {
 
-	let mut length = 0;
-	let mut unit = UNIT_PX;
+	// let mut length = 0;
+	// let mut unit = UNIT_PX;
 
 	if !isInherit(opv) {
 		match getValue(opv) {
 			COLUMN_RULE_WIDTH_SET => {
-				length = peek_bytecode(style);
+				// length = peek_bytecode(style);
 				advance_bytecode(style);
-				unit = peek_bytecode(style);
+				// unit = peek_bytecode(style);
 				advance_bytecode(style);
 			},
 			COLUMN_RULE_WIDTH_THIN |
@@ -2718,16 +2718,16 @@ pub fn css__compose_display(parent:@mut css_computed_style,
 pub fn css__cascade_elevation(opv:u32, style:@mut css_style, 
 									state:@mut css_select_state) -> css_error {
 
-	let mut val :i32  = 0;
-	let mut unit : u32 = UNIT_DEG ;
+	// let mut val :i32  = 0;
+	// let mut unit : u32 = UNIT_DEG ;
 
 	if (isInherit(opv) == false) {
 		match (getValue(opv)) {
 			ELEVATION_ANGLE =>{
-				val = peek_bytecode(style) as i32 ;
+				// val = peek_bytecode(style) as i32 ;
 				advance_bytecode(style);
 
-				unit = peek_bytecode(style);
+				// unit = peek_bytecode(style);
 				advance_bytecode(style);
 			},
 			ELEVATION_BELOW |
@@ -3035,8 +3035,6 @@ pub fn css__set_font_family_from_hint(hint:@mut  css_hint,
 										style:@mut css_computed_style
 										) -> css_error {
 
-	let mut error : css_error;
-
 	match hint.hint_type {
 		STRINGS_VECTOR=>{
 			match hint.strings {
@@ -3099,7 +3097,6 @@ pub fn css__compose_font_family(parent:@mut css_computed_style,
 									result:@mut css_computed_style
 									) -> css_error {
 
-	let mut error : css_error;
 	//lwc_string **names = NULL;
 	let mut (ftype,ffamily) = css_computed_font_family(child);
 
@@ -5296,15 +5293,15 @@ pub fn css__cascade_pitch(opv:u32 ,
 							state: @mut css_select_state 
 							) -> css_error {
 
-	let mut freq : i32 = 0;
-	let mut unit : u32 = UNIT_HZ as u32;
+	// let mut freq : i32 = 0;
+	// let mut unit : u32 = UNIT_HZ as u32;
 
 	if (isInherit(opv) == false) {
 		match (getValue(opv)) {
 			PITCH_FREQUENCY  => {
-				freq = peek_bytecode(style) as i32 ;
+				// freq = peek_bytecode(style) as i32 ;
 				advance_bytecode(style);
-				unit = peek_bytecode(style);
+				// unit = peek_bytecode(style);
 				advance_bytecode(style);
 			},
 			PITCH_X_LOW  |
@@ -5386,15 +5383,15 @@ pub fn css__cascade_play_during(opv:u32 ,
 							state: @mut css_select_state 
 							) -> css_error {
 
-	let mut uri : ~str = ~"" ;
+	// let mut uri : ~str;
 
 	if (isInherit(opv) == false) {
 		match (getValue(opv)) {
 			PLAY_DURING_URI => {
-				let (result, str_option) = style.sheet.get().css__stylesheet_string_get(peek_bytecode(style) as uint);
+				let (result, _) = style.sheet.get().css__stylesheet_string_get(peek_bytecode(style) as uint);
 				match result {
 					CSS_OK => {
-						uri = str_option.unwrap();
+						// uri = str_option.unwrap();
 					},
 					x => { 
 						return x ;
@@ -5939,12 +5936,12 @@ pub fn css__cascade_speech_rate(opv:u32 ,
 								state: @mut css_select_state 
 								) -> css_error {
 
-	let mut rate : i32 = 0;
+	// let mut rate : i32 = 0;
 
 	if (isInherit(opv) == false) {
 		match (getValue(opv)) {
 			SPEECH_RATE_SET => {
-				rate = peek_bytecode(style) as i32;
+				// rate = peek_bytecode(style) as i32;
 				advance_bytecode(style);
 			},
 			SPEECH_RATE_X_SLOW 	|
@@ -6776,19 +6773,19 @@ pub fn css__cascade_volume(opv:u32 ,
 								state: @mut css_select_state 
 								) -> css_error {
 
-	let mut val : i32 = 0;
-	let mut unit : u32 = UNIT_PCT as u32;
+	// let mut val : i32 = 0;
+	// let mut unit : u32 = UNIT_PCT as u32;
 
 	if (isInherit(opv) == false) {
 		match (getValue(opv)) {
 			VOLUME_NUMBER => {
-				val = peek_bytecode(style) as i32;
+				// val = peek_bytecode(style) as i32;
 				advance_bytecode(style);
 			},
 			VOLUME_DIMENSION => {
-				val = peek_bytecode(style) as i32;
+				// val = peek_bytecode(style) as i32;
 				advance_bytecode(style);
-				unit = peek_bytecode(style);
+				// unit = peek_bytecode(style);
 				advance_bytecode(style);
 			},
 			VOLUME_SILENT 	|
@@ -6803,7 +6800,7 @@ pub fn css__cascade_volume(opv:u32 ,
 		}
 	}
 
-	unit = css__to_css_unit(unit) as u32;
+	// unit = css__to_css_unit(unit) as u32;
 
 	if (css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,
 			isInherit(opv))) {
@@ -7719,15 +7716,15 @@ pub fn css__cascade_column_width(opv:u32, style:@mut css_style,
     							state:@mut css_select_state ) 
 								-> css_error {
 
-	let mut length : i32 = 0;
-	let mut unit : u32 = UNIT_PX;
+	// let mut length : i32 = 0;
+	// let mut unit : u32 = UNIT_PX;
 
   	if !isInherit(opv) {
 	    match getValue(opv) {
 		    COLUMN_WIDTH_SET => {
-		        length = peek_bytecode(style) as i32;
+		        // length = peek_bytecode(style) as i32;
 		        advance_bytecode(style);
-		        unit = peek_bytecode(style);
+		        // unit = peek_bytecode(style);
 		        advance_bytecode(style);
 		    },
 		    COLUMN_WIDTH_AUTO => {
