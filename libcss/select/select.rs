@@ -319,6 +319,10 @@ impl css_select_ctx {
             next_reject:128-1,             
             props: ~[] 
         };
+        for uint::range(0,128) |_| {
+            state.reject_cache.push(None);
+        }
+
         for uint::range(0,(CSS_N_PROPERTIES as uint)) |_| {
             let mut prop_vec : ~[@mut prop_state] = ~[] ;
             for uint::range(0,(CSS_PSEUDO_ELEMENT_COUNT as uint)) |_| {
@@ -1096,31 +1100,35 @@ impl css_select_ctx {
         pending
     }
 
-    pub fn _selector_less_specific(refer:@mut css_selector, cand:@mut css_selector) -> bool {
+    pub fn _selector_less_specific(refer:Option<@mut css_selector>, 
+                                cand:Option<@mut css_selector>) 
+                                -> bool {
 
         io::println(fmt!("Entering _selector_less_specific")) ;
-        let mut result : bool ;
+        let mut result : bool = true ;
 
-        // if (cand == NULL)
-        //  return false;
+        if (cand.is_none()) {
+            return false;
+        }
 
-        // if (ref == NULL)
-        //  return true;
+        if (refer.is_none()) {
+            return true;
+        }
 
         /* Sort by specificity */
-        if (cand.specificity < refer.specificity) {
+        if (cand.get().specificity < refer.get().specificity) {
             result = true;
         } 
-        else if (refer.specificity < cand.specificity) {
+        else if (refer.get().specificity < cand.get().specificity) {
             result = false;
         } 
         else {
 
-            if( cand.rule.is_none() || refer.rule.is_none() ) {
+            if( cand.get().rule.is_none() || refer.get().rule.is_none() ) {
                 fail!(~"_selector_less_specific:Base rule cannot be null");
             }
-            let mut cand_base = css_stylesheet::css__stylesheet_get_base_rule(cand.rule.get()) ;
-            let mut refer_base = css_stylesheet::css__stylesheet_get_base_rule(refer.rule.get()) ;
+            let mut cand_base = css_stylesheet::css__stylesheet_get_base_rule(cand.get().rule.get()) ;
+            let mut refer_base = css_stylesheet::css__stylesheet_get_base_rule(refer.get().rule.get()) ;
             /* Then by rule index -- earliest wins */
             if (cand_base.index < refer_base.index) {
                 result = true;
@@ -1142,60 +1150,25 @@ impl css_select_ctx {
         io::println(fmt!("Entering _selector_next")) ;
         let mut ret : Option<@mut css_selector> = None;
 
-        match node {
-            None => {}
-            Some(T) => {
-                ret = Some(T);
-            }
+        if (css_select_ctx::_selector_less_specific(ret, node)) {
+            ret = Some(node.get());
         }
 
-        match id {
-            None => {}
-            Some(I) => {
-                match ret {
-                    None => {}
-                    Some(R) => {
-                        if css_select_ctx::_selector_less_specific(R, I) {
-                            ret = Some(I);
-                        }
-                    }
-                }
-            }
+        if (css_select_ctx::_selector_less_specific(ret, id)) {
+            ret = Some(id.get());
         }
 
-        match univ {
-            None => {}
-            Some(I) => {
-                match ret {
-                    None => {}
-                    Some(R) => {
-                        if css_select_ctx::_selector_less_specific(R, I) {
-                            ret = Some(I);
-                        }
-                    }
-                }
-            }
+        if (css_select_ctx::_selector_less_specific(ret, univ)) {
+            ret = Some(univ.get());
         }
 
         let mut i : uint = 0;
         while i < classes.len() {
-            match copy classes[i] {
-                None => {}
-                Some(T) => {
-                    match ret {
-                        None => {}
-                        Some(R) => {
-                            if css_select_ctx::_selector_less_specific(R, T) {
-                                ret = Some(T);
-                            }
-                        }
-                    }
-                }
+            if (css_select_ctx::_selector_less_specific(classes[i], ret)){
+                ret = Some(classes[i].get());
             }
-
             i += 1;
         }
-
         ret
     }
 
@@ -1311,6 +1284,9 @@ impl css_select_ctx {
                                     &class_selectors_option_list, 
                                     univ_selectors_option );
 
+            if o_selector.is_none() {
+                fail!(~"Error getting selector next ") ;
+            }
             selector = o_selector.get() ; 
             /* Ignore any selectors contained in rules which are a child 
              * of an @media block that doesn't match the current media 
@@ -1328,7 +1304,7 @@ impl css_select_ctx {
             /* Advance to next selector in whichever chain we extracted 
              * the processed selector from. */
             if ( node_selectors_option.is_some() &&
-                 mut_ptr_eq( selector, node_selectors_option.get() ) ) {
+                mut_ptr_eq( selector, node_selectors_option.get() ) ) {
                 let mut (node_next_hash,error) = 
                         css_selector_hash::_iterate_elements(node_selectors_hash_entry.get());
 
@@ -1389,8 +1365,8 @@ impl css_select_ctx {
             } 
             else {
                 let mut i = 0 ;
-                let mut j = class_selectors_option_list.len()  ;
-                while i < j  {
+                //let mut j = class_selectors_option_list.len()  ;
+                while i < class_selectors_option_list.len()  {
                     if ( class_selectors_option_list[i].is_some() &&
                          mut_ptr_eq(selector, class_selectors_option_list[i].get()) ) {
                         let mut (class_next_hash,error) = 
@@ -1430,36 +1406,44 @@ impl css_select_ctx {
                                 s:@mut css_selector) {
 
         io::println(fmt!("Entering update_reject_cache")) ;
+        let mut detail : uint = 0 ;
         let mut  next_detail : Option<@mut css_selector_detail> = None;
 
-        unsafe {
+    unsafe {
             if (s.data.len() > 1 ) {
                 next_detail = Some(s.data[1]);
             }
 
-            if (state.next_reject < 0 || s.data.len() > 2 ) { 
-                return;
-            }
-        }
+        if (    (state.next_reject < 0) ||
 
-        if( next_detail.is_none() ) {
+                (match comb {   
+                    CSS_COMBINATOR_ANCESTOR => { false },
+                    _=>{
+                        true
+                    }
+                })   ||
+
+                (next_detail.is_none()) ||
+
+                (if (s.data.len() > 2) {
+                    true
+                } 
+                else {
+                    false
+                }) ||
+
+                (match next_detail.get().selector_type {   
+                    CSS_SELECTOR_CLASS=> { false },         
+                    CSS_SELECTOR_ID=>{false},
+                    _=>{
+                        true  
+                    }
+                }) 
+        ) {
+
             return ;
         }
-
-        match comb {
-            CSS_COMBINATOR_ANCESTOR => {},
-            _=>{
-                return ;
-            }
-        }
-
-        match next_detail.get().selector_type {
-            CSS_SELECTOR_CLASS=> {},
-            CSS_SELECTOR_ID=>{},
-            _=>{
-                return ;
-            }
-        }
+    }
 
         /* Insert */
         let mut item : reject_item = reject_item{
@@ -1739,7 +1723,7 @@ impl css_select_ctx {
             (match next_detail.unwrap().selector_type { CSS_SELECTOR_CLASS | CSS_SELECTOR_ID => true, _ => false})) {
 
             let mut reject = state.next_reject + 1;
-            let last = unsafe { state.reject_cache.len()} -1;
+            let last : int = (unsafe { state.reject_cache.len()} -1) as int ;
 
             while (reject <= last) {
                 /* Perform pessimistic matching (may hurt quirks) */

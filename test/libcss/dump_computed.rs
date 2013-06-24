@@ -102,7 +102,7 @@ fn dump_css_unit(val: css_fixed , unit: css_unit , ptr: &mut ~str) {
             str::push_str(ptr , &"pc");
         },
         CSS_UNIT_PCT => {
-            str::push_str(ptr , &"pct");
+            str::push_str(ptr , &"%");
         },
         CSS_UNIT_DEG => {
             str::push_str(ptr , &"deg");
