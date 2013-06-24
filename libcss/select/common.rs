@@ -671,7 +671,7 @@ pub struct reject_item {
 } 
 
 pub struct prop_state {
-    specificity:u32,       /* Specificity of property in result */
+    specificity:uint,       /* Specificity of property in result */
     set       : bool,         /* Whether property is set in result */
     origin    : u8,         /* Origin of property in result */
     important : bool,         /* Importance of property in result */

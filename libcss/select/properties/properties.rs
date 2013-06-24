@@ -22,7 +22,110 @@ pub fn css__outranks_existing(op:u16,
 							important:bool, 
 							state: @mut css_select_state,
 							inherit:bool) -> bool {
-	true 
+	let mut existing = copy state.props[op][state.current_pseudo as uint];
+	let mut outranks : bool = false;
+
+	/* Sorting on origin & importance gives the following:
+	 * 
+	 *           | UA, - | UA, i | USER, - | USER, i | AUTHOR, - | AUTHOR, i
+	 *           |----------------------------------------------------------
+	 * UA    , - |   S       S       Y          Y         Y           Y
+	 * UA    , i |   S       S       Y          Y         Y           Y
+	 * USER  , - |   -       -       S          Y         Y           Y
+	 * USER  , i |   -       -       -          S         -           -
+	 * AUTHOR, - |   -       -       -          Y         S           Y
+	 * AUTHOR, i |   -       -       -          Y         -           S
+	 *
+	 * Where the columns represent the origin/importance of the property 
+	 * being considered and the rows represent the origin/importance of 
+	 * the existing property.
+	 *
+	 * - means that the existing property must be preserved
+	 * Y means that the new property must be applied
+	 * S means that the specificities of the rules must be considered.
+	 *
+	 * If specificities are considered, the highest specificity wins.
+	 * If specificities are equal, then the rule defined last wins.
+	 *
+	 * We have no need to explicitly consider the ordering of rules if
+	 * the specificities are the same because:
+	 *
+	 * a) We process stylesheets in order
+	 * b) The selector hash chains within a sheet are ordered such that 
+	 *    more specific rules come after less specific ones and, when
+	 *    specificities are identical, rules defined later occur after
+	 *    those defined earlier.
+	 *
+	 * Therefore, where we consider specificity, below, the property 
+	 * currently being considered will always be applied if its specificity
+	 * is greater than or equal to that of the existing property.
+	 */
+
+	if existing.set {
+		/* Property hasn't been set before, new one wins */
+		outranks = true;
+	} 
+	else {
+		assert!( (CSS_ORIGIN_UA as uint) < (CSS_ORIGIN_USER as uint) );
+		assert!( (CSS_ORIGIN_USER as uint) < (CSS_ORIGIN_AUTHOR as uint) );
+
+		if (existing.origin < (state.current_origin as u8) ) {
+			/* New origin has more weight than existing one.
+			 * Thus, new property wins, except when the existing 
+			 * one is USER, i. */
+			if ( (existing.important == false) ||
+					(existing.origin != (CSS_ORIGIN_USER as u8) ) ) {
+				outranks = true;
+			}
+		} 
+		else if (existing.origin == (state.current_origin as u8) ) {
+			/* Origins are identical, consider importance, except 
+			 * for UA stylesheets, when specificity is always 
+			 * considered (as importance is meaningless) */
+			if (existing.origin == (CSS_ORIGIN_UA as u8) ) {
+				if (state.current_specificity >=
+						existing.specificity) {
+					outranks = true;
+				}
+			} 
+			else if ((existing.important == false) && important) {
+				/* New is more important than old. */
+				outranks = true;
+			} 
+			else if ( existing.important && (important == false)) {
+				/* Old is more important than new */
+			} 
+			else {
+				/* Same importance, consider specificity */
+				if (state.current_specificity >=
+						existing.specificity) {
+					outranks = true;
+				}
+			}
+		} else {
+			/* Existing origin has more weight than new one.
+			 * Thus, existing property wins, except when the new
+			 * one is USER, i. */
+			if ( ((state.current_origin as u8) == (CSS_ORIGIN_USER as u8)) &&
+					important) {
+				outranks = true;
+			}
+		}
+	}
+
+	if (outranks) {
+		/* The new property is about to replace the old one.
+		 * Update our state to reflect this. */
+		existing.set = true;
+		existing.specificity = state.current_specificity;
+		existing.origin = (state.current_origin as u8);
+		existing.important = important;
+		existing.inherit = inherit;
+	}
+
+	// update existing in proptable of the select state machine 
+	state.props[op][state.current_pseudo as uint] = existing ;
+	outranks
 }
 
 pub fn css__to_css_unit(u:u32) -> css_unit {
