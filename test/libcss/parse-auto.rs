@@ -37,7 +37,7 @@ pub struct line_ctx {
 
 pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
 
-    //io::println(fmt!("Strtol : strings are %? ====== %? ",a,b));
+    //debug!(fmt!("Strtol : strings are %? ====== %? ",a,b));
     if ( a.len() != b.len() ) {
         return false ;
     }
@@ -177,7 +177,7 @@ pub fn strtoul(data:~str , data_used: &mut uint) -> Option<uint> {
 }
 
 fn main() {
-    io::println("parse-auto");
+    debug!("parse-auto");
     // corresponding code now in parse_auto function, entry from test-cases
 }
 
@@ -191,7 +191,7 @@ fn parse_auto(file: ~str) {
         },
         Err(y) => {
             file_content = ~"" ;
-            io::println(fmt!("\n Error opening file :%?",y));
+            debug!(fmt!("\n Error opening file :%?",y));
             assert!(false) ;
         }
     }
@@ -209,10 +209,10 @@ fn parse_auto(file: ~str) {
     for str::each_line_any(file_content) |line| {
         let mut line_string : ~str = line.to_str() ;
         str::push_char(&mut line_string,'\n') ;
-        io::println(fmt!("Entering:v data is=%?=",line_string));
+        debug!(fmt!("Entering:v data is=%?=",line_string));
         handle_line(line_string,ctx);
     }
-    io::println(fmt!("Ctx ====================================\n%?\n==============================",ctx));
+    debug!(fmt!("Ctx ====================================\n%?\n==============================",ctx));
     /* and run final test */
     if ( unsafe { ctx.buf.len()>0 } ) {
         run_test(ctx);
@@ -225,7 +225,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
     if (data[len] == ('#' as u8) ) {
         if (ctx.inexp) {
             /* This marks end of testcase, so run it */
-            io::println(fmt!("Ctx ====================================\n%?\n==============================",ctx));
+            debug!(fmt!("Ctx ====================================\n%?\n==============================",ctx));
             run_test(ctx);
 
             ctx.buf = ~[] ;
@@ -250,7 +250,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
             ctx.inerrors = false;
             ctx.inexp = true;
             ctx.inrule = false;
-            //io::println(fmt!("Entering:v ctx in rule false 1=%?=",data));
+            //debug!(fmt!("Entering:v ctx in rule false 1=%?=",data));
         } 
         else if (ctx.inexp && data.len()>=5 && 
                 (is_string_caseless_equal( data.slice(1,5), "data"))) {
@@ -264,7 +264,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
             for str::each_char(data) |ch| {
                 ctx.buf.push(ch as u8);
             }
-            io::println(fmt!("Buffer is 1= %?",unsafe {copy ctx.buf}));
+            debug!(fmt!("Buffer is 1= %?",unsafe {copy ctx.buf}));
         } 
         else {
             ctx.indata = ( data.len()>=5 && is_string_caseless_equal( data.slice(1,5), "data") );
@@ -278,7 +278,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
             for str::each_char(data) |ch| {
                 ctx.buf.push(ch as u8);
             }
-            io::println(fmt!("Buffer is 2= %?",unsafe {copy ctx.buf}));
+            debug!(fmt!("Buffer is 2= %?",unsafe {copy ctx.buf}));
         }
         if (ctx.inexp) {
             len = data.len() ;
@@ -287,7 +287,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
             }
 
             css__parse_expected(ctx, data);
-            io::println(fmt!("ctx == %?",copy ctx.exp));
+            debug!(fmt!("ctx == %?",copy ctx.exp));
         }
     }
 
@@ -295,7 +295,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
 }
 
 pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
-    io::println(fmt!("Entering:v css__parse_expected =%?=",data));
+    debug!(fmt!("Entering:v css__parse_expected =%?=",data));
 
     let mut len : uint = 0 ;
     let mut _goto_start_rule : bool = true  ;
@@ -304,16 +304,16 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
     }
 
     while _goto_start_rule {
-        io::println("Entering: while _goto_start_rule");
+        debug!("Entering: while _goto_start_rule");
         _goto_start_rule = false ;
 
         if( ctx.inrule==false) {
-            io::println("Entering:v ctx.inrule==false");
+            debug!("Entering:v ctx.inrule==false");
             len += 1;
 
             while ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
                  (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) && (data.len()>len) {
-                io::println("Entering: while {...} 1");
+                debug!("Entering: while {...} 1");
                 len += 1;
             }
 
@@ -321,7 +321,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
             while ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
                  (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) && (data.len()>len) {
-                io::println("Entering: while {...} 2");
+                debug!("Entering: while {...} 2");
                 len += 1;
             }
 
@@ -336,12 +336,12 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
             };
             len += min ;
 
-            unsafe { io::println(fmt!("Entry created is =%?=%?=",copy entry.name,entry.ftype)); }
+            unsafe { debug!(fmt!("Entry created is =%?=%?=",copy entry.name,entry.ftype)); }
             ctx.exp.push(entry);
             ctx.inrule = true;
         }
         else {
-            io::println("Entering: else");
+            debug!("Entering: else");
             let mut explen = unsafe { ctx.exp.len()-1 };
             if explen < 0 {
                 fail!(~"No exp entry found");
@@ -350,14 +350,14 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
             if( data[2] != (' ' as u8) ) {
                 ctx.inrule = false ;
-                io::println(fmt!("Entering:v ctx in rule false 2=%?=",data));
+                debug!(fmt!("Entering:v ctx in rule false 2=%?=",data));
                 _goto_start_rule = true ;
                 loop ;
             }
 
             len += 1;
             while (len < data.len()) {
-                io::println( fmt!("Entering: while =%?=%?=%?=",data.len(),len,data));
+                debug!( fmt!("Entering: while =%?=%?=%?=",data.len(),len,data));
 
                 /* Skip whitespace */
                 while (data.len()!=len) && ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
@@ -370,7 +370,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
                 }
 
                 if data[len] == ('P' as u8) {
-                    io::println( fmt!("Entering: if = %?=%?=",data,len));
+                    debug!( fmt!("Entering: if = %?=%?=",data,len));
                     let mut start = str::find_char_between( data ,'(' , len , data.len() ) ;
 
                     if start.is_none() {
@@ -401,31 +401,31 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
                         break ;
                     }
                     /* Assume hexnum */
-                    io::println( fmt!("Entering: else 1= %?=%?=",data,len));
+                    debug!( fmt!("Entering: else 1= %?=%?=",data,len));
                     let mut val = strtoul(copy data,&mut len) ;
-                    io::println( fmt!("Entering: else 2= %?=%?=%?=",data,len,val));
+                    debug!( fmt!("Entering: else 2= %?=%?=%?=",data,len,val));
                     /* Append to bytecode */
                     rule.expected.push(bytecode(val.get_or_default(0) as u32)) ;
                 }
             }
         }
     }
-    io::println("Exiting: css__parse_expected");
+    debug!("Exiting: css__parse_expected");
 }
 
 pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
 
-    io::println(fmt!("Data == %? ", str::from_bytes(data)));
-    io::println(fmt!("Expected entry type == %d, name == %s", e.ftype, copy e.name) );
+    debug!(fmt!("Data == %? ", str::from_bytes(data)));
+    debug!(fmt!("Expected entry type == %d, name == %s", e.ftype, copy e.name) );
     io::print(fmt!("Expected bytecode == ") );
     for e.expected.each_mut |&expected| {
         io::print(fmt!("%? ", expected ));
     }
-    io::println("\n")
+    debug!("\n")
 }
 
 pub fn run_test(ctx:@mut line_ctx) {
-    io::println("Entering: run_test");
+    debug!("Entering: run_test");
 
     let mut error : css_error ;
     let mut params = css_params {
@@ -469,7 +469,7 @@ pub fn run_test(ctx:@mut line_ctx) {
         CSS_OK=>{},
         CSS_NEEDDATA=>{},
         _=> { 
-            io::println( fmt!("\n Failed appending data : %?",error) );
+            debug!( fmt!("\n Failed appending data : %?",error) );
         }
     }
 
@@ -521,7 +521,7 @@ pub fn run_test(ctx:@mut line_ctx) {
     let mut e : uint = 0;
 
     if (css_instance.stylesheet.rule_count != unsafe {ctx.exp.len()} ) {
-        io::println(fmt!("Got %u rules. Expected %u\n",
+        debug!(fmt!("Got %u rules. Expected %u\n",
                 css_instance.stylesheet.rule_count , unsafe{ctx.exp.len()}) );
         report_fail(copy ctx.buf,copy ctx.exp[e]);
         fail!(~"Unexpected number of rules ") ;
@@ -539,7 +539,7 @@ pub fn run_test(ctx:@mut line_ctx) {
                 match crule {
                     RULE_SELECTOR(rule) => {
                         if ( ctx.exp[e].ftype != (CSS_RULE_SELECTOR as int) ) {
-                            io::println(fmt!("Got type %d , Expected %d ",
+                            debug!(fmt!("Got type %d , Expected %d ",
                                 ctx.exp[e].ftype , (CSS_RULE_SELECTOR as int)  )) ;
                             fail!(~"Expected type differs") ;
                         }
@@ -553,7 +553,7 @@ pub fn run_test(ctx:@mut line_ctx) {
                     },
                     RULE_CHARSET(rule) => {
                         if ( ctx.exp[e].ftype != (CSS_RULE_CHARSET as int) ) {
-                            io::println( fmt!("Got type %d , Expected %d ",
+                            debug!( fmt!("Got type %d , Expected %d ",
                                 ctx.exp[e].ftype , (CSS_RULE_SELECTOR as int) )) ;
                             fail!(~"Expected type differs") ;
                         }
@@ -565,7 +565,7 @@ pub fn run_test(ctx:@mut line_ctx) {
                     },
                     RULE_IMPORT(rule) => {
                         if ( ctx.exp[e].ftype != (CSS_RULE_IMPORT as int) ) {
-                            io::println( fmt!("Got type %d , Expected %d ",
+                            debug!( fmt!("Got type %d , Expected %d ",
                                 ctx.exp[e].ftype ,(CSS_RULE_SELECTOR as int)  ) );
                             fail!(~"Expected type differs") ;
                         }
@@ -576,28 +576,28 @@ pub fn run_test(ctx:@mut line_ctx) {
                         loop ;
                     },
                     RULE_UNKNOWN(_)=>{
-                        io::println(fmt!("Unhandled rule type %?", CSS_RULE_UNKNOWN)) ;
+                        debug!(fmt!("Unhandled rule type %?", CSS_RULE_UNKNOWN)) ;
                         ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
                         e += 1 ;
                         loop ;
 
                     },
                     RULE_MEDIA(_)=>{
-                        io::println(fmt!("Unhandled rule type %?", CSS_RULE_MEDIA)) ;
+                        debug!(fmt!("Unhandled rule type %?", CSS_RULE_MEDIA)) ;
                         ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
                         e += 1 ;
                         loop ;
 
                     },
                     RULE_FONT_FACE(_)=>{
-                        io::println(fmt!("Unhandled rule type %?", CSS_RULE_FONT_FACE)) ;
+                        debug!(fmt!("Unhandled rule type %?", CSS_RULE_FONT_FACE)) ;
                         ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
                         e += 1 ;
                         loop ;
 
                     },
                     RULE_PAGE(_)=>{
-                        io::println(fmt!("Unhandled rule type %?", CSS_RULE_PAGE) ) ;
+                        debug!(fmt!("Unhandled rule type %?", CSS_RULE_PAGE) ) ;
                         ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
                         e += 1 ;
                         loop ;
@@ -611,23 +611,23 @@ pub fn run_test(ctx:@mut line_ctx) {
 
 pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bool {
 
-    io::println("Entering: validate_rule_selector");
+    debug!("Entering: validate_rule_selector");
     let mut name : ~str = ~"" ;
     let mut ptr : ~str = ~"" ;
 
     // Build selector string
     unsafe {
-        io::println("Entering: validate_rule_selector: unsafe");
-        io::println(fmt!("Parsed Rule List:%?",copy s.selectors.len()));
+        debug!("Entering: validate_rule_selector: unsafe");
+        debug!(fmt!("Parsed Rule List:%?",copy s.selectors.len()));
         for s.selectors.eachi |i,&sel| {
             dump_selector_list(sel,&mut ptr) ;
             if ( i != (s.selectors.len()-1) ) {
                 name = name + ptr + ", ";
-                io::println(fmt!("if name == %?" , name));
+                debug!(fmt!("if name == %?" , name));
             }
             else {
                 name = name + ptr ;
-                io::println(fmt!("else name == %?" , name));
+                debug!(fmt!("else name == %?" , name));
             }
             ptr = ~"" ;
         }
@@ -635,41 +635,41 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 
     /* Compare with expected selector */
     if name != e.name {
-        io::println(fmt!("FAIL Mismatched names\n
+        debug!(fmt!("FAIL Mismatched names\n
                         Got name '%s'. Expected '%s'\n",name,copy e.name) );
         return true ;
     }
 
     // Now compare bytecode
     if (unsafe{e.expected.len()} != 0 && s.style.is_none()) {
-        io::println("FAIL No bytecode\n    Expected bytecode but none created\n");
+        debug!("FAIL No bytecode\n    Expected bytecode but none created\n");
         return true;
     }
     else if (unsafe{e.expected.len()} == 0 && s.style.is_some()) {
-        io::println("FAIL Unexpected bytecode\n    No bytecode expected but some created\n");
+        debug!("FAIL Unexpected bytecode\n    No bytecode expected but some created\n");
         return true;
     }
     else if (unsafe{e.expected.len()} != 0 && s.style.is_some()) {
         let mut style = s.style.get() ;
 
         if unsafe { style.bytecode.len() != e.expected.len() } {
-            io::println(fmt!("FAIL: bytecode length differs "));
+            debug!(fmt!("FAIL: bytecode length differs "));
             return true ;
         }
 
         let mut i = 0 ;
 
         while i < unsafe {e.expected.len()} {
-            unsafe {io::println(fmt!("Entering: while i < unsafe {e.bytecode.len()} i == %?  , e.bytecode.len() == %?" , i , e.expected.len()));}
+            unsafe {debug!(fmt!("Entering: while i < unsafe {e.bytecode.len()} i == %?  , e.bytecode.len() == %?" , i , e.expected.len()));}
             
 
             match copy e.expected[i] {
                 bytecode(b) => {
                     if style.bytecode[i] != b {
-                        io::println(fmt!("FAIL Bytecode differs 
+                        debug!(fmt!("FAIL Bytecode differs 
                                         Bytecode differs at %?", i) );
                         while (i < unsafe {e.expected.len()} ) {
-                            io::println(fmt!("%? ", copy style.bytecode[i]));
+                            debug!(fmt!("%? ", copy style.bytecode[i]));
                             i += 1;
                         }
                         return true;
@@ -681,7 +681,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
                 string(s) => {
                     /* String */
                     if( style.sheet.is_none() ) {
-                        io::println("\n Parent stylesheet not found in style , need sheet ");
+                        debug!("\n Parent stylesheet not found in style , need sheet ");
                         return false ;
                     }
 
@@ -696,7 +696,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
                     };
 
                     if p != s {
-                        io::println(fmt!("FAIL: string differs got %?, expected %? ",
+                        debug!(fmt!("FAIL: string differs got %?, expected %? ",
                                 p , s ) );
                         return true;
                     }
@@ -713,7 +713,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 pub fn validate_rule_charset(s:@mut css_rule_charset, e:@mut exp_entry) -> bool {
 
     unsafe {
-        io::println(fmt!("Parsed Rule List:%?",copy s.encoding));
+        debug!(fmt!("Parsed Rule List:%?",copy s.encoding));
         if( e.name.len() != s.encoding.len() ) {
             return false ;
         }
@@ -731,7 +731,7 @@ pub fn validate_rule_charset(s:@mut css_rule_charset, e:@mut exp_entry) -> bool 
 pub fn validate_rule_import(s:@mut css_rule_import, e:@mut exp_entry) -> bool {
 
     unsafe {
-        io::println(fmt!("Parsed Rule List:%?",copy s.url));
+        debug!(fmt!("Parsed Rule List:%?",copy s.url));
         if( e.name.len() < s.url.len() ) {
             return false ;
         }
@@ -782,17 +782,17 @@ fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
 
 fn dump_selector(selector:@mut css_selector, ptr:&mut ~str){
     let mut d:~[@mut css_selector_detail] = copy selector.data;
-    io::println(fmt!("Selector Data:%?",d));
+    debug!(fmt!("Selector Data:%?",d));
   	let mut iter:uint = 0;
     while iter < d.len() {
-		io::println(fmt!("Selector Data len:%?, Iter:%?",d.len(), iter));
+		debug!(fmt!("Selector Data len:%?, Iter:%?",d.len(), iter));
         dump_selector_detail(d[iter], ptr, (iter != d.len()-1) );
         iter += 1;
     }   
 }
 
 fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_next:bool ) {
-	io::println(fmt!("Detail == %?",detail));
+	debug!(fmt!("Detail == %?",detail));
     if detail.negate {
         str::push_str(ptr,&":not(");
     }

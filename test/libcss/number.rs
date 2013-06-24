@@ -6,7 +6,7 @@ use css::parse::properties::common::*;
 use wapcaplet::*;
 
 fn main() {
-    io::println("number");
+    debug!("number");
     // number(~"data/number/number.dat");
     // let i = print_css_fixed(1);
 }
@@ -22,7 +22,7 @@ fn number(file_name: ~str) {
 
     while !r.eof() {
         let buf = r.read_line();
-        // io::println(buf);
+        // debug!(buf);
         if buf == ~"#data" {
             dataFlag = true;
             expectedFlag = false; 
@@ -52,21 +52,21 @@ fn number(file_name: ~str) {
         }
 
         if (resetFlag && !dataFlag && !expectedFlag) {
-             io::println(fmt!("data = %?" , data_string));
-            // io::println(fmt!("expected_str = %?" , expected_str));
+             debug!(fmt!("data = %?" , data_string));
+            // debug!(fmt!("expected_str = %?" , expected_str));
             do lwc.write |l| {
                 let lwc_string= Some(l.lwc_intern_string(copy data_string));
-                //io::println(fmt!("lwc string = %?" , lwc_string.get_ref().clone()));
+                //debug!(fmt!("lwc string = %?" , lwc_string.get_ref().clone()));
                 let (a , _) = css__number_from_lwc_string(lwc_string.unwrap() , false);
-                // io::println(fmt!("a = %?" , a));
+                // debug!(fmt!("a = %?" , a));
                 
                 let b = print_css_fixed(256, a);
-                //io::println(fmt!("got: %s expected: %.*s\n", b, expected_str.len(), expected_str));
-                io::println(fmt!("expected is %?" , expected_str));
-                io::println(fmt!("found is %? \n" , b));
+                //debug!(fmt!("got: %s expected: %.*s\n", b, expected_str.len(), expected_str));
+                debug!(fmt!("expected is %?" , expected_str));
+                debug!(fmt!("found is %? \n" , b));
                 assert!(str::starts_with(b, expected_str));
             }
-            // io::println(fmt!("lwc = %?" , lwc));
+            // debug!(fmt!("lwc = %?" , lwc));
 
             data_string = ~"";
             expected_str = ~"";
@@ -83,12 +83,12 @@ fn print_css_fixed(mut len:uint, a: i32) -> ~str {
     else {
         b = a as u32;
     }
-    //io::println(fmt!("Result %?", a));
+    //debug!(fmt!("Result %?", a));
     let mut unitpart:u32 = b >> 10;
-    io::println(fmt!("Expected Unitpart %?", unitpart));
-    //io::println(fmt!("b %?", b));
+    debug!(fmt!("Expected Unitpart %?", unitpart));
+    //debug!(fmt!("b %?", b));
     let mut fracpart:u32 = ((b & 0x3ff)*1000 + 500)/(1 << 10);
-    io::println(fmt!("Expected Fracpart %?", fracpart));
+    debug!(fmt!("Expected Fracpart %?", fracpart));
     let mut flen: uint = 0;
     let mut tmp: ~[char] = ~[];
 
@@ -110,12 +110,12 @@ fn print_css_fixed(mut len:uint, a: i32) -> ~str {
         buf.push_char(tmp.pop());
         len -= 1;
     }
-    //io::println(fmt!("Buffer Length %?", buf.len()));
+    //debug!(fmt!("Buffer Length %?", buf.len()));
     if len > 0 {
         buf.push_char('.');
         len -=1;
     }
-    //io::println(fmt!("Fracpart %?", fracpart));
+    //debug!(fmt!("Fracpart %?", fracpart));
     loop {
         tmp.push(string_number[fracpart%10] as char);
         fracpart /= 10;
@@ -123,7 +123,7 @@ fn print_css_fixed(mut len:uint, a: i32) -> ~str {
             break;    
         }
     }
-    //io::println(fmt!("Fracpart %?", fracpart));
+    //debug!(fmt!("Fracpart %?", fracpart));
 
     while (len > 0 && tmp.len() > 0) {
         buf.push_char(tmp.pop());

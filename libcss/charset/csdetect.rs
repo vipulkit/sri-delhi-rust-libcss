@@ -240,8 +240,8 @@ pub fn try_utf16_charset(data : &[u8], alias_arc: arc::ARC<~alias>) -> (Option<u
 }
 
 pub fn  try_ascii_compatible_charset(data : &[u8], alias_arc: arc::ARC<~alias>) -> (Option<u16>, parserutils_error) {  
-    //io::println("Entering: try_ascii_compatible_charset");
-    //io::println(str::from_bytes(*data));
+    //debug!("Entering: try_ascii_compatible_charset");
+    //debug!(str::from_bytes(*data));
 
     let mut mibenum : u16 = 0;
     let charset_decl_string : ~[u8] = ~[ '@' as u8, 'c' as u8, 'h' as u8, 'a' as u8 , 'r' as u8, 's' as u8, 'e' as u8, 't' as u8, ' ' as u8 , '\"'  as u8] ;
@@ -257,7 +257,7 @@ pub fn  try_ascii_compatible_charset(data : &[u8], alias_arc: arc::ARC<~alias>) 
         let mut indexVal = charset_decl_string.len();
         // Looking for "; at the end of charset declaration
         while (indexVal < data.len()) {
-            //io::println(fmt!("indexVal == %?", indexVal));
+            //debug!(fmt!("indexVal == %?", indexVal));
             if (data[indexVal] == ('"' as u8) || data[indexVal+1] == (';' as u8)) {
                 break;
             }
@@ -272,7 +272,7 @@ pub fn  try_ascii_compatible_charset(data : &[u8], alias_arc: arc::ARC<~alias>) 
         let charset = str::from_bytes(data.slice(charset_decl_string.len(), indexVal));
         // Convert to MIB enum 
         mibenum = arc::get(&alias_arc).parserutils_charset_mibenum_from_name(copy charset);
-        //io::println(fmt!("try_ascii_compatible_charset:: charset == %?", charset));
+        //debug!(fmt!("try_ascii_compatible_charset:: charset == %?", charset));
 
         // Any non-ASCII compatible charset must be ignored, as
         // we've just used an ASCII parser to read it. 
@@ -389,7 +389,7 @@ pub fn css__charset_extract(data : &[u8] , mibenum : u16 , input_source : int /*
     let mut src :css_charset_source;
 
     if (data.len()==(0 as uint)) {
-        // io::println("Entering: data.len() == 0");
+        // debug!("Entering: data.len() == 0");
         return (None, None, PARSERUTILS_BADPARM);
     }
 
@@ -417,7 +417,7 @@ pub fn css__charset_extract(data : &[u8] , mibenum : u16 , input_source : int /*
         },
         
         _ => {
-            // io::println(fmt!("Entering: match err => _ error = %?" , err));           
+            // debug!(fmt!("Entering: match err => _ error = %?" , err));           
             // return (None, None, PARSERUTILS_BADPARM);
         }
     }

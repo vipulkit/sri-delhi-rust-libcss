@@ -101,7 +101,7 @@ fn match_vec_u8(expected_data: &[u8] , found_string: &str) -> bool {
 
     let mut found_string_vector = str::to_bytes(found_string);
     if found_string_vector.len() != expected_data.len() {
-        // io::println("lenghts don't match");
+        // debug!("lenghts don't match");
         return false;
     }
 
@@ -116,9 +116,9 @@ fn match_vec_u8(expected_data: &[u8] , found_string: &str) -> bool {
 pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx_lex)->bool
 {
     let mut data : ~[u8] = args ;
-    // unsafe{io::println(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
+    // unsafe{debug!(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
     if  (data.len() == 0) {
-		// io::println("error");
+		// debug!("error");
 		return true;
 	}
 
@@ -182,7 +182,7 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx_lex)->bool
 }
 
 fn testMain(fileName: ~str) {
-	// io::println(~"testMain : "+ fileName);
+	// debug!(~"testMain : "+ fileName);
 	let ctx: @mut line_ctx_lex = @mut line_ctx_lex
     {
 		mut buf:~[],
@@ -200,7 +200,7 @@ fn testMain(fileName: ~str) {
         },
         Err(_) => {
             file_content = ~[] ;
-            io::println(fmt!("\n Error opening file"));
+            debug!(fmt!("\n Error opening file"));
             assert!(false) ;
         }
     }        
@@ -217,7 +217,7 @@ fn testMain(fileName: ~str) {
 
 
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
-	// io::println("run test");
+	// debug!("run test");
 	let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
 
     let inputstream = 
@@ -232,7 +232,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
 
     lexer.css__lexer_append_data(data);
     lexer.css__lexer_append_data(~[]);
-    // io::println(~"after append data="+ from_bytes(*data));
+    // debug!(~"after append data="+ from_bytes(*data));
     let mut index = 0;
     loop {
         let (error,token_option)= lexer.css__lexer_get_token();
@@ -240,10 +240,10 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
         match(error)	{
             CSS_OK => {
                 let token = token_option.unwrap();
-                // io::println(foundmt!("token == %?", token));
+                // debug!(foundmt!("token == %?", token));
 
                 let token_type_string = token_to_string(token.token_type);
-                // unsafe{io::println(fmt!("token bytes == %?", token.data.data));}
+                // unsafe{debug!(fmt!("token bytes == %?", token.data.data));}
                 let token_data = str::from_bytes(copy token.data.data);
                 let mut found = token_type_string;
                 
@@ -252,11 +252,11 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
                 }
 
                 //let found = {copy str::trim(found_str)};
-                // io::println(fmt!("Expected token bytes == %?", str::to_bytes(exp[index])));
-                // io::println(fmt!("match token == %?" , match_vec_u8(&exp[index] , found)));
+                // debug!(fmt!("Expected token bytes == %?", str::to_bytes(exp[index])));
+                // debug!(fmt!("match token == %?" , match_vec_u8(&exp[index] , found)));
                 if  !match_vec_u8(exp[index] , found) {
-                    // io::println(fmt!("Expected token == %?", (&exp[index])));
-                    // io::println(fmt!("Found token == %?", (found)));
+                    // debug!(fmt!("Expected token == %?", (&exp[index])));
+                    // debug!(fmt!("Found token == %?", (found)));
                     fail!(~"Expected and Found tokens do not match.");
 
                 }
@@ -264,22 +264,22 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
                 index += 1;
             },
             _=>{
-                // io::println(fmt!("error = %?", error));
+                // debug!(fmt!("error = %?", error));
             	if token_option.is_some() {
                     
                     let token = token_option.unwrap();
-                    // io::println(fmt!("token == %?", token));
+                    // debug!(fmt!("token == %?", token));
 
                     let token_type_string = token_to_string(token.token_type);
                     let token_data = str::from_bytes(copy token.data.data);
 
                     let found = fmt!("%s%s" , token_type_string , token_data);
 
-                    // io::println(fmt!("found == %?", found));
-                    // io::println(fmt!("Expected token == %?", (exp[index])));
+                    // debug!(fmt!("found == %?", found));
+                    // debug!(fmt!("Expected token == %?", (exp[index])));
                     if  !match_vec_u8(exp[index] , found) {
-                    // io::println(fmt!("Expected token == %?", (exp[index])));
-                    // io::println(fmt!("Found token == %?", (found)));
+                    // debug!(fmt!("Expected token == %?", (exp[index])));
+                    // debug!(fmt!("Found token == %?", (found)));
                     fail!(~"Expected and Found tokens do not match.");
 
                 }

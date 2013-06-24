@@ -41,7 +41,7 @@ fn create_css() -> @mut css{
 
 fn main() {
     // css(~"data/css/blocks.css");
-    io::println("css21");   
+    debug!("css21");   
 }
 
 fn css(file_name: ~str) {
@@ -120,7 +120,7 @@ fn css(file_name: ~str) {
     buf = dump_sheet(css.stylesheet);
     let outlen = buf.len();
     let written = outsize - outlen;
-    // io::println(fmt!("written == %? , outsize - outlen == %?" , written , outsize-outlen));
+    // debug!(fmt!("written == %? , outsize - outlen == %?" , written , outsize-outlen));
     assert!(written == outsize-outlen);
     
 } 

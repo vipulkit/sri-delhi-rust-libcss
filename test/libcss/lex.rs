@@ -9,7 +9,7 @@ use css::charset::csdetect::*;
 use css::lex::lexer::*;
 
 fn main() {
-    io::println("lex");
+    debug!("lex");
     lex(~"data/lex/tests1.dat");
 }
 
@@ -29,7 +29,7 @@ fn lex(fileName: ~str) {
             match(inputStreamOption) {
                 Some(x) => x,
                 None => {
-                    io::println("InputStream is not created, hence lexer can't be initialised");
+                    debug!("InputStream is not created, hence lexer can't be initialised");
                     fail!(~"inputstream is None");
                 }
             };
@@ -37,7 +37,7 @@ fn lex(fileName: ~str) {
         let buf = r.read_line();
 
         if buf == ~"#data" {
-            // io::println(buf);
+            // debug!(buf);
             dataFlag = true;
             expectedFlag = false;
             resetFlag = false;
@@ -59,10 +59,10 @@ fn lex(fileName: ~str) {
             resetFlag = true;
         }
         else if dataFlag {
-            // io::println(buf);
+            // debug!(buf);
             finalstr.push_str(buf);
             finalstr.push_char('\n');
-            // io::println(finalstr);
+            // debug!(finalstr);
         }
         else if expectedFlag {
             expectedstr.push_str(buf);
@@ -76,20 +76,20 @@ fn lex(fileName: ~str) {
             
             lexer.css__lexer_append_data(final_buf);
             final_buf = ~[];
-            // io::println(fmt!("final_buf is %s",str::from_bytes(final_buf)));
+            // debug!(fmt!("final_buf is %s",str::from_bytes(final_buf)));
             loop {
                 let mut (error, token_option) = lexer.css__lexer_get_token();
                 match error {
                     CSS_OK => {
                         let token = token_option.unwrap();
-                        // io::println(fmt!("token == %?", token));
+                        // debug!(fmt!("token == %?", token));
 
                         let token_type_string = token_to_string(token.token_type);
                         let token_data = str::from_bytes(copy token.data.data);
 
                         let found = fmt!("%s%s" , token_type_string , token_data);
-                        io::println(fmt!("found == %?", found));
-                        // io::println(fmt!("Expected token == %?", (exp[index])));
+                        debug!(fmt!("found == %?", found));
+                        // debug!(fmt!("Expected token == %?", (exp[index])));
                         match token_type_string {
                             ~"EOF" => break,
                             _=>{}
@@ -97,18 +97,18 @@ fn lex(fileName: ~str) {
 
                     },
                     _=>{
-                        io::println(fmt!("error = %?", error));
+                        debug!(fmt!("error = %?", error));
                         if token_option.is_some() {
                             
                             let token = token_option.unwrap();
-                            // io::println(fmt!("token == %?", token));
+                            // debug!(fmt!("token == %?", token));
 
                             let token_type_string = token_to_string(token.token_type);
                             let token_data = str::from_bytes(copy token.data.data);
 
                             let found = fmt!("%s%s" , token_type_string , token_data);
 
-                            io::println(fmt!("found == %?", found));
+                            debug!(fmt!("found == %?", found));
                             match token_type_string {
                                 ~"EOF" => break,
                                 _=>{}

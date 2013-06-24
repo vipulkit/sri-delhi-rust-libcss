@@ -409,7 +409,7 @@ impl css_stylesheet {
     *   'uint' - index next to the index of insertion is returned.
     */
     pub fn css__stylesheet_string_add(&mut self, string: ~str) -> uint {
-        io::println("Entering: css__stylesheet_string_add");
+        debug!("Entering: css__stylesheet_string_add");
         let mut i : uint = self.string_vector.len() ;
         while(i!=0) {
             i -= 1;
@@ -434,7 +434,7 @@ impl css_stylesheet {
     */
     pub fn css__stylesheet_string_get(&mut self, num:uint) 
                                     -> (css_error,Option<~str>) {
-        io::println("Entering: css__stylesheet_string_get");
+        debug!("Entering: css__stylesheet_string_get");
 
         if( (self.string_vector.len() < num) || (num == 0) ) {
             return (CSS_BADPARM,None) ;
@@ -447,7 +447,7 @@ impl css_stylesheet {
                                         opcode:css_properties_e,
                                         flags:u8,
                                         value:u16 ) {
-        io::println("Entering: css__stylesheet_style_appendOPV");
+        debug!("Entering: css__stylesheet_style_appendOPV");
         css_stylesheet::css__stylesheet_style_append(
             style,
             buildOPV(opcode,flags,value)
@@ -457,7 +457,7 @@ impl css_stylesheet {
     pub fn css_stylesheet_style_inherit(
                                         style: @mut css_style,
                                         opcode:css_properties_e) {
-        io::println("Entering: css_stylesheet_style_inherit");
+        debug!("Entering: css_stylesheet_style_inherit");
 
         css_stylesheet::css__stylesheet_style_append(
             style,
@@ -475,7 +475,7 @@ impl css_stylesheet {
     *  'css_style' - css_style.
     */
     pub fn css__stylesheet_style_create(sheet : @mut css_stylesheet) -> @mut css_style {
-        io::println("Entering: css__stylesheet_style_create");
+        debug!("Entering: css__stylesheet_style_create");
         if sheet.cached_style.is_none() {
             @mut css_style{ 
                 bytecode:~[],
@@ -495,7 +495,7 @@ impl css_stylesheet {
     *  'style'  - The style to merge. 
     */
     pub fn css__stylesheet_merge_style(target : @mut css_style, style: @mut css_style) {
-        io::println("Entering: css__stylesheet_merge_style");
+        debug!("Entering: css__stylesheet_merge_style");
         target.bytecode += copy style.bytecode;
     }
 
@@ -508,7 +508,7 @@ impl css_stylesheet {
     *  'style'  - The style to add. 
     */
     pub fn css__stylesheet_style_append(target : @mut css_style, bytecode: u32) {
-        io::println("Entering: css__stylesheet_style_append");
+        debug!("Entering: css__stylesheet_style_append");
         target.bytecode.push(bytecode);
     }
     
@@ -521,7 +521,7 @@ impl css_stylesheet {
     *  'bytecodes'  - vector of style to add. 
     */
     pub fn css__stylesheet_style_vappend(target : @mut css_style, bytecodes: &[u32] ) {
-        io::println("Entering: css__stylesheet_style_vappend");
+        debug!("Entering: css__stylesheet_style_vappend");
         target.bytecode += bytecodes;
     }
 
@@ -536,8 +536,8 @@ impl css_stylesheet {
     *   'css_selector' - Pointer to box containing selector object.
     */
     pub fn css__stylesheet_selector_create(&mut self, qname : css_qname ) -> @mut css_selector {
-        io::println("Entering: css__stylesheet_selector_create");
-        io::println(fmt!("css__stylesheet_selector_create:: qname == %?", qname));
+        debug!("Entering: css__stylesheet_selector_create");
+        debug!(fmt!("css__stylesheet_selector_create:: qname == %?", qname));
         let mut sel = @mut css_selector{  
             combinator:None, 
             rule:None, 
@@ -593,7 +593,7 @@ impl css_stylesheet {
         negate:bool
     )  -> (css_error, Option<@mut css_selector_detail>) 
     {
-        io::println("Entering: css__stylesheet_selector_detail_init");
+        debug!("Entering: css__stylesheet_selector_detail_init");
         let detail : @mut css_selector_detail = @mut css_selector_detail{
             qname:qname,
             selector_type:sel_type,
@@ -637,7 +637,7 @@ impl css_stylesheet {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_selector_append_specific(selector : @mut css_selector, detail: @mut css_selector_detail)  -> css_error  {
-        io::println("Entering: css__stylesheet_selector_append_specific");
+        debug!("Entering: css__stylesheet_selector_append_specific");
         
         match detail.selector_type {
             CSS_SELECTOR_CLASS=> selector.specificity += CSS_SPECIFICITY_C, 
@@ -678,7 +678,7 @@ impl css_stylesheet {
     pub fn css__stylesheet_selector_combine(combinator_type : css_combinator, a : @mut css_selector , 
                                             b : @mut css_selector) -> css_error {
         
-        io::println("Entering: css__stylesheet_selector_combine");
+        debug!("Entering: css__stylesheet_selector_combine");
         match b.combinator {
             Some(_)=> return CSS_INVALID,
             None=> {}
@@ -709,7 +709,7 @@ impl css_stylesheet {
     */
     pub fn css_stylesheet_rule_create(rule_type : css_rule_type ) -> CSS_RULE_DATA_TYPE  {
 
-        io::println("Entering: css_stylesheet_rule_create");
+        debug!("Entering: css_stylesheet_rule_create");
         
         let mut base_rule = @mut css_rule{ 
             parent_rule:None,
@@ -801,8 +801,8 @@ impl css_stylesheet {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_add_selector(css_rule : CSS_RULE_DATA_TYPE , selector : @mut css_selector) -> css_error {
-        io::println("Entering: css__stylesheet_rule_add_selector");
-        io::println(fmt!("css__stylesheet_rule_add_selector:: selector == %?", selector));
+        debug!("Entering: css__stylesheet_rule_add_selector");
+        debug!(fmt!("css__stylesheet_rule_add_selector:: selector == %?", selector));
         match css_rule {
             RULE_SELECTOR(x)=> {
                 selector.rule = Some(css_rule);
@@ -825,7 +825,7 @@ impl css_stylesheet {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_append_style(&mut self, css_rule : CSS_RULE_DATA_TYPE , style : @mut css_style) -> css_error {
-        io::println("Entering: css__stylesheet_rule_append_style");
+        debug!("Entering: css__stylesheet_rule_append_style");
         match css_rule {
             RULE_PAGE(page)=> {
                 if page.style.is_none() {
@@ -864,7 +864,7 @@ impl css_stylesheet {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_set_charset(css_rule : CSS_RULE_DATA_TYPE, charset: ~str) -> css_error {
-        io::println("Entering: css__stylesheet_rule_set_charset");
+        debug!("Entering: css__stylesheet_rule_set_charset");
         
         if charset.len() <= 0 {
             return CSS_BADPARM;
@@ -895,7 +895,7 @@ impl css_stylesheet {
     */
     pub fn css__stylesheet_rule_set_nascent_import(
         css_rule : CSS_RULE_DATA_TYPE, url_str:~str, media:u64) -> css_error {
-        io::println("Entering: css__stylesheet_rule_set_nascent_import");
+        debug!("Entering: css__stylesheet_rule_set_nascent_import");
         match css_rule {
             RULE_IMPORT(x) => {
                 x.url = url_str;
@@ -921,7 +921,7 @@ impl css_stylesheet {
     */
     pub fn css__stylesheet_rule_set_media(
         css_rule : CSS_RULE_DATA_TYPE, media:u64) -> css_error {
-        io::println("Entering: css__stylesheet_rule_set_media");
+        debug!("Entering: css__stylesheet_rule_set_media");
         match css_rule {
             RULE_MEDIA(x) => {
                 x.media=media;
@@ -935,7 +935,7 @@ impl css_stylesheet {
 
     pub fn css__stylesheet_rule_set_page_selector(
         css_rule : CSS_RULE_DATA_TYPE, selector:@mut css_selector) -> css_error {
-        io::println("Entering: css__stylesheet_rule_set_page_selector");
+        debug!("Entering: css__stylesheet_rule_set_page_selector");
         match css_rule {
             RULE_PAGE(x) => {
                 x.selector= Some(selector);
@@ -1003,7 +1003,7 @@ impl css_stylesheet {
     pub fn css__stylesheet_add_rule(sheet : @mut css_stylesheet, css_rule : CSS_RULE_DATA_TYPE,
                                     parent_rule : Option<CSS_RULE_DATA_TYPE> ) -> css_error {
         
-        io::println("Entering: css__stylesheet_add_rule");
+        debug!("Entering: css__stylesheet_add_rule");
         let mut base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
 
         base_rule.index = sheet.rule_count;
@@ -1078,7 +1078,7 @@ impl css_stylesheet {
     */
     pub fn css__stylesheet_remove_rule(sheet : @mut css_stylesheet, css_rule : CSS_RULE_DATA_TYPE) 
                                         -> css_error {
-        io::println("Entering: css__stylesheet_remove_rule");
+        debug!("Entering: css__stylesheet_remove_rule");
         match sheet._remove_selectors(css_rule) {
             CSS_OK=>{},
             _=>return CSS_INVALID
@@ -1118,7 +1118,7 @@ impl css_stylesheet {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn _add_selectors(&mut self, css_rule : CSS_RULE_DATA_TYPE) -> css_error {
-        io::println("Entering: _add_selectors");
+        debug!("Entering: _add_selectors");
         match css_rule {
             RULE_SELECTOR(x) => {
                 if x.base.parent_rule.is_some() || 
@@ -1209,7 +1209,7 @@ impl css_stylesheet {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn _remove_selectors(&mut self, css_rule : CSS_RULE_DATA_TYPE) -> css_error {
-        io::println("Entering: _remove_selectors");
+        debug!("Entering: _remove_selectors");
         match css_rule {
             RULE_SELECTOR(x) => {
 

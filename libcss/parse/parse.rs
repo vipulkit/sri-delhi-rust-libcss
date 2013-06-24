@@ -77,7 +77,7 @@ pub impl css_parser {
     fn css__parser_create_internal(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>, initial:(uint, uint) ) 
         -> Option<~css_parser> {
 
-        io::println("Entering: css__parser_create_internal");
+        debug!("Entering: css__parser_create_internal");
         
         let mut states = ~[
             ~css_parser::parse_start,
@@ -147,7 +147,7 @@ pub impl css_parser {
     */
     pub fn css__parser_create(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>) 
         -> Option<~css_parser> {
-        io::println("Entering: css__parser_create");
+        debug!("Entering: css__parser_create");
         let initial = ( sStart as uint, 0u );
 
         css_parser::css__parser_create_internal(language, lexer, lwc, initial)
@@ -171,7 +171,7 @@ pub impl css_parser {
     */
     pub fn css__parser_create_for_inline_style(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>) 
         -> Option<~css_parser> {
-        io::println("Entering: css__parser_create_for_inline_style");
+        debug!("Entering: css__parser_create_for_inline_style");
         let initial = (sInlineStyle as uint, 0);
 
         css_parser::css__parser_create_internal(language, lexer, lwc, initial)
@@ -189,22 +189,22 @@ pub impl css_parser {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__parser_parse_chunk(&mut self, data: ~[u8]) -> css_error {
-        io::println("Entering: css__parser_parse_chunk");
+        debug!("Entering: css__parser_parse_chunk");
         self.lexer.css__lexer_append_data(data);
 
         loop {
             if self.state_stack.is_empty() {
-                io::println("Entering: css__parser_parse_chunk:: self.state_stack.is_empty()");
+                debug!("Entering: css__parser_parse_chunk:: self.state_stack.is_empty()");
                 break;
             }
 
-            io::println(fmt!("css__parser_parse_chunk:: state_stack (1) == %?", self.state_stack));
+            debug!(fmt!("css__parser_parse_chunk:: state_stack (1) == %?", self.state_stack));
             let (current_state, _) = self.state_stack[self.state_stack.len()-1];
-            io::println(fmt!("css__parser_parse_chunk:: state_stack (2) == %?", self.state_stack));
+            debug!(fmt!("css__parser_parse_chunk:: state_stack (2) == %?", self.state_stack));
 
             unsafe {
                 let current_state_enum : parse_states = cast::transmute(current_state);
-                io::println(fmt!("css__parser_parse_chunk:: current state == %?", current_state_enum));
+                debug!(fmt!("css__parser_parse_chunk:: current state == %?", current_state_enum));
             }
             let result = (*self.states[current_state])(self);
 
@@ -225,15 +225,15 @@ pub impl css_parser {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__parser_completed(&mut self) -> css_error {
-        io::println("Entering: css__parser_completed ");
+        debug!("Entering: css__parser_completed ");
         self.lexer.css__lexer_append_data(~[]);
         loop {
             if self.state_stack.is_empty() {
                 break;
             }
-            io::println(fmt!("css__parser_completed, state_stack (1) == %?", self.state_stack));
+            debug!(fmt!("css__parser_completed, state_stack (1) == %?", self.state_stack));
             let (current_state, _) = self.state_stack[self.state_stack.len()-1];
-            io::println(fmt!("css__parser_completed, state_stack (2) == %?", self.state_stack));
+            debug!(fmt!("css__parser_completed, state_stack (2) == %?", self.state_stack));
             let result = (*self.states[current_state])(self);
 
             match(result) {
@@ -262,8 +262,8 @@ pub impl css_parser {
     */
     fn transition(&mut self, to:(uint,uint), subsequent:(uint,uint))
     {
-        io::println(fmt!("Entering: transition : to == %? , subsequent == %?",to,subsequent));
-        io::println(fmt!("transition:: state_stack 1 == %?", self.state_stack));
+        debug!(fmt!("Entering: transition : to == %? , subsequent == %?",to,subsequent));
+        debug!(fmt!("transition:: state_stack 1 == %?", self.state_stack));
         /* Replace current state on the stack with the subsequent one */
         if (!self.state_stack.is_empty()) {
             self.state_stack.pop();
@@ -273,7 +273,7 @@ pub impl css_parser {
         /* Push next state on the stack */
         self.state_stack.push(to);
 
-        io::println(fmt!("transition:: state_stack 2 == %?", self.state_stack));
+        debug!(fmt!("transition:: state_stack 2 == %?", self.state_stack));
 
         self.parse_error = false;
     }
@@ -290,15 +290,15 @@ pub impl css_parser {
     */
     fn transition_no_ret(&mut self, to:(uint,uint))
     {
-        io::println(fmt!("Entering: transition_no_ret : to == %?",to));
-        io::println(fmt!("transition_no_ret:: state_stack 1 == %?", self.state_stack));
+        debug!(fmt!("Entering: transition_no_ret : to == %?",to));
+        debug!(fmt!("transition_no_ret:: state_stack 1 == %?", self.state_stack));
         /* Replace current state on the stack with destination */
         if (!self.state_stack.is_empty()) {
             self.state_stack.pop();
         }
         self.state_stack.push(to) ;
 
-        io::println(fmt!("transition_no_ret:: state_stack 2 == %?", self.state_stack));
+        debug!(fmt!("transition_no_ret:: state_stack 2 == %?", self.state_stack));
 
         self.parse_error = false;
     }
@@ -309,11 +309,11 @@ pub impl css_parser {
     */
     fn done(&mut self)
     {
-        io::println("Entering: done");
+        debug!("Entering: done");
         /* Pop current state from stack */
-        io::println(fmt!("done::state_stack 1 == %?", self.state_stack));
+        debug!(fmt!("done::state_stack 1 == %?", self.state_stack));
         self.state_stack.pop();
-        io::println(fmt!("done::state_stack 2 == %?", self.state_stack));
+        debug!(fmt!("done::state_stack 2 == %?", self.state_stack));
     }
 
     /**
@@ -325,13 +325,13 @@ pub impl css_parser {
     */
     fn eat_ws(&mut self) -> css_error
     {
-        io::println("Entering: eat_ws");
+        debug!("Entering: eat_ws");
         let (parser_error, token_option) = self.get_token();
         if (token_option.is_none()) {
             return parser_error;
         }
         let token = token_option.unwrap();
-        io::println(fmt!("Entering : eat_ws token.token_type == %?" , token.token_type));
+        debug!(fmt!("Entering : eat_ws token.token_type == %?" , token.token_type));
         match token.token_type {
             CSS_TOKEN_S => {
                 return CSS_OK;
@@ -351,21 +351,21 @@ pub impl css_parser {
     *  'token' -  The token to push back. 
     */
     fn push_back(&mut self, token: @css_token) {
-        io::println("Entering: push_back");
-        // io::println("Entering: push_back");
-        /*// io::println(fmt!("token == %?", token));
-        // io::println(fmt!("self.tokens == %?", self.tokens));*/
+        debug!("Entering: push_back");
+        // debug!("Entering: push_back");
+        /*// debug!(fmt!("token == %?", token));
+        // debug!(fmt!("self.tokens == %?", self.tokens));*/
 
         assert!(self.pushback.is_none());
 
         self.pushback = Some(token);
         self.tokens.pop();
-        // io::println("Exiting: push_back");
+        // debug!("Exiting: push_back");
     }
 
 
     fn intern_string (&mut self, string: ~str) -> arc::RWARC<~lwc_string> {
-        io::println("Entering: intern_string");
+        debug!("Entering: intern_string");
         let mut interned_string: Option<arc::RWARC<~lwc_string>> = None;
 
         do self.lwc.write |lwc| {
@@ -384,7 +384,7 @@ pub impl css_parser {
     */
     fn get_token(&mut self) -> (css_error, Option<@css_token>) {
 
-        io::println("Entering: get_token");
+        debug!("Entering: get_token");
         let mut token_option: Option<@css_token>;
 
         /* Use pushback, if it exists */
@@ -451,32 +451,32 @@ pub impl css_parser {
         self.tokens.push(token_option.get());
         self.last_was_ws = (token_option.get().token_type as int == CSS_TOKEN_S as int);
 
-        io::println(fmt!("token_option == %?",token_option)) ;
+        debug!(fmt!("token_option == %?",token_option)) ;
         (CSS_OK, token_option)
     }
 
     #[inline(always)]
     fn update_current_substate(&mut self, new_substate:uint) {
-        io::println("Entering update_current_substate");
-        io::println(fmt!("update_current_substate: state stack1 == %?" , self.state_stack));
+        debug!("Entering update_current_substate");
+        debug!(fmt!("update_current_substate: state stack1 == %?" , self.state_stack));
         let (current_state,_) = self.state_stack.pop();
         self.state_stack.push((current_state, new_substate));
-        io::println(fmt!("update_current_substate: state stack2 == %?" , self.state_stack));
+        debug!(fmt!("update_current_substate: state stack2 == %?" , self.state_stack));
     }
 
     /* parser states */
     fn parse_start(parser:&mut css_parser) -> css_error {
-        io::println("Entering: parse_start");
+        debug!("Entering: parse_start");
         enum parse_start_sub_states { 
             Initial = 0, 
             AfterWS = 1, 
             AfterStylesheet = 2 
         };
 
-        // io::println(fmt!("parse_start: state_stack (1) == %?", parser.state_stack));
+        // debug!(fmt!("parse_start: state_stack (1) == %?", parser.state_stack));
         let mut (current_state,current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sStart as uint);
-        // io::println(fmt!("parse_start: state_stack (2) == %?", parser.state_stack));
+        // debug!(fmt!("parse_start: state_stack (2) == %?", parser.state_stack));
 
         while (true) {
             match (current_substate) {
@@ -538,7 +538,7 @@ pub impl css_parser {
 
 
     fn parse_stylesheet(parser:&mut css_parser) -> css_error {
-        io::println("Entering: parse_stylesheet");
+        debug!("Entering: parse_stylesheet");
         enum parse_stylesheet_sub_states { 
             Initial = 0, 
             WS = 1 
@@ -607,7 +607,7 @@ pub impl css_parser {
 
     fn parse_statement(parser: &mut css_parser) -> css_error
     {
-        io::println("Entering: parse_statement");
+        debug!("Entering: parse_statement");
         enum parser_statement_sub_states { 
             Initial = 0 
         };
@@ -638,7 +638,7 @@ pub impl css_parser {
 
 
     fn parse_ruleset(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_ruleset");
+        debug!("Entering: parse_ruleset");
         enum parse_ruleset_sub_states { 
             Initial = 0, 
             Brace = 1, 
@@ -649,10 +649,10 @@ pub impl css_parser {
         assert!(current_state == sRuleset as uint);
 
         while (true) {
-            io::println(fmt!("Entering: parse_ruleset:: current_substate is = %? ",current_substate)); 
+            debug!(fmt!("Entering: parse_ruleset:: current_substate is = %? ",current_substate)); 
             match (current_substate) {
                 0 /* Initial */ => { 
-                    io::println("Entering: parse_ruleset:: substate-initial");   
+                    debug!("Entering: parse_ruleset:: substate-initial");   
                     parser.tokens.clear();
 
                     let (parser_error, token_option) = parser.get_token();
@@ -663,21 +663,21 @@ pub impl css_parser {
 
                     match (token.token_type) {
                         CSS_TOKEN_CHAR => {
-                            io::println("Entering: parse_ruleset:: substate-initial::CSS_TOKEN_CHAR");   
+                            debug!("Entering: parse_ruleset:: substate-initial::CSS_TOKEN_CHAR");   
                             let c = token.data.data[0] as char;
                             if (c=='{') {
                                 match (
                                     parser.language.language_handle_event(CSS_PARSER_START_RULESET, &parser.tokens)
                                 ) {
                                     CSS_INVALID => {
-                                        io::println("Entering: parse_ruleset:: substate-initial::CSS_INVALID");   
+                                        debug!("Entering: parse_ruleset:: substate-initial::CSS_INVALID");   
                                         let to = (sMalformedSelector as uint, Initial as uint);
                                         parser.transition_no_ret(to);
 
                                         return CSS_OK;
                                     } /* CSS_INVALID */
                                     _ => {
-                                        io::println("Entering: parse_ruleset:: substate-initial:: WS");   
+                                        debug!("Entering: parse_ruleset:: substate-initial:: WS");   
                                         current_substate = WS as uint;
                                         parser.update_current_substate(WS as uint);
                                     }
@@ -709,13 +709,13 @@ pub impl css_parser {
                 } /* Initial */
             
                 1 /* Brace */ => {
-                    io::println("Entering: parse_ruleset:: substate-brace");  
+                    debug!("Entering: parse_ruleset:: substate-brace");  
                     if (!parser.parse_error) {
                         match (
                             parser.language.language_handle_event(CSS_PARSER_START_RULESET, &parser.tokens)
                         ) {
                             CSS_INVALID => {
-                                io::println("Entering: language.language_handle_event(CSS_PARSER_START_RULESET, &parser.tokens) => CSS_INVALID");
+                                debug!("Entering: language.language_handle_event(CSS_PARSER_START_RULESET, &parser.tokens) => CSS_INVALID");
                                 parser.parse_error = true;
                             }
                             _ => {
@@ -761,7 +761,7 @@ pub impl css_parser {
                 }
 
                 2 /* WS */ => {
-                    io::println("Entering: parse_ruleset:: substate-WS");  
+                    debug!("Entering: parse_ruleset:: substate-WS");  
                     let eat_ws_result = parser.eat_ws();
                     match (eat_ws_result) {
                         CSS_OK => {
@@ -788,7 +788,7 @@ pub impl css_parser {
 
 
     fn parse_ruleset_end(parser:&mut css_parser) -> css_error {
-        io::println("Entering: parse_ruleset_end");
+        debug!("Entering: parse_ruleset_end");
         enum parse_ruleset_end_substates { 
             Initial = 0, 
             DeclList = 1, 
@@ -800,7 +800,7 @@ pub impl css_parser {
         assert!(current_state == sRulesetEnd as uint);
 
         while (true) {
-            io::println(fmt!("parse_ruleset_end: current_substate == %?" , current_substate));
+            debug!(fmt!("parse_ruleset_end: current_substate == %?" , current_substate));
             match (current_substate) {
                 0 /* Initial */ => {
                     let (parser_error, token_option) = parser.get_token();
@@ -862,7 +862,7 @@ pub impl css_parser {
                     }
                     let token = token_option.unwrap();
 
-                    io::println(fmt!("parse_ruleset_end: token.token_type == %?" , token.token_type));
+                    debug!(fmt!("parse_ruleset_end: token.token_type == %?" , token.token_type));
                     match token.token_type {
                         CSS_TOKEN_EOF => {
                             parser.push_back(token);
@@ -910,7 +910,7 @@ pub impl css_parser {
     } /* parse_ruleset_end */
 
     fn parse_at_rule(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_at_rule");
+        debug!("Entering: parse_at_rule");
         enum parse_at_rule_substates { 
             Initial = 0, 
             WS = 1, 
@@ -1012,7 +1012,7 @@ pub impl css_parser {
     } /* parse_at_rule */
 
     fn parse_at_rule_end(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_at_rule_end");
+        debug!("Entering: parse_at_rule_end");
         enum parser_at_rule_end_substates { 
             Initial = 0, 
             WS = 1, 
@@ -1104,7 +1104,7 @@ pub impl css_parser {
     } /* parse_at_rule_end */
 
     fn parse_block(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_block");
+        debug!("Entering: parse_block");
         enum parse_block_substates { 
             Initial = 0, 
             WS = 1, 
@@ -1225,7 +1225,7 @@ pub impl css_parser {
     } /* parse_block */
 
     fn parse_block_content(parser: &mut css_parser) -> css_error {
-            io::println("Entering: parse_block_content");
+            debug!("Entering: parse_block_content");
             enum parse_block_content_substates { 
                 Initial = 0, 
                 WS = 1 
@@ -1344,7 +1344,7 @@ pub impl css_parser {
     } /* parse_block_content */
 
     fn parse_selector(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_selector");
+        debug!("Entering: parse_selector");
         enum parse_selector_substates { 
             Initial = 0,
             AfterAny1 = 1 
@@ -1378,7 +1378,7 @@ pub impl css_parser {
     } /* parse_selector */
 
     fn parse_declaration(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_declaration");
+        debug!("Entering: parse_declaration");
         enum parser_declaration_substates { 
             Initial = 0, 
             Colon = 1, 
@@ -1392,7 +1392,7 @@ pub impl css_parser {
         assert!(current_state == sDeclaration as uint);
 
         while (true) {
-            io::println(fmt!("parse_declaration:: current_substate == %?", current_substate));
+            debug!(fmt!("parse_declaration:: current_substate == %?", current_substate));
             match (current_substate) {
                 0 /* Initial */ => {
                     parser.tokens.clear();
@@ -1478,7 +1478,7 @@ pub impl css_parser {
 
                         return CSS_OK;
                     }
-                    io::println(fmt!("parse_declaration:: AfterValue1:: parser.tokens == %?", parser.tokens));
+                    debug!(fmt!("parse_declaration:: AfterValue1:: parser.tokens == %?", parser.tokens));
                     parser.language.language_handle_event(CSS_PARSER_DECLARATION, &parser.tokens);
                     break;
                 } /* AfterValue1 */
@@ -1494,7 +1494,7 @@ pub impl css_parser {
     } /* parse_declaration */
 
     fn parse_decl_list(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_decl_list");
+        debug!("Entering: parse_decl_list");
         enum parse_decl_list_substates { 
             Initial = 0, 
             WS = 1 
@@ -1507,7 +1507,7 @@ pub impl css_parser {
         let mut (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sDeclList as uint);
         while (true) {
-            io::println(fmt!("Entering: decl-list: current_substate == %?" , current_substate));
+            debug!(fmt!("Entering: decl-list: current_substate == %?" , current_substate));
             match (current_substate) {
                 0 /* Initial */ => {
                     let (parser_error, token_option) = parser.get_token();
@@ -1571,7 +1571,7 @@ pub impl css_parser {
     } /* parse_decl_list */
 
     fn parse_decl_list_end(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_decl_list_end");
+        debug!("Entering: parse_decl_list_end");
         enum parse_decl_list_end_substates { 
             Initial = 0, 
             AfterDeclaration = 1 
@@ -1626,7 +1626,7 @@ pub impl css_parser {
     } /* parse_decl_list_end */
 
     fn parse_property(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_property");
+        debug!("Entering: parse_property");
         enum parse_property_substates { 
             Initial = 0, 
             WS = 1 
@@ -1691,7 +1691,7 @@ pub impl css_parser {
     } /* parse_property */
 
     fn parse_value_0(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_value_0");
+        debug!("Entering: parse_value_0");
         enum parse_value_0_substates { 
             Initial = 0, 
             AfterValue = 1 
@@ -1765,7 +1765,7 @@ pub impl css_parser {
     } /* parse_value_0 */
 
     fn parse_value_1(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_value_1");
+        debug!("Entering: parse_value_1");
         enum parse_value_1_substates { 
             Initial = 0, 
             AfterValue = 1 
@@ -1831,7 +1831,7 @@ pub impl css_parser {
     } /* parse_value_1 */
 
     fn parse_value(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_value");
+        debug!("Entering: parse_value");
         enum parse_value_substates { 
             Initial = 0, 
             WS = 1 
@@ -1906,7 +1906,7 @@ pub impl css_parser {
     } /* parse_value */
 
     fn parse_any_0(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_any_0");
+        debug!("Entering: parse_any_0");
         enum parse_any_0_substates { 
             Initial = 0, 
             AfterAny = 1 
@@ -1916,10 +1916,10 @@ pub impl css_parser {
         assert!(current_state == sAny0 as uint);
 
         while (true) {
-            io::println(fmt!("Entering: parse_any_0 :: current_substate=%?",current_substate));
+            debug!(fmt!("Entering: parse_any_0 :: current_substate=%?",current_substate));
             match (current_substate) {
                 0 /* Initial */ => {
-                    io::println(fmt!("Entering: parse_any_0 :: case initial "));
+                    debug!(fmt!("Entering: parse_any_0 :: case initial "));
                     let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
@@ -1928,14 +1928,14 @@ pub impl css_parser {
 
                     match token.token_type {
                         CSS_TOKEN_EOF => {
-                            io::println(fmt!("Entering: parse_any_0 :: case initial : CSS_TOKEN_EOF"));
+                            debug!(fmt!("Entering: parse_any_0 :: case initial : CSS_TOKEN_EOF"));
                             parser.push_back(token);
                             parser.done();
                             return CSS_OK;
                         }/* CSS_TOKEN_EOF */
 
                         CSS_TOKEN_CHAR => { 
-                            io::println(fmt!("Entering: parse_any_0 :: case initial : CSS_TOKEN_CHAR"));
+                            debug!(fmt!("Entering: parse_any_0 :: case initial : CSS_TOKEN_CHAR"));
                             let c = token.data.data[0] as char;
                             parser.push_back(token);
 
@@ -1954,7 +1954,7 @@ pub impl css_parser {
                         }/* CSS_TOKEN_CHAR */
 
                         _ => {
-                            io::println(fmt!("Entering: parse_any_0 :: case initial : _"));
+                            debug!(fmt!("Entering: parse_any_0 :: case initial : _"));
                             parser.push_back(token);
 
                             let to =  (sAny as uint, Initial as uint);
@@ -1967,7 +1967,7 @@ pub impl css_parser {
                 } /* Initial */
 
                 1 /* AfterAny */ => {
-                    io::println(fmt!("Entering: parse_any_0 :: case AfterAny "));
+                    debug!(fmt!("Entering: parse_any_0 :: case AfterAny "));
                     if (parser.parse_error) {
                         parser.done();
                         return CSS_OK;
@@ -1987,7 +1987,7 @@ pub impl css_parser {
     } /* parse_any_0 */
 
     fn parse_any_1(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_any_1");
+        debug!("Entering: parse_any_1");
         enum parse_any_1_substates { 
             Initial = 0, 
             AfterAny = 1,
@@ -2060,7 +2060,7 @@ pub impl css_parser {
     } /* parse_any_1 */
 
     fn parse_any(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_any");
+        debug!("Entering: parse_any");
         enum parse_any_substates { 
             Initial = 0, 
             WS = 1,
@@ -2072,7 +2072,7 @@ pub impl css_parser {
         assert!(current_state == sAny as uint);
         
         while (true) {
-            io::println(fmt!("Entering: parse_any:: while(true):: current_substate == %?", current_substate));
+            debug!(fmt!("Entering: parse_any:: while(true):: current_substate == %?", current_substate));
             match (current_substate) {
                 0 /* Initial */ => {
                     let (parser_error, token_option) = parser.get_token();
@@ -2153,7 +2153,7 @@ pub impl css_parser {
                 } /* WS */
 
                 2 /* AfterAny0 */ => {
-                    io::println("Entering: parse_any:: AfterAny0");
+                    debug!("Entering: parse_any:: AfterAny0");
                     let (parser_error, token_option) = parser.get_token();
                     if (token_option.is_none()) {
                         return parser_error;
@@ -2211,7 +2211,7 @@ pub impl css_parser {
 
     // TODO review : piyush
     fn parse_malformed_declaration(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_malformed_declaration");
+        debug!("Entering: parse_malformed_declaration");
         enum parse_malformed_declaration_substates{ 
             Initial = 0, 
             Go = 1 
@@ -2305,7 +2305,7 @@ pub impl css_parser {
     } /* parse_malformed_declaration */
 
     fn parse_malformed_selector(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_malformed_selector");
+        debug!("Entering: parse_malformed_selector");
         enum parse_malformed_selector_substates{ 
             Initial = 0, 
             Go = 1 
@@ -2393,7 +2393,7 @@ pub impl css_parser {
     } /* parse_malformed_selector */
 
     fn parse_malformed_at_rule(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_malformed_at_rule");
+        debug!("Entering: parse_malformed_at_rule");
         enum parse_malformed_at_rule_substates{ 
             Initial = 0, 
             Go = 1 
@@ -2490,7 +2490,7 @@ pub impl css_parser {
     } /* parse_malformed_at_rule */
 
     fn parse_inline_style(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_inline_style");
+        debug!("Entering: parse_inline_style");
         enum parse_inline_style_substates { 
             Initial = 0, 
             WS = 1, 
@@ -2552,7 +2552,7 @@ pub impl css_parser {
     } /* parse_inline_style */
 
     fn parse_IS_body_0(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_IS_body_0");
+        debug!("Entering: parse_IS_body_0");
         enum parse_IS_body_0_substates { 
             Initial = 0, 
             AfterISBody = 1 
@@ -2609,7 +2609,7 @@ pub impl css_parser {
     } /* parse_IS_body_0 */
 
     fn parse_IS_body(parser: &mut css_parser) -> css_error {
-        io::println("Entering: parse_IS_body");
+        debug!("Entering: parse_IS_body");
         enum parse_IS_body_substates { 
             Initial = 0, 
             DeclList = 1, 

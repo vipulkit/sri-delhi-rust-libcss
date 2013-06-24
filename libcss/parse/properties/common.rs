@@ -21,12 +21,12 @@ use utils::errors::*;
 */
 pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
 
-    io::println("Entering: consumeWhitespace");
+    debug!("Entering: consumeWhitespace");
     loop {
         if *ctx < vector.len() {
             match vector[*ctx].token_type {
                 CSS_TOKEN_S => {
-                    io::println("Entering: consumeWhitespace:: CSS_TOKEN_S");
+                    debug!("Entering: consumeWhitespace:: CSS_TOKEN_S");
                     *ctx = *ctx+1
                 },
                 _ => return
@@ -61,7 +61,7 @@ pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
 */
 pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_token] , ctx: @mut uint , default_unit: u32) -> (Option<i32> , Option<u32>, css_error) {
 
-    io::println("Entering: css__parse_unit_specifier");
+    debug!("Entering: css__parse_unit_specifier");
     let mut token:&@css_token;
     let mut unit_retVal:u32;
     let orig_ctx = *ctx;
@@ -69,7 +69,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
     consumeWhitespace(vector , ctx);
 
     if *ctx >= vector.len() {
-        io::println("Exiting: css__parse_unit_specifier (1)");
+        debug!("Exiting: css__parse_unit_specifier (1)");
         return (None , None , CSS_INVALID)
     }
     token = &vector[*ctx];
@@ -79,7 +79,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
         CSS_TOKEN_DIMENSION|CSS_TOKEN_NUMBER|CSS_TOKEN_PERCENTAGE => {},
         _ => {
             *ctx = orig_ctx;
-            io::println("Exiting: css__parse_unit_specifier (2)");
+            debug!("Exiting: css__parse_unit_specifier (2)");
             return(None , None , CSS_INVALID);
         }
     }
@@ -95,7 +95,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
                 CSS_OK => {},
                 _ => {
                     *ctx = orig_ctx;
-                    io::println("Exiting: css__parse_unit_specifier (3)");
+                    debug!("Exiting: css__parse_unit_specifier (3)");
                     return (None , None , result);
                 }
             }
@@ -108,7 +108,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
                 }
                 else {
                     *ctx = orig_ctx;
-                    io::println("Exiting: css__parse_unit_specifier (4)");
+                    debug!("Exiting: css__parse_unit_specifier (4)");
                     return (None , None , CSS_INVALID);
                 }
             }
@@ -117,7 +117,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
                 let tmp_ctx = ctx;
                 consumeWhitespace(vector , tmp_ctx);
                 if *ctx >= vector.len() {
-                    io::println("Exiting: css__parse_unit_specifier (5)");
+                    debug!("Exiting: css__parse_unit_specifier (5)");
                     return (None , None , CSS_INVALID)
                 }
                 token = &vector[*tmp_ctx];
@@ -142,20 +142,20 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
         //CSS_TOKEN_PERCENTAGE
         _ => {
             if lwc_string_length(token.idata.get_ref().clone()) != consumed_index {
-                io::println("Exiting: css__parse_unit_specifier (6)");
+                debug!("Exiting: css__parse_unit_specifier (6)");
                 return (None , None , CSS_INVALID);
             }
             unit_retVal = UNIT_PCT as u32;
         }
     }
-    io::println("Exiting: css__parse_unit_specifier (7)");
-    io::println(fmt!("css__parse_unit_specifier:: num == %?, unit_retVal == %?", num, unit_retVal));
+    debug!("Exiting: css__parse_unit_specifier (7)");
+    debug!(fmt!("css__parse_unit_specifier:: num == %?, unit_retVal == %?", num, unit_retVal));
     return(Some(num) , Some(unit_retVal) , CSS_OK);
 }
 
 pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bool) -> (i32 , uint) {
     
-    io::println("Entering: css__number_from_lwc_string");
+    debug!("Entering: css__number_from_lwc_string");
     let mut ret_value = 0;
     let mut consumed_length = 0;
 
@@ -178,8 +178,8 @@ pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bo
 */
 pub fn css__parse_unit_keyword(ptr:&str)-> (Option<u32>,css_error) {
     
-    io::println("Entering: css__parse_unit_keyword");
-    io::println(fmt!("css__parse_unit_keyword:: ptr == %s", copy ptr));
+    debug!("Entering: css__parse_unit_keyword");
+    debug!(fmt!("css__parse_unit_keyword:: ptr == %s", copy ptr));
     let mut unit = UNIT_GRAD;
     let ptr_lower = ptr.to_lower();
     match(ptr_lower.len()) {
@@ -252,7 +252,7 @@ pub fn css__parse_unit_keyword(ptr:&str)-> (Option<u32>,css_error) {
 
 pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool) -> (i32 , uint){
 
-    io::println("Entering: css__number_from_string");
+    debug!("Entering: css__number_from_string");
     let mut length = data.len() - *data_index;
     let orig_data_index = *data_index;
     let mut sign = 1;
@@ -368,7 +368,7 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
 
 pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->bool {
     
-    io::println("Entering: is_css_inherit");
+    debug!("Entering: is_css_inherit");
     match token.token_type {
         CSS_TOKEN_IDENT => {
              return strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint);
@@ -399,7 +399,7 @@ pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->boo
 */
 pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_error) {
     
-    io::println("Entering: css__parse_color_specifier");
+    debug!("Entering: css__parse_color_specifier");
     let mut token:&@css_token;
     let mut ret_value: u16;
     let mut ret_result: u32 = 0;
@@ -435,8 +435,8 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
         } 
     }
 	unsafe {
-		io::println(fmt!("Token = %?", token));
-		io::println(fmt!("sheet.quirks_allowed = %?", sheet.quirks_allowed));
+		debug!(fmt!("Token = %?", token));
+		debug!(fmt!("sheet.quirks_allowed = %?", sheet.quirks_allowed));
 	}
 	
     if token.token_type as int == CSS_TOKEN_IDENT as int  {
@@ -820,7 +820,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                 return (None , None , CSS_INVALID);
             }
 			
-			io::println(fmt!("hue= %?, sat= %?, lit= %?", hue as i32, sat as i32, lit as i32)); //DEBUG
+			debug!(fmt!("hue= %?, sat= %?, lit= %?", hue as i32, sat as i32, lit as i32)); //DEBUG
             
 			/* have a valid HSV entry, convert to RGB */
 			let (ra , ga , ba) = HSL_to_RGB(hue as i32, sat as i32, lit as i32);
@@ -828,7 +828,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
             *g = ga;
             *b = ba;
 			
-			io::println(fmt!("ra= %?, ga= %?, ba= %?", ra, ga, ba)); //DEBUG
+			debug!(fmt!("ra= %?, ga= %?, ba= %?", ra, ga, ba)); //DEBUG
             
 			if alpha > 255 {
                 *a = 255;
@@ -844,8 +844,8 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
             *ctx = orig_ctx;
             return (None , None , CSS_INVALID);
         }
-		io::println(fmt!("a= %?, r= %?, g= %?, b= %?", *a, *r, *g, *b)); //DEBUG
-		io::println(fmt!("a= %?, r= %?, g= %?, b= %?", *a as u32 << 24, *r as u32 << 16, *g as u32 << 8, *b as u32)); //DEBUG
+		debug!(fmt!("a= %?, r= %?, g= %?, b= %?", *a, *r, *g, *b)); //DEBUG
+		debug!(fmt!("a= %?, r= %?, g= %?, b= %?", *a as u32 << 24, *r as u32 << 16, *g as u32 << 8, *b as u32)); //DEBUG
 		
         ret_result = (*a as u32 << 24 | *r as u32 << 16 | *g as u32 << 8 | *b as u32);
         
@@ -858,7 +858,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
 	
 	ret_value = COLOR_SET ;
 	
-	io::println(fmt!("Return value= %?, result= %?", ret_value, ret_result)); //DEBUG
+	debug!(fmt!("Return value= %?, result= %?", ret_value, ret_result)); //DEBUG
     
 	(Some(ret_value) , Some(ret_result) , CSS_OK)
 }
@@ -880,7 +880,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
 */
 pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error){
 
-    io::println("Entering: css__parse_hash_colour");
+    debug!("Entering: css__parse_hash_colour");
     let mut result_val: u32;
     let mut r: u8;
     let mut g: u8;
@@ -893,7 +893,7 @@ pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , c
         r = charToHex(input_string[0]) as u8;
         g = charToHex(input_string[1]) as u8;
         b = charToHex(input_string[2]) as u8;
-		io::println(fmt!("r=%?, g=%?, b=%? ",r, g, b));
+		debug!(fmt!("r=%?, g=%?, b=%? ",r, g, b));
 
         r |= (r << 4);
         g |= (g << 4);
@@ -911,11 +911,11 @@ pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , c
     else {
         return(None , CSS_INVALID)
     }
-	io::println(fmt!("r=%?, g=%?, b=%? ",r, g, b));
+	debug!(fmt!("r=%?, g=%?, b=%? ",r, g, b));
 	
     result_val = (a as u32 << 24) | (r as u32 << 16) | (g as u32 << 8) | b as u32;
 	
-	io::println(fmt!("result_val=%?",result_val));
+	debug!(fmt!("result_val=%?",result_val));
     return (Some(result_val) , CSS_OK);
 }
 
@@ -930,7 +930,7 @@ pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , c
 */
 pub fn tokenIsChar(token:&@css_token, c:char) -> bool {
     
-    io::println("Entering: tokenIsChar");
+    debug!("Entering: tokenIsChar");
     let result = false;
 
     match token.token_type {
@@ -995,7 +995,7 @@ pub fn charToHex(c: u8) -> u32 {
 */
 pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 
-    io::println("Entering: HSL_to_RGB");
+    debug!("Entering: HSL_to_RGB");
     let min_rgb: i32;
     let max_rgb: i32;
     let chroma: i32;
@@ -1020,11 +1020,11 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
     else {
         max_rgb = css_divide_fixed(css_subtract_fixed(css_multiply_fixed(css_add_fixed(lit, sat), F_100 as i32), css_multiply_fixed(lit, sat)), F_100 as i32);
     }
-	io::println(fmt!("max_rgb= %?", max_rgb));
+	debug!(fmt!("max_rgb= %?", max_rgb));
 	
     /* Compute min(r,g,b) */
     min_rgb = css_subtract_fixed(css_multiply_fixed(lit, css_int_to_fixed(2)), max_rgb);
-	io::println(fmt!("min_rgb= %?", min_rgb));
+	debug!(fmt!("min_rgb= %?", min_rgb));
 	
     /* We know that the value of at least one of the components is 
      * max(r,g,b) and that the value of at least one of the other
@@ -1048,36 +1048,36 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 
     /* Chroma is the difference between min and max */
     chroma = css_subtract_fixed(max_rgb, min_rgb);
-	io::println(fmt!("chroma= %?", chroma));
+	debug!(fmt!("chroma= %?", chroma));
 	
     /* Compute which sextant the hue lies in (truncates result) */
     let hue = css_divide_fixed(css_multiply_fixed(hue, css_int_to_fixed(6)), F_360 as i32);
     sextant = (hue as int) >> CSS_RADIX_POINT;
-	io::println(fmt!("hue= %?", hue));
-	io::println(fmt!("sextant= %?", sextant));
+	debug!(fmt!("hue= %?", hue));
+	debug!(fmt!("sextant= %?", sextant));
 
     /* Compute offset of hue from start of sextant */
     relative_hue = css_subtract_fixed(hue, css_int_to_fixed(sextant));
-	io::println(fmt!("relative_hue= %?", relative_hue));
+	debug!(fmt!("relative_hue= %?", relative_hue));
 	
     /* Scale offset by chroma */
     scaled_hue = css_multiply_fixed(relative_hue, chroma);
-	io::println(fmt!("scaled_hue= %?", scaled_hue));
+	debug!(fmt!("scaled_hue= %?", scaled_hue));
 	
     /* Compute potential values of the third colour component */
     mid1 = css_add_fixed(min_rgb, scaled_hue);
     mid2 = css_subtract_fixed(max_rgb, scaled_hue);
-	io::println(fmt!("mid1= %?", mid1));
-	io::println(fmt!("mid2= %?", mid2));
+	debug!(fmt!("mid1= %?", mid1));
+	debug!(fmt!("mid2= %?", mid2));
 	
     match sextant {
         0 => {
             let r = (css_divide_fixed(css_multiply_fixed((max_rgb), F_255 as i32), F_100 as i32 )) >> CSS_RADIX_POINT;
-            io::println(fmt!("r= %?", r));
+            debug!(fmt!("r= %?", r));
 			let g = (css_divide_fixed(css_multiply_fixed((mid1), F_255 as i32), F_100 as i32    )) >> CSS_RADIX_POINT;
-			io::println(fmt!("g= %?", g));
+			debug!(fmt!("g= %?", g));
             let b = (css_divide_fixed(css_multiply_fixed((min_rgb), F_255 as i32), F_100 as i32 )) >> CSS_RADIX_POINT;
-			io::println(fmt!("b= %?", b));
+			debug!(fmt!("b= %?", b));
             return (r as u8 , g as u8 , b as u8);
         },
         1 => {
@@ -1126,7 +1126,7 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 */
 fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error){
     
-    io::println("Entering: css__parse_named_color");
+    debug!("Entering: css__parse_named_color");
     let mut result_val: u32;
     let colourmap: ~[u32] = ~[
         0xfff0f8ff, /* ALICEBLUE */

@@ -51,7 +51,7 @@ pub struct css_language {
 }
 
 pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~css_language {
-    io::println("Entering: css_language");
+    debug!("Entering: css_language");
     ~css_language {
         sheet:sheet,
         lwc_instance: lwc_inst.clone(),
@@ -81,7 +81,7 @@ pub impl css_language {
 	*/
     pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:&~[@css_token])
         -> css_error {
-        io::println("Entering: language_handle_event");
+        debug!("Entering: language_handle_event");
         match event_type {
             
             CSS_PARSER_START_STYLESHEET => {
@@ -128,19 +128,19 @@ pub impl css_language {
 
 
     pub fn handleStartStylesheet(&mut self ) -> css_error {
-        io::println("Entering: handleStartStylesheet");
+        debug!("Entering: handleStartStylesheet");
         let entry:context_entry = context_entry {
             event_type: CSS_PARSER_START_STYLESHEET, 
             data:None                                       
         };
         
         self.context.push(entry);
-        io::println("Exiting: handleStartStylesheet");
+        debug!("Exiting: handleStartStylesheet");
         CSS_OK
     }
 
     pub fn handleEndStylesheet(&mut self)->css_error {
-        io::println("Entering: handleEndStylesheet");
+        debug!("Entering: handleEndStylesheet");
         if vec::is_empty(self.context) {
             return CSS_INVALID
         }
@@ -154,7 +154,7 @@ pub impl css_language {
     }
 
     pub fn handleStartRuleset(&mut self, tokens:&~[@css_token]) ->css_error    {
-        io::println("Entering: handleStartRuleset");
+        debug!("Entering: handleStartRuleset");
 
         let mut cur:context_entry ;
         let mut parent_rule :Option<CSS_RULE_DATA_TYPE> = None ;
@@ -201,7 +201,7 @@ pub impl css_language {
     }
 
     pub fn handleEndRuleset(&mut self)->css_error {
-        io::println("Entering: handleEndRuleset");
+        debug!("Entering: handleEndRuleset");
         let mut cur:context_entry;
         
         /* Retrieve parent rule from stack, if any */
@@ -221,7 +221,7 @@ pub impl css_language {
     }
 
     pub fn handleStartAtRule(&mut self, vector:&~[@css_token])->css_error {
-        io::println("Entering: handleStartAtRule");
+        debug!("Entering: handleStartAtRule");
        // context_entry entry = { CSS_PARSER_START_ATRULE, NULL };
             
         let ctx: @mut uint =@mut 0;
@@ -502,7 +502,7 @@ pub impl css_language {
     }
 
     pub fn handleEndAtRule(&mut self)->css_error {
-        io::println("Entering: handleEndAtRule");
+        debug!("Entering: handleEndAtRule");
         let mut cur:context_entry;
         
         if !vec::is_empty(self.context) {
@@ -522,7 +522,7 @@ pub impl css_language {
     
 
     pub fn handleStartBlock(&mut self)->css_error {
-        io::println("Entering: handleStartBlock");
+        debug!("Entering: handleStartBlock");
         let mut cur:context_entry;
         let mut entry:context_entry = context_entry{ event_type:CSS_PARSER_START_BLOCK, data:None };
         
@@ -543,7 +543,7 @@ pub impl css_language {
     }
 
     pub fn handleEndBlock(&mut self)->css_error {
-        io::println("Entering: handleEndBlock");
+        debug!("Entering: handleEndBlock");
         let mut cur:context_entry;
         
         if !vec::is_empty(self.context) {
@@ -583,7 +583,7 @@ pub impl css_language {
 
 
     pub fn handleBlockContent(&mut self, tokens:&~[@css_token])-> css_error {
-        io::println("Entering: handleBlockContent");
+        debug!("Entering: handleBlockContent");
         // * Block content comprises either declarations (if the current block is
         // * associated with @page, @font-face or a selector), or rulesets (if the
         // * current block is associated with @media). 
@@ -614,7 +614,7 @@ pub impl css_language {
     }
 
     pub fn handleDeclaration(&mut self, tokens:&~[@css_token])->css_error {
-        io::println("Entering: handleDeclaration");
+        debug!("Entering: handleDeclaration");
         let ctx: @mut uint = @mut 0u;   
          // Locations where declarations are permitted:
          // *
@@ -626,7 +626,7 @@ pub impl css_language {
         
         if !vec::is_empty(self.context) {
             cur=self.context[self.context.len()-1];
-            // io::println(fmt!("Entering: cur.data == %? , cur.event_type == %?" , cur.data.unwrap() , cur.event_type));
+            // debug!(fmt!("Entering: cur.data == %? , cur.event_type == %?" , cur.data.unwrap() , cur.event_type));
             match cur.data {
                 None => CSS_INVALID,
                 Some(curRule) => {
@@ -678,9 +678,9 @@ pub impl css_language {
     }
 
     pub fn parseSelectorList(&mut self, tokens:&~[@css_token], curRule: CSS_RULE_DATA_TYPE) -> css_error {
-        io::println("Entering: parseSelectorList");
+        debug!("Entering: parseSelectorList");
         let ctx: @mut uint = @mut 0u;
-        io::println(fmt!("parseSelectorList:: tokens == %?", tokens));
+        debug!(fmt!("parseSelectorList:: tokens == %?", tokens));
         loop {
             /* Strip any leading whitespace (can happen if in nested block) */
             consumeWhitespace(tokens, ctx);
@@ -717,7 +717,7 @@ pub impl css_language {
 
     pub fn parseMediaList(&mut self, vector:&~[@css_token], ctx:@mut uint, media:@mut u64) -> css_error
     {
-        io::println("Entering: parseMediaList");
+        debug!("Entering: parseMediaList");
         let mut ret:u64 = 0;
 
         if *ctx < vector.len() {
@@ -808,7 +808,7 @@ pub impl css_language {
                     CSS_INVALID if the input is not valid.
     */
     pub fn addNamespace(&mut self, _prefix:Option<arc::RWARC<~lwc_string>>, uri:arc::RWARC<~lwc_string>) -> css_error {
-        io::println("Entering: addNamespace");
+        debug!("Entering: addNamespace");
         match _prefix {
             Some(prefix) => {
                 /* Replace, or add mapping */
@@ -863,7 +863,7 @@ pub impl css_language {
      ******************************************************************************/
 
     pub fn parseProperty(&mut self , property: &@css_token , vector: &~[@css_token], ctx:@mut uint, curRule: CSS_RULE_DATA_TYPE) -> css_error {
-        io::println("Entering: parseProperty");
+        debug!("Entering: parseProperty");
         let mut style: @mut css_style;
         let mut index = AZIMUTH as uint;
 
@@ -880,15 +880,15 @@ pub impl css_language {
 
         style = css_stylesheet::css__stylesheet_style_create(self.sheet) ;
         unsafe {
-            io::println(fmt!("parseProperty:: style.bytecode (1) == %?" , style.bytecode));
+            debug!(fmt!("parseProperty:: style.bytecode (1) == %?" , style.bytecode));
         }
         (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , &mut self.strings , vector , ctx , style);
         unsafe {
-            io::println(fmt!("parseProperty:: style.bytecode (2)== %?" , style.bytecode));
+            debug!(fmt!("parseProperty:: style.bytecode (2)== %?" , style.bytecode));
         }
         let (status,flags) = self.css__parse_important(vector , ctx);
         if status as int != CSS_OK as int {
-            io::println("Exiting: parseProperty (1)");
+            debug!("Exiting: parseProperty (1)");
             return status;
         }
         consumeWhitespace(vector , ctx);
@@ -903,22 +903,22 @@ pub impl css_language {
             self.css__make_style_important(style);
         }
 
-        io::println("Exiting: parseProperty (2)");
+        debug!("Exiting: parseProperty (2)");
         /* Append style to rule */
         match self.sheet.css__stylesheet_rule_append_style(curRule, style) {
             CSS_OK => {
-                io::println("Exiting: parseProperty (3)");
+                debug!("Exiting: parseProperty (3)");
                 CSS_OK
             },
             x => {
-                io::println("Exiting: parseProperty (4)");
+                debug!("Exiting: parseProperty (4)");
                 x
             }
         }
     }
 
     pub fn parseSelector(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_error, Option<@mut css_selector>) {
-        io::println("Entering: parseSelector");
+        debug!("Entering: parseSelector");
         /* selector -> simple_selector [ combinator simple_selector ]* ws
          * 
          * Note, however, that, as combinator can be wholly whitespace,
@@ -971,7 +971,7 @@ pub impl css_language {
     }
 
     pub fn parseSimpleSelector(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_error, Option<@mut css_selector>) {
-        io::println("Entering: parseSimpleSelector");
+        debug!("Entering: parseSimpleSelector");
         let orig_ctx = *ctx;
         /* simple_selector  -> type_selector specifics
          *          -> specific specifics
@@ -1025,7 +1025,7 @@ pub impl css_language {
     }
 
     pub fn parseCombinator(&mut self, vector:&~[@css_token], ctx:@mut uint, comb:@mut css_combinator) -> css_error {
-        io::println("Entering: parseCombinator");
+        debug!("Entering: parseCombinator");
         let mut token:&@css_token;
         /* combinator      -> ws '+' ws | ws '>' ws | ws '~' ws | ws1 */
         *comb = CSS_COMBINATOR_NONE;
@@ -1036,7 +1036,7 @@ pub impl css_language {
             } 
 
             token = &vector[*ctx];
-            io::println(fmt!("parseCombinator :: token == %?", token));
+            debug!(fmt!("parseCombinator :: token == %?", token));
 			if tokenIsChar(token, '+') {
                 *comb = CSS_COMBINATOR_SIBLING
             }   
@@ -1074,7 +1074,7 @@ pub impl css_language {
     }   
 
     pub fn parseTypeSelector(&mut self, vector:&~[@css_token], ctx:@mut uint, qname:@mut css_qname) -> css_error {
-        io::println("Entering: parseTypeSelector");
+        debug!("Entering: parseTypeSelector");
         let mut token:&@css_token;
         let mut prefix:Option<arc::RWARC<~lwc_string>> =None;
 
@@ -1127,19 +1127,19 @@ pub impl css_language {
                 None => qname.ns = self.strings.lwc_string_data(UNIVERSAL as uint)
             }
 
-			io::println(fmt!("prefix=%?",prefix));
+			debug!(fmt!("prefix=%?",prefix));
             qname.name = match prefix {
                 Some(x) => lwc_string_data(x),
                 None => ~""
             };
-			io::println(fmt!("qname=%?",qname));
+			debug!(fmt!("qname=%?",qname));
         }
         
         return CSS_OK
     }   
 
     pub fn parseSelectorSpecifics(&mut self, vector:&~[@css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_error {
-        io::println("Entering: parseSelectorSpecifics");
+        debug!("Entering: parseSelectorSpecifics");
         let mut token:&@css_token;
 
         /* specifics -> specific* */
@@ -1169,7 +1169,7 @@ pub impl css_language {
 
 
     pub fn parseAppendSpecific(&mut self, vector:&~[@css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_error{
-        io::println("Entering: parseAppendSpecific");
+        debug!("Entering: parseAppendSpecific");
         match self.parseSpecific(vector, ctx, false) {
             (CSS_OK,Some(specific)) => return css_stylesheet::css__stylesheet_selector_append_specific(parent,specific),
             (error,_) => return error
@@ -1178,7 +1178,7 @@ pub impl css_language {
 
 
     pub fn parseSpecific(&mut self, vector:&~[@css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<@mut css_selector_detail>) {
-        io::println("Entering: parseSpecific");
+        debug!("Entering: parseSpecific");
         /* specific  -> [ HASH | class | attrib | pseudo ] */
 
         let mut token:&@css_token;
@@ -1195,7 +1195,7 @@ pub impl css_language {
                 match css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_ID, qname, 
                                             CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false) {
                     (CSS_OK, res) => {
-                        io::println(fmt!("parseSpecific:: css__stylesheet_selector_detail_init result == %?", res));
+                        debug!(fmt!("parseSpecific:: css__stylesheet_selector_detail_init result == %?", res));
                         *ctx +=1;
                         (CSS_OK, res) 
                     } 
@@ -1230,20 +1230,20 @@ pub impl css_language {
                     CSS_INVALID if the input is not valid.
     */
     pub fn lookupNamespace(&mut self, prefix:Option<arc::RWARC<~lwc_string>>, qname:@mut css_qname) -> css_error {
-        io::println("Entering: lookupNamespace");
+        debug!("Entering: lookupNamespace");
         let mut idx:uint=0;
         
         match prefix {
             None => {
-                io::println("Entering: lookupNamespace (1)");
+                debug!("Entering: lookupNamespace (1)");
                 qname.ns = ~""
             },
             Some(value) => {
-                io::println("Entering: lookupNamespace (2)");
+                debug!("Entering: lookupNamespace (2)");
                 for self.namespaces.each |ns| {
                     match ns.prefix {
                         Some(_) => {
-                            io::println("Entering: lookupNamespace (3)");
+                            debug!("Entering: lookupNamespace (3)");
                             let ns_prefix = ns.prefix.get_ref().clone();
                             if (
                                 do self.lwc_instance.clone().read |l| {
@@ -1263,11 +1263,11 @@ pub impl css_language {
 
                 match self.namespaces[idx].uri {
                     Some(_)=> {
-                        io::println("Entering: lookupNamespace (4)");
+                        debug!("Entering: lookupNamespace (4)");
                         qname.ns = lwc_string_data(self.namespaces[idx].uri.get_ref().clone())
                     },
                     None => {
-                        io::println("Entering: lookupNamespace (5)");
+                        debug!("Entering: lookupNamespace (5)");
                         qname.ns = ~""
                     }
                 }
@@ -1280,7 +1280,7 @@ pub impl css_language {
     * Selector list parsing functions                         *
     ******************************************************************************/
     pub fn  parseClass(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_error,Option<@mut css_selector_detail>) {
-        io::println("Entering: parseClass");
+        debug!("Entering: parseClass");
         let mut token:&@css_token;
         
         /* class     -> '.' IDENT */
@@ -1309,7 +1309,7 @@ pub impl css_language {
     }
 
     pub fn  parseAttrib(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_error,Option<@mut css_selector_detail>) {
-        io::println("Entering: parseAttrib");
+        debug!("Entering: parseAttrib");
         let mut token:&@css_token;
         
         /* attrib    -> '[' ws namespace_prefix? IDENT ws [
@@ -1378,7 +1378,7 @@ pub impl css_language {
         match self.lookupNamespace(prefix, qname) { CSS_OK  => {}, error   => return (error,None)}   
 
         qname.name = lwc_string_data(token.idata.get_ref().clone());
-		io::println(fmt!("Qname=%?",copy qname.name));
+		debug!(fmt!("Qname=%?",copy qname.name));
 		
         consumeWhitespace(vector, ctx);
 
@@ -1440,7 +1440,7 @@ pub impl css_language {
 
 
     pub fn parsePseudo(&mut self, vector:&~[@css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<@mut css_selector_detail>) {
-        io::println("Entering: parsePseudo");
+        debug!("Entering: parsePseudo");
         let mut token:&@css_token;
         //let mut tkn_type = CSS_SELECTOR_PSEUDO_CLASS;
         let mut value_type = CSS_SELECTOR_DETAIL_VALUE_STRING;
@@ -1548,23 +1548,23 @@ pub impl css_language {
                             specific.selector_type = selector_type;
                             // Iterate to the next location
                             if *ctx >= vector.len() {
-                                io::println("Exiting: parsePseudo (Nth 1)");
+                                debug!("Exiting: parsePseudo (Nth 1)");
                                 return (CSS_INVALID, None)
                             }
                                         
                             token = &vector[*ctx];
                             *ctx += 1 ; 
-                            io::println(fmt!("parsePseudo (Nth) :: token == %?", token));
+                            debug!(fmt!("parsePseudo (Nth) :: token == %?", token));
                             if !tokenIsChar(token, ')') {
-                                io::println("Exiting: parsePseudo (Nth 2)");
+                                debug!("Exiting: parsePseudo (Nth 2)");
                                 return (CSS_INVALID, None)
                             }
 
-                            io::println("Exiting: parsePseudo (Nth 3)");
+                            debug!("Exiting: parsePseudo (Nth 3)");
                             return (CSS_OK,Some(specific))
                         },  
                         (error,_) => { 
-                            io::println("Exiting: parsePseudo (Nth 4)");
+                            debug!("Exiting: parsePseudo (Nth 4)");
                             return (error,None); 
                         }
                     }
@@ -1639,7 +1639,7 @@ pub impl css_language {
     }
 
     pub fn parseNth(&mut self, vector:&~[@css_token], ctx:@mut uint, qname:@mut css_qname) -> (css_error,Option<@mut css_selector_detail>) {
-        io::println("Entering: parseNth");
+        debug!("Entering: parseNth");
         let mut token:&@css_token;
         let mut negate:bool = false;
         //let qname:css_qname = css_qname{ name:~"", ns:~""};
@@ -1664,7 +1664,7 @@ pub impl css_language {
 
         // Vector Iterate
         if *ctx >= vector.len() {
-            io::println("Exiting: parseNth (1)");
+            debug!("Exiting: parseNth (1)");
             return (CSS_INVALID, None)
         }
             
@@ -1709,7 +1709,7 @@ pub impl css_language {
                     }) {
                         if len < 2 {
                             if (data[data_index + 0] != 'n' as u8) && (data[data_index + 0] != 'N' as u8)   {
-                                io::println("Exiting: parseNth (2)");
+                                debug!("Exiting: parseNth (2)");
                                 return (CSS_INVALID, None)
                             }
                                 
@@ -1722,7 +1722,7 @@ pub impl css_language {
                         else {
                             if (data[data_index + 0] != '-' as u8) || ((data[data_index + 1] != 'n' as u8) && (data[data_index + 1] != 'N' as u8))
                             {   
-                                io::println("Exiting: parseNth (3)");
+                                debug!("Exiting: parseNth (3)");
                                 return (CSS_INVALID, None)  
                             }
                                 
@@ -1734,19 +1734,19 @@ pub impl css_language {
                         }
 
                         if len > 0 {
-                            io::println("Entering: parseNth:: len > 0");
-                            io::println(fmt!("parseNth:: len == %?", len));
-                            io::println(fmt!("parseNth:: data == %?", data));
+                            debug!("Entering: parseNth:: len > 0");
+                            debug!(fmt!("parseNth:: len == %?", len));
+                            debug!(fmt!("parseNth:: data == %?", data));
 
                             if (data[data_index + 0] != '-' as u8)
                             {
-                                io::println("Exiting: parseNth (4)");
+                                debug!("Exiting: parseNth (4)");
                                 return (CSS_INVALID, None)
                             }
                                 
 
                             /* -n- */
-                            io::println("parseNth:: -n-");
+                            debug!("parseNth:: -n-");
                             sign = -1;
                             had_sign = true;
 
@@ -1754,18 +1754,18 @@ pub impl css_language {
                                 /* Reject additional sign */
                                 if (data[data_index + 1] == '-' as u8) || (data[data_index + 1] == '+' as u8)
                                 {
-                                    io::println("Exiting: parseNth (5)");
+                                    debug!("Exiting: parseNth (5)");
                                     return (CSS_INVALID, None)
                                 }
                                     
 
                                 /* -n-b */
-                                io::println("parseNth:: -n-b");
+                                debug!("parseNth:: -n-b");
                                 let (ret_b,consumed) = css__number_from_string( data, @mut (data_index + 1), true);
                                 b = ret_b;
                                 if consumed != len - 1
                                 {   
-                                    io::println("Exiting: parseNth (6)");
+                                    debug!("Exiting: parseNth (6)");
                                     return (CSS_INVALID, None)
                                 }
 
@@ -1778,14 +1778,14 @@ pub impl css_language {
                         let mut (ret_a, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
                         a = ret_a;
                         if consumed == 0 || ((data[data_index + consumed] != 'n' as u8) && (data[data_index + consumed] != 'N' as u8)) {
-                            io::println("Exiting: parseNth (7)");
+                            debug!("Exiting: parseNth (7)");
                             return (CSS_INVALID, None)
                         }
 
                         consumed += 1;
                         if len - consumed > 0 {
                             if (data[data_index + consumed] != '-' as u8) {
-                                io::println("Exiting: parseNth (8)");
+                                debug!("Exiting: parseNth (8)");
                                 return (CSS_INVALID, None)
                             }
 
@@ -1799,7 +1799,7 @@ pub impl css_language {
 
                                 /* Reject additional sign */
                                 if (data[data_index + consumed] == '-' as u8) ||    (data[data_index + consumed] == '+' as u8) {
-                                    io::println("Exiting: parseNth (9)");
+                                    debug!("Exiting: parseNth (9)");
                                     return (CSS_INVALID, None)
                                 }
 
@@ -1809,7 +1809,7 @@ pub impl css_language {
                                 let (ret_b,consumed) = css__number_from_string( data, @mut (data_index + bstart), true);
                                 b= ret_b;
                                 if consumed != len - bstart {
-                                    io::println("Exiting: parseNth (10)");
+                                    debug!("Exiting: parseNth (10)");
                                     return (CSS_INVALID, None)
                                 }
 
@@ -1819,7 +1819,7 @@ pub impl css_language {
                     }
 
                     if had_b == false {
-                        io::println("Entering: parseNth:: if had_b == false");
+                        debug!("Entering: parseNth:: if had_b == false");
                         consumeWhitespace(vector, ctx);
 
                         /* Look for optional b : [ [ CHAR ws ]? NUMBER ws ]? */
@@ -1849,7 +1849,7 @@ pub impl css_language {
                         /* Expect NUMBER */
                         if *ctx < vector.len() && (match token.token_type 
                             { CSS_TOKEN_NUMBER => true, _ => false }) {
-                            io::println("Entering: parseNth:: /* Expect NUMBER */");
+                            debug!("Entering: parseNth:: /* Expect NUMBER */");
 
                             *ctx += 1;
 
@@ -1862,17 +1862,17 @@ pub impl css_language {
 
                                 if data.char_at(data_index + 0) == '-' || data.char_at(data_index + 0) == '+'
                                 {
-                                    io::println("Exiting: parseNth (11)");
+                                    debug!("Exiting: parseNth (11)");
                                     return (CSS_INVALID,None)   
                                 }                                   
                             }
 
                             let (ret_b,consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
                             b = ret_b;
-                            io::println(fmt!("parseNth:: b == %?", b));
+                            debug!(fmt!("parseNth:: b == %?", b));
                             if consumed != lwc_string_length(token.idata.get_ref().clone())
                             {
-                                io::println("Exiting: parseNth (12)");
+                                debug!("Exiting: parseNth (12)");
                                 return (CSS_INVALID, None)
                             }
                         }
@@ -1881,15 +1881,15 @@ pub impl css_language {
                     value.a = a >> 10;
                     value.b = (b >> 10) * sign;
 
-                    io::println(fmt!("parseNth:: value == %?", value));
+                    debug!(fmt!("parseNth:: value == %?", value));
                 }
             },
             CSS_TOKEN_NUMBER  => {
-                io::println("Entering: parseNth:: CSS_TOKEN_NUMBER");
+                debug!("Entering: parseNth:: CSS_TOKEN_NUMBER");
                 let (ret_val,consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
                 if consumed != lwc_string_length(token.idata.get_ref().clone())
                 {
-                    io::println("Exiting: parseNth (13)");
+                    debug!("Exiting: parseNth (13)");
                     return (CSS_INVALID, None)
                 }   
 
@@ -1897,14 +1897,14 @@ pub impl css_language {
                 value.b = ret_val >> 10;
             } ,
             _  =>  {
-                io::println("Exiting: parseNth (14)");
+                debug!("Exiting: parseNth (14)");
                 return (CSS_INVALID, None);
             }
         }
     
 
         consumeWhitespace(vector, ctx);
-        io::println("Exiting: parseNth (15)");
+        debug!("Exiting: parseNth (15)");
         return (CSS_OK,Some(value))
     }
     // ===========================================================================================================
@@ -1928,19 +1928,19 @@ pub impl css_language {
     *   If the input is invalid, then ctx remains unchanged.
     */
     pub fn css__parse_important(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_error,u8){
-        io::println("Entering: css__parse_important");
+        debug!("Entering: css__parse_important");
         let orig_ctx = *ctx;
         let mut flags :u8 =0;
         
         consumeWhitespace(vector, ctx);
 
         if *ctx >= vector.len() {
-            io::println("Exiting: css__parse_important (1)");
+            debug!("Exiting: css__parse_important (1)");
             return (CSS_OK,flags)
         }
         
         let mut token = &vector[*ctx];
-        io::println(fmt!("css__parse_important:: token == %?", token));
+        debug!(fmt!("css__parse_important:: token == %?", token));
         *ctx += 1; //Iterate
         
         if  tokenIsChar(token, '!') {
@@ -1949,7 +1949,7 @@ pub impl css_language {
 
             if *ctx >= vector.len() || match vector[*ctx].token_type { CSS_TOKEN_IDENT => false, _ => true} {
                 *ctx = orig_ctx;
-                io::println("Exiting: css__parse_important (2)");
+                debug!("Exiting: css__parse_important (2)");
                 return (CSS_INVALID,flags)
             }
                         
@@ -1960,20 +1960,20 @@ pub impl css_language {
                 flags |= FLAG_IMPORTANT as u8;
             } else {
                 *ctx = orig_ctx;
-                io::println("Exiting: css__parse_important (3)");
+                debug!("Exiting: css__parse_important (3)");
                 return (CSS_INVALID, flags);
             }
         } else {
             *ctx = orig_ctx;
-            io::println("Exiting: css__parse_important (4)");
+            debug!("Exiting: css__parse_important (4)");
             return (CSS_INVALID,flags);
         }
-        io::println("Exiting: css__parse_important (5)");
+        debug!("Exiting: css__parse_important (5)");
         return (CSS_OK,flags);
     }
 
     pub fn css__make_style_important(&mut self, style: @mut css_style) {
-        io::println("Entering: css__make_style_important");
+        debug!("Entering: css__make_style_important");
         let bytecode:&mut ~[u32] = &mut style.bytecode;
         let mut offset = 0;
 

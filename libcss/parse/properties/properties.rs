@@ -188,7 +188,7 @@ pub impl css_properties {
     *   If the input is invalid, then ctx remains unchanged.
     */
     fn css__parse_azimuth(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
-        io::println("Entering: css__parse_azimuth");
+        debug!("Entering: css__parse_azimuth");
         let orig_ctx:uint = *ctx;
         let mut flags:u8 = 0;
         let mut  value:u16 = 0;
@@ -204,7 +204,7 @@ pub impl css_properties {
          */
 
         if *ctx >= vector.len() {
-            io::println("Exiting: css__parse_azimuth (1)");
+            debug!("Exiting: css__parse_azimuth (1)");
             return CSS_INVALID;
         }
         
@@ -226,7 +226,7 @@ pub impl css_properties {
             value = AZIMUTH_RIGHTWARDS ;
         }
         else if (token.token_type as int == CSS_TOKEN_IDENT as int) {
-            io::println("Entering: css__parse_azimuth:: token.token_type as int == CSS_TOKEN_IDENT as int ");
+            debug!("Entering: css__parse_azimuth:: token.token_type as int == CSS_TOKEN_IDENT as int ");
 
             *ctx += 1;
             /* Now, we may have one of the other keywords or behind,
@@ -261,76 +261,76 @@ pub impl css_properties {
                 value = AZIMUTH_RIGHT_SIDE;
             }
             else if (strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BEHIND as uint)) {
-                io::println("Entering: css__parse_azimuth :: BEHIND ");
+                debug!("Entering: css__parse_azimuth :: BEHIND ");
                 value = AZIMUTH_BEHIND;
             }
             else {
                 *ctx = orig_ctx;
-                io::println("Exiting: css__parse_azimuth (2)");
+                debug!("Exiting: css__parse_azimuth (2)");
                 return CSS_INVALID;
             }
             
-            io::println(fmt!("css__parse_azimuth:: ctx (1) == %?", *ctx));
+            debug!(fmt!("css__parse_azimuth:: ctx (1) == %?", *ctx));
             consumeWhitespace(vector, ctx);
-            io::println(fmt!("css__parse_azimuth:: ctx (2) == %?", *ctx));
+            debug!(fmt!("css__parse_azimuth:: ctx (2) == %?", *ctx));
             /* Get potential following token */
             /* parserutils_vector_peek(vector, *ctx); */
             let mut token_null = false;
             
-            io::println(fmt!("css__parse_azimuth:: ctx (3) == %?", *ctx));
+            debug!(fmt!("css__parse_azimuth:: ctx (3) == %?", *ctx));
             if *ctx >= vector.len() {
-                io::println("Entering: css__parse_azimuth:: token_null = true");
+                debug!("Entering: css__parse_azimuth:: token_null = true");
                 token_null = true;
             }
             else {
                 token=&vector[*ctx];
-                io::println(fmt!("css__parse_azimuth:: token == %?", token));
+                debug!(fmt!("css__parse_azimuth:: token == %?", token));
             }
 
             if (!token_null && token.token_type as int == CSS_TOKEN_IDENT as int && value == AZIMUTH_BEHIND) {
                 /* parserutils_vector_iterate(vector, ctx); */
                 *ctx += 1;
-                io::println("Entering: css__parse_azimuth:: !token_null && token.token_type as int == CSS_TOKEN_IDENT as int && value == AZIMUTH_BEHIND");
+                debug!("Entering: css__parse_azimuth:: !token_null && token.token_type as int == CSS_TOKEN_IDENT as int && value == AZIMUTH_BEHIND");
                 
                 if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT_SIDE as uint) {
-                    io::println("Entering: css__parse_azimuth:: LEFT_SIDE");
+                    debug!("Entering: css__parse_azimuth:: LEFT_SIDE");
                     value |= AZIMUTH_LEFT_SIDE;
                 }
                 else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_LEFT as uint) {
-                    io::println("Entering: css__parse_azimuth:: FAR_LEFT");
+                    debug!("Entering: css__parse_azimuth:: FAR_LEFT");
                     value |= AZIMUTH_FAR_LEFT;
                 }
                 else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LEFT as uint) {
-                    io::println("Entering: css__parse_azimuth:: LEFT");
+                    debug!("Entering: css__parse_azimuth:: LEFT");
                     value |= AZIMUTH_LEFT;
                 }
                 else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER_LEFT as uint) {
-                    io::println("Entering: css__parse_azimuth:: CENTER_LEFT");
+                    debug!("Entering: css__parse_azimuth:: CENTER_LEFT");
                     value |= AZIMUTH_CENTER_LEFT;
                 }
                 else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER as uint) {
-                    io::println("Entering: css__parse_azimuth:: CENTER");
+                    debug!("Entering: css__parse_azimuth:: CENTER");
                     value |=  AZIMUTH_CENTER;
                 }
                 else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), CENTER_RIGHT as uint) {
-                    io::println("Entering: css__parse_azimuth:: CENTER_RIGHT");
+                    debug!("Entering: css__parse_azimuth:: CENTER_RIGHT");
                     value |= AZIMUTH_CENTER_RIGHT;
                 }
                 else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT as uint) {
-                    io::println("Entering: css__parse_azimuth:: RIGHT");
+                    debug!("Entering: css__parse_azimuth:: RIGHT");
                     value |= AZIMUTH_RIGHT;
                 }
                 else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), FAR_RIGHT as uint) {
-                    io::println("Entering: css__parse_azimuth:: FAR_RIGHT");
+                    debug!("Entering: css__parse_azimuth:: FAR_RIGHT");
                     value |= AZIMUTH_FAR_RIGHT;
                 }
                 else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RIGHT_SIDE as uint) {
-                    io::println("Entering: css__parse_azimuth:: RIGHT_SIDE");
+                    debug!("Entering: css__parse_azimuth:: RIGHT_SIDE");
                     value |= AZIMUTH_RIGHT_SIDE;
                 }
                 else {
                     *ctx = orig_ctx;
-                    io::println("Exiting: css__parse_azimuth (3)");
+                    debug!("Exiting: css__parse_azimuth (3)");
                     return CSS_INVALID;
                 }
             }
@@ -343,12 +343,12 @@ pub impl css_properties {
                 }
                 else {
                     *ctx = orig_ctx;
-                    io::println("Exiting: css__parse_azimuth (4)");
+                    debug!("Exiting: css__parse_azimuth (4)");
                     return CSS_INVALID;
                 }
             } 
             else if ((token_null || token.token_type as int != CSS_TOKEN_IDENT as int) && value == AZIMUTH_BEHIND) {
-                io::println("Entering: css__parse_azimuth:: (token_null || token.token_type as int != CSS_TOKEN_IDENT as int) && value == AZIMUTH_BEHIND");
+                debug!("Entering: css__parse_azimuth:: (token_null || token.token_type as int != CSS_TOKEN_IDENT as int) && value == AZIMUTH_BEHIND");
                 value |= AZIMUTH_CENTER;
             }
         } 
@@ -360,33 +360,33 @@ pub impl css_properties {
                 CSS_OK => {},
                 _ => {
                     *ctx = orig_ctx;
-                    io::println("Exiting: css__parse_azimuth (5)");
+                    debug!("Exiting: css__parse_azimuth (5)");
                     return result;
                 }
             }
             if (unit_val.unwrap() & UNIT_ANGLE as u32) == 0 {
                 *ctx = orig_ctx;
-                io::println("Exiting: css__parse_azimuth (6)");
+                debug!("Exiting: css__parse_azimuth (6)");
                 return CSS_INVALID;
             }
             if (unit_val.unwrap() == UNIT_DEG as u32) {
                 if ((length_val.unwrap() < -F_360) || (length_val.unwrap() > F_360)) {
                     *ctx = orig_ctx;
-                    io::println("Exiting: css__parse_azimuth (7)");
+                    debug!("Exiting: css__parse_azimuth (7)");
                     return CSS_INVALID;
                 }
             }
             else if (unit_val.unwrap() == UNIT_GRAD as u32) {
                 if ((length_val.unwrap() < -F_400) || (length_val.unwrap() > F_400)) {
                     *ctx = orig_ctx;
-                    io::println("Exiting: css__parse_azimuth (8)");
+                    debug!("Exiting: css__parse_azimuth (8)");
                     return CSS_INVALID;
                 }
             } 
             else if (unit_val.unwrap() == UNIT_RAD as u32) {
                 if ((length_val.unwrap() < -F_2PI) || (length_val.unwrap() > F_2PI)) {
                     *ctx = orig_ctx;
-                    io::println("Exiting: css__parse_azimuth (9)");
+                    debug!("Exiting: css__parse_azimuth (9)");
                     return CSS_INVALID;
                 }
             }
@@ -399,7 +399,7 @@ pub impl css_properties {
             css_stylesheet::css__stylesheet_style_vappend(style, [return_length_val.unwrap() as u32 , return_unit_val.unwrap() as u32]);
         }
 
-        io::println("Exiting: css__parse_azimuth (10)");
+        debug!("Exiting: css__parse_azimuth (10)");
         CSS_OK
     }
 
@@ -425,7 +425,7 @@ pub impl css_properties {
     *   If the input is invalid, then ctx remains unchanged.
     */
     pub fn css__parse_background(sheet:@mut css_stylesheet, strings: &mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, result:@mut css_style) -> css_error {
-        io::println("Entering: css__parse_background");
+        debug!("Entering: css__parse_background");
         let orig_ctx = *ctx;
         let mut prev_ctx;
         let mut error = CSS_OK; 
@@ -584,7 +584,7 @@ pub impl css_properties {
     fn css__parse_background_position(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,
         vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_background_position");
+        debug!("Entering: css__parse_background_position");
         let mut orig_ctx = *ctx;
         let mut flags:u8 = 0;
         let mut value = [0,0]; //u16
@@ -765,7 +765,7 @@ pub impl css_properties {
     */
     fn css__parse_border(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_border");
+        debug!("Entering: css__parse_border");
         let orig_ctx = *ctx;
         let mut error: css_error;
 
@@ -832,7 +832,7 @@ pub impl css_properties {
     */
     fn css__parse_border_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_border_color");
+        debug!("Entering: css__parse_border_color");
         let orig_ctx = *ctx;
         let mut prev_ctx: uint;
         let mut side_count: u32 = 0;
@@ -991,7 +991,7 @@ pub impl css_properties {
     */
     fn css__parse_border_spacing(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_border_spacing");
+        debug!("Entering: css__parse_border_spacing");
         let orig_ctx = *ctx;
         let mut error: css_error; 
         let mut length:~[i32] = ~[];
@@ -1109,7 +1109,7 @@ pub impl css_properties {
     */
     fn css__parse_border_style(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_border_style");
+        debug!("Entering: css__parse_border_style");
         let orig_ctx = *ctx;
         let mut prev_ctx: uint;
         let mut token: &@css_token;
@@ -1248,7 +1248,7 @@ pub impl css_properties {
     */
     fn css__parse_border_width(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
        
-        io::println("Entering: css__parse_border_width");
+        debug!("Entering: css__parse_border_width");
         let orig_ctx = *ctx;
         let mut error: css_error= CSS_OK;
         let mut token: &@css_token;
@@ -1527,7 +1527,7 @@ pub impl css_properties {
     */
     fn css__parse_clip(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
        
-        io::println("Entering: css__parse_clip");
+        debug!("Entering: css__parse_clip");
         let orig_ctx = *ctx;
         let mut token: &@css_token;
         let mut num_lengths: int = 0;
@@ -1677,7 +1677,7 @@ pub impl css_properties {
     */
     fn css__parse_columns(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_columns");
+        debug!("Entering: css__parse_columns");
         let mut prev_ctx:uint;
         let mut token:&@css_token;
         let mut width = true;
@@ -1777,7 +1777,7 @@ pub impl css_properties {
     */
     fn css__parse_column_rule(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
        
-        io::println("Entering: css__parse_column_rule");
+        debug!("Entering: css__parse_column_rule");
         let orig_ctx = *ctx;
         let mut color = true;
         let mut bool_style = true;
@@ -1900,7 +1900,7 @@ pub impl css_properties {
     */
     fn css__parse_content(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, result: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_content");
+        debug!("Entering: css__parse_content");
         let mut orig_ctx = *ctx;
         let mut error:css_error = CSS_OK;                
         /* IDENT(normal, none, inherit) | [ ... ]+ */
@@ -2346,8 +2346,8 @@ pub impl css_properties {
     */
     fn css__parse_cue(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_cue");
-        //io::println(fmt!("css__parse_cue: style1 == %?" , style));
+        debug!("Entering: css__parse_cue");
+        //debug!(fmt!("css__parse_cue: style1 == %?" , style));
         let orig_ctx = *ctx;
         let mut error: css_error;
         let mut token:&@css_token;
@@ -2422,7 +2422,7 @@ pub impl css_properties {
     */
     fn css__parse_cursor(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_cursor");
+        debug!("Entering: css__parse_cursor");
         let orig_ctx = *ctx;
         let mut token: &@css_token;
 
@@ -2718,7 +2718,7 @@ pub impl css_properties {
     */
     fn css__parse_elevation(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_elevation");
+        debug!("Entering: css__parse_elevation");
         let orig_ctx:uint = *ctx;
         let mut flags:u8 = 0;
         let mut value:u16= 0;
@@ -2727,7 +2727,7 @@ pub impl css_properties {
         let mut token:&@css_token;
 
         if *ctx >= vector.len() {
-            io::println("Exiting: css__parse_elevation (1)");
+            debug!("Exiting: css__parse_elevation (1)");
             return CSS_INVALID;
         }
         token=&vector[*ctx];
@@ -2772,28 +2772,28 @@ pub impl css_properties {
 
                     if ((unit & UNIT_ANGLE) ==0) {
                         *ctx = orig_ctx;
-                        io::println("Exiting: css__parse_elevation (2)");
+                        debug!("Exiting: css__parse_elevation (2)");
                         return CSS_INVALID;
                     }
                     /* Valid angles lie between -90 and 90 degrees */
                     if (unit == UNIT_DEG as u32) {
                         if (length < -F_90 as i32 || length > F_90 as i32) {
                             *ctx = orig_ctx;
-                            io::println("Exiting: css__parse_elevation (3)");
+                            debug!("Exiting: css__parse_elevation (3)");
                             return CSS_INVALID;
                         }
                     } 
                     else if (unit == UNIT_GRAD as u32) {
                         if (length < -F_100  as i32|| length > F_100 as i32) {
                             *ctx = orig_ctx;
-                            io::println("Exiting: css__parse_elevation (4)");
+                            debug!("Exiting: css__parse_elevation (4)");
                             return CSS_INVALID;
                         }
                     } 
                     else if (unit == UNIT_RAD as u32) {
                         if (length < -F_PI_2  as i32|| length > F_PI_2 as i32) {
                             *ctx = orig_ctx;
-                            io::println("Exiting: css__parse_elevation (5)");
+                            debug!("Exiting: css__parse_elevation (5)");
                             return CSS_INVALID;
                         }
                     }
@@ -2811,7 +2811,7 @@ pub impl css_properties {
         if (((flags & FLAG_INHERIT as u8) == 0) && (value == ELEVATION_ANGLE )) {
             css_stylesheet::css__stylesheet_style_vappend(style, [length as u32, unit]);
         }
-        io::println("Exiting: css__parse_elevation (6)");
+        debug!("Exiting: css__parse_elevation (6)");
         CSS_OK
     }
 
@@ -2838,7 +2838,7 @@ pub impl css_properties {
     */
     fn css__parse_font(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_font");
+        debug!("Entering: css__parse_font");
         let mut prev_ctx: uint;
         let mut token: &@css_token;
         let mut bool_style = true;
@@ -3065,7 +3065,7 @@ pub impl css_properties {
     */
     pub fn css__parse_font_family(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token], ctx: @mut uint, result: @mut css_style) -> css_error {
     
-        io::println("Entering: css__parse_font_family");
+        debug!("Entering: css__parse_font_family");
         let orig_ctx = *ctx;
         
         /* [ IDENT+ | STRING ] [ ',' [ IDENT+ | STRING ] ]* | IDENT(inherit)
@@ -3096,9 +3096,9 @@ pub impl css_properties {
         } 
         else {
             *ctx = orig_ctx;
-            io::println(fmt!("css__parse_font_family :: *ctx (1) == %?" , *ctx));
+            debug!(fmt!("css__parse_font_family :: *ctx (1) == %?" , *ctx));
             let error = css__comma_list_to_style(sheet , strings , vector , ctx , Some(@font_family_reserved) , Some(@font_family_value) , result);
-            io::println(fmt!("css__parse_font_family :: *ctx (2) == %?" , *ctx));
+            debug!(fmt!("css__parse_font_family :: *ctx (2) == %?" , *ctx));
             match error {
                 CSS_OK => {},
                 _ => {
@@ -3136,14 +3136,14 @@ pub impl css_properties {
     */
     fn css__parse_font_weight(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_font_weight");
+        debug!("Entering: css__parse_font_weight");
         let orig_ctx = *ctx;
         let mut flags:u8 = 0;
         let mut value:u16= 0;
         let mut token:&@css_token;
 
         if *ctx >= vector.len() {
-            io::println("Exiting: css__parse_font_weight (1)");
+            debug!("Exiting: css__parse_font_weight (1)");
             return CSS_INVALID;
         }
         token=&vector[*ctx];
@@ -3151,7 +3151,7 @@ pub impl css_properties {
 
         if (token.token_type as int != CSS_TOKEN_IDENT as int && token.token_type as int != CSS_TOKEN_NUMBER as int) {
             *ctx = orig_ctx;
-            io::println("Exiting: css__parse_font_weight (2)");
+            debug!("Exiting: css__parse_font_weight (2)");
             return CSS_INVALID
         }
         
@@ -3163,11 +3163,11 @@ pub impl css_properties {
 
             if (consumed !=  lwc_string_length(token.idata.get_ref().clone())){
                 *ctx = orig_ctx;
-                io::println("Exiting: css__parse_font_weight (3)");
+                debug!("Exiting: css__parse_font_weight (3)");
                 return CSS_INVALID;
             }
 
-            io::println(fmt!("css__parse_font_weight:: num == %?", num));
+            debug!(fmt!("css__parse_font_weight:: num == %?", num));
 
             match (num >> 10) {
                 100 => value = FONT_WEIGHT_100 ,
@@ -3181,7 +3181,7 @@ pub impl css_properties {
                 900 => value = FONT_WEIGHT_900 ,
                 _=>{
                     *ctx = orig_ctx;
-                    io::println("Exiting: css__parse_font_weight (4)");
+                    debug!("Exiting: css__parse_font_weight (4)");
                     return CSS_INVALID;
                 }
             }
@@ -3201,11 +3201,11 @@ pub impl css_properties {
         }
         else  {
             *ctx = orig_ctx;
-            io::println("Exiting: css__parse_font_weight (5)");
+            debug!("Exiting: css__parse_font_weight (5)");
             return CSS_INVALID;
         }
         css_stylesheet::css__stylesheet_style_appendOPV(style,  CSS_PROP_FONT_WEIGHT,flags, value);
-        io::println("Exiting: css__parse_font_weight (6)");
+        debug!("Exiting: css__parse_font_weight (6)");
         CSS_OK
     }
 
@@ -3232,7 +3232,7 @@ pub impl css_properties {
     */
     fn css__parse_list_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_list_style");
+        debug!("Entering: css__parse_list_style");
         let orig_ctx = *ctx;
         let mut token: &@css_token;
         let mut image = true;
@@ -3351,7 +3351,7 @@ pub impl css_properties {
     */
     fn css__parse_list_style_type(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_list_style_type");
+        debug!("Entering: css__parse_list_style_type");
         let orig_ctx = *ctx;
         let mut token: &@css_token;
         let mut flags: u8 = 0;
@@ -3414,7 +3414,7 @@ pub impl css_properties {
     */
     fn css__parse_margin(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_margin");
+        debug!("Entering: css__parse_margin");
         let orig_ctx = *ctx;
         let mut error: css_error= CSS_OK;
         let mut token: &@css_token;
@@ -3658,7 +3658,7 @@ pub impl css_properties {
     */
     fn css__parse_opacity(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_opacity");
+        debug!("Entering: css__parse_opacity");
         let orig_ctx:uint = *ctx;
 
         if *ctx >= vector.len() {
@@ -3724,7 +3724,7 @@ pub impl css_properties {
     */
     fn css__parse_outline(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
        
-        io::println("Entering: css__parse_outline");
+        debug!("Entering: css__parse_outline");
         let orig_ctx = *ctx;
         let mut token: &@css_token;
         let mut color =true;
@@ -3845,7 +3845,7 @@ pub impl css_properties {
     */
     fn css__parse_padding(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_padding");
+        debug!("Entering: css__parse_padding");
         let orig_ctx = *ctx;
         let mut side_length: ~[i32] = ~[];
         let mut side_unit: ~[u32] = ~[];
@@ -3997,7 +3997,7 @@ pub impl css_properties {
     */
     fn css__parse_pause(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_pause");
+        debug!("Entering: css__parse_pause");
         let orig_ctx = *ctx;
         let mut first_token: &@css_token;
         let mut token: &@css_token;
@@ -4074,7 +4074,7 @@ pub impl css_properties {
     */
     fn css__parse_play_during(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_play_during");
+        debug!("Entering: css__parse_play_during");
         let orig_ctx = *ctx;
         let mut token: &@css_token;
         let mut flags: u8 = 0;
@@ -4198,7 +4198,7 @@ pub impl css_properties {
     */
     fn css__parse_quotes(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
             
-        io::println("Entering: css__parse_quotes");
+        debug!("Entering: css__parse_quotes");
         let orig_ctx:uint = *ctx;
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -4302,12 +4302,12 @@ pub impl css_properties {
     */
     fn css__parse_text_decoration(_: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
-        io::println("Entering: css__parse_text_decoration");
+        debug!("Entering: css__parse_text_decoration");
         let orig_ctx:uint= *ctx;
         let mut token: &@css_token;
 
         if *ctx >= vector.len() {
-            io::println("Exiting: css__parse_text_decoration (1)");
+            debug!("Exiting: css__parse_text_decoration (1)");
             return CSS_INVALID;
         }
         token=&vector[*ctx];
@@ -4331,7 +4331,7 @@ pub impl css_properties {
                             
                             else {
                                 *ctx = orig_ctx;
-                                io::println("Exiting: css__parse_text_decoration (2)");
+                                debug!("Exiting: css__parse_text_decoration (2)");
                                 return CSS_INVALID;
                             }
                         }
@@ -4341,7 +4341,7 @@ pub impl css_properties {
                             }
                             else {
                                 *ctx = orig_ctx;
-                                io::println("Exiting: css__parse_text_decoration (3)");
+                                debug!("Exiting: css__parse_text_decoration (3)");
                                 return CSS_INVALID;
                             }
                         }
@@ -4351,7 +4351,7 @@ pub impl css_properties {
                             }
                             else {
                                 *ctx = orig_ctx;
-                                io::println("Exiting: css__parse_text_decoration (4)");
+                                debug!("Exiting: css__parse_text_decoration (4)");
                                 return CSS_INVALID;
 
                             }
@@ -4362,13 +4362,13 @@ pub impl css_properties {
                             }
                             else {
                                 *ctx = orig_ctx;
-                                io::println("Exiting: css__parse_text_decoration (5)");
+                                debug!("Exiting: css__parse_text_decoration (5)");
                                 return CSS_INVALID;
                             }
                         }
                         else {
                             *ctx = orig_ctx;
-                            io::println("Exiting: css__parse_text_decoration (6)");
+                            debug!("Exiting: css__parse_text_decoration (6)");
                             return CSS_INVALID;
                         }
                         consumeWhitespace(vector, ctx);
@@ -4393,11 +4393,11 @@ pub impl css_properties {
             },
             _=> {
                 *ctx = orig_ctx;
-                io::println("Exiting: css__parse_text_decoration (7)");
+                debug!("Exiting: css__parse_text_decoration (7)");
                 return CSS_INVALID;
             }
         }
-        io::println("Exiting: css__parse_text_decoration (8)");
+        debug!("Exiting: css__parse_text_decoration (8)");
         CSS_OK
     }
 
@@ -4424,9 +4424,9 @@ pub impl css_properties {
     */
     fn css__parse_voice_family(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token], ctx: @mut uint, result: @mut css_style) -> css_error {
     
-        io::println("Entering: css__parse_voice_family");
+        debug!("Entering: css__parse_voice_family");
         let orig_ctx = *ctx;
-		io::println(fmt!("ctx == %?", *ctx));
+		debug!(fmt!("ctx == %?", *ctx));
         /* [ IDENT+ | STRING ] [ ',' [ IDENT+ | STRING ] ]* | IDENT(inherit)
          * 
          * In the case of IDENT+, any whitespace between tokens is collapsed to
@@ -4465,7 +4465,7 @@ pub impl css_properties {
             }
             css_stylesheet::css__stylesheet_style_append(result, VOICE_FAMILY_END as u32);
         }
-		io::println(fmt!("ctx == %?", *ctx));
+		debug!(fmt!("ctx == %?", *ctx));
         CSS_OK
     }
       
@@ -4489,7 +4489,7 @@ pub impl css_properties {
 */
 pub fn css__parse_list_style_type_value(strings: &mut ~css_propstrings , token:&@css_token) -> (Option<u16> , css_error) {
     
-    io::println("Entering: css__parse_list_style_type_value");
+    debug!("Entering: css__parse_list_style_type_value");
     if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , DISC as uint) {
         return (Some(LIST_STYLE_TYPE_DISC ) , CSS_OK);
     }
@@ -4552,7 +4552,7 @@ pub fn css__parse_list_style_type_value(strings: &mut ~css_propstrings , token:&
 */
 pub fn font_family_reserved(strings:&mut ~css_propstrings, ident:&@css_token) -> bool {
 
-    io::println("Entering: font_family_reserved");
+    debug!("Entering: font_family_reserved");
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), SERIF as uint) ||
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), SANS_SERIF as uint) ||
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), CURSIVE as uint) ||
@@ -4574,7 +4574,7 @@ pub fn font_family_reserved(strings:&mut ~css_propstrings, ident:&@css_token) ->
 */
 pub fn font_family_value(strings:&mut ~css_propstrings, token:&@css_token, first:bool) -> u32 {
     
-    io::println("Entering: font_family_value");
+    debug!("Entering: font_family_value");
     let mut value:u16;
     
     match token.token_type{
@@ -4621,7 +4621,7 @@ pub fn font_family_value(strings:&mut ~css_propstrings, token:&@css_token, first
 */
 pub fn parse_system_font(sheet: @mut css_stylesheet , strings:&mut ~css_propstrings , style: @mut css_style , system_font: css_system_font) -> css_error{
     
-    io::println("Entering: parse_system_font");
+    debug!("Entering: parse_system_font");
     match system_font.style {
         CSS_FONT_STYLE_NORMAL => {
             css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_NORMAL );
@@ -4739,7 +4739,7 @@ pub fn parse_system_font(sheet: @mut css_stylesheet , strings:&mut ~css_propstri
 */
 pub fn voice_family_reserved(strings: &mut ~css_propstrings, ident:&@css_token) -> bool {
     
-    io::println("Entering: voice_family_reserved");
+    debug!("Entering: voice_family_reserved");
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), MALE as uint) ||
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), FEMALE as uint) ||
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), CHILD as uint) 
@@ -4758,7 +4758,7 @@ pub fn voice_family_reserved(strings: &mut ~css_propstrings, ident:&@css_token) 
 */
 pub fn voice_family_value(strings: &mut ~css_propstrings, token:&@css_token, first:bool) -> u32
 {
-    io::println("Entering: voice_family_value");
+    debug!("Entering: voice_family_value");
     let value = match token.token_type {
         CSS_TOKEN_IDENT  => {
             if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), MALE as uint){
@@ -4809,7 +4809,7 @@ pub fn voice_family_value(strings: &mut ~css_propstrings, token:&@css_token, fir
 pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, reserved:Option<reserved_fn>)
     -> (css_error, Option<~str>) {
     
-    io::println("Entering: css__ident_list_or_string_to_string");
+    debug!("Entering: css__ident_list_or_string_to_string");
     if *ctx >= vector.len() {
         return (CSS_INVALID,None)
     }
@@ -4849,7 +4849,7 @@ pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings:
 pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token],
     ctx: @mut uint , reserved:Option<reserved_fn>) -> (css_error , Option<~str>) {
 
-    io::println("Entering: css__ident_list_to_string");
+    debug!("Entering: css__ident_list_to_string");
     let orig_ctx = *ctx;
     let mut token: &@css_token;
     let mut token_buffer_string: ~str = ~"";
@@ -4937,7 +4937,7 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
 pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token], 
     ctx: @mut uint , reserved:Option<reserved_fn> , get_value: Option<get_value_fn> , style: @mut css_style) -> css_error {
 
-    io::println("Entering: css__comma_list_to_style");
+    debug!("Entering: css__comma_list_to_style");
     let orig_ctx = *ctx;
     let mut prev_ctx = orig_ctx;
     let mut token: &@css_token;
