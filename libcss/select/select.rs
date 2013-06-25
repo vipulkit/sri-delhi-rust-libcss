@@ -1233,7 +1233,7 @@ impl css_select_ctx {
                         return err;
                     }
                 }
-				debug!(fmt!("sel_class=%?", sel_class));
+				//debug!(fmt!("sel_class=%?", sel_class));
                 if sel_class.is_some() {
                     class_selectors_hash_entry.push(sel_class) ;
                     class_selectors_option_list.push(Some(sel_class.get().selector)) ;

@@ -113,7 +113,7 @@ pub fn select_test(file:~str) {
 		},
 		Err(y) => {
 			file_content = ~"" ;
-			debug!(fmt!("\n Error opening file ===============:%?",y));
+			debug!("\n Error opening file ===============:%?",y);
 			assert!(false) ;
 		}
 	}
@@ -121,7 +121,7 @@ pub fn select_test(file:~str) {
 	for str::each_line_any(file_content) |line| { 
         let mut line_string: ~str = line.to_str(); 
 		line_string.push_char('\n');
-		debug!(fmt!("Handling line =%?=",copy line_string));
+		debug!("Handling line =%?=",copy line_string);
 	    handle_line(&mut line_string,ctx);
     	}	
 
@@ -152,18 +152,14 @@ pub fn css_create_params() -> css_params {
      return css_param;
 }
 
-pub fn main() {
-	debug!(fmt!("\n Starting select-auto test cases "));
-}
-
 pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
 
 	let mut error : css_error ;
 	let mut len : uint ; 
 	if ( data[0] == ('#' as u8) ) {
-		debug!(fmt!("# encountered "));
+		debug!("# encountered ");
 	    if( ctx.intree ) {
-	    	debug!(fmt!("ctx intree"));
+	    	debug!("ctx intree");
             if( data.len() >= 7 && is_string_caseless_equal(data.slice(1,7), "errors") ){
                 ctx.intree = false;
                 ctx.insheet = false;
@@ -173,7 +169,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
             else {
                 /* Assume start of stylesheet */
                 css__parse_sheet(ctx, data,1);
-                debug!(fmt!("Sheet parsed 1"));
+                debug!("Sheet parsed 1");
                 ctx.intree = false;
                 ctx.insheet = true;
                 ctx.inerrors = false;
@@ -181,7 +177,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
             }
         }
         else if (ctx.insheet) {
-        	debug!(fmt!("ctx insheet"));
+        	debug!("ctx insheet");
             if(data.len() >= 7 && is_string_caseless_equal(data.slice(1,7), "errors")){
                 len = unsafe { ctx.sheets.len() -1 } ;
                 assert!( 
@@ -205,7 +201,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
                             _=>{false}
                         });
                 css__parse_sheet(ctx, data,1);
-                debug!(fmt!("Sheet parsed 2"));
+                debug!("Sheet parsed 2");
             }
             else {
                 len = unsafe { ctx.sheets.len() -1 } ;
@@ -218,14 +214,14 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
             }
         }
         else if (ctx.inerrors) {
-        	debug!(fmt!("in ctx errors"));
+        	debug!("in ctx errors");
             ctx.intree = false;
             ctx.insheet = false;
             ctx.inerrors = false;
             ctx.inexp = true;
         }
         else if (ctx.inexp) {
-        	debug!(fmt!("in ctx inexp"));
+        	debug!("in ctx inexp");
             /* This marks end of testcase, so run it */
             run_test(ctx);
 	
@@ -238,9 +234,9 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
         }
         else {
             /* Start state */
-            debug!(fmt!("in ctx tree ==== "));
+            debug!("in ctx tree ==== ");
             if(data.len()>=5 && is_string_caseless_equal(data.slice(1,5), "tree")) {
-            	debug!(fmt!("entering for parse tree"));
+            	debug!("entering for parse tree");
                 css__parse_tree(ctx, data, 5 );
                 ctx.intree = true;
                 ctx.insheet = false;
@@ -288,7 +284,7 @@ pub fn isspace (ch:u8)-> bool {
 
 pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
 
-	debug!(fmt!("\n Entering css__parse_tree ")) ;
+	debug!("\n Entering css__parse_tree ") ;
 	let mut p = index;
 	let mut end = data.len() ;
 	//size_t left;
@@ -322,7 +318,7 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
 
 pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 	
-	debug!(fmt!("\n Entering css__parse_tree_data ")) ;
+	debug!("\n Entering css__parse_tree_data ") ;
 	let mut p = 0;
 	let end = data.len();
 
@@ -337,14 +333,14 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 	 * <element> ::= [^=*[:space:]]+
 	 * <attr>    ::= [^=*[:space:]]+ '=' [^[:space:]]*
 	 */
-	 //debug!(fmt!("\n Before while  ")) ;
+	 //debug!("\n Before while  ") ;
 	while (p < end && isspace(data[p])) {
 		depth += 1;
 		p += 1;
 	}
 	depth -= 1;
 
-	//debug!(fmt!("\n Before attribute name  ")) ;
+	//debug!("\n Before attribute name  ") ;
 	/* Get element/attribute name */
 	let name_begin = p;
 	while ( (p < end) && (data[p] != '=' as u8) && (data[p] != '*' as u8)  && (isspace(data[p]) == false) ){
@@ -354,7 +350,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 
 	let mut name = data.slice(name_begin,name_begin+namelen);
 
-	//debug!(fmt!("\n Before while  2")) ;
+	//debug!("\n Before while  2") ;
 	/* Skip whitespace */
 	while (p < end && isspace(data[p])){
 		p += 1;
@@ -362,7 +358,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 	
 	let mut value_begin = 0;
 
-	//debug!(fmt!("\n Before attribute value  ")) ;
+	//debug!("\n Before attribute value  ") ;
 	if (p < end && (data[p] == ('=' as u8)) ) {
 		/* Attribute value */
 		p += 1;
@@ -378,12 +374,12 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 		target = true;
 	}
 
-	//debug!(fmt!("\n Before 3  ")) ;
+	//debug!("\n Before 3  ") ;
 	if valuelen > 0 {
 		value = Some(data.slice(value_begin, value_begin+valuelen));
 	}
 
-	//debug!(fmt!("\n Before 4  ")) ;
+	//debug!("\n Before 4  ") ;
 	if (value.is_none() ) {
 		/* We have an element, so create it */
 		let n : @mut node = @mut node {
@@ -409,28 +405,28 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 			assert!(depth > 0);
 			assert!(depth <= ctx.depth + 1);
 
-			//debug!(fmt!("\n Before while  3")) ;
+			//debug!("\n Before while  3") ;
 			/* Find node to insert into */
 			while (depth <= ctx.depth) {
 				ctx.depth -= 1;
 				ctx.current = ctx.current.get().parent;
 			}
 			//let ctx_current = ctx.current.get();	
-			//debug!(fmt!("\n Before insert into current node  ")) ;
+			//debug!("\n Before insert into current node  ") ;
 			/* Insert into current node */
 			if (ctx.current.get().children.is_none()) {
-				//debug!(fmt!("\n Before insert into current node == if statement ")) ;
+				//debug!("\n Before insert into current node == if statement ") ;
 				ctx.current.get().children = Some(n);
 				ctx.current.get().last_child = Some(n);
 			} else {
-				//debug!(fmt!("\n Before insert into current node == else statement ")) ;
+				//debug!("\n Before insert into current node == else statement ");
 				ctx.current.get().last_child.get().next = Some(n);
-				//debug!(fmt!("\n Before insert into current node == else statement 2")) ;
+				//debug!("\n Before insert into current node == else statement 2") ;
 				n.prev = ctx.current.get().last_child;
-				//debug!(fmt!("\n Before insert into current node == else statement 3")) ;
+				//debug!("\n Before insert into current node == else statement 3") ;
 				ctx.current.get().last_child = Some(n);
 			}
-			//debug!(fmt!("\n Before final updation  ")) ;
+			//debug!("\n Before final updation  ") ;
 		 	ctx.current = Some(ctx.current.get());	
 			n.parent = ctx.current;
 		}
@@ -446,7 +442,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 	} 
 	else {
 		/* New attribute */
-		debug!(fmt!("\n Before else  ")) ;
+		debug!("\n Before else  ");
 		let mut lwc_name:Option<arc::RWARC<~lwc_string> > = None;
 		let mut lwc_value:Option<arc::RWARC<~lwc_string> > = None;
 		unsafe {
@@ -456,7 +452,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 			}
 		}
 
-		debug!(fmt!("\n Before attributes unwrap  ")) ;
+		debug!("\n Before attributes unwrap  ") ;
 		let mut attr: attribute = attribute{
 			name:lwc_name.unwrap(),
 			value:lwc_value.unwrap()
@@ -469,7 +465,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 }
 
 pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
-	debug!(fmt!("\n Entering css__parse_sheet ")) ;
+	debug!("\n Entering css__parse_sheet ") ;
     let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
     let mut p : uint = index;
     let end : uint = data.len();
@@ -516,7 +512,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
 
 
 pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> uint {
-	debug!(fmt!("\n Entering css__parse_media_list =%?=%?=",data,index)) ;
+	debug!("\n Entering css__parse_media_list =%?=%?=",data,index) ;
 	// ' '	(0x20)	space (SPC)
 	// '\t'	(0x09)	horizontal tab (TAB)
 	// '\n'	(0x0a)	newline (LF)
@@ -540,7 +536,7 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> u
 			}
 		}
 
-		debug!(fmt!("\n slice left is =%?=%?=%?=%?=",copy data.slice(start,data.len()),len,start,data.len() )) ;
+		debug!("\n slice left is =%?=%?=%?=%?=",copy data.slice(start,data.len()),len,start,data.len() ) ;
 
         if ( (len-start)==10 && is_string_caseless_equal(data.slice(start,start+10), "projection") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
@@ -609,7 +605,7 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> u
 
 pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> uint {
 	
-	debug!(fmt!("\n Entering css__parse_pseudo_list ")) ;
+	debug!("\n Entering css__parse_pseudo_list ") ;
 	let mut string = data.slice(index, data.len()).to_owned();
     *data = data.slice(0,index).to_owned();
 
@@ -676,7 +672,7 @@ pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> u
 //}
 
 pub fn run_test( ctx:@mut line_ctx) {
-	//debug!(fmt!("\n Entering run test =%?=",ctx)) ;
+	//debug!("\n Entering run test =%?=",ctx) ;
     let mut select: ~css_select_ctx;
     let mut results: css_select_results;
 
@@ -692,7 +688,7 @@ pub fn run_test( ctx:@mut line_ctx) {
 	        let mut ds_sheet = dump_sheet(ctx.sheets[i].sheet.stylesheet);
 	        debug!("\n=================================================");
 	        debug!("Dumpping Stylesheet before appending to selector");
-	        debug!(fmt!("%?",ds_sheet));
+	        debug!("%?",ds_sheet);
 	        debug!("=================================================\n");
 
             match select.css_select_ctx_append_sheet(ctx.sheets[i].sheet.stylesheet,ctx.sheets[i].origin,ctx.sheets[i].media) {
@@ -787,15 +783,15 @@ pub fn run_test( ctx:@mut line_ctx) {
     assert!(results.styles[ctx.pseudo_element].is_some());
     dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
 
-    debug!(fmt!(" CSS Selection result is =%?=%?=",results,copy ctx.exp));
+    //debug!(" CSS Selection result is =%?=%?=",results,copy ctx.exp);
     let mut string:~str = copy ctx.exp;
     if !str::eq( &buf.to_owned().to_lower(), &(copy string).to_lower() ) {
-        debug!(fmt!("Expected : %s ",string));
-        debug!(fmt!("Result: %s",buf));
-        fail!(~"Select result mismatched with exepected");
+        io::println(fmt!("Expected : %s ",string));
+        io::println(fmt!("Result: %s",buf));
+        fail!(~"Select result mismatched with expected");
     }
     else {
-    	debug!(fmt!("Result: Test case passed"));	
+    	debug!("Result: Test case passed");	
     }
 
     ctx.tree = None;
@@ -1025,14 +1021,16 @@ fn node_has_name(_:*libc::c_void, n:*libc::c_void, qname:css_qname, matched:@mut
 fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error {
 	let mut node1:@mut node;
 	let mut ctx: @mut  line_ctx;
-	let mut i:u32 = 0 ;
+	let mut i:uint = 0 ;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 		ctx = ::cast::transmute(pw);
+		cast::forget(pw);
 	}
 	unsafe {
 		
-		while (i as uint) < node1.attrs.len() {
+		while i < node1.attrs.len() {
 			let mut amatched: bool = false;
 			do lwc().write |l| {
 					amatched = l.lwc_string_caseless_isequal(node1.attrs[i].name.clone(),ctx.attr_class.clone()); 
@@ -1049,7 +1047,7 @@ fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:arc::RWARC<~lwc_string
 			condition_match = l.lwc_string_caseless_isequal(name.clone(), node1.attrs[i].value.clone());
 		}
 		
-		if (i != node1.attrs.len() as u32) && condition_match {
+		if (i != node1.attrs.len()) && condition_match {
 			*matched = true;
 		}
 		else {
@@ -1297,7 +1295,7 @@ fn node_has_attribute_suffix(n:*libc::c_void, qname:css_qname,value:~str, matche
 			}
 			else {
 				*matched = is_string_caseless_equal(data.slice(suffix_start,suffix_start + vlen).to_owned(),value);
-				//*matched = str::eq(&data.slice(suffix_start,suffix_start + vlen).to_owned().to_lower(),&value/*.slice(0,vlen).to_owned()*/.to_lower());
+				
 			}
 		}
 	}
@@ -1513,7 +1511,7 @@ fn ua_default_for_property(property:u32, hint:@mut css_hint ) -> css_error {
 
 
 fn compute_font_size(parent: Option<@mut css_hint>, size: Option<@mut css_hint>) -> css_error {
-	debug!(fmt!("\n Entering compute ")) ;
+	debug!("\n Entering compute ") ;
 	let mut parent_value:@mut css_hint;
 	let mut size_val : @mut css_hint;
 	let mut sizes:~[@mut css_hint_length] =
