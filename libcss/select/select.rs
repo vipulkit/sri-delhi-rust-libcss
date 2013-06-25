@@ -1857,7 +1857,7 @@ impl css_select_ctx {
         /* Return the applicable pseudo element, if required */
         match pseudo_element {
             Some(value) =>{
-                value = pseudo ;
+                *value = *pseudo ;
             },
             None => {}
         }
