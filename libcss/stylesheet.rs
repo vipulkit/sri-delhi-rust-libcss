@@ -1360,11 +1360,10 @@ impl css_selector_hash {
         debug!("Entering _hash_name");
         let mut z: u32 = 0x811c9dc5;
         let mut i: uint = 0;
-        let mut string_index = str::char_len(string);
-        while string_index>0 {
+        let string_index = str::char_len(string);
+        while i<string_index {
             z *= 0x01000193;
             z ^= string[i] as u32 & !0x20;
-            string_index = string_index-1;
             i = i+1; 
         }
         //z = z%4091;
@@ -1469,6 +1468,7 @@ impl css_selector_hash {
                         // added , due to logical incompatibilty with "_remove_into_chain"
                         // in origical code , _remove_into_chain removes by comparing pointer values,
                         // and freeing the final result , by doing reallocation of 0 bytes ( line num : 650-671 , hash.c)
+                        io::println("_insert_into_chain : error: double insertion of same selector ") ;
                         return CSS_BADPARM;
                     }
 
@@ -1478,6 +1478,7 @@ impl css_selector_hash {
 
                     if search.selector.specificity == selector.specificity {
                         if(search.selector.rule.is_none() || selector.rule.is_none() ){
+                            io::println("_insert_into_chain : error : rule is none  ") ;
                             return CSS_BADPARM ;
                         }
 
@@ -1489,6 +1490,7 @@ impl css_selector_hash {
                         }
                     }
 
+                    first_pos = false ;
                     search = 
                         match search.next {
                             None=>{
@@ -1496,21 +1498,22 @@ impl css_selector_hash {
                             },
                             Some(next_ptr)=>{
                                 prev = search ;
-                                first_pos = false ;
                                 next_ptr
                             }
                     };
                 }
                 if(first_pos){
+                    entry.next = Some(index_element);
                     (*hash_entry_list)[index] = Some(entry);
-                    entry.next = Some(search);
                 }
                 else {
+                    entry.next=prev.next;
                     prev.next= Some(entry);
-                    entry.next=Some(search);
                 }
             }
         }
+        io::println("_insert_into_chain : after insertion list is ") ;
+        css_selector_hash::debug_print_hash_entry_list((*hash_entry_list)[index]) ;
         CSS_OK
     }
 
@@ -1607,14 +1610,14 @@ impl css_selector_hash {
                         break;
                     }
 
-                    prev = search ;
+                    first_pos = false ;
                     search = 
                         match search.next {
                             None=>{
                                 return CSS_INVALID ;
                             },
                             Some(next_ptr)=>{
-                                first_pos = false ;
+                                prev = search ;
                                 next_ptr
                             }
                     };
@@ -1632,36 +1635,37 @@ impl css_selector_hash {
 
     pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
 
-        if ( a.len() != b.len() ) {
-            return false ;
+    //debug!(fmt!("Strtol : strings are %? ====== %? ",a,b));
+    if ( a.len() != b.len() ) {
+        return false ;
+    }
+    
+    let mut i :uint = a.len() ;
+    for uint::range(0,i) |e| {
+        if a[e] == b[e] {
+            loop;
         }
-        
-        let mut i :uint = a.len() ;
-        for uint::range(0,i) |e| {
-            if a[e] == b[e] {
+
+        if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
+            if (a[e]+32) == b[e] {
                 loop;
             }
-
-            if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
-                if (a[e]+32) == b[e] {
-                    loop;
-                }
-                else {
-                    return false ;
-                }
+            else {
+                return false ;
             }
-
-            if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
-                if (b[e]+32) == a[e] {
-                    loop;
-                }
-                else {
-                    return false ;
-                }
-            }
-            return false ;
         }
-        return true ;
+
+        if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
+            if (b[e]+32) == a[e] {
+                loop;
+            }
+            else {
+                return false ;
+            }
+        }
+        return false ;
+    }
+    return true ;
     }
 
     /**
@@ -1958,7 +1962,35 @@ impl css_selector_hash {
         }
         (None,CSS_OK)
     }
+
+    pub fn debug_print_vector_of_hash_entry_list(hash_vec : &[Option<@mut hash_entry>]) {
+
+        for hash_vec.each |&entry| {
+            css_selector_hash::debug_print_hash_entry_list(entry) ;
+        }
+    }
+
+    pub fn debug_print_hash_entry_list(current : Option<@mut hash_entry>) {
+
+        io::println("Starting Printing hash_entry linked list ======");
+        let mut ptr = current ;
+        loop {
+            match ptr {
+                None=>{ 
+                    io::print("None Encountered");
+                    io::println("Ending Printing hash_entry linked list ======");
+                    return ;
+                },
+                Some(x)=>{
+                    unsafe {
+                    io::print(fmt!("Selector:specificity=%?=,data=%?=",x.selector.specificity,x.selector.data));
+                    }
+                    ptr = x.next ;
+                }
+            }
+        }
+    }
 }
 
 
-/////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
