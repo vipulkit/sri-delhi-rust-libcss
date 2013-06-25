@@ -1222,7 +1222,9 @@ impl css_select_ctx {
 
         if ( unsafe {state.classes.len() != 0} ) {
              /* Find hash chains for node classes */
-
+			unsafe{
+				io::println(fmt!("state.classes=%?",state.classes));
+			}	
             for state.classes.each_mut |&sclass| {
                 let mut (sel_class,error) = sheet.selectors.css__selector_hash_find_by_class(copy sclass);
                 match error {
@@ -1231,13 +1233,16 @@ impl css_select_ctx {
                         return err;
                     }
                 }
+				io::println(fmt!("sel_class=%?", sel_class));
                 if sel_class.is_some() {
                     class_selectors_hash_entry.push(sel_class) ;
                     class_selectors_option_list.push(Some(sel_class.get().selector)) ;
                 }
             }
         }
-
+		unsafe {
+			io::println(fmt!("state.id=%?, state.id.len=%?", state.id, state.id.len()));
+		}		
         if ( unsafe { state.id.len() != 0 } ) {
             /* Find hash chain for node ID */
             let mut (sel_id,error) = sheet.selectors.css__selector_hash_find_by_id(copy state.id);

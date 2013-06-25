@@ -788,8 +788,8 @@ pub fn run_test( ctx:@mut line_ctx) {
     io::println(fmt!(" CSS Selection result is =%?=%?=",results,copy ctx.exp));
     let mut string:~str = copy ctx.exp;
     if !str::eq( &buf.to_owned().to_lower(), &(copy string).to_lower() ) {
-        io::println(fmt!("Expected : %? ",string));
-        io::println(fmt!("Result: %?",buf));
+        io::println(fmt!("Expected : %s ",string));
+        io::println(fmt!("Result: %s",buf));
         fail!(~"Select result mismatched with exepected");
     }
     else {
@@ -836,7 +836,7 @@ fn node_classes(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[~str] ) -> cs
 		
 		if i != n_attrs {
 			classes.clear(); // as the next pushed val will be 1st elem.
-			classes.push(lwc_string_data(node.attrs[i].name.clone()));
+			classes.push(lwc_string_data(node.attrs[i].value.clone()));
 		}
 		else {
 			classes.clear();
