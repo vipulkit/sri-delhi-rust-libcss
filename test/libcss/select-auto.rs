@@ -859,7 +859,7 @@ fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut ~str ) -> css_error{
 		while i < n_attrs {
 			let mut matched = false;
 			do lwc().write |l| {
-				matched = l.lwc_string_caseless_isequal(node.attrs[i].name.clone(),lc.attr_class.clone()); 
+				matched = l.lwc_string_caseless_isequal(node.attrs[i].name.clone(),lc.attr_id.clone()); 
 			}
 
 			if matched {break;}
@@ -867,7 +867,7 @@ fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut ~str ) -> css_error{
 		}
 		
 		if i != n_attrs {
-			*id = lwc_string_data(node.attrs[i].name.clone());
+			*id = lwc_string_data(node.attrs[i].value.clone());
 		}
 		else {
 			*id = ~"";
