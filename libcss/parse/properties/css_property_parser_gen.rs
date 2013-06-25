@@ -300,7 +300,7 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             str::push_str(&mut output,fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s);\n", parseid.val,kvlist[0].val));
             str::push_str(&mut output,"\t\t\tlet mut token_null=false;\n\n");
             str::push_str(&mut output,"\t\twhile !token_null && (match token.token_type {CSS_TOKEN_IDENT => true, _ => false}) {\n");
-            str::push_str(&mut output,"\t\t\tlet mut num:css_fixed = 0;\n");
+            str::push_str(&mut output,"\t\t\tlet mut num:css_fixed;\n");
             str::push_str(&mut output,"\t\t\tlet mut pctx:uint;\n\n");
             str::push_str(&mut output,"\t\t\tlet snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone()));\n");
             str::push_str(&mut output,"\t\t\tcss_stylesheet::css__stylesheet_style_append(result, snumber as u32);\n"); 

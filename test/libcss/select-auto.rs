@@ -545,34 +545,34 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> u
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
         }
         else if ( (len-start)==8 && is_string_caseless_equal(data.slice(start,start+8), "handheld") ) {
-            result = result | (CSS_MEDIA_PROJECTION as u64) ;
+            result = result | (CSS_MEDIA_HANDHELD as u64) ;
         }
         else if ( (len-start)==8 && is_string_caseless_equal(data.slice(start,start+8), "embossed") ) {
-            result = result | (CSS_MEDIA_PROJECTION as u64) ;
+            result = result | (CSS_MEDIA_EMBOSSED as u64) ;
         }
         else if ( (len-start)==7 && is_string_caseless_equal(data.slice(start,start+7), "braille") ) {
-            result = result | (CSS_MEDIA_PROJECTION as u64) ;
+            result = result | (CSS_MEDIA_BRAILLE as u64) ;
         }
         else if ( (len-start)==6 && is_string_caseless_equal(data.slice(start,start+6), "speech") ) {
-            result = result | (CSS_MEDIA_PROJECTION as u64) ;
+            result = result | (CSS_MEDIA_SPEECH as u64) ;
         }
         else if ( (len-start)==6 && is_string_caseless_equal(data.slice(start,start+6), "screen") ) {
-            result = result | (CSS_MEDIA_PROJECTION as u64) ;
+            result = result | (CSS_MEDIA_SCREEN as u64) ;
         }
         else if ( (len-start)==5 && is_string_caseless_equal(data.slice(start,start+5), "print") ) {
-            result = result | (CSS_MEDIA_PROJECTION as u64) ;
+            result = result | (CSS_MEDIA_PRINT as u64) ;
         }
         else if ( (len-start)==5 && is_string_caseless_equal(data.slice(start,start+5), "aural") ) {
-            result = result | (CSS_MEDIA_PROJECTION as u64) ;
+            result = result | (CSS_MEDIA_AURAL as u64) ;
         }
         else if ( (len-start)==3 && is_string_caseless_equal(data.slice(start,start+3), "tty") ) {
-            result = result | (CSS_MEDIA_PROJECTION as u64) ;
+            result = result | (CSS_MEDIA_TTY as u64) ;
         }
         else if ( (len-start)==3 && is_string_caseless_equal(data.slice(start,start+3), "all") ) {
-            result = result | (CSS_MEDIA_PROJECTION as u64) ;
+            result = result | (CSS_MEDIA_ALL as u64) ;
         }
         else if ( (len-start)==2 && is_string_caseless_equal(data.slice(start,start+2), "tv") ) {
-            result = result | (CSS_MEDIA_PROJECTION as u64) ;
+            result = result | (CSS_MEDIA_TV as u64) ;
         }
         else {
             // unknown media type
@@ -582,8 +582,9 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> u
 
 		/* Consume whitespace */
 		while data.len()>len && ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
-			 	(data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) )  {
-				len += 1;
+		(data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) )  {
+		
+			len += 1;
 		}
 
 		/* Stop if we've reached the end */
@@ -596,8 +597,8 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> u
 
 		/* Consume whitespace */
 		while data.len()>len && ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
-			 	(data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) )  {
-				len += 1;
+		(data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) )  {
+			len += 1;
 		}	
 	}
 	
