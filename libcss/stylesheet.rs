@@ -125,7 +125,7 @@ pub struct hash_entry {
 
 /**< Hashtable of selectors */
 pub struct css_selector_hash {
-    default_slots:uint,
+    default_slots:u32,
     elements:~[Option<@mut hash_entry>],
     classes:~[Option<@mut hash_entry>],
     ids:~[Option<@mut hash_entry>],
@@ -1282,7 +1282,7 @@ impl css_selector_hash {
                         ids:~[],
                         universal:~[] 
         };
-        for uint::range(0,hash.default_slots) |_| {
+        for u32::range(0,hash.default_slots) |_| {
             hash.elements.push(None);
             hash.classes.push(None);
             hash.ids.push(None);
@@ -1356,18 +1356,18 @@ impl css_selector_hash {
     * #Return Value:
     *  'uint' - hash value.
     */
-    pub fn _hash_name( string: ~str ) -> uint {
-
-        let mut z: uint = 0x811c9dc5;
+    pub fn _hash_name( string: ~str ) -> u32 {
+        debug!("Entering _hash_name");
+        let mut z: u32 = 0x811c9dc5;
         let mut i: uint = 0;
         let mut string_index = str::char_len(string);
         while string_index>0 {
-            z = z*0x01000193;
-            z = (z^(string[i]) as uint);
+            z *= 0x01000193;
+            z ^= string[i] as u32 & !0x20;
             string_index = string_index-1;
             i = i+1; 
         }
-        z = z%4091;
+        //z = z%4091;
         z
     }
     
@@ -1384,8 +1384,8 @@ impl css_selector_hash {
     pub fn css__selector_hash_insert(&mut self, selector : @mut css_selector) 
                                     -> css_error {
         unsafe {
-            let mut mask :uint ;
-            let mut index:uint=0;
+            let mut mask :u32 ;
+            let mut index:u32=0;
             let mut name :~str ;
             if (vec::uniq_len(&selector.data) > 0) {
 
@@ -1398,7 +1398,7 @@ impl css_selector_hash {
                 }
 
                 // Named Class
-                else if css_selector_hash::_class_name(selector).len() == 0  {
+                else if css_selector_hash::_class_name(selector).len() != 0  {
                     name = css_selector_hash::_class_name(selector);
                     mask = self.default_slots-1 ;
                     index = css_selector_hash::_hash_name(name) & mask ;
@@ -1406,7 +1406,7 @@ impl css_selector_hash {
                 }
 
                 // Named Id
-                else if css_selector_hash::_id_name(selector).len() == 0 {
+                else if css_selector_hash::_id_name(selector).len() != 0 {
                     name = css_selector_hash::_id_name(selector);
                     mask = self.default_slots-1 ;
                     index = css_selector_hash::_hash_name(name) & mask ;
@@ -1436,7 +1436,7 @@ impl css_selector_hash {
     */
     pub fn _insert_into_chain(&mut self, 
                             hash_type : css_hash_type,
-                            index:uint,
+                            index:u32,
                             selector : @mut css_selector) 
                             -> css_error {
 
@@ -1527,8 +1527,8 @@ impl css_selector_hash {
     pub fn css__selector_hash_remove(&mut self, selector : @mut css_selector) 
                                     -> css_error {
         unsafe {
-            let mut mask :uint ;
-            let mut index:uint=0;
+            let mut mask :u32 ;
+            let mut index:u32=0;
             let mut name :~str ;
             if (vec::uniq_len(&selector.data) > 0){
 
@@ -1578,7 +1578,7 @@ impl css_selector_hash {
     */
     pub fn _remove_from_chain(&mut self, 
                             hash_type : css_hash_type,
-                            index:uint,
+                            index:u32,
                             selector : @mut css_selector) 
                             -> css_error {
 
@@ -1675,11 +1675,12 @@ impl css_selector_hash {
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
     pub fn css__selector_hash_find(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_error) {
-
+        debug!("Entering: css__selector_hash_find");
         let mut mask  = self.default_slots-1 ;
         let mut index = css_selector_hash::_hash_name(copy name) & mask ; 
         let mut head = self.elements[index];
 
+        debug!(fmt!("css__selector_hash_find:: name=%?  mask=%?, index=%? ", name, mask, index ));
         loop {
             match head {
                 None=>{
@@ -1691,6 +1692,7 @@ impl css_selector_hash {
                         unsafe {
                             if css_selector_hash::is_string_caseless_equal(
                                 detail_element.qname.name,name) {
+                                debug!("Exiting: css__selector_hash_find (1)");
                                 return (head,CSS_OK);
                             }
                         }
@@ -1698,6 +1700,7 @@ impl css_selector_hash {
 
                     match node_element.next {
                         None=> {
+                            debug!("Exiting: css__selector_hash_find (2)");
                             return (None,CSS_OK);
                         },
                         Some(_)=>{
@@ -1727,6 +1730,7 @@ impl css_selector_hash {
         let mut index = css_selector_hash::_hash_name(copy name) & mask ; 
         let mut head = self.classes[index];
 
+        debug!(fmt!("name=%?  mask=%?, index=%? ", name, mask, index ));
         loop {
             match head {
                 None=>{
