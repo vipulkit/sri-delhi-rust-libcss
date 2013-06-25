@@ -1164,7 +1164,7 @@ impl css_select_ctx {
 
         let mut i : uint = 0;
         while i < classes.len() {
-            if (css_select_ctx::_selector_less_specific(classes[i], ret)){
+            if (css_select_ctx::_selector_less_specific(ret,classes[i])){
                 ret = Some(classes[i].get());
             }
             i += 1;

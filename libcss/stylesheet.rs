@@ -1512,7 +1512,7 @@ impl css_selector_hash {
                 }
             }
         }
-        io::println("_insert_into_chain : after insertion list is ") ;
+        io::println(fmt!("_insert_into_chain : after insertion list is hash_type=%?= index=%?=",hash_type,index)) ;
         css_selector_hash::debug_print_hash_entry_list((*hash_entry_list)[index]) ;
         CSS_OK
     }
