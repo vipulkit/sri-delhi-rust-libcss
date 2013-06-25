@@ -788,8 +788,8 @@ pub fn run_test( ctx:@mut line_ctx) {
     io::println(fmt!(" CSS Selection result is =%?=%?=",results,copy ctx.exp));
     let mut string:~str = copy ctx.exp;
     if !str::eq( &buf.to_owned().to_lower(), &(copy string).to_lower() ) {
-        io::println(fmt!("Expected : %? ",string));
-        io::println(fmt!("Result: %?",buf));
+        io::println(fmt!("Expected : %s ",string));
+        io::println(fmt!("Result: %s",buf));
         fail!(~"Select result mismatched with exepected");
     }
     else {
