@@ -1512,7 +1512,7 @@ impl css_selector_hash {
                 }
             }
         }
-        io::println(fmt!("_insert_into_chain : after insertion list is hash_type=%?= index=%?=",hash_type,index)) ;
+        debug!("_insert_into_chain : after insertion list is hash_type=%?= index=%?=",hash_type,index) ;
         css_selector_hash::debug_print_hash_entry_list((*hash_entry_list)[index]) ;
         CSS_OK
     }
@@ -1972,18 +1972,18 @@ impl css_selector_hash {
 
     pub fn debug_print_hash_entry_list(current : Option<@mut hash_entry>) {
 
-        io::println("Starting Printing hash_entry linked list ======");
+        debug!("Starting Printing hash_entry linked list ======");
         let mut ptr = current ;
         loop {
             match ptr {
                 None=>{ 
-                    io::print("None Encountered");
-                    io::println("Ending Printing hash_entry linked list ======");
+                    debug!("None Encountered");
+                    debug!("Ending Printing hash_entry linked list ======");
                     return ;
                 },
                 Some(x)=>{
                     unsafe {
-                    io::print(fmt!("Selector:specificity=%?=,data=%?=",x.selector.specificity,x.selector.data));
+                    debug!("Selector:specificity=%?=,data=%?=",x.selector.specificity,x.selector.data);
                     }
                     ptr = x.next ;
                 }
