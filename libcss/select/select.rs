@@ -503,6 +503,10 @@ impl css_select_ctx {
         while ( j < (CSS_PSEUDO_ELEMENT_COUNT as int) ) {
             debug!(fmt!("css_select_style : pseudo element of property =%?=",j)) ;
             state.current_pseudo = unsafe { cast::transmute(j)};
+
+            unsafe {
+                cast::forget(state.current_pseudo);
+            }
 			let computed_opt = state.results.styles[j];
 			
 			match computed_opt {

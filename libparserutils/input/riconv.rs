@@ -23,6 +23,7 @@ pub fn copy_rust_to_c(r_ptr : ~[u8] , c_ptr : *u8 , len : uint ) {
     // Caution :: Allocate C array before copying 
     unsafe {
         let dptr = ::cast::transmute_mut_unsafe(c_ptr);
+        cast::forget(dptr);
         ptr::copy_memory(dptr, vec::raw::to_ptr(r_ptr), len);
     }
 }
