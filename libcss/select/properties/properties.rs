@@ -61,7 +61,7 @@ pub fn css__outranks_existing(op:u16,
 	 * is greater than or equal to that of the existing property.
 	 */
 
-	if existing.set {
+	if !existing.set {
 		/* Property hasn't been set before, new one wins */
 		outranks = true;
 	} 
