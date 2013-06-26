@@ -1472,7 +1472,7 @@ impl css_select_ctx {
         let mut error:css_error;
 
         loop {
-            let mut match_result = false;
+            let match_result = @mut false;
 
             /* Find candidate node */
             match combinator_type {
@@ -1515,14 +1515,15 @@ impl css_select_ctx {
 
             if n != ptr::null() {
                 /* Match its details */
-                error = self.match_details(n, detail, state, @mut match_result, None);
+                error = self.match_details(n, detail, state, match_result, None);
                 match error {
                     CSS_OK => {},
                     err => return err
                 }
-
+				
+				//io::println(fmt!("match_result=%?", match_result));
                 /* If we found a match, use it */
-                if (match_result == true){
+                if (*match_result == true){
                     break   
                 }
                     
@@ -1845,7 +1846,7 @@ impl css_select_ctx {
                     return error;
                 }
             }
-
+			//io::println(fmt!("matched=%?", matched));
             if !(*matched) {
                 return CSS_OK;
             }
@@ -1865,7 +1866,7 @@ impl css_select_ctx {
             },
             None => {}
         }
- 
+		//io::println(fmt!("matched=%?", matched));
         CSS_OK
     }
     
