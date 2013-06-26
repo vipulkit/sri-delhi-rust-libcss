@@ -503,6 +503,10 @@ impl css_select_ctx {
         while ( j < (CSS_PSEUDO_ELEMENT_COUNT as int) ) {
             debug!(fmt!("css_select_style : pseudo element of property =%?=",j)) ;
             state.current_pseudo = unsafe { cast::transmute(j)};
+
+            unsafe {
+                cast::forget(state.current_pseudo);
+            }
 			let computed_opt = state.results.styles[j];
 			
 			match computed_opt {
@@ -1164,7 +1168,7 @@ impl css_select_ctx {
 
         let mut i : uint = 0;
         while i < classes.len() {
-            if (css_select_ctx::_selector_less_specific(classes[i], ret)){
+            if (css_select_ctx::_selector_less_specific(ret,classes[i])){
                 ret = Some(classes[i].get());
             }
             i += 1;
@@ -1233,7 +1237,7 @@ impl css_select_ctx {
                         return err;
                     }
                 }
-				debug!(fmt!("sel_class=%?", sel_class));
+				//debug!(fmt!("sel_class=%?", sel_class));
                 if sel_class.is_some() {
                     class_selectors_hash_entry.push(sel_class) ;
                     class_selectors_option_list.push(Some(sel_class.get().selector)) ;

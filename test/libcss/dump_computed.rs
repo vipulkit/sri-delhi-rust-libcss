@@ -703,6 +703,30 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
         ptr.push_str("\n");
     }
 
+    /* counter-reset */
+    let (val,counter) = css_computed_counter_reset(style);
+    let mut counter_index = 0;
+
+    if (val == CSS_COUNTER_RESET_INHERIT as u8) {
+            ptr.push_str("counter-reset: inherit\n");
+    }
+    else if (counter.len() == 0) {
+        ptr.push_str("counter-reset: none\n");
+    } 
+    else {
+        ptr.push_str("counter-reset:");
+    
+        while (counter[counter_index].name != ~"") {
+            ptr.push_str(fmt!(" %s ",
+                copy counter[counter_index].name));
+            
+            dump_css_fixed(counter[counter_index].value, ptr);
+            
+            counter_index+=1;
+        }
+
+        ptr.push_str("\n");
+    }
 
     /* cursor */
     let (val,string_list_option) = css_computed_cursor(style);
@@ -1177,7 +1201,22 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
         },
     }
 
-    
+    /* max-height */
+    let (val, len1, unit1) = css_computed_max_height(style);
+    let val_enum: css_max_height_e =  unsafe {cast::transmute(val as uint)}; 
+
+    match (val_enum) {
+        CSS_MAX_HEIGHT_INHERIT =>
+            ptr.push_str("max-height: inherit\n"),
+        CSS_MAX_HEIGHT_NONE =>
+            ptr.push_str("max-height: none\n"),
+        CSS_MAX_HEIGHT_SET => {
+            ptr.push_str("max-height: ");
+            dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+            ptr.push_str("\n")
+        },
+    }
+
     /* max-width */
     let (val, len1, unit1) = css_computed_max_width(style);
     let val_enum: css_max_width_e =  unsafe {cast::transmute(val as uint)}; 
@@ -1346,6 +1385,20 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
             ptr.push_str("padding-right: inherit\n"),
         CSS_PADDING_SET => {
             ptr.push_str("padding-right: ");
+            dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
+            ptr.push_str("\n")
+        },
+    }
+
+    /* padding-bottom */
+    let (val, len1, unit1) = css_computed_padding_bottom(style);
+    let val_enum: css_padding_e =  unsafe {cast::transmute(val as uint)}; 
+
+    match (val_enum) {
+        CSS_PADDING_INHERIT =>
+            ptr.push_str("padding-bottom: inherit\n"),
+        CSS_PADDING_SET => {
+            ptr.push_str("padding-bottom: ");
             dump_css_unit(len1.unwrap(), unit1.unwrap(), ptr);
             ptr.push_str("\n")
         },

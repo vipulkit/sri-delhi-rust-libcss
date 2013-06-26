@@ -1516,7 +1516,11 @@ pub impl css_language {
 		
         if match token.token_type { CSS_TOKEN_FUNCTION => true, _ => false} {
             
-            let mut fun_type:index_property = unsafe { cast::transmute(lut_idx) };
+            let mut fun_type:index_property;
+            unsafe {
+                fun_type = cast::transmute(lut_idx);
+                cast::forget(fun_type);
+            }
 
             consumeWhitespace(vector, ctx);
 			

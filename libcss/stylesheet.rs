@@ -1524,7 +1524,7 @@ impl css_selector_hash {
                 }
             }
         }
-        debug!("_insert_into_chain : after insertion list is ") ;
+        debug!("_insert_into_chain : after insertion list is hash_type=%?= index=%?=",hash_type,index) ;
         css_selector_hash::debug_print_hash_entry_list((*hash_entry_list)[index]) ;
         CSS_OK
     }
@@ -1995,7 +1995,7 @@ impl css_selector_hash {
                 },
                 Some(x)=>{
                     unsafe {
-                    debug!(fmt!("Selector:specificity=%?=,data=%?=",x.selector.specificity,x.selector.data));
+                        debug!("Selector:specificity=%?=,data=%?=",x.selector.specificity,x.selector.data);
                     }
                     ptr = x.next ;
                 }
