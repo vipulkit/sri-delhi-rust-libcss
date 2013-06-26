@@ -197,7 +197,7 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 			BACKGROUND_IMAGE_NONE => value = CSS_BACKGROUND_IMAGE_NONE,
 			BACKGROUND_IMAGE_URI => {
 				value = CSS_BACKGROUND_IMAGE_IMAGE;
-				let (_, ret_uri) = style.sheet.unwrap().css__stylesheet_string_get(peek_bytecode(style) as uint);
+				let (_, ret_uri) = style.sheet.get().css__stylesheet_string_get(peek_bytecode(style) as uint);
 				uri = ret_uri;
 				advance_bytecode(style)	
 			},
@@ -208,7 +208,12 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 	// \todo lose fun != NULL once all properties have set routines 
 	match fun {
 		Some(fun_fn) => if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
-			(*fun_fn)(state.computed, value as u8, uri.unwrap())
+			if uri.is_some() {
+				(*fun_fn)(state.computed, value as u8, uri.unwrap())	
+			}
+			else {
+				(*fun_fn)(state.computed, value as u8, ~"")	
+			}
 		},
 		None => {}
 	}
@@ -469,7 +474,7 @@ pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state
 
 				while v != COUNTER_INCREMENT_NONE as u32{
 					
-					let (result, name_option) = style.sheet.unwrap().css__stylesheet_string_get((peek_bytecode(style)) as uint);
+					let (result, name_option) = style.sheet.get().css__stylesheet_string_get((peek_bytecode(style)) as uint);
 					advance_bytecode(style);
 					match result {
 						CSS_OK => {
@@ -683,7 +688,6 @@ pub fn css__compose_background_color(parent:@mut css_computed_style,
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_background_image(opv:u32, style:@mut css_style, 
 									state:@mut css_select_state) -> css_error {
-
 	return css__cascade_uri_none(opv, style, state, Some(@set_background_image) );
 }
 
@@ -7513,7 +7517,7 @@ pub fn css__cascade_content(opv:u32, style:@mut css_style,
                     let temp:@mut css_computed_content_item=
                      @mut css_computed_content_item{item_type:CSS_COMPUTED_CONTENT_NONE,data:None, counters_data:None};
                        
-                    let (result, he_option) = style.sheet.unwrap().css__stylesheet_string_get(peek_bytecode(style) as uint);
+                    let (result, he_option) = style.sheet.get().css__stylesheet_string_get(peek_bytecode(style) as uint);
                     
                     match result {
                         CSS_OK => {},
@@ -7540,7 +7544,7 @@ pub fn css__cascade_content(opv:u32, style:@mut css_style,
 
                             advance_bytecode(style);
 
-                            let (result, sep_option) = style.sheet.unwrap().css__stylesheet_string_get(peek_bytecode(style) as uint);
+                            let (result, sep_option) = style.sheet.get().css__stylesheet_string_get(peek_bytecode(style) as uint);
                             
                             match result {
                                 CSS_OK => {},
