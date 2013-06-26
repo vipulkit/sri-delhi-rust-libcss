@@ -1515,13 +1515,14 @@ impl css_select_ctx {
 
             if n != ptr::null() {
                 /* Match its details */
+                debug!("");
                 error = self.match_details(n, detail, state, match_result, None);
                 match error {
                     CSS_OK => {},
                     err => return err
                 }
-				
-				debug!(fmt!("match_result=%?", match_result));
+                
+                debug!(fmt!("match_result=%?", match_result));
                 /* If we found a match, use it */
                 if (*match_result == true){
                     break   
@@ -1549,7 +1550,6 @@ impl css_select_ctx {
 
         return CSS_OK;
     }
-
     pub fn match_selector_chain(&mut self, selector:Option<@mut css_selector>,
                             state:@mut css_select_state) -> css_error {
 
