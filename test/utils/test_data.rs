@@ -44,7 +44,7 @@ fn main() {
 
     io::println(fmt!("rust:: creation_time == %.3f, append_time == %.3f, select_time == %.3f", rust_creation_time, rust_append_time, rust_select_time));
 
-	let c_file_content_result = io::read_whole_file_str(&Path(~"r_output.txt"));
+	let c_file_content_result = io::read_whole_file_str(&Path(~"c_output.txt"));
 
 	let mut c_file_content:~str = ~"";
 
@@ -87,9 +87,9 @@ fn main() {
 
     io::println(fmt!("c::    creation_time == %.3f, append_time == %.3f, select_time == %.3f", c_creation_time, c_append_time, c_select_time));
 
-    let creation_perf:uint = (rust_creation_time / c_creation_time) as uint;
-    let append_perf:uint = (rust_append_time / c_append_time) as uint;
-    let select_perf:uint = (rust_append_time / c_append_time) as uint;
+    let creation_perf:float = (rust_creation_time / c_creation_time);
+    let append_perf:float = (rust_append_time / c_append_time);
+    let select_perf:float = (rust_select_time / c_select_time);
 
-    io::println(fmt!("perf:: creation: %?x, append: %?x, select: %?x", creation_perf, append_perf, select_perf));
+    io::println(fmt!("perf:: creation: %.3fx, append: %.3fx, select: %.3fx", creation_perf, append_perf, select_perf));
 }
