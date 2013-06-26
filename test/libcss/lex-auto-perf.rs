@@ -1,7 +1,6 @@
 extern mod std;
 extern mod css;
 extern mod parserutils ; 
-extern mod wapcaplet;
 
 use css::utils::errors::*;
 use css::lex::lexer::*;
@@ -20,8 +19,7 @@ pub struct line_ctx_lex {
 
 fn check_newline(x: &u8) -> bool { *x == ('\n' as u8) }
 
-pub type  line_func =  
-    ~extern fn(data:~str , pw:&mut line_ctx_lex) -> bool;
+pub type  line_func = ~extern fn(data:~str , pw:&mut line_ctx_lex) -> bool;
 
 fn token_to_string(token:css_token_type)-> ~str {
     let mut returnString =~"";
@@ -182,7 +180,7 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx_lex)->bool
 }
 
 fn testMain(fileName: ~str) {
-    // debug!(~"testMain : "+ fileName);
+    debug!("Entering: testMain, fileName == %?", fileName);
     let ctx: @mut line_ctx_lex = @mut line_ctx_lex
     {
         mut buf:~[],
@@ -217,7 +215,7 @@ fn testMain(fileName: ~str) {
 
 
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
-    // debug!("run test");
+    debug!("Entering: run_test");
     let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
 
     let inputstream = 
@@ -240,75 +238,25 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     end_time = std::time::precise_time_ns();
 
     let append_time = (end_time as float - start_time as float);
-    let mut get_token_time = 0 as float;
-    // debug!(~"after append data="+ from_bytes(*data));
-    let mut index = 0;
+    
+    let mut index=0;
+    start_time = std::time::precise_time_ns();
     loop {
-        start_time = std::time::precise_time_ns();
-        let (error,token_option)= lexer.css__lexer_get_token();
-        end_time = std::time::precise_time_ns();
+        debug!("Entering: run_test loop");
+        let (error,_)= lexer.css__lexer_get_token();
 
-        get_token_time += (end_time as float - start_time as float);
-       
         match(error)    {
-            CSS_OK => {
-                let token = token_option.unwrap();
-                // debug!(foundmt!("token == %?", token));
-
-                let token_type_string = token_to_string(token.token_type);
-                // unsafe{debug!(fmt!("token bytes == %?", token.data.data));}
-                let token_data = str::from_bytes(copy token.data.data);
-                let mut found = token_type_string;
-                
-                if ((token.token_type as int) < (CSS_TOKEN_LAST_INTERN as int)) {
-                    found += token_data;
-                }
-
-                if  !match_vec_u8(exp[index] , found) {
-                    debug!("Expected token == %?", (&exp[index]));
-                    debug!("Found token == %?", (found));
-                    fail!(~"Expected and Found tokens do not match.");
-
-                }
-
-                index += 1;
-            },
+            CSS_OK => {},
             _=>{
-                debug!("error = %?", error);
-                    if token_option.is_some() {
-                        
-                        let token = token_option.unwrap();
-                        // debug!(fmt!("token == %?", token));
-
-                        let token_type_string = token_to_string(token.token_type);
-                        let token_data = str::from_bytes(copy token.data.data);
-
-                        let found = fmt!("%s%s" , token_type_string , token_data);
-
-                        debug!("found == %?", found);
-                        debug!("Expected token == %?", (exp[index]));
-                        if  !match_vec_u8(exp[index] , found) {
-                        debug!("Expected token == %?", (exp[index]));
-                        debug!("Found token == %?", (found));
-                        fail!(~"Expected and Found tokens do not match.");
-
-                    }
-                    index += 1;
-                }
                 break;
             }
         } // match
+        index += 1;
 
         if (index == exp.len()) {break;}
-        
     }
-
-    assert!(index == exp.len());
-    // io::println     ("-----------------------");
-    // io::println(fmt!("creation  : %.3f usec", creation_time / 1000f));
-    // io::println(fmt!("appending : %.3f usec", append_time / 1000f));
-    // io::println(fmt!("lexing    : %.3f usec", get_token_time / 1000f));
-    // io::println     ("-----------------------");
+    end_time = std::time::precise_time_ns();
+    let get_token_time = (end_time as float - start_time as float);
 
     io::println(fmt!("%.3f, %.3f, %.3f", creation_time, append_time, get_token_time));
 }
@@ -316,6 +264,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
 
 #[test]
 fn tests1() {
+    debug!("Entering: tests1");
     testMain(~"data/lex/tests1.dat");
 }
 
@@ -327,8 +276,4 @@ fn tests2() {
 #[test]
 fn regression() {
     testMain(~"data/lex/regression.dat");
-}
-
-fn main() {
-    testMain(~"data/lex/tests1.dat");
 }

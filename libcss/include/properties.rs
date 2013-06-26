@@ -483,8 +483,7 @@ pub enum css_line_height_e {
 pub enum css_list_style_image_e {
     CSS_LIST_STYLE_IMAGE_INHERIT        = 0x0,
     /* Consult pointer in struct to determine which */
-    CSS_LIST_STYLE_IMAGE_URI        = 0x1,
-    CSS_LIST_STYLE_IMAGE_NONE       = 0x2
+    CSS_LIST_STYLE_IMAGE_URI_OR_NONE       = 0x1,
 }
 
 pub enum css_list_style_position_e {
@@ -626,8 +625,7 @@ pub enum css_position_e {
 pub enum css_quotes_e {
     CSS_QUOTES_INHERIT          = 0x0,
 /* Consult pointer in struct to determine which */
-    CSS_QUOTES_STRING           = 0x1,
-    CSS_QUOTES_NONE             = 0x2
+    CSS_QUOTES_STRING_OR_NONE           = 0x1,
 }
 
 pub enum css_right_e {
