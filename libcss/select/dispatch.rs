@@ -1498,12 +1498,12 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
         },
         None=>{
             let (a,b,c) = css_computed_font_size(style);
-            psize.status = a;
+            size.status = a;
             let length = @mut css_hint_length { 
                 value:b.get_or_default(0) , 
                 unit:c.get_or_default(CSS_UNIT_PX) 
             };
-            psize.length = Some(length);
+            size.length = Some(length);
             error = (*compute_font_size_ptr)(None,Some(size));
         }
     }
