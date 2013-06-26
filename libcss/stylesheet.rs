@@ -76,9 +76,9 @@ pub struct css_system_font {
 
 pub type css_fixed = i32;
 
-pub type css_url_resolution_fn = @extern fn (base:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>);
+pub type css_url_resolution_fn = @extern fn (base:@str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>);
 pub type css_font_resolution_fn = @extern fn (name: arc::RWARC<~lwc_string>) -> (css_error , Option<css_system_font>);
-pub type css_import_notification_fn =  @extern fn(url:~str, media:@mut u64) -> css_error;
+pub type css_import_notification_fn =  @extern fn(url:@str, media:@mut u64) -> css_error;
 pub type css_color_resolution_fn = @extern fn (name: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error);
 
 
@@ -138,8 +138,8 @@ pub struct css_stylesheet {
     rule_list:Option<CSS_RULE_DATA_TYPE>,   /**< List of rules in sheet */
     last_rule:Option<CSS_RULE_DATA_TYPE>,   /**< Last rule in list */
     disabled:bool,                          /**< Whether this sheet is  disabled */
-    url:~str,                               /**< URL of this sheet */
-    title:~str,                             /**< Title of this sheet */
+    url:@str,                               /**< URL of this sheet */
+    title:@str,                             /**< Title of this sheet */
     level:css_language_level,               /**< Language level of sheet */
     quirks_allowed:bool,                    /**< Quirks permitted */
     quirks_used:bool,                       /**< Quirks actually used */
@@ -187,7 +187,7 @@ pub struct css_rule_page {
 
 pub struct css_rule_import {
     base:@mut css_rule,
-    url:~str,
+    url:@str,
     media:u64,
     sheet:Option<@mut css_stylesheet>
 } 
@@ -752,7 +752,7 @@ impl css_stylesheet {
             CSS_RULE_IMPORT=>   {   
                 let mut ret_rule = @mut css_rule_import{
                     base:base_rule,
-                    url:~"",
+                    url:@"",
                     media:0,
                     sheet:None
                 };  
@@ -894,7 +894,7 @@ impl css_stylesheet {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_set_nascent_import(
-        css_rule : CSS_RULE_DATA_TYPE, url_str:~str, media:u64) -> css_error {
+        css_rule : CSS_RULE_DATA_TYPE, url_str:@str, media:u64) -> css_error {
         debug!("Entering: css__stylesheet_rule_set_nascent_import");
         match css_rule {
             RULE_IMPORT(x) => {

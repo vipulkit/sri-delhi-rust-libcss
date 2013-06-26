@@ -1971,7 +1971,7 @@ pub impl css_properties {
                 }
                 else if match token.token_type {CSS_TOKEN_URI  => true, _ => false} {
                     
-                    match (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone()){
+                    match (*sheet.resolve)(sheet.url, token.idata.get_ref().clone()){
                         (CSS_OK, Some(uri)) => {
                             let uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri));
                             CSS_APPEND(first, CONTENT_URI);
@@ -2460,7 +2460,7 @@ pub impl css_properties {
                    ) {
 
                 let mut uri:arc::RWARC<~lwc_string>;
-                match (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone()) {
+                match (*sheet.resolve)(sheet.url, token.idata.get_ref().clone()) {
                     (CSS_OK, Some(x)) => {
                         uri =x;
                     },
@@ -4112,7 +4112,7 @@ pub impl css_properties {
             let mut modifiers:int = 0;
             value = PLAY_DURING_URI as u16;
             let mut uri:arc::RWARC<~lwc_string>;
-            match (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone()) {
+            match (*sheet.resolve)( sheet.url, token.idata.get_ref().clone()) {
                 (CSS_OK, Some(x)) => {
                     uri =x;
                 },

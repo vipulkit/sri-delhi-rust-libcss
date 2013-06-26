@@ -292,7 +292,7 @@ pub impl css_language {
         } 
         else if self.strings.lwc_string_caseless_isequal(atkeyword.idata.get_ref().clone(), LIBCSS_IMPORT as uint) {
             if self.state as uint <= IMPORT_PERMITTED as uint {
-                let mut url:~str;
+                let mut url:@str;
                 let mut media:@mut u64 =@mut  0;
 
                 /* any0 = (STRING | URI) ws 
@@ -323,15 +323,15 @@ pub impl css_language {
                 let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_IMPORT);
 
                 /* Resolve import URI */
-                match (*self.sheet.resolve)(copy self.sheet.url, uri.idata.get_ref().clone())
+                match (*self.sheet.resolve)(self.sheet.url, uri.idata.get_ref().clone())
                 { 
-                    (CSS_OK,Some(ret_url)) => url = lwc_string_data(ret_url),
+                    (CSS_OK,Some(ret_url)) => url = lwc_string_data(ret_url).to_managed(),
                     (error,_) => return error
                 }   
 
                
                 /* Inform rule of it */
-                match css_stylesheet::css__stylesheet_rule_set_nascent_import(temp_rule, copy url, *media){
+                match css_stylesheet::css__stylesheet_rule_set_nascent_import(temp_rule, url, *media){
                     CSS_OK => {},
                     error => return error
                 }
