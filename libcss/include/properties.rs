@@ -131,8 +131,9 @@ pub enum css_background_image_e {
     CSS_BACKGROUND_IMAGE_INHERIT        = 0x0,
     /* Consult pointer in struct to determine which */
     CSS_BACKGROUND_IMAGE_NONE       = 0x1,
-    CSS_BACKGROUND_IMAGE_IMAGE      = 0x2
 }
+
+pub static CSS_BACKGROUND_IMAGE_IMAGE : uint = 0x1;
 
 pub enum css_background_position_e {
     CSS_BACKGROUND_POSITION_INHERIT     = 0x0,
@@ -326,15 +327,17 @@ pub enum css_counter_increment_e {
     CSS_COUNTER_INCREMENT_INHERIT       = 0x0,
     /* Consult pointer in struct to determine which */
     CSS_COUNTER_INCREMENT_NAMED     = 0x1,
-    CSS_COUNTER_INCREMENT_NONE      = 0x2
 }
+
+pub static CSS_COUNTER_INCREMENT_NONE : uint = 0x1 ;
 
 pub enum css_counter_reset_e {
     CSS_COUNTER_RESET_INHERIT       = 0x0,
     /* Consult pointer in struct to determine which */
     CSS_COUNTER_RESET_NAMED         = 0x1,
-    CSS_COUNTER_RESET_NONE          = 0x2
 }
+
+pub static CSS_COUNTER_RESET_NONE : uint = 0x1 ;
 
 pub enum css_cursor_e {
     CSS_CURSOR_INHERIT          = 0x00,
