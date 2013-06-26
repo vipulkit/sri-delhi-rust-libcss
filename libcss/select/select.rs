@@ -1515,13 +1515,14 @@ impl css_select_ctx {
 
             if n != ptr::null() {
                 /* Match its details */
+                debug!("");
                 error = self.match_details(n, detail, state, match_result, None);
                 match error {
                     CSS_OK => {},
                     err => return err
                 }
-				
-				debug!(fmt!("match_result=%?", match_result));
+                
+                debug!(fmt!("match_result=%?", match_result));
                 /* If we found a match, use it */
                 if (*match_result == true){
                     break   
@@ -1549,7 +1550,6 @@ impl css_select_ctx {
 
         return CSS_OK;
     }
-
     pub fn match_selector_chain(&mut self, selector:Option<@mut css_selector>,
                             state:@mut css_select_state) -> css_error {
 
@@ -1588,7 +1588,7 @@ impl css_select_ctx {
 
         unsafe {
             /* Iterate up the selector chain, matching combinators */
-            while ( s.is_some() ) {
+            loop {
                 let mut next_node : *libc::c_void = ptr::null();
 
                 /* Consider any combinator on this selector */
@@ -1667,6 +1667,10 @@ impl css_select_ctx {
                 /* Details matched, so progress to combining selector */
                 s = s.get().combinator;
                 node = next_node;
+
+                if s.is_none() {
+                    break;
+                }
             } 
         }
         /* If we got here, then the entire selector chain matched, so cascade */
