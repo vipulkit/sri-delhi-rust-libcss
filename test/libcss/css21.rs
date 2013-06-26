@@ -35,7 +35,7 @@ fn css_create_params() -> css_params {
 
 fn create_css() -> @mut css{
     let mut lwc = wapcaplet::lwc();
-    let css = css_create(css_create_params() , Some(lwc));
+    let css = css_create( &css_create_params() , Some(lwc));
     css
 }
 

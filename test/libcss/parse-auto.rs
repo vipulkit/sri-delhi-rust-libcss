@@ -462,7 +462,7 @@ pub fn run_test(ctx:@mut line_ctx) {
 
     let mut lwc_instance = lwc() ;
 
-    let mut css_instance = css::css_create(copy params,Some(lwc_instance.clone())) ;
+    let mut css_instance = css::css_create( &params,Some(lwc_instance.clone())) ;
 
     error = css_instance.css_stylesheet_append_data(copy (ctx.buf));
     match error {
@@ -505,7 +505,7 @@ pub fn run_test(ctx:@mut line_ctx) {
             CSS_OK=> {
                 params.url = copy url;
 
-                let mut import = css::css_create(copy params,Some(lwc_instance.clone())) ;
+                let mut import = css::css_create(&params,Some(lwc_instance.clone())) ;
                 
                 assert!(    match css_instance.css_stylesheet_register_import(
                                                         Some(import.stylesheet)) {

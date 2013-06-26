@@ -32,7 +32,7 @@ fn fill_params() -> css_params {
 
 fn css_create_fn() -> @mut css{
     let mut lwc = wapcaplet::lwc();
-    let css = css_create(fill_params() , Some(lwc));
+    let css = css_create( &fill_params() , Some(lwc));
     css
 }
 

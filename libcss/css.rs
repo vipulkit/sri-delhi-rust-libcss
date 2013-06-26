@@ -55,7 +55,7 @@ pub struct css_params {
 }
 
 pub impl css {
-	pub fn css_create(params: css_params, lwc_instance: Option<arc::RWARC<~lwc>>) -> @mut css {
+	pub fn css_create(params: &css_params, lwc_instance: Option<arc::RWARC<~lwc>>) -> @mut css {
 		// create lwc
 		let lwc = 	if lwc_instance.is_none() { 
 						lwc()

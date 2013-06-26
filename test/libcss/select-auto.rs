@@ -498,7 +498,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
     }
     let params = css_create_params();
     let mut lwc_ins = unsafe {ctx.lwc_instance.clone() } ;
-    let sheet:@mut css = css::css_create(params, Some(lwc_ins.clone()) );
+    let sheet:@mut css = css::css_create(&params, Some(lwc_ins.clone()) );
     debug!("Sheet created in select-auto ");
     let mut sheet_ctx_ins = @mut sheet_ctx {
         sheet: sheet,
