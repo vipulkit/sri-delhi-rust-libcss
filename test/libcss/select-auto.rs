@@ -1523,7 +1523,7 @@ fn ua_default_for_property(property:u32, hint:@mut css_hint ) -> css_error {
 	else if property == CSS_PROP_QUOTES as u32 {
 		/* Not exactly useful :) */
 		hint.strings = None;
-		hint.status = CSS_QUOTES_NONE as u8;
+		hint.status = CSS_QUOTES_STRING_OR_NONE as u8;
 	}
 	else if property == CSS_PROP_VOICE_FAMILY as u32 {
 		// \todo Fix this when we have voice-family done 

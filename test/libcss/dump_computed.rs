@@ -1079,7 +1079,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     else if (url != ~"") {
         ptr.push_str(fmt!("list-style-image => url('%s')\n",url));
     }
-    else if (val == CSS_LIST_STYLE_IMAGE_NONE as u8) {
+    else if (val == CSS_LIST_STYLE_IMAGE_URI_OR_NONE as u8) {
         ptr.push_str("list-style-image: none\n");
     } 
 
@@ -1440,7 +1440,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     let (val,string_list) = css_computed_quotes(style);
     let mut string_list_index = 0;
 
-    if (val == CSS_QUOTES_STRING as u8 && string_list.len() != 0) {
+    if (val == CSS_QUOTES_STRING_OR_NONE as u8 && string_list.len() != 0) {
         ptr.push_str("quotes:");
         
         while (string_list_index < string_list.len()) {
@@ -1456,10 +1456,8 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
         match (val_enum) {
             CSS_QUOTES_INHERIT =>
                 ptr.push_str("quotes: inherit\n"),
-            CSS_QUOTES_NONE =>
+            CSS_QUOTES_STRING_OR_NONE =>
                 ptr.push_str("quotes: none\n"),
-            _ =>
-                {}
         }
     }
 
