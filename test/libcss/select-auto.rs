@@ -138,7 +138,7 @@ pub fn select_test(file:~str) {
 		run_test(ctx, select_time);
 	}
 
-	io::println(fmt!("creation_time == %?us, append_time == %?us, select_time == %?us", (*creation_time as float)/1000f, (*append_time as float)/1000f, (*select_time as float)/1000f));
+	io::println(fmt!("#creation_time:%?\n#append_time:%?\n#select_time:%?\n", (*creation_time as float)/1000f, (*append_time as float)/1000f, (*select_time as float)/1000f));
 }
 
 pub fn resolve_url(_:@str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>){
