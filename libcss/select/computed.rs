@@ -102,11 +102,11 @@ pub fn css_computed_border_spacing(
             bits = bits >> CSS_BORDER_SPACING_SHIFT ;
 
             if bits == (CSS_BORDER_SPACING_SET as u8) { 
-                let mut bits1 = uncommon_struct.bits[2];
+                let mut bits1 = uncommon_struct.bits[CSS_BORDER_SPACING_INDEX1];
                 bits1 = bits1 & (CSS_BORDER_SPACING_MASK1 as u8);
                 bits1 = bits1 >> CSS_BORDER_SPACING_SHIFT1 ;
 
-                result.hlength = uncommon_struct.border_spacing[CSS_BORDER_SPACING_INDEX1];
+                result.hlength = uncommon_struct.border_spacing[0];
                 result.hunit = unsafe { cast::transmute((bits1 >> 4)as int) } ;
 
                 result.vlength = uncommon_struct.border_spacing[1];
