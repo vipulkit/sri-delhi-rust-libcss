@@ -8,7 +8,7 @@ use css::stylesheet::*;
 use css::utils::errors::*;
 use wapcaplet::*;
 
-pub fn resolve_url(_:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>) {
+pub fn resolve_url(_:@str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
@@ -438,9 +438,9 @@ pub fn run_test(ctx:@mut line_ctx) {
         /* The charset of the stylesheet data, or NULL to detect */
         charset : Some(~"UTF-8"),
         /* URL of stylesheet */
-        url : ~"foo",
+        url : @"foo",
         /* Title of stylesheet */
-        title : ~"",
+        title : @"",
 
         /* Permit quirky parsing of stylesheet */
         allow_quirks : false,
@@ -499,7 +499,7 @@ pub fn run_test(ctx:@mut line_ctx) {
             _=>{false}
         } );
 
-        let mut url = o_str.get_or_default(~"") ;
+        let mut url = o_str.get_or_default(@"") ;
 
         match error {
             CSS_OK=> {

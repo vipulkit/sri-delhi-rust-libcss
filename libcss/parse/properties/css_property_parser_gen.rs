@@ -174,7 +174,7 @@ pub fn output_uri(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
         let mut output : ~str = ~" if match token.token_type { CSS_TOKEN_URI => true, _ => false} {\n";
         
         str::push_str(&mut output,"\n");
-        str::push_str(&mut output,"\t\tmatch (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone()) {\n");
+        str::push_str(&mut output,"\t\tmatch (*sheet.resolve)(sheet.url, token.idata.get_ref().clone()) {\n");
         str::push_str(&mut output,"\t\t\t(CSS_OK, Some(uri)) => {\n");
         str::push_str(&mut output,"\t\t\t\tlet uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri));\n");
         str::push_str(&mut output,fmt!("\t\t\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s );\n",parseid.val,kvlist[0].val));
