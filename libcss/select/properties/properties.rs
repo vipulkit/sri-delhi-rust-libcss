@@ -188,13 +188,13 @@ pub fn css__cascade_bg_border_color(opv:u32, style:@mut css_style, state:@mut cs
 pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_select_state, 
 	fun:Option<@extern fn (@mut css_computed_style, u8, ~str)>) -> css_error {
 	
-	let mut value = CSS_BACKGROUND_IMAGE_INHERIT;
+	let mut value : uint = CSS_BACKGROUND_IMAGE_INHERIT as uint;
 	let mut uri: Option<~str> = None;
 	//let mut error:css_error;
 
 	if !isInherit(opv) {
 		match getValue(opv) {
-			BACKGROUND_IMAGE_NONE => value = CSS_BACKGROUND_IMAGE_NONE,
+			BACKGROUND_IMAGE_NONE => value = CSS_BACKGROUND_IMAGE_NONE as uint,
 			BACKGROUND_IMAGE_URI => {
 				value = CSS_BACKGROUND_IMAGE_IMAGE;
 				let (_, ret_uri) = style.sheet.get().css__stylesheet_string_get(peek_bytecode(style) as uint);
@@ -464,7 +464,7 @@ pub fn css__cascade_page_break_after_before_inside(opv:u32, _:@mut css_style, st
 pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state:@mut css_select_state,
 	fun:@extern fn (@mut css_computed_style, u8, ~[@mut css_computed_counter]) ) -> css_error {
 
-	let mut value = CSS_COUNTER_INCREMENT_INHERIT;
+	let mut value : uint = CSS_COUNTER_INCREMENT_INHERIT as uint;
 	let mut counters:~[@mut css_computed_counter] = ~[];
 	
 	if !isInherit(opv) {
@@ -7257,6 +7257,8 @@ pub fn css__compose_counter_increment(parent:@mut css_computed_style,
 									child:@mut css_computed_style,
 									result:@mut css_computed_style
 									) -> css_error {
+
+
 
 	let mut (ftype,ocounters) = css_computed_counter_increment(child);
 
