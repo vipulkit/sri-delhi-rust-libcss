@@ -118,36 +118,36 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx_lex)->bool
     let mut data : ~[u8] = args ;
     // unsafe{debug!(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
     if  (data.len() == 0) {
-		// debug!("error");
-		return true;
-	}
+        // debug!("error");
+        return true;
+    }
 
-	if (data[0] == '#' as u8) {
-		if (ctx.inexp) {
-			/* This marks end of testcase, so run it */
+    if (data[0] == '#' as u8) {
+        if (ctx.inexp) {
+            /* This marks end of testcase, so run it */
 
-			run_test(copy ctx.buf , copy ctx.exp);
-			ctx.exp= ~[];
-			ctx.buf=~[];
-		}
-		if (ctx.indata && match_vec_u8(data, &"#expected")) {
-			ctx.indata = false;
-			ctx.inexp = true;
-		} else if (!ctx.indata) {
-			ctx.indata = match_vec_u8(data,&"#data");
-			ctx.inexp  = match_vec_u8(data,&"#expected");
-		} else {
-			ctx.buf += copy data;
+            run_test(copy ctx.buf , copy ctx.exp);
+            ctx.exp= ~[];
+            ctx.buf=~[];
+        }
+        if (ctx.indata && match_vec_u8(data, &"#expected")) {
+            ctx.indata = false;
+            ctx.inexp = true;
+        } else if (!ctx.indata) {
+            ctx.indata = match_vec_u8(data,&"#data");
+            ctx.inexp  = match_vec_u8(data,&"#expected");
+        } else {
+            ctx.buf += copy data;
             ctx.buf.push('\n' as u8);
-		}
-	}
-	else {
-		if ctx.indata {
-			ctx.buf += copy data;
+        }
+    }
+    else {
+        if ctx.indata {
+            ctx.buf += copy data;
             ctx.buf.push('\n' as u8);
-			
-		}
-		if (ctx.inexp) {
+            
+        }
+        if (ctx.inexp) {
 
             let mut unescaped_data = ~[];
             let mut counter = 1;
@@ -175,22 +175,22 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx_lex)->bool
             }
             
             ctx.exp.push(unescaped_data);
-		}
-	}
+        }
+    }
 
-	return true;
+    return true;
 }
 
 fn testMain(fileName: ~str) {
-	// debug!(~"testMain : "+ fileName);
-	let ctx: @mut line_ctx_lex = @mut line_ctx_lex
+    // debug!(~"testMain : "+ fileName);
+    let ctx: @mut line_ctx_lex = @mut line_ctx_lex
     {
-		mut buf:~[],
-		mut exp : ~[],
+        mut buf:~[],
+        mut exp : ~[],
 
-		mut indata:false,
-		mut inexp:false
-	};
+        mut indata:false,
+        mut inexp:false
+    };
 
     let file_content_result = io::read_whole_file(&Path(fileName)) ;
     let mut file_content : ~[u8] ;
@@ -209,16 +209,16 @@ fn testMain(fileName: ~str) {
     for vec_lines.each |&each_line| {
         handle_line(each_line,ctx);
     }
-	
+    
     if unsafe {copy ctx.buf.len()} > 0 {
-		run_test(copy ctx.buf,copy ctx.exp);
-	}
+        run_test(copy ctx.buf,copy ctx.exp);
+    }
 }
 
 
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
-	// debug!("run test");
-	let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
+    // debug!("run test");
+    let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
 
     let inputstream = 
         match(inputStreamOption) {
@@ -250,7 +250,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
 
         get_token_time += (end_time as float - start_time as float);
        
-        match(error)	{
+        match(error)    {
             CSS_OK => {
                 let token = token_option.unwrap();
                 // debug!(foundmt!("token == %?", token));
@@ -264,12 +264,9 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
                     found += token_data;
                 }
 
-                //let found = {copy str::trim(found_str)};
-                // debug!(fmt!("Expected token bytes == %?", str::to_bytes(exp[index])));
-                // debug!(fmt!("match token == %?" , match_vec_u8(&exp[index] , found)));
                 if  !match_vec_u8(exp[index] , found) {
-                    // debug!(fmt!("Expected token == %?", (&exp[index])));
-                    // debug!(fmt!("Found token == %?", (found)));
+                    debug!("Expected token == %?", (&exp[index]));
+                    debug!("Found token == %?", (found));
                     fail!(~"Expected and Found tokens do not match.");
 
                 }
@@ -277,8 +274,8 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
                 index += 1;
             },
             _=>{
-                // debug!(fmt!("error = %?", error));
-            	if token_option.is_some() {
+                debug!("error = %?", error);
+                if token_option.is_some() {
                     
                     let token = token_option.unwrap();
                     // debug!(fmt!("token == %?", token));
@@ -288,11 +285,11 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
 
                     let found = fmt!("%s%s" , token_type_string , token_data);
 
-                    // debug!(fmt!("found == %?", found));
-                    // debug!(fmt!("Expected token == %?", (exp[index])));
+                    debug!("found == %?", found);
+                    debug!("Expected token == %?", (exp[index]));
                     if  !match_vec_u8(exp[index] , found) {
-                    // debug!(fmt!("Expected token == %?", (exp[index])));
-                    // debug!(fmt!("Found token == %?", (found)));
+                    debug!("Expected token == %?", (exp[index]));
+                    debug!("Found token == %?", (found));
                     fail!(~"Expected and Found tokens do not match.");
 
                 }

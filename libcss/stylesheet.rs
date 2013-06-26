@@ -1478,7 +1478,7 @@ impl css_selector_hash {
                         // added , due to logical incompatibilty with "_remove_into_chain"
                         // in origical code , _remove_into_chain removes by comparing pointer values,
                         // and freeing the final result , by doing reallocation of 0 bytes ( line num : 650-671 , hash.c)
-                        io::println("_insert_into_chain : error: double insertion of same selector ") ;
+                        debug!("_insert_into_chain : error: double insertion of same selector ") ;
                         return CSS_BADPARM;
                     }
 
@@ -1488,7 +1488,7 @@ impl css_selector_hash {
 
                     if search.selector.specificity == selector.specificity {
                         if(search.selector.rule.is_none() || selector.rule.is_none() ){
-                            io::println("_insert_into_chain : error : rule is none  ") ;
+                            debug!("_insert_into_chain : error : rule is none  ") ;
                             return CSS_BADPARM ;
                         }
 
@@ -1513,16 +1513,18 @@ impl css_selector_hash {
                     };
                 }
                 if(first_pos){
+                    debug!("Entering: _insert_into_chain:: if(first_pos)");
                     entry.next = Some(index_element);
                     (*hash_entry_list)[index] = Some(entry);
                 }
                 else {
+                    debug!("Entering: _insert_into_chain:: if(first_pos)--else");
                     entry.next=prev.next;
                     prev.next= Some(entry);
                 }
             }
         }
-        io::println("_insert_into_chain : after insertion list is ") ;
+        debug!("_insert_into_chain : after insertion list is ") ;
         css_selector_hash::debug_print_hash_entry_list((*hash_entry_list)[index]) ;
         CSS_OK
     }
@@ -1982,18 +1984,18 @@ impl css_selector_hash {
 
     pub fn debug_print_hash_entry_list(current : Option<@mut hash_entry>) {
 
-        io::println("Starting Printing hash_entry linked list ======");
+        debug!("Starting Printing hash_entry linked list ======");
         let mut ptr = current ;
         loop {
             match ptr {
                 None=>{ 
-                    io::print("None Encountered");
-                    io::println("Ending Printing hash_entry linked list ======");
+                    debug!("None Encountered");
+                    debug!("Ending Printing hash_entry linked list ======");
                     return ;
                 },
                 Some(x)=>{
                     unsafe {
-                    io::print(fmt!("Selector:specificity=%?=,data=%?=",x.selector.specificity,x.selector.data));
+                    debug!(fmt!("Selector:specificity=%?=,data=%?=",x.selector.specificity,x.selector.data));
                     }
                     ptr = x.next ;
                 }
