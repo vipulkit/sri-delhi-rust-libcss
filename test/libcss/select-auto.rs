@@ -121,7 +121,7 @@ pub fn select_test(file:~str) {
 	for str::each_line_any(file_content) |line| { 
         let mut line_string: ~str = line.to_str(); 
 		line_string.push_char('\n');
-		debug!("Handling line =%?=",copy line_string);
+		// debug!("Handling line =%?=",copy line_string);
 	    handle_line(&mut line_string,ctx);
     	}	
 
@@ -783,11 +783,16 @@ pub fn run_test( ctx:@mut line_ctx) {
     assert!(results.styles[ctx.pseudo_element].is_some());
     dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
 
+
+
     //debug!(" CSS Selection result is =%?=%?=",results,copy ctx.exp);
     let mut string:~str = copy ctx.exp;
+    io::println(fmt!("Expected : %s ",string));
+    io::println(fmt!("Result: %s",buf));
+
     if !str::eq( &buf.to_owned().to_lower(), &(copy string).to_lower() ) {
-        io::println(fmt!("Expected : %s ",string));
-        io::println(fmt!("Result: %s",buf));
+        // io::println(fmt!("Expected : %s ",string));
+        // io::println(fmt!("Result: %s",buf));
         fail!(~"Select result mismatched with expected");
     }
     else {
@@ -802,11 +807,12 @@ pub fn run_test( ctx:@mut line_ctx) {
  }
 
 
- fn node_name(n:*libc::c_void, qname : &mut css_qname) -> css_error {
+fn node_name(n:*libc::c_void, qname : &mut css_qname) -> css_error {
 
 	let node : @mut node;
 	unsafe {
 		node = ::cast::transmute(n);
+		cast::forget(node);
 		qname.name = lwc_string_data((node.name).get_ref().clone());
 	}
 
@@ -818,7 +824,9 @@ fn node_classes(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[~str] ) -> cs
 	let mut lc : @mut line_ctx;
 	unsafe {
 		node = ::cast::transmute(n);
+		cast::forget(node);
 		lc = ::cast::transmute(pw);
+		cast::forget(lc);
 
 		let mut i = 0;
 		let n_attrs = node.attrs.len();
@@ -850,7 +858,9 @@ fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut ~str ) -> css_error{
 	let mut lc : @mut line_ctx;
 	unsafe {
 		node = ::cast::transmute(n);
+		cast::forget(node);
 		lc = ::cast::transmute(pw);
+		cast::forget(lc);
 
 		let mut i = 0;
 		let n_attrs = node.attrs.len();
@@ -879,6 +889,7 @@ fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *lib
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 	}
 	
 	if node1.parent.is_none() {
@@ -900,6 +911,7 @@ fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *lib
 	}
 	unsafe {
 		*ancestor =  ::cast::transmute(node1);
+		cast::forget(*ancestor);
 	}
 	CSS_OK
 }
@@ -908,6 +920,7 @@ fn named_parent_node(n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 		*parent = ptr::null();
 	}	
 	if node1.parent.is_some() {
@@ -921,6 +934,7 @@ fn named_parent_node(n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_
 		if matched {
 			unsafe {
 				*parent = ::cast::transmute(parent_node);
+				cast::forget(*parent);
 			}
 		}		
 	}	
@@ -931,6 +945,7 @@ fn named_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc:
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 		*sibling = ptr::null();
 	}	
 	if node1.prev.is_some() {
@@ -944,6 +959,7 @@ fn named_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc:
 		if matched {
 			unsafe {
 				*sibling = ::cast::transmute(prev_node);
+				cast::forget(*sibling);
 			}
 		}		
 	}	
@@ -954,6 +970,7 @@ fn named_generic_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mu
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 	}
 	if node1.prev.is_none() {
 		unsafe {
@@ -975,6 +992,7 @@ fn named_generic_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mu
 	}
 	unsafe {
 		*sibling =  ::cast::transmute(node1);
+		cast::forget(*sibling);
 	}
 	CSS_OK
 }
@@ -983,8 +1001,10 @@ fn parent_node(n:*libc::c_void, parent:*mut*libc::c_void) -> css_error {
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n); 
+		cast::forget(node1);
 		
 		*parent = ::cast::transmute(node1.parent.unwrap());
+		cast::forget(*parent);
 				
 	}
 	CSS_OK
@@ -994,8 +1014,10 @@ fn sibling_node(n:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 		
 		*sibling = ::cast::transmute(node1.prev.unwrap());
+		cast::forget(*sibling);
 			
 	}
 	CSS_OK
@@ -1005,6 +1027,7 @@ fn node_has_name(_:*libc::c_void, n:*libc::c_void, qname:css_qname, matched:@mut
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 	}
 	if qname.name.len() == 1 && qname.name[0] == '*' as u8 {
 		*matched = true;
@@ -1063,7 +1086,9 @@ fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:arc::RWARC<~lwc_string>, 
 	let mut i:u32 = 0 ;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 		ctx = ::cast::transmute(pw);
+		cast::forget(ctx);
 	}
 	unsafe {
 		
@@ -1099,6 +1124,7 @@ fn node_has_attribute(n:*libc::c_void, qname:css_qname, matched:@mut bool) -> cs
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 	}
 	let mut i:u32 = 0 ;
 	//let mut vlen = value.len();
@@ -1121,6 +1147,7 @@ fn  node_has_attribute_equal(n:*libc::c_void, qname:css_qname,value:~str, matche
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 	}
 	let mut i:u32 = 0 ;
 	
@@ -1150,6 +1177,7 @@ fn node_has_attribute_includes(n:*libc::c_void, qname:css_qname,value:~str, matc
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 	}
 	
 	let mut i:u32 = 0 ;
@@ -1196,6 +1224,7 @@ fn node_has_attribute_dashmatch(n:*libc::c_void, qname:css_qname,value:~str, mat
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 	}
 	let mut i:u32 = 0 ;
 	let mut vlen = value.len();
@@ -1239,6 +1268,7 @@ fn node_has_attribute_prefix(n:*libc::c_void, qname:css_qname,value:~str, matche
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 	}
 	let mut i:u32 = 0 ;
 	*matched = false;
@@ -1272,6 +1302,7 @@ fn node_has_attribute_suffix(n:*libc::c_void, qname:css_qname,value:~str, matche
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 	}
 	let mut i:u32 = 0 ;
 	*matched = false;
@@ -1308,6 +1339,7 @@ fn node_has_attribute_substring(n:*libc::c_void, qname:css_qname,value:~str, mat
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 	}
 	let mut i:u32 = 0 ;
 	*matched = false;
@@ -1352,6 +1384,7 @@ fn node_is_root(n:*libc::c_void, matched:@mut bool) -> css_error {
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 	}
 	*matched = node1.parent.is_none();
 	CSS_OK
@@ -1365,6 +1398,7 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
 	let mut name: arc::RWARC<~lwc_string> ;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 		name = (node1.name).get_ref().clone();
 	}
 	
@@ -1418,6 +1452,7 @@ fn node_is_empty(n:*libc::c_void, matched:@mut bool) -> css_error {
 	let mut node1:@mut node;
 	unsafe {
 		node1 = ::cast::transmute(n);
+		cast::forget(node1);
 	}
 	*matched = node1.children.is_none();
 	CSS_OK
