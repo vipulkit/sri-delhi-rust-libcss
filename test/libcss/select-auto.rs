@@ -780,6 +780,7 @@ pub fn run_test( ctx:@mut line_ctx) {
     }
 
     
+    io::println(fmt!("Result: %?",results));
     assert!(results.styles[ctx.pseudo_element].is_some());
     dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
 
