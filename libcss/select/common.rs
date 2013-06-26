@@ -809,7 +809,7 @@ pub fn advance_bytecode(style: @mut css_style) {
 pub fn peek_bytecode(style: @mut css_style) -> u32 {
     unsafe{
         if style.bytecode.len() - style.used > 0 {
-            io::println(fmt!("bytecode=%?",style.bytecode)); 
+            debug!(fmt!("bytecode=%?",style.bytecode)); 
 			style.bytecode[style.used] 
         }
         else {
