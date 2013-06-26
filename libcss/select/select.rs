@@ -1588,7 +1588,7 @@ impl css_select_ctx {
 
         unsafe {
             /* Iterate up the selector chain, matching combinators */
-            while ( s.is_some() ) {
+            loop {
                 let mut next_node : *libc::c_void = ptr::null();
 
                 /* Consider any combinator on this selector */
@@ -1667,6 +1667,10 @@ impl css_select_ctx {
                 /* Details matched, so progress to combining selector */
                 s = s.get().combinator;
                 node = next_node;
+
+                if s.is_none() {
+                    break;
+                }
             } 
         }
         /* If we got here, then the entire selector chain matched, so cascade */
