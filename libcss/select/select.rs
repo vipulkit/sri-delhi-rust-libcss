@@ -1720,7 +1720,11 @@ impl css_select_ctx {
         debug!(fmt!("Entering match_universal_combinator")) ;
         let detail :~[@mut css_selector_detail] = copy selector.data;
         let mut n:*libc::c_void = node;
-        let mut next_detail:Option<@mut css_selector_detail> = None; 
+        io::println(fmt!("n = %?", n));
+		if ( n == ptr::null()){
+			io::println("Node Is Null");
+		}
+		let mut next_detail:Option<@mut css_selector_detail> = None; 
         let mut error:css_error;
         
         if (detail.len() > 1){
@@ -1754,12 +1758,13 @@ impl css_select_ctx {
         }
 
         loop {
-            let mut match_result = false;
+            let mut match_result = @mut false;
 
             /* Find candidate node */
             match (combinator_type) {
                 CSS_COMBINATOR_ANCESTOR | 
                 CSS_COMBINATOR_PARENT => {
+					io::println(fmt!("n = %?", n));
                     error = (*state.handler.get().parent_node)(n, &mut n);
                     match error {
                         CSS_OK => {},
@@ -1779,14 +1784,14 @@ impl css_select_ctx {
 
             if (n != ptr::null()) {
                 /* Match its details */
-                error = self.match_details(n, vec::slice(detail,1,detail.len()), state, @mut match_result, None);
+                error = self.match_details(n, vec::slice(detail,1,detail.len()), state, match_result, None);
                 match error {
                     CSS_OK => {},
                     err => return err
                 }
 
                 /* If we found a match, use it */
-                if (match_result == true){
+                if (*match_result == true){
                     break   
                 }
 
@@ -1804,8 +1809,8 @@ impl css_select_ctx {
                 if n == ptr::null() {
                 break
             }    
-            }
-        } 
+        }
+    } 
 
         unsafe { *next_node = n };
 

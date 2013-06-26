@@ -228,6 +228,7 @@ pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_selec
 	let mut value = CSS_BORDER_STYLE_INHERIT;
 
 	if !isInherit(opv)  {
+        debug!("css__cascade_border_style :: getValue(opv) == %?" , getValue(opv));
 		match getValue(opv) {
 			BORDER_STYLE_NONE => value = CSS_BORDER_STYLE_NONE,
 			BORDER_STYLE_HIDDEN => value = CSS_BORDER_STYLE_HIDDEN,
@@ -688,13 +689,14 @@ pub fn css__compose_background_color(parent:@mut css_computed_style,
 ///////////////////////////////////////////////////////////////////
 pub fn css__cascade_background_image(opv:u32, style:@mut css_style, 
 									state:@mut css_select_state) -> css_error {
+    debug!("Entering: css_cascade_background_image");
 	return css__cascade_uri_none(opv, style, state, Some(@set_background_image) );
 }
 
 pub fn css__set_background_image_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
 										) -> css_error {
-
+    debug!("Entering: css__set_background_image_from_hint");
 	match hint.hint_type {
 		STRING=>{
 			match hint.string {
@@ -715,6 +717,7 @@ pub fn css__set_background_image_from_hint(hint:@mut  css_hint,
 
 pub fn css__initial_background_image(state:@mut css_select_state) -> css_error {
 
+    debug!("Entering: css__initial_background_image");
 	set_background_image(state.computed, 
 		(CSS_BACKGROUND_IMAGE_NONE as u8), ~"");
 	CSS_OK
@@ -725,6 +728,7 @@ pub fn css__compose_background_image(parent:@mut css_computed_style,
 									result:@mut css_computed_style
 									) -> css_error {
 
+    debug!("Entering: css_compose_background_image");
 	let mut (ftype,url) = css_computed_background_image(child);
 
 	if (ftype == (CSS_BACKGROUND_IMAGE_INHERIT as u8) ) {
@@ -745,6 +749,7 @@ pub fn css__compose_background_image(parent:@mut css_computed_style,
 pub fn css__cascade_background_position(opv:u32, style:@mut css_style, 
 									state:@mut css_select_state) -> css_error {
 
+    debug!("Entering: css_cascade_background_position");
 	let mut  value : u16 = CSS_BACKGROUND_POSITION_INHERIT as u16;
 	let mut hlength : i32 = 0;
 	let mut vlength : i32  = 0;
@@ -754,7 +759,9 @@ pub fn css__cascade_background_position(opv:u32, style:@mut css_style,
 	if ( isInherit(opv) == false) {
 		value = CSS_BACKGROUND_POSITION_SET as u16;
 
+        debug!("css__cascade_background_position :: opv == %?" , opv);
 		let mut compare = getValue(opv) & 0xf0 ;
+        debug!("css__cascade_background_position :: compare == %?" , compare);
 		if( compare == (BACKGROUND_POSITION_HORZ_SET as u16) ) {
 			hlength = peek_bytecode(style) as i32 ;
 			advance_bytecode(style);
@@ -816,7 +823,7 @@ pub fn css__cascade_background_position(opv:u32, style:@mut css_style,
 pub fn css__set_background_position_from_hint(hint:@mut  css_hint, 
 										style:@mut css_computed_style
 										) -> css_error {
-
+    debug!("Entering: css__set_background_position_from_hint");
 	match hint.hint_type {
 		HINT_LENGTH_H_V=>{
 			match hint.position {
@@ -839,6 +846,7 @@ pub fn css__set_background_position_from_hint(hint:@mut  css_hint,
 
 pub fn css__initial_background_position(state:@mut css_select_state) -> css_error {
 
+    debug!("Entering: css__initial_background_position");
 	set_background_position(state.computed, 
 		(CSS_BACKGROUND_POSITION_SET as u8), 0,CSS_UNIT_PCT , 0, CSS_UNIT_PCT);
 	CSS_OK
@@ -849,6 +857,7 @@ pub fn css__compose_background_position(parent:@mut css_computed_style,
 									final:@mut css_computed_style
 									) -> css_error {
 
+    debug!("Entering: css_computed_background_position");
 	let mut result = css_computed_background_position(child);
 
 	if (result.result == (CSS_BACKGROUND_POSITION_INHERIT as u8) ) {
@@ -3775,7 +3784,7 @@ pub fn css__set_list_style_image_from_hint(hint:@mut  css_hint,
 pub fn css__initial_list_style_image(state:@mut css_select_state) -> css_error {
 
 	set_list_style_image(state.computed, 
-			(CSS_LIST_STYLE_IMAGE_NONE as u8) , ~"" );
+			(CSS_LIST_STYLE_IMAGE_URI_OR_NONE as u8) , ~"" );
 	CSS_OK
 }
 
@@ -5526,7 +5535,7 @@ pub fn css__cascade_quotes(opv:u32, style:@mut css_style,
 	if (isInherit(opv) == false) {
 		let mut v : u32 = getValue(opv) as u32 ;
 
-		value = CSS_QUOTES_STRING as u16;
+		value = CSS_QUOTES_STRING_OR_NONE as u16;
 
 		while (v != (QUOTES_NONE as u32) ) {
 
