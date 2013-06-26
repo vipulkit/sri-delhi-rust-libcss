@@ -1003,9 +1003,13 @@ fn parent_node(n:*libc::c_void, parent:*mut*libc::c_void) -> css_error {
 		node1 = ::cast::transmute(n); 
 		cast::forget(node1);
 		
-		*parent = ::cast::transmute(node1.parent.unwrap());
-		cast::forget(*parent);
-				
+		if node1.parent.is_some() {
+			*parent = ::cast::transmute(node1.parent.unwrap());
+			cast::forget(*parent);	
+		}
+		else {
+			*parent = ptr::null();
+		}
 	}
 	CSS_OK
 }
@@ -1016,9 +1020,13 @@ fn sibling_node(n:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
 		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 		
-		*sibling = ::cast::transmute(node1.prev.unwrap());
-		cast::forget(*sibling);
-			
+		if node1.prev.is_some() {
+			*sibling = ::cast::transmute(node1.prev.unwrap());
+			cast::forget(*sibling);	
+		}
+		else {
+			*sibling = ptr::null();
+		}
 	}
 	CSS_OK
 }
@@ -1035,7 +1043,6 @@ fn node_has_name(_:*libc::c_void, n:*libc::c_void, qname:css_qname, matched:@mut
 	else {
 		unsafe {
 			*matched = is_string_caseless_equal(lwc_string_data(node1.name.get_ref().clone()),qname.name);
-			//*matched = str::eq(&lwc_string_data(node1.name.get_ref().clone()).to_lower(),&qname.name.to_lower());
 		}		
 	}
 	CSS_OK
@@ -1132,7 +1139,6 @@ fn node_has_attribute(n:*libc::c_void, qname:css_qname, matched:@mut bool) -> cs
 	unsafe {
 		while (i as uint) < node1.attrs.len() {
 			*matched = is_string_caseless_equal(lwc_string_data(node1.attrs[i].name.clone()),qname.name);
-			//*matched = str::eq(&lwc_string_data(node1.attrs[i].name.clone()).to_lower(),&qname.name.to_lower());
 			if *matched {
 				break;
 			}
@@ -1155,7 +1161,6 @@ fn  node_has_attribute_equal(n:*libc::c_void, qname:css_qname,value:~str, matche
 	unsafe {
 		while (i as uint) < node1.attrs.len() {
 			*matched = is_string_caseless_equal(lwc_string_data(node1.attrs[i].name.clone()),qname.name);
-			//*matched = str::eq(&lwc_string_data(node1.attrs[i].name.clone()).to_lower(),&qname.name.to_lower());
 			if *matched {
 				break;
 			}
@@ -1164,7 +1169,6 @@ fn  node_has_attribute_equal(n:*libc::c_void, qname:css_qname,value:~str, matche
 	
 		if *matched {
 			*matched = is_string_caseless_equal(lwc_string_data(node1.attrs[i].name.clone()),value);
-			//*matched = str::eq(&lwc_string_data(node1.attrs[i].name.clone()).to_lower(),&value.to_lower());
 		}
 	}
 	CSS_OK
@@ -1188,7 +1192,6 @@ fn node_has_attribute_includes(n:*libc::c_void, qname:css_qname,value:~str, matc
 	unsafe {
 		while (i as uint) < node1.attrs.len() {
 			*matched = is_string_caseless_equal(lwc_string_data(node1.attrs[i].name.clone()),qname.name);
-			//*matched = str::eq(&lwc_string_data(node1.attrs[i].name.clone()),&qname.name);
 			if *matched {
 				break;
 			}
@@ -1206,7 +1209,6 @@ fn node_has_attribute_includes(n:*libc::c_void, qname:css_qname,value:~str, matc
 				if start[p] == ' ' as u8 {
 					if (p - start_len == vlen) && 
 					is_string_caseless_equal(start.slice(start_len,start_len + vlen).to_owned(),value) {
-					//(str::eq(&start.slice(start_len,start_len + vlen).to_owned().to_lower(),&value.to_lower())) {
 						*matched = true;
 						break;
 					}
@@ -1232,7 +1234,6 @@ fn node_has_attribute_dashmatch(n:*libc::c_void, qname:css_qname,value:~str, mat
 	unsafe {
 		while (i as uint) < node1.attrs.len() {
 			*matched = is_string_caseless_equal(lwc_string_data(node1.attrs[i].name.clone()),qname.name);
-			//*matched = str::eq(&lwc_string_data(node1.attrs[i].name.clone()),&qname.name);
 			if *matched {
 				break;
 			}
@@ -1250,7 +1251,6 @@ fn node_has_attribute_dashmatch(n:*libc::c_void, qname:css_qname,value:~str, mat
 				if start[p] == '-' as u8 {
 					if (p - start_len == vlen) && 
 					is_string_caseless_equal(start.slice(start_len,start_len + vlen).to_owned(),value) {
-					//(str::eq(&start.slice(start_len,start_len + vlen).to_owned().to_lower(),&value.to_lower())) {
 						*matched = true;
 						break;
 					}
@@ -1275,7 +1275,6 @@ fn node_has_attribute_prefix(n:*libc::c_void, qname:css_qname,value:~str, matche
 	unsafe {
 		while (i as uint) < node1.attrs.len() {
 			*matched = is_string_caseless_equal(lwc_string_data(node1.attrs[i].name.clone()),qname.name);
-			//*matched = str::eq(&lwc_string_data(node1.attrs[i].name.clone()),&qname.name);
 			if *matched {
 				break;
 			}
@@ -1291,7 +1290,6 @@ fn node_has_attribute_prefix(n:*libc::c_void, qname:css_qname,value:~str, matche
 			}
 			else {
 				*matched = is_string_caseless_equal(data.slice(0, vlen).to_owned(),value);
-				//*matched = str::eq(&data.slice(0, vlen).to_owned().to_lower(),&value.to_lower());
 			}
 		}
 	}
@@ -1309,7 +1307,6 @@ fn node_has_attribute_suffix(n:*libc::c_void, qname:css_qname,value:~str, matche
 	unsafe {
 		while (i as uint) < node1.attrs.len() {
 			*matched = is_string_caseless_equal(lwc_string_data(node1.attrs[i].name.clone()),qname.name);
-			//*matched = str::eq(&lwc_string_data(node1.attrs[i].name.clone()),&qname.name);
 			if *matched {
 				break;
 			}
@@ -1346,7 +1343,6 @@ fn node_has_attribute_substring(n:*libc::c_void, qname:css_qname,value:~str, mat
 	unsafe {
 		while (i as uint) < node1.attrs.len() {
 			*matched = is_string_caseless_equal(lwc_string_data(node1.attrs[i].name.clone()),qname.name);
-			//*matched = str::eq(&lwc_string_data(node1.attrs[i].name.clone()),&qname.name);
 			if *matched {
 				break;
 			}
@@ -1357,7 +1353,6 @@ fn node_has_attribute_substring(n:*libc::c_void, qname:css_qname,value:~str, mat
 			let mut data = lwc_string_data(node1.attrs[i].value.clone());
 			let vlen = value.len();
 			let last_start_len = len -vlen;
-			//let last_start = data.slice(last_start_len,data.len()).to_owned();
 			if len < vlen {
 				*matched = false;
 			}
@@ -1365,7 +1360,6 @@ fn node_has_attribute_substring(n:*libc::c_void, qname:css_qname,value:~str, mat
 				let mut iter:uint = 0;
 				while iter < last_start_len {
 					if is_string_caseless_equal(data.slice(iter,iter + vlen).to_owned(),value) {
-					//if str::eq(&data.slice(iter,iter + vlen).to_owned().to_lower(),& value/*.slice(0,vlen).to_owned()*/.to_lower()) {
 						*matched =true;
 						break;
 					}
@@ -1583,6 +1577,9 @@ fn compute_font_size(parent: Option<@mut css_hint>, size: Option<@mut css_hint>)
 	  		size_val = size.unwrap();
 	  	}
 
+	  	unsafe {
+	  		io::println(fmt!("size_val.status == %? , CSS_FONT_SIZE_INHERIT as u8 == %u" , size_val.status , CSS_FONT_SIZE_INHERIT as uint));
+	  	}
 	  	assert!(size_val.status != CSS_FONT_SIZE_INHERIT as u8);
 
 	  	if size_val.status < CSS_FONT_SIZE_LARGER as u8 {
