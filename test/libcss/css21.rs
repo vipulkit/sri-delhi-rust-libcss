@@ -12,7 +12,7 @@ use css::utils::errors::*;
 use wapcaplet::*;
 use dump::*;
 
-pub fn resolve_url(_:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>) {
+pub fn resolve_url(_:@str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
@@ -21,8 +21,8 @@ fn css_create_params() -> css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
         charset : Some(~"UTF-8"),
-        url : ~"foo",
-        title : ~"",
+        url : @"foo",
+        title : @"",
         allow_quirks : false,
         inline_style : false,
         resolve : @resolve_url,
@@ -35,7 +35,7 @@ fn css_create_params() -> css_params {
 
 fn create_css() -> @mut css{
     let mut lwc = wapcaplet::lwc();
-    let css = css_create(css_create_params() , Some(lwc));
+    let css = css_create( &css_create_params() , Some(lwc));
     css
 }
 

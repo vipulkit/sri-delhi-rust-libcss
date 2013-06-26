@@ -32,9 +32,9 @@ pub struct css_params {
 		/** The charset of the stylesheet data, or NULL to detect */
 		charset : Option<~str>,
 		/** URL of stylesheet */
-		url : ~str,
+		url : @str,
 		/** Title of stylesheet */
-		title : ~str,
+		title : @str,
 
 		/** Permit quirky parsing of stylesheet */
 		allow_quirks : bool,
@@ -55,7 +55,7 @@ pub struct css_params {
 }
 
 pub impl css {
-	pub fn css_create(params: css_params, lwc_instance: Option<arc::RWARC<~lwc>>) -> @mut css {
+	pub fn css_create(params: &css_params, lwc_instance: Option<arc::RWARC<~lwc>>) -> @mut css {
 		// create lwc
 		let lwc = 	if lwc_instance.is_none() { 
 						lwc()
@@ -81,8 +81,8 @@ pub impl css {
 			rule_list:None,   
 			last_rule:None,   
 			disabled:false,                          
-			url:copy params.url,                               
-			title:copy params.title,                             
+			url:params.url,                               
+			title:params.title,                             
 			level:params.level,               
 			quirks_allowed:params.allow_quirks,                    
 			quirks_used:false,                       
@@ -240,9 +240,9 @@ pub impl css {
 	* #Return Value:
     *   '(css_error,~str)' - (CSS_OK , title).
     */
-	pub fn css_stylesheet_get_title(&mut self) -> (css_error,~str) {
+	pub fn css_stylesheet_get_title(&mut self) -> (css_error,@str) {
 
-	    (CSS_OK,copy self.stylesheet.title)
+	    (CSS_OK,self.stylesheet.title)
 	}
 
     /**
@@ -252,9 +252,9 @@ pub impl css {
 	* #Return Value:
     *   '(css_error,~str)' - (CSS_OK , url).
     */
-	pub fn css_stylesheet_get_url(&mut self) -> (css_error,~str) {
+	pub fn css_stylesheet_get_url(&mut self) -> (css_error,@str) {
 
-	    (CSS_OK,copy self.stylesheet.url)
+	    (CSS_OK,self.stylesheet.url)
 	}
 
     /**
@@ -292,7 +292,7 @@ pub impl css {
 												(appropriate error, None, None) otherwise.
     */
 	pub fn css_stylesheet_next_pending_import(&mut self) -> 
-	                            (css_error,Option<~str>,Option<u64>) {
+	                            (css_error,Option<@str>,Option<u64>) {
 
 	    let mut ptr = self.stylesheet.rule_list ;
 	    loop {
@@ -304,7 +304,7 @@ pub impl css {
 	                match current_rule {
 	                    RULE_IMPORT(irule)=>{
 	                        if irule.sheet.is_none() {
-	                            return (CSS_OK,Some(copy irule.url),Some(irule.media));
+	                            return (CSS_OK,Some(irule.url),Some(irule.media));
 	                        }
 	                        else {
 	                            ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;

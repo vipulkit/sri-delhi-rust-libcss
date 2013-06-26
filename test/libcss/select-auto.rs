@@ -130,7 +130,7 @@ pub fn select_test(file:~str) {
 	}
 }
 
-pub fn resolve_url(_:~str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>){
+pub fn resolve_url(_:@str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>){
 
 	(CSS_OK, Some(rel.clone()))
 }
@@ -140,8 +140,8 @@ pub fn css_create_params() -> css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
         charset : Some(~"UTF-8"),
-        url : ~"foo",
-        title : ~"foo",
+        url : @"foo",
+        title : @"foo",
         allow_quirks : false,
         inline_style : false,
         resolve : @resolve_url,
@@ -498,7 +498,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
     }
     let params = css_create_params();
     let mut lwc_ins = unsafe {ctx.lwc_instance.clone() } ;
-    let sheet:@mut css = css::css_create(params, Some(lwc_ins.clone()) );
+    let sheet:@mut css = css::css_create(&params, Some(lwc_ins.clone()) );
     debug!("Sheet created in select-auto ");
     let mut sheet_ctx_ins = @mut sheet_ctx {
         sheet: sheet,

@@ -263,7 +263,7 @@ pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut 
 
     match token.token_type {
         CSS_TOKEN_URI => {
-            match (*sheet.resolve)(copy sheet.url, token.idata.get_ref().clone())
+            match (*sheet.resolve)(sheet.url, token.idata.get_ref().clone())
             { 
                 (CSS_OK,loc) => location =loc,
                 (error,_) => return (error,None)
