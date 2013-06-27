@@ -123,16 +123,22 @@ pub fn select_test(file:~str) {
 		}
 	}
 
+	let mut creation_time = @mut 0;
+	let mut append_time = @mut 0;
+	let mut select_time = @mut 0;
+
 	for str::each_line_any(file_content) |line| { 
         let mut line_string: ~str = line.to_str(); 
 		line_string.push_char('\n');
 		// debug!("Handling line =%?=",copy line_string);
-	    handle_line(&mut line_string,ctx);
-    	}	
+	    handle_line(&mut line_string,ctx, creation_time, append_time, select_time);
+    }	
 
-	if( ctx.tree.is_some() ) {
-		run_test(ctx);
+	if (ctx.tree.is_some() ) {
+		run_test(ctx, select_time);
 	}
+
+	io::println(fmt!("#creation_time:%?\n#append_time:%?\n#select_time:%?\n", (*creation_time as float)/1000f, (*append_time as float)/1000f, (*select_time as float)/1000f));
 }
 
 pub fn resolve_url(_:@str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>){
@@ -157,7 +163,7 @@ pub fn css_create_params() -> css_params {
      return css_param;
 }
 
-pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
+pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, creation_time:@mut u64, append_time:@mut u64, select_time:@mut u64) -> bool {
 
 	let mut error : css_error ;
 	let mut len : uint ; 
@@ -173,7 +179,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
             }
             else {
                 /* Assume start of stylesheet */
-                css__parse_sheet(ctx, data,1);
+                css__parse_sheet(ctx, data,1, creation_time);
                 debug!("Sheet parsed 1");
                 ctx.intree = false;
                 ctx.insheet = true;
@@ -205,12 +211,16 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
                             CSS_OK=>{true},
                             _=>{false}
                         });
-                css__parse_sheet(ctx, data,1);
+                css__parse_sheet(ctx, data,1, creation_time);
                 debug!("Sheet parsed 2");
             }
             else {
                 len = unsafe { ctx.sheets.len() -1 } ;
+                let start_time = std::time::precise_time_ns();
                 let mut error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.to_bytes());
+                let end_time = std::time::precise_time_ns();
+                *append_time += (end_time - start_time);
+
                 assert!( match error {
                             CSS_OK=>{true},
                             CSS_NEEDDATA=>{true},
@@ -228,7 +238,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
         else if (ctx.inexp) {
         	debug!("in ctx inexp");
             /* This marks end of testcase, so run it */
-            run_test(ctx);
+            run_test(ctx, select_time);
 	
 	    	//ctx.expused = 0;
 
@@ -257,7 +267,10 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx) -> bool {
         }
         else if ( ctx.insheet ) {
             len = unsafe { ctx.sheets.len() -1 } ;
+            let start_time = std::time::precise_time_ns();
             error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.to_bytes());
+            let end_time = std::time::precise_time_ns();
+            *append_time += (end_time - start_time);
             assert!( match error {
                         CSS_OK=>{true},
                         CSS_NEEDDATA=>{true},
@@ -457,7 +470,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 
 }
 
-pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
+pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, creation_time:@mut u64) {
 	debug!("\n Entering css__parse_sheet ") ;
     let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
     let mut p : uint = index;
@@ -477,8 +490,8 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
         origin = CSS_ORIGIN_UA;
     }
     else {
-	println("Unknown stylesheet origin");
-            assert!(false);
+		debug!("Unknown stylesheet origin");
+        assert!(false);
     }
     
     /* Skip any whitespace */
@@ -491,7 +504,13 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint) {
     }
     let params = css_create_params();
     let mut lwc_ins = unsafe {ctx.lwc_instance.clone() } ;
+
+    let start_time = std::time::precise_time_ns();
     let sheet:@mut css = css::css_create(&params, Some(lwc_ins.clone()) );
+    let end_time = std::time::precise_time_ns();
+
+    *creation_time += (end_time - start_time);
+
     debug!("Sheet created in select-auto ");
     let mut sheet_ctx_ins = @mut sheet_ctx {
         sheet: sheet,
@@ -664,7 +683,7 @@ pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> u
 //
 //}
 
-pub fn run_test( ctx:@mut line_ctx) {
+pub fn run_test( ctx:@mut line_ctx, select_time:@mut u64) {
 	//debug!("\n Entering run test =%?=",ctx) ;
     let mut select: ~css_select_ctx;
     let mut results: css_select_results;
@@ -766,8 +785,16 @@ pub fn run_test( ctx:@mut line_ctx) {
 		
     unsafe {
 		let pw = @mut ctx_pw{attr_class:lwc_string_data(ctx.attr_class.clone()), attr_id:lwc_string_data(ctx.attr_id.clone())};
-    	io::println(fmt!("pw=%?",pw));
-		let mut result = select.css_select_style(cast::transmute(ctx.target.unwrap()),ctx.media as u64,None, select_handler,::cast::transmute(pw));
+    	debug!(fmt!("pw=%?",pw));
+    	let target = cast::transmute(ctx.target.unwrap());
+    	let pw_ptr = ::cast::transmute(pw);
+
+    	let start_time = std::time::precise_time_ns();
+		let mut result = select.css_select_style(target,ctx.media as u64,None, select_handler,pw_ptr);
+		let end_time = std::time::precise_time_ns();
+
+		*select_time += (end_time - start_time);
+
     	match result {
     	    (CSS_OK,Some(x)) => results = x,
    		       _=> fail!(~"During css_select_style in select-auto")
@@ -780,10 +807,10 @@ pub fn run_test( ctx:@mut line_ctx) {
 
 
 
-    io::println(fmt!(" CSS Selection result is =%?",results));
+    debug!(fmt!(" CSS Selection result is =%?",results));
     let mut string:~str = copy ctx.exp;
-    io::println(fmt!("Expected : %s ",string));
-    io::println(fmt!("Result: %s",buf));
+    debug!(fmt!("Expected : %s ",string));
+    debug!(fmt!("Result: %s",buf));
 
     if !str::eq( &buf.to_owned().to_lower(), &(copy string).to_lower() ) {
         fail!(~"Select result mismatched with expected");
@@ -1052,8 +1079,8 @@ fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:arc::RWARC<~lwc_string
 		ctx = ::cast::transmute(pw);
 		cast::forget(pw);
 	
-		io::println(fmt!("node1.attrs.len=%?",node1.attrs.len()));
-		io::println(fmt!("node1.attrs[i].name=%?",copy node1.attrs[i].name));
+		debug!(fmt!("node1.attrs.len=%?",node1.attrs.len()));
+		debug!(fmt!("node1.attrs[i].name=%?",copy node1.attrs[i].name));
 		len = node1.attrs.len();
 		
 		while i < len {
@@ -1576,7 +1603,7 @@ fn compute_font_size(parent: Option<@mut css_hint>, size: Option<@mut css_hint>)
 	  	}
 
 	  	unsafe {
-	  		io::println(fmt!("size_val.status == %? , CSS_FONT_SIZE_INHERIT as u8 == %u" , size_val.status , CSS_FONT_SIZE_INHERIT as uint));
+	  		debug!(fmt!("size_val.status == %? , CSS_FONT_SIZE_INHERIT as u8 == %u" , size_val.status , CSS_FONT_SIZE_INHERIT as uint));
 	  	}
 	  	assert!(size_val.status != CSS_FONT_SIZE_INHERIT as u8);
 
