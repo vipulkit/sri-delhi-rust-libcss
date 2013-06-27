@@ -1704,15 +1704,12 @@ impl css_selector_hash {
                 },
                 Some(node_element)=>{
 
-                    for node_element.selector.data.each_mut |&detail_element| {
-                        unsafe {
-                            if css_selector_hash::is_string_caseless_equal(
-                                detail_element.qname.name,name) {
+                    unsafe {
+                    if css_selector_hash::is_string_caseless_equal(
+                                node_element.selector.data[0].qname.name,name) {
                                 debug!("Exiting: css__selector_hash_find (1)");
                                 return (head,CSS_OK);
-                            }
-                        }
-                    }
+                    }}
 
                     match node_element.next {
                         None=> {
@@ -1868,7 +1865,7 @@ impl css_selector_hash {
                             return (None,CSS_INVALID);
                         }
                         if css_selector_hash::is_string_caseless_equal(
-                            head.selector.data[0].qname.name,
+                            current.selector.data[0].qname.name,
                             next_entry.selector.data[0].qname.name) == true {
 
                             return (head.next,CSS_OK);
