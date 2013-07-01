@@ -1092,37 +1092,42 @@ fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:arc::RWARC<~lwc_string
 			}
 			i += 1;
 		}
-
-		/* Classes are case-sensitive in HTML */
-		let mut condition_match : bool = false;
-		do lwc().write |l| {
-			let lwc_attrs_value = l.lwc_intern_string(copy node1.attrs[i].value);
-			condition_match = l.lwc_string_caseless_isequal(name.clone(), lwc_attrs_value);
-		}
-		
-		if (i != node1.attrs.len()) && condition_match {
-			*matched = true;
-		}
-		else {
-			*matched = false;
-		}
 	}
+	
+	/* Classes are case-sensitive in HTML */
+	let mut condition_match : bool = false;
+	if (i != len) {
+		//io::println(fmt!("name=%?",lwc_string_data(name.clone())));
+		//io::println(fmt!("node1.attrs[i].name=%?",copy node1.attrs[i].value));
+		condition_match = is_string_caseless_equal(lwc_string_data(name.clone()), copy node1.attrs[i].value);
+	}
+	
+	if condition_match {
+		*matched = true;
+	}
+	else {
+		*matched = false;
+	}
+
+	//io::println(fmt!("node_has_class match=%?",*matched));
+	
 	CSS_OK
 }
 
 fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error {
 	let mut node1:@mut node;
 	let mut ctx: @mut  ctx_pw;
-	let mut i:u32 = 0 ;
+	let mut i:uint = 0 ;
+	let len:uint;
+	
 	unsafe {
 		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 		ctx = ::cast::transmute(pw);
 		cast::forget(ctx);
-	}
-	unsafe {
+		len = node1.attrs.len();
 		
-		while (i as uint) < node1.attrs.len() {
+		while i  < len {
 			let mut amatched: bool = false;
 			do lwc().write |l| {
 					let lwc_attr_id = l.lwc_intern_string(copy ctx.attr_id);
@@ -1134,21 +1139,25 @@ fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:arc::RWARC<~lwc_string>, 
 			}
 			i += 1;
 		}
-
-		/* IDs are case-sensitive in HTML */
-		let mut condition_match : bool = false;
-		do lwc().write |l| {
-			let lwc_attrs_value = l.lwc_intern_string(copy node1.attrs[i].value);
-			condition_match = l.lwc_string_caseless_isequal(name.clone(), lwc_attrs_value);
-		}
-		
-		if i != (node1.attrs.len()as u32 ) && condition_match {
-			*matched = true;
-		}
-		else {
-			*matched = false;
-		}
 	}
+	
+	/* IDs are case-sensitive in HTML */
+	let mut condition_match : bool = false;
+	if (i != len) {
+		//io::println(fmt!("name=%?",lwc_string_data(name.clone())));
+		//io::println(fmt!("node1.attrs[i].name=%?",copy node1.attrs[i].value));
+		condition_match = is_string_caseless_equal(lwc_string_data(name.clone()), copy node1.attrs[i].value);
+	}
+	
+	if condition_match {
+		*matched = true;
+	}
+	else {
+		*matched = false;
+	}
+
+	//io::println(fmt!("node_has_id match=%?",*matched));
+		
 	CSS_OK
 }
 
