@@ -570,7 +570,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
 
                 if (value & (AZIMUTH_BEHIND as u32) > 0) {
-                    str::push_str(ptr , &"behind");
+                    str::push_str(ptr , &" behind");
                 }
             }
 
@@ -714,7 +714,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
 
                 else if value as int == BACKGROUND_REPEAT_REPEAT as int {
-                    str::push_str(ptr , &"repeat-repeat");
+                    str::push_str(ptr , &"repeat");
                 }
             }
 

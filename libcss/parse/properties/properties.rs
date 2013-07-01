@@ -429,6 +429,7 @@ pub impl css_properties {
         let orig_ctx = *ctx;
         let mut prev_ctx;
         let mut error = CSS_OK; 
+        let mut is_inherit_error = CSS_OK; 
         let mut attachment = true;
         let mut color = true;
         let mut image = true;
@@ -474,9 +475,8 @@ pub impl css_properties {
             prev_ctx = *ctx;
             
             if (is_css_inherit(strings, token)) {
-                error = CSS_INVALID;
-                background_cleanup = true;
-                break
+                *ctx = orig_ctx;
+                return CSS_INVALID;
             }
 
             /* Try each property parser in turn, but only if we
@@ -484,37 +484,46 @@ pub impl css_properties {
              */
             
             if attachment &&  match css__parse_background_attachment(sheet, strings, vector, ctx, 
-                attachment_style) { CSS_OK => true, x =>{ error = x; false}} {
+                attachment_style) { CSS_OK => {error = CSS_OK ; true}, x =>{ error = x; false}} {
+                debug!("css__parse_background :: in css__parse_background_attachment");
                 attachment = false
             } 
             else if color &&  match css__parse_background_color(sheet, strings, vector, ctx,
-                color_style) { CSS_OK => true, x =>{ error = x; false}} {
+                color_style) { CSS_OK => {error = CSS_OK ; true}, x =>{ error = x; false}} {
+                debug!("css__parse_background :: in css__parse_background_color");
                 color = false
             } 
             else if image &&  match css__parse_background_image(sheet, strings, vector, ctx,
-                image_style) { CSS_OK => true, x =>{ error = x; false}} {
+                image_style) { CSS_OK => {error = CSS_OK ; true}, x =>{ error = x; false}} {
+                debug!("css__parse_background :: in css__parse_background_image");
                 image = false
             } 
             else if position && match css_properties::css__parse_background_position(sheet, strings, vector, ctx,
-             position_style) { CSS_OK => true, x =>{ error = x; false}} {
+             position_style) { CSS_OK => {error = CSS_OK ; true}, x =>{ error = x; false}} {
+                debug!("css__parse_background :: in css__parse_background_position");
                 position = false
             } else if repeat && match css__parse_background_repeat(sheet, strings, vector, ctx,
-             repeat_style){ CSS_OK => true, x => {error = x; false}} {
+             repeat_style){ CSS_OK => {error = CSS_OK ; true}, x => {error = x; false}} {
+                debug!("css__parse_background :: in css__parse_background_repeat");
                 repeat = false
             }
 
             match error {
                 CSS_OK => {
+                    debug!("css__parse_background :: in match error CSS_OK");
                     consumeWhitespace(vector, ctx);
                     if *ctx >= vector.len() {
                         break   
                     }
                     token = &vector[*ctx];
                 },
-                _ =>  break //Forcibly cause loop to exit
+                _ =>  {
+                    debug!("css__parse_background :: in match error _");
+                    break //Forcibly cause loop to exit
+                }
             }
 
-            if *ctx == prev_ctx {
+            if *ctx == prev_ctx{
                 break
             }
         } 
@@ -550,14 +559,13 @@ pub impl css_properties {
             css_stylesheet::css__stylesheet_merge_style(result, position_style);
             css_stylesheet::css__stylesheet_merge_style(result, repeat_style);
         }
-        
-        match error { 
-            CSS_OK => return CSS_OK,
-            x => {
-                *ctx = orig_ctx ;
-                return x 
-            }
+
+        if is_inherit_error as int != CSS_OK as int {
+            *ctx = orig_ctx;
+            return is_inherit_error;
         }
+        
+        CSS_OK
     }
  
 
