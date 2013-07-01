@@ -100,7 +100,9 @@ pub struct css_lexer {
     context: _context,
     emit_comments: bool,
     current_col: uint,
-    current_line: uint
+    current_line: uint,
+    peek_time:float,
+    append_time:float
 }
 
 // pub fn preprocess(input: &str) -> ~str {
@@ -155,11 +157,17 @@ impl css_lexer {
             context: context_inst,      
             current_col: 1,
             current_line: 1,
+            peek_time:0f,
+            append_time:0f
         }
     }
 
     pub fn css__lexer_append_data(&mut self, input_data: ~[u8]) {
+        let mut start_time = std::time::precise_time_ns();
         self.input.parserutils_inputstream_append(input_data);
+        let mut end_time = std::time::precise_time_ns();
+        let append_data_time = (end_time as float - start_time as float);
+        self.append_time += append_data_time ;
     }
 
     /**
@@ -329,7 +337,13 @@ impl css_lexer {
             unsafe{t.data.len = t.data.data.len();}
         }
         else {
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result, pu_peek_error) = self.input.parserutils_inputstream_peek(0);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
+            //io::println(fmt!("css__lexer_append_data : append_data_time=%?=",append_data_time));
+            
 
             assert!((token_type as int == CSS_TOKEN_EOF as int) || 
                 (pu_peek_error as int == PARSERUTILS_OK as int));
@@ -469,8 +483,12 @@ impl css_lexer {
          */
 
         if (self.substate == Initial as uint) {
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return (css_error_from_parserutils_error(perror), None);
@@ -552,9 +570,12 @@ impl css_lexer {
             
             /* Fall through */
             self.substate = Gt as uint;
-
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return (css_error_from_parserutils_error(perror), None);
@@ -609,8 +630,13 @@ impl css_lexer {
         
 
             /* Ok, so we're dealing with CDC. Expect a '>' */
+
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return (css_error_from_parserutils_error(perror), None);
@@ -671,8 +697,12 @@ impl css_lexer {
 
         if (self.substate == Initial as uint) {
             /* Expect '!' */
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return (css_error_from_parserutils_error(perror), None);
@@ -698,8 +728,12 @@ impl css_lexer {
 
         if (self.substate == Dash1 as uint) {
             /* Expect '-' */
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
-                            self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return (css_error_from_parserutils_error(perror), None);
@@ -731,8 +765,12 @@ impl css_lexer {
 
         if (self.substate == Dash2 as uint) {
             /* Expect '-' */
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
-                    self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return (css_error_from_parserutils_error(perror), None);
@@ -773,8 +811,12 @@ impl css_lexer {
          */
 
         if (self.substate == Initial as uint) {
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return (css_error_from_parserutils_error(perror), None);
@@ -798,8 +840,12 @@ impl css_lexer {
 
         if (self.substate == InComment as uint) {
             loop {
+                let mut start_time = std::time::precise_time_ns();
                 let (pu_peek_result , perror) = 
                     self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+                let mut end_time = std::time::precise_time_ns();
+                let peek_time = (end_time as float - start_time as float);
+                self.peek_time += peek_time ;
 
                 if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                     return (css_error_from_parserutils_error(perror), None);
@@ -905,8 +951,12 @@ impl css_lexer {
         }
 
         if (self.substate == Bracket as uint) {
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
-                    self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return (css_error_from_parserutils_error(perror), None);
@@ -943,8 +993,12 @@ impl css_lexer {
          * The first character has been consumed.
          */
 
+        let mut start_time = std::time::precise_time_ns();
         let (pu_peek_result , perror) = 
             self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+        let mut end_time = std::time::precise_time_ns();
+        let peek_time = (end_time as float - start_time as float);
+        self.peek_time += peek_time ;
 
         if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
             return (css_error_from_parserutils_error(perror), None);
@@ -1002,8 +1056,12 @@ impl css_lexer {
 
         if (self.substate == Dot as uint) {
             
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return (css_error_from_parserutils_error(perror), None);
@@ -1059,8 +1117,12 @@ impl css_lexer {
         }
         
         if (self.substate == Suffix as uint) {
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return (css_error_from_parserutils_error(perror), None);
@@ -1189,8 +1251,12 @@ impl css_lexer {
             }
 
             // debug!(fmt!("start:: self.bytes_read_for_token == %?", self.bytes_read_for_token));
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 // debug!("Entering: perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int");
@@ -1347,8 +1413,12 @@ impl css_lexer {
          * The 'u' (or 'U') has been consumed.
          */
 
+        let mut start_time = std::time::precise_time_ns();
         let (pu_peek_result , perror) = 
-                        self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+        let mut end_time = std::time::precise_time_ns();
+        let peek_time = (end_time as float - start_time as float);
+        self.peek_time += peek_time ;
 
         if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
             return (css_error_from_parserutils_error(perror), None);
@@ -1395,8 +1465,12 @@ impl css_lexer {
          */
 
         if (self.substate == Initial as uint) {
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return (css_error_from_parserutils_error(perror), None);
@@ -1426,8 +1500,12 @@ impl css_lexer {
 
         if (self.substate == LParen as uint) {
 
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return (css_error_from_parserutils_error(perror), None);
@@ -1473,8 +1551,12 @@ impl css_lexer {
         }
 
         if (self.substate == Quote as uint) {
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return (css_error_from_parserutils_error(perror), None);
@@ -1552,8 +1634,12 @@ impl css_lexer {
         }
 
         if (self.substate == RParen as uint) {
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return (css_error_from_parserutils_error(perror), None);
@@ -1597,8 +1683,12 @@ impl css_lexer {
         if (self.substate == Initial as uint) {
             /* Attempt to consume 6 hex digits (or question marks) */
             while (self.context.hex_count < 6) {
-                let (pu_peek_result , perror) = 
-                    self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut start_time = std::time::precise_time_ns();
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
                 if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                     return (css_error_from_parserutils_error(perror), None);
@@ -1643,8 +1733,12 @@ impl css_lexer {
 
             else if (self.context.hex_count == 6) {
                 /* Consumed 6 valid characters. Look for '-' */
+                let mut start_time = std::time::precise_time_ns();
                 let (pu_peek_result , perror) = 
                     self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+                let mut end_time = std::time::precise_time_ns();
+                let peek_time = (end_time as float - start_time as float);
+                self.peek_time += peek_time ;
 
                 if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                     return (css_error_from_parserutils_error(perror), None);
@@ -1669,8 +1763,12 @@ impl css_lexer {
             else {
                 // hex count > 0 && <  6
                 // append what we had at end of while loop
-                let (pu_peek_result , _) = 
-                                    self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+                let mut start_time = std::time::precise_time_ns();
+                let (pu_peek_result , perror) = 
+                    self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+                let mut end_time = std::time::precise_time_ns();
+                let peek_time = (end_time as float - start_time as float);
+                self.peek_time += peek_time ;
                 /* don't check error, this succeded in while loop above */
                 let (cptr , clen) = pu_peek_result.unwrap();
                 c = cptr[0] as char;
@@ -1695,8 +1793,12 @@ impl css_lexer {
         if (self.substate == MoreDigits as uint) {
             /* Consume up to 6 hex digits */
             while (self.context.hex_count < 6) {
+                let mut start_time = std::time::precise_time_ns();
                 let (pu_peek_result , perror) = 
                     self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+                let mut end_time = std::time::precise_time_ns();
+                let peek_time = (end_time as float - start_time as float);
+                self.peek_time += peek_time ;
 
                 if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                     return (css_error_from_parserutils_error(perror), None);
@@ -1749,8 +1851,12 @@ impl css_lexer {
 
         /* Consume all digits */
         loop {
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return css_error_from_parserutils_error(perror);
@@ -1781,8 +1887,12 @@ impl css_lexer {
              * The '\' has been consumed.
              */
         
+        let mut start_time = std::time::precise_time_ns();
         let (pu_peek_result , perror) = 
             self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+        let mut end_time = std::time::precise_time_ns();
+        let peek_time = (end_time as float - start_time as float);
+        self.peek_time += peek_time ;
         
         match perror {
         
@@ -1822,8 +1932,12 @@ impl css_lexer {
         if (!self.escape_seen) {
             // debug!("!self.escape_seen");
             if (self.bytes_read_for_token > 1) {
+                let mut start_time = std::time::precise_time_ns();
                 let (pu_peek_result , perror) = 
                     self.input.parserutils_inputstream_peek(0);
+                let mut end_time = std::time::precise_time_ns();
+                let peek_time = (end_time as float - start_time as float);
+                self.peek_time += peek_time ;
 
                 assert!(perror as int == PARSERUTILS_OK as int);
 
@@ -1857,8 +1971,12 @@ impl css_lexer {
         /* If we're handling escaped newlines, convert CR(LF)? to LF */
         if (nl && c=='\r') {
             // debug!("nl && c=='\r'");
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token+clen);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return css_error_from_parserutils_error(perror);
@@ -1916,8 +2034,13 @@ impl css_lexer {
         /* nmchar = [a-zA-Z] | '-' | '_' | nonascii | escape */
 
         loop {
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
+
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return css_error_from_parserutils_error(perror);
@@ -1981,8 +2104,13 @@ impl css_lexer {
          */
 
         loop {
+
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return css_error_from_parserutils_error(perror);
@@ -2023,8 +2151,13 @@ impl css_lexer {
         /* stringchar = urlchar | ' ' | ')' | '\' nl */
 
         loop {
+
+            let mut start_time = std::time::precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return css_error_from_parserutils_error(perror);
@@ -2076,20 +2209,25 @@ impl css_lexer {
         let mut bytes_read_init : uint = self.bytes_read_for_token;
 
         while (count < 5) {
-           let (pu_peek_result , error) = 
-            self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+            let mut start_time = std::time::precise_time_ns();
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
             
-            if error as int != PARSERUTILS_OK as int && error as int != PARSERUTILS_EOF as int {
+            if perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int {
                 /* Rewind what we've read */
                 self.bytes_read_for_token = bytes_read_init;
-                return css_error_from_parserutils_error(error);
+                return css_error_from_parserutils_error(perror);
             }
 
-            if error as int == PARSERUTILS_EOF as int {
+            if perror as int == PARSERUTILS_EOF as int {
                 break;
             }
 
-            if error as int == PARSERUTILS_OK as int {
+            if perror as int == PARSERUTILS_OK as int {
                 let (cptr , clen) = pu_peek_result.unwrap();
                 let c = cptr[0] as char;
                 if char::is_digit_radix(c, 16){
@@ -2117,27 +2255,39 @@ impl css_lexer {
         let (utf8data_option, pu_charset_error) = parserutils_charset_utf8_from_ucs4(ucs);
         assert!(pu_charset_error as int == PARSERUTILS_OK as int);
         
-        let (pu_peek_result , error) = self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+
+        let mut start_time = std::time::precise_time_ns();
+        let (pu_peek_result , perror) = 
+            self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+        let mut end_time = std::time::precise_time_ns();
+        let peek_time = (end_time as float - start_time as float);
+        self.peek_time += peek_time ;
         
-        if error as int != PARSERUTILS_OK as int && error as int != PARSERUTILS_EOF as int {
+        if perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int {
                         /* Rewind what we've read */
             self.bytes_read_for_token = bytes_read_init;
-            return css_error_from_parserutils_error(error);
+            return css_error_from_parserutils_error(perror);
         }
 
-        if error as int == PARSERUTILS_OK as int {
+        if perror as int == PARSERUTILS_OK as int {
             let mut (cptr , _) = pu_peek_result.unwrap();
             if (cptr[0] as char == '\r') { // Potential CRLF 
                 //let mut p_cr : u8 = _cptr[0];
-                let (pu_peek_result2 , error2) = 
-                    self.input.parserutils_inputstream_peek(self.bytes_read_for_token + 1);
+
+                let mut start_time = std::time::precise_time_ns();
+                let (pu_peek_result2 , perror2) = 
+                    self.input.parserutils_inputstream_peek(self.bytes_read_for_token+1);
+                let mut end_time = std::time::precise_time_ns();
+                let peek_time = (end_time as float - start_time as float);
+                self.peek_time += peek_time ;
+
                 self.bytes_read_for_token = bytes_read_init;
 
-                if error2 as int != PARSERUTILS_OK as int && error2 as int != PARSERUTILS_EOF as int {
+                if perror2 as int != PARSERUTILS_OK as int && perror2 as int != PARSERUTILS_EOF as int {
                     self.bytes_read_for_token = bytes_read_init;
-                    return css_error_from_parserutils_error(error);
+                    return css_error_from_parserutils_error(perror2);
                 }
-                if error2 as int == PARSERUTILS_OK as int {
+                if perror2 as int == PARSERUTILS_OK as int {
 
                     let (cptr2 , _) = pu_peek_result2.unwrap();
                     if (cptr2[0] as char == '\n') { // Potential CRLF 
@@ -2146,13 +2296,20 @@ impl css_lexer {
                 }
             }
         }
-        let (pu_peek_result , error) = self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+      
+        let mut start_time = std::time::precise_time_ns();
+        let (pu_peek_result , perror) = 
+            self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+        let mut end_time = std::time::precise_time_ns();
+        let peek_time = (end_time as float - start_time as float);
+        self.peek_time += peek_time ;
+
         let mut (cptr , clen) = pu_peek_result.unwrap();
         let mut utf8data = utf8data_option.unwrap();
         self.append_to_token_data(utf8data, utf8data.len());
 
         /* Deal with the whitespace character */
-        if error as int == PARSERUTILS_EOF as int {
+        if perror as int == PARSERUTILS_EOF as int {
             return CSS_OK;
         }
 
@@ -2176,13 +2333,19 @@ impl css_lexer {
     pub fn consume_url_chars(&mut self) -> css_error {
         // debug!("entering : consume_url_chars");
         loop {
-            let (pu_peek_result , error) = self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            
+            let mut start_time = std::time::precise_time_ns();
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
 
-            if (error as int != PARSERUTILS_OK as int && error as int != PARSERUTILS_EOF as int) {
-                return css_error_from_parserutils_error(error);
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return css_error_from_parserutils_error(perror);
             }
 
-            if (error as int == PARSERUTILS_EOF as int) {
+            if (perror as int == PARSERUTILS_EOF as int) {
                 return CSS_OK;
             }
 
@@ -2217,13 +2380,19 @@ impl css_lexer {
     pub fn consume_w_chars(&mut self) -> css_error {
         // debug!("entering : consume_w_chars");
         loop {
-            let (pu_peek_result , error) = self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
             
-            if (error as int != PARSERUTILS_OK as int && error as int != PARSERUTILS_EOF as int) {
-                return css_error_from_parserutils_error(error);
+            let mut start_time = std::time::precise_time_ns();
+            let (pu_peek_result , perror) = 
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
+            let mut end_time = std::time::precise_time_ns();
+            let peek_time = (end_time as float - start_time as float);
+            self.peek_time += peek_time ;
+            
+            if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
+                return css_error_from_parserutils_error(perror);
             }
 
-            if (error as int == PARSERUTILS_EOF as int) {
+            if (perror as int == PARSERUTILS_EOF as int) {
                 return CSS_OK;
             }
             
