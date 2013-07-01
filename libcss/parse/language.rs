@@ -882,7 +882,12 @@ pub impl css_language {
         unsafe {
             debug!(fmt!("parseProperty:: style.bytecode (1) == %?" , style.bytecode));
         }
-        (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , &mut self.strings , vector , ctx , style);
+        let error = (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , &mut self.strings , vector , ctx , style);
+
+        if error as int != CSS_OK as int {
+            return error;
+        }
+
         unsafe {
             debug!(fmt!("parseProperty:: style.bytecode (2)== %?" , style.bytecode));
         }

@@ -1764,7 +1764,7 @@ impl css_lexer {
                 // hex count > 0 && <  6
                 // append what we had at end of while loop
                 let mut start_time = std::time::precise_time_ns();
-                let (pu_peek_result , perror) = 
+                let (pu_peek_result , _) = 
                     self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
                 let mut end_time = std::time::precise_time_ns();
                 let peek_time = (end_time as float - start_time as float);

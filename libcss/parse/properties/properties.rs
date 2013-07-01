@@ -4014,28 +4014,35 @@ pub impl css_properties {
                 consumeWhitespace(vector, ctx);
                 
                 if (*ctx >= vector.len() )  {
+                    debug!("Entering: css__parse_pause  :: no second token, re-parse the first");
                     /* no second token, re-parse the first */
                     *ctx = orig_ctx;
                     error =  css__parse_pause_after(sheet, strings, vector, ctx, style);
                 } 
                 else {
                     token = &vector[*ctx];
+                    debug!("css__parse_pause:: token == %?" , token);
+
                     /* second token - might be useful */
                     if ( is_css_inherit(strings, token)) {
                         /* another bogus inherit */
                         error = CSS_INVALID;
+                        debug!("css__parse_pause ::  after is_css_inherit(1)");
                     } 
                     else {
                         error =  css__parse_pause_after(sheet, strings, vector, ctx, style);
                         match (error) {
-                             CSS_OK => { 
+                            CSS_OK => { 
+                                debug!("css__parse_pause ::  second token parsed");
                                 /* second token parsed */
                                 if ( is_css_inherit(strings, first_token)) {
                                     /* valid second token after inherit */
                                     error = CSS_INVALID;
+                                    debug!("css__parse_pause ::  after is_css_inherit(2)");
                                 }
                             },
                             _=> {
+                                debug!("css__parse_pause ::  second token appears to be junk re-try with first");
                                 /* second token appears to be junk re-try with first */
                                 *ctx = orig_ctx;
                                 error =  css__parse_pause_after(sheet, strings, vector, ctx, style);
@@ -4048,6 +4055,7 @@ pub impl css_properties {
                 *ctx = orig_ctx;
             }
         }
+        debug!("css__parse_pause error == %?", error );
        return error;
     }
 

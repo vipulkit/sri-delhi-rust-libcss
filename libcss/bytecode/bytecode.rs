@@ -66,6 +66,7 @@ pub fn getValue(OPV : u32 ) -> u16 {
 
 pub fn isImportant(OPV : u32 ) -> bool {
 
+    debug!("Entering: isImportant:: OPV  = %?" , OPV);
     if (getFlags(OPV) & 0x1)==0 {
         false
     }

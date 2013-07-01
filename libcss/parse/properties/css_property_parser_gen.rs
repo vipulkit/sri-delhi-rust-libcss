@@ -256,7 +256,7 @@ pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     str::push_str(&mut output,"\t\t\t},\n");
     str::push_str(&mut output,"\t\t\t_ => {\n");
     str::push_str(&mut output,"\t\t\t\t*ctx = orig_ctx;\n");
-    str::push_str(&mut output,"\t\t\t\treturn error\n");
+    str::push_str(&mut output,"\t\t\t\treturn res\n");
     str::push_str(&mut output,"\t\t\t}\n");
     str::push_str(&mut output,"\t\t}\n\n");
         

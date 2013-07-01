@@ -165,7 +165,7 @@ pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
     //debug!(fmt!("rule == %?" , rule));
     while rule.is_some() {
         //debug!(fmt!("rule == %?" , rule.unwrap()));
-        match rule.unwrap() {
+        match rule.get() {
 
             RULE_SELECTOR(css_rule_selector_x)=>{
                 dump_rule_selector(css_rule_selector_x, &mut ptr, 1);
@@ -203,8 +203,6 @@ pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
     debug!(fmt!("ptr == %?" , ptr));
 
     ptr
-
-
 }
 
 fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
@@ -229,6 +227,7 @@ fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
     }
     ptr.push_char('\n');
     if s.style.is_some() {
+        debug!("Entering: dump_rule_selector :: if s.style.is_some()");
         dump_bytecode(s.style.unwrap() , ptr, depth +1);
     }
 
@@ -360,8 +359,13 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
     if detail.negate {
         str::push_str(ptr,&":not(");
     }
+    unsafe {
+        debug!("dump_selector_detail :: detail.selector_type == %?" , detail.selector_type);
+    }
+
     match detail.selector_type {
         CSS_SELECTOR_ELEMENT=>{
+            debug!("Entering: CSS_SELECTOR_ELEMENT");
             unsafe{
                 if detail.qname.name.len() == 1 && detail.qname.name[0] == '*' as u8 && !detail_next {
                 
@@ -2192,13 +2196,13 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 let string = fmt!("Unknown opcode %x" , op as uint);
                 str::push_str(ptr , string);
             }
-
-            if (isImportant(opv)) {
-                str::push_str(ptr , &" !important")
-            }
-            ptr.push_char('\n');
-
         }
+        
+        if (isImportant(opv)) {
+            str::push_str(ptr , &" !important")
+        }
+        ptr.push_char('\n');
+
     }
 
     debug!(fmt!("ptr == %?" , ptr));
@@ -2300,7 +2304,7 @@ fn dump_unit(val: i32 , unit: u32 , ptr: &mut ~str) {
             str::push_str(ptr , &"pc");
         },
         UNIT_PCT => {
-            str::push_str(ptr , &"pct");
+            str::push_str(ptr , &"%");
         },
         UNIT_DEG => {
             str::push_str(ptr , &"deg");

@@ -1109,7 +1109,7 @@ impl css_select_ctx {
                                 -> bool {
 
         debug!(fmt!("Entering _selector_less_specific")) ;
-        let mut result : bool = true;
+        let mut result : bool;
 
         if (cand.is_none()) {
             return false;

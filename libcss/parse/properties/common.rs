@@ -62,6 +62,7 @@ pub fn consumeWhitespace(vector:&~[@css_token], ctx:@mut uint) {
 pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_token] , ctx: @mut uint , default_unit: u32) -> (Option<i32> , Option<u32>, css_error) {
 
     debug!("Entering: css__parse_unit_specifier");
+    debug!("Entering: css__parse_unit_specifier :: ctx == %?  ,  vector == %? " , ctx ,vector);
     let mut token:&@css_token;
     let mut unit_retVal:u32;
     let orig_ctx = *ctx;
@@ -74,7 +75,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
     }
     token = &vector[*ctx];
     *ctx = *ctx + 1;
-
+    debug!("css__parse_unit_specifier :: token == %? , vector == %? " , token , vector);
     match token.token_type {
         CSS_TOKEN_DIMENSION|CSS_TOKEN_NUMBER|CSS_TOKEN_PERCENTAGE => {},
         _ => {
