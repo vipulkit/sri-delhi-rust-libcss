@@ -194,11 +194,15 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 
 	if !isInherit(opv) {
 		match getValue(opv) {
-			BACKGROUND_IMAGE_NONE => value = CSS_BACKGROUND_IMAGE_NONE as uint,
+			BACKGROUND_IMAGE_NONE => {
+				value = (CSS_BACKGROUND_IMAGE_NONE as uint);
+			},
 			BACKGROUND_IMAGE_URI => {
-				value = CSS_BACKGROUND_IMAGE_IMAGE;
+				value = (CSS_BACKGROUND_IMAGE_IMAGE);
+				unsafe { debug!("css__cascade_uri_none: bytecode is =%?=",style.bytecode) };
 				let (_, ret_uri) = style.sheet.get().css__stylesheet_string_get(peek_bytecode(style) as uint);
 				uri = ret_uri;
+				unsafe { debug!("css__cascade_uri_none: bytecode is =%?=%?=",style.bytecode,uri) };
 				advance_bytecode(style)	
 			},
 			_ => {}
@@ -212,6 +216,7 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 				(*fun_fn)(state.computed, value as u8, uri.unwrap())	
 			}
 			else {
+				debug!("URI is none in css__cascade_uri_none ") ;
 				(*fun_fn)(state.computed, value as u8, ~"")	
 			}
 		},

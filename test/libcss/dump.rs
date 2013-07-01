@@ -570,7 +570,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
 
                 if (value & (AZIMUTH_BEHIND as u32) > 0) {
-                    str::push_str(ptr , &"behind");
+                    str::push_str(ptr , &" behind");
                 }
             }
 
