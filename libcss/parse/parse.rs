@@ -242,7 +242,7 @@ pub impl css_parser {
             }
         }
         //io::println(fmt!("css__parser_completed :: self.lexer.append_time == %?, self.lexer.peek_time == %? ",self.lexer.append_time , self.lexer.peek_time )) ;
-        io::println(fmt!("%?,%? ",self.lexer.append_time , self.lexer.peek_time )) ;
+        //io::println(fmt!("%?,%? ",self.lexer.append_time , self.lexer.peek_time )) ;
 
         CSS_OK
     }

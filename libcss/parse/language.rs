@@ -170,12 +170,12 @@ pub impl css_language {
         
         let mut curRule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_SELECTOR);
         
-        if !vec::is_empty(*tokens) {
-            match self.parseSelectorList(tokens, curRule) {
-                CSS_OK => {},
-                x      =>   return x  
-            }
+        //if !vec::is_empty(*tokens) {
+        match self.parseSelectorList(tokens, curRule) {
+            CSS_OK => {},
+            x =>   return x  
         }
+        //}
 
         let mut entry:context_entry = context_entry {
             event_type: CSS_PARSER_START_RULESET, 
