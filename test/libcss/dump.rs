@@ -1747,6 +1747,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     let string = fmt!("#%08x" , colour as uint);
                     str::push_str(ptr , string);
                 }
+                else if value as int == OUTLINE_COLOR_INVERT as int {
+                    str::push_str(ptr , &"invert");
+                }
             }
 
             else if op as int == CSS_PROP_OVERFLOW as int {

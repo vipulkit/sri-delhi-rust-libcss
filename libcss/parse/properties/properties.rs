@@ -3785,7 +3785,7 @@ pub impl css_properties {
                 error = CSS_OK; 
             }
             else if (width) && 
-                (match (css__parse_outline_color(sheet , strings , vector , ctx , width_style)) {
+                (match (css__parse_outline_width(sheet , strings , vector , ctx , width_style)) {
                     CSS_OK => true,
                     _ => false
                 }) {
