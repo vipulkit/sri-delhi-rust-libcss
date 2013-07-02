@@ -3460,6 +3460,7 @@ pub impl css_properties {
             else {
                 side_val.push(MARGIN_SET );
                 let (length , unit , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
+                error = result ;
                 if length.is_some() {
                     side_length.push(length.unwrap());
                 }
