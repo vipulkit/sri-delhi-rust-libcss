@@ -167,7 +167,7 @@ fn testMain(fileName: ~str) {
 
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     io::println("Entering run_test = ");
-    debug!("\n == data == %?" , str::from_bytes(data));
+    // debug!("\n == data == %?" , str::from_bytes(data));
     
     let mut css = create_css();
     let mut buf: ~str;
@@ -200,9 +200,9 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
 
     if a.len() != b.len() {
         debug!("============================================================" );
-        debug!(" == sheet ==%?=" , str::from_bytes(a));
+        debug!(" == sheet ==%?=" , (a));
         debug!("============================================================" );
-        debug!(" == exp   ==%?=" , str::from_bytes(b));
+        debug!(" == exp   ==%?=" , (b));
         debug!("============================================================" );
         fail!(~"Expected lines not equal to sheet dump lines");
     }
@@ -210,9 +210,9 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     for vec::each2(a,b) |&s,&e| {
         if s != e {
             debug!("============================================================" );
-            debug!(" == sheet ==%?=" , str::from_bytes(a));
+            debug!(" == sheet ==%?=" , (a));
             debug!("============================================================" );
-            debug!(" == exp   ==%?=" , str::from_bytes(b));
+            debug!(" == exp   ==%?=" , (b));
             debug!("============================================================" );
             fail!(~"character mismatch during result checking ");       
         }
