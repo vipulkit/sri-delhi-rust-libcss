@@ -3363,6 +3363,7 @@ pub impl css_properties {
         let orig_ctx = *ctx;
         let mut token: &@css_token;
         let mut flags: u8 = 0;
+        let mut value : u16 = 0;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -3370,32 +3371,25 @@ pub impl css_properties {
         
         token=&vector[*ctx];
         *ctx += 1;
-        match token.token_type {
-            CSS_TOKEN_IDENT  => {
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint) {
-                    flags |= FLAG_INHERIT as u8;
-                }
-                else {
-                    let (_ , error) = css__parse_list_style_type_value(strings , token);
-                    match error {
-                        CSS_OK => {},
-                        _ => {
-                            *ctx = orig_ctx;
-                            return error;
-                        }
-                    }
-                }
-            }
-            _ => {
-                *ctx = orig_ctx;
-                return CSS_INVALID;
-            }
-        }
-        let (list_type , error) = css__parse_list_style_type_value(strings , token);
-        if error as int != CSS_OK as int {
+
+        if token.token_type as int != CSS_TOKEN_IDENT as int{
+            *ctx = orig_ctx;
             return CSS_INVALID;
         }
-        css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_LIST_STYLE_TYPE , flags , list_type.unwrap());
+
+        if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint) {
+            flags |= FLAG_INHERIT as u8;
+        }
+        else {
+            let (list_type , error) = css__parse_list_style_type_value(strings , token);
+            
+            if error as int != CSS_OK as int {
+                *ctx = orig_ctx;
+                return error;
+            }
+            value = list_type.unwrap();
+        }
+        css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_LIST_STYLE_TYPE , flags , value);
         CSS_OK
     }
 

@@ -1118,6 +1118,13 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             }
 
             else if op as int == CSS_PROP_CONTENT as int {
+
+                if value as int == CONTENT_NORMAL as int {
+                    str::push_str(ptr , &"normal");
+                }
+                else if value as int == CONTENT_NONE as int {
+                    str::push_str(ptr , &"none");
+                }
                 
                 while value as int != CONTENT_NORMAL as int {
 
@@ -1129,10 +1136,11 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         iterator += 1;
 
                         if option_string.is_some() {
+                            debug!("dump_bytecode :: CONTENT_COUNTER :: option_string == %?" , copy option_string.get_ref());
                             dump_counter(option_string.unwrap() , value , ptr);
                         }
                     }
-                    else if (value as int & 0xff) == CONTENT_COUNTER as int {
+                    else if (value as int & 0xff) == CONTENT_COUNTERS as int {
 
                         let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
                         iterator += 1;
@@ -1140,6 +1148,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         iterator += 1;
 
                         if option_string.is_some() {
+                            debug!("dump_bytecode :: CONTENT_COUNTERS :: option_string == %?" , copy option_string.get_ref());
                             dump_counters(option_string.unwrap() , fmt!("%?" , sep) , value , ptr);
                         }
                     }
@@ -1153,15 +1162,17 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         if value as int == CONTENT_ATTR as int {
                             str::push_str(ptr , &"attr(");
                         }
-                        if value as int == CONTENT_STRING as int {
+                        if value as int != CONTENT_STRING as int {
                             str::push_str(ptr , &")");
                         }
 
                         iterator += 1;
 
                         if option_string.is_some() {
-                            ptr.push_char('\'');
+                            debug!("dump_bytecode :: CONTENT_URI_ATTR_STRING :: option_string == %?" , copy option_string.get_ref());
+                            str::push_str(ptr , &"'");
                             str::push_str(ptr , option_string.unwrap());
+                            str::push_str(ptr , &"'");
                         }
                     }
                     else if (value as int & 0xff) == CONTENT_OPEN_QUOTE as int {
@@ -1182,6 +1193,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     if value as int != CONTENT_NORMAL as int {
                         ptr.push_char(' ');
                     }
+                    debug!("dump_bytecode :: while :: ptr == %?" , ptr);
                 } // end while
             }
 
