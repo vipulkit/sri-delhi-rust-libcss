@@ -1284,14 +1284,14 @@ fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propst
 
     let mut index = ALICEBLUE as uint;
 
-    while (index < YELLOWGREEN as uint) {
+    while (index < YELLOWGREEN as uint + 1) {
         if strings.lwc_string_caseless_isequal(data.clone() , index) {
             break
         }
         index +=1;
     }
 
-    if index <= YELLOWGREEN as uint + 1 {
+    if index <= YELLOWGREEN as uint {
         result_val = colourmap[(index - (ALICEBLUE as uint))];
         return (Some(result_val) , CSS_OK);
     }

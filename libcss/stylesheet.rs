@@ -1189,7 +1189,6 @@ impl css_stylesheet {
                                             }
                                         }
                                     }
-                                    return x ;
                                 }
                             }
                         }
