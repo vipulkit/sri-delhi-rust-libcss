@@ -166,7 +166,7 @@ fn testMain(fileName: ~str) {
 }
 
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
-    io::println("Entering run_test = ");
+    debug!("Entering :: run_test");
     // debug!("\n == data == %?" , str::from_bytes(data));
     
     let mut css = create_css();
@@ -217,58 +217,6 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
             fail!(~"character mismatch during result checking ");       
         }
     }
-
-    // let mut vec_buffer = copy exp;
-
-    // let mut vec_1 = ~[];
-    // if !vec_buffer.is_empty() {
-    //     vec_1 = copy vec_buffer[0];
-    // }
-    
-
-    // vec::reverse(vec_buffer);
-
-    // if !vec_buffer.is_empty() {
-    //     vec_buffer.pop();
-    // }
-    
-    // vec::reverse(vec_buffer);
-
-    // let mut expected_buffer = copy exp;
-
-    // let mut exp_1 = ~[];
-    // if !expected_buffer.is_empty() {
-    //     exp_1 = copy expected_buffer[0];
-    // }
-
-    // vec::reverse(expected_buffer);
-
-    // if !expected_buffer.is_empty() {
-    //     expected_buffer.pop();
-    // }
-    
-    // vec::reverse(expected_buffer);
-
-    // let mut exp = vec::concat(expected_buffer);
-    // let mut vec = vec::concat(vec_buffer);
-
-
-    // debug!(fmt!("vec == %?" , vec));
-    // debug!(fmt!("exp == %?" , exp));
-
-
-
-    // assert!(vec_1 == exp_1);
-    // assert!(vec == exp);
-
-//     #data
-// * { color: #ff0000 }
-// #errors
-// #expected
-// | *
-// |  color: #ffff0000
-// #reset
-
 }
 
 
