@@ -859,7 +859,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
 	
 	ret_value = COLOR_SET ;
 	
-	debug!(fmt!("Return value= %?, result= %?", ret_value, ret_result)); //DEBUG
+	debug!(fmt!("css__parse_color_specifier :: Return value= %?, result= %?", ret_value, ret_result)); //DEBUG
     
 	(Some(ret_value) , Some(ret_result) , CSS_OK)
 }

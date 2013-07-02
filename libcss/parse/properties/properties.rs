@@ -887,6 +887,8 @@ pub impl css_properties {
                     token=&vector[*ctx];
                 },
                 _ => {
+                    side_val_vec.push(0);
+                    side_color_vec.push(0);
                     break
                 }
             }
@@ -899,73 +901,73 @@ pub impl css_properties {
             1 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
             },
             2 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[1]);
                 if side_val_vec[1] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[1] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[1]);
                 if side_val_vec[1] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[1] as u32)
                 }
             },
             3 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[1]);
                 if side_val_vec[1] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[1] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[2]);
                 if side_val_vec[2] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[2] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[2] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[1]);
                 if side_val_vec[1] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[1] as u32)
                 }
             },
             4 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[1]);
                 if side_val_vec[1] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[1] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[2]);
                 if side_val_vec[2] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[2] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[2] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[3]);
                 if side_val_vec[3] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[3] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[3] as u32)
                 }
             },
             _ => {
@@ -1339,7 +1341,7 @@ pub impl css_properties {
                 else {
                     side_unit.push(0);    
                 }
-                
+                error = result;
                 match result {
                     CSS_OK => {
                         if (side_unit[side_count] == (UNIT_PCT as u32)) {
@@ -3412,7 +3414,7 @@ pub impl css_properties {
         
         debug!("Entering: css__parse_margin");
         let orig_ctx = *ctx;
-        let mut error: css_error= CSS_OK;
+        let mut error: css_error;
         let mut token: &@css_token;
         let mut side_val: ~[u16] = ~[];
         let mut side_length: ~[i32] = ~[];
@@ -5076,6 +5078,7 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
 */
 pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_error { 
     
+    debug!("Entering: css__parse_border_side");
     let orig_ctx = *ctx;
     let mut prev_ctx: uint;
     let mut color: bool = true;
@@ -5101,7 +5104,6 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
         return CSS_OK;
     }
     
-    *ctx = *ctx + 1;
     color_style = css_stylesheet::css__stylesheet_style_create(sheet);
     style_style = css_stylesheet::css__stylesheet_style_create(sheet);
     width_style = css_stylesheet::css__stylesheet_style_create(sheet);
@@ -5130,15 +5132,18 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
         if color && 
             match css__parse_border_side_color(sheet, strings, vector, ctx, color_style, 
                 unsafe { cast::transmute(CSS_PROP_BORDER_TOP_COLOR as uint + side as uint)}) { CSS_OK =>{error = CSS_OK; true}, err =>{ error = err; false} } {
+                debug!("css__parse_border :: inside if color");
             color = false
         } 
         else if style && 
             match css__parse_border_side_style(sheet, strings, vector, ctx, style_style, 
                 unsafe {cast::transmute( CSS_PROP_BORDER_TOP_STYLE as uint + side as uint)}) { CSS_OK =>{error = CSS_OK; true}, err =>{ error = err; false} } {
+                debug!("css__parse_border :: inside if style");
             style = false
         } else if width && 
             match css__parse_border_side_width(sheet, strings, vector, ctx, width_style, 
                 unsafe { cast::transmute(CSS_PROP_BORDER_TOP_WIDTH as uint + side as uint)}) { CSS_OK =>{error = CSS_OK; true}, err =>{ error = err; false} } {
+            debug!("css__parse_border :: inside if width");
             width = false
         } 
 
@@ -5148,8 +5153,6 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
             if *ctx >= vector.len() {
                 break;
             }
-        
-            //token = &vector[*ctx]; Not Used
         
         } else {
             /* Forcibly cause loop to exit */
@@ -5176,14 +5179,7 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
     
     css_stylesheet::css__stylesheet_merge_style(result_style, width_style);
 
-    match error {
-        CSS_OK => CSS_OK,
-        error => {
-            *ctx = orig_ctx;
-            error
-        }
-    }
-    
+    CSS_OK
 }
 
 
