@@ -188,6 +188,8 @@ word-spacing: normal
 z-index: auto
 #reset
 
+
+
 8
 #tree
 | div
@@ -948,6 +950,110 @@ width: auto
 word-spacing: normal
 z-index: auto
 #reset
+
+19
+#tree
+| div
+|  table
+|   id=sonic
+|   class=hedgehog
+|   tr
+|    th
+|    td*
+|   tr
+|    th
+|    td
+#ua
+div {display:block;}
+table {display:table; border-spacing:2px;}
+tr {display:table-row;}
+td,th {display:table-cell;}
+#user
+#author
+.hedgehog tr > td {border-color:#000000;}
+td,th {border-top-style: solid;border-right-style: double;border-bottom-style: groove;border-left-style: ridge}
+tr > td {border-top-width: 0;border-right-width: 2em;border-bottom-width: thick;border-left-width: -2px;}
+#errors
+#expected
+background-attachment: scroll
+background-color: #00000000
+background-image: none
+background-position: 0% 0%
+background-repeat: repeat
+border-collapse: inherit
+border-spacing: 0px 0px
+border-top-color: #ff000000
+border-right-color: #ff000000
+border-bottom-color: #ff000000
+border-left-color: #ff000000
+border-top-style: solid
+border-right-style: double
+border-bottom-style: groove
+border-left-style: ridge
+border-top-width: 0px
+border-right-width: 2em
+border-bottom-width: thick
+border-left-width: medium
+bottom: auto
+caption-side: inherit
+clear: none
+clip: auto
+color: inherit
+content: normal
+counter-increment: none
+counter-reset: none
+cursor: auto
+direction: inherit
+display: table-cell
+empty-cells: inherit
+float: none
+font-family: inherit
+font-size: inherit
+font-style: inherit
+font-variant: inherit
+font-weight: inherit
+height: auto
+left: auto
+letter-spacing: normal
+line-height: inherit
+list-style-image: inherit
+list-style-position: inherit
+list-style-type: inherit
+margin-top: 0px
+margin-right: 0px
+margin-bottom: 0px
+margin-left: 0px
+max-height: none
+max-width: none
+min-height: 0px
+min-width: 0px
+opacity: 1.000
+outline-color: invert
+outline-style: none
+outline-width: 2px
+overflow: visible
+padding-top: 0px
+padding-right: 0px
+padding-bottom: 0px
+padding-left: 0px
+position: static
+quotes: inherit
+right: auto
+table-layout: auto
+text-align: inherit
+text-decoration: none
+text-indent: inherit
+text-transform: inherit
+top: auto
+unicode-bidi: normal
+vertical-align: baseline
+visibility: inherit
+white-space: inherit
+width: auto
+word-spacing: normal
+z-index: auto
+#reset
+
 
 20
 #tree
