@@ -1260,7 +1260,7 @@ pub impl css_properties {
        
         debug!("Entering: css__parse_border_width");
         let orig_ctx = *ctx;
-        let mut error: css_error= CSS_OK;
+        let mut error: css_error;
         let mut token: &@css_token;
         let mut side_val: ~[u16] = ~[];
         let mut side_length: ~[i32] = ~[];
