@@ -203,7 +203,7 @@ pub fn output_number(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     str::push_str(&mut output,"\t\t}\n");
         
 
-    for uint::range(1 , kvlist.len()-1) |i| {
+    for uint::range(1 , kvlist.len()) |i| {
         if kvlist[i].key == ~"RANGE" {
             str::push_str(&mut output,fmt!("\t\tif %s {\n",kvlist[i].val));
             str::push_str(&mut output,"\t\t\t*ctx = orig_ctx;\n");
@@ -256,13 +256,14 @@ pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     str::push_str(&mut output,"\t\tmatch res {\n");
     str::push_str(&mut output,"\t\t\tCSS_OK => {\n");
     str::push_str(&mut output,"\t\t\t\tunit = unit_option.unwrap();\n");
-    str::push_str(&mut output,"\t\t\t\tlength = length_option.unwrap() as u32;\n");
+    str::push_str(&mut output,"\t\t\t\tlength = length_option.get() as u32;\n");
     str::push_str(&mut output,"\t\t\t},\n");
     str::push_str(&mut output,"\t\t\t_ => {\n");
     str::push_str(&mut output,"\t\t\t\t*ctx = orig_ctx;\n");
     str::push_str(&mut output,"\t\t\t\treturn res\n");
     str::push_str(&mut output,"\t\t\t}\n");
     str::push_str(&mut output,"\t\t}\n\n");
+    str::push_str(&mut output,"\t\t\tlet length_fixed = length_option.get();\n");
         
 
     for uint::range(1 , kvlist.len()) |i| { 
@@ -278,7 +279,7 @@ pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             str::push_str(&mut output,"\t\t\treturn CSS_INVALID\n");
             str::push_str(&mut output,"\t\t}\n\n")
         } else if kvlist[i].key == ~"RANGE" {
-            str::push_str(&mut output,fmt!("\t\tif length %s {\n",kvlist[i].val));
+            str::push_str(&mut output,fmt!("\t\tif length_fixed %s {\n",kvlist[i].val));
             str::push_str(&mut output,"\t\t\t*ctx = orig_ctx;\n");
             str::push_str(&mut output,"\t\t\treturn CSS_INVALID\n");
             str::push_str(&mut output,"\t\t}\n\n")
