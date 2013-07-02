@@ -1043,7 +1043,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                     ptr.push_char(')');
                 }
-                str::push_str(ptr , &"auto");
+                else {
+                    str::push_str(ptr , &"auto");    
+                }
             }
 
             else if op as int == CSS_PROP_COLOR as int {
@@ -2101,6 +2103,19 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
                 else if value as int == VERTICAL_ALIGN_TEXT_BOTTOM as int {
                     str::push_str(ptr , &"text-bottom");
+                }
+            }
+
+            else if op as int == CSS_PROP_VISIBILITY as int {
+
+                if value as int == VISIBILITY_VISIBLE as int {
+                    str::push_str(ptr , &"visible");
+                }
+                else if value as int == VISIBILITY_HIDDEN as int {
+                    str::push_str(ptr , &"hidden");
+                }
+                else if value as int == VISIBILITY_COLLAPSE as int {
+                    str::push_str(ptr , &"collapse");
                 }
             }
 
