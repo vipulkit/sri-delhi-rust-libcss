@@ -1686,13 +1686,12 @@ pub impl css_properties {
     fn css__parse_columns(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
         debug!("Entering: css__parse_columns");
+        let orig_ctx = *ctx;
         let mut prev_ctx:uint;
         let mut token:&@css_token;
         let mut width = true;
         let mut count = true;
-        let mut error_width: css_error;
-        let mut error_count: css_error;
-        let mut error =true;
+        let mut error: css_error;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -1710,32 +1709,26 @@ pub impl css_properties {
         let mut count_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         loop {
+            debug!("css__parse_columns :: Entering loop");
             prev_ctx = *ctx;
+            error = CSS_OK;
             if (is_css_inherit(strings, token)) {
+                *ctx = orig_ctx;
                 return CSS_INVALID;
             }
-            error_width= css__parse_column_width(sheet , strings ,vector, ctx,  width_style);
-            error_count= css__parse_column_count(sheet , strings ,vector, ctx,  count_style);
-            if (width &&
-                match error_width {
-                    CSS_OK=>true,
-                    _=>false
-                }
-            ) {
+
+            if width && {error = css__parse_column_width(sheet , strings ,vector, ctx,  width_style); error} as int == CSS_OK as int { 
+              
+                debug!("Entering: css__parse_columns :: if(width)  :: error == %? , count == %? , width == %?" , error , count , width); 
                 width = false;
-                error =false;
             }
- 
-            else if (count &&
-                match error_count{
-                    CSS_OK=>true,
-                    _=>false
-                }
-                ) {
+            else if count && {error = css__parse_column_count(sheet , strings ,vector, ctx,  count_style); error} as int == CSS_OK as int {
+
+                debug!("Entering: css__parse_columns :: else if count  :: error == %? , count == %? , width == %?" , error , count , width);
                 count = false;
-                error =false;
             }
-            if(!error) {
+            
+            if error as int == CSS_OK as int {
                 consumeWhitespace(vector, ctx);
                 if *ctx >= vector.len() {
                     break;
@@ -1745,16 +1738,17 @@ pub impl css_properties {
             else {
                 break
             }
+
             if *ctx == prev_ctx {
                 break;
             }
         }//end of loop
 
         if width {
-            css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_COLUMN_WIDTH, 0, COLUMN_WIDTH_AUTO);
+            css_stylesheet::css__stylesheet_style_appendOPV(width_style, CSS_PROP_COLUMN_WIDTH, 0, COLUMN_WIDTH_AUTO);
         }
         if count {
-            css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_COLUMN_COUNT, 0, COLUMN_COUNT_AUTO);
+            css_stylesheet::css__stylesheet_style_appendOPV(count_style, CSS_PROP_COLUMN_COUNT, 0, COLUMN_COUNT_AUTO);
         }
         css_stylesheet::css__stylesheet_merge_style(style , width_style);
         css_stylesheet::css__stylesheet_merge_style(style , count_style);

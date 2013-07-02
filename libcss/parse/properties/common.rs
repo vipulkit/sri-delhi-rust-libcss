@@ -86,7 +86,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
     }
 
     let (num , consumed_index) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
-
+    debug!("css__parse_unit_specifier :: num == %?" , num);
     match token.token_type {
         CSS_TOKEN_DIMENSION => {
             let data = lwc_string_data(token.idata.get_ref().clone());

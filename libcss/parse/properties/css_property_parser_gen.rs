@@ -265,7 +265,7 @@ pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     str::push_str(&mut output,"\t\t}\n\n");
         
 
-    for uint::range(1 , kvlist.len()-1) |i| { 
+    for uint::range(1 , kvlist.len()) |i| { 
         
         if kvlist[i].key == ~"ALLOW" {
             str::push_str(&mut output,fmt!("\t\tif !(%s) {\n",kvlist[i].val));
