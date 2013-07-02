@@ -4906,12 +4906,12 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
     }
 	
 	/* Rewind context by one step if we consumed an unacceptable token */
-    if *ctx >= vector.len() {
+    if *ctx < vector.len() {
         *ctx -= 1;
     }
 	
     /* Strip trailing whitespace */
-    token_buffer_string.trim_right();
+    token_buffer_string = token_buffer_string.trim_right().to_str();
 
     return (CSS_OK , Some(token_buffer_string));
 }
