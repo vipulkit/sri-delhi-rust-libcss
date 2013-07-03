@@ -4,6 +4,7 @@ use include::types::*;
 use select::common::*;
 // use css_fpmath::*;
 
+#[inline(always)]
 pub fn ENSURE_UNCOMMON ( style:@mut css_computed_style){
 	match style.uncommon {
 		Some(_)=>{},
@@ -36,6 +37,7 @@ pub fn ENSURE_UNCOMMON ( style:@mut css_computed_style){
 	}
 }
 
+#[inline(always)]
 pub fn ENSURE_PAGE ( style:@mut css_computed_style){
 	match style.uncommon {
 		Some(_)=>{},
