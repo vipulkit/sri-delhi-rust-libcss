@@ -41,7 +41,7 @@ pub enum parse_states {
 type state =  ~extern fn(parser: &mut css_parser) ->css_error;
 
 pub struct css_parser {
-    priv language: ~css_language,
+    language: ~css_language,
     lexer: ~css_lexer,
     priv lwc: arc::RWARC<~lwc>,
 
@@ -242,8 +242,6 @@ pub impl css_parser {
                 _ => return result
             }
         }
-        //io::println(fmt!("css__parser_completed :: self.lexer.parseutils_inputstream_append_time == %?, self.lexer.parseutils_inputstream_peek_time == %? ",self.lexer.parseutils_inputstream_append_time , self.lexer.parseutils_inputstream_peek_time )) ;
-        io::println(fmt!("%?,%? ",self.lexer.parseutils_inputstream_append_time , self.lexer.parseutils_inputstream_peek_time )) ;
         CSS_OK
     }
 

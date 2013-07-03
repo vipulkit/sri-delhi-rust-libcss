@@ -48,19 +48,34 @@ pub struct css_language {
     properties: ~css_properties,
     default_namespace:Option<~str>, 
     namespaces:~[~css_namespace],
+    css_lang_create_propstring_time:float,
+    css_lang_create_properties_time:float
 }
 
 pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~css_language {
     debug!("Entering: css_language");
+   
+    let mut start_time = std::time::precise_time_ns();
+    let propstring = css_propstrings::css_propstrings(lwc_inst.clone());
+    let mut end_time = std::time::precise_time_ns();
+    let create_propstring_time = (end_time as float - start_time as float);
+
+    let mut start_time = std::time::precise_time_ns();
+    let cr_properties = css_properties::css_properties(sheet);
+    let mut end_time = std::time::precise_time_ns();
+    let create_properties_time = (end_time as float - start_time as float);
+
     ~css_language {
         sheet:sheet,
         lwc_instance: lwc_inst.clone(),
-        strings: css_propstrings::css_propstrings(lwc_inst.clone()),
-        properties: css_properties::css_properties(sheet),
+        strings:propstring,
+        properties: cr_properties,
         context:~[], 
         state:CHARSET_PERMITTED,
         default_namespace:None,   
-        namespaces:~[]      
+        namespaces:~[],
+	css_lang_create_propstring_time:create_propstring_time,      
+	css_lang_create_properties_time:create_properties_time,
     }
 }
 
