@@ -3056,23 +3056,16 @@ pub fn css__set_font_family_from_hint(hint:@mut  css_hint,
 										style:@mut css_computed_style
 										) -> css_error {
 
-	match hint.hint_type {
-		STRINGS_VECTOR=>{
-			match hint.strings {
-				Some(copy x)=>{
-					set_font_family(style, hint.status, x);
-				},
-				None=>{
-					set_font_family(style, hint.status, ~[]);
-				}
-			}
-			hint.strings = Some(~[]);
+	
+	match hint.strings {
+		Some(copy x)=>{
+			set_font_family(style, hint.status, x);
 		},
-		_=>{
-			return CSS_INVALID ;
+		None=>{
+			set_font_family(style, hint.status, ~[]);
 		}
 	}
-
+	hint.strings = Some(~[]);
 	CSS_OK
 }
 
@@ -5590,23 +5583,16 @@ pub fn css__set_quotes_from_hint(hint:@mut  css_hint,
 								style:@mut css_computed_style
 								) -> css_error {
 
-	match hint.hint_type {
-		STRINGS_VECTOR => {
-			match hint.strings {
-				Some(copy x)=>{
-					set_quotes(style, hint.status, x);
-				},
-				None=>{
-					set_quotes(style, hint.status, ~[] );
-				}
-			} 
-			hint.strings= None ;
-			CSS_OK 
+	match hint.strings {
+		Some(copy x)=>{
+			set_quotes(style, hint.status, x);
 		},
-		_ => {
-			CSS_INVALID
+		None=>{
+			set_quotes(style, hint.status, ~[] );
 		}
-	}
+	} 
+	hint.strings= None ;
+	CSS_OK 
 }
 
 pub fn css__initial_quotes(state:@mut css_select_state) -> css_error {
