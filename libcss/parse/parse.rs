@@ -42,7 +42,7 @@ type state =  ~extern fn(parser: &mut css_parser) ->css_error;
 
 pub struct css_parser {
     priv language: ~css_language,
-    priv lexer: ~css_lexer,
+    lexer: ~css_lexer,
     priv lwc: arc::RWARC<~lwc>,
 
     priv last_was_ws : bool,
@@ -53,6 +53,7 @@ pub struct css_parser {
     priv state_stack: ~[(uint,uint)], /*Parser state stack*/
     priv states: ~[state],
     priv tokens: ~[@css_token],
+    css_lexer_get_token_time: float
 }
 
 pub impl css_parser {
@@ -121,7 +122,7 @@ pub impl css_parser {
             state_stack: ~[],
             states: states,
             tokens: ~[],
-            
+	    css_lexer_get_token_time:0f
         };
 
         parser.state_stack.push(initial);
@@ -241,8 +242,8 @@ pub impl css_parser {
                 _ => return result
             }
         }
-        //io::println(fmt!("css__parser_completed :: self.lexer.append_time == %?, self.lexer.peek_time == %? ",self.lexer.append_time , self.lexer.peek_time )) ;
-        io::println(fmt!("%?,%? ",self.lexer.append_time , self.lexer.peek_time )) ;
+        //io::println(fmt!("css__parser_completed :: self.lexer.parseutils_inputstream_append_time == %?, self.lexer.parseutils_inputstream_peek_time == %? ",self.lexer.parseutils_inputstream_append_time , self.lexer.parseutils_inputstream_peek_time )) ;
+        io::println(fmt!("%?,%? ",self.lexer.parseutils_inputstream_append_time , self.lexer.parseutils_inputstream_peek_time )) ;
 
         CSS_OK
     }
@@ -394,18 +395,27 @@ pub impl css_parser {
             token_option = Some(self.pushback.swap_unwrap());
         }
         else {
+            let mut start_time = std::time::precise_time_ns();
             /* Otherwise, ask the lexer */
             let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
+            let mut end_time = std::time::precise_time_ns();
+            let css_lexer_get_token_time = (end_time as float - start_time as float);
+            self.css_lexer_get_token_time += css_lexer_get_token_time ;
 
             if (lexer_error as int != CSS_OK as int) {
                 return (lexer_error, None);
             }
 
             let mut t = lexer_token_option.unwrap();
+
+            let mut start_time = std::time::precise_time_ns();
             /* If the last token read was whitespace, keep reading
              * tokens until we encounter one that isn't whitespace */
             while (self.last_was_ws && t.token_type as int == CSS_TOKEN_S as int) {
                 let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
+            let mut end_time = std::time::precise_time_ns();
+            let css_lexer_get_token_time = (end_time as float - start_time as float);
+            self.css_lexer_get_token_time += css_lexer_get_token_time ;
                 if (lexer_error as int != CSS_OK as int) {
                     return (lexer_error, None);
                 }

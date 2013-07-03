@@ -1,3 +1,4 @@
+extern mod std;
 use core::vec::*;
 use std::arc;
 
@@ -18,7 +19,9 @@ pub struct inputstream {
     priv mibenum: u16,       // MIB enum for charset, or 0
     priv encsrc: int,     // Charset source
     priv input: ~filter, // Charset conversion filter
-    priv csdetect: Option<parserutils_charset_detect_func>
+    priv csdetect: Option<parserutils_charset_detect_func>,
+    inputstream_alias_create_time:float
+
 }
  /**
     * Create an input stream
@@ -45,7 +48,13 @@ pub fn inputstream(encoding: Option<~str>, charset_src: Option<int>, csdetect_in
         stream_encoding = ~"UTF-8";
         stream_charset_src = 0;
     }
-    match parserutils_filter(alias() , copy stream_encoding) {
+
+    let mut start_time = std::time::precise_time_ns();
+    let alias_instance = alias();
+    let mut end_time = std::time::precise_time_ns();
+    let alias_create_time = (end_time as float - start_time as float);
+
+    match parserutils_filter(alias_instance , copy stream_encoding) {
         (x,PARSERUTILS_OK) =>{
             let mut filter_instance = x.unwrap(); 
             stream = ~inputstream {
@@ -58,7 +67,8 @@ pub fn inputstream(encoding: Option<~str>, charset_src: Option<int>, csdetect_in
                 mibenum: arc::get(&filter_instance.instance).parserutils_charset_mibenum_from_name(copy stream_encoding),
                 encsrc: stream_charset_src,
                 input: filter_instance,
-                csdetect: csdetect_instance
+                csdetect: csdetect_instance,
+		inputstream_alias_create_time:alias_create_time
             };
         },
         
