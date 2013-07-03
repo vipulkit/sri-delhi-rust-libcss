@@ -123,22 +123,66 @@ pub fn select_test(file:~str) {
 		}
 	}
 
-	let mut creation_time = @mut 0;
-	let mut append_time = @mut 0;
-	let mut select_time = @mut 0;
+	let mut css_stylesheet_create_time = @mut 0;
+	let mut css_stylesheet_append_data_time = @mut 0;
+	let mut css_select_style_time = @mut 0;
+	let mut parseutils_inputstream_peek_time = @mut 0f;
+	let mut parseutils_inputstream_append_time = @mut 0f;
+	let mut parseutils_inputstream_advance_time = @mut 0f;
+	let mut css_lexer_get_token_time = @mut 0f;
+	let mut css_stylesheet_data_done_time= @mut 0f;
+	let mut css_create_lwc_time = @mut 0f;
+	let mut css_create_inputstream_time = @mut 0f;
+	let css_create_lexer_time = @mut 0f;
+	let css_create_stylesheet_time = @mut 0f;
+	let css_create_language_time = @mut 0f;
+	let css_create_parser_time = @mut 0f;
+	let css_create_inputstream_alias_time = @mut 0f;
 
 	for str::each_line_any(file_content) |line| { 
         let mut line_string: ~str = line.to_str(); 
 		line_string.push_char('\n');
 		// debug!("Handling line =%?=",copy line_string);
-	    handle_line(&mut line_string,ctx, creation_time, append_time, select_time);
+	    handle_line(&mut line_string,ctx, css_stylesheet_create_time, 
+				css_stylesheet_append_data_time, 
+				css_select_style_time, 
+				parseutils_inputstream_peek_time, 
+				parseutils_inputstream_append_time,
+				css_lexer_get_token_time, 
+				css_stylesheet_data_done_time, 	
+				parseutils_inputstream_advance_time,
+				css_create_lwc_time,  
+				css_create_inputstream_time, 
+				css_create_lexer_time, 
+				css_create_stylesheet_time, 
+				css_create_language_time,
+				css_create_parser_time ,
+				css_create_inputstream_alias_time);
     }	
 
 	if (ctx.tree.is_some() ) {
-		run_test(ctx, select_time);
+		run_test(ctx, css_select_style_time, parseutils_inputstream_peek_time, parseutils_inputstream_append_time, css_lexer_get_token_time, parseutils_inputstream_advance_time);
 	}
 
-	io::println(fmt!("#creation_time:%?\n#append_time:%?\n#select_time:%?\n", (*creation_time as float)/1000f, (*append_time as float)/1000f, (*select_time as float)/1000f));
+	io::println(fmt!("#css_stylesheet_create_time:%?",(*css_stylesheet_create_time as float /1000f))) ;
+	io::println(fmt!("#css_create_lwc_time:%?",(*css_create_lwc_time/1000f))) ;
+	io::println(fmt!("#css_create_input_stream_time:%?",(*css_create_inputstream_time/1000f))) ;
+	io::println(fmt!("#css_create_inputstream_alias_time:%?",(*css_create_inputstream_alias_time/1000f))) ;
+
+	io::println(fmt!("#css_create_lexer_time:%?",(*css_create_lexer_time/1000f))) ;
+	io::println(fmt!("#css_create_stylesheet_time:%?",(*css_create_stylesheet_time/1000f))) ;
+	io::println(fmt!("#css_create_language_time:%?",(*css_create_language_time/1000f))) ;
+
+	io::println(fmt!("#css_create_parser_time:%?",(*css_create_parser_time/1000f))) ;
+
+
+	io::println(fmt!("#css_stylesheet_append_data_time:%?",(*css_stylesheet_append_data_time as float/1000f))) ;
+	io::println(fmt!("#css_stylesheet_data_done_time:%?",(*css_stylesheet_data_done_time/1000f))) ;
+	io::println(fmt!("#css_lexer_get_token_time:%?",(*css_lexer_get_token_time/1000f))) ;
+	io::println(fmt!("#parseutils_inputstream_peek_time:%?",(*parseutils_inputstream_peek_time/1000f))) ;
+	io::println(fmt!("#parseutils_inputstream_append_time:%?",(*parseutils_inputstream_append_time/1000f))) ;
+	io::println(fmt!("#parseutils_inputstream_advance_time:%?",(*parseutils_inputstream_advance_time/1000f))) ;
+	io::println(fmt!("#css_select_style_time:%?",(*css_select_style_time as float /1000f))) ;
 }
 
 pub fn resolve_url(_:@str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>){
@@ -163,8 +207,23 @@ pub fn css_create_params() -> css_params {
      return css_param;
 }
 
-pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, creation_time:@mut u64, append_time:@mut u64, select_time:@mut u64) -> bool {
-
+pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_time:@mut u64, 
+	css_stylesheet_append_data_time:@mut u64, 
+	css_select_style_time:@mut u64, 
+	parseutils_inputstream_peek_time:@mut float, 
+	parseutils_inputstream_append_time:@mut float, 
+	css_lexer_get_token_time:@mut float, 
+	css_stylesheet_data_done_time:@mut float, 
+	parseutils_inputstream_advance_time:@mut float,
+	css_create_lwc_time:@mut float,
+	css_create_inputstream_time:@mut float,
+	css_create_lexer_time:@mut float,
+	css_create_stylesheet_time:@mut float,
+	css_create_language_time:@mut float,
+	css_create_parser_time:@mut float ,
+	css_create_inputstream_alias_time:@mut float
+	) -> bool 
+{
 	let mut error : css_error ;
 	let mut len : uint ; 
 	if ( data[0] == ('#' as u8) ) {
@@ -179,7 +238,14 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, creation_time:@mut u64, a
             }
             else {
                 /* Assume start of stylesheet */
-                css__parse_sheet(ctx, data,1, creation_time);
+                css__parse_sheet(ctx, data,1, css_stylesheet_create_time, 
+				css_create_lwc_time,  
+				css_create_inputstream_time, 
+				css_create_lexer_time, 
+				css_create_stylesheet_time, 
+				css_create_language_time,
+				css_create_parser_time,
+				css_create_inputstream_alias_time );
                 debug!("Sheet parsed 1");
                 ctx.intree = false;
                 ctx.insheet = true;
@@ -191,11 +257,15 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, creation_time:@mut u64, a
         	debug!("ctx insheet");
             if(data.len() >= 7 && is_string_caseless_equal(data.slice(1,7), "errors")){
                 len = unsafe { ctx.sheets.len() -1 } ;
+                let mut start_time = std::time::precise_time_ns();
                 assert!( 
                         match ctx.sheets[len].sheet.css_stylesheet_data_done() {
                                 CSS_OK=>{true},
                                 _=>{false}
                         });
+            	let mut end_time = std::time::precise_time_ns();
+	        let css_style_diff_time = (end_time as float - start_time as float);
+        	*css_stylesheet_data_done_time += css_style_diff_time;
                 ctx.intree = false;
                 ctx.insheet = false;
                 ctx.inerrors = true ;
@@ -206,12 +276,23 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, creation_time:@mut u64, a
                         data.len() >= 7 && is_string_caseless_equal(data.slice(1,7), "author") {
                 
                 len = unsafe { ctx.sheets.len() -1 } ;
+                let mut start_time = std::time::precise_time_ns();
                 assert!( 
                         match ctx.sheets[len].sheet.css_stylesheet_data_done() {
                             CSS_OK=>{true},
                             _=>{false}
                         });
-                css__parse_sheet(ctx, data,1, creation_time);
+            	let mut end_time = std::time::precise_time_ns();
+	        let css_style_diff_time = (end_time as float - start_time as float);
+        	*css_stylesheet_data_done_time += css_style_diff_time;
+                css__parse_sheet(ctx, data,1, css_stylesheet_create_time, 
+				css_create_lwc_time,  
+				css_create_inputstream_time, 
+				css_create_lexer_time, 
+				css_create_stylesheet_time, 
+				css_create_language_time,
+				css_create_parser_time,
+				css_create_inputstream_alias_time );
                 debug!("Sheet parsed 2");
             }
             else {
@@ -219,7 +300,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, creation_time:@mut u64, a
                 let start_time = std::time::precise_time_ns();
                 let mut error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.to_bytes());
                 let end_time = std::time::precise_time_ns();
-                *append_time += (end_time - start_time);
+                *css_stylesheet_append_data_time += (end_time - start_time);
 
                 assert!( match error {
                             CSS_OK=>{true},
@@ -238,8 +319,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, creation_time:@mut u64, a
         else if (ctx.inexp) {
         	debug!("in ctx inexp");
             /* This marks end of testcase, so run it */
-            run_test(ctx, select_time);
-	
+            run_test(ctx, css_select_style_time, parseutils_inputstream_peek_time, parseutils_inputstream_append_time,css_lexer_get_token_time , parseutils_inputstream_advance_time);
 	    	//ctx.expused = 0;
 
             ctx.intree = false;
@@ -270,7 +350,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, creation_time:@mut u64, a
             let start_time = std::time::precise_time_ns();
             error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.to_bytes());
             let end_time = std::time::precise_time_ns();
-            *append_time += (end_time - start_time);
+            *css_stylesheet_append_data_time += (end_time - start_time);
             assert!( match error {
                         CSS_OK=>{true},
                         CSS_NEEDDATA=>{true},
@@ -470,7 +550,14 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 
 }
 
-pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, creation_time:@mut u64) {
+pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_stylesheet_create_time:@mut u64,
+			css_create_lwc_time:@mut float,
+			css_create_inputstream_time:@mut float,
+			css_create_lexer_time:@mut float,
+			css_create_stylesheet_time:@mut float,
+			css_create_language_time:@mut float,
+			css_create_parser_time:@mut float,
+			css_create_inputstream_alias_time:@mut float ) {
 	debug!("\n Entering css__parse_sheet ") ;
     let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
     let mut p : uint = index;
@@ -508,8 +595,16 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, creation_t
     let start_time = std::time::precise_time_ns();
     let sheet:@mut css = css::css_create(&params, Some(lwc_ins.clone()) );
     let end_time = std::time::precise_time_ns();
+    *css_stylesheet_create_time += (end_time - start_time);
 
-    *creation_time += (end_time - start_time);
+    *css_create_lwc_time += sheet.css_create_lwc_time;
+    *css_create_inputstream_time += sheet.css_create_inputstream_time;
+    *css_create_lexer_time += sheet.css_create_lexer_time;
+    *css_create_stylesheet_time += sheet.css_create_stylesheet_time;
+    *css_create_language_time   += sheet.css_create_language_time;
+    *css_create_parser_time    += sheet.css_create_parser_time;
+    *css_create_inputstream_alias_time += sheet.css_create_inputstream_alias_time;
+ 
 
     debug!("Sheet created in select-auto ");
     let mut sheet_ctx_ins = @mut sheet_ctx {
@@ -683,7 +778,7 @@ pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> u
 //
 //}
 
-pub fn run_test( ctx:@mut line_ctx, select_time:@mut u64) {
+pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_inputstream_peek_time:@mut float, parseutils_inputstream_append_time:@mut float, css_lexer_get_token_time:@mut float,parseutils_inputstream_advance_time:@mut float) {
 	//debug!("\n Entering run test =%?=",ctx) ;
     let mut select: ~css_select_ctx;
     let mut results: css_select_results;
@@ -790,10 +885,10 @@ pub fn run_test( ctx:@mut line_ctx, select_time:@mut u64) {
     	let pw_ptr = ::cast::transmute(pw);
 
     	let start_time = std::time::precise_time_ns();
-		let mut result = select.css_select_style(target,ctx.media as u64,None, select_handler,pw_ptr);
-		let end_time = std::time::precise_time_ns();
+	let mut result = select.css_select_style(target,ctx.media as u64,None, select_handler,pw_ptr);
+	let end_time = std::time::precise_time_ns();
 
-		*select_time += (end_time - start_time);
+	*css_select_style_time += (end_time - start_time);
 
     	match result {
     	    (CSS_OK,Some(x)) => results = x,
@@ -804,6 +899,17 @@ pub fn run_test( ctx:@mut line_ctx, select_time:@mut u64) {
     
     assert!(results.styles[ctx.pseudo_element].is_some());
     dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
+
+    unsafe {
+	let mut i = 0;
+        while i < (ctx.sheets.len() as u32) {
+    *parseutils_inputstream_peek_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_peek_time;
+    *parseutils_inputstream_append_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_append_time;
+    *parseutils_inputstream_advance_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_advance_time;
+    *css_lexer_get_token_time += ctx.sheets[i].sheet.parser.css_lexer_get_token_time;
+            i += 1;
+        }
+    }
 
 
 
