@@ -19,23 +19,23 @@ fn main() {
     let mut rust_select_time = 0f;
 
     for str::each_line(rust_file_content) |line| {
-    	if (str::starts_with(line, ~"#creation_time")) {
+    	if (str::starts_with(line, ~"#css_stylesheet_create_time")) {
     		debug!("found creation_time");
-    		let val = line.slice(15, line.len());
+    		let val = line.slice(28, line.len());
     		debug!("val == %s", val);
     		rust_creation_time = float::from_str(val).unwrap();
     	}
 
-		if (str::starts_with(line, ~"#append_time")) {
+		if (str::starts_with(line, ~"#css_stylesheet_append_data_time")) {
 			debug!("found append_time");
-			let val = line.slice(13, line.len());
+			let val = line.slice(33, line.len());
     		debug!("val == %s", val);
     		rust_append_time = float::from_str(val).unwrap();
     	}
 
-    	if (str::starts_with(line, ~"#select_time")) {
+    	if (str::starts_with(line, ~"#css_select_style_time")) {
     		debug!("found select_time");
-    		let val = line.slice(13, line.len());
+    		let val = line.slice(23, line.len());
     		debug!("val == %s", val);
     		rust_select_time = float::from_str(val).unwrap();
     	}      	
@@ -63,23 +63,23 @@ fn main() {
     let mut c_select_time = 0f;
 
     for str::each_line(c_file_content) |line| {
-    	if (str::starts_with(line, ~"#creation_time")) {
+    	if (str::starts_with(line, ~"#css_stylesheet_create_time")) {
     		debug!("found creation_time");
-    		let val = line.slice(15, line.len());
+    		let val = line.slice(28, line.len());
     		debug!("val == %s", val);
     		c_creation_time = float::from_str(val).unwrap();
     	}
 
-		if (str::starts_with(line, ~"#append_time")) {
+		if (str::starts_with(line, ~"#css_stylesheet_append_data_time")) {
 			debug!("found append_time");
-			let val = line.slice(13, line.len());
+			let val = line.slice(33, line.len());
     		debug!("val == %s", val);
     		c_append_time = float::from_str(val).unwrap();
     	}
 
-    	if (str::starts_with(line, ~"#select_time")) {
+    	if (str::starts_with(line, ~"#css_select_style_time")) {
     		debug!("found select_time");
-    		let val = line.slice(13, line.len());
+    		let val = line.slice(23, line.len());
     		debug!("val == %s", val);
     		c_select_time = float::from_str(val).unwrap();
     	}      	
