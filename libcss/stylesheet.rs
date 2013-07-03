@@ -1081,7 +1081,7 @@ impl css_stylesheet {
         debug!("Entering: css__stylesheet_remove_rule");
         match sheet._remove_selectors(css_rule) {
             CSS_OK=>{},
-            _=>return CSS_INVALID
+            x =>return x 
         }
 
         let mut base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
@@ -1104,6 +1104,10 @@ impl css_stylesheet {
                 prev_rule.next = base_rule.next ;
             }
         }
+        base_rule.parent_rule = None ;
+        base_rule.parent_stylesheet = None ;
+        base_rule.next = None;
+        base_rule.prev = None ;
         CSS_OK
     }
 
@@ -1176,7 +1180,7 @@ impl css_stylesheet {
                                     loop {
                                         match ptr {
                                             None=>{
-                                                break ;
+                                                return x ;
                                             }
                                             Some(prev_rule)=>{
                                                 self._remove_selectors(prev_rule) ;
@@ -1185,7 +1189,6 @@ impl css_stylesheet {
                                             }
                                         }
                                     }
-                                    return x ;
                                 }
                             }
                         }

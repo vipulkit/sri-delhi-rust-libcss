@@ -244,7 +244,6 @@ pub impl css_parser {
         }
         //io::println(fmt!("css__parser_completed :: self.lexer.parseutils_inputstream_append_time == %?, self.lexer.parseutils_inputstream_peek_time == %? ",self.lexer.parseutils_inputstream_append_time , self.lexer.parseutils_inputstream_peek_time )) ;
         io::println(fmt!("%?,%? ",self.lexer.parseutils_inputstream_append_time , self.lexer.parseutils_inputstream_peek_time )) ;
-
         CSS_OK
     }
 

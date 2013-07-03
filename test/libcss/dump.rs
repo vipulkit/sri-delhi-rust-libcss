@@ -570,7 +570,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
 
                 if (value & (AZIMUTH_BEHIND as u32) > 0) {
-                    str::push_str(ptr , &"behind");
+                    str::push_str(ptr , &" behind");
                 }
             }
 
@@ -714,7 +714,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
 
                 else if value as int == BACKGROUND_REPEAT_REPEAT as int {
-                    str::push_str(ptr , &"repeat-repeat");
+                    str::push_str(ptr , &"repeat");
                 }
             }
 
@@ -1043,7 +1043,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                     ptr.push_char(')');
                 }
-                str::push_str(ptr , &"auto");
+                else {
+                    str::push_str(ptr , &"auto");    
+                }
             }
 
             else if op as int == CSS_PROP_COLOR as int {
@@ -1118,6 +1120,13 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             }
 
             else if op as int == CSS_PROP_CONTENT as int {
+
+                if value as int == CONTENT_NORMAL as int {
+                    str::push_str(ptr , &"normal");
+                }
+                else if value as int == CONTENT_NONE as int {
+                    str::push_str(ptr , &"none");
+                }
                 
                 while value as int != CONTENT_NORMAL as int {
 
@@ -1129,10 +1138,11 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         iterator += 1;
 
                         if option_string.is_some() {
+                            debug!("dump_bytecode :: CONTENT_COUNTER :: option_string == %?" , copy option_string.get_ref());
                             dump_counter(option_string.unwrap() , value , ptr);
                         }
                     }
-                    else if (value as int & 0xff) == CONTENT_COUNTER as int {
+                    else if (value as int & 0xff) == CONTENT_COUNTERS as int {
 
                         let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
                         iterator += 1;
@@ -1140,6 +1150,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         iterator += 1;
 
                         if option_string.is_some() {
+                            debug!("dump_bytecode :: CONTENT_COUNTERS :: option_string == %?" , copy option_string.get_ref());
                             dump_counters(option_string.unwrap() , fmt!("%?" , sep) , value , ptr);
                         }
                     }
@@ -1153,15 +1164,17 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         if value as int == CONTENT_ATTR as int {
                             str::push_str(ptr , &"attr(");
                         }
-                        if value as int == CONTENT_STRING as int {
+                        if value as int != CONTENT_STRING as int {
                             str::push_str(ptr , &")");
                         }
 
                         iterator += 1;
 
                         if option_string.is_some() {
-                            ptr.push_char('\'');
+                            debug!("dump_bytecode :: CONTENT_URI_ATTR_STRING :: option_string == %?" , copy option_string.get_ref());
+                            str::push_str(ptr , &"'");
                             str::push_str(ptr , option_string.unwrap());
+                            str::push_str(ptr , &"'");
                         }
                     }
                     else if (value as int & 0xff) == CONTENT_OPEN_QUOTE as int {
@@ -1182,6 +1195,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     if value as int != CONTENT_NORMAL as int {
                         ptr.push_char(' ');
                     }
+                    debug!("dump_bytecode :: while :: ptr == %?" , ptr);
                 } // end while
             }
 
@@ -1735,6 +1749,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     let string = fmt!("#%08x" , colour as uint);
                     str::push_str(ptr , string);
                 }
+                else if value as int == OUTLINE_COLOR_INVERT as int {
+                    str::push_str(ptr , &"invert");
+                }
             }
 
             else if op as int == CSS_PROP_OVERFLOW as int {
@@ -2086,6 +2103,19 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
                 else if value as int == VERTICAL_ALIGN_TEXT_BOTTOM as int {
                     str::push_str(ptr , &"text-bottom");
+                }
+            }
+
+            else if op as int == CSS_PROP_VISIBILITY as int {
+
+                if value as int == VISIBILITY_VISIBLE as int {
+                    str::push_str(ptr , &"visible");
+                }
+                else if value as int == VISIBILITY_HIDDEN as int {
+                    str::push_str(ptr , &"hidden");
+                }
+                else if value as int == VISIBILITY_COLLAPSE as int {
+                    str::push_str(ptr , &"collapse");
                 }
             }
 

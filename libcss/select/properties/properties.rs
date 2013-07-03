@@ -194,11 +194,15 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 
 	if !isInherit(opv) {
 		match getValue(opv) {
-			BACKGROUND_IMAGE_NONE => value = CSS_BACKGROUND_IMAGE_NONE as uint,
+			BACKGROUND_IMAGE_NONE => {
+				value = (CSS_BACKGROUND_IMAGE_NONE as uint);
+			},
 			BACKGROUND_IMAGE_URI => {
-				value = CSS_BACKGROUND_IMAGE_IMAGE;
+				value = (CSS_BACKGROUND_IMAGE_IMAGE);
+				unsafe { debug!("css__cascade_uri_none: bytecode is =%?=",style.bytecode) };
 				let (_, ret_uri) = style.sheet.get().css__stylesheet_string_get(peek_bytecode(style) as uint);
 				uri = ret_uri;
+				unsafe { debug!("css__cascade_uri_none: bytecode is =%?=%?=",style.bytecode,uri) };
 				advance_bytecode(style)	
 			},
 			_ => {}
@@ -212,6 +216,7 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 				(*fun_fn)(state.computed, value as u8, uri.unwrap())	
 			}
 			else {
+				debug!("URI is none in css__cascade_uri_none ") ;
 				(*fun_fn)(state.computed, value as u8, ~"")	
 			}
 		},
@@ -3051,23 +3056,16 @@ pub fn css__set_font_family_from_hint(hint:@mut  css_hint,
 										style:@mut css_computed_style
 										) -> css_error {
 
-	match hint.hint_type {
-		STRINGS_VECTOR=>{
-			match hint.strings {
-				Some(copy x)=>{
-					set_font_family(style, hint.status, x);
-				},
-				None=>{
-					set_font_family(style, hint.status, ~[]);
-				}
-			}
-			hint.strings = Some(~[]);
+	
+	match hint.strings {
+		Some(copy x)=>{
+			set_font_family(style, hint.status, x);
 		},
-		_=>{
-			return CSS_INVALID ;
+		None=>{
+			set_font_family(style, hint.status, ~[]);
 		}
 	}
-
+	hint.strings = Some(~[]);
 	CSS_OK
 }
 
@@ -5585,23 +5583,16 @@ pub fn css__set_quotes_from_hint(hint:@mut  css_hint,
 								style:@mut css_computed_style
 								) -> css_error {
 
-	match hint.hint_type {
-		STRINGS_VECTOR => {
-			match hint.strings {
-				Some(copy x)=>{
-					set_quotes(style, hint.status, x);
-				},
-				None=>{
-					set_quotes(style, hint.status, ~[] );
-				}
-			} 
-			hint.strings= None ;
-			CSS_OK 
+	match hint.strings {
+		Some(copy x)=>{
+			set_quotes(style, hint.status, x);
 		},
-		_ => {
-			CSS_INVALID
+		None=>{
+			set_quotes(style, hint.status, ~[] );
 		}
-	}
+	} 
+	hint.strings= None ;
+	CSS_OK 
 }
 
 pub fn css__initial_quotes(state:@mut css_select_state) -> css_error {

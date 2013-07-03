@@ -86,7 +86,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
     }
 
     let (num , consumed_index) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
-
+    debug!("css__parse_unit_specifier :: num == %?" , num);
     match token.token_type {
         CSS_TOKEN_DIMENSION => {
             let data = lwc_string_data(token.idata.get_ref().clone());
@@ -859,7 +859,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
 	
 	ret_value = COLOR_SET ;
 	
-	debug!(fmt!("Return value= %?, result= %?", ret_value, ret_result)); //DEBUG
+	debug!(fmt!("css__parse_color_specifier :: Return value= %?, result= %?", ret_value, ret_result)); //DEBUG
     
 	(Some(ret_value) , Some(ret_result) , CSS_OK)
 }
@@ -1284,14 +1284,14 @@ fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propst
 
     let mut index = ALICEBLUE as uint;
 
-    while (index < YELLOWGREEN as uint) {
+    while (index < YELLOWGREEN as uint + 1) {
         if strings.lwc_string_caseless_isequal(data.clone() , index) {
             break
         }
         index +=1;
     }
 
-    if index <= YELLOWGREEN as uint + 1 {
+    if index <= YELLOWGREEN as uint {
         result_val = colourmap[(index - (ALICEBLUE as uint))];
         return (Some(result_val) , CSS_OK);
     }

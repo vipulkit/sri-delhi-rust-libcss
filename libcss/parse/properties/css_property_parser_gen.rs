@@ -203,7 +203,7 @@ pub fn output_number(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     str::push_str(&mut output,"\t\t}\n");
         
 
-    for uint::range(1 , kvlist.len()-1) |i| {
+    for uint::range(1 , kvlist.len()) |i| {
         if kvlist[i].key == ~"RANGE" {
             str::push_str(&mut output,fmt!("\t\tif %s {\n",kvlist[i].val));
             str::push_str(&mut output,"\t\t\t*ctx = orig_ctx;\n");
@@ -224,6 +224,8 @@ pub fn output_color(fp:@Writer, parseid:&keyval) {
     str::push_str(&mut output,"\t\tlet mut value:u16;\n\n");
     str::push_str(&mut output,"\t\tlet mut color:u32;\n\n");
     str::push_str(&mut output,"\t\tlet (value_option, color_option, res)= css__parse_color_specifier(sheet, strings, vector, ctx);\n");
+    str::push_str(&mut output,"\t\terror = res;\n");
+    str::push_str(&mut output,"\tdebug!(\"error == %? (1)\" , error)\n");
     str::push_str(&mut output,"\t\tmatch res {\n");
     str::push_str(&mut output,"\t\t\tCSS_OK => {\n");
     str::push_str(&mut output,"\t\t\t\tvalue = value_option.unwrap();\n");
@@ -231,7 +233,7 @@ pub fn output_color(fp:@Writer, parseid:&keyval) {
     //str::push_str(&mut output,"\t\t\t\tcolor = color_option.unwrap() },\n");
     str::push_str(&mut output,"\t\t\t_ => {\n");
     str::push_str(&mut output,"\t\t\t\t*ctx = orig_ctx;\n");
-    str::push_str(&mut output,"\t\t\t\treturn error\n");
+    str::push_str(&mut output,"\t\t\t\treturn res\n");
     str::push_str(&mut output,"\t\t\t}\n");
     str::push_str(&mut output,"\t\t}\n\n");
     str::push_str(&mut output,fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, value);\n",parseid.val));
@@ -249,19 +251,22 @@ pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     str::push_str(&mut output,"\t\t*ctx = orig_ctx;\n\n");
     str::push_str(&mut output,"\t\tlet mut unit:u32;\n\n");
     str::push_str(&mut output,fmt!("\t\tlet (length_option, unit_option, res) =css__parse_unit_specifier(sheet, vector, ctx, %s as u32);\n",kvlist[0].key));
+    str::push_str(&mut output,"\t\terror = res;\n");
+    str::push_str(&mut output,"\tdebug!(\"error == %?(1)\" , error)\n");
     str::push_str(&mut output,"\t\tmatch res {\n");
     str::push_str(&mut output,"\t\t\tCSS_OK => {\n");
     str::push_str(&mut output,"\t\t\t\tunit = unit_option.unwrap();\n");
-    str::push_str(&mut output,"\t\t\t\tlength = length_option.unwrap() as u32;\n");
+    str::push_str(&mut output,"\t\t\t\tlength = length_option.get() as u32;\n");
     str::push_str(&mut output,"\t\t\t},\n");
     str::push_str(&mut output,"\t\t\t_ => {\n");
     str::push_str(&mut output,"\t\t\t\t*ctx = orig_ctx;\n");
     str::push_str(&mut output,"\t\t\t\treturn res\n");
     str::push_str(&mut output,"\t\t\t}\n");
     str::push_str(&mut output,"\t\t}\n\n");
+    str::push_str(&mut output,"\t\t\tlet length_fixed = length_option.get();\n");
         
 
-    for uint::range(1 , kvlist.len()-1) |i| { 
+    for uint::range(1 , kvlist.len()) |i| { 
         
         if kvlist[i].key == ~"ALLOW" {
             str::push_str(&mut output,fmt!("\t\tif !(%s) {\n",kvlist[i].val));
@@ -274,7 +279,7 @@ pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             str::push_str(&mut output,"\t\t\treturn CSS_INVALID\n");
             str::push_str(&mut output,"\t\t}\n\n")
         } else if kvlist[i].key == ~"RANGE" {
-            str::push_str(&mut output,fmt!("\t\tif length %s {\n",kvlist[i].val));
+            str::push_str(&mut output,fmt!("\t\tif length_fixed %s {\n",kvlist[i].val));
             str::push_str(&mut output,"\t\t\t*ctx = orig_ctx;\n");
             str::push_str(&mut output,"\t\t\treturn CSS_INVALID\n");
             str::push_str(&mut output,"\t\t}\n\n")
@@ -361,6 +366,7 @@ pub fn output_footer(fp:@Writer) {
     let mut output : ~str = ~"\tif match error {CSS_OK => false, _ => true} {\n";
     str::push_str(&mut output,"\t\t*ctx = orig_ctx;\n\t}\n");
     str::push_str(&mut output," \n");
+    str::push_str(&mut output,"\tdebug!(\"error == %? (2)\" , error)\n");
     str::push_str(&mut output,"\treturn error\n");
     str::push_str(&mut output,"}\n\n");
     fp.write_str(output);

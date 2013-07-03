@@ -170,12 +170,12 @@ pub impl css_language {
         
         let mut curRule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_SELECTOR);
         
-        if !vec::is_empty(*tokens) {
-            match self.parseSelectorList(tokens, curRule) {
-                CSS_OK => {},
-                x      =>   return x  
-            }
+        //if !vec::is_empty(*tokens) {
+        match self.parseSelectorList(tokens, curRule) {
+            CSS_OK => {},
+            x =>   return x  
         }
+        //}
 
         let mut entry:context_entry = context_entry {
             event_type: CSS_PARSER_START_RULESET, 
@@ -884,13 +884,14 @@ pub impl css_language {
         }
         let error = (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , &mut self.strings , vector , ctx , style);
 
-        if error as int != CSS_OK as int {
-            return error;
-        }
-
         unsafe {
             debug!(fmt!("parseProperty:: style.bytecode (2)== %?" , style.bytecode));
         }
+
+        if error as int != CSS_OK as int {
+            return error;
+        }
+        
         let (status,flags) = self.css__parse_important(vector , ctx);
         if status as int != CSS_OK as int {
             debug!("Exiting: parseProperty (1)");

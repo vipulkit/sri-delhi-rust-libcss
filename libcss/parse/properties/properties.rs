@@ -429,6 +429,7 @@ pub impl css_properties {
         let orig_ctx = *ctx;
         let mut prev_ctx;
         let mut error = CSS_OK; 
+        let mut is_inherit_error = CSS_OK; 
         let mut attachment = true;
         let mut color = true;
         let mut image = true;
@@ -474,9 +475,8 @@ pub impl css_properties {
             prev_ctx = *ctx;
             
             if (is_css_inherit(strings, token)) {
-                error = CSS_INVALID;
-                background_cleanup = true;
-                break
+                *ctx = orig_ctx;
+                return CSS_INVALID;
             }
 
             /* Try each property parser in turn, but only if we
@@ -484,37 +484,46 @@ pub impl css_properties {
              */
             
             if attachment &&  match css__parse_background_attachment(sheet, strings, vector, ctx, 
-                attachment_style) { CSS_OK => true, x =>{ error = x; false}} {
+                attachment_style) { CSS_OK => {error = CSS_OK ; true}, x =>{ error = x; false}} {
+                debug!("css__parse_background :: in css__parse_background_attachment");
                 attachment = false
             } 
             else if color &&  match css__parse_background_color(sheet, strings, vector, ctx,
-                color_style) { CSS_OK => true, x =>{ error = x; false}} {
+                color_style) { CSS_OK => {error = CSS_OK ; true}, x =>{ error = x; false}} {
+                debug!("css__parse_background :: in css__parse_background_color");
                 color = false
             } 
             else if image &&  match css__parse_background_image(sheet, strings, vector, ctx,
-                image_style) { CSS_OK => true, x =>{ error = x; false}} {
+                image_style) { CSS_OK => {error = CSS_OK ; true}, x =>{ error = x; false}} {
+                debug!("css__parse_background :: in css__parse_background_image");
                 image = false
             } 
             else if position && match css_properties::css__parse_background_position(sheet, strings, vector, ctx,
-             position_style) { CSS_OK => true, x =>{ error = x; false}} {
+             position_style) { CSS_OK => {error = CSS_OK ; true}, x =>{ error = x; false}} {
+                debug!("css__parse_background :: in css__parse_background_position");
                 position = false
             } else if repeat && match css__parse_background_repeat(sheet, strings, vector, ctx,
-             repeat_style){ CSS_OK => true, x => {error = x; false}} {
+             repeat_style){ CSS_OK => {error = CSS_OK ; true}, x => {error = x; false}} {
+                debug!("css__parse_background :: in css__parse_background_repeat");
                 repeat = false
             }
 
             match error {
                 CSS_OK => {
+                    debug!("css__parse_background :: in match error CSS_OK");
                     consumeWhitespace(vector, ctx);
                     if *ctx >= vector.len() {
                         break   
                     }
                     token = &vector[*ctx];
                 },
-                _ =>  break //Forcibly cause loop to exit
+                _ =>  {
+                    debug!("css__parse_background :: in match error _");
+                    break //Forcibly cause loop to exit
+                }
             }
 
-            if *ctx == prev_ctx {
+            if *ctx == prev_ctx{
                 break
             }
         } 
@@ -550,14 +559,13 @@ pub impl css_properties {
             css_stylesheet::css__stylesheet_merge_style(result, position_style);
             css_stylesheet::css__stylesheet_merge_style(result, repeat_style);
         }
-        
-        match error { 
-            CSS_OK => return CSS_OK,
-            x => {
-                *ctx = orig_ctx ;
-                return x 
-            }
+
+        if is_inherit_error as int != CSS_OK as int {
+            *ctx = orig_ctx;
+            return is_inherit_error;
         }
+        
+        CSS_OK
     }
  
 
@@ -879,6 +887,8 @@ pub impl css_properties {
                     token=&vector[*ctx];
                 },
                 _ => {
+                    side_val_vec.push(0);
+                    side_color_vec.push(0);
                     break
                 }
             }
@@ -891,73 +901,73 @@ pub impl css_properties {
             1 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
             },
             2 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[1]);
                 if side_val_vec[1] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[1] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[1]);
                 if side_val_vec[1] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[1] as u32)
                 }
             },
             3 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[1]);
                 if side_val_vec[1] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[1] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[2]);
                 if side_val_vec[2] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[2] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[2] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[1]);
                 if side_val_vec[1] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[1] as u32)
                 }
             },
             4 => {
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_TOP_COLOR , 0 , side_val_vec[0]);
                 if side_val_vec[0] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[0] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[0] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_RIGHT_COLOR , 0 , side_val_vec[1]);
                 if side_val_vec[1] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[1] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[1] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_BOTTOM_COLOR , 0 , side_val_vec[2]);
                 if side_val_vec[2] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[2] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[2] as u32)
                 }
                 css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_LEFT_COLOR , 0 , side_val_vec[3]);
                 if side_val_vec[3] == BORDER_COLOR_SET  {
-                    css_stylesheet::css__stylesheet_style_append(style , side_val_vec[3] as u32)
+                    css_stylesheet::css__stylesheet_style_append(style , side_color_vec[3] as u32)
                 }
             },
             _ => {
@@ -1250,7 +1260,7 @@ pub impl css_properties {
        
         debug!("Entering: css__parse_border_width");
         let orig_ctx = *ctx;
-        let mut error: css_error= CSS_OK;
+        let mut error: css_error;
         let mut token: &@css_token;
         let mut side_val: ~[u16] = ~[];
         let mut side_length: ~[i32] = ~[];
@@ -1331,7 +1341,7 @@ pub impl css_properties {
                 else {
                     side_unit.push(0);    
                 }
-                
+                error = result;
                 match result {
                     CSS_OK => {
                         if (side_unit[side_count] == (UNIT_PCT as u32)) {
@@ -1678,13 +1688,12 @@ pub impl css_properties {
     fn css__parse_columns(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
         debug!("Entering: css__parse_columns");
+        let orig_ctx = *ctx;
         let mut prev_ctx:uint;
         let mut token:&@css_token;
         let mut width = true;
         let mut count = true;
-        let mut error_width: css_error;
-        let mut error_count: css_error;
-        let mut error =true;
+        let mut error: css_error;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -1702,32 +1711,26 @@ pub impl css_properties {
         let mut count_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
         loop {
+            debug!("css__parse_columns :: Entering loop");
             prev_ctx = *ctx;
+            error = CSS_OK;
             if (is_css_inherit(strings, token)) {
+                *ctx = orig_ctx;
                 return CSS_INVALID;
             }
-            error_width= css__parse_column_width(sheet , strings ,vector, ctx,  width_style);
-            error_count= css__parse_column_count(sheet , strings ,vector, ctx,  count_style);
-            if (width &&
-                match error_width {
-                    CSS_OK=>true,
-                    _=>false
-                }
-            ) {
+
+            if width && {error = css__parse_column_width(sheet , strings ,vector, ctx,  width_style); error} as int == CSS_OK as int { 
+              
+                debug!("Entering: css__parse_columns :: if(width)  :: error == %? , count == %? , width == %?" , error , count , width); 
                 width = false;
-                error =false;
             }
- 
-            else if (count &&
-                match error_count{
-                    CSS_OK=>true,
-                    _=>false
-                }
-                ) {
+            else if count && {error = css__parse_column_count(sheet , strings ,vector, ctx,  count_style); error} as int == CSS_OK as int {
+
+                debug!("Entering: css__parse_columns :: else if count  :: error == %? , count == %? , width == %?" , error , count , width);
                 count = false;
-                error =false;
             }
-            if(!error) {
+            
+            if error as int == CSS_OK as int {
                 consumeWhitespace(vector, ctx);
                 if *ctx >= vector.len() {
                     break;
@@ -1737,16 +1740,17 @@ pub impl css_properties {
             else {
                 break
             }
+
             if *ctx == prev_ctx {
                 break;
             }
         }//end of loop
 
         if width {
-            css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_COLUMN_WIDTH, 0, COLUMN_WIDTH_AUTO);
+            css_stylesheet::css__stylesheet_style_appendOPV(width_style, CSS_PROP_COLUMN_WIDTH, 0, COLUMN_WIDTH_AUTO);
         }
         if count {
-            css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_COLUMN_COUNT, 0, COLUMN_COUNT_AUTO);
+            css_stylesheet::css__stylesheet_style_appendOPV(count_style, CSS_PROP_COLUMN_COUNT, 0, COLUMN_COUNT_AUTO);
         }
         css_stylesheet::css__stylesheet_merge_style(style , width_style);
         css_stylesheet::css__stylesheet_merge_style(style , count_style);
@@ -3355,6 +3359,7 @@ pub impl css_properties {
         let orig_ctx = *ctx;
         let mut token: &@css_token;
         let mut flags: u8 = 0;
+        let mut value : u16 = 0;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -3362,32 +3367,25 @@ pub impl css_properties {
         
         token=&vector[*ctx];
         *ctx += 1;
-        match token.token_type {
-            CSS_TOKEN_IDENT  => {
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint) {
-                    flags |= FLAG_INHERIT as u8;
-                }
-                else {
-                    let (_ , error) = css__parse_list_style_type_value(strings , token);
-                    match error {
-                        CSS_OK => {},
-                        _ => {
-                            *ctx = orig_ctx;
-                            return error;
-                        }
-                    }
-                }
-            }
-            _ => {
-                *ctx = orig_ctx;
-                return CSS_INVALID;
-            }
-        }
-        let (list_type , error) = css__parse_list_style_type_value(strings , token);
-        if error as int != CSS_OK as int {
+
+        if token.token_type as int != CSS_TOKEN_IDENT as int{
+            *ctx = orig_ctx;
             return CSS_INVALID;
         }
-        css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_LIST_STYLE_TYPE , flags , list_type.unwrap());
+
+        if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint) {
+            flags |= FLAG_INHERIT as u8;
+        }
+        else {
+            let (list_type , error) = css__parse_list_style_type_value(strings , token);
+            
+            if error as int != CSS_OK as int {
+                *ctx = orig_ctx;
+                return error;
+            }
+            value = list_type.unwrap();
+        }
+        css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_LIST_STYLE_TYPE , flags , value);
         CSS_OK
     }
 
@@ -3416,7 +3414,7 @@ pub impl css_properties {
         
         debug!("Entering: css__parse_margin");
         let orig_ctx = *ctx;
-        let mut error: css_error= CSS_OK;
+        let mut error: css_error;
         let mut token: &@css_token;
         let mut side_val: ~[u16] = ~[];
         let mut side_length: ~[i32] = ~[];
@@ -3458,6 +3456,7 @@ pub impl css_properties {
             else {
                 side_val.push(MARGIN_SET );
                 let (length , unit , result) = css__parse_unit_specifier(sheet , vector, ctx, UNIT_PX as u32);
+                error = result ;
                 if length.is_some() {
                     side_length.push(length.unwrap());
                 }
@@ -3783,7 +3782,7 @@ pub impl css_properties {
                 error = CSS_OK; 
             }
             else if (width) && 
-                (match (css__parse_outline_color(sheet , strings , vector , ctx , width_style)) {
+                (match (css__parse_outline_width(sheet , strings , vector , ctx , width_style)) {
                     CSS_OK => true,
                     _ => false
                 }) {
@@ -4907,12 +4906,12 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
     }
 	
 	/* Rewind context by one step if we consumed an unacceptable token */
-    if *ctx >= vector.len() {
+    if *ctx < vector.len() {
         *ctx -= 1;
     }
 	
     /* Strip trailing whitespace */
-    token_buffer_string.trim_right();
+    token_buffer_string = token_buffer_string.trim_right().to_str();
 
     return (CSS_OK , Some(token_buffer_string));
 }
@@ -5079,6 +5078,7 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
 */
 pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint , result_style: @mut css_style , side: border_side_e) -> css_error { 
     
+    debug!("Entering: css__parse_border_side");
     let orig_ctx = *ctx;
     let mut prev_ctx: uint;
     let mut color: bool = true;
@@ -5104,7 +5104,6 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
         return CSS_OK;
     }
     
-    *ctx = *ctx + 1;
     color_style = css_stylesheet::css__stylesheet_style_create(sheet);
     style_style = css_stylesheet::css__stylesheet_style_create(sheet);
     width_style = css_stylesheet::css__stylesheet_style_create(sheet);
@@ -5133,15 +5132,18 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
         if color && 
             match css__parse_border_side_color(sheet, strings, vector, ctx, color_style, 
                 unsafe { cast::transmute(CSS_PROP_BORDER_TOP_COLOR as uint + side as uint)}) { CSS_OK =>{error = CSS_OK; true}, err =>{ error = err; false} } {
+                debug!("css__parse_border :: inside if color");
             color = false
         } 
         else if style && 
             match css__parse_border_side_style(sheet, strings, vector, ctx, style_style, 
                 unsafe {cast::transmute( CSS_PROP_BORDER_TOP_STYLE as uint + side as uint)}) { CSS_OK =>{error = CSS_OK; true}, err =>{ error = err; false} } {
+                debug!("css__parse_border :: inside if style");
             style = false
         } else if width && 
             match css__parse_border_side_width(sheet, strings, vector, ctx, width_style, 
                 unsafe { cast::transmute(CSS_PROP_BORDER_TOP_WIDTH as uint + side as uint)}) { CSS_OK =>{error = CSS_OK; true}, err =>{ error = err; false} } {
+            debug!("css__parse_border :: inside if width");
             width = false
         } 
 
@@ -5151,8 +5153,6 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
             if *ctx >= vector.len() {
                 break;
             }
-        
-            //token = &vector[*ctx]; Not Used
         
         } else {
             /* Forcibly cause loop to exit */
@@ -5179,14 +5179,7 @@ pub fn css__parse_border_side(sheet: @mut css_stylesheet, strings: &mut ~css_pro
     
     css_stylesheet::css__stylesheet_merge_style(result_style, width_style);
 
-    match error {
-        CSS_OK => CSS_OK,
-        error => {
-            *ctx = orig_ctx;
-            error
-        }
-    }
-    
+    CSS_OK
 }
 
 

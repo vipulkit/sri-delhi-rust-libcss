@@ -166,9 +166,9 @@ fn testMain(fileName: ~str) {
 }
 
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
-    debug!(fmt!("entering run_test"));
-    debug!(fmt!("data == %?" , data));
-    // debug!(fmt!("exp == %?" , exp));
+    debug!("Entering :: run_test");
+    // debug!("\n == data == %?" , str::from_bytes(data));
+    
     let mut css = create_css();
     let mut buf: ~str;
     let mut error = css.css_stylesheet_append_data(data);
@@ -178,61 +178,45 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     }
 
     error = css.css_stylesheet_data_done();
-    debug!(fmt!("error from css_stylesheet_data_done: %?" , error));
+    //debug!(fmt!("error from css_stylesheet_data_done: %?" , error));
     match error {
         CSS_OK => {},
         _ => {assert!(false);}
     }
 
     buf = dump_sheet(css.stylesheet);
-    let mut vec = ~[];
+    //debug!(fmt!("\n == sheet ==%?=" , buf));
+    let mut dvec = ~[];
     for str::each_line(buf) |s| {
-        vec.push(s.to_owned().to_bytes());
+        dvec.push(s.to_owned().to_bytes());
+    }
+    let mut a = vec::concat(dvec) ;
+    let mut b = vec::concat(exp) ;
+    // debug!("============================================================" );
+    // debug!(fmt!(" == sheet ==%?=" , vec));
+    // debug!("============================================================" );
+    // debug!(fmt!(" == exp ==%?=" , exp));
+    // debug!("============================================================" );
+
+    if a.len() != b.len() {
+        debug!("============================================================" );
+        debug!(" == sheet ==%?=" , (a));
+        debug!("============================================================" );
+        debug!(" == exp   ==%?=" , (b));
+        debug!("============================================================" );
+        fail!(~"Expected lines not equal to sheet dump lines");
     }
 
-    let mut vec_buffer = copy exp;
-
-    let mut vec_1 = ~[];
-    if !vec_buffer.is_empty() {
-        vec_1 = copy vec_buffer[0];
+    for vec::each2(a,b) |&s,&e| {
+        if s != e {
+            debug!("============================================================" );
+            debug!(" == sheet ==%?=" , (a));
+            debug!("============================================================" );
+            debug!(" == exp   ==%?=" , (b));
+            debug!("============================================================" );
+            fail!(~"character mismatch during result checking ");       
+        }
     }
-    
-
-    vec::reverse(vec_buffer);
-
-    if !vec_buffer.is_empty() {
-        vec_buffer.pop();
-    }
-    
-    vec::reverse(vec_buffer);
-
-    let mut expected_buffer = copy exp;
-
-    let mut exp_1 = ~[];
-    if !expected_buffer.is_empty() {
-        exp_1 = copy expected_buffer[0];
-    }
-
-    vec::reverse(expected_buffer);
-
-    if !expected_buffer.is_empty() {
-        expected_buffer.pop();
-    }
-    
-    vec::reverse(expected_buffer);
-
-    let mut exp = vec::concat(expected_buffer);
-    let mut vec = vec::concat(vec_buffer);
-
-
-    debug!(fmt!("vec == %?" , vec));
-    debug!(fmt!("exp == %?" , exp));
-
-
-
-    assert!(vec_1 == exp_1);
-    assert!(vec == exp);
-
 }
 
 
