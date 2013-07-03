@@ -1067,6 +1067,7 @@ impl css_select_ctx {
         CSS_OK
     }
 
+    #[inline(always)]
     pub fn _selectors_pending(node: Option<@mut css_selector>, id: Option<@mut css_selector>,
                 classes: &~[Option<@mut css_selector>], 
                 univ: Option<@mut css_selector>) -> bool {
@@ -1104,6 +1105,7 @@ impl css_select_ctx {
         pending
     }
 
+    #[inline(always)]
     pub fn _selector_less_specific(refer:Option<@mut css_selector>, 
                                 cand:Option<@mut css_selector>) 
                                 -> bool {
@@ -1145,6 +1147,7 @@ impl css_select_ctx {
         result
     }
 
+    #[inline(always)]
     pub fn _selector_next(node: Option<@mut css_selector>, 
                             id: Option<@mut css_selector>,
                             classes: &~[Option<@mut css_selector>], 

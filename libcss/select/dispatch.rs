@@ -1044,12 +1044,14 @@ pub struct dispatch_table ;
 // otherwise static variables are not visible outside
 impl dispatch_table {
 
+	#[inline(always)]
 	pub fn check_index(index:uint) {
 		if( index >= CSS_N_PROPERTIES as uint) {
 			fail!(~"In Check Index : index should be less that CSS_N_PROPERTIES value") ;
 		}
 	}
 
+	#[inline(always)]
 	pub fn get_cascade_ptr(index:uint) -> (&fn (opv:u32, style:@mut css_style,state:@mut css_select_state)-> css_error) {
 
 		dispatch_table::check_index(index);
@@ -1057,6 +1059,7 @@ impl dispatch_table {
 		dispatch_cascade
 	}
 
+	#[inline(always)]
 	pub fn get_set_from_hint_ptr(index:uint) -> (&fn (hint:@mut css_hint, style: @mut css_computed_style) -> css_error) {
 
 		dispatch_table::check_index(index);
@@ -1064,6 +1067,7 @@ impl dispatch_table {
 		dispatch_set_from_hint
 	}
 
+	#[inline(always)]
 	pub fn get_initial_ptr(index:uint) -> (&fn (state:@mut css_select_state) -> css_error ) {
 
 		dispatch_table::check_index(index);
@@ -1071,6 +1075,7 @@ impl dispatch_table {
 		dispatch_initial
 	}
 
+	#[inline(always)]
 	pub fn get_compose_ptr(index:uint) -> (&fn (parent:@mut css_computed_style, child:@mut css_computed_style, 
 											result:@mut css_computed_style) -> css_error) {
 
@@ -1079,6 +1084,7 @@ impl dispatch_table {
 		dispatch_compose
 	}
 
+	#[inline(always)]
 	pub fn get_inherited(index:uint) -> uint {
 
 		dispatch_table::check_index(index);
@@ -1086,6 +1092,7 @@ impl dispatch_table {
 		dispatch_inherited
 	}
 
+	#[inline(always)]
 	pub fn get_group(index:uint) -> prop_group {
 
 		dispatch_table::check_index(index);
@@ -1183,6 +1190,7 @@ pub type  compute_absolute_color_set =
 * #Return Value:
 * 	'css_computed_style' - Pointer to box containing css_computed_style object.
 */
+#[inline(always)]
 pub fn css_computed_style_create() -> @mut css_computed_style {
 	let mut result = @mut css_computed_style {
 	    bits:~[],
@@ -1277,6 +1285,7 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn css_computed_style_initialise(style: @mut css_computed_style ,
                                     fn_handler:@mut css_select_handler) -> css_error {
 
@@ -1366,6 +1375,7 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn css_computed_style_compose(parent: @mut css_computed_style, 
                                 child: @mut css_computed_style, 
                                 compute_font_size_ptr: css_fnptr_compute_font_size , 
@@ -1436,6 +1446,7 @@ pub fn css_computed_style_compose(parent: @mut css_computed_style,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
                                     style: @mut css_computed_style,
                                     compute_font_size_ptr:css_fnptr_compute_font_size) 
@@ -1772,6 +1783,7 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn  compute_absolute_color(style: @mut css_computed_style,
                                 getfn : compute_absolute_color_get,
                                 setfn : compute_absolute_color_set
@@ -1799,6 +1811,7 @@ pub fn  compute_absolute_color(style: @mut css_computed_style,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn compute_border_colors(style: @mut css_computed_style) -> css_error {
 
     let mut (_,ocomputed_color) = css_computed_color(style);
@@ -1844,6 +1857,7 @@ pub fn compute_border_colors(style: @mut css_computed_style) -> css_error {
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn  compute_absolute_border_width(style: @mut css_computed_style,
                     ex_size: @mut css_hint_length) -> css_error {
 
@@ -1900,6 +1914,7 @@ pub fn  compute_absolute_border_width(style: @mut css_computed_style,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn  compute_absolute_border_side_width(style: @mut css_computed_style,
                                     ex_size: @mut css_hint_length,
                                     getfn : compute_absolute_border_side_width_get,
@@ -1945,6 +1960,7 @@ pub fn  compute_absolute_border_side_width(style: @mut css_computed_style,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn compute_absolute_clip(style: @mut css_computed_style,
                     ex_size: @mut css_hint_length) -> css_error {
 
@@ -2018,6 +2034,7 @@ pub fn compute_absolute_clip(style: @mut css_computed_style,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn compute_absolute_line_height(style: @mut css_computed_style,
                     ex_size: @mut css_hint_length) -> css_error {
 
@@ -2052,6 +2069,7 @@ pub fn compute_absolute_line_height(style: @mut css_computed_style,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn compute_absolute_sides(style: @mut css_computed_style,
                     ex_size: @mut css_hint_length) -> css_error {
 
@@ -2101,6 +2119,7 @@ pub fn compute_absolute_sides(style: @mut css_computed_style,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn compute_absolute_margins(style: @mut css_computed_style,
                     ex_size: @mut css_hint_length) -> css_error {
 
@@ -2149,6 +2168,7 @@ pub fn compute_absolute_margins(style: @mut css_computed_style,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn compute_absolute_padding(style: @mut css_computed_style,
                             ex_size: @mut css_hint_length) -> css_error {
 
@@ -2197,6 +2217,7 @@ pub fn compute_absolute_padding(style: @mut css_computed_style,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn compute_absolute_vertical_align(style: @mut css_computed_style,
                             ex_size: @mut css_hint_length) -> css_error {
 
@@ -2234,6 +2255,7 @@ pub fn compute_absolute_vertical_align(style: @mut css_computed_style,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn compute_absolute_length(style: @mut css_computed_style,
                                     ex_size: @mut css_hint_length,
                                     getfn : compute_absolute_length_get,
@@ -2272,6 +2294,7 @@ pub fn compute_absolute_length(style: @mut css_computed_style,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn compute_absolute_length_auto(style: @mut css_computed_style,
                                     ex_size: @mut css_hint_length,
                                     getfn : compute_absolute_length_auto_get,
@@ -2316,6 +2339,7 @@ pub fn compute_absolute_length_auto(style: @mut css_computed_style,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn compute_absolute_length_none(style: @mut css_computed_style,
                                     ex_size: @mut css_hint_length,
                                     getfn : compute_absolute_length_none_get,
@@ -2360,6 +2384,7 @@ pub fn compute_absolute_length_none(style: @mut css_computed_style,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn  compute_absolute_length_normal(style: @mut css_computed_style,
                                     ex_size: @mut css_hint_length,
                                     getfn : compute_absolute_length_normal_get,
@@ -2404,6 +2429,7 @@ pub fn  compute_absolute_length_normal(style: @mut css_computed_style,
 * #Return Value:
 *  'css_error' - CSS_OK on success, appropriate error otherwise.
 */
+#[inline(always)]
 pub fn compute_absolute_length_pair(style: @mut css_computed_style,
                                     ex_size: @mut css_hint_length,
                                     getfn : compute_absolute_length_pair_get,
