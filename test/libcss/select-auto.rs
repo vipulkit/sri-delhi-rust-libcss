@@ -138,6 +138,8 @@ pub fn select_test(file:~str) {
 	let css_create_language_time = @mut 0f;
 	let css_create_parser_time = @mut 0f;
 	let css_create_inputstream_alias_time = @mut 0f;
+	let css_lang_create_propstring_time = @mut 0f;
+	let css_lang_create_properties_time = @mut 0f;
 
 	for str::each_line_any(file_content) |line| { 
         let mut line_string: ~str = line.to_str(); 
@@ -157,7 +159,10 @@ pub fn select_test(file:~str) {
 				css_create_stylesheet_time, 
 				css_create_language_time,
 				css_create_parser_time ,
-				css_create_inputstream_alias_time);
+				css_create_inputstream_alias_time,
+				css_lang_create_propstring_time,
+				css_lang_create_properties_time
+				);
     }	
 
 	if (ctx.tree.is_some() ) {
@@ -172,6 +177,9 @@ pub fn select_test(file:~str) {
 	io::println(fmt!("#css_create_lexer_time:%?",(*css_create_lexer_time/1000f))) ;
 	io::println(fmt!("#css_create_stylesheet_time:%?",(*css_create_stylesheet_time/1000f))) ;
 	io::println(fmt!("#css_create_language_time:%?",(*css_create_language_time/1000f))) ;
+				
+	io::println(fmt!("#css_lang_create_propstring_time:%?",(*css_lang_create_propstring_time/1000f))) ;
+	io::println(fmt!("#css_lang_create_properties_time:%?",(*css_lang_create_properties_time/1000f))) ;
 
 	io::println(fmt!("#css_create_parser_time:%?",(*css_create_parser_time/1000f))) ;
 
@@ -221,7 +229,9 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
 	css_create_stylesheet_time:@mut float,
 	css_create_language_time:@mut float,
 	css_create_parser_time:@mut float ,
-	css_create_inputstream_alias_time:@mut float
+	css_create_inputstream_alias_time:@mut float,
+	css_lang_create_propstring_time:@mut float,
+	css_lang_create_properties_time:@mut float
 	) -> bool 
 {
 	let mut error : css_error ;
@@ -245,7 +255,9 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
 				css_create_stylesheet_time, 
 				css_create_language_time,
 				css_create_parser_time,
-				css_create_inputstream_alias_time );
+				css_create_inputstream_alias_time ,
+				css_lang_create_propstring_time,
+				css_lang_create_properties_time);
                 debug!("Sheet parsed 1");
                 ctx.intree = false;
                 ctx.insheet = true;
@@ -292,7 +304,9 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
 				css_create_stylesheet_time, 
 				css_create_language_time,
 				css_create_parser_time,
-				css_create_inputstream_alias_time );
+				css_create_inputstream_alias_time,
+				css_lang_create_propstring_time,
+				css_lang_create_properties_time);
                 debug!("Sheet parsed 2");
             }
             else {
@@ -557,7 +571,9 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_styles
 			css_create_stylesheet_time:@mut float,
 			css_create_language_time:@mut float,
 			css_create_parser_time:@mut float,
-			css_create_inputstream_alias_time:@mut float ) {
+			css_create_inputstream_alias_time:@mut float ,
+			css_lang_create_propstring_time:@mut float,
+			css_lang_create_properties_time:@mut float){
 	debug!("\n Entering css__parse_sheet ") ;
     let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
     let mut p : uint = index;
@@ -603,7 +619,9 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_styles
     *css_create_stylesheet_time += sheet.css_create_stylesheet_time;
     *css_create_language_time   += sheet.css_create_language_time;
     *css_create_parser_time    += sheet.css_create_parser_time;
-    *css_create_inputstream_alias_time += sheet.css_create_inputstream_alias_time;
+    *css_create_inputstream_alias_time += sheet.parser.lexer.input.inputstream_alias_create_time;
+    *css_lang_create_propstring_time += sheet.parser.language.css_lang_create_propstring_time;
+    *css_lang_create_properties_time += sheet.parser.language.css_lang_create_properties_time;
  
 
     debug!("Sheet created in select-auto ");

@@ -21,7 +21,6 @@ pub struct css {
 	css_create_stylesheet_time:float,
 	css_create_language_time:float,
 	css_create_parser_time:float,
-	css_create_inputstream_alias_time:float,
 }
 
 enum css_params_version {
@@ -92,7 +91,6 @@ pub impl css {
 		let lexer = css_lexer::css__lexer_create(inputstream_option.unwrap());
             	let mut end_time = std::time::precise_time_ns();
 	        let create_lexer_time = (end_time as float - start_time as float);
-		let input_stream_alias_time = lexer.input.inputstream_alias_create_time;
 
 		// create stylesheet
             	let mut start_time = std::time::precise_time_ns();
@@ -142,8 +140,7 @@ pub impl css {
         		css_create_lexer_time:create_lexer_time,
         		css_create_stylesheet_time:create_stylesheet_time,
         		css_create_language_time:create_language_time,
-        		css_create_parser_time:create_parser_time,
-			css_create_inputstream_alias_time:input_stream_alias_time,
+        		css_create_parser_time:create_parser_time
 		}
 	}
 

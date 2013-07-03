@@ -41,7 +41,7 @@ pub enum parse_states {
 type state =  ~extern fn(parser: &mut css_parser) ->css_error;
 
 pub struct css_parser {
-    priv language: ~css_language,
+    language: ~css_language,
     lexer: ~css_lexer,
     priv lwc: arc::RWARC<~lwc>,
 
