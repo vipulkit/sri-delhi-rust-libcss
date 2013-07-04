@@ -1,21 +1,21 @@
-extern mod std;
-use core::str::* ;
-use core::libc::size_t;
-use core::libc::c_int ;
+use std::libc::*;
 
-pub struct  chunk_result {
+
+struct  chunk_result {
     outbuf : ~[u8] ,
     len_processed : u64 ,
     err_state : int , 
     ret_val : u64
 }
 
-extern mod iconv_wrapper {
-    fn AllocateBuffer(bytes:libc::c_int) -> *u8 ;
-    fn DeallocateBuffer(buffer:*u8)  ;
-    fn rust_iconv_open( tocode: * u8 , fromcode : * u8) -> u64;
-    fn rust_iconv(s: u64, inbuf : **u8 , insize : * size_t , outbuf : ** u8 , outsize : * size_t , error : * int ) -> size_t ;
-    fn rust_iconv_close(s: u64) -> c_int ;
+mod iconv_wrapper {
+ extern {
+        fn AllocateBuffer(bytes:c_int) -> *u8 ;
+        fn DeallocateBuffer(buffer:*u8)  ;
+        fn rust_iconv_open( tocode: * u8 , fromcode : * u8) -> u64;
+        fn rust_iconv(s: u64, inbuf : **u8 , insize : * size_t , outbuf : ** u8 , outsize : * size_t , error : * int ) -> size_t ;
+        fn rust_iconv_close(s: u64) -> c_int ;
+    }
 }
 
 /* Safe functions */
