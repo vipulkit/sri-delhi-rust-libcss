@@ -2120,7 +2120,6 @@ pub fn css__compose_break_after(_:@mut css_computed_style,
 ///////////////////////////////////////////////////////////////////
 pub fn  css__cascade_color(opv:u32, style:@mut css_style, state:@mut css_select_state) -> css_error {
 	
-println("color test: inside css__cascade_color");
 	let mut inherit = isInherit(opv);
 	let mut value = CSS_COLOR_INHERIT;
 	let mut color = 0;
@@ -2193,7 +2192,6 @@ pub fn css__compose_color(parent:@mut css_computed_style,
 						result:@mut css_computed_style) 
 						-> css_error {
 	
-println("color test: inside css__compose_color");
 	let (color_type, color) = css_computed_color(child);
 	
 	if color_type == (CSS_COLOR_INHERIT as u8) {

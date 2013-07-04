@@ -1503,6 +1503,7 @@ impl css_selector_hash {
                         }
                     }
 
+                    prev = search ;
                     first_pos = false ;
                     search = 
                         match search.next {
@@ -1510,7 +1511,6 @@ impl css_selector_hash {
                                 break ;
                             },
                             Some(next_ptr)=>{
-                                prev = search ;
                                 next_ptr
                             }
                     };

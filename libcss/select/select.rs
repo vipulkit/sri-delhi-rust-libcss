@@ -1723,7 +1723,7 @@ impl css_select_ctx {
         debug!(fmt!("Entering match_universal_combinator")) ;
         let detail :~[@mut css_selector_detail] = copy selector.data;
         let mut n:*libc::c_void = node;
-        io::println(fmt!("n = %?", n));
+        //io::println(fmt!("n = %?", n));
 		if ( n == ptr::null()){
 			io::println("Node Is Null");
 		}
@@ -1767,7 +1767,7 @@ impl css_select_ctx {
             match (combinator_type) {
                 CSS_COMBINATOR_ANCESTOR | 
                 CSS_COMBINATOR_PARENT => {
-					io::println(fmt!("n = %?", n));
+					//io::println(fmt!("n = %?", n));
                     error = (*state.handler.get().parent_node)(n, &mut n);
                     match error {
                         CSS_OK => {},
