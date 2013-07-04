@@ -39,6 +39,24 @@ pub struct css_namespace {
     uri:Option<arc::RWARC<~lwc_string>>     //< Namespace URI */
 }
 
+pub struct css_lang_time
+{
+	parse_lang_handle_event_time:float,
+	parse_lang_handleStartStyleSheet_time:float,
+	parse_lang_handleEndStyleSheet_time:float,
+        parse_lange_handleStartRuleSet_time:float,
+	parse_lang_handleEndRuleSet_time:float,
+	parse_lang_handleStartAtRule_time:float,
+	parse_lang_handleEndAtRule_time:float,
+	parse_lang_handleStartBlock_time:float,
+	parse_lang_handleEndBlock_time:float, 
+	parse_lang_handle_block_content_time:float,
+	parse_lang_handle_parse_declaration_time:float,
+	parse_lang_parse_property_time:float,
+	parse_lang_font_desc_time:float
+}
+	
+
 pub struct css_language {
     sheet:@mut css_stylesheet,
     lwc_instance:arc::RWARC<~lwc>,      
@@ -49,7 +67,8 @@ pub struct css_language {
     default_namespace:Option<~str>, 
     namespaces:~[~css_namespace],
     css_lang_create_propstring_time:float,
-    css_lang_create_properties_time:float
+    css_lang_create_properties_time:float,
+    lang_func_time:css_lang_time
 }
 
 pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~css_language {
@@ -76,6 +95,20 @@ pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~c
         namespaces:~[],
 	css_lang_create_propstring_time:create_propstring_time,      
 	css_lang_create_properties_time:create_properties_time,
+	lang_func_time:css_lang_time{
+	parse_lang_handle_event_time:0f,
+	parse_lang_handleStartStyleSheet_time:0f,
+	parse_lang_handleEndStyleSheet_time:0f,
+        parse_lange_handleStartRuleSet_time:0f,
+	parse_lang_handleEndRuleSet_time:0f,
+	parse_lang_handleStartAtRule_time:0f,
+	parse_lang_handleEndAtRule_time:0f,
+	parse_lang_handleStartBlock_time:0f,
+	parse_lang_handleEndBlock_time:0f, 
+	parse_lang_handle_block_content_time:0f,
+	parse_lang_handle_parse_declaration_time:0f,
+	parse_lang_parse_property_time:0f,
+	parse_lang_font_desc_time:0f }
     }
 }
 
@@ -96,49 +129,85 @@ pub impl css_language {
 	*/
     pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:&~[@css_token])
         -> css_error {
+	let mut css_er:css_error;
+        let mut start_time = std::time::precise_time_ns();
         debug!("Entering: language_handle_event");
         match event_type {
             
             CSS_PARSER_START_STYLESHEET => {
-                self.handleStartStylesheet()
+        	let mut start_time = std::time::precise_time_ns();
+                css_er = self.handleStartStylesheet();
+        	let mut end_time = std::time::precise_time_ns();
+		self.lang_func_time.parse_lang_handleStartStyleSheet_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_END_STYLESHEET=>{
-                self.handleEndStylesheet()
+        	let mut start_time = std::time::precise_time_ns();
+                css_er = self.handleEndStylesheet();
+        	let mut end_time = std::time::precise_time_ns();
+		self.lang_func_time.parse_lang_handleEndStyleSheet_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_START_RULESET=>{
-                self.handleStartRuleset(tokens)
+        	let mut start_time = std::time::precise_time_ns();
+                css_er = self.handleStartRuleset(tokens);
+        	let mut end_time = std::time::precise_time_ns();
+		self.lang_func_time.parse_lange_handleStartRuleSet_time +=(end_time as float - start_time as float);
             }
             
             CSS_PARSER_END_RULESET=>{
-                self.handleEndRuleset()
+        	let mut start_time = std::time::precise_time_ns();
+                css_er = self.handleEndRuleset();
+       	    	let mut end_time = std::time::precise_time_ns();
+		self.lang_func_time.parse_lang_handleEndRuleSet_time +=(end_time as float - start_time as float);
             }
             
             CSS_PARSER_START_ATRULE=>{
-                self.handleStartAtRule(tokens)
+        	let mut start_time = std::time::precise_time_ns();
+                css_er = self.handleStartAtRule(tokens);
+       	    	let mut end_time = std::time::precise_time_ns();
+		self.lang_func_time.parse_lang_handleStartAtRule_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_END_ATRULE=>{
-                self.handleEndAtRule()
+        	let mut start_time = std::time::precise_time_ns();
+                css_er = self.handleEndAtRule();
+       	    	let mut end_time = std::time::precise_time_ns();
+		self.lang_func_time.parse_lang_handleEndAtRule_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_START_BLOCK=>{
-                self.handleStartBlock()
+        	let mut start_time = std::time::precise_time_ns();
+                css_er = self.handleStartBlock();
+
+            	let mut end_time = std::time::precise_time_ns();
+		self.lang_func_time.parse_lang_handleStartBlock_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_END_BLOCK=>{
-                self.handleEndBlock()
+        	let mut start_time = std::time::precise_time_ns();
+                css_er = self.handleEndBlock();
+            	let mut end_time = std::time::precise_time_ns();
+		self.lang_func_time.parse_lang_handleEndBlock_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_BLOCK_CONTENT=>{
-                self.handleBlockContent(tokens)
+        	let mut start_time = std::time::precise_time_ns();
+                css_er = self.handleBlockContent(tokens);
+            	let mut end_time = std::time::precise_time_ns();
+		self.lang_func_time.parse_lang_handle_block_content_time +=(end_time as float - start_time as float);
             }
             
             CSS_PARSER_DECLARATION=>{
-                self.handleDeclaration(tokens)
+        	let mut start_time = std::time::precise_time_ns();
+                css_er = self.handleDeclaration(tokens);
+            	let mut end_time = std::time::precise_time_ns();
+		self.lang_func_time.parse_lang_handle_parse_declaration_time +=(end_time as float - start_time as float);
             }
         }
+        let mut end_time = std::time::precise_time_ns();
+	self.lang_func_time.parse_lang_handle_event_time += (end_time as float - start_time as float);
+	css_er
     }
 
 
@@ -159,10 +228,11 @@ pub impl css_language {
         if vec::is_empty(self.context) {
             return CSS_INVALID
         }
+
         match self.context.last().event_type {
             CSS_PARSER_START_STYLESHEET => {},
             _   =>return CSS_INVALID
-        }
+	}
 
         self.context.pop();
         CSS_OK
@@ -189,6 +259,7 @@ pub impl css_language {
         match self.parseSelectorList(tokens, curRule) {
             CSS_OK => {},
             x =>   return x  
+		  
         }
         //}
 
@@ -227,7 +298,7 @@ pub impl css_language {
                     self.context.pop();
                     CSS_OK
                 },
-                _ =>    CSS_INVALID
+                _ =>   CSS_INVALID
             }
         }
         else {
@@ -293,7 +364,8 @@ pub impl css_language {
                     
                     match css_stylesheet::css__stylesheet_add_rule(self.sheet,temp_rule, None){
                         CSS_OK => {},
-                        error => return error   
+                        error => return error
+
                     }
 
                     curRule = Some(temp_rule);
@@ -348,7 +420,7 @@ pub impl css_language {
                 /* Inform rule of it */
                 match css_stylesheet::css__stylesheet_rule_set_nascent_import(temp_rule, url, *media){
                     CSS_OK => {},
-                    error => return error
+                    error => return error 
                 }
                 
 
@@ -365,7 +437,8 @@ pub impl css_language {
                 /* Add rule to sheet */
                 match css_stylesheet::css__stylesheet_add_rule(self.sheet, temp_rule, None){
                         CSS_OK => {},
-                        error => return error   
+                        error => return error
+				 
                 }
 
                 curRule = Some(temp_rule);
@@ -387,7 +460,7 @@ pub impl css_language {
 
                 if *ctx >= vector.len() {
                     return CSS_INVALID
-                }
+                }	           
 
                 token = &vector[*ctx];
                 *ctx += 1; //Iterate
@@ -414,6 +487,7 @@ pub impl css_language {
                 match self.addNamespace(prefix, token.idata.get_ref().clone()){
                     CSS_OK => {},
                     error => return error
+		             
                 }
 
                 self.state = NAMESPACE_PERMITTED;
@@ -430,19 +504,21 @@ pub impl css_language {
             match self.parseMediaList(vector, ctx, media){
                 CSS_OK => {},
                 error => return error
-            }
+		}
                 
             let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_MEDIA);
             
             match css_stylesheet::css__stylesheet_rule_set_media(temp_rule, *media){
                 CSS_OK => {},
                 error => return error
+			 
             }
 
             
             match css_stylesheet::css__stylesheet_add_rule(self.sheet, temp_rule, None){
                 CSS_OK => {},
                 error => return error   
+			 
             }
             
             curRule = Some(temp_rule);
@@ -460,6 +536,7 @@ pub impl css_language {
             match css_stylesheet::css__stylesheet_add_rule(self.sheet, temp_rule, None){
                 CSS_OK => {},
                 error => return error   
+			 
             }
             
             /* Rule is now owned by the sheet, 
@@ -494,6 +571,7 @@ pub impl css_language {
             match css_stylesheet::css__stylesheet_add_rule(self.sheet, temp_rule, None){
                 CSS_OK => {},
                 error => return error   
+			 
             }
 
             curRule = Some(temp_rule);
@@ -527,7 +605,8 @@ pub impl css_language {
                     self.context.pop();
                     CSS_OK
                 },
-                _ =>    CSS_INVALID
+                _ => CSS_INVALID
+		   
             }
         }
         else {
@@ -589,6 +668,7 @@ pub impl css_language {
                     }
                 },
                 _   =>  return CSS_INVALID
+		
             } // end of match
         }
         else {
@@ -618,14 +698,16 @@ pub impl css_language {
                             // Expect rulesets 
                             return self.handleStartRuleset(tokens);
                         },  
-                        _ =>    return CSS_INVALID
+                        _ => return CSS_INVALID
+			    
                     }
                 }
             } // end of match
         }
         else {
-            return CSS_INVALID  
-        }       
+		return CSS_INVALID  
+	     }
+        
     }
 
     pub fn handleDeclaration(&mut self, tokens:&~[@css_token])->css_error {
@@ -668,10 +750,22 @@ pub impl css_language {
                                             *ctx += 1;
                                             consumeWhitespace(tokens, ctx);
                                             match curRule {
-                                                RULE_FONT_FACE(font_face_rule) =>   
-                                                    return css__parse_font_descriptor(self.sheet, ident, &mut self.strings, tokens, ctx, font_face_rule, self.lwc_instance.clone()),
-                                                _ =>    
-                                                    return self.parseProperty(ident, tokens, ctx, curRule)  
+                                                RULE_FONT_FACE(font_face_rule) =>  
+							{
+        							let mut start_time = std::time::precise_time_ns();
+								let css_er:css_error = css__parse_font_descriptor(self.sheet, ident, &mut self.strings, tokens, ctx, font_face_rule, self.lwc_instance.clone());
+    								let mut end_time = std::time::precise_time_ns();
+							        self.lang_func_time.parse_lang_font_desc_time += (end_time as float - start_time as float);
+		        	                                return css_er;
+								 
+							},
+                                                _ =>   {
+        						let mut start_time = std::time::precise_time_ns();
+							let css_er:css_error = self.parseProperty(ident, tokens, ctx, curRule) ;  
+    							let mut end_time = std::time::precise_time_ns();
+						        self.lang_func_time.parse_lang_parse_property_time += (end_time as float - start_time as float);
+		                                        return css_er;
+						       }
                                             }
                                         }               
                                     } 
