@@ -1,4 +1,192 @@
-3
+#tree
+| div
+|  id=foo
+|  p*
+|   class=green
+#ua
+div, p { display: block; }
+#user
+.green { color: #f00 !important; }
+#author
+div#foo { background-color: #bbc; }
+.green { color: #0f0; }
+div#foo { float: right; }
+#errors
+#expected
+background-attachment: scroll
+background-color: #00000000
+background-image: none
+background-position: 0% 0%
+background-repeat: repeat
+border-collapse: inherit
+border-spacing: 0px 0px
+border-top-color: currentColor
+border-right-color: currentColor
+border-bottom-color: currentColor
+border-left-color: currentColor
+border-top-style: none
+border-right-style: none
+border-bottom-style: none
+border-left-style: none
+border-top-width: medium
+border-right-width: medium
+border-bottom-width: medium
+border-left-width: medium
+bottom: auto
+caption-side: inherit
+clear: none
+clip: auto
+color: #ffff0000
+content: normal
+counter-increment: none
+counter-reset: none
+cursor: auto
+direction: inherit
+display: block
+empty-cells: inherit
+float: none
+font-family: inherit
+font-size: inherit
+font-style: inherit
+font-variant: inherit
+font-weight: inherit
+height: auto
+left: auto
+letter-spacing: normal
+line-height: inherit
+list-style-image: inherit
+list-style-position: inherit
+list-style-type: inherit
+margin-top: 0px
+margin-right: 0px
+margin-bottom: 0px
+margin-left: 0px
+max-height: none
+max-width: none
+min-height: 0px
+min-width: 0px
+opacity: 1.000
+outline-color: invert
+outline-style: none
+outline-width: 2px
+overflow: visible
+padding-top: 0px
+padding-right: 0px
+padding-bottom: 0px
+padding-left: 0px
+position: static
+quotes: inherit
+right: auto
+table-layout: auto
+text-align: inherit
+text-decoration: none
+text-indent: inherit
+text-transform: inherit
+top: auto
+unicode-bidi: normal
+vertical-align: baseline
+visibility: inherit
+white-space: inherit
+width: auto
+word-spacing: normal
+z-index: auto
+#reset
+
+#tree
+| div
+|  id=foo
+|  p*
+|   class=green
+#ua
+div, p { display: none; float: right; position: absolute; }
+#user
+p { display: inherit; float: none; }
+.green { color: #f00 !important; }
+#author
+div#foo { background-color: #bbc; }
+.green { color: #0f0; display: table-row-group; display: table-cell !important; }
+div p.green { float: left !important; }
+#errors
+#expected
+background-attachment: scroll
+background-color: #00000000
+background-image: none
+background-position: 0% 0%
+background-repeat: repeat
+border-collapse: inherit
+border-spacing: 0px 0px
+border-top-color: currentColor
+border-right-color: currentColor
+border-bottom-color: currentColor
+border-left-color: currentColor
+border-top-style: none
+border-right-style: none
+border-bottom-style: none
+border-left-style: none
+border-top-width: medium
+border-right-width: medium
+border-bottom-width: medium
+border-left-width: medium
+bottom: auto
+caption-side: inherit
+clear: none
+clip: auto
+color: #ffff0000
+content: normal
+counter-increment: none
+counter-reset: none
+cursor: auto
+direction: inherit
+display: table-cell
+empty-cells: inherit
+float: none
+font-family: inherit
+font-size: inherit
+font-style: inherit
+font-variant: inherit
+font-weight: inherit
+height: auto
+left: auto
+letter-spacing: normal
+line-height: inherit
+list-style-image: inherit
+list-style-position: inherit
+list-style-type: inherit
+margin-top: 0px
+margin-right: 0px
+margin-bottom: 0px
+margin-left: 0px
+max-height: none
+max-width: none
+min-height: 0px
+min-width: 0px
+opacity: 1.000
+outline-color: invert
+outline-style: none
+outline-width: 2px
+overflow: visible
+padding-top: 0px
+padding-right: 0px
+padding-bottom: 0px
+padding-left: 0px
+position: absolute
+quotes: inherit
+right: auto
+table-layout: auto
+text-align: inherit
+text-decoration: none
+text-indent: inherit
+text-transform: inherit
+top: auto
+unicode-bidi: normal
+vertical-align: baseline
+visibility: inherit
+white-space: inherit
+width: auto
+word-spacing: normal
+z-index: auto
+#reset
+
 #tree
 | div
 |  class=moose
@@ -94,102 +282,6 @@ word-spacing: normal
 z-index: auto
 #reset
 
-1
-#tree
-| div
-|  id=foo
-|  p*
-|   class=green
-#ua
-div, p { display: block; }
-#user
-.green { color: #f00 !important; }
-#author
-div#foo { background-color: #bbc; }
-.green { color: #0f0; }
-div#foo { float: right; }
-#errors
-#expected
-background-attachment: scroll
-background-color: #00000000
-background-image: none
-background-position: 0% 0%
-background-repeat: repeat
-border-collapse: inherit
-border-spacing: 0px 0px
-border-top-color: currentColor
-border-right-color: currentColor
-border-bottom-color: currentColor
-border-left-color: currentColor
-border-top-style: none
-border-right-style: none
-border-bottom-style: none
-border-left-style: none
-border-top-width: medium
-border-right-width: medium
-border-bottom-width: medium
-border-left-width: medium
-bottom: auto
-caption-side: inherit
-clear: none
-clip: auto
-color: #ffff0000
-content: normal
-counter-increment: none
-counter-reset: none
-cursor: auto
-direction: inherit
-display: block
-empty-cells: inherit
-float: none
-font-family: inherit
-font-size: inherit
-font-style: inherit
-font-variant: inherit
-font-weight: inherit
-height: auto
-left: auto
-letter-spacing: normal
-line-height: inherit
-list-style-image: inherit
-list-style-position: inherit
-list-style-type: inherit
-margin-top: 0px
-margin-right: 0px
-margin-bottom: 0px
-margin-left: 0px
-max-height: none
-max-width: none
-min-height: 0px
-min-width: 0px
-opacity: 1.000
-outline-color: invert
-outline-style: none
-outline-width: 2px
-overflow: visible
-padding-top: 0px
-padding-right: 0px
-padding-bottom: 0px
-padding-left: 0px
-position: static
-quotes: inherit
-right: auto
-table-layout: auto
-text-align: inherit
-text-decoration: none
-text-indent: inherit
-text-transform: inherit
-top: auto
-unicode-bidi: normal
-vertical-align: baseline
-visibility: inherit
-white-space: inherit
-width: auto
-word-spacing: normal
-z-index: auto
-#reset
-
-4
 #tree
 | div
 |  class=moose
@@ -285,7 +377,93 @@ word-spacing: normal
 z-index: auto
 #reset
 
-6
+#tree screen
+| div*
+#ua
+div { display: block; }
+#user print
+div { display: inline; }
+#errors
+#expected
+background-attachment: scroll
+background-color: #00000000
+background-image: none
+background-position: 0% 0%
+background-repeat: repeat
+border-collapse: separate
+border-spacing: 0px 0px
+border-top-color: #ff000000
+border-right-color: #ff000000
+border-bottom-color: #ff000000
+border-left-color: #ff000000
+border-top-style: none
+border-right-style: none
+border-bottom-style: none
+border-left-style: none
+border-top-width: 2px
+border-right-width: 2px
+border-bottom-width: 2px
+border-left-width: 2px
+bottom: auto
+caption-side: top
+clear: none
+clip: auto
+color: #ff000000
+content: normal
+counter-increment: none
+counter-reset: none
+cursor: auto
+direction: ltr
+display: block
+empty-cells: show
+float: none
+font-family: sans-serif
+font-size: 12pt
+font-style: normal
+font-variant: normal
+font-weight: normal
+height: auto
+left: auto
+letter-spacing: normal
+line-height: normal
+list-style-image: none
+list-style-position: outside
+list-style-type: disc
+margin-top: 0px
+margin-right: 0px
+margin-bottom: 0px
+margin-left: 0px
+max-height: none
+max-width: none
+min-height: 0px
+min-width: 0px
+opacity: 1.000
+outline-color: invert
+outline-style: none
+outline-width: 2px
+overflow: visible
+padding-top: 0px
+padding-right: 0px
+padding-bottom: 0px
+padding-left: 0px
+position: static
+quotes: none
+right: auto
+table-layout: auto
+text-align: default
+text-decoration: none
+text-indent: 0px
+text-transform: none
+top: auto
+unicode-bidi: normal
+vertical-align: baseline
+visibility: visible
+white-space: normal
+width: auto
+word-spacing: normal
+z-index: auto
+#reset
+
 #tree all
 | div*
 #author
@@ -371,7 +549,6 @@ word-spacing: normal
 z-index: auto
 #reset
 
-7
 #tree all
 | div*
 #author
@@ -458,7 +635,6 @@ word-spacing: normal
 z-index: auto
 #reset
 
-8
 #tree
 | div
 |  p*
@@ -545,7 +721,6 @@ word-spacing: normal
 z-index: auto
 #reset
 
-9
 #tree screen
 | div*
 #author
@@ -631,7 +806,6 @@ word-spacing: normal
 z-index: auto
 #reset
 
-10
 #tree
 | div
 |  p
@@ -721,7 +895,7 @@ width: auto
 word-spacing: normal
 z-index: auto
 #reset
-11
+
 #tree
 | div
 |  p*
@@ -811,7 +985,7 @@ width: auto
 word-spacing: normal
 z-index: auto
 #reset
-12
+
 #tree
 | div
 |  p*
@@ -903,8 +1077,193 @@ word-spacing: normal
 z-index: auto
 #reset
 
+#tree
+| div
+|  p
+|  p*
+#ua
+div, p { display: block; }
+p { background-position: 2px; background-repeat: no-repeat; }
+#user
+p { background-image: none; background-position: 40% 40%; background-repeat: repeat-x; }
+#author
+p { background-image: url("Sonic.png"); background-position: left top; background-repeat: repeat-y; }
+div p + p { background-image: url("Sonic2.png"); background-position: center; }
+div p + p { background-image: url("Sonic_the_Hedgehog.png"); background-position: bottom right; }
+#errors
+#expected
+background-attachment: scroll
+background-color: #00000000
+background-image: url('Sonic_the_Hedgehog.png')
+background-position: 100% 100%
+background-repeat: repeat-y
+border-collapse: inherit
+border-spacing: 0px 0px
+border-top-color: currentColor
+border-right-color: currentColor
+border-bottom-color: currentColor
+border-left-color: currentColor
+border-top-style: none
+border-right-style: none
+border-bottom-style: none
+border-left-style: none
+border-top-width: medium
+border-right-width: medium
+border-bottom-width: medium
+border-left-width: medium
+bottom: auto
+caption-side: inherit
+clear: none
+clip: auto
+color: inherit
+content: normal
+counter-increment: none
+counter-reset: none
+cursor: auto
+direction: inherit
+display: block
+empty-cells: inherit
+float: none
+font-family: inherit
+font-size: inherit
+font-style: inherit
+font-variant: inherit
+font-weight: inherit
+height: auto
+left: auto
+letter-spacing: normal
+line-height: inherit
+list-style-image: inherit
+list-style-position: inherit
+list-style-type: inherit
+margin-top: 0px
+margin-right: 0px
+margin-bottom: 0px
+margin-left: 0px
+max-height: none
+max-width: none
+min-height: 0px
+min-width: 0px
+opacity: 1.000
+outline-color: invert
+outline-style: none
+outline-width: 2px
+overflow: visible
+padding-top: 0px
+padding-right: 0px
+padding-bottom: 0px
+padding-left: 0px
+position: static
+quotes: inherit
+right: auto
+table-layout: auto
+text-align: inherit
+text-decoration: none
+text-indent: inherit
+text-transform: inherit
+top: auto
+unicode-bidi: normal
+vertical-align: baseline
+visibility: inherit
+white-space: inherit
+width: auto
+word-spacing: normal
+z-index: auto
+#reset
 
-15
+#tree
+| div
+|  p
+|  p*
+#ua
+div, p { display: block; }
+#user
+p { background-image: none; background-repeat: true;}
+#author
+p { background-image: url("Sonic.png"); background-position: center 20%;}
+div p + p { background-image: url("Sonic2.png"); }
+div p + p { background-image: url("Sonic_the_Hedgehog.png"); background-repeat: repeat}
+#errors
+#expected
+background-attachment: scroll
+background-color: #00000000
+background-image: url('Sonic_the_Hedgehog.png')
+background-position: 50% 20%
+background-repeat: repeat
+border-collapse: inherit
+border-spacing: 0px 0px
+border-top-color: currentColor
+border-right-color: currentColor
+border-bottom-color: currentColor
+border-left-color: currentColor
+border-top-style: none
+border-right-style: none
+border-bottom-style: none
+border-left-style: none
+border-top-width: medium
+border-right-width: medium
+border-bottom-width: medium
+border-left-width: medium
+bottom: auto
+caption-side: inherit
+clear: none
+clip: auto
+color: inherit
+content: normal
+counter-increment: none
+counter-reset: none
+cursor: auto
+direction: inherit
+display: block
+empty-cells: inherit
+float: none
+font-family: inherit
+font-size: inherit
+font-style: inherit
+font-variant: inherit
+font-weight: inherit
+height: auto
+left: auto
+letter-spacing: normal
+line-height: inherit
+list-style-image: inherit
+list-style-position: inherit
+list-style-type: inherit
+margin-top: 0px
+margin-right: 0px
+margin-bottom: 0px
+margin-left: 0px
+max-height: none
+max-width: none
+min-height: 0px
+min-width: 0px
+opacity: 1.000
+outline-color: invert
+outline-style: none
+outline-width: 2px
+overflow: visible
+padding-top: 0px
+padding-right: 0px
+padding-bottom: 0px
+padding-left: 0px
+position: static
+quotes: inherit
+right: auto
+table-layout: auto
+text-align: inherit
+text-decoration: none
+text-indent: inherit
+text-transform: inherit
+top: auto
+unicode-bidi: normal
+vertical-align: baseline
+visibility: inherit
+white-space: inherit
+width: auto
+word-spacing: normal
+z-index: auto
+#reset
+
 #tree
 | div
 |  table
@@ -1003,7 +1362,7 @@ width: auto
 word-spacing: normal
 z-index: auto
 #reset
-16
+
 #tree
 | div
 |  table
@@ -1102,7 +1461,7 @@ width: auto
 word-spacing: normal
 z-index: auto
 #reset
-17
+
 #tree
 | div
 |  table
@@ -1201,7 +1560,7 @@ width: auto
 word-spacing: normal
 z-index: auto
 #reset
-18
+
 #tree
 | div
 |  table
@@ -1305,7 +1664,6 @@ word-spacing: normal
 z-index: auto
 #reset
 
-19
 #tree
 | div
 |  table
@@ -1408,8 +1766,6 @@ word-spacing: normal
 z-index: auto
 #reset
 
-
-20
 #tree
 | div
 |  table
@@ -1509,7 +1865,7 @@ width: auto
 word-spacing: normal
 z-index: auto
 #reset
-21
+
 #tree
 | div
 |  table*
@@ -1608,7 +1964,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-22
+
 #tree
 | div
 |  table*
@@ -1707,7 +2063,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-23
+
 #tree
 | div
 |  table*
@@ -1806,7 +2162,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-24
+
 #tree
 | div
 |  table*
@@ -1905,7 +2261,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-25
+
 #tree
 | div
 |  table*
@@ -2004,7 +2360,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-26
+
 #tree
 | div
 |  table*
@@ -2103,7 +2459,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-27
+
 #tree
 | div
 |  table*
@@ -2202,7 +2558,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-28
+
 #tree
 | div
 |  table*
@@ -2301,7 +2657,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-29
+
 #tree
 | div
 |  table*
@@ -2400,7 +2756,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-30
+
 #tree
 | div
 |  table*
@@ -2499,7 +2855,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-31
+
 #tree
 | div
 |  table*
@@ -2598,7 +2954,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-32
+
 #tree
 | div
 |  table*
@@ -2697,7 +3053,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-33
+
 #tree
 | div
 |  table*
@@ -2796,7 +3152,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-34
+
 #tree
 | div
 |  table*
@@ -2895,7 +3251,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-35
+
 #tree
 | div
 |  table*
@@ -2994,7 +3350,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-36
+
 #tree
 | div
 |  table*
@@ -3093,7 +3449,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-37
+
 #tree
 | div
 |  table*
@@ -3192,7 +3548,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-38
+
 #tree
 | div
 |  table*
@@ -3291,7 +3647,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-39
+
 #tree
 | div
 |  table*
@@ -3390,7 +3746,7 @@ width: auto
 word-spacing: inherit
 z-index: auto
 #reset
-40
+
 #tree
 | div
 |  table*

@@ -498,7 +498,7 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
 	if (p < end) {
 		//left = end - p;
 
-		p = css__parse_media_list(data,p, ctx);
+		p = css__parse_media_list(data,p, &mut (ctx.media));
 
 		//end = p + left;
 	}
@@ -658,6 +658,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_styles
 			css_lang_create_properties_time:@mut float){
 	debug!("\n Entering css__parse_sheet ") ;
     let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
+    let mut media = CSS_MEDIA_ALL as u64; 
     let mut p : uint = index;
     let end : uint = data.len();
     /* Find end of origin */
@@ -685,7 +686,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_styles
     }
     
     if p < end {
-       css__parse_media_list(data,p,ctx);
+       css__parse_media_list(data,p,&mut media);
     }
     let params = css_create_params();
     let mut lwc_ins = unsafe {ctx.lwc_instance.clone() } ;
@@ -710,7 +711,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_styles
     let mut sheet_ctx_ins = @mut sheet_ctx {
         sheet: sheet,
         origin: origin,
-        media: ctx.media as u64
+        media: media
     };
     debug!("Before pushing Sheet ");
     ctx.sheets.push(sheet_ctx_ins) ;
@@ -718,7 +719,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_styles
 }
 
 
-pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> uint {
+pub fn css__parse_media_list(data:&mut ~str ,index:uint, media : &mut u64) -> uint {
 	debug!("\n Entering css__parse_media_list =%?=%?=",data,index) ;
 	// ' '	(0x20)	space (SPC)
 	// '\t'	(0x09)	horizontal tab (TAB)
@@ -806,7 +807,7 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, ctx:@mut line_ctx) -> u
 		}	
 	}
 	
-	ctx.media = result as u64 ;
+	*media = result ;
 	len
 }
 
