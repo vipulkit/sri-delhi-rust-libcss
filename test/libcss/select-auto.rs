@@ -1844,7 +1844,7 @@ pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
 #[test]
 fn selection_test() {
 
-	select_test(~"data/select/tests1_fail.dat");
+	select_test(~"data/select/tests1.dat");
 }
 
 
