@@ -610,7 +610,7 @@ impl css_propstrings {
             let mut i =0;
             while(i < length) {
                 css_propstrings_instance.propstrings.push(
-                    s.lwc_intern_string(propstrings_list.pop())
+                    s.lwc_intern_string(propstrings_list[length-i-1])
                 );
                 i += 1;
             }
