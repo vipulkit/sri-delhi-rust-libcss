@@ -1,8 +1,13 @@
-extern mod std;
 extern mod wapcaplet;
 extern mod parserutils;
 
-use std::arc;
+use extra::arc;
+
+use extra::time::*;
+use std::char::*;
+use std::u32::*;
+use std::str::*;
+
 use wapcaplet::*;
 use parserutils::input::inputstream::*;
 use parserutils::charset::encodings::utf8impl::*;
@@ -165,9 +170,9 @@ impl css_lexer {
     }
 
     pub fn css__lexer_append_data(&mut self, input_data: ~[u8]) {
-        let mut start_time = std::time::precise_time_ns();
+        let start_time = precise_time_ns();
         self.input.parserutils_inputstream_append(input_data);
-        let mut end_time = std::time::precise_time_ns();
+        let end_time = precise_time_ns();
         let append_data_time = (end_time as float - start_time as float);
         self.parseutils_inputstream_append_time += append_data_time ;
     }
@@ -309,7 +314,7 @@ impl css_lexer {
     pub fn emit_token(&mut self , input_token_type: Option<css_token_type>) -> (css_error, Option<@mut css_token>) {
 
         // debug!("entering emit_token");
-        let mut t = self.token.swap_unwrap();
+        let t = self.token.swap_unwrap();
         let _data = css_token_data {
             data: ~[],
             len: 0
@@ -336,12 +341,12 @@ impl css_lexer {
         if (self.escape_seen) {
             // debug!("Entering:if self.escape_seen");
             t.data.data = self.unescaped_token_data.swap_unwrap();
-            unsafe{t.data.len = t.data.data.len();}
+            t.data.len = t.data.data.len();
         }
         else {
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result, pu_peek_error) = self.input.parserutils_inputstream_peek(0);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
             //io::println(fmt!("css__lexer_append_data : append_data_time=%?=",append_data_time));
@@ -364,12 +369,12 @@ impl css_lexer {
         match token_type {
             CSS_TOKEN_ATKEYWORD => {
                 /* Strip the '@' from the front */
-                vec::shift(&mut t.data.data);
+                t.data.data.shift();
                 t.data.len -=1;
             },
             CSS_TOKEN_STRING => {
                 /* Strip the leading quote */
-                vec::shift(&mut t.data.data);
+                t.data.data.shift();
                 t.data.len -=1;
 
                 /* Strip the trailing quote, iff it exists (may have hit EOF) */
@@ -386,12 +391,12 @@ impl css_lexer {
             },
             CSS_TOKEN_INVALID_STRING => {
                 /* Strip the leading quote */
-                vec::shift(&mut t.data.data);
+                t.data.data.shift();
                 t.data.len -=1;
             },
             CSS_TOKEN_HASH => {
                 /* Strip the '#' from the front */
-                vec::shift(&mut t.data.data);
+                t.data.data.shift();
                 t.data.len -=1;
             },
             CSS_TOKEN_PERCENTAGE => {
@@ -403,10 +408,8 @@ impl css_lexer {
             CSS_TOKEN_URI => {
 
                 /* Strip the "url(" from the start */
-                unsafe {
-                    // debug!(fmt!("emit_token::uri:: t.data.data == %?" , t.data.data));
-                    t.data.data = vec::tailn(t.data.data, 4).to_owned();
-                }
+                // debug!(fmt!("emit_token::uri:: t.data.data == %?" , t.data.data));
+                t.data.data = t.data.data.tailn(4).to_owned();
                 t.data.len -= 4;
 
 
@@ -415,7 +418,7 @@ impl css_lexer {
                 
                 /* Strip any trailing whitespace */
                 /* Strip any trailing quote */
-                do vec::retain(&mut t.data.data) |&c| {
+                do t.data.data.retain |&c| {
                     if (c == ' ' as u8 || c =='"' as u8 || c == '\'' as u8) {
                         false
                     }
@@ -424,32 +427,30 @@ impl css_lexer {
                     }
                 }
                 
-                unsafe{
-                    /* Strip the trailing ')' */
-                    let strip_close_bracket = match *vec::last(t.data.data) {
-                        ')' as u8=> true,
-                        _ => false
-                    };
+                /* Strip the trailing ')' */
+                let strip_close_bracket = match *t.data.data.last() {
+                    41 /* ')' */ => true,
+                    _ => false
+                };
 
-                    if strip_close_bracket {
-                        t.data.data.pop();
-                    }
-
-                    t.data.len = t.data.data.len();
-                    // debug!(fmt!("emit_token::uri:: t.data.data == %?" , t.data.data));
+                if strip_close_bracket {
+                    t.data.data.pop();
                 }
+
+                t.data.len = t.data.data.len();
+                // debug!(fmt!("emit_token::uri:: t.data.data == %?" , t.data.data));
                 
             },
             CSS_TOKEN_UNICODE_RANGE => {
                 /* Remove "U+" from the start */
-                unsafe {t.data.data = vec::tailn(t.data.data, 2).to_owned();}
+                t.data.data = t.data.data.tailn(2).to_owned();
                 t.data.len -= 2;
             },
             CSS_TOKEN_COMMENT => {
                 /* Strip the leading '/' and '*' */
                 /* Strip the trailing '*' and '/' */
 
-                unsafe{t.data.data = t.data.data.slice(2, t.data.data.len()-2).to_owned();}
+                t.data.data = t.data.data.slice(2, t.data.data.len()-2).to_owned();
                 t.data.len-=4;
             },
             CSS_TOKEN_FUNCTION => {
@@ -485,10 +486,10 @@ impl css_lexer {
          */
 
         if (self.substate == Initial as uint) {
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -572,10 +573,10 @@ impl css_lexer {
             
             /* Fall through */
             self.substate = Gt as uint;
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -592,7 +593,7 @@ impl css_lexer {
             let c = cptr[0] as char;
             // debug!(fmt!("cdc_or_ident_or_function_or_npd1: character read is %c" , c));
 
-            if (char::is_digit(c) || c == '.') {
+            if (c.is_digit() || c == '.') {
                 /* NPD */
                 self.APPEND(cptr, clen);
                 self.state = sNUMBER;
@@ -633,10 +634,10 @@ impl css_lexer {
 
             /* Ok, so we're dealing with CDC. Expect a '>' */
 
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -699,10 +700,10 @@ impl css_lexer {
 
         if (self.substate == Initial as uint) {
             /* Expect '!' */
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -730,10 +731,10 @@ impl css_lexer {
 
         if (self.substate == Dash1 as uint) {
             /* Expect '-' */
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -767,10 +768,10 @@ impl css_lexer {
 
         if (self.substate == Dash2 as uint) {
             /* Expect '-' */
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -813,10 +814,10 @@ impl css_lexer {
          */
 
         if (self.substate == Initial as uint) {
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -842,10 +843,10 @@ impl css_lexer {
 
         if (self.substate == InComment as uint) {
             loop {
-                let mut start_time = std::time::precise_time_ns();
+                let start_time = precise_time_ns();
                 let (pu_peek_result , perror) = 
                     self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-                let mut end_time = std::time::precise_time_ns();
+                let end_time = precise_time_ns();
                 let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
                 self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -953,10 +954,10 @@ impl css_lexer {
         }
 
         if (self.substate == Bracket as uint) {
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -995,10 +996,10 @@ impl css_lexer {
          * The first character has been consumed.
          */
 
-        let mut start_time = std::time::precise_time_ns();
+        let start_time = precise_time_ns();
         let (pu_peek_result , perror) = 
             self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-        let mut end_time = std::time::precise_time_ns();
+        let end_time = precise_time_ns();
         let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
         self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -1058,10 +1059,10 @@ impl css_lexer {
 
         if (self.substate == Dot as uint) {
             
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -1119,10 +1120,10 @@ impl css_lexer {
         }
         
         if (self.substate == Suffix as uint) {
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -1233,9 +1234,9 @@ impl css_lexer {
             // debug!(fmt!("start:: self.bytes_read_for_token == %?", self.bytes_read_for_token));
             /* Advance past the input read for the previous token */
             if (self.bytes_read_for_token > 0) {
-        	let mut start_time = std::time::precise_time_ns();
+        	let start_time = precise_time_ns();
                 self.input.parserutils_inputstream_advance(self.bytes_read_for_token);
-        	let mut end_time = std::time::precise_time_ns();
+        	let end_time = precise_time_ns();
 	        let advance_time = (end_time as float - start_time as float);
         	self.parseutils_inputstream_advance_time += advance_time ;
 
@@ -1243,14 +1244,12 @@ impl css_lexer {
             }
 
             /* Reset in preparation for the next token */
-            for self.token.each_mut |t| {
-                t.token_type = CSS_TOKEN_EOF;
-                t.data.data = ~[];
-                t.data.len = 0;
-                t.idata = None;
-                t.col = self.current_col;
-                t.line = self.current_line;
-            }
+            self.token.get_mut_ref().token_type = CSS_TOKEN_EOF;
+            self.token.get_mut_ref().data.data = ~[];
+            self.token.get_mut_ref().data.len = 0;
+            self.token.get_mut_ref().idata = None;
+            self.token.get_mut_ref().col = self.current_col;
+            self.token.get_mut_ref().line = self.current_line;
 
             self.escape_seen = false;
             if (self.unescaped_token_data.is_some()) {
@@ -1258,10 +1257,10 @@ impl css_lexer {
             }
 
             // debug!(fmt!("start:: self.bytes_read_for_token == %?", self.bytes_read_for_token));
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -1420,10 +1419,10 @@ impl css_lexer {
          * The 'u' (or 'U') has been consumed.
          */
 
-        let mut start_time = std::time::precise_time_ns();
+        let start_time = precise_time_ns();
         let (pu_peek_result , perror) = 
             self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-        let mut end_time = std::time::precise_time_ns();
+        let end_time = precise_time_ns();
         let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
         self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -1472,10 +1471,10 @@ impl css_lexer {
          */
 
         if (self.substate == Initial as uint) {
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -1507,10 +1506,10 @@ impl css_lexer {
 
         if (self.substate == LParen as uint) {
 
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -1558,10 +1557,10 @@ impl css_lexer {
         }
 
         if (self.substate == Quote as uint) {
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -1641,10 +1640,10 @@ impl css_lexer {
         }
 
         if (self.substate == RParen as uint) {
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -1690,10 +1689,10 @@ impl css_lexer {
         if (self.substate == Initial as uint) {
             /* Attempt to consume 6 hex digits (or question marks) */
             while (self.context.hex_count < 6) {
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -1718,7 +1717,7 @@ impl css_lexer {
                 let (cptr , clen) = pu_peek_result.unwrap();
                 c = cptr[0] as char;
                 // debug!(fmt!("unicode_range1: character read is %c" , c));
-                if (char::is_digit_radix(c, 16) || c == '?') {
+                if (c.is_digit_radix(16) || c == '?') {
                     self.APPEND(cptr, clen);
                 }
                 else {
@@ -1740,10 +1739,10 @@ impl css_lexer {
 
             else if (self.context.hex_count == 6) {
                 /* Consumed 6 valid characters. Look for '-' */
-                let mut start_time = std::time::precise_time_ns();
+                let start_time = precise_time_ns();
                 let (pu_peek_result , perror) = 
                     self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-                let mut end_time = std::time::precise_time_ns();
+                let end_time = precise_time_ns();
                 let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
                 self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -1770,10 +1769,10 @@ impl css_lexer {
             else {
                 // hex count > 0 && <  6
                 // append what we had at end of while loop
-                let mut start_time = std::time::precise_time_ns();
+                let start_time = precise_time_ns();
                 let (pu_peek_result , _) = 
                     self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-                let mut end_time = std::time::precise_time_ns();
+                let end_time = precise_time_ns();
                 let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
                 self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
                 /* don't check error, this succeded in while loop above */
@@ -1800,10 +1799,10 @@ impl css_lexer {
         if (self.substate == MoreDigits as uint) {
             /* Consume up to 6 hex digits */
             while (self.context.hex_count < 6) {
-                let mut start_time = std::time::precise_time_ns();
+                let start_time = precise_time_ns();
                 let (pu_peek_result , perror) = 
                     self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-                let mut end_time = std::time::precise_time_ns();
+                let end_time = precise_time_ns();
                 let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
                 self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -1828,7 +1827,7 @@ impl css_lexer {
                 let (cptr , clen) = pu_peek_result.unwrap();
                 c = cptr[0] as char;
                 // debug!(fmt!("unicode_range4: character read is %c" , c));
-                if (char::is_digit_radix(c, 16)) {
+                if (c.is_digit_radix(16)) {
                     self.APPEND(cptr, clen);
                 }
                 else {
@@ -1858,10 +1857,10 @@ impl css_lexer {
 
         /* Consume all digits */
         loop {
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -1876,7 +1875,7 @@ impl css_lexer {
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
             // debug!(fmt!("consume_digits: character read is %c" , c));
-            if (char::is_digit(c)) {
+            if (c.is_digit()) {
                 self.APPEND(cptr, clen);
             }
             else {
@@ -1894,10 +1893,10 @@ impl css_lexer {
              * The '\' has been consumed.
              */
         
-        let mut start_time = std::time::precise_time_ns();
+        let start_time = precise_time_ns();
         let (pu_peek_result , perror) = 
             self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-        let mut end_time = std::time::precise_time_ns();
+        let end_time = precise_time_ns();
         let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
         self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
         
@@ -1939,10 +1938,10 @@ impl css_lexer {
         if (!self.escape_seen) {
             // debug!("!self.escape_seen");
             if (self.bytes_read_for_token > 1) {
-                let mut start_time = std::time::precise_time_ns();
+                let start_time = precise_time_ns();
                 let (pu_peek_result , perror) = 
                     self.input.parserutils_inputstream_peek(0);
-                let mut end_time = std::time::precise_time_ns();
+                let end_time = precise_time_ns();
                 let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
                 self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -1958,11 +1957,11 @@ impl css_lexer {
             self.escape_seen = true;
         }
 
-        if (char::is_digit_radix(c,16)) {
+        if (c.is_digit_radix(16)) {
             // debug!("char::is_digit_radix(c,16)");
             // debug!(fmt!("c== %?" , c));
             self.bytes_read_for_token += clen;
-            let hex_value = char::to_digit(c, 16).unwrap();
+            let hex_value = to_digit(c, 16).unwrap();
             // debug!(fmt!("hex_value== %? hex_value as u32 == %?" , hex_value , hex_value as u32));
             match (self.consume_unicode(hex_value as u32)) {
                 CSS_OK => {
@@ -1978,10 +1977,10 @@ impl css_lexer {
         /* If we're handling escaped newlines, convert CR(LF)? to LF */
         if (nl && c=='\r') {
             // debug!("nl && c=='\r'");
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token+clen);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -2041,10 +2040,10 @@ impl css_lexer {
         /* nmchar = [a-zA-Z] | '-' | '_' | nonascii | escape */
 
         loop {
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -2112,10 +2111,10 @@ impl css_lexer {
 
         loop {
 
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -2159,10 +2158,10 @@ impl css_lexer {
 
         loop {
 
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -2213,14 +2212,14 @@ impl css_lexer {
     fn consume_unicode(&mut self, mut ucs : u32) -> css_error {
         // debug!("entering : consume_unicode");
         let mut count : int = 0;
-        let mut bytes_read_init : uint = self.bytes_read_for_token;
+        let bytes_read_init : uint = self.bytes_read_for_token;
 
         while (count < 5) {
 
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
             
@@ -2237,9 +2236,9 @@ impl css_lexer {
             if perror as int == PARSERUTILS_OK as int {
                 let (cptr , clen) = pu_peek_result.unwrap();
                 let c = cptr[0] as char;
-                if char::is_digit_radix(c, 16){
+                if c.is_digit_radix(16){
                     self.bytes_read_for_token += clen;
-                    ucs = (ucs << 4) | u32::from_str_radix(str::from_char(cptr[0] as char), 16).unwrap();
+                    ucs = (ucs << 4) | from_str_radix(from_char(cptr[0] as char), 16).unwrap();
                 }
                 else{
                     break;
@@ -2263,10 +2262,10 @@ impl css_lexer {
         assert!(pu_charset_error as int == PARSERUTILS_OK as int);
         
 
-        let mut start_time = std::time::precise_time_ns();
+        let start_time = precise_time_ns();
         let (pu_peek_result , perror) = 
             self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-        let mut end_time = std::time::precise_time_ns();
+        let end_time = precise_time_ns();
         let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
         self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
         
@@ -2277,14 +2276,14 @@ impl css_lexer {
         }
 
         if perror as int == PARSERUTILS_OK as int {
-            let mut (cptr , _) = pu_peek_result.unwrap();
+            let (cptr , _) = pu_peek_result.unwrap();
             if (cptr[0] as char == '\r') { // Potential CRLF 
                 //let mut p_cr : u8 = _cptr[0];
 
-                let mut start_time = std::time::precise_time_ns();
+                let start_time = precise_time_ns();
                 let (pu_peek_result2 , perror2) = 
                     self.input.parserutils_inputstream_peek(self.bytes_read_for_token+1);
-                let mut end_time = std::time::precise_time_ns();
+                let end_time = precise_time_ns();
                 let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
                 self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -2304,15 +2303,15 @@ impl css_lexer {
             }
         }
       
-        let mut start_time = std::time::precise_time_ns();
+        let start_time = precise_time_ns();
         let (pu_peek_result , perror) = 
             self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-        let mut end_time = std::time::precise_time_ns();
+        let end_time = precise_time_ns();
         let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
         self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
-        let mut (cptr , clen) = pu_peek_result.unwrap();
-        let mut utf8data = utf8data_option.unwrap();
+        let (cptr , clen) = pu_peek_result.unwrap();
+        let utf8data = utf8data_option.unwrap();
         self.append_to_token_data(utf8data, utf8data.len());
 
         /* Deal with the whitespace character */
@@ -2341,10 +2340,10 @@ impl css_lexer {
         // debug!("entering : consume_url_chars");
         loop {
             
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
@@ -2388,10 +2387,10 @@ impl css_lexer {
         // debug!("entering : consume_w_chars");
         loop {
             
-            let mut start_time = std::time::precise_time_ns();
+            let start_time = precise_time_ns();
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
-            let mut end_time = std::time::precise_time_ns();
+            let end_time = precise_time_ns();
             let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
             self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
             

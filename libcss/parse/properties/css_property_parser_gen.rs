@@ -2,8 +2,10 @@
  * This file generates parts of LibCSS.
  */
 extern mod std;
-use core::io::WriterUtil;
 
+use std::io::WriterUtil;
+use std::io::*;
+use std::result::*;
 
 
 /**
@@ -25,8 +27,9 @@ struct keyval {
 pub fn get_keyval(pos:~str) ->Option<~[keyval]> {
     
     let mut strKVPairs = ~[];
-    for str::each_split_char_nonempty(pos,' ') |subs| { 
-        strKVPairs.push(subs); 
+    for pos.each_split_char_nonempty(' ') |subs| { 
+	//for pos.split_iter(' ') |subs| { 
+       strKVPairs.push(subs); 
     }
     
 
@@ -34,7 +37,7 @@ pub fn get_keyval(pos:~str) ->Option<~[keyval]> {
     for  strKVPairs.each |&kv| {
         
         let mut tempKVPair=~[]; 
-        for str::each_split_char_nonempty(kv,':') |subs| { 
+        for kv.each_split_char_nonempty(':') |subs| { 
             tempKVPair.push(subs); 
         }
         if tempKVPair.len() > 1 {
@@ -101,46 +104,46 @@ pub fn function_header(fp:@Writer, descriptor:~str, parser_id:&keyval, is_generi
 
 pub fn output_token_type_check(fp:@Writer, do_token_check:bool, IDENT:~[keyval], URI:~[keyval], NUMBER:~[keyval]) {
     let mut output : ~str = ~"\tlet orig_ctx = *ctx;\n";
-    str::push_str(&mut output, "\tlet mut error:css_error=CSS_OK;\n");
-    str::push_str(&mut output, "\tlet mut token:&@css_token;\n\n");
+    output.push_str( "\tlet mut error:css_error=CSS_OK;\n");
+    output.push_str( "\tlet mut token:&@css_token;\n\n");
     
-    str::push_str(&mut output, "\tif *ctx >= vector.len() {\n");
-    str::push_str(&mut output, "\t\treturn CSS_INVALID\n");
-    str::push_str(&mut output, "\t}\n");
-    str::push_str(&mut output, "\ttoken = &vector[*ctx];\n");
-    str::push_str(&mut output, "\t*ctx += 1;\n\n");
+    output.push_str( "\tif *ctx >= vector.len() {\n");
+    output.push_str( "\t\treturn CSS_INVALID\n");
+    output.push_str( "\t}\n");
+    output.push_str( "\ttoken = &vector[*ctx];\n");
+    output.push_str( "\t*ctx += 1;\n\n");
     
     
 
     if do_token_check {
         let mut prev = false; /* there was a previous check - add && */
                   
-        if !vec::is_empty(IDENT) {
-            str::push_str(&mut output, "\tif ");
-            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_IDENT => false, _ => true})");
+        if !IDENT.is_empty() {
+            output.push_str( "\tif ");
+            output.push_str("(match token.token_type { CSS_TOKEN_IDENT => false, _ => true})");
             prev = true;
         }
-        if !vec::is_empty(URI) {
-            if prev {  str::push_str(&mut output," && \n\t") }
+        if !URI.is_empty() {
+            if prev {  output.push_str(" && \n\t") }
             else {
-                str::push_str(&mut output, "\tif ");
+                output.push_str( "\tif ");
             }
-            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_URI => false, _ => true})");
+            output.push_str("(match token.token_type { CSS_TOKEN_URI => false, _ => true})");
             prev = true;
         }
-        if !vec::is_empty(NUMBER) {
-            if prev {  str::push_str(&mut output," && \n\t") }
+        if !NUMBER.is_empty() {
+            if prev {  output.push_str(" && \n\t") }
             else {
-                str::push_str(&mut output, "\tif ");
+                output.push_str( "\tif ");
             }
-            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_NUMBER => false, _ => true}) ");
+            output.push_str("(match token.token_type { CSS_TOKEN_NUMBER => false, _ => true}) ");
             prev = true;
         }
         if prev {
-            str::push_str(&mut output, " {\n");
-            str::push_str(&mut output, "\t\t*ctx = orig_ctx;\n");
-            str::push_str(&mut output, "\t\treturn CSS_INVALID\n");
-            str::push_str(&mut output, "\t}\n\n");    
+            output.push_str( " {\n");
+            output.push_str( "\t\t*ctx = orig_ctx;\n");
+            output.push_str( "\t\treturn CSS_INVALID\n");
+            output.push_str( "\t}\n\n");    
         }
     
     }
@@ -152,19 +155,19 @@ pub fn output_ident(fp:@Writer, only_ident:bool, parseid:&keyval, IDENT:~[keyval
     let mut output : ~str = ~"";
     for IDENT.each |&i| {
         
-        str::push_str(&mut output,"\tif ");
+        output.push_str("\tif ");
         if !only_ident {
-            str::push_str(&mut output,"(match token.token_type { CSS_TOKEN_IDENT => true, _ => false}) && \n");
+            output.push_str("(match token.token_type { CSS_TOKEN_IDENT => true, _ => false}) && \n");
         }
-        str::push_str(&mut output, fmt!("\tstrings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), %s as uint) {\n",i.key));
+        output.push_str( fmt!("\tstrings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), %s as uint) {\n",i.key));
         if i.key == ~"INHERIT" {
-            str::push_str(&mut output, fmt!("\t\tcss_stylesheet::css_stylesheet_style_inherit(result, %s)\n", parseid.val));
+            output.push_str( fmt!("\t\tcss_stylesheet::css_stylesheet_style_inherit(result, %s)\n", parseid.val));
 
         } 
         else {
-            str::push_str(&mut output, fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, %s)\n",  parseid.val, i.val));
+            output.push_str( fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, %s)\n",  parseid.val, i.val));
         }
-        str::push_str(&mut output,"\t} \n\telse ");
+        output.push_str("\t} \n\telse ");
     }
     fp.write_str(output);
 }
@@ -173,21 +176,21 @@ pub fn output_uri(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     
         let mut output : ~str = ~" if match token.token_type { CSS_TOKEN_URI => true, _ => false} {\n";
         
-        str::push_str(&mut output,"\n");
-        str::push_str(&mut output,"\t\tmatch (*sheet.resolve)(sheet.url, token.idata.get_ref().clone()) {\n");
-        str::push_str(&mut output,"\t\t\t(CSS_OK, Some(uri)) => {\n");
-        str::push_str(&mut output,"\t\t\t\tlet uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri));\n");
-        str::push_str(&mut output,fmt!("\t\t\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s );\n",parseid.val,kvlist[0].val));
-        str::push_str(&mut output,"\t\t\t\tcss_stylesheet::css__stylesheet_style_append(result, uri_snumber as u32)\n");
-        str::push_str(&mut output,"\n");
-        str::push_str(&mut output,"\t\t\t},\n");
-        str::push_str(&mut output,"\t\t\t(error, _ ) => {\n");
-        str::push_str(&mut output,"\t\t\t\t*ctx = orig_ctx;\n");
-        str::push_str(&mut output,"\t\t\t\treturn error\n");
-        str::push_str(&mut output,"\t\t\t},\n");
-        str::push_str(&mut output,"\t\t}\n");
-        str::push_str(&mut output,"\n");
-        str::push_str(&mut output,"\t} \n\t else ");
+        output.push_str("\n");
+        output.push_str("\t\tmatch (*sheet.resolve)(sheet.url, token.idata.get_ref().clone()) {\n");
+        output.push_str("\t\t\t(CSS_OK, Some(uri)) => {\n");
+        output.push_str("\t\t\t\tlet uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri));\n");
+        output.push_str(fmt!("\t\t\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s );\n",parseid.val,kvlist[0].val));
+        output.push_str("\t\t\t\tcss_stylesheet::css__stylesheet_style_append(result, uri_snumber as u32)\n");
+        output.push_str("\n");
+        output.push_str("\t\t\t},\n");
+        output.push_str("\t\t\t(error, _ ) => {\n");
+        output.push_str("\t\t\t\t*ctx = orig_ctx;\n");
+        output.push_str("\t\t\t\treturn error\n");
+        output.push_str("\t\t\t},\n");
+        output.push_str("\t\t}\n");
+        output.push_str("\n");
+        output.push_str("\t} \n\t else ");
         fp.write_str(output);
 }
 
@@ -195,103 +198,103 @@ pub fn output_number(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     
     let mut output : ~str = ~"\tif match token.token_type { CSS_TOKEN_NUMBER => true, _ => false} {\n";
   
-    str::push_str(&mut output,fmt!("\t\tlet mut (num,consumed): (i32,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), %s);\n",kvlist[0].key));
-    str::push_str(&mut output,"\t\t/* Invalid if there are trailing characters */\n");
-    str::push_str(&mut output,"\t\tif consumed != lwc_string_length(token.idata.get_ref().clone()) {\n");
-    str::push_str(&mut output,"\t\t\t*ctx = orig_ctx;\n");
-    str::push_str(&mut output,"\t\t\treturn CSS_INVALID\n");
-    str::push_str(&mut output,"\t\t}\n");
+    output.push_str(fmt!("\t\tlet mut (num,consumed): (i32,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), %s);\n",kvlist[0].key));
+    output.push_str("\t\t/* Invalid if there are trailing characters */\n");
+    output.push_str("\t\tif consumed != lwc_string_length(token.idata.get_ref().clone()) {\n");
+    output.push_str("\t\t\t*ctx = orig_ctx;\n");
+    output.push_str("\t\t\treturn CSS_INVALID\n");
+    output.push_str("\t\t}\n");
         
 
-    for uint::range(1 , kvlist.len()) |i| {
+    for (1 , kvlist.len()).range |i| {
         if kvlist[i].key == ~"RANGE" {
-            str::push_str(&mut output,fmt!("\t\tif %s {\n",kvlist[i].val));
-            str::push_str(&mut output,"\t\t\t*ctx = orig_ctx;\n");
-            str::push_str(&mut output,"\t\t\treturn CSS_INVALID\n");
-            str::push_str(&mut output,"\t\t}\n\n")
+            output.push_str(fmt!("\t\tif %s {\n",kvlist[i].val));
+            output.push_str("\t\t\t*ctx = orig_ctx;\n");
+            output.push_str("\t\t\treturn CSS_INVALID\n");
+            output.push_str("\t\t}\n\n")
         }
     }
 
-    str::push_str(&mut output,fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s);\n",parseid.val,kvlist[0].val));
-    str::push_str(&mut output,"\t\tcss_stylesheet::css__stylesheet_style_append(result, num as u32)\n");
-    str::push_str(&mut output,"\t} \n\t else ");
+    output.push_str(fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s);\n",parseid.val,kvlist[0].val));
+    output.push_str("\t\tcss_stylesheet::css__stylesheet_style_append(result, num as u32)\n");
+    output.push_str("\t} \n\t else ");
     fp.write_str(output);
 }
 
 pub fn output_color(fp:@Writer, parseid:&keyval) {
     let mut output : ~str = ~"\t{\n";
-    str::push_str(&mut output,"\t\t*ctx = orig_ctx;\n\n");
-    str::push_str(&mut output,"\t\tlet mut value:u16;\n\n");
-    str::push_str(&mut output,"\t\tlet mut color:u32;\n\n");
-    str::push_str(&mut output,"\t\tlet (value_option, color_option, res)= css__parse_color_specifier(sheet, strings, vector, ctx);\n");
-    str::push_str(&mut output,"\t\terror = res;\n");
-    str::push_str(&mut output,"\tdebug!(\"error == %? (1)\" , error)\n");
-    str::push_str(&mut output,"\t\tmatch res {\n");
-    str::push_str(&mut output,"\t\t\tCSS_OK => {\n");
-    str::push_str(&mut output,"\t\t\t\tvalue = value_option.unwrap();\n");
-    str::push_str(&mut output,"\t\t\t\tcolor = color_option.unwrap() },\n");
-    //str::push_str(&mut output,"\t\t\t\tcolor = color_option.unwrap() },\n");
-    str::push_str(&mut output,"\t\t\t_ => {\n");
-    str::push_str(&mut output,"\t\t\t\t*ctx = orig_ctx;\n");
-    str::push_str(&mut output,"\t\t\t\treturn res\n");
-    str::push_str(&mut output,"\t\t\t}\n");
-    str::push_str(&mut output,"\t\t}\n\n");
-    str::push_str(&mut output,fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, value);\n",parseid.val));
-    str::push_str(&mut output,"\n");
-    str::push_str(&mut output,"\t\tif value == COLOR_SET {\n");
-    str::push_str(&mut output,"\t\t\tcss_stylesheet::css__stylesheet_style_append(result, color as u32)\n");
-    str::push_str(&mut output,"\t\t}\n");
-    str::push_str(&mut output,"\t}\n\n");
+    output.push_str("\t\t*ctx = orig_ctx;\n\n");
+    output.push_str("\t\tlet mut value:u16;\n\n");
+    output.push_str("\t\tlet mut color:u32;\n\n");
+    output.push_str("\t\tlet (value_option, color_option, res)= css__parse_color_specifier(sheet, strings, vector, ctx);\n");
+    output.push_str("\t\terror = res;\n");
+    output.push_str("\tdebug!(\"error == %? (1)\" , error)\n");
+    output.push_str("\t\tmatch res {\n");
+    output.push_str("\t\t\tCSS_OK => {\n");
+    output.push_str("\t\t\t\tvalue = value_option.unwrap();\n");
+    output.push_str("\t\t\t\tcolor = color_option.unwrap() },\n");
+    //output.push_str("\t\t\t\tcolor = color_option.unwrap() },\n");
+    output.push_str("\t\t\t_ => {\n");
+    output.push_str("\t\t\t\t*ctx = orig_ctx;\n");
+    output.push_str("\t\t\t\treturn res\n");
+    output.push_str("\t\t\t}\n");
+    output.push_str("\t\t}\n\n");
+    output.push_str(fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, value);\n",parseid.val));
+    output.push_str("\n");
+    output.push_str("\t\tif value == COLOR_SET {\n");
+    output.push_str("\t\t\tcss_stylesheet::css__stylesheet_style_append(result, color as u32)\n");
+    output.push_str("\t\t}\n");
+    output.push_str("\t}\n\n");
     fp.write_str(output);   
 }
 
 pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     let mut output : ~str = ~"\t{\n";
-    str::push_str(&mut output,"\t\tlet length:u32;\n");
-    str::push_str(&mut output,"\t\t*ctx = orig_ctx;\n\n");
-    str::push_str(&mut output,"\t\tlet mut unit:u32;\n\n");
-    str::push_str(&mut output,fmt!("\t\tlet (length_option, unit_option, res) =css__parse_unit_specifier(sheet, vector, ctx, %s as u32);\n",kvlist[0].key));
-    str::push_str(&mut output,"\t\terror = res;\n");
-    str::push_str(&mut output,"\tdebug!(\"error == %?(1)\" , error)\n");
-    str::push_str(&mut output,"\t\tmatch res {\n");
-    str::push_str(&mut output,"\t\t\tCSS_OK => {\n");
-    str::push_str(&mut output,"\t\t\t\tunit = unit_option.unwrap();\n");
-    str::push_str(&mut output,"\t\t\t\tlength = length_option.get() as u32;\n");
-    str::push_str(&mut output,"\t\t\t},\n");
-    str::push_str(&mut output,"\t\t\t_ => {\n");
-    str::push_str(&mut output,"\t\t\t\t*ctx = orig_ctx;\n");
-    str::push_str(&mut output,"\t\t\t\treturn res\n");
-    str::push_str(&mut output,"\t\t\t}\n");
-    str::push_str(&mut output,"\t\t}\n\n");
-    str::push_str(&mut output,"\t\t\tlet length_fixed = length_option.get();\n");
+    output.push_str("\t\tlet length:u32;\n");
+    output.push_str("\t\t*ctx = orig_ctx;\n\n");
+    output.push_str("\t\tlet mut unit:u32;\n\n");
+    output.push_str(fmt!("\t\tlet (length_option, unit_option, res) =css__parse_unit_specifier(sheet, vector, ctx, %s as u32);\n",kvlist[0].key));
+    output.push_str("\t\terror = res;\n");
+    output.push_str("\tdebug!(\"error == %?(1)\" , error)\n");
+    output.push_str("\t\tmatch res {\n");
+    output.push_str("\t\t\tCSS_OK => {\n");
+    output.push_str("\t\t\t\tunit = unit_option.unwrap();\n");
+    output.push_str("\t\t\t\tlength = length_option.get() as u32;\n");
+    output.push_str("\t\t\t},\n");
+    output.push_str("\t\t\t_ => {\n");
+    output.push_str("\t\t\t\t*ctx = orig_ctx;\n");
+    output.push_str("\t\t\t\treturn res\n");
+    output.push_str("\t\t\t}\n");
+    output.push_str("\t\t}\n\n");
+    output.push_str("\t\t\tlet length_fixed = length_option.get();\n");
         
 
-    for uint::range(1 , kvlist.len()) |i| { 
+    for (1 , kvlist.len()).range |i| { 
         
         if kvlist[i].key == ~"ALLOW" {
-            str::push_str(&mut output,fmt!("\t\tif !(%s) {\n",kvlist[i].val));
-            str::push_str(&mut output,"\t\t\t*ctx = orig_ctx;\n");
-            str::push_str(&mut output,"\t\t\treturn CSS_INVALID\n");
-            str::push_str(&mut output,"\t\t}\n\n")
+            output.push_str(fmt!("\t\tif !(%s) {\n",kvlist[i].val));
+            output.push_str("\t\t\t*ctx = orig_ctx;\n");
+            output.push_str("\t\t\treturn CSS_INVALID\n");
+            output.push_str("\t\t}\n\n")
         } else if kvlist[i].key == ~"DISALLOW" {
-            str::push_str(&mut output,fmt!("\t\tif %s {\n",kvlist[i].val));
-            str::push_str(&mut output,"\t\t\t*ctx = orig_ctx;\n");
-            str::push_str(&mut output,"\t\t\treturn CSS_INVALID\n");
-            str::push_str(&mut output,"\t\t}\n\n")
+            output.push_str(fmt!("\t\tif %s {\n",kvlist[i].val));
+            output.push_str("\t\t\t*ctx = orig_ctx;\n");
+            output.push_str("\t\t\treturn CSS_INVALID\n");
+            output.push_str("\t\t}\n\n")
         } else if kvlist[i].key == ~"RANGE" {
-            str::push_str(&mut output,fmt!("\t\tif length_fixed %s {\n",kvlist[i].val));
-            str::push_str(&mut output,"\t\t\t*ctx = orig_ctx;\n");
-            str::push_str(&mut output,"\t\t\treturn CSS_INVALID\n");
-            str::push_str(&mut output,"\t\t}\n\n")
+            output.push_str(fmt!("\t\tif length_fixed %s {\n",kvlist[i].val));
+            output.push_str("\t\t\t*ctx = orig_ctx;\n");
+            output.push_str("\t\t\treturn CSS_INVALID\n");
+            output.push_str("\t\t}\n\n")
         }
 
     }
 
     
-    str::push_str(&mut output,fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s);\n",parseid.val,kvlist[0].val));
-    str::push_str(&mut output,"\n");
-    str::push_str(&mut output,"\t\tcss_stylesheet::css__stylesheet_style_vappend(result , [length, unit])\n");
-    str::push_str(&mut output,"\t}\n\n");
+    output.push_str(fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s);\n",parseid.val,kvlist[0].val));
+    output.push_str("\n");
+    output.push_str("\t\tcss_stylesheet::css__stylesheet_style_vappend(result , [length, unit])\n");
+    output.push_str("\t}\n\n");
     fp.write_str(output);
 }
 
@@ -302,58 +305,58 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
         
         let mut output : ~str = ~"{\n"; 
             
-            str::push_str(&mut output,fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s);\n", parseid.val,kvlist[0].val));
-            str::push_str(&mut output,"\t\t\tlet mut token_null=false;\n\n");
-            str::push_str(&mut output,"\t\twhile !token_null && (match token.token_type {CSS_TOKEN_IDENT => true, _ => false}) {\n");
-            str::push_str(&mut output,"\t\t\tlet mut num:css_fixed;\n");
-            str::push_str(&mut output,"\t\t\tlet mut pctx:uint;\n\n");
-            str::push_str(&mut output,"\t\t\tlet snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone()));\n");
-            str::push_str(&mut output,"\t\t\tcss_stylesheet::css__stylesheet_style_append(result, snumber as u32);\n"); 
-            str::push_str(&mut output,"\t\t\tconsumeWhitespace(vector, ctx);\n\n");
-            str::push_str(&mut output,"\t\t\tpctx = *ctx;\n");
-            str::push_str(&mut output,"\t\t\tif *ctx >= vector.len() {\n");
-            str::push_str(&mut output,"\t\t\t\ttoken_null = true\n");
-            str::push_str(&mut output,"\t\t\t}\n");
-            str::push_str(&mut output,"\t\t\telse { \n");
-            str::push_str(&mut output,"\t\t\t\ttoken = &vector[*ctx];\n");
-            str::push_str(&mut output,"\t\t\t\t*ctx += 1; //Iterate\n");
-            str::push_str(&mut output,"\t\t\t}\n");
-            str::push_str(&mut output,"\t\t\tif !token_null && (match token.token_type { CSS_TOKEN_NUMBER => true, _ => false}) {\n");
-            str::push_str(&mut output,"\t\t\t\tlet (_num, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);\n");
-            str::push_str(&mut output,"\t\t\t\tnum = _num;\n");
-            str::push_str(&mut output,"\t\t\t\tif consumed != lwc_string_length(token.idata.get_ref().clone()) {\n");
-            str::push_str(&mut output,"\t\t\t\t\t*ctx = orig_ctx;\n");
-            str::push_str(&mut output,"\t\t\t\t\treturn CSS_INVALID\n");
-            str::push_str(&mut output,"\t\t\t\t}\n");
-            str::push_str(&mut output,"\t\t\t\tconsumeWhitespace(vector, ctx);\n\n");
-            str::push_str(&mut output,"\t\t\t\tpctx = *ctx;\n");
-            str::push_str(&mut output,"\t\t\t\tif *ctx >= vector.len() {\n");
-            str::push_str(&mut output,"\t\t\t\t\ttoken_null = true\n");
-            str::push_str(&mut output,"\t\t\t\t}\n");
-            str::push_str(&mut output,"\t\t\t\telse { \n");
-            str::push_str(&mut output,"\t\t\t\t\ttoken = &vector[*ctx];\n");
-            str::push_str(&mut output,"\t\t\t\t\t*ctx += 1; //Iterate\n");
-            str::push_str(&mut output,"\t\t\t\t}\n");
-            str::push_str(&mut output,"\t\t\t}\n");
-            str::push_str(&mut output,"\t\t\telse {\n");
-            str::push_str(&mut output,fmt!("\t\t\t\tnum = css_int_to_fixed(%s);\n",kvlist[1].key));
-            str::push_str(&mut output,"\t\t\t}\n\n");
-            str::push_str(&mut output,"\t\t\tcss_stylesheet::css__stylesheet_style_append(result, num as u32);\n");
-            str::push_str(&mut output,"\t\t\tif token_null {\n");
-            str::push_str(&mut output,"\t\t\t\tbreak;\n}\n");
-            str::push_str(&mut output,"\t\t\tif match token.token_type { CSS_TOKEN_IDENT => true, _ => false} {\n");
-            str::push_str(&mut output,fmt!("\t\t\t\tcss_stylesheet::css__stylesheet_style_append(result, %s as u32);\n",kvlist[0].val));
-            str::push_str(&mut output,"\t\t\t}\n");
-            str::push_str(&mut output,"\t\t\telse {\n");
-            str::push_str(&mut output,"\t\t\t\t*ctx = pctx // rewind one token back */\n");
-            str::push_str(&mut output,"\t\t\t}\n");
-            str::push_str(&mut output,"\t\t}\n\n");
-            str::push_str(&mut output,fmt!("\t\tcss_stylesheet::css__stylesheet_style_append(result, %s as u32)\n",kvlist[1].val));
-            str::push_str(&mut output,"\t}\n\n");
+            output.push_str(fmt!("\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s);\n", parseid.val,kvlist[0].val));
+            output.push_str("\t\t\tlet mut token_null=false;\n\n");
+            output.push_str("\t\twhile !token_null && (match token.token_type {CSS_TOKEN_IDENT => true, _ => false}) {\n");
+            output.push_str("\t\t\tlet mut num:css_fixed;\n");
+            output.push_str("\t\t\tlet mut pctx:uint;\n\n");
+            output.push_str("\t\t\tlet snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone()));\n");
+            output.push_str("\t\t\tcss_stylesheet::css__stylesheet_style_append(result, snumber as u32);\n"); 
+            output.push_str("\t\t\tconsumeWhitespace(vector, ctx);\n\n");
+            output.push_str("\t\t\tpctx = *ctx;\n");
+            output.push_str("\t\t\tif *ctx >= vector.len() {\n");
+            output.push_str("\t\t\t\ttoken_null = true\n");
+            output.push_str("\t\t\t}\n");
+            output.push_str("\t\t\telse { \n");
+            output.push_str("\t\t\t\ttoken = &vector[*ctx];\n");
+            output.push_str("\t\t\t\t*ctx += 1; //Iterate\n");
+            output.push_str("\t\t\t}\n");
+            output.push_str("\t\t\tif !token_null && (match token.token_type { CSS_TOKEN_NUMBER => true, _ => false}) {\n");
+            output.push_str("\t\t\t\tlet (_num, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);\n");
+            output.push_str("\t\t\t\tnum = _num;\n");
+            output.push_str("\t\t\t\tif consumed != lwc_string_length(token.idata.get_ref().clone()) {\n");
+            output.push_str("\t\t\t\t\t*ctx = orig_ctx;\n");
+            output.push_str("\t\t\t\t\treturn CSS_INVALID\n");
+            output.push_str("\t\t\t\t}\n");
+            output.push_str("\t\t\t\tconsumeWhitespace(vector, ctx);\n\n");
+            output.push_str("\t\t\t\tpctx = *ctx;\n");
+            output.push_str("\t\t\t\tif *ctx >= vector.len() {\n");
+            output.push_str("\t\t\t\t\ttoken_null = true\n");
+            output.push_str("\t\t\t\t}\n");
+            output.push_str("\t\t\t\telse { \n");
+            output.push_str("\t\t\t\t\ttoken = &vector[*ctx];\n");
+            output.push_str("\t\t\t\t\t*ctx += 1; //Iterate\n");
+            output.push_str("\t\t\t\t}\n");
+            output.push_str("\t\t\t}\n");
+            output.push_str("\t\t\telse {\n");
+            output.push_str(fmt!("\t\t\t\tnum = css_int_to_fixed(%s);\n",kvlist[1].key));
+            output.push_str("\t\t\t}\n\n");
+            output.push_str("\t\t\tcss_stylesheet::css__stylesheet_style_append(result, num as u32);\n");
+            output.push_str("\t\t\tif token_null {\n");
+            output.push_str("\t\t\t\tbreak;\n}\n");
+            output.push_str("\t\t\tif match token.token_type { CSS_TOKEN_IDENT => true, _ => false} {\n");
+            output.push_str(fmt!("\t\t\t\tcss_stylesheet::css__stylesheet_style_append(result, %s as u32);\n",kvlist[0].val));
+            output.push_str("\t\t\t}\n");
+            output.push_str("\t\t\telse {\n");
+            output.push_str("\t\t\t\t*ctx = pctx // rewind one token back */\n");
+            output.push_str("\t\t\t}\n");
+            output.push_str("\t\t}\n\n");
+            output.push_str(fmt!("\t\tcss_stylesheet::css__stylesheet_style_append(result, %s as u32)\n",kvlist[1].val));
+            output.push_str("\t}\n\n");
             fp.write_str(output);
     } 
     else {
-        io::println(fmt!("unknown IDENT list type %s\n",kvlist[0].key));
+        println(fmt!("unknown IDENT list type %s\n",kvlist[0].key));
         fail!();
     }
 }
@@ -364,11 +367,11 @@ pub fn output_invalidcss(fp:@Writer) {
 
 pub fn output_footer(fp:@Writer) {
     let mut output : ~str = ~"\tif match error {CSS_OK => false, _ => true} {\n";
-    str::push_str(&mut output,"\t\t*ctx = orig_ctx;\n\t}\n");
-    str::push_str(&mut output," \n");
-    str::push_str(&mut output,"\tdebug!(\"error == %? (2)\" , error)\n");
-    str::push_str(&mut output,"\treturn error\n");
-    str::push_str(&mut output,"}\n\n");
+    output.push_str("\t\t*ctx = orig_ctx;\n\t}\n");
+    output.push_str(" \n");
+    output.push_str("\tdebug!(\"error == %? (2)\" , error)\n");
+    output.push_str("\treturn error\n");
+    output.push_str("}\n\n");
     fp.write_str(output);
 }
 
@@ -401,19 +404,19 @@ fn main() {
     
     // Below commented code takes command line arguments and generates the code in the given path
     // if args.len() < 2 {
-    //     io::println(fmt!("Usage: %s [-o <filename>] <descriptor>\n", args[0]));
+    //     println(fmt!("Usage: %s [-o <filename>] <descriptor>\n", args[0]));
     //     fail!(~"Invalid Usage");
     // }
 
     // if args[1] == ~"--o" {
         
     //     if (args.len() != 4) {
-    //         io::println(fmt!("Usage: %s [-o <filename>] <descriptor>\n", args[0]));
+    //         println(fmt!("Usage: %s [-o <filename>] <descriptor>\n", args[0]));
     //         fail!();
     //     }
 
     //     let path = Path("args[2]");
-    //     writer = io::file_writer(&path,[io::Create, io::Append]).get();
+    //     writer = file_writer(&path,[Create, io::Append]).get();
     //     descriptor = copy args[3]
     // } 
     // else {
@@ -423,9 +426,10 @@ fn main() {
        
 
     let input_path = Path("properties.gen");
-    let reader = result::get(&io::file_reader(&input_path));
+	println(input_path);
+    let reader = get(&file_reader(&input_path));
     let output_path = Path("autogenerated.rs");
-    writer = io::file_writer(&output_path,[io::Create]).get();
+    writer = file_writer(&output_path,[Create]).get();
     file_header(writer);
 
     while !reader.eof() {
@@ -466,7 +470,7 @@ fn main() {
 
         match get_keyval(copy descriptor) {
             None =>     {
-                            io::println(fmt!("Token error at offset %u\n", curpos));
+                            println(fmt!("Token error at offset %u\n", curpos));
                             fail!();
                         }
 
@@ -477,10 +481,10 @@ fn main() {
                                     only_ident = false;
                                 } 
                                 else if rkv.key == ~"NUMBER" {
-                                    if str::char_at(rkv.val, 0) == '(' {
+                                    if rkv.val.char_at( 0) == '(' {
                                         curlist = NUMBER;
                                     } 
-                                    else if str::char_at(rkv.val, 0) == ')' {
+                                    else if rkv.val.char_at( 0) == ')' {
                                         curlist = BASE;
                                     } 
                                     else {
@@ -489,10 +493,10 @@ fn main() {
                                     only_ident = false;
                                 } 
                                 else if rkv.key == ~"IDENT" {
-                                    if str::char_at(rkv.val, 0) == '(' {
+                                    if rkv.val.char_at( 0) == '(' {
                                         curlist = IDENT;
                                     } 
-                                    else if str::char_at(rkv.val, 0) == ')' {
+                                    else if rkv.val.char_at( 0) == ')' {
                                         curlist = BASE;
                                     } 
                                     else if rkv.val ==  ~"INHERIT" {
@@ -500,18 +504,18 @@ fn main() {
                                     }
                                 } 
                                 else if rkv.key == ~"IDENT_LIST" {
-                                    if str::char_at(rkv.val, 0) == '(' {
+                                    if rkv.val.char_at( 0) == '(' {
                                         curlist = IDENT_LIST;
                                     } 
-                                    else if str::char_at(rkv.val, 0) == ')' {
+                                    else if rkv.val.char_at( 0) == ')' {
                                         curlist = BASE;
                                     } 
                                 } 
                                 else if rkv.key == ~"LENGTH_UNIT" {
-                                    if str::char_at(rkv.val, 0) == '(' {
+                                    if rkv.val.char_at( 0) == '(' {
                                         curlist = LENGTH_UNIT;
                                     } 
-                                    else if str::char_at(rkv.val, 0) == ')' {
+                                    else if rkv.val.char_at( 0) == ')' {
                                         curlist = BASE;
                                     } 
                                     only_ident = false;
@@ -543,7 +547,7 @@ fn main() {
         }
 
         if base.len() != 1 {
-            io::println(fmt!("Incorrect base element count (got %u expected 1)\n", base.len()));
+            println(fmt!("Incorrect base element count (got %u expected 1)\n", base.len()));
             fail!();
         }
 
