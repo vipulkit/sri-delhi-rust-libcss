@@ -10,21 +10,21 @@ pub enum parserutils_error {
 }
 
 pub fn parserutils_error_from_string(error_string: ~str) -> parserutils_error {
-    if (str::starts_with(error_string, &"PARSERUTILS_OK")) {
+    if (error_string.starts_with(&"PARSERUTILS_OK")) {
         PARSERUTILS_OK
-    } else if (str::starts_with(error_string, &"PARSERUTILS_NOMEM")) {
+    } else if (error_string.starts_with(&"PARSERUTILS_NOMEM")) {
         PARSERUTILS_NOMEM
-    } else if (str::starts_with(error_string, &"PARSERUTILS_BADPARM")) {
+    } else if (error_string.starts_with(&"PARSERUTILS_BADPARM")) {
         PARSERUTILS_BADPARM
-    } else if (str::starts_with(error_string, &"PARSERUTILS_INVALID")) {
+    } else if (error_string.starts_with(&"PARSERUTILS_INVALID")) {
         PARSERUTILS_INVALID
-    } else if (str::starts_with(error_string, &"PARSERUTILS_FILENOTFOUND")) {
+    } else if (error_string.starts_with(&"PARSERUTILS_FILENOTFOUND")) {
         PARSERUTILS_FILENOTFOUND
-    } else if (str::starts_with(error_string, &"PARSERUTILS_NEEDDATA")) {
+    } else if (error_string.starts_with(&"PARSERUTILS_NEEDDATA")) {
         PARSERUTILS_NEEDDATA
-    } else if (str::starts_with(error_string, &"PARSERUTILS_BADENCODING")) {
+    } else if (error_string.starts_with(&"PARSERUTILS_BADENCODING")) {
         PARSERUTILS_BADENCODING
-    } else if (str::starts_with(error_string, &"PARSERUTILS_EOF")) {
+    } else if (error_string.starts_with(&"PARSERUTILS_EOF")) {
         PARSERUTILS_EOF
     }
     else {
