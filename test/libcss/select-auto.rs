@@ -140,6 +140,19 @@ pub fn select_test(file:~str) {
 	let css_create_inputstream_alias_time = @mut 0f;
 	let css_lang_create_propstring_time = @mut 0f;
 	let css_lang_create_properties_time = @mut 0f;
+	let parse_lang_handle_event_time = @mut 0f;
+	let parse_lang_handleStartStyleSheet_time = @mut 0f;
+	let parse_lang_handleEndStyleSheet_time = @mut 0f;
+        let parse_lang_handleStartRuleSet_time = @mut 0f;
+	let parse_lang_handleEndRuleSet_time = @mut 0f;
+	let parse_lang_handleStartAtRule_time = @mut 0f;
+	let parse_lang_handleEndAtRule_time = @mut 0f;
+	let parse_lang_handleStartBlock_time = @mut 0f;
+	let parse_lang_handleEndBlock_time = @mut 0f; 
+	let parse_lang_handle_block_content_time = @mut 0f;
+	let parse_lang_handle_parse_declaration_time = @mut 0f;
+	let parse_lang_parse_property_time =@mut 0f;
+	let parse_lang_font_desc_time = @mut 0f;
 
 	for str::each_line_any(file_content) |line| { 
         let mut line_string: ~str = line.to_str(); 
@@ -161,12 +174,40 @@ pub fn select_test(file:~str) {
 				css_create_parser_time ,
 				css_create_inputstream_alias_time,
 				css_lang_create_propstring_time,
-				css_lang_create_properties_time
+				css_lang_create_properties_time,
+				parse_lang_handle_event_time,
+				parse_lang_handleStartStyleSheet_time,
+				parse_lang_handleEndStyleSheet_time,
+				parse_lang_handleStartRuleSet_time,
+				parse_lang_handleEndRuleSet_time,
+				parse_lang_handleStartAtRule_time,
+				parse_lang_handleEndAtRule_time,
+				parse_lang_handleStartBlock_time,
+				parse_lang_handleEndBlock_time, 
+				parse_lang_handle_block_content_time,
+				parse_lang_handle_parse_declaration_time,
+				parse_lang_parse_property_time,
+				parse_lang_font_desc_time
 				);
+
     }	
 
 	if (ctx.tree.is_some() ) {
-		run_test(ctx, css_select_style_time, parseutils_inputstream_peek_time, parseutils_inputstream_append_time, css_lexer_get_token_time, parseutils_inputstream_advance_time);
+		run_test(ctx, css_select_style_time, parseutils_inputstream_peek_time, parseutils_inputstream_append_time, css_lexer_get_token_time, parseutils_inputstream_advance_time,
+				parse_lang_handle_event_time,
+				parse_lang_handleStartStyleSheet_time,
+				parse_lang_handleEndStyleSheet_time,
+				parse_lang_handleStartRuleSet_time,
+				parse_lang_handleEndRuleSet_time,
+				parse_lang_handleStartAtRule_time,
+				parse_lang_handleEndAtRule_time,
+				parse_lang_handleStartBlock_time,
+				parse_lang_handleEndBlock_time, 
+				parse_lang_handle_block_content_time, 
+				parse_lang_handle_parse_declaration_time,
+				parse_lang_parse_property_time,
+				parse_lang_font_desc_time);
+
 	}
 
 	io::println(fmt!("#css_stylesheet_create_time:%?",(*css_stylesheet_create_time as float /1000f))) ;
@@ -177,6 +218,21 @@ pub fn select_test(file:~str) {
 	io::println(fmt!("#css_create_lexer_time:%?",(*css_create_lexer_time/1000f))) ;
 	io::println(fmt!("#css_create_stylesheet_time:%?",(*css_create_stylesheet_time/1000f))) ;
 	io::println(fmt!("#css_create_language_time:%?",(*css_create_language_time/1000f))) ;
+
+	io::println(fmt!("#parse_language_handle_event_time:%?",(*parse_lang_handle_event_time/1000f))) ;
+	io::println(fmt!("#parse_lang_handleStartStyleSheet_time:%?",(*parse_lang_handleStartStyleSheet_time/1000f))); 
+	io::println(fmt!("#parse_lang_handleEndStyleSheet_time:%?",(*parse_lang_handleEndStyleSheet_time/1000f)));
+        io::println(fmt!("#parse_lang_handleStartRuleSet_time:%?",(*parse_lang_handleStartRuleSet_time/1000f)));
+	io::println(fmt!("#parse_lang_handleEndRuleSet_time:%?",(*parse_lang_handleEndRuleSet_time/1000f)));
+	io::println(fmt!("#parse_lang_handleStartAtRule_time:%?",(*parse_lang_handleStartAtRule_time/1000f)));
+	io::println(fmt!("#parse_lang_handleEndAtRule_time :%?",(*parse_lang_handleEndAtRule_time/1000f)));
+	io::println(fmt!("#parse_lang_handleStartBlock_time:%?",(*parse_lang_handleStartBlock_time/1000f)));
+	io::println(fmt!("#parse_lang_handleEndBlock_time :%?",(*parse_lang_handleEndBlock_time/1000f)));
+	io::println(fmt!("#parse_lang_handle_block_content_time:%?",(*parse_lang_handle_block_content_time/1000f)));
+	io::println(fmt!("#parse_lang_handle_parse_declaration_time:%?",(*parse_lang_handle_parse_declaration_time/1000f)));
+
+	io::println(fmt!("#parse_lang_parse_property_time:%?",(*parse_lang_parse_property_time/1000f)));
+	io::println(fmt!("#parse_lang_font_desc_time:%?",(*parse_lang_font_desc_time/1000f)));
 				
 	io::println(fmt!("#css_lang_create_propstring_time:%?",(*css_lang_create_propstring_time/1000f))) ;
 	io::println(fmt!("#css_lang_create_properties_time:%?",(*css_lang_create_properties_time/1000f))) ;
@@ -231,7 +287,20 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
 	css_create_parser_time:@mut float ,
 	css_create_inputstream_alias_time:@mut float,
 	css_lang_create_propstring_time:@mut float,
-	css_lang_create_properties_time:@mut float
+	css_lang_create_properties_time:@mut float,
+	parse_lang_handle_event_time:@mut float,
+	parse_lang_handleStartStyleSheet_time:@mut float,
+	parse_lang_handleEndStyleSheet_time:@mut float,
+        parse_lang_handleStartRuleSet_time:@mut float,
+	parse_lang_handleEndRuleSet_time:@mut float,
+	parse_lang_handleStartAtRule_time:@mut float,
+	parse_lang_handleEndAtRule_time:@mut float,
+	parse_lang_handleStartBlock_time:@mut float,
+	parse_lang_handleEndBlock_time:@mut float, 
+	parse_lang_handle_block_content_time:@mut float,
+	parse_lang_handle_parse_declaration_time:@mut float,
+	parse_lang_parse_property_time:@mut float,
+	parse_lang_font_desc_time:@mut float
 	) -> bool 
 {
 	let mut error : css_error ;
@@ -333,7 +402,20 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
         else if (ctx.inexp) {
         	debug!("in ctx inexp");
             /* This marks end of testcase, so run it */
-            run_test(ctx, css_select_style_time, parseutils_inputstream_peek_time, parseutils_inputstream_append_time,css_lexer_get_token_time , parseutils_inputstream_advance_time);
+            run_test(ctx, css_select_style_time, parseutils_inputstream_peek_time, parseutils_inputstream_append_time,css_lexer_get_token_time , parseutils_inputstream_advance_time,
+			    parse_lang_handle_event_time,
+			    parse_lang_handleStartStyleSheet_time,
+			    parse_lang_handleEndStyleSheet_time,
+			    parse_lang_handleStartRuleSet_time,
+			    parse_lang_handleEndRuleSet_time,
+			    parse_lang_handleStartAtRule_time,
+			    parse_lang_handleEndAtRule_time,
+			    parse_lang_handleStartBlock_time,
+			    parse_lang_handleEndBlock_time, 
+			    parse_lang_handle_block_content_time,
+			    parse_lang_handle_parse_declaration_time,
+			    parse_lang_parse_property_time,
+			    parse_lang_font_desc_time);
 	    	//ctx.expused = 0;
 
             ctx.intree = false;
@@ -797,7 +879,27 @@ pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> u
 //
 //}
 
-pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_inputstream_peek_time:@mut float, parseutils_inputstream_append_time:@mut float, css_lexer_get_token_time:@mut float,parseutils_inputstream_advance_time:@mut float) {
+pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_inputstream_peek_time:@mut float, 
+	parseutils_inputstream_append_time:@mut float, 
+	css_lexer_get_token_time:@mut float,
+	parseutils_inputstream_advance_time:@mut float,
+	parse_lang_handle_event_time:@mut float,
+	parse_lang_handleStartStyleSheet_time:@mut float,
+	parse_lang_handleEndStyleSheet_time:@mut float,
+        parse_lang_handleStartRuleSet_time:@mut float,
+	parse_lang_handleEndRuleSet_time:@mut float,
+	parse_lang_handleStartAtRule_time:@mut float,
+	parse_lang_handleEndAtRule_time:@mut float,
+	parse_lang_handleStartBlock_time:@mut float,
+	parse_lang_handleEndBlock_time:@mut float, 
+	parse_lang_handle_block_content_time:@mut float,
+    	parse_lang_handle_parse_declaration_time :@mut float,
+	parse_lang_parse_property_time:@mut float,
+	parse_lang_font_desc_time:@mut float
+
+
+
+) {
 	//debug!("\n Entering run test =%?=",ctx) ;
     let mut select: ~css_select_ctx;
     let mut results: css_select_results;
@@ -926,6 +1028,20 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_i
     *parseutils_inputstream_append_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_append_time;
     *parseutils_inputstream_advance_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_advance_time;
     *css_lexer_get_token_time += ctx.sheets[i].sheet.parser.css_lexer_get_token_time;
+    *parse_lang_handle_event_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_event_time;
+    *parse_lang_handleStartStyleSheet_time +=ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartStyleSheet_time;
+    *parse_lang_handleEndStyleSheet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndStyleSheet_time;
+    *parse_lang_handleStartRuleSet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lange_handleStartRuleSet_time;
+    *parse_lang_handleEndRuleSet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndRuleSet_time;
+    *parse_lang_handleStartAtRule_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartAtRule_time;
+    *parse_lang_handleEndAtRule_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndAtRule_time;
+    *parse_lang_handleStartBlock_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartBlock_time;
+    *parse_lang_handleEndBlock_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndBlock_time;
+    *parse_lang_handle_block_content_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_block_content_time;
+    *parse_lang_handle_parse_declaration_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_parse_declaration_time;
+    *parse_lang_parse_property_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_parse_property_time;
+    *parse_lang_font_desc_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_font_desc_time;
+
             i += 1;
         }
     }
