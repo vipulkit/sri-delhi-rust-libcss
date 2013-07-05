@@ -180,21 +180,21 @@ impl alias_gen {
         fp.write_line("        let mut trim_left_index = 0u;");
         fp.write_line("        let mut trim_right_index = alias.len()-1;");
         fp.write_line(""    );
-        fp.write_line("        for alias.iter().advance |index, c| {");
-        fp.write_line("            if char::is_alphanumeric(c) {");
+        fp.write_line("        for alias.iter().enumerate().advance |(index,c)| {");
+        fp.write_line("            if c.is_alphanumeric() {");
         fp.write_line("                trim_left_index = index;");
         fp.write_line("                break;");
         fp.write_line("            }");
         fp.write_line("        }");
         fp.write_line("");
-        fp.write_line("        for alias.rev_iter().advance |index, c| {");
-        fp.write_line("            if char::is_alphanumeric(c) {");
+        fp.write_line("        for alias.rev_iter().enumerate().advance |(index,c)| {");
+        fp.write_line("            if c.is_alphanumeric() {");
         fp.write_line("                trim_right_index = index+1;");
         fp.write_line("                break;");
         fp.write_line("            }");
         fp.write_line("        }");
         fp.write_line("");
-        fp.write_line("        let trimmed_alias = alias.alice(trim_left_index, trim_right_index).to_owned();");
+        fp.write_line("        let trimmed_alias = alias.slice(trim_left_index, trim_right_index).to_owned();");
         fp.write_line("        trimmed_alias");
         fp.write_line("    }");
         fp.write_line("");
@@ -229,7 +229,7 @@ impl alias_gen {
     fn write_parserutils_charset_mibenum_from_name(&mut self, fp:@Writer) {
         fp.write_line("");
         fp.write_line("    pub fn parserutils_charset_mibenum_from_name(&self, alias: &str) -> u16 {");
-        fp.write_line("        match self.alias_map_find(alias.to_lower()) {");
+        fp.write_line("        match self.alias_map_find(alias.to_ascii().to_lower().to_str_ascii()) {");
         fp.write_line("            None => 0 ,");
         fp.write_line("            Some(mib_enum) => mib_enum");
         fp.write_line("        }");
@@ -240,7 +240,7 @@ impl alias_gen {
     fn write_parserutils__charset_alias_canonicalise(&mut self, fp:@Writer) {
         fp.write_line("");
         fp.write_line("    pub fn parserutils__charset_alias_canonicalise(&self, alias: ~str) -> Option<parserutils_charset_aliases_canon> {"       );
-        fp.write_line("        match self.alias_map_find(self.trim_search_alias(alias.to_lower())) {");
+        fp.write_line("        match self.alias_map_find(self.trim_search_alias(alias.to_ascii().to_lower().to_str_ascii())) {");
         fp.write_line("            None => None,"                   );
         fp.write_line("            Some(temp_mib_enum) => {");
         fp.write_line("                match self.mibenum_map_find(temp_mib_enum) {");
