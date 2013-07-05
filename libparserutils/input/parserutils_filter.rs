@@ -1,5 +1,3 @@
-use extra::arc;
-
 use charset::aliases::*;
 use input::riconv;
 use utils::errors::*;
@@ -99,7 +97,7 @@ impl filter {
 
     pub fn parserutils__filter_reset(&mut self ) -> parserutils_error {
         if riconv::riconv_initialized(self.iconv_h) {
-            riconv::safe_riconv(self.iconv_h, ~[]);
+            riconv::safe_riconv(self.iconv_h, []);
             return PARSERUTILS_OK;
         }
         else {
@@ -131,7 +129,7 @@ impl filter {
     }
 }
 
-pub fn parserutils_filter(mut alias_instance: arc::ARC<~alias> , int_enc: ~str) -> (Option<~filter> , parserutils_error) {
+pub fn parserutils_filter(alias_instance: arc::ARC<~alias> , int_enc: ~str) -> (Option<~filter> , parserutils_error) {
 
     let mut filter = ~filter{
         int_enc: alias_instance.get().parserutils_charset_mibenum_from_name(int_enc),               // The internal encoding

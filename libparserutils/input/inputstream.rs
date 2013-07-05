@@ -7,7 +7,7 @@ use input::parserutils_filter::*;
 use utils::errors::*;
 
 pub type  parserutils_charset_detect_func =  
-    ~extern fn(data: &[u8], mibenum:u16, source:int, arc:arc::ARC<~alias>) -> (Option<u16>, Option<int>, parserutils_error);
+    @extern fn(data: &[u8], mibenum:u16, source:int, arc:arc::ARC<~alias>) -> (Option<u16>, Option<int>, parserutils_error);
 
 pub struct inputstream {
     utf8: ~[u8],        // Buffer containing UTF-8 data 
@@ -49,14 +49,14 @@ pub fn inputstream(encoding: Option<~str>, charset_src: Option<int>, csdetect_in
         stream_charset_src = 0;
     }
 
-    let mut start_time = extra::time::precise_time_ns();
+    let start_time = extra::time::precise_time_ns();
     let alias_instance = alias();
-    let mut end_time = extra::time::precise_time_ns();
+    let end_time = extra::time::precise_time_ns();
     let alias_create_time = (end_time as float - start_time as float);
 
     match parserutils_filter(alias_instance , copy stream_encoding) {
         (x,PARSERUTILS_OK) =>{
-            let mut filter_instance = x.unwrap(); 
+            let filter_instance = x.unwrap(); 
             stream = ~inputstream {
                 utf8: ~[],
                 cursor: 0,
@@ -120,7 +120,7 @@ impl inputstream {
             self.had_eof = true;
             return PARSERUTILS_OK;
         }
-        append(self.raw,data);
+        self.raw = self.raw + data;
         PARSERUTILS_OK
     }
 
@@ -140,8 +140,8 @@ impl inputstream {
 
         let temp = self.utf8.slice(self.cursor,self.utf8.len()).to_owned();
         self.utf8.truncate(self.cursor);
-        append(self.utf8, data) ;
-        append(self.utf8, temp) ;
+        self.utf8 = self.utf8 + data ;
+        self.utf8 = self.utf8 + temp ;
         PARSERUTILS_OK
     }
 
@@ -235,7 +235,7 @@ impl inputstream {
                 } 
             },
             ~"UTF-32" => {
-                self.mibenum  = self.input.alias.get().parserutils_charset_mibenum_from_name(~"UTF-32BE");
+                self.mibenum  = self.input.alias.get().parserutils_charset_mibenum_from_name("UTF-32BE");
                 if self.mibenum==0 {
                     return PARSERUTILS_BADPARM;
                 }
@@ -246,7 +246,7 @@ impl inputstream {
                         return PARSERUTILS_OK;
                     }
                     else if self.raw[0] == 0xFF && self.raw[1] == 0xFE && self.raw[2] == 0x00 && self.raw[3] == 0x00 {
-                        self.mibenum  = self.input.alias.get().parserutils_charset_mibenum_from_name(~"UTF-32LE");
+                        self.mibenum  = self.input.alias.get().parserutils_charset_mibenum_from_name("UTF-32LE");
                         if self.mibenum==0 {
                             return PARSERUTILS_BADPARM;
                         }
@@ -257,7 +257,7 @@ impl inputstream {
                 }
             },
             ~"UTF-16" => {
-                self.mibenum  = self.input.alias.get().parserutils_charset_mibenum_from_name(~"UTF-16BE");
+                self.mibenum  = self.input.alias.get().parserutils_charset_mibenum_from_name("UTF-16BE");
                 
                 if self.mibenum==0 {
                     return PARSERUTILS_BADPARM;
@@ -269,7 +269,7 @@ impl inputstream {
                         return PARSERUTILS_OK;
                     }
                     else if self.raw[0] == 0xFF && self.raw[1] == 0xFE {
-                        self.mibenum  = self.input.alias.get().parserutils_charset_mibenum_from_name(~"UTF-16LE");
+                        self.mibenum  = self.input.alias.get().parserutils_charset_mibenum_from_name("UTF-16LE");
                         if self.mibenum == 0 {
                             return PARSERUTILS_BADPARM;
                         }
@@ -382,7 +382,7 @@ impl inputstream {
                 None => {}
             }   
             if (self.mibenum == 0) {
-                self.mibenum = self.input.alias.get().parserutils_charset_mibenum_from_name(~"UTF-8");
+                self.mibenum = self.input.alias.get().parserutils_charset_mibenum_from_name("UTF-8");
                 if self.mibenum == 0 {
                     // io::println("parserutils_inputstream_refill_buffer: self.mibenum == 0");
                     return PARSERUTILS_BADPARM;
@@ -433,17 +433,17 @@ impl inputstream {
                     if (!self.done_first_chunk) {
                         self.done_first_chunk = true;
                         if outbuf[0]== 0xFF && outbuf[1]== 0xFE && outbuf[2]== 0x00 && outbuf[3]== 0x00{
-                            append(self.utf8,outbuf.slice(4,outbuf.len()).to_owned());
+                            self.utf8 = self.utf8 + outbuf.slice(4,outbuf.len()).to_owned();
                         }
                         else if outbuf[0]== 0xFF && outbuf[1]== 0xFE {
-                            append(self.utf8, outbuf.slice(2,outbuf.len()).to_owned());
+                            self.utf8 = self.utf8 + outbuf.slice(2,outbuf.len()).to_owned();
                         }
                         else {
-                            append(self.utf8, outbuf);
+                            self.utf8 = self.utf8 + outbuf;
                         }
                 }
                 else {
-                    append(self.utf8, outbuf);
+                    self.utf8 = self.utf8 + outbuf;
                 }
                 processed_length = len_processed as uint
             },
