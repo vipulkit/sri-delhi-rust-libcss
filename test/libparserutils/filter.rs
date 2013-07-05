@@ -1,7 +1,7 @@
 extern mod std;
 extern mod parserutils;
 
-use core::vec::*;
+use std::{vec,io};
 use parserutils::charset::aliases::*;
 use parserutils::utils::errors::*;
 use parserutils::input::parserutils_filter::*;
@@ -11,7 +11,7 @@ fn main(){
 
     let mut Alias = alias();
     
-    let mut (filterinstance,filterResult) = parserutils_filter(Alias, ~"UTF-8");
+    let (filterinstance,filterResult) = parserutils_filter(Alias, ~"UTF-8");
 
     match(filterResult){
         PARSERUTILS_OK   => {                               
@@ -29,7 +29,7 @@ fn main(){
 
                 match(Filter.parserutils__filter_process_chunk(inbuf)) { 
                     (PARSERUTILS_OK, f_outbuf , _) => {
-                        outbuf += f_outbuf;
+                        outbuf = outbuf+f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
@@ -39,18 +39,18 @@ fn main(){
                 }
 
                 let tempbuf = ~[104 , 101 , 108 , 108 , 194 , 160 , 111 , 33];
-                if !eq(outbuf,tempbuf) {
+                if !vec::eq(outbuf,tempbuf) {
                     assert!(false)
                 }
 
                 Filter.parserutils__filter_reset();
 
-                inbuf = (~"hello!").to_bytes();
+                inbuf = ~['h' as u8,'e' as u8,'l' as u8,'l' as u8,'o' as u8,'!' as u8] ;
                 outbuf = ~[];
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf)) { 
                     (PARSERUTILS_OK, f_outbuf, _) => {
-                        outbuf += f_outbuf;
+                        outbuf = outbuf+f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
@@ -59,7 +59,7 @@ fn main(){
                     }
                 }
 
-                if !eq(outbuf,"hello!".to_bytes()){                  
+                if !vec::eq(outbuf,inbuf){                  
                     assert!(false);
                 }
 
@@ -73,7 +73,7 @@ fn main(){
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf)) { 
                     (PARSERUTILS_OK, f_outbuf, _) => {
-                        outbuf += f_outbuf;
+                        outbuf = outbuf+f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
@@ -83,7 +83,7 @@ fn main(){
                 }
                 // io::println(fmt!("outbuf=%?",outbuf));
                 let mut tempbuf = ~[ 104, 101, 108 , 108 , 239, 191 , 189 , 111 , 33];
-                if !eq(outbuf,tempbuf){         
+                if !vec::eq(outbuf,tempbuf){         
                     assert!(false);
                 }
 
@@ -95,7 +95,7 @@ fn main(){
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
                     (PARSERUTILS_OK, f_outbuf, _) => {
-                        outbuf += f_outbuf;
+                        outbuf = outbuf+f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
@@ -115,7 +115,7 @@ fn main(){
                 }
 
                 tempbuf = ~[104 , 101 , 108 , 108 , 194 , 160 , 111 , 33];
-                if !eq(outbuf,tempbuf) {                  
+                if !vec::eq(outbuf,tempbuf) {                  
                     assert!(false);  
                 }
 
@@ -130,7 +130,7 @@ fn main(){
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
                     (PARSERUTILS_OK, f_outbuf, _) => {
-                        outbuf += f_outbuf;
+                        outbuf = outbuf+f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
@@ -142,7 +142,7 @@ fn main(){
                 outbuf=~[];
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()).to_owned())) { 
                     (PARSERUTILS_OK, f_outbuf, _) => {
-                        outbuf += f_outbuf;
+                        outbuf = outbuf+f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
@@ -151,7 +151,7 @@ fn main(){
                     }
                 }  //hell\xef\xbf\xbd\xef\xbf\xbdo!"
                 let mut tempbuf = ~[ 104, 101, 108 , 108 , 239, 191 , 189 , 239 , 191 , 189 , 111 , 33];
-                if !eq(outbuf,tempbuf){                  
+                if !vec::eq(outbuf,tempbuf){                  
                     assert!(false)  
                 }
 
@@ -166,7 +166,7 @@ fn main(){
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-5).to_owned())) { 
                     (PARSERUTILS_OK, f_outbuf, _) => {
-                        outbuf += f_outbuf;
+                        outbuf = outbuf+f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
@@ -179,7 +179,7 @@ fn main(){
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
                     (PARSERUTILS_OK, f_outbuf, _) => {
-                        outbuf += f_outbuf;
+                        outbuf = outbuf+f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
@@ -192,7 +192,7 @@ fn main(){
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf)) { 
                     (PARSERUTILS_OK, f_outbuf, _) => {
-                        outbuf += f_outbuf;
+                        outbuf = outbuf+f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
@@ -202,7 +202,7 @@ fn main(){
                 }
 
                 let tempbuf = ~[104 , 101 , 108 , 108 , 194 , 160 , 194 , 161 , 111 , 33];
-                if !eq(outbuf,tempbuf){
+                if !vec::eq(outbuf,tempbuf){
                     assert!(false);
                 }
 
@@ -218,7 +218,7 @@ fn main(){
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-4).to_owned())) { 
                     (PARSERUTILS_OK, f_outbuf, _) => {
-                        outbuf += f_outbuf;
+                        outbuf = outbuf+f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                         //processedLen = processed_chunk.len_processed as uint;
                     },
@@ -230,7 +230,7 @@ fn main(){
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf.slice(0,inbuf.len()-3).to_owned())) { 
                     (PARSERUTILS_OK, f_outbuf, _) => {
-                        outbuf += f_outbuf;
+                        outbuf = outbuf+f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));
                     },
                     (_ , _, _) => {
@@ -241,7 +241,7 @@ fn main(){
                 
                 match(Filter.parserutils__filter_process_chunk(inbuf)) { 
                     (PARSERUTILS_OK, f_outbuf, _) => {
-                        outbuf += f_outbuf;
+                        outbuf = outbuf+f_outbuf;
                         io::println(fmt!("outbuf=%?",outbuf));                                   
                     },
                     (_ , _, _) => {
@@ -249,7 +249,7 @@ fn main(){
                     }
                 }
                 let tempbuf = ~[104 , 101 , 108 , 108 , 226 , 128 , 162 , 111 , 33];
-                if !eq(outbuf,tempbuf) {
+                if !vec::eq(outbuf,tempbuf) {
                     assert!(false);
                 }
 
