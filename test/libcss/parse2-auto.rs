@@ -134,12 +134,12 @@ fn testMain(fileName: ~str) {
     let ctx = @mut line_ctx
     {
         buf:~[],
-              exp : ~[],
-              expused: 0,
-              indata:false,
-              inexp:false,
-              inerrors: false,
-              inrule: false
+        exp : ~[],
+        expused: 0,
+        indata:false,
+        inexp:false,
+        inerrors: false,
+        inrule: false
     };
 
     let file_content_result = io::read_whole_file(&Path(fileName)) ;
