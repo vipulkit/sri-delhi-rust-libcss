@@ -8,11 +8,11 @@
 // Title            :
 //
 //////////////////////////////////////////////////////////////////////
-
-extern mod std;
 extern mod parserutils;
+extern mod extra;
 
-use std::arc;
+use std::{io};
+
 use parserutils::charset::*;
 
 
@@ -22,9 +22,9 @@ fn main() {
 
 #[test]
 fn canonicalise_moose() {
-    let mut parser = aliases::alias();
+    let parser = aliases::alias();
 
-    let mut canon = arc::get(&parser).parserutils__charset_alias_canonicalise(~"moose");
+    let canon = parser.get().parserutils__charset_alias_canonicalise(~"moose");
     match(canon) {
         Some(_) => {
             assert!(false);
@@ -37,9 +37,9 @@ fn canonicalise_moose() {
 
 #[test]
 fn canonicalise_csinvariant() {
-    let mut parser = aliases::alias();
+    let parser = aliases::alias();
 
-    let mut canon = arc::get(&parser).parserutils__charset_alias_canonicalise(~"csinvariant");
+    let canon = parser.get().parserutils__charset_alias_canonicalise(~"csinvariant");
     match(canon) {
         Some(c) => {
             io::println(fmt!("%s %?\n", c.name, c.mib_enum));
@@ -53,9 +53,9 @@ fn canonicalise_csinvariant() {
 
 #[test]
 fn canonicalise_csinvariant_quote() {
-    let mut parser = aliases::alias();
+    let  parser = aliases::alias();
 
-    let mut canon = arc::get(&parser).parserutils__charset_alias_canonicalise(~"csinvariant\"");
+    let  canon = parser.get().parserutils__charset_alias_canonicalise(~"csinvariant\"");
     match(canon) {
         Some(c) => {
             io::println(fmt!("%s %?\n", c.name, c.mib_enum));
@@ -69,16 +69,16 @@ fn canonicalise_csinvariant_quote() {
 
 #[test]
 fn canonicalise_nats_sefi_add() {
-    let mut parser = aliases::alias();
+    let  parser = aliases::alias();
 
-    let mut canon = arc::get(&parser).parserutils__charset_alias_canonicalise(~"nats-sefi-add");
+    let  canon = parser.get().parserutils__charset_alias_canonicalise(~"nats-sefi-add");
     match(canon) {
         Some(c) => {
             io::println(fmt!("%s %?\n", c.name, c.mib_enum));
             assert!(true);
-            assert!(c.mib_enum == arc::get(&parser).parserutils_charset_mibenum_from_name(copy c.name));
+            assert!(c.mib_enum == parser.get().parserutils_charset_mibenum_from_name(copy c.name));
 
-            let name = arc::get(&parser).parserutils_charset_mibenum_to_name(c.mib_enum);
+            let name = parser.get().parserutils_charset_mibenum_to_name(c.mib_enum);
             match(name) {
                 Some(n) => {
                     assert!(n == c.name);
@@ -95,9 +95,9 @@ fn canonicalise_nats_sefi_add() {
 
 #[test]
 fn canonicalise_utf8() {
-    let mut parser = aliases::alias();
+    let parser = aliases::alias();
 
-    let mut canon = arc::get(&parser).parserutils__charset_alias_canonicalise(~"u.t.f.8");
+    let canon = parser.get().parserutils__charset_alias_canonicalise(~"u.t.f.8");
     match(canon) {
         Some(c) => {
             io::println(fmt!("%s %?\n", c.name, c.mib_enum));
