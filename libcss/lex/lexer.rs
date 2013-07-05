@@ -427,7 +427,7 @@ impl css_lexer {
                 unsafe{
                     /* Strip the trailing ')' */
                     let strip_close_bracket = match *vec::last(t.data.data) {
-                        ')' as u8=> true,
+                        ')' => true,
                         _ => false
                     };
 
@@ -2277,7 +2277,7 @@ impl css_lexer {
         }
 
         if perror as int == PARSERUTILS_OK as int {
-            let mut (cptr , _) = pu_peek_result.unwrap();
+            let (cptr , _) = pu_peek_result.unwrap();
             if (cptr[0] as char == '\r') { // Potential CRLF 
                 //let mut p_cr : u8 = _cptr[0];
 
@@ -2311,7 +2311,7 @@ impl css_lexer {
         let parseutils_inputstream_peek_time = (end_time as float - start_time as float);
         self.parseutils_inputstream_peek_time += parseutils_inputstream_peek_time ;
 
-        let mut (cptr , clen) = pu_peek_result.unwrap();
+        let (cptr , clen) = pu_peek_result.unwrap();
         let mut utf8data = utf8data_option.unwrap();
         self.append_to_token_data(utf8data, utf8data.len());
 
