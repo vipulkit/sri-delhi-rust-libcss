@@ -95,7 +95,6 @@ impl alias_gen {
         fp.write_line("");
         fp.write_line("extern mod extra;");
         fp.write_line("use extra::arc;");
-        fp.write_line("use std::{char,str};");
         fp.write_line("");
         fp.write_line("pub struct parserutils_charset_aliases_canon {");
         fp.write_line("    mib_enum:u16,");
@@ -162,7 +161,7 @@ impl alias_gen {
     fn write_alias_function(&mut self, fp:@Writer) {
         fp.write_line("");
         fp.write_line("pub fn alias() -> arc::ARC<~alias> {");
-        fp.write_line("    let mut new_alias = ~alias {");
+        fp.write_line("    let new_alias = ~alias {");
         fp.write_line("        canonical_name_list :");
         fp.write_line(fmt!("%?", self.canonical_name_list));
         fp.write_line("    };");
