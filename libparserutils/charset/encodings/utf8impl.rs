@@ -25,7 +25,7 @@ pub fn parserutils_charset_utf8_from_ucs4(mut ucs4: u32) -> (Option<~[u8]>, pars
         output.push(ucs4 as u8);
     }
     else {
-        vec::grow(&mut output, l, &0u8);
+        output.grow(l, &0u8);
 
         let mut count=l;
         while (count > 1) {

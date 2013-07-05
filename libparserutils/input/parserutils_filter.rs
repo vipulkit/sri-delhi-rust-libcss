@@ -1,4 +1,4 @@
-use std::arc;
+use extra::arc;
 
 use charset::aliases::*;
 use input::riconv;
