@@ -183,13 +183,13 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx_lex)->bool
 
 fn testMain(fileName: ~str) {
     // debug!(~"testMain : "+ fileName);
-    let ctx: @mut line_ctx_lex = @mut line_ctx_lex
+    let ctx = @mut line_ctx_lex
     {
-        mut buf:~[],
-        mut exp : ~[],
+        buf:~[],
+        exp : ~[],
 
-        mut indata:false,
-        mut inexp:false
+        indata:false,
+        inexp:false
     };
 
     let file_content_result = io::read_whole_file(&Path(fileName)) ;

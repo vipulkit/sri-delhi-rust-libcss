@@ -1215,7 +1215,7 @@ impl css_select_ctx {
         //let mut error : css_error ;
 
         /* Find hash chain that applies to current node */
-        let mut (sel,error) = sheet.selectors.css__selector_hash_find(copy state.element.name);
+        let (sel,error) = sheet.selectors.css__selector_hash_find(copy state.element.name);
         match error {
             CSS_OK => {},
             err => {
@@ -1233,7 +1233,7 @@ impl css_select_ctx {
 				debug!(fmt!("state.classes=%?",state.classes));
 			}	
             for state.classes.each_mut |&sclass| {
-                let mut (sel_class,error) = sheet.selectors.css__selector_hash_find_by_class(copy sclass);
+                let (sel_class,error) = sheet.selectors.css__selector_hash_find_by_class(copy sclass);
                 match error {
                     CSS_OK => {},
                     err => {
@@ -1252,7 +1252,7 @@ impl css_select_ctx {
 		}		
         if ( unsafe { state.id.len() != 0 } ) {
             /* Find hash chain for node ID */
-            let mut (sel_id,error) = sheet.selectors.css__selector_hash_find_by_id(copy state.id);
+            let (sel_id,error) = sheet.selectors.css__selector_hash_find_by_id(copy state.id);
             match error {
                 CSS_OK => {},
                 err => {
@@ -1266,7 +1266,7 @@ impl css_select_ctx {
         }
 
         /* Find hash chain for universal selector */
-        let mut (sel_univ,error) = sheet.selectors.css__selector_hash_find_universal();
+        let (sel_univ,error) = sheet.selectors.css__selector_hash_find_universal();
         match error {
             CSS_OK => {},
             err => {
@@ -1317,7 +1317,7 @@ impl css_select_ctx {
              * the processed selector from. */
             if ( node_selectors_option.is_some() &&
                 mut_ptr_eq( selector, node_selectors_option.get() ) ) {
-                let mut (node_next_hash,error) = 
+                let (node_next_hash,error) = 
                         css_selector_hash::_iterate_elements(node_selectors_hash_entry.get());
 
                 match error {
@@ -1337,7 +1337,7 @@ impl css_select_ctx {
             } 
             else if (   id_selectors_option.is_some() &&
                         mut_ptr_eq(selector, id_selectors_option.get() ) ){
-                let mut (id_next_hash,error) = 
+                let (id_next_hash,error) = 
                             css_selector_hash::_iterate_ids(id_selectors_hash_entry.get());
 
                 match error {
@@ -1357,7 +1357,7 @@ impl css_select_ctx {
             } 
             else if (   univ_selectors_option.is_some() &&
                         mut_ptr_eq(selector, univ_selectors_option.get() ) ){
-                let mut (univ_next_hash,error) = 
+                let (univ_next_hash,error) = 
                             css_selector_hash::_iterate_universal(univ_selectors_hash_entry.get());
 
                 match error {
@@ -1381,7 +1381,7 @@ impl css_select_ctx {
                 while i < class_selectors_option_list.len()  {
                     if ( class_selectors_option_list[i].is_some() &&
                          mut_ptr_eq(selector, class_selectors_option_list[i].get()) ) {
-                        let mut (class_next_hash,error) = 
+                        let (class_next_hash,error) = 
                                         css_selector_hash::_iterate_classes(
                                                     class_selectors_hash_entry[i].get());
 

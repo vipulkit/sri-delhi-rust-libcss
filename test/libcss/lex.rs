@@ -78,7 +78,7 @@ fn lex(fileName: ~str) {
             final_buf = ~[];
             // debug!(fmt!("final_buf is %s",str::from_bytes(final_buf)));
             loop {
-                let mut (error, token_option) = lexer.css__lexer_get_token();
+                let (error, token_option) = lexer.css__lexer_get_token();
                 match error {
                     CSS_OK => {
                         let token = token_option.unwrap();

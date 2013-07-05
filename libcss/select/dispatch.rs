@@ -1789,11 +1789,11 @@ pub fn  compute_absolute_color(style: @mut css_computed_style,
                                 setfn : compute_absolute_color_set
                                 ) -> css_error {
 
-    let mut (result,_) =  (*getfn)(style);
+    let (result,_) =  (*getfn)(style);
 
     if ( result == (CSS_BACKGROUND_COLOR_CURRENT_COLOR as u8) ) {
 
-        let mut (_,ocomputed_color) = css_computed_color(style);
+        let (_,ocomputed_color) = css_computed_color(style);
         let mut computed_color = ocomputed_color.get_or_default(0);
 
         (*setfn)(style, (CSS_BACKGROUND_COLOR_COLOR as u8), computed_color);
@@ -1814,29 +1814,29 @@ pub fn  compute_absolute_color(style: @mut css_computed_style,
 #[inline(always)]
 pub fn compute_border_colors(style: @mut css_computed_style) -> css_error {
 
-    let mut (_,ocomputed_color) = css_computed_color(style);
+    let (_,ocomputed_color) = css_computed_color(style);
     let mut computed_color = ocomputed_color.get_or_default(0);
 
     //let mut (result,border_color) : (u8,u32) = (0,0);
-    let mut (result,_) = css_computed_border_top_color(style) ;
+    let (result,_) = css_computed_border_top_color(style) ;
     if ( result == (CSS_BORDER_COLOR_CURRENT_COLOR as u8) ) {
         set_border_top_color(style, 
                 (CSS_BORDER_COLOR_COLOR as u8) ,computed_color );
     }
 
-    let mut (result,_) = css_computed_border_right_color(style) ;
+    let (result,_) = css_computed_border_right_color(style) ;
     if ( result == (CSS_BORDER_COLOR_CURRENT_COLOR as u8) ) {
         set_border_right_color(style, 
                 (CSS_BORDER_COLOR_COLOR as u8) ,computed_color );
     }
 
-    let mut (result,_) = css_computed_border_bottom_color(style);
+    let (result,_) = css_computed_border_bottom_color(style);
     if ( result  == (CSS_BORDER_COLOR_CURRENT_COLOR as u8) ) {
         set_border_bottom_color(style, 
                 (CSS_BORDER_COLOR_COLOR as u8) ,computed_color );
     }
 
-    let mut (result,_) = css_computed_border_left_color(style) ;
+    let (result,_) = css_computed_border_left_color(style) ;
     if ( result == (CSS_BORDER_COLOR_CURRENT_COLOR as u8) ) {
         set_border_left_color(style, 
                 (CSS_BORDER_COLOR_COLOR as u8) ,computed_color );
@@ -1921,7 +1921,7 @@ pub fn  compute_absolute_border_side_width(style: @mut css_computed_style,
                                     setfn : compute_absolute_border_side_width_set
                                     ) -> css_error {
 
-    let mut (result,olength,ounit) =  (*getfn)(style);
+    let (result,olength,ounit) =  (*getfn)(style);
     let mut length = olength.get_or_default(0);
     let mut unit = ounit.get_or_default(CSS_UNIT_PX);
 
@@ -1964,7 +1964,7 @@ pub fn  compute_absolute_border_side_width(style: @mut css_computed_style,
 pub fn compute_absolute_clip(style: @mut css_computed_style,
                     ex_size: @mut css_hint_length) -> css_error {
 
-    let mut (result, orect) = css_computed_clip(style) ;
+    let (result, orect) = css_computed_clip(style) ;
 
     match orect {
         None=> { 
@@ -2038,7 +2038,7 @@ pub fn compute_absolute_clip(style: @mut css_computed_style,
 pub fn compute_absolute_line_height(style: @mut css_computed_style,
                     ex_size: @mut css_hint_length) -> css_error {
 
-    let mut (result,olength,ounit) = css_computed_line_height(style);
+    let (result,olength,ounit) = css_computed_line_height(style);
     let mut length = olength.get_or_default(0);
     let mut unit = ounit.get_or_default(CSS_UNIT_PX);
 
@@ -2221,7 +2221,7 @@ pub fn compute_absolute_padding(style: @mut css_computed_style,
 pub fn compute_absolute_vertical_align(style: @mut css_computed_style,
                             ex_size: @mut css_hint_length) -> css_error {
 
-    let mut (result,olength,ounit) = css_computed_vertical_align(style);
+    let (result,olength,ounit) = css_computed_vertical_align(style);
     let mut length = olength.get_or_default(0);
     let mut unit = ounit.get_or_default(CSS_UNIT_PX);
 
@@ -2262,7 +2262,7 @@ pub fn compute_absolute_length(style: @mut css_computed_style,
                                     setfn : compute_absolute_length_set
                                     ) -> css_error {
 
-    let mut (result,olength,ounit) =  (*getfn)(style);
+    let (result,olength,ounit) =  (*getfn)(style);
     let mut length = olength.get_or_default(0);
     let mut unit = ounit.get_or_default(CSS_UNIT_PX);
 
@@ -2301,7 +2301,7 @@ pub fn compute_absolute_length_auto(style: @mut css_computed_style,
                                     setfn : compute_absolute_length_auto_set
                                     ) -> css_error {
 
-    let mut (result,olength,ounit) =  (*getfn)(style);
+    let (result,olength,ounit) =  (*getfn)(style);
     let mut length = olength.get_or_default(0);
     let mut unit = ounit.get_or_default(CSS_UNIT_PX);
 
@@ -2346,7 +2346,7 @@ pub fn compute_absolute_length_none(style: @mut css_computed_style,
                                     setfn : compute_absolute_length_none_set
                                     ) -> css_error {
 
-    let mut (result,olength,ounit) =  (*getfn)(style);
+    let (result,olength,ounit) =  (*getfn)(style);
     let mut length = olength.get_or_default(0);
     let mut unit = ounit.get_or_default(CSS_UNIT_PX);
 
@@ -2391,7 +2391,7 @@ pub fn  compute_absolute_length_normal(style: @mut css_computed_style,
                                     setfn : compute_absolute_length_normal_set
                                     ) -> css_error {
 
-    let mut (result,olength,ounit) =  (*getfn)(style);
+    let (result,olength,ounit) =  (*getfn)(style);
     let mut length = olength.get_or_default(0);
     let mut unit = ounit.get_or_default(CSS_UNIT_PX);
 

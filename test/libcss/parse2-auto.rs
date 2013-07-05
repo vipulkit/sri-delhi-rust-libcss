@@ -131,15 +131,15 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
 
 fn testMain(fileName: ~str) {
     debug!(~"testMain : "+ fileName);
-    let ctx: @mut line_ctx = @mut line_ctx
+    let ctx = @mut line_ctx
     {
-        mut buf:~[],
-        mut exp : ~[],
-        mut expused: 0,
-        mut indata:false,
-        mut inexp:false,
-        mut inerrors: false,
-        mut inrule: false
+        buf:~[],
+              exp : ~[],
+              expused: 0,
+              indata:false,
+              inexp:false,
+              inerrors: false,
+              inrule: false
     };
 
     let file_content_result = io::read_whole_file(&Path(fileName)) ;

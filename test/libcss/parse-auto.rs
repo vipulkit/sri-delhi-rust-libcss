@@ -488,7 +488,7 @@ pub fn run_test(ctx:@mut line_ctx) {
 
     while  pending_imports {
         
-        let mut (error,o_str,_) = css_instance.css_stylesheet_next_pending_import() ;
+        let (error,o_str,_) = css_instance.css_stylesheet_next_pending_import() ;
         assert!( match error {
             CSS_OK=>{
                 true
@@ -685,7 +685,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
                         return false ;
                     }
 
-                    let mut (res,op) = style.sheet.get().
+                    let (res,op) = style.sheet.get().
                                 css__stylesheet_string_get(style.bytecode[i] as uint);
 
                     assert!(res as int == CSS_OK as int);
