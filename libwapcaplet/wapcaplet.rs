@@ -187,7 +187,7 @@ pub fn lwc_string_data(string: @mut lwc_string) -> ~str {
     copy string.string
 }
 
-pub fn lwc()->@lwc {
+pub fn lwc()->@mut lwc {
     
     let mut temp_buckets: ~([~[@mut lwc_string]]) = ~[];
     for uint::iterate(0, 4091) |_| {
@@ -195,7 +195,7 @@ pub fn lwc()->@lwc {
         temp_buckets.push(bucket);
     }
 
-    @lwc {
+    @mut lwc {
         buckets:temp_buckets
     }
 }
