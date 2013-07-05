@@ -4,9 +4,9 @@
 
 #[crate_type = "lib"];
 
-//extern mod std;
+extern mod extra;
 extern mod wapcaplet;
-//use parserutils;
+extern mod parserutils;
 
 pub mod include {
 	pub mod font_face;
@@ -53,14 +53,14 @@ pub mod utils {
 pub mod stylesheet;
 
 pub mod select {
-	pub mod common;
-	pub mod propset;
-	pub mod computed;
-	pub mod select;
-	pub mod dispatch;
-	pub mod properties {
-		pub mod properties;
-	}
+        pub mod common;
+        pub mod propset;
+        pub mod computed;
+        pub mod select;
+        pub mod dispatch;
+        pub mod properties {
+                pub mod properties;
+        }
 }
 
 pub mod css;
