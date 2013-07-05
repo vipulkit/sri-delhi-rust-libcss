@@ -1,4 +1,4 @@
-use std::arc;
+use extra::arc;
 use wapcaplet::*;
 
 use bytecode::opcodes::*;

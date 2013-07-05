@@ -1,6 +1,6 @@
-use core::managed::*;
+use std::managed::*;
 use wapcaplet::*;
-use std::arc;
+use extra::arc;
 
 use bytecode::bytecode::*;
 

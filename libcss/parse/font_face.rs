@@ -2,7 +2,7 @@
 // CSS-FONT-FACE implementation/data-structs starts here 
 // ===========================================================================================================
 
-use std::arc;
+use extra::arc;
 use wapcaplet::*;
 
 use include::font_face::*;

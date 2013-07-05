@@ -2,7 +2,7 @@ use include::properties::*;
 
 use stylesheet::*;
 
-use core::managed::*;
+use std::managed::*;
 
 use include::types::*;
 use include::fpmath::*;

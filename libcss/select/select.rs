@@ -1,5 +1,5 @@
 
-use std::arc;
+use extra::arc;
 use wapcaplet::*;
 
 use include::properties::*;
@@ -11,7 +11,7 @@ use select::common::*;
 use select::dispatch::*;
 use stylesheet::*;
 
-use core::managed::*;
+use std::managed::*;
 
 static IMPORT_STACK_SIZE : int = 256 ;
 

@@ -1,5 +1,5 @@
 use wapcaplet::*;
-use std::arc;
+use extra::arc;
 
 use bytecode::bytecode::*;
 use bytecode::opcodes::*;

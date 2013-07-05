@@ -2,7 +2,7 @@ use include::types::*;
 use include::font_face::*;
 use stylesheet::*;
 use utils::errors::*;
-use std::arc;
+use extra::arc;
 use wapcaplet::*;
 
 
