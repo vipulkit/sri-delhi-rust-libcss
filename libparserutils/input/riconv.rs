@@ -40,10 +40,10 @@ pub fn riconv_initialize() -> u64 {
     }
 }
 
-pub fn safe_riconv_open( tocode: &str , fromcode : &str ) -> u64 {
+pub fn safe_riconv_open( tocode: ~str , fromcode : ~str ) -> u64 {
     unsafe {
-        let tobytes = tocode.to_bytes() ;
-        let frombytes = fromcode.to_bytes();
+        let tobytes = tocode.as_bytes_with_null_consume() ;
+        let frombytes = fromcode.as_bytes_with_null_consume();
         iconv_wrapper::rust_iconv_open( to_ptr(tobytes) ,  to_ptr(frombytes) ) 
     }
 }
