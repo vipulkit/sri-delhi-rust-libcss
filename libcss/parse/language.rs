@@ -18,7 +18,9 @@ use parse::properties::common::*;
 use parse::properties::properties::*;
 
 use utils::errors::*;
+use std::cast::*;
 
+use extra::time::*;
 
 enum language_state {
 
@@ -74,14 +76,14 @@ pub struct css_language {
 pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~css_language {
     debug!("Entering: css_language");
    
-    let mut start_time = std::time::precise_time_ns();
+    let mut start_time = precise_time_ns();
     let propstring = css_propstrings::css_propstrings(lwc_inst.clone());
-    let mut end_time = std::time::precise_time_ns();
+    let mut end_time = precise_time_ns();
     let create_propstring_time = (end_time as float - start_time as float);
 
-    let mut start_time = std::time::precise_time_ns();
+    let mut start_time = precise_time_ns();
     let cr_properties = css_properties::css_properties(sheet);
-    let mut end_time = std::time::precise_time_ns();
+    let mut end_time = precise_time_ns();
     let create_properties_time = (end_time as float - start_time as float);
 
     ~css_language {
@@ -130,82 +132,82 @@ impl css_language {
     pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:&~[@css_token])
         -> css_error {
 	let mut css_er:css_error;
-        let mut start_time = std::time::precise_time_ns();
+        let mut start_time = precise_time_ns();
         debug!("Entering: language_handle_event");
         match event_type {
             
             CSS_PARSER_START_STYLESHEET => {
-        	let mut start_time = std::time::precise_time_ns();
+        	let mut start_time = precise_time_ns();
                 css_er = self.handleStartStylesheet();
-        	let mut end_time = std::time::precise_time_ns();
+        	let mut end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handleStartStyleSheet_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_END_STYLESHEET=>{
-        	let mut start_time = std::time::precise_time_ns();
+        	let mut start_time = precise_time_ns();
                 css_er = self.handleEndStylesheet();
-        	let mut end_time = std::time::precise_time_ns();
+        	let mut end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handleEndStyleSheet_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_START_RULESET=>{
-        	let mut start_time = std::time::precise_time_ns();
+        	let mut start_time = precise_time_ns();
                 css_er = self.handleStartRuleset(tokens);
-        	let mut end_time = std::time::precise_time_ns();
+        	let mut end_time = precise_time_ns();
 		self.lang_func_time.parse_lange_handleStartRuleSet_time +=(end_time as float - start_time as float);
             }
             
             CSS_PARSER_END_RULESET=>{
-        	let mut start_time = std::time::precise_time_ns();
+        	let mut start_time = precise_time_ns();
                 css_er = self.handleEndRuleset();
-       	    	let mut end_time = std::time::precise_time_ns();
+       	    	let mut end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handleEndRuleSet_time +=(end_time as float - start_time as float);
             }
             
             CSS_PARSER_START_ATRULE=>{
-        	let mut start_time = std::time::precise_time_ns();
+        	let mut start_time = precise_time_ns();
                 css_er = self.handleStartAtRule(tokens);
-       	    	let mut end_time = std::time::precise_time_ns();
+       	    	let mut end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handleStartAtRule_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_END_ATRULE=>{
-        	let mut start_time = std::time::precise_time_ns();
+        	let mut start_time = precise_time_ns();
                 css_er = self.handleEndAtRule();
-       	    	let mut end_time = std::time::precise_time_ns();
+       	    	let mut end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handleEndAtRule_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_START_BLOCK=>{
-        	let mut start_time = std::time::precise_time_ns();
+        	let mut start_time = precise_time_ns();
                 css_er = self.handleStartBlock();
 
-            	let mut end_time = std::time::precise_time_ns();
+            	let mut end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handleStartBlock_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_END_BLOCK=>{
-        	let mut start_time = std::time::precise_time_ns();
+        	let mut start_time = precise_time_ns();
                 css_er = self.handleEndBlock();
-            	let mut end_time = std::time::precise_time_ns();
+            	let mut end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handleEndBlock_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_BLOCK_CONTENT=>{
-        	let mut start_time = std::time::precise_time_ns();
+        	let mut start_time = precise_time_ns();
                 css_er = self.handleBlockContent(tokens);
-            	let mut end_time = std::time::precise_time_ns();
+            	let mut end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handle_block_content_time +=(end_time as float - start_time as float);
             }
             
             CSS_PARSER_DECLARATION=>{
-        	let mut start_time = std::time::precise_time_ns();
+        	let mut start_time = precise_time_ns();
                 css_er = self.handleDeclaration(tokens);
-            	let mut end_time = std::time::precise_time_ns();
+            	let mut end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handle_parse_declaration_time +=(end_time as float - start_time as float);
             }
         }
-        let mut end_time = std::time::precise_time_ns();
+        let mut end_time = precise_time_ns();
 	self.lang_func_time.parse_lang_handle_event_time += (end_time as float - start_time as float);
 	css_er
     }
@@ -225,7 +227,7 @@ impl css_language {
 
     pub fn handleEndStylesheet(&mut self)->css_error {
         debug!("Entering: handleEndStylesheet");
-        if vec::is_empty(self.context) {
+        if self.context.is_empty() {
             return CSS_INVALID
         }
 
@@ -245,7 +247,7 @@ impl css_language {
         let mut parent_rule :Option<CSS_RULE_DATA_TYPE> = None ;
 
         /* Retrieve parent rule from stack, if any */
-        if !vec::is_empty(self.context) {
+        if !self.context.is_empty() {
             cur=self.context[self.context.len()-1];
             match cur.event_type {
                 CSS_PARSER_START_STYLESHEET =>{},
@@ -291,7 +293,7 @@ impl css_language {
         let mut cur:context_entry;
         
         /* Retrieve parent rule from stack, if any */
-        if !vec::is_empty(self.context) {
+        if !self.context.is_empty() {
             cur=self.context[self.context.len()-1];
             match cur.event_type {
                 CSS_PARSER_START_RULESET => {
@@ -598,7 +600,7 @@ impl css_language {
         debug!("Entering: handleEndAtRule");
         let mut cur:context_entry;
         
-        if !vec::is_empty(self.context) {
+        if !self.context.is_empty() {
             cur=self.context[self.context.len()-1];
             match cur.event_type {
                 CSS_PARSER_START_ATRULE => {
@@ -624,7 +626,7 @@ impl css_language {
         /* If the current item on the stack isn't a block, 
          * then clone its data field. This ensures that the relevant rule
          * is available when parsing the block contents. */
-        if !vec::is_empty(self.context) {
+        if !self.context.is_empty() {
             cur=self.context[self.context.len()-1];
             match cur.event_type {
                 CSS_PARSER_START_BLOCK =>   {},
@@ -640,7 +642,7 @@ impl css_language {
         debug!("Entering: handleEndBlock");
         let mut cur:context_entry;
         
-        if !vec::is_empty(self.context) {
+        if !self.context.is_empty() {
             cur=self.context[self.context.len()-1];
             match cur.event_type {
                 CSS_PARSER_START_BLOCK => {
@@ -684,7 +686,7 @@ impl css_language {
         // * current block is associated with @media). 
         let mut cur:context_entry;
         
-        if !vec::is_empty(self.context) {
+        if !self.context.is_empty() {
             cur=self.context[self.context.len()-1];
             match cur.data {
                 None => CSS_INVALID,
@@ -721,7 +723,7 @@ impl css_language {
          
         let mut cur:context_entry;
         
-        if !vec::is_empty(self.context) {
+        if !self.context.is_empty() {
             cur=self.context[self.context.len()-1];
             // debug!(fmt!("Entering: cur.data == %? , cur.event_type == %?" , cur.data.unwrap() , cur.event_type));
             match cur.data {
@@ -752,17 +754,17 @@ impl css_language {
                                             match curRule {
                                                 RULE_FONT_FACE(font_face_rule) =>  
 							{
-        							let mut start_time = std::time::precise_time_ns();
+        							let mut start_time = precise_time_ns();
 								let css_er:css_error = css__parse_font_descriptor(self.sheet, ident, &mut self.strings, tokens, ctx, font_face_rule, self.lwc_instance.clone());
-    								let mut end_time = std::time::precise_time_ns();
+    								let mut end_time = precise_time_ns();
 							        self.lang_func_time.parse_lang_font_desc_time += (end_time as float - start_time as float);
 		        	                                return css_er;
 								 
 							},
                                                 _ =>   {
-        						let mut start_time = std::time::precise_time_ns();
+        						let mut start_time = precise_time_ns();
 							let css_er:css_error = self.parseProperty(ident, tokens, ctx, curRule) ;  
-    							let mut end_time = std::time::precise_time_ns();
+    							let mut end_time = precise_time_ns();
 						        self.lang_func_time.parse_lang_parse_property_time += (end_time as float - start_time as float);
 		                                        return css_er;
 						       }
@@ -1633,8 +1635,8 @@ impl css_language {
             
             let mut fun_type:index_property;
             unsafe {
-                fun_type = cast::transmute(lut_idx);
-                cast::forget(fun_type);
+                fun_type = transmute(lut_idx);
+                forget(fun_type);
             }
 
             consumeWhitespace(vector, ctx);

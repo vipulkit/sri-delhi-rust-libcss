@@ -5,6 +5,8 @@ use utils::errors::*;
 
 use wapcaplet::*;
 use std::arc;
+use extra::time::*;
+use std::cast::*;
 
 /**
  * Major state numbers
@@ -204,7 +206,7 @@ impl css_parser {
             debug!(fmt!("css__parser_parse_chunk:: state_stack (2) == %?", self.state_stack));
 
             unsafe {
-                let current_state_enum : parse_states = cast::transmute(current_state);
+                let current_state_enum : parse_states = transmute(current_state);
                 debug!(fmt!("css__parser_parse_chunk:: current state == %?", current_state_enum));
             }
             let result = (*self.states[current_state])(self);
@@ -392,10 +394,10 @@ impl css_parser {
             token_option = Some(self.pushback.swap_unwrap());
         }
         else {
-            let mut start_time = std::time::precise_time_ns();
+            let mut start_time = precise_time_ns();
             /* Otherwise, ask the lexer */
             let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
-            let mut end_time = std::time::precise_time_ns();
+            let mut end_time = precise_time_ns();
             let css_lexer_get_token_time = (end_time as float - start_time as float);
             self.css_lexer_get_token_time += css_lexer_get_token_time ;
 
@@ -405,12 +407,12 @@ impl css_parser {
 
             let mut t = lexer_token_option.unwrap();
 
-            let mut start_time = std::time::precise_time_ns();
+            let mut start_time = precise_time_ns();
             /* If the last token read was whitespace, keep reading
              * tokens until we encounter one that isn't whitespace */
             while (self.last_was_ws && t.token_type as int == CSS_TOKEN_S as int) {
                 let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
-            let mut end_time = std::time::precise_time_ns();
+            let mut end_time = precise_time_ns();
             let css_lexer_get_token_time = (end_time as float - start_time as float);
             self.css_lexer_get_token_time += css_lexer_get_token_time ;
                 if (lexer_error as int != CSS_OK as int) {

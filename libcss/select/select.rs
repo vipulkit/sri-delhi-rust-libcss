@@ -5,13 +5,20 @@ use wapcaplet::*;
 use include::properties::*;
 use include::types::*;
 use include::font_face::*;
+
 use bytecode::bytecode::*;
+
 use utils::errors::*;
+
 use select::common::*;
 use select::dispatch::*;
+
 use stylesheet::*;
 
+use std::ptr::*;
 use std::managed::*;
+use std::libc::*;
+use std::cast::*;
 
 static IMPORT_STACK_SIZE : int = 256 ;
 
@@ -278,22 +285,22 @@ impl css_select_ctx {
 	* update the fully computed style for a node when layout changes.
 	*/
     pub fn css_select_style(&mut self,
-                                node:*libc::c_void,
+                                node:*c_void,
                                 media:u64,
                                 inline_style:Option<@mut css_stylesheet>,
                                 handler:@mut css_select_handler,
-								pw:*libc::c_void) 
+								pw:*c_void) 
                                 -> (css_error,Option<css_select_results>) {
 
         debug!(fmt!("Entering css_select_style")) ;
-        if( node == ptr::null() || handler.handler_version != (CSS_SELECT_HANDLER_VERSION_1  as uint) ) {
+        if( node == null() || handler.handler_version != (CSS_SELECT_HANDLER_VERSION_1  as uint) ) {
             return (CSS_BADPARM,None) ;
         }
         let mut i : int  ;
         let mut j :int;
         let mut error : css_error ;
         //let mut results : Option<css_select_results>  ;
-        let mut parent : *libc::c_void = ptr::null() ;
+        let mut parent : *c_void = null() ;
 
         let mut state: @mut css_select_state = @mut css_select_state {
             node:node,
@@ -484,7 +491,7 @@ impl css_select_ctx {
              * and we're the root element, then set it to its initial 
              * value. */
             if (prop.set == false || 
-                    (parent == ptr::null() && 
+                    (parent == null() && 
                     prop.inherit == true)) {
                 error = css_select_ctx::set_initial(state, i as uint, 
                         CSS_PSEUDO_ELEMENT_NONE, parent);
@@ -502,10 +509,10 @@ impl css_select_ctx {
         j = (CSS_PSEUDO_ELEMENT_NONE as int) + 1;
         while ( j < (CSS_PSEUDO_ELEMENT_COUNT as int) ) {
             debug!(fmt!("css_select_style : pseudo element of property =%?=",j)) ;
-            state.current_pseudo = unsafe { cast::transmute(j)};
+            state.current_pseudo = unsafe { transmute(j)};
 
             unsafe {
-                cast::forget(state.current_pseudo);
+                forget(state.current_pseudo);
             }
 			let computed_opt = state.results.styles[j];
 			
@@ -530,7 +537,7 @@ impl css_select_ctx {
                 /* If the property is still unset then set it 
                  * to its initial value. */
                 if (prop.set == false) {
-                    error = css_select_ctx::set_initial(state, i as uint, unsafe { cast::transmute(j)}, parent);
+                    error = css_select_ctx::set_initial(state, i as uint, unsafe { transmute(j)}, parent);
                     match error {
                         CSS_OK=>{},
                         x =>  {
@@ -547,7 +554,7 @@ impl css_select_ctx {
          * length values are absolute, display and float are correctly 
          * computed, and the default border-{top,right,bottom,left}-color 
          * is set to the computed value of color. */
-        if (parent == ptr::null()) {
+        if (parent == null()) {
             /* Only compute absolute values for the base element */
             error = css__compute_absolute_values(None,
                     state.results.styles[CSS_PSEUDO_ELEMENT_NONE as uint].get(),
@@ -723,7 +730,7 @@ impl css_select_ctx {
     }
 
     pub fn set_initial(state : @mut css_select_state, prop : uint, pseudo : css_pseudo_element,
-        parent: *libc::c_void) -> css_error {
+        parent: *c_void) -> css_error {
 
         debug!(fmt!("Entering set_initial")) ;
         let mut error : css_error; 
@@ -736,7 +743,7 @@ impl css_select_ctx {
          */
 
         if dispatch_table::get_inherited(prop) == 0 || match pseudo { CSS_PSEUDO_ELEMENT_NONE => true, _ => false} &&
-            parent == ptr::null() {
+            parent == null() {
             
             let mut group : prop_group = dispatch_table::get_group(prop);
 
@@ -1467,7 +1474,7 @@ impl css_select_ctx {
 
     pub fn match_named_combinator(&mut self, combinator_type:css_combinator,
         selector:@mut css_selector, state:@mut css_select_state, 
-        node:*libc::c_void, next_node:*mut *libc::c_void) -> css_error {
+        node:*c_void, next_node:*mut *c_void) -> css_error {
 
         debug!(fmt!("Entering match_named_combinator")) ;
         let detail :~[@mut css_selector_detail] = copy selector.data;
@@ -1516,7 +1523,7 @@ impl css_select_ctx {
                     
             }
 
-            if n != ptr::null() {
+            if n != null() {
                 /* Match its details */
                 debug!("");
                 error = self.match_details(n, detail, state, match_result, None);
@@ -1537,14 +1544,14 @@ impl css_select_ctx {
                  * give up. */
                 match combinator_type { 
                     CSS_COMBINATOR_PARENT | CSS_COMBINATOR_SIBLING => {
-                        n = ptr::null();   
+                        n = null();   
                     },
                     _  => {}
                 }    
                     
             }
 
-            if n == ptr::null() {
+            if n == null() {
                 break
             }
         }
@@ -1592,7 +1599,7 @@ impl css_select_ctx {
         unsafe {
             /* Iterate up the selector chain, matching combinators */
             loop {
-                let mut next_node : *libc::c_void = ptr::null();
+                let mut next_node : *c_void = null();
 
                 /* Consider any combinator on this selector */
                 if ( (s.get().data.len() > 0 ) && 
@@ -1624,7 +1631,7 @@ impl css_select_ctx {
                     }
 
                     /* No match for combinator, so reject selector chain */
-                    if (next_node == ptr::null() ) {
+                    if (next_node == null() ) {
                         return CSS_OK;
                     }
                 } 
@@ -1655,7 +1662,7 @@ impl css_select_ctx {
                     }
 
                     /* No match for combinator, so reject selector chain */
-                    if (next_node == ptr::null()) {
+                    if (next_node == null()) {
                         if (may_optimise && mut_ptr_eq(s.get(),selector.get()) &&
                                 rejected_by_cache == @mut false) {
                             css_select_ctx::update_reject_cache(state, 
@@ -1717,15 +1724,15 @@ impl css_select_ctx {
 
     pub fn match_universal_combinator(&mut self, combinator_type:css_combinator,
         selector:@mut css_selector, state:@mut css_select_state,
-        node:*libc::c_void, may_optimise:bool, rejected_by_cache:@mut bool,
-        next_node:*mut *libc::c_void) -> css_error  {
+        node:*c_void, may_optimise:bool, rejected_by_cache:@mut bool,
+        next_node:*mut *c_void) -> css_error  {
         
         debug!(fmt!("Entering match_universal_combinator")) ;
         let detail :~[@mut css_selector_detail] = copy selector.data;
-        let mut n:*libc::c_void = node;
-        //io::println(fmt!("n = %?", n));
-		if ( n == ptr::null()){
-			io::println("Node Is Null");
+        let mut n:*c_void = node;
+        //println(fmt!("n = %?", n));
+		if ( n == null()){
+			debug!("Node Is Null");
 		}
 		let mut next_detail:Option<@mut css_selector_detail> = None; 
         let mut error:css_error;
@@ -1751,7 +1758,7 @@ impl css_select_ctx {
                    ((copy state.reject_cache[reject]).get().value==next_detail.get().qname.name) {
                     
                     /* Found it: can't match */
-                    unsafe { *next_node = ptr::null() };
+                    unsafe { *next_node = null() };
                     *rejected_by_cache = true;
                     return CSS_OK;
                 }
@@ -1767,7 +1774,7 @@ impl css_select_ctx {
             match (combinator_type) {
                 CSS_COMBINATOR_ANCESTOR | 
                 CSS_COMBINATOR_PARENT => {
-					//io::println(fmt!("n = %?", n));
+					//println(fmt!("n = %?", n));
                     error = (*state.handler.get().parent_node)(n, &mut n);
                     match error {
                         CSS_OK => {},
@@ -1785,7 +1792,7 @@ impl css_select_ctx {
                 CSS_COMBINATOR_NONE => {}
             }
 
-            if (n != ptr::null()) {
+            if (n != null()) {
                 /* Match its details */
                 error = self.match_details(n, vec::slice(detail,1,detail.len()), state, match_result, None);
                 match error {
@@ -1804,12 +1811,12 @@ impl css_select_ctx {
                 
                 match combinator_type { 
                     CSS_COMBINATOR_PARENT | CSS_COMBINATOR_SIBLING => {
-                        n = ptr::null();   
+                        n = null();   
                     },
                     _  => {}
                 }    
 
-                if n == ptr::null() {
+                if n == null() {
                 break
             }    
         }
@@ -1820,7 +1827,7 @@ impl css_select_ctx {
         return CSS_OK;
     }
 
-    pub fn match_details(&mut self, node:*libc::c_void, 
+    pub fn match_details(&mut self, node:*c_void, 
         detail :&[@mut css_selector_detail], state : @mut css_select_state, 
         matched : @mut bool, pseudo_element : Option<@mut css_pseudo_element>) -> css_error {
 
@@ -1902,7 +1909,7 @@ impl css_select_ctx {
         }
     }
 
-    pub fn match_detail(&mut self, node:*libc::c_void, 
+    pub fn match_detail(&mut self, node:*c_void, 
             detail:@mut css_selector_detail, state:@mut css_select_state, 
             matched:@mut bool, pseudo_element:@mut css_pseudo_element) -> css_error {
 

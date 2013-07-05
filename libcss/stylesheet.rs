@@ -545,7 +545,7 @@ impl css_stylesheet {
                 if self.inline_style {
                     CSS_SPECIFICITY_A
                 }
-                else if (qname.name.len() != 1 || str::char_at(qname.name,0) != '*') {
+                else if (qname.name.len() != 1 || qname.name.char_at(0) != '*') {
                     CSS_SPECIFICITY_D
                 }
                 else {

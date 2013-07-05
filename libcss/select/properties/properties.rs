@@ -3,6 +3,7 @@ use include::properties::*;
 use stylesheet::*;
 
 use std::managed::*;
+use std::cast::*;
 
 use include::types::*;
 use include::fpmath::*;
@@ -286,7 +287,7 @@ pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_s
 	unit = css__to_css_unit(unit) as u32;
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
-		(*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+		(*fun)(state.computed, value as u8, length as i32, unsafe { transmute(unit as uint) } )
 	}
 
 	CSS_OK
@@ -317,7 +318,7 @@ pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_se
 	unit = css__to_css_unit(unit) as u32;
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
-		(*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+		(*fun)(state.computed, value as u8, length as i32, unsafe { transmute(unit as uint) } )
 	}
 
 	CSS_OK
@@ -349,7 +350,7 @@ pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_
 	unit = css__to_css_unit(unit) as u32;
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
-		(*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+		(*fun)(state.computed, value as u8, length as i32, unsafe { transmute(unit as uint) } )
 	}
 
 	CSS_OK
@@ -380,7 +381,7 @@ pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_se
 	unit = css__to_css_unit(unit) as u32;
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state,	isInherit(opv)) {
-		(*fun)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+		(*fun)(state.computed, value as u8, length as i32, unsafe { transmute(unit as uint) } )
 	}
 
 	CSS_OK
@@ -407,7 +408,7 @@ pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_
 	// \todo lose fun != NULL once all properties have set routines */
 	match fun {
 		Some(fun_fn) => if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
-			(*fun_fn)(state.computed, value as u8, length as i32, unsafe { cast::transmute(unit as uint) } )
+			(*fun_fn)(state.computed, value as u8, length as i32, unsafe { transmute(unit as uint) } )
 		},
 		None => {}
 	}
@@ -823,9 +824,9 @@ pub fn css__cascade_background_position(opv:u32, style:@mut css_style,
 		set_background_position(state.computed, 
 							 	(value as u8),
 								hlength, 
-								unsafe { cast::transmute(hunit as uint) }, 
+								unsafe { transmute(hunit as uint) }, 
 								vlength, 
-								unsafe { cast::transmute(vunit as uint) });
+								unsafe { transmute(vunit as uint) });
 	}
 
 	CSS_OK
@@ -1778,9 +1779,9 @@ pub fn css__cascade_border_spacing(opv:u32, style:@mut css_style,
 		set_border_spacing(state.computed, 
 							(value as u8),
 							hlength, 
-							unsafe { cast::transmute(hunit as uint) }, 
+							unsafe { transmute(hunit as uint) }, 
 							vlength, 
-							unsafe { cast::transmute(vunit as uint) });
+							unsafe { transmute(vunit as uint) });
 	}
 
 	CSS_OK
