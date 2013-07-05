@@ -10,6 +10,8 @@ use select::computed::*;
 use select::propset::*;
 use select::properties::properties::*;
 use include::types::*;
+use std::ptr::*;
+
 
 pub enum prop_group {
 	GROUP_NORMAL	= 0x0,
@@ -1290,7 +1292,7 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
                                     fn_handler:@mut css_select_handler) -> css_error {
 
     let mut state: @mut css_select_state = @mut css_select_state {
-        node:ptr::null(),
+        node:null(),
         media:(CSS_MEDIA_ALL as u64),       
         results:css_select_results{ 
         	styles:~[] 
@@ -1298,7 +1300,7 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
         current_pseudo:CSS_PSEUDO_ELEMENT_NONE,  
         computed:style,   
         handler:Some(fn_handler),    
-        pw:ptr::null(),
+        pw:null(),
         sheet:None,   
         current_origin:CSS_ORIGIN_UA,  
         current_specificity:0,   

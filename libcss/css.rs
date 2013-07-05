@@ -1,6 +1,6 @@
 use wapcaplet::*;
 use extra::arc;
-
+use extra::time::*;
 use parserutils::input::inputstream::*;
 
 // libcss uses
@@ -61,7 +61,7 @@ pub struct css_params {
 
 impl css {
 	pub fn css_create(params: &css_params, lwc_instance: Option<arc::RWARC<~lwc>>) -> @mut css {
-            	let mut start_time = std::time::precise_time_ns();
+            	let mut start_time = precise_time_ns();
 		// create lwc
 		let lwc = 	if lwc_instance.is_none() { 
 						lwc()
@@ -69,12 +69,12 @@ impl css {
 					else {
 						lwc_instance.get_ref().clone()
 					} ;
-            	let mut end_time = std::time::precise_time_ns();
+            	let mut end_time = precise_time_ns();
 	        let create_lwc_time = (end_time as float - start_time as float);
 
 
 		// create inputstream
-            	let mut start_time = std::time::precise_time_ns();
+            	let mut start_time = precise_time_ns();
 		let (inputstream_option, _) =  
 			match copy params.charset {
 				None => inputstream(None, None ,Some(~css__charset_extract)),
@@ -82,18 +82,18 @@ impl css {
 			};
 		
 
-            	let mut end_time = std::time::precise_time_ns();
+            	let mut end_time = precise_time_ns();
 	        let create_input_stream_time = (end_time as float - start_time as float);
 
 		// create lexer
 		
-            	let mut start_time = std::time::precise_time_ns();
+            	let mut start_time = precise_time_ns();
 		let lexer = css_lexer::css__lexer_create(inputstream_option.unwrap());
-            	let mut end_time = std::time::precise_time_ns();
+            	let mut end_time = precise_time_ns();
 	        let create_lexer_time = (end_time as float - start_time as float);
 
 		// create stylesheet
-            	let mut start_time = std::time::precise_time_ns();
+            	let mut start_time = precise_time_ns();
 		let stylesheet = @mut css_stylesheet {
 			selectors:css_selector_hash::css__selector_hash_create(),       
 			rule_count:0,                        
@@ -113,22 +113,22 @@ impl css {
 			font : params.font,   
 			color: params.color
 		};
-            	let mut end_time = std::time::precise_time_ns();
+            	let mut end_time = precise_time_ns();
 	        let create_stylesheet_time = (end_time as float - start_time as float);
 
 		// create language
-            	let mut start_time = std::time::precise_time_ns();
+            	let mut start_time = precise_time_ns();
 		let language = css_language(stylesheet, lwc.clone());
-            	let mut end_time = std::time::precise_time_ns();
+            	let mut end_time = precise_time_ns();
 	        let create_language_time = (end_time as float - start_time as float);
 
 		// create parser
-            	let mut start_time = std::time::precise_time_ns();
+            	let mut start_time = precise_time_ns();
 		let parser = match params.inline_style {
 		    false => css_parser::css__parser_create(language, lexer, lwc.clone()),
 		    true => css_parser::css__parser_create_for_inline_style(language, lexer, lwc.clone())
 		}; 
-            	let mut end_time = std::time::precise_time_ns();
+            	let mut end_time = precise_time_ns();
 	        let create_parser_time = (end_time as float - start_time as float);
 
 		@mut css {

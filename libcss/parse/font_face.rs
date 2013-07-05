@@ -18,6 +18,8 @@ use stylesheet::*;
 
 use utils::errors::*;
 
+use std::cast::*;
+
 pub fn font_rule_font_family_reserved(strings:&mut ~css_propstrings, ident:&@css_token) -> bool {
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), SERIF as uint) ||
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(),SANS_SERIF as uint) ||
@@ -386,17 +388,17 @@ pub fn font_face_src_parse_format(strings:&mut ~css_propstrings, vector:&~[@css_
         *ctx +=1;   //Iterate
 
         if strings.lwc_string_isequal(token.idata.get_ref().clone(), WOFF as uint) {
-            *format = unsafe { cast::transmute(*format as uint | CSS_FONT_FACE_FORMAT_WOFF as uint) }
+            *format = unsafe { transmute(*format as uint | CSS_FONT_FACE_FORMAT_WOFF as uint) }
         } 
         else if strings.lwc_string_isequal(token.idata.get_ref().clone(),TRUETYPE as uint) ||
             strings.lwc_string_isequal(token.idata.get_ref().clone(),OPENTYPE as uint) {
-            *format = unsafe { cast::transmute(*format as uint | CSS_FONT_FACE_FORMAT_OPENTYPE as uint) }
+            *format = unsafe { transmute(*format as uint | CSS_FONT_FACE_FORMAT_OPENTYPE as uint) }
         } 
         else if strings.lwc_string_isequal(token.idata.get_ref().clone(), EMBEDDED_OPENTYPE as uint) {
-            *format = unsafe { cast::transmute(*format as uint | CSS_FONT_FACE_FORMAT_EMBEDDED_OPENTYPE as uint) }
+            *format = unsafe { transmute(*format as uint | CSS_FONT_FACE_FORMAT_EMBEDDED_OPENTYPE as uint) }
         }
         else if strings.lwc_string_isequal(token.idata.get_ref().clone(),SVG as uint) {
-            *format = unsafe { cast::transmute(*format as uint | CSS_FONT_FACE_FORMAT_SVG as uint) }    
+            *format = unsafe { transmute(*format as uint | CSS_FONT_FACE_FORMAT_SVG as uint) }    
         } 
         else {
             /* The spec gives a list of possible strings, which 
@@ -405,7 +407,7 @@ pub fn font_face_src_parse_format(strings:&mut ~css_propstrings, vector:&~[@css_
              * so we treat any string we don't know not as a parse
              * error, but as indicating an "unknown font format".
              */
-            *format = unsafe { cast::transmute(*format as uint | CSS_FONT_FACE_FORMAT_UNKNOWN as uint) }        
+            *format = unsafe { transmute(*format as uint | CSS_FONT_FACE_FORMAT_UNKNOWN as uint) }        
             
         }
 
@@ -444,13 +446,13 @@ pub fn css_font_face_get_font_family(font_face: @mut css_font_face) -> Option< a
 
 pub fn css_font_face_font_style(font_face: @mut css_font_face) -> css_font_style_e {
     unsafe {
-        return cast::transmute((font_face.bits[0] & 0x3) as uint);
+        return transmute((font_face.bits[0] & 0x3) as uint);
     }
 }
 
 pub fn css_font_face_font_weight(font_face: @mut css_font_face) -> css_font_weight_e {
     unsafe {
-        return cast::transmute(((font_face.bits[0] >> 2) & 0xf) as uint);
+        return transmute(((font_face.bits[0] >> 2) & 0xf) as uint);
     }
 }
 
@@ -500,12 +502,12 @@ pub fn css_font_face_src_get_location(src: & ~css_font_face_src) -> Option<arc::
 
 pub fn css_font_face_src_location_type(src: &~ css_font_face_src) -> css_font_face_location_type {
     unsafe {
-        return cast::transmute((src.bits[0] & 0x3) as uint);
+        return transmute((src.bits[0] & 0x3) as uint);
     }
 }
 
 pub fn css_font_face_src_format(src: &~ css_font_face_src) -> css_font_face_location_type {
     unsafe {
-        return cast::transmute((src.bits[0] & 0x1f) as uint);
+        return transmute((src.bits[0] & 0x1f) as uint);
     }
 }
