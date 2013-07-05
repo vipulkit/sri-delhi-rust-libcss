@@ -1,3 +1,5 @@
+
+use std::{cast};
 use include::properties::*;
 
 pub enum flag {

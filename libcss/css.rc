@@ -4,15 +4,23 @@
 
 #[crate_type = "lib"];
 
-extern mod std;
+//extern mod std;
 extern mod wapcaplet;
-extern mod parserutils;
+//use parserutils;
+
+pub mod include {
+	pub mod font_face;
+	pub mod fpmath;
+	pub mod properties;
+	pub mod types;
+}
 
 pub mod bytecode {
 	pub mod bytecode;
 	pub mod opcodes;
 }
 
+/*
 pub mod charset {
 	pub mod csdetect;
 }
@@ -64,3 +72,4 @@ pub mod select {
 }
 
 pub mod css;
+*/
