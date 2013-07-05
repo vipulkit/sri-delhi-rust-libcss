@@ -1,5 +1,5 @@
 use wapcaplet::*;
-use std::arc;
+use extra::arc;
 
 use parserutils::input::inputstream::*;
 
@@ -59,7 +59,7 @@ pub struct css_params {
 		font : Option<css_font_resolution_fn>,
 }
 
-pub impl css {
+impl css {
 	pub fn css_create(params: &css_params, lwc_instance: Option<arc::RWARC<~lwc>>) -> @mut css {
             	let mut start_time = std::time::precise_time_ns();
 		// create lwc

@@ -113,7 +113,7 @@ pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~c
 }
 
 
-pub impl css_language {
+impl css_language {
     
 	/**
 	* #Description:
@@ -1117,7 +1117,7 @@ pub impl css_language {
         else {
             /* Universal selector */
             match self.default_namespace {
-                Some(copy ns) => qname.ns = ns,
+                Some(ns) => qname.ns = ns,
                 None => qname.ns = self.strings.lwc_string_data(UNIVERSAL as uint)
             }   
             
@@ -1238,7 +1238,7 @@ pub impl css_language {
         else {
             /* No namespace prefix */
             match self.default_namespace {
-                Some(copy ns) => qname.ns = ns,
+                Some(ns) => qname.ns = ns,
                 None => qname.ns = self.strings.lwc_string_data(UNIVERSAL as uint)
             }
 
@@ -1894,7 +1894,7 @@ pub impl css_language {
                     } 
                     else {
                         /* 2n */
-                        let mut (ret_a, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
+                        let (ret_a, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
                         a = ret_a;
                         if consumed == 0 || ((data[data_index + consumed] != 'n' as u8) && (data[data_index + consumed] != 'N' as u8)) {
                             debug!("Exiting: parseNth (7)");
