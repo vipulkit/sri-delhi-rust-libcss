@@ -1,5 +1,5 @@
-extern mod std;
 extern mod extra;
+extern mod std;
 extern mod css;
 extern mod wapcaplet;
 extern mod dumpcomputed;
@@ -7,8 +7,10 @@ extern mod dump2;
 
 use css::css::*;
 use wapcaplet::*;
-use std::cast::*;
-
+use std::cast;
+use std::libc;
+use std::ptr;
+use std::str;
 
 use css::include::types::*;
 use css::utils::errors::*;
@@ -21,6 +23,8 @@ use dump2::dump_sheet;
 use css::include::properties::*;
 use css::include::fpmath::*;
 
+use extra::time;
+use std::io;
 
 pub struct attribute {
 	name:~str,
@@ -155,7 +159,7 @@ pub fn select_test(file:~str) {
 	let parse_lang_parse_property_time =@mut 0f;
 	let parse_lang_font_desc_time = @mut 0f;
 
-	for str::each_line_any(file_content) |line| { 
+	for file_content.any_line_iter().advance |line| { 
         let mut line_string: ~str = line.to_str(); 
 		line_string.push_char('\n');
 		// debug!("Handling line =%?=",copy line_string);
@@ -339,13 +343,13 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
         	debug!("ctx insheet");
             if(data.len() >= 7 && is_string_caseless_equal(data.slice(1,7), "errors")){
                 len = unsafe { ctx.sheets.len() -1 } ;
-                let mut start_time = std::time::precise_time_ns();
+                let mut start_time = time::precise_time_ns();
                 assert!( 
                         match ctx.sheets[len].sheet.css_stylesheet_data_done() {
                                 CSS_OK=>{true},
                                 _=>{false}
                         });
-            	let mut end_time = std::time::precise_time_ns();
+            	let mut end_time = time::precise_time_ns();
 	        let css_style_diff_time = (end_time as float - start_time as float);
         	*css_stylesheet_data_done_time += css_style_diff_time;
                 ctx.intree = false;
@@ -358,13 +362,13 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
                         data.len() >= 7 && is_string_caseless_equal(data.slice(1,7), "author") {
                 
                 len = unsafe { ctx.sheets.len() -1 } ;
-                let mut start_time = std::time::precise_time_ns();
+                let mut start_time = time::precise_time_ns();
                 assert!( 
                         match ctx.sheets[len].sheet.css_stylesheet_data_done() {
                             CSS_OK=>{true},
                             _=>{false}
                         });
-            	let mut end_time = std::time::precise_time_ns();
+            	let mut end_time = time::precise_time_ns();
 	        let css_style_diff_time = (end_time as float - start_time as float);
         	*css_stylesheet_data_done_time += css_style_diff_time;
                 css__parse_sheet(ctx, data,1, css_stylesheet_create_time, 
@@ -381,9 +385,9 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
             }
             else {
                 len = unsafe { ctx.sheets.len() -1 } ;
-                let start_time = std::time::precise_time_ns();
+                let start_time = time::precise_time_ns();
                 let mut error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.to_bytes());
-                let end_time = std::time::precise_time_ns();
+                let end_time = time::precise_time_ns();
                 *css_stylesheet_append_data_time += (end_time - start_time);
 
                 assert!( match error {
@@ -444,9 +448,9 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
         }
         else if ( ctx.insheet ) {
             len = unsafe { ctx.sheets.len() -1 } ;
-            let start_time = std::time::precise_time_ns();
+            let start_time = time::precise_time_ns();
             error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.to_bytes());
-            let end_time = std::time::precise_time_ns();
+            let end_time = time::precise_time_ns();
             *css_stylesheet_append_data_time += (end_time - start_time);
             assert!( match error {
                         CSS_OK=>{true},
@@ -692,9 +696,9 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_styles
     let params = css_create_params();
     let mut lwc_ins = unsafe {ctx.lwc_instance.clone() } ;
 
-    let start_time = std::time::precise_time_ns();
+    let start_time = time::precise_time_ns();
     let sheet:@mut css = css::css_create(&params, Some(lwc_ins.clone()) );
-    let end_time = std::time::precise_time_ns();
+    let end_time = time::precise_time_ns();
     *css_stylesheet_create_time += (end_time - start_time);
 
     *css_create_lwc_time += sheet.css_create_lwc_time;
@@ -1003,12 +1007,12 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_i
     unsafe {
 		let pw = @mut ctx_pw{attr_class:lwc_string_data(ctx.attr_class.clone()), attr_id:lwc_string_data(ctx.attr_id.clone())};
     	debug!(fmt!("pw=%?",pw));
-    	let target = transmute(ctx.target.unwrap());
-    	let pw_ptr = ::transmute(pw);
+    	let target = cast::transmute(ctx.target.unwrap());
+    	let pw_ptr = ::cast::transmute(pw);
 
-    	let start_time = std::time::precise_time_ns();
+    	let start_time = time::precise_time_ns();
 	let mut result = select.css_select_style(target,ctx.media as u64,None, select_handler,pw_ptr);
-	let end_time = std::time::precise_time_ns();
+	let end_time = time::precise_time_ns();
 
 	*css_select_style_time += (end_time - start_time);
 
@@ -1073,7 +1077,7 @@ fn node_name(n:*libc::c_void, qname : &mut css_qname) -> css_error {
 
 	let node : @mut node;
 	unsafe {
-		node = ::transmute(n);
+		node = ::cast::transmute(n);
 		cast::forget(node);
 		qname.name = copy *node.name.get_ref();
 	}
@@ -1086,9 +1090,9 @@ fn node_classes(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[~str] ) -> cs
 	let mut node : @mut node;
 	let mut lc : @mut ctx_pw;
 	unsafe {
-		node = ::transmute(n);
+		node = ::cast::transmute(n);
 		cast::forget(node);
-		lc = ::transmute(pw);
+		lc = ::cast::transmute(pw);
 		cast::forget(lc);
 
 		let mut i = 0;
@@ -1123,9 +1127,9 @@ fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut ~str ) -> css_error{
 	let mut node : @mut node;
 	let mut lc : @mut ctx_pw;
 	unsafe {
-		node = ::transmute(n);
+		node = ::cast::transmute(n);
 		cast::forget(node);
-		lc = ::transmute(pw);
+		lc = ::cast::transmute(pw);
 		cast::forget(lc);
 
 		let mut i = 0;
@@ -1157,7 +1161,7 @@ fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *lib
 	debug!("named_ancestor_node");
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 	}
 	
@@ -1178,7 +1182,7 @@ fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *lib
 		}
 	}
 	unsafe {
-		*ancestor =  ::transmute(node1);
+		*ancestor =  ::cast::transmute(node1);
 		cast::forget(*ancestor);
 	}
 	CSS_OK
@@ -1188,7 +1192,7 @@ fn named_parent_node(n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_
 	debug!("named_parent_node");
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 		*parent = ptr::null();
 	}	
@@ -1201,7 +1205,7 @@ fn named_parent_node(n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_
 		}
 		if matched {
 			unsafe {
-				*parent = ::transmute(parent_node);
+				*parent = ::cast::transmute(parent_node);
 				cast::forget(*parent);
 			}
 		}		
@@ -1213,7 +1217,7 @@ fn named_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc:
 	debug!("named_sibling_node");
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 		*sibling = ptr::null();
 	}	
@@ -1226,7 +1230,7 @@ fn named_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc:
 		}
 		if matched {
 			unsafe {
-				*sibling = ::transmute(prev_node);
+				*sibling = ::cast::transmute(prev_node);
 				cast::forget(*sibling);
 			}
 		}		
@@ -1238,7 +1242,7 @@ fn named_generic_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mu
 	debug!("named_generic_sibling_node");
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 	}
 	if node1.prev.is_none() {
@@ -1259,7 +1263,7 @@ fn named_generic_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mu
 		}
 	}
 	unsafe {
-		*sibling =  ::transmute(node1);
+		*sibling =  ::cast::transmute(node1);
 		cast::forget(*sibling);
 	}
 	CSS_OK
@@ -1268,11 +1272,11 @@ fn named_generic_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mu
 fn parent_node(n:*libc::c_void, parent:*mut*libc::c_void) -> css_error {
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n); 
+		node1 = ::cast::transmute(n); 
 		cast::forget(node1);
 		
 		if node1.parent.is_some() {
-			*parent = ::transmute(node1.parent.unwrap());
+			*parent = ::cast::transmute(node1.parent.unwrap());
 			cast::forget(*parent);	
 		}
 		else {
@@ -1285,11 +1289,11 @@ fn parent_node(n:*libc::c_void, parent:*mut*libc::c_void) -> css_error {
 fn sibling_node(n:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 		
 		if node1.prev.is_some() {
-			*sibling = ::transmute(node1.prev.unwrap());
+			*sibling = ::cast::transmute(node1.prev.unwrap());
 			cast::forget(*sibling);	
 		}
 		else {
@@ -1303,7 +1307,7 @@ fn node_has_name(_:*libc::c_void, n:*libc::c_void, qname:css_qname, matched:@mut
 	debug!("node_has_name");
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 	}
 	if qname.name.len() == 1 && qname.name[0] == '*' as u8 {
@@ -1324,9 +1328,9 @@ fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:@mut lwc_string, match
 	let mut i:uint = 0 ;
 	let len:uint;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
-		ctx = ::transmute(pw);
+		ctx = ::cast::transmute(pw);
 		cast::forget(ctx);
 	
 		debug!(fmt!("node1.attrs.len=%?",node1.attrs.len()));
@@ -1372,9 +1376,9 @@ fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:@mut lwc_string, matched:
 	let len:uint;
 	
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
-		ctx = ::transmute(pw);
+		ctx = ::cast::transmute(pw);
 		cast::forget(ctx);
 		len = node1.attrs.len();
 		
@@ -1417,7 +1421,7 @@ fn node_has_attribute(n:*libc::c_void, qname:css_qname, matched:@mut bool) -> cs
 	debug!("node_has_attribute");
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 	}
 	let mut i:u32 = 0 ;
@@ -1440,7 +1444,7 @@ fn  node_has_attribute_equal(n:*libc::c_void, qname:css_qname,value:~str, matche
 	debug!("node_has_attribute_equal");
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 	}
 	let mut i:u32 = 0 ;
@@ -1468,7 +1472,7 @@ fn node_has_attribute_includes(n:*libc::c_void, qname:css_qname,value:~str, matc
 	debug!("node_has_attribute_includes");
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 	}
 	
@@ -1514,7 +1518,7 @@ fn node_has_attribute_dashmatch(n:*libc::c_void, qname:css_qname,value:~str, mat
 	debug!("node_has_attribute_dashmatch");
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 	}
 	let mut i:u32 = 0 ;
@@ -1557,7 +1561,7 @@ fn node_has_attribute_prefix(n:*libc::c_void, qname:css_qname,value:~str, matche
 	debug!("node_has_attribute_prefix");
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 	}
 	let mut i:u32 = 0 ;
@@ -1590,7 +1594,7 @@ fn node_has_attribute_suffix(n:*libc::c_void, qname:css_qname,value:~str, matche
 	debug!("node_has_attribute_suffix");
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 	}
 	let mut i:u32 = 0 ;
@@ -1627,7 +1631,7 @@ fn node_has_attribute_substring(n:*libc::c_void, qname:css_qname,value:~str, mat
 	debug!("node_has_attribute_substring");
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 	}
 	let mut i:u32 = 0 ;
@@ -1670,7 +1674,7 @@ fn node_is_root(n:*libc::c_void, matched:@mut bool) -> css_error {
 	debug!("node_is_root");
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 	}
 	*matched = node1.parent.is_none();
@@ -1684,7 +1688,7 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
 	let mut node1:@mut node;
 	let mut name: ~str ;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 		name = copy *(node1.name).get_ref();
 	}
@@ -1738,7 +1742,7 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
 fn node_is_empty(n:*libc::c_void, matched:@mut bool) -> css_error {
 	let mut node1:@mut node;
 	unsafe {
-		node1 = ::transmute(n);
+		node1 = ::cast::transmute(n);
 		cast::forget(node1);
 	}
 	*matched = node1.children.is_none();
