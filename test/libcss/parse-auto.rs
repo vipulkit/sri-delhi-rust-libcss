@@ -1,14 +1,32 @@
-extern mod std;
+extern mod extra;
 extern mod css;
 extern mod wapcaplet;
 
-use std::arc;
+use extra::*;
+use std::uint;
+use std::int;
+use std::io;
+use std::str;
 use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use wapcaplet::*;
 
-pub fn resolve_url(_:@str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>) {
+pub fn find_char_between(s: &str, c: char, start: uint, end: uint) -> Option<uint>{
+	let length = s.len();
+	let mut i : uint = start;
+	while i < length && i < end {
+		if(s[i] as char == c){
+			return Some(i);
+		}
+		
+		i = i + 1;
+	}
+	
+	return None;
+}
+//fn(@str, @mut wapcaplet::lwc_string) -> (css::utils::errors::css_error,std::option::Option<@mut wapcaplet::lwc_string>)
+pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
@@ -35,6 +53,7 @@ pub struct line_ctx {
     inrule:bool
 }
 
+
 pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
 
     //debug!(fmt!("Strtol : strings are %? ====== %? ",a,b));
@@ -43,7 +62,7 @@ pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
     }
     
     let mut i :uint = a.len() ;
-    for uint::range(0,i) |e| {
+    for uint::iterate(0,i) |e| {
         if a[e] == b[e] {
             loop;
         }
@@ -206,9 +225,9 @@ fn parse_auto(file: ~str) {
         inrule:false
     };
 
-    for str::each_line_any(file_content) |line| {
+    for file_content.any_line_iter().advance |line| {
         let mut line_string : ~str = line.to_str() ;
-        str::push_char(&mut line_string,'\n') ;
+        line_string.push_char('\n') ;
         debug!(fmt!("Entering:v data is=%?=",line_string));
         handle_line(line_string,ctx);
     }
@@ -261,7 +280,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
         } 
         else if (ctx.indata) {
             //ctx.buf = ~[] ;
-            for str::each_char(data) |ch| {
+            for data.iter().advance |ch| {
                 ctx.buf.push(ch as u8);
             }
             debug!(fmt!("Buffer is 1= %?",unsafe {copy ctx.buf}));
@@ -275,7 +294,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
     else {
         if ctx.indata {
             //ctx.buf = ~[] ;
-            for str::each_char(data) |ch| {
+            for data.iter().advance |ch| {
                 ctx.buf.push(ch as u8);
             }
             debug!(fmt!("Buffer is 2= %?",unsafe {copy ctx.buf}));
@@ -283,7 +302,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
         if (ctx.inexp) {
             len = data.len() ;
             if (data[len - 1] == ('\n' as u8) ) {
-                str::pop_char(&mut data);
+                data.pop_char();
             }
 
             css__parse_expected(ctx, data);
@@ -371,21 +390,20 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
                 if data[len] == ('P' as u8) {
                     debug!( fmt!("Entering: if = %?=%?=",data,len));
-                    let mut start = str::find_char_between( data ,'(' , len , data.len() ) ;
+                    let mut start = find_char_between(data, '(', len , data.len());
 
                     if start.is_none() {
                         assert!(false);
                     }
-
-                    len = start.get() ;
-                    let mut end = str::find_char_between( data,')' ,len+1,data.len()) ;
+					
+                    len = start.get();
+                    let mut end = find_char_between( data,')' ,len+1,data.len()) ;
                     if end.is_none() {
                         assert!(false);
                     }
+
                     len = end.get()+1;  
-
                     rule.expected.push(string(data.slice( start.get()+1,end.get() ).to_str()));
-
                     if len == data.len() {
                         break ;
                     }
@@ -418,7 +436,7 @@ pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
     debug!(fmt!("Data == %? ", str::from_bytes(data)));
     debug!(fmt!("Expected entry type == %d, name == %s", e.ftype, copy e.name) );
     io::print(fmt!("Expected bytecode == ") );
-    for e.expected.each_mut |&expected| {
+    for e.expected.mut_iter().advance |&expected| {
         io::print(fmt!("%? ", expected ));
     }
     debug!("\n")
@@ -619,8 +637,10 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
     unsafe {
         debug!("Entering: validate_rule_selector: unsafe");
         debug!(fmt!("Parsed Rule List:%?",copy s.selectors.len()));
-        for s.selectors.eachi |i,&sel| {
-            dump_selector_list(sel,&mut ptr) ;
+		let mut i : uint = 0;
+		let mut length = s.selectors.len();
+        while i < length {
+            dump_selector_list(s.selectors[i],&mut ptr) ;
             if ( i != (s.selectors.len()-1) ) {
                 name = name + ptr + ", ";
                 debug!(fmt!("if name == %?" , name));
@@ -630,6 +650,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
                 debug!(fmt!("else name == %?" , name));
             }
             ptr = ~"" ;
+			i = i + 1;
         }
     }
 
