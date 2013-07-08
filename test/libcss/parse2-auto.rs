@@ -1,11 +1,14 @@
 extern mod std;
+extern mod extra;
 extern mod css;
 extern mod wapcaplet;
 extern mod dump;
 
-use std::arc;
+use extra::arc;
+use std::io;
+use std::vec;
 use css::css::*;
-use css::css::css::*;
+//use css::css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use wapcaplet::*;
@@ -23,7 +26,7 @@ pub struct line_ctx {
     inrule: bool
 }
 
-pub fn resolve_url(_:@str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>) {
+pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
@@ -31,13 +34,14 @@ pub fn check_newline(x: &u8) -> bool { *x == ('\n' as u8) }
 
 fn match_vec_u8(expected_data: &[u8] , found_string: &str) -> bool {
 
-    let mut found_string_vector = str::to_bytes(found_string);
+    let mut found_string_vector = found_string.to_str().as_bytes_with_null_consume();
     if found_string_vector.len() != expected_data.len() {
         // debug!("lenghts don't match");
         return false;
     }
 
-    for vec::each2(expected_data , found_string_vector) |&e , &f| {
+	let mut iter_both = expected_data.iter().zip(found_string_vector.iter());
+    for iter_both.advance() |(e , f)| {
         if e != f {
             return false;
         }
@@ -69,7 +73,7 @@ fn main() {
 fn create_css() -> @mut css{
     debug!("Entering: create_css");
     let mut lwc = wapcaplet::lwc();
-    let css = css_create( &(css_create_params()) , Some(lwc));
+    let css = css::css_create( &(css_create_params()) , Some(lwc));
     css
 }
 
@@ -107,7 +111,7 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
             ctx.inexp = false;
         }
         else if (ctx.indata) {
-            ctx.buf += copy data;
+            ctx.buf = ctx.buf + copy data;
             ctx.buf.push('\n' as u8);
         } 
         else {
@@ -118,7 +122,7 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
     }
     else {
         if ctx.indata {
-            ctx.buf += copy data;
+            ctx.buf = ctx.buf + copy data;
             ctx.buf.push('\n' as u8);
         }
         if (ctx.inexp) {
@@ -156,7 +160,7 @@ fn testMain(fileName: ~str) {
     }        
     let mut vec_lines = vec::split(file_content, check_newline) ;
 
-    for vec_lines.each |&each_line| {
+    for vec_lines.iter().advance |&each_line| {
         handle_line(each_line,ctx);
     }
     
@@ -187,8 +191,8 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     buf = dump_sheet(css.stylesheet);
     //debug!(fmt!("\n == sheet ==%?=" , buf));
     let mut dvec = ~[];
-    for str::each_line(buf) |s| {
-        dvec.push(s.to_owned().to_bytes());
+    for buf.any_line_iter().advance |s| {
+        dvec.push(s.to_owned().as_bytes_with_null_consume());
     }
     let mut a = vec::concat(dvec) ;
     let mut b = vec::concat(exp) ;
@@ -207,7 +211,8 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
         fail!(~"Expected lines not equal to sheet dump lines");
     }
 
-    for vec::each2(a,b) |&s,&e| {
+	let mut iter_both = a.iter().zip(b.iter());
+    for iter_both.advance |(s,e)| {
         if s != e {
             debug!("============================================================" );
             debug!(" == sheet ==%?=" , (a));

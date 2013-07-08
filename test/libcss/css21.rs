@@ -1,18 +1,19 @@
 extern mod std;
+extern mod extra;
 extern mod css;
 extern mod wapcaplet;
 extern mod dump;
 
-use core::io::*;
-use std::arc;
+use std::io::*;
+use extra::arc;
 use css::css::*;
-use css::css::css::*;
+//use css::css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use wapcaplet::*;
 use dump::*;
 
-pub fn resolve_url(_:@str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>) {
+pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
@@ -35,7 +36,7 @@ fn css_create_params() -> css_params {
 
 fn create_css() -> @mut css{
     let mut lwc = wapcaplet::lwc();
-    let css = css_create( &css_create_params() , Some(lwc));
+    let css = css::css_create( &css_create_params() , Some(lwc));
     css
 }
 
@@ -48,7 +49,7 @@ fn css(file_name: ~str) {
     let mut css = create_css();
     let CHUNK_SIZE = 4096;
     let mut buf: ~[u8];
-    let r:@Reader = io::file_reader(&Path(file_name)).get(); 
+    let r:@Reader = file_reader(&Path(file_name)).get(); 
     r.seek(0 , SeekEnd);
     let mut len = r.tell();
     let mut origlen = len; 
