@@ -2,7 +2,7 @@ use include::types::*;
 use include::font_face::*;
 use stylesheet::*;
 use utils::errors::*;
-use extra::arc;
+//use extra::arc;
 use wapcaplet::*;
 use std::libc::*;
 
@@ -575,7 +575,7 @@ pub struct css_computed_style {
 
     font_family:~[~str],
 
-    //lwc_string **quotes;
+    //quotes chaned from wapcaplet-strings to strings
     quotes:~[~str],
 
     uncommon:Option<@mut css_computed_uncommon>, /**< Uncommon properties */
@@ -704,9 +704,9 @@ pub struct css_select_handler {
 
     node_has_name: @extern fn(pw:*c_void,node:*c_void, qname:css_qname, matched:@mut bool) -> css_error,
 
-    node_has_class: @extern fn(pw:*c_void, node:*c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error,
+    node_has_class: @extern fn(pw:*c_void, node:*c_void, name:@mut lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_id: @extern fn(pw:*c_void, node:*c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error,
+    node_has_id: @extern fn(pw:*c_void, node:*c_void, name:@mut lwc_string, matched:@mut bool) -> css_error,
 
     node_has_attribute: @extern fn(node:*c_void, name:css_qname, matched:@mut bool) -> css_error,
     
@@ -772,9 +772,9 @@ pub struct css_select_state {
     current_specificity:uint,  
 
     element:css_qname,       
-     //TODO :lwc_string *id;         /* Node id, if any */
+     //changed id from wapcaplet-string to string
     id:~str,
-     //TODO :lwc_string **classes;       /* Node classes, if any */
+     //changes classes from wapcaplet  to string
     classes:~[~str],
     n_classes:u32,           
 

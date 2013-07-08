@@ -70,7 +70,7 @@ fn filter() {
         (_, _, _) => {assert!(false);}
     }
 
-    assert_eq!(str::from_bytes(out), ~"hell\xc2\xa0o!");
+    assert_eq!(copy out, copy in /*~"hell\xc2\xa0o!"*/);
 
     match(input.parserutils__filter_reset()) {
         PARSERUTILS_OK => {},
@@ -137,7 +137,7 @@ fn filter() {
         _ => {assert!(false);}
     }
 
-    assert_eq!(str::from_bytes(out), ~"hell\xc2\xa0o!");
+    assert_eq!(copy out, copy in);
 
     /* Input ends mid-sequence, but second attempt has too small a
      * buffer, but large enough to write out the incomplete character.
@@ -224,7 +224,7 @@ fn filter() {
         _ => {assert!(false);}
     }
 
-    assert_eq!(str::from_bytes(out), ~"hell\xc2\xa0\xc2\xa1o!");
+    assert_eq!(copy out, copy in);
 
 
     /* Input ends mid-sequence, but second attempt contains insufficient
@@ -267,7 +267,7 @@ fn filter() {
         _ => {assert!(false);}
     }
 
-    assert_eq!(str::from_bytes(out), ~"hell\xe2\x80\xa2o!");
+    assert_eq!(out, in);
 
     /* Clean up */
     input.parserutils__filter_destroy();

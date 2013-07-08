@@ -174,7 +174,7 @@ impl alias_gen {
     fn write_trim_search_alias(&mut self, fp:@Writer) {
         fp.write_line("");
         fp.write_line("    fn trim_search_alias(&self, alias: &str) -> ~str {");
-        fp.write_line("        debug!(\"Entering: trim_search_alias\");");
+        fp.write_line("        debug!(\"Entering: trim_search_alias, alias == %?\", alias);");
         fp.write_line(""    );
         fp.write_line("        let mut trim_left_index = 0u;");
         fp.write_line("        let mut trim_right_index = alias.len()-1;");
@@ -188,12 +188,15 @@ impl alias_gen {
         fp.write_line("");
         fp.write_line("        for alias.rev_iter().enumerate().advance |(index,c)| {");
         fp.write_line("            if c.is_alphanumeric() {");
-        fp.write_line("                trim_right_index = index+1;");
+        fp.write_line("                trim_right_index = alias.len()-index;");
         fp.write_line("                break;");
         fp.write_line("            }");
         fp.write_line("        }");
         fp.write_line("");
+        fp.write_line("        debug!(\"trim_search_alias :: trim_left_index == %?, trim_right_index == %?\", trim_left_index, trim_right_index);");
         fp.write_line("        let trimmed_alias = alias.slice(trim_left_index, trim_right_index).to_owned();");
+        fp.write_line("        debug!(\"trim_search_alias :: trimmed_alias == %?\", trimmed_alias);");
+        fp.write_line("        ");
         fp.write_line("        trimmed_alias");
         fp.write_line("    }");
         fp.write_line("");
@@ -242,9 +245,11 @@ impl alias_gen {
         fp.write_line("        match self.alias_map_find(self.trim_search_alias(alias.to_ascii().to_lower().to_str_ascii())) {");
         fp.write_line("            None => None,"                   );
         fp.write_line("            Some(temp_mib_enum) => {");
+        fp.write_line("                debug!(\"parserutils__charset_alias_canonicalise:: temp_mib_enum == %?\", temp_mib_enum);");
         fp.write_line("                match self.mibenum_map_find(temp_mib_enum) {");
         fp.write_line("                    None => None,"                   );
         fp.write_line("                    Some(canonical_name_list_index) => {");
+        fp.write_line("                        debug!(\"parserutils__charset_alias_canonicalise:: canonical_name_list_index == %?\", canonical_name_list_index);");
         fp.write_line("                        if (canonical_name_list_index < self.canonical_name_list.len()) {");
         fp.write_line("                            let temp_name = copy (self.canonical_name_list[canonical_name_list_index]);");
         fp.write_line("                            let temp_name_len = temp_name.len() as u16;");
