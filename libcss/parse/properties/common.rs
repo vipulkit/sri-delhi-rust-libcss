@@ -126,7 +126,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
 
                 match token.token_type {
                     CSS_TOKEN_IDENT => {
-                        let (unit , result) = css__parse_unit_keyword(lwc_string_data(token.idata.get_ref()));
+                        let (unit , result) = css__parse_unit_keyword(lwc_string_data(token.idata.get()));
                         match  result {
                             CSS_OK => {
                                 sheet.quirks_used = true;
@@ -154,7 +154,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
     return(Some(num) , Some(unit_retVal) , CSS_OK);
 }
 
-pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bool) -> (i32 , uint) {
+pub fn css__number_from_lwc_string(string: @mut lwc_string, int_only: bool) -> (i32 , uint) {
     
     debug!("Entering: css__number_from_lwc_string");
     let mut ret_value = 0;
@@ -164,6 +164,20 @@ pub fn css__number_from_lwc_string(string: arc::RWARC<~lwc_string>, int_only: bo
         return (ret_value , consumed_length);
     }
     css__number_from_string(lwc_string_data(string.clone()), @mut 0, int_only)
+}
+
+#[inline(always)]
+pub fn string_lower(a:&str) -> ~str {
+    let mut result = a.to_str();
+    let mut z = 0 ;
+    let z_len = result.len();
+    while z<z_len {
+        if (result[z] > 64 && result[z] < 91) {
+            result[z] = result[z]+32 ;
+        }
+        z += 1;
+    }
+    result
 }
 
 /**
@@ -182,9 +196,9 @@ pub fn css__parse_unit_keyword(ptr:&str)-> (Option<u32>,css_error) {
     debug!("Entering: css__parse_unit_keyword");
     debug!(fmt!("css__parse_unit_keyword:: ptr == %s", copy ptr));
     let mut unit = UNIT_GRAD;
-    let ptr_lower = ptr.to_lower();
+    let ptr_lower = string_lower(ptr);
     match(ptr_lower.len()) {
-        4=> if (ptr_lower == ~"grad") {
+        4=> if( ptr_lower == ~"grad" ) {
                 unit= UNIT_GRAD;    
             },
         3=> {
@@ -879,7 +893,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
 *   ctx is updated with the next token to process.
 *   If the input is invalid, then ctx remains unchanged.
 */
-pub fn css__parse_hash_colour(data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error){
+pub fn css__parse_hash_colour(data: @mut lwc_string) -> (Option<u32> , css_error){
 
     debug!("Entering: css__parse_hash_colour");
     let mut result_val: u32;
@@ -1125,7 +1139,7 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 * 'css_error' - CSS_OK on success,  
                 CSS_INVALID if the input is not valid.
 */
-fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , data: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error){
+fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , data: @mut lwc_string) -> (Option<u32> , css_error){
     
     debug!("Entering: css__parse_named_color");
     let mut result_val: u32;

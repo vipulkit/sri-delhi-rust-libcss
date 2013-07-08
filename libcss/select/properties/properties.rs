@@ -3116,7 +3116,7 @@ pub fn css__compose_font_family(parent:@mut css_computed_style,
 									result:@mut css_computed_style
 									) -> css_error {
 
-	//lwc_string **names = NULL;
+	//chaned wapcaplet strings to strings
 	let (ftype,ffamily) = css_computed_font_family(child);
 
 	if (ftype == (CSS_FONT_FAMILY_INHERIT as u8) || !mut_ptr_eq(result,child)) {

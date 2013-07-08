@@ -1,5 +1,5 @@
 
-use extra::arc;
+//use extra::arc;
 use wapcaplet::*;
 
 use include::properties::*;
@@ -36,35 +36,35 @@ pub struct css_select_sheet {
  */
 struct css_select_ctx {
     sheets:~[@mut css_select_sheet],
-    lwc_instance:arc::RWARC<~lwc>,
+    lwc_instance:@mut lwc,
     /* Useful interned strings */
-    universal:Option<arc::RWARC<~lwc_string>>,
-    first_child:Option<arc::RWARC<~lwc_string>>,
-    link:Option<arc::RWARC<~lwc_string>>,
-    visited:Option<arc::RWARC<~lwc_string>>,
-    hover:Option<arc::RWARC<~lwc_string>>,
-    active:Option<arc::RWARC<~lwc_string>>,
-    focus:Option<arc::RWARC<~lwc_string>>,
-    nth_child:Option<arc::RWARC<~lwc_string>>,
-    nth_last_child:Option<arc::RWARC<~lwc_string>>,
-    nth_of_type:Option<arc::RWARC<~lwc_string>>,
-    nth_last_of_type:Option<arc::RWARC<~lwc_string>>,
-    last_child:Option<arc::RWARC<~lwc_string>>,
-    first_of_type:Option<arc::RWARC<~lwc_string>>,
-    last_of_type:Option<arc::RWARC<~lwc_string>>,
-    only_child:Option<arc::RWARC<~lwc_string>>,
-    only_of_type:Option<arc::RWARC<~lwc_string>>,
-    root:Option<arc::RWARC<~lwc_string>>,
-    empty:Option<arc::RWARC<~lwc_string>>,
-    target:Option<arc::RWARC<~lwc_string>>,
-    lang:Option<arc::RWARC<~lwc_string>>,
-    enabled:Option<arc::RWARC<~lwc_string>>,
-    disabled:Option<arc::RWARC<~lwc_string>>,
-    checked:Option<arc::RWARC<~lwc_string>>,
-    first_line:Option<arc::RWARC<~lwc_string>>,
-    first_letter:Option<arc::RWARC<~lwc_string>>,
-    before:Option<arc::RWARC<~lwc_string>>,
-    after:Option<arc::RWARC<~lwc_string>>
+    universal:Option<@mut lwc_string>,
+    first_child:Option<@mut lwc_string>,
+    link:Option<@mut lwc_string>,
+    visited:Option<@mut lwc_string>,
+    hover:Option<@mut lwc_string>,
+    active:Option<@mut lwc_string>,
+    focus:Option<@mut lwc_string>,
+    nth_child:Option<@mut lwc_string>,
+    nth_last_child:Option<@mut lwc_string>,
+    nth_of_type:Option<@mut lwc_string>,
+    nth_last_of_type:Option<@mut lwc_string>,
+    last_child:Option<@mut lwc_string>,
+    first_of_type:Option<@mut lwc_string>,
+    last_of_type:Option<@mut lwc_string>,
+    only_child:Option<@mut lwc_string>,
+    only_of_type:Option<@mut lwc_string>,
+    root:Option<@mut lwc_string>,
+    empty:Option<@mut lwc_string>,
+    target:Option<@mut lwc_string>,
+    lang:Option<@mut lwc_string>,
+    enabled:Option<@mut lwc_string>,
+    disabled:Option<@mut lwc_string>,
+    checked:Option<@mut lwc_string>,
+    first_line:Option<@mut lwc_string>,
+    first_letter:Option<@mut lwc_string>,
+    before:Option<@mut lwc_string>,
+    after:Option<@mut lwc_string>
 }
 
 /*
@@ -78,7 +78,7 @@ pub struct css_select_font_faces_list {
  * Font face selection state
  */
 pub struct css_select_font_faces_state {
-    font_family:Option<arc::RWARC<~lwc_string>>,
+    font_family:Option<@mut lwc_string>,
     media:u64,
 
     ua_font_faces:css_select_font_faces_list,
@@ -600,16 +600,16 @@ impl css_select_ctx {
     */
     pub fn css_select_font_faces(&mut self,
                                 media:u64,
-                                font_family:arc::RWARC<~lwc_string>) 
+                                font_family:@mut lwc_string) 
                                 -> (css_error,Option<@mut css_select_font_faces_results>) {
 
         debug!(fmt!("Entering css_select_font_faces")) ;
-        if( lwc_string_length(font_family.clone()) == 0 ) {
+        if( lwc_string_length(font_family) == 0 ) {
             return (CSS_BADPARM,None) ;
         }
 
         let state = @mut css_select_font_faces_state {
-            font_family:Some(font_family.clone()),
+            font_family:Some(font_family),
             media:media,
 
             ua_font_faces:css_select_font_faces_list{font_faces:~[]},
@@ -665,41 +665,40 @@ impl css_select_ctx {
      ******************************************************************************/
     pub fn intern_strings(&mut self) {
         
-        do self.lwc_instance.clone().write |l| {
-
+        let mut l = self.lwc_instance ;
             /* Universal selector */
-            self.universal = Some(l.lwc_intern_string(~"*"));
+        self.universal = Some(l.lwc_intern_string(~"*"));
 
-            /* Pseudo classes */
-            self.first_child = Some(l.lwc_intern_string(~"first-child"));
-            self.link = Some(l.lwc_intern_string(~"link"));
-            self.visited = Some(l.lwc_intern_string(~"visited"));
-            self.hover = Some(l.lwc_intern_string(~"hover"));
-            self.active = Some(l.lwc_intern_string(~"active"));
-            self.focus = Some(l.lwc_intern_string(~"focus"));
-            self.nth_child = Some(l.lwc_intern_string(~"nth-child"));
-            self.nth_last_child = Some(l.lwc_intern_string(~"nth-last-child"));
-            self.nth_of_type = Some(l.lwc_intern_string(~"nth-of-type"));
-            self.nth_last_of_type = Some(l.lwc_intern_string(~"nth-last-of-type"));
-            self.last_child = Some(l.lwc_intern_string(~"last-child"));
-            self.first_of_type = Some(l.lwc_intern_string(~"first-of-type"));
-            self.last_of_type = Some(l.lwc_intern_string(~"last-of-type"));
-            self.only_child = Some(l.lwc_intern_string(~"only-child"));
-            self.only_of_type = Some(l.lwc_intern_string(~"only-of-type"));
-            self.root = Some(l.lwc_intern_string(~"root"));
-            self.empty = Some(l.lwc_intern_string(~"empty"));
-            self.target = Some(l.lwc_intern_string(~"target"));
-            self.lang = Some(l.lwc_intern_string(~"lang"));
-            self.enabled = Some(l.lwc_intern_string(~"enabled"));
-            self.disabled = Some(l.lwc_intern_string(~"disabled"));
-            self.checked = Some(l.lwc_intern_string(~"checked"));
+        /* Pseudo classes */
+        self.first_child = Some(l.lwc_intern_string(~"first-child"));
+        self.link = Some(l.lwc_intern_string(~"link"));
+        self.visited = Some(l.lwc_intern_string(~"visited"));
+        self.hover = Some(l.lwc_intern_string(~"hover"));
+        self.active = Some(l.lwc_intern_string(~"active"));
+        self.focus = Some(l.lwc_intern_string(~"focus"));
+        self.nth_child = Some(l.lwc_intern_string(~"nth-child"));
+        self.nth_last_child = Some(l.lwc_intern_string(~"nth-last-child"));
+        self.nth_of_type = Some(l.lwc_intern_string(~"nth-of-type"));
+        self.nth_last_of_type = Some(l.lwc_intern_string(~"nth-last-of-type"));
+        self.last_child = Some(l.lwc_intern_string(~"last-child"));
+        self.first_of_type = Some(l.lwc_intern_string(~"first-of-type"));
+        self.last_of_type = Some(l.lwc_intern_string(~"last-of-type"));
+        self.only_child = Some(l.lwc_intern_string(~"only-child"));
+        self.only_of_type = Some(l.lwc_intern_string(~"only-of-type"));
+        self.root = Some(l.lwc_intern_string(~"root"));
+        self.empty = Some(l.lwc_intern_string(~"empty"));
+        self.target = Some(l.lwc_intern_string(~"target"));
+        self.lang = Some(l.lwc_intern_string(~"lang"));
+        self.enabled = Some(l.lwc_intern_string(~"enabled"));
+        self.disabled = Some(l.lwc_intern_string(~"disabled"));
+        self.checked = Some(l.lwc_intern_string(~"checked"));
 
-            /* Pseudo elements */
-            self.first_line = Some(l.lwc_intern_string(~"first-line"));
-            self.first_letter = Some(l.lwc_intern_string(~"first-letter"));
-            self.before = Some(l.lwc_intern_string(~"before"));
-            self.after = Some(l.lwc_intern_string(~"after"));
-        }   
+        /* Pseudo elements */
+        self.first_line = Some(l.lwc_intern_string(~"first-line"));
+        self.first_letter = Some(l.lwc_intern_string(~"first-letter"));
+        self.before = Some(l.lwc_intern_string(~"before"));
+        self.after = Some(l.lwc_intern_string(~"after"));
+
     }
 
     pub fn set_hint(state:@mut css_select_state, prop:u32) -> css_error {
@@ -958,11 +957,9 @@ impl css_select_ctx {
                 return CSS_BADPARM ;
             }
 
-            let mut res : bool = false ;
-            do self.lwc_instance.read |lwc_ins| {
-                res = lwc_ins.lwc_string_isequal(rule.font_face.get().font_family.swap_unwrap(),
-                                                    state.font_family.swap_unwrap() ) ;
-            }
+            let mut res : bool = self.lwc_instance.lwc_string_isequal(rule.font_face.get().font_family.get(),
+                                                    state.font_family.get() ) ;
+
             if ( res ) {
                 let mut faces = @mut css_select_font_faces_list{
                     font_faces:~[]
@@ -1106,13 +1103,16 @@ impl css_select_ctx {
             }
         }
 
-	for classes.each |&ele| {        
-            match ele {
+        let mut z = 0 ;
+        let z_len = classes.len();
+	    while z<z_len {        
+            match classes[z] {
                 None => {}
                 Some(_) => {
                     pending = true;
                 }
             }
+            z += 1;
         }
 
         pending
@@ -1244,9 +1244,11 @@ impl css_select_ctx {
              /* Find hash chains for node classes */
 			unsafe{
 				debug!(fmt!("state.classes=%?",state.classes));
-			}	
-            for state.classes.each_mut |&sclass| {
-                let (sel_class,error) = sheet.selectors.css__selector_hash_find_by_class(copy sclass);
+			}
+            let mut z = 0 ;
+            let z_len = state.classes.len();
+            while z<z_len {
+                let (sel_class,error) = sheet.selectors.css__selector_hash_find_by_class(copy state.classes[z]);
                 match error {
                     CSS_OK => {},
                     err => {
@@ -1258,6 +1260,7 @@ impl css_select_ctx {
                     class_selectors_hash_entry.push(sel_class) ;
                     class_selectors_option_list.push(Some(sel_class.get().selector)) ;
                 }
+                z += 1;
             }
         }
 		unsafe {
@@ -1577,8 +1580,8 @@ impl css_select_ctx {
         let mut rejected_by_cache : @mut bool = @mut true ;
         let mut pseudo : @mut css_pseudo_element = @mut CSS_PSEUDO_ELEMENT_NONE ;
         let mut error : css_error ;
-        let mut universal_string = self.universal.swap_unwrap().clone() ;
-        self.universal = Some(universal_string.clone()) ;     
+        let mut universal_string = self.universal.get() ;
+        //self.universal = Some(universal_string) ;     
         
         /* Match the details of the first selector in the chain. 
          *
@@ -1616,7 +1619,7 @@ impl css_select_ctx {
                      (s.get().combinator.is_some() ) &&
                      (self.universal.is_some() ) &&
                      (s.get().combinator.get().data[0].qname.name != 
-                      lwc_string_data(universal_string.clone()) )  ) {
+                      lwc_string_data(universal_string)) ) {
 
                     /* Named combinator */
                     
@@ -1922,9 +1925,8 @@ impl css_select_ctx {
         debug!(fmt!("Entering match_detail")) ;
         let is_root = @mut false;
         let mut error = CSS_OK;
-        let lwc_name = do self.lwc_instance.clone().write |l|{
-            l.lwc_intern_string(copy detail.qname.name)
-        };
+        let lwc_name = self.lwc_instance.lwc_intern_string(copy detail.qname.name);
+    
 		//debug!(fmt!("detail.qname.name=%?",copy detail.qname.name));
 		
         match (detail.selector_type) {
@@ -1939,11 +1941,11 @@ impl css_select_ctx {
             }
             CSS_SELECTOR_CLASS => {
                 error = (*state.handler.get().node_has_class)(state.pw, node,
-                        lwc_name.clone(), matched);
+                        lwc_name , matched);
             }       
             CSS_SELECTOR_ID => {
                 error = (*state.handler.get().node_has_id)(state.pw, node,
-                        lwc_name.clone(), matched);
+                        lwc_name , matched);
             }
             CSS_SELECTOR_PSEUDO_CLASS => {
                 error = (*state.handler.get().node_is_root)( node, is_root);
@@ -1955,9 +1957,7 @@ impl css_select_ctx {
                 }
 								
 				if (*is_root == false && 
-					do self.lwc_instance.clone().read |l| {
-						l.lwc_string_isequal(lwc_name.clone(), self.first_child.get_ref().clone())
-					}) { 
+					   self.lwc_instance.lwc_string_isequal(lwc_name , self.first_child.get() ) ) { 
 
                     let mut num_before:i32 = 0;
 
@@ -1977,9 +1977,8 @@ impl css_select_ctx {
                     }
                 }
                 else if (*is_root == false && 
-							do self.lwc_instance.clone().read |l| {
-								l.lwc_string_isequal(lwc_name.clone(), self.nth_child.get_ref().clone())
-							}) { 
+							self.lwc_instance.lwc_string_isequal(lwc_name , self.nth_child.get() )
+					   ) { 
                     let mut num_before:i32 = 0;
 
                     error = (*state.handler.get().node_count_siblings)( 
@@ -1996,9 +1995,8 @@ impl css_select_ctx {
                     }
                 }
                 else if (*is_root == false && 
-						do self.lwc_instance.clone().read |l| {
-							l.lwc_string_isequal(lwc_name.clone(), self.nth_last_child.get_ref().clone())
-						})  { 
+						  self.lwc_instance.lwc_string_isequal(lwc_name , self.nth_last_child.get() )
+						)  { 
                     let mut num_after:i32 = 0;
 
                     error = (*state.handler.get().node_count_siblings)( 
@@ -2015,7 +2013,7 @@ impl css_select_ctx {
                     }
                 }
                 else if (*is_root == false && 
-                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.nth_of_type.get_ref().clone())} ) { 
+                        self.lwc_instance.lwc_string_isequal(lwc_name , self.nth_of_type.get() ) ) { 
                     let mut num_before:i32 = 0;
 
                     error = (*state.handler.get().node_count_siblings)( 
@@ -2032,7 +2030,7 @@ impl css_select_ctx {
                     }
                 } 
                 else if (*is_root == false && 
-                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.nth_last_of_type.get_ref().clone())} ) { 
+                        self.lwc_instance.lwc_string_isequal(lwc_name , self.nth_last_of_type.get() ) ) { 
                     let mut num_after:i32 = 0;
 
                     error = (*state.handler.get().node_count_siblings)( 
@@ -2048,7 +2046,7 @@ impl css_select_ctx {
                         _ => {}
                     }
                 } else if (*is_root == false &&
-                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.last_child.get_ref().clone())} ) { 
+                        self.lwc_instance.lwc_string_isequal(lwc_name , self.last_child.get() ) ) { 
                     let mut num_after:i32 = 0;
 
                     error = (*state.handler.get().node_count_siblings)(
@@ -2066,7 +2064,7 @@ impl css_select_ctx {
                             }
                 } 
                 else if (*is_root == false &&
-                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.first_of_type.get_ref().clone())} ) { 
+                        self.lwc_instance.lwc_string_isequal(lwc_name , self.first_of_type.get() ) ) { 
                     let mut num_before:i32 = 0;
 
                     error = (*state.handler.get().node_count_siblings)( 
@@ -2085,7 +2083,7 @@ impl css_select_ctx {
                     }
                 } 
                 else if (*is_root == false &&
-                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.last_of_type.get_ref().clone())} ) { 
+                        self.lwc_instance.lwc_string_isequal(lwc_name , self.last_of_type.get() ) ) { 
                     let mut num_after:i32 = 0;
 
                     error = (*state.handler.get().node_count_siblings)( 
@@ -2104,7 +2102,7 @@ impl css_select_ctx {
                     }
                 }
                 else if (*is_root == false && 
-                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.only_child.get_ref().clone())} ) { 
+                        self.lwc_instance.lwc_string_isequal(lwc_name , self.only_child.get() ) ) { 
                     
                     let mut num_before = 0;
                     let mut num_after = 0;
@@ -2134,7 +2132,7 @@ impl css_select_ctx {
                     }
                 } 
                 else if (*is_root == false && 
-                        do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.only_of_type.get_ref().clone())} ) { 
+                        self.lwc_instance.lwc_string_isequal(lwc_name , self.only_of_type.get() ) ) { 
                 
                     let mut num_before = 0;
                     let mut num_after = 0;
@@ -2160,50 +2158,50 @@ impl css_select_ctx {
                         }       
                     }
                 } 
-                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.root.get_ref().clone())} ) { 
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.root.get() ) ) { 
                     *matched = *is_root;
                 } 
-                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.empty.get_ref().clone())} ) {
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.empty.get() ) ) {
                     error = (*state.handler.get().node_is_empty)(
                             node, matched);
                 } 
-                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.link.get_ref().clone())} ) { 
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.link.get() ) ) { 
                     error = (*state.handler.get().node_is_link)(
                             node, matched);
                 }
-                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.visited.get_ref().clone())} ) { 
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.visited.get() ) ) { 
                     error = (*state.handler.get().node_is_visited)(
                             node, matched);
                 }
-                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.hover.get_ref().clone())} ) { 
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.hover.get() ) ) { 
                     error = (*state.handler.get().node_is_hover)(
                             node, matched);
                 }
-                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.active.get_ref().clone())} ) { 
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.active.get() ) ) { 
                     error = (*state.handler.get().node_is_active)(
                             node, matched);
                 } 
-                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.focus.get_ref().clone())} ) { 
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.focus.get() ) ) { 
                     error = (*state.handler.get().node_is_focus)(
                             node, matched);
                 } 
-                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.target.get_ref().clone())} ) { 
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.target.get() ) ) { 
                     error = (*state.handler.get().node_is_target)(
                             node, matched);
                 }
-                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.lang.get_ref().clone())} ) { 
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.lang.get() ) ) { 
                     error = (*state.handler.get().node_is_lang)(
                             node, (copy detail.string).unwrap(), matched);
                 }
-                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.enabled.get_ref().clone())} ) { 
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.enabled.get() ) ) { 
                     error = (*state.handler.get().node_is_enabled)(
                             node, matched);
                 }
-                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.disabled.get_ref().clone())} ) { 
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.disabled.get() ) ) { 
                     error = (*state.handler.get().node_is_disabled)(
                             node, matched);
                 }
-                else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.checked.get_ref().clone())} ) { 
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.checked.get() ) ) { 
                     error = (*state.handler.get().node_is_checked)(
                             node, matched);
                 }
@@ -2213,16 +2211,19 @@ impl css_select_ctx {
             }
             CSS_SELECTOR_PSEUDO_ELEMENT => {
                 *matched = true;
-
-                if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.first_line.get_ref().clone())} ) { 
+                if ( self.lwc_instance.lwc_string_isequal(lwc_name, self.first_line.get() ) ) { 
                     *pseudo_element = CSS_PSEUDO_ELEMENT_FIRST_LINE;
-                } else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.first_letter.get_ref().clone())} ) { 
+                } 
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name, self.first_letter.get() ) ){ 
                     *pseudo_element = CSS_PSEUDO_ELEMENT_FIRST_LETTER;
-                } else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.before.get_ref().clone())} ) { 
+                } 
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name, self.before.get() ) ) { 
                     *pseudo_element = CSS_PSEUDO_ELEMENT_BEFORE;
-                } else if (do self.lwc_instance.clone().read |l| { l.lwc_string_isequal(lwc_name.clone(), self.after.get_ref().clone())} ) { 
+                } 
+                else if ( self.lwc_instance.lwc_string_isequal(lwc_name, self.after.get() ) ) { 
                     *pseudo_element = CSS_PSEUDO_ELEMENT_AFTER;
-                } else {
+                } 
+                else {
                     *matched = false;
                 }
             }

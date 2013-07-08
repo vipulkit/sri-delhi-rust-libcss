@@ -7,6 +7,7 @@ use wapcaplet::*;
 use std::arc;
 use extra::time::*;
 use std::cast::*;
+use std::str::raw::*;
 
 /**
  * Major state numbers
@@ -366,9 +367,9 @@ impl css_parser {
     }
 
 
-    fn intern_string (&mut self, string: ~str) -> arc::RWARC<~lwc_string> {
+    fn intern_string (&mut self, string: ~str) -> @mut lwc_string {
         debug!("Entering: intern_string");
-        let mut interned_string: Option<arc::RWARC<~lwc_string>> = None;
+        let mut interned_string: Option<@mut lwc_string> = None;
 
         do self.lwc.write |lwc| {
             interned_string = Some(lwc.lwc_intern_string(copy string));
@@ -423,7 +424,7 @@ impl css_parser {
             }
 
             if ((t.token_type as int) < (CSS_TOKEN_LAST_INTERN as int)) {
-                let idata = Some(self.intern_string(t.data.data.from_bytes()));
+                let idata = Some(self.intern_string(from_bytes(t.data.data)));
 
                 let t1_data = css_token_data {
                     data: copy t.data.data,
