@@ -1103,13 +1103,16 @@ impl css_select_ctx {
             }
         }
 
-	for classes.each |&ele| {        
-            match ele {
+        let mut z = 0 ;
+        let z_len = classes.len();
+	    while z<z_len {        
+            match classes[z] {
                 None => {}
                 Some(_) => {
                     pending = true;
                 }
             }
+            z += 1;
         }
 
         pending
@@ -1241,9 +1244,11 @@ impl css_select_ctx {
              /* Find hash chains for node classes */
 			unsafe{
 				debug!(fmt!("state.classes=%?",state.classes));
-			}	
-            for state.classes.each_mut |&sclass| {
-                let (sel_class,error) = sheet.selectors.css__selector_hash_find_by_class(copy sclass);
+			}
+            let mut z = 0 ;
+            let z_len = state.classes.len();
+            while z<z_len {
+                let (sel_class,error) = sheet.selectors.css__selector_hash_find_by_class(copy state.classes[z]);
                 match error {
                     CSS_OK => {},
                     err => {
@@ -1255,6 +1260,7 @@ impl css_select_ctx {
                     class_selectors_hash_entry.push(sel_class) ;
                     class_selectors_option_list.push(Some(sel_class.get().selector)) ;
                 }
+                z += 1;
             }
         }
 		unsafe {
