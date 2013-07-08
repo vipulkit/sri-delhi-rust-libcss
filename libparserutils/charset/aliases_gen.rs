@@ -1,5 +1,3 @@
-extern mod extra;
-
 use std::{hashmap,io, u16};
 
 pub struct alias_gen {
@@ -93,7 +91,6 @@ impl alias_gen {
         fp.write_line(" * Mozilla Samsung Servo Browser Project.");
         fp.write_line(" */");
         fp.write_line("");
-        fp.write_line("extern mod extra;");
         fp.write_line("use extra::arc;");
         fp.write_line("");
         fp.write_line("pub struct parserutils_charset_aliases_canon {");

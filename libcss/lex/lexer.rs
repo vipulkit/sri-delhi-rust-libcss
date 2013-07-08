@@ -1,6 +1,3 @@
-extern mod wapcaplet;
-extern mod parserutils;
-
 use extra::time::*;
 use std::char::*;
 use std::u32::*;
