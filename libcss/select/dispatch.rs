@@ -1250,26 +1250,46 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 	    aural:None,         
 	    page:None 
 	};
-	for uint::range(0,34) |_| {
+	let mut k = 0;
+	while k < 34 {
 		result.bits.push(0) ;
+		k = k + 1;
 	}
-	for uint::range(0,2) |_| {
+	
+	k = 0;
+	while k < 2 {
 		result.unused.push(0) ;
+		k = k + 1;
 	}
-	for uint::range(0,2) |_| {
+	
+	k = 0;
+	while k < 2 {
 		result.background_position.push(0) ;
+		k = k + 1;
 	}
-	for uint::range(0,4) |_| {
+	
+	k = 0;
+	while k < 4 {
 		result.border_color.push(0) ;
+		k = k + 1;
 	}
-	for uint::range(0,4) |_| {
+	
+	k = 0;
+	while k < 4 {
 		result.border_width.push(0) ;
+		k = k + 1;
 	}
-	for uint::range(0,4) |_| {
+	
+	k = 0;
+	while k < 4 {
 		result.margin.push(0) ;
+		k = k + 1;
 	}	
-	for uint::range(0,4) |_| {
+	
+	k = 0;
+	while k < 4 {
 		result.padding.push(0) ;
+		k = k + 1;
 	}
 
 	result
@@ -1315,10 +1335,12 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
         next_reject:128-1,             
         props: ~[~[]] 
     };
-    for uint::range(0,CSS_N_PROPERTIES as uint) |_| {
+	let mut l = 0;
+    while l < CSS_N_PROPERTIES as uint {
         let mut prop_vec : ~[@mut prop_state] = ~[] ;
-        for uint::range(0,CSS_PSEUDO_ELEMENT_COUNT as uint) |_| {
-            let mut pstate = @mut prop_state{
+        let mut k = 0;
+		while k < CSS_PSEUDO_ELEMENT_COUNT as uint {
+			let mut pstate = @mut prop_state{
                 specificity:0,
                 set:false,
                 origin:0,
@@ -1326,8 +1348,10 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
                 inherit:false    
             };
             prop_vec.push(pstate);
+			k = k + 1;
         }
         state.props.push(prop_vec);
+		l = l + 1;
     }
 
     let mut i: uint = 0 ;

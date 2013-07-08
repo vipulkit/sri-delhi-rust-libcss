@@ -423,7 +423,7 @@ impl css_parser {
             }
 
             if ((t.token_type as int) < (CSS_TOKEN_LAST_INTERN as int)) {
-                let idata = Some(self.intern_string(str::from_bytes(copy t.data.data)));
+                let idata = Some(self.intern_string(t.data.data.from_bytes()));
 
                 let t1_data = css_token_data {
                     data: copy t.data.data,

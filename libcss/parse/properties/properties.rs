@@ -618,7 +618,8 @@ impl css_properties {
         } 
         else {
             let second_pass = false;
-            for uint::range(0,2) |i| {
+            let mut i = 0;
+			while i< 2 {
                 if *ctx >= vector.len() {
                     break   
                 }
@@ -688,6 +689,7 @@ impl css_properties {
                     }
                 }    
                 consumeWhitespace(vector, ctx);
+				i = i + 1;
             }
 
             //assert(i != 0);

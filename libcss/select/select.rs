@@ -326,13 +326,17 @@ impl css_select_ctx {
             next_reject:128-1,             
             props: ~[] 
         };
-        for uint::range(0,128) |_| {
+        let mut k = 0;
+		while k < 128 {
             state.reject_cache.push(None);
+			k = k + 1;
         }
 
-        for uint::range(0,(CSS_N_PROPERTIES as uint)) |_| {
+        let mut l = 0;
+		while l < (CSS_N_PROPERTIES as uint) {
             let mut prop_vec : ~[@mut prop_state] = ~[] ;
-            for uint::range(0,(CSS_PSEUDO_ELEMENT_COUNT as uint)) |_| {
+            let mut m = 0;
+			while m < (CSS_PSEUDO_ELEMENT_COUNT as uint) {
                 let mut pstate = @mut prop_state{
                     specificity:0,
                     set:false,
@@ -341,8 +345,10 @@ impl css_select_ctx {
                     inherit:false    
                 };
                 prop_vec.push(pstate);
+				m = m + 1;
             }
             state.props.push(prop_vec);
+			l = l + 1;
         }
 
         i = CSS_PSEUDO_ELEMENT_COUNT as int ;
@@ -993,7 +999,7 @@ impl css_select_ctx {
         let mut rule = s.get().rule_list;
         let mut sp : u32 = 0 ;
         let mut import_stack : ~[CSS_RULE_DATA_TYPE] = ~[];
-        vec::reserve_at_least(&mut import_stack,IMPORT_STACK_SIZE as uint) ;
+        import_stack.reserve_at_least(IMPORT_STACK_SIZE as uint) ;
 
         let mut ptr = rule ;
         while ( s.is_some() ) {
@@ -1794,7 +1800,7 @@ impl css_select_ctx {
 
             if (n != null()) {
                 /* Match its details */
-                error = self.match_details(n, vec::slice(detail,1,detail.len()), state, match_result, None);
+                error = self.match_details(n, detail.slice(1,detail.len()), state, match_result, None);
                 match error {
                     CSS_OK => {},
                     err => return err

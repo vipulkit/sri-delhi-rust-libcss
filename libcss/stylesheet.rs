@@ -1286,11 +1286,13 @@ impl css_selector_hash {
                         ids:~[],
                         universal:~[] 
         };
-        for u32::range(0,hash.default_slots) |_| {
+        let mut i = 0;
+		while i < hash.default_slots {
             hash.elements.push(None);
             hash.classes.push(None);
             hash.ids.push(None);
             hash.universal.push(None);
+			i = i + 1;
         }
         hash
     }
@@ -1364,7 +1366,7 @@ impl css_selector_hash {
         debug!("Entering _hash_name");
         let mut z: u32 = 0x811c9dc5;
         let mut i: uint = 0;
-        let string_index = str::char_len(string);
+        let string_index = string.char_len();
         while i<string_index {
             z *= 0x01000193;
             z ^= string[i] as u32 & !0x20;
@@ -1391,11 +1393,11 @@ impl css_selector_hash {
             let mut mask :u32 ;
             let mut index:u32=0;
             let mut name :~str ;
-            if (vec::uniq_len(&selector.data) > 0) {
+            if (selector.data.uniq_len() > 0) {
 
                 // Named Element
                 if ( selector.data[0].qname.name.len() != 1) || 
-                    (str::char_at(selector.data[0].qname.name,0) != '*' ) {
+                    (selector.data[0].qname.name.char_at(0) != '*' ) {
                         debug!("Entering: css__selector_hash_insert:: Named Element");
                         mask = self.default_slots-1 ;
                         index = css_selector_hash::_hash_name(copy (selector.data[0].qname.name)) & mask ;
@@ -1548,11 +1550,11 @@ impl css_selector_hash {
             let mut mask :u32 ;
             let mut index:u32=0;
             let mut name :~str ;
-            if (vec::uniq_len(&selector.data) > 0){
+            if (selector.data.uniq_len() > 0){
 
                 // Named Element
                 if ( selector.data[0].qname.name.len() != 1) || 
-                    (str::char_at(selector.data[0].qname.name,0) != '*' ) {
+                    (selector.data[0].qname.name.char_at(0) != '*' ) {
                         mask = self.default_slots-1 ;
                         index = css_selector_hash::_hash_name(copy (selector.data[0].qname.name)) & mask ;
                         return self._remove_from_chain(Element,index,selector);
@@ -1656,13 +1658,16 @@ impl css_selector_hash {
     }
     
     let mut i :uint = a.len() ;
-    for uint::range(0,i) |e| {
+    let mut e = 0;
+	while e < i {
         if a[e] == b[e] {
-            loop;
+            e = e + 1 ;
+			loop;
         }
 
         if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
             if (a[e]+32) == b[e] {
+				e = e + 1 ;
                 loop;
             }
             else {
@@ -1672,6 +1677,7 @@ impl css_selector_hash {
 
         if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
             if (b[e]+32) == a[e] {
+				e = e + 1 ;
                 loop;
             }
             else {
@@ -1863,8 +1869,8 @@ impl css_selector_hash {
                 },
                 Some(next_entry)=>{
                     unsafe {
-                        if vec::uniq_len(&head.selector.data)==0 || 
-                            vec::uniq_len(&next_entry.selector.data)==0 {
+                        if head.selector.data.uniq_len()==0 || 
+                            next_entry.selector.data.uniq_len()==0 {
                             return (None,CSS_INVALID);
                         }
                         if css_selector_hash::is_string_caseless_equal(
