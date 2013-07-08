@@ -35,7 +35,7 @@ pub struct prop_table {
 } 
 
 // vector of size -- CSS_N_PROPERTIES
-static prop_dispatch : &'static[&'static prop_table] = &[
+pub static prop_dispatch : &'static[&'static prop_table] = &[
 	&prop_table { 
 		cascade:css__cascade_azimuth, 
 		set_from_hint:css__set_azimuth_from_hint,
@@ -1049,48 +1049,15 @@ impl dispatch_table {
 	#[inline(always)]
 	pub fn check_index(index:uint) {
 		if( index >= CSS_N_PROPERTIES as uint) {
-			fail!(~"In Check Index : index should be less that CSS_N_PROPERTIES value") ;
+			fail!(~"In dispatch_table::check_index : index should be less that CSS_N_PROPERTIES value") ;
 		}
-	}
-
-	#[inline(always)]
-	pub fn get_cascade_ptr(index:uint) -> (&fn (opv:u32, style:@mut css_style,state:@mut css_select_state)-> css_error) {
-
-		dispatch_table::check_index(index);
-		let mut dispatch_cascade = prop_dispatch[index].cascade;
-		dispatch_cascade
-	}
-
-	#[inline(always)]
-	pub fn get_set_from_hint_ptr(index:uint) -> (&fn (hint:@mut css_hint, style: @mut css_computed_style) -> css_error) {
-
-		dispatch_table::check_index(index);
-		let mut dispatch_set_from_hint = prop_dispatch[index].set_from_hint;
-		dispatch_set_from_hint
-	}
-
-	#[inline(always)]
-	pub fn get_initial_ptr(index:uint) -> (&fn (state:@mut css_select_state) -> css_error ) {
-
-		dispatch_table::check_index(index);
-		let mut dispatch_initial = prop_dispatch[index].initial;
-		dispatch_initial
-	}
-
-	#[inline(always)]
-	pub fn get_compose_ptr(index:uint) -> (&fn (parent:@mut css_computed_style, child:@mut css_computed_style, 
-											result:@mut css_computed_style) -> css_error) {
-
-		dispatch_table::check_index(index);
-		let mut dispatch_compose = prop_dispatch[index].compose;
-		dispatch_compose
 	}
 
 	#[inline(always)]
 	pub fn get_inherited(index:uint) -> uint {
 
 		dispatch_table::check_index(index);
-		let mut dispatch_inherited = prop_dispatch[index].inherited;
+		let dispatch_inherited = prop_dispatch[index].inherited;
 		dispatch_inherited
 	}
 
@@ -1098,7 +1065,7 @@ impl dispatch_table {
 	pub fn get_group(index:uint) -> prop_group {
 
 		dispatch_table::check_index(index);
-		let mut dispatch_group = prop_dispatch[index].group;
+		let dispatch_group = prop_dispatch[index].group;
 		dispatch_group
 	}
 }
@@ -1365,11 +1332,11 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
 
         /* No need to initialise anything other than the normal
          * properties -- the others are handled by the accessors */
+        dispatch_table::check_index(i);
         match prop_dispatch[i].group {
             GROUP_NORMAL => {
                 if ( prop_dispatch[i].inherited == 0 ) {
-                    let mut dispatch_initial = prop_dispatch[i].initial;
-                    error =  dispatch_initial(state);
+                    error =  (prop_dispatch[i].initial)(state);
                     match error {
                         CSS_OK=>{},
                         x =>  {
@@ -1413,6 +1380,7 @@ pub fn css_computed_style_compose(parent: @mut css_computed_style,
     while i < (CSS_N_PROPERTIES as uint) {
         
         /* Skip any in extension blocks if the block does not exist */
+        dispatch_table::check_index(i);
         match prop_dispatch[i].group {
             GROUP_UNCOMMON => {
             	if ( parent.uncommon.is_none() &&
@@ -1436,8 +1404,8 @@ pub fn css_computed_style_compose(parent: @mut css_computed_style,
         }
 
 		/* Compose the property */
-		let mut dispatch_compose = prop_dispatch[i].compose;
-		error =  dispatch_compose(parent, child, result);
+		dispatch_table::check_index(i);
+		error =  (prop_dispatch[i].compose)(parent, child, result);
         match error {
             CSS_OK=>{},
             _ =>  {

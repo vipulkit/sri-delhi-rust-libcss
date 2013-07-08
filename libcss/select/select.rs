@@ -713,9 +713,9 @@ impl css_select_ctx {
         } 
 
         /* Hint defined -- set it in the result */
-        let mut dispatch_hint = dispatch_table::get_set_from_hint_ptr(prop as uint) ;
         let hint = hint_option.unwrap();
-        let error =  dispatch_hint(hint, state.computed);
+        dispatch_table::check_index(prop as uint);
+        let error =  (prop_dispatch[prop as uint].set_from_hint)(hint, state.computed);
 
         match error {
             CSS_OK => {},
@@ -764,7 +764,8 @@ impl css_select_ctx {
 
             match group {
                 GROUP_NORMAL => {
-                    error = (dispatch_table::get_initial_ptr(prop))(state);
+                    dispatch_table::check_index(prop);
+                    error = (prop_dispatch[prop].initial)(state);
                     match error {
                         CSS_OK => {},
                         _=> {
@@ -777,7 +778,8 @@ impl css_select_ctx {
                     match state.computed.uncommon {
                         None => {},
                         Some(_) => {
-                            error = (dispatch_table::get_initial_ptr(prop))(state);
+                            dispatch_table::check_index(prop);
+                            error = (prop_dispatch[prop].initial)(state);
                             match error {
                                 CSS_OK => {},
                                 _=> {
@@ -792,7 +794,8 @@ impl css_select_ctx {
                     match state.computed.page {
                         None => {},
                         Some(_) => {
-                            error = (dispatch_table::get_initial_ptr(prop))(state);
+                            dispatch_table::check_index(prop);
+                            error = (prop_dispatch[prop].initial)(state);
                             match error {
                                 CSS_OK => {},
                                 _=> {
@@ -807,7 +810,8 @@ impl css_select_ctx {
                     match state.computed.aural {
                         None => {},
                         Some(_) => {
-                            error = (dispatch_table::get_initial_ptr(prop))(state);
+                            dispatch_table::check_index(prop);
+                            error = (prop_dispatch[prop].initial)(state);
                             match error {
                                 CSS_OK => {},
                                 _=> {
@@ -2287,8 +2291,8 @@ impl css_select_ctx {
 
             op = getOpcode(opv) as u32;
             debug!(fmt!("op=%?, opv=%?, op_m=%?", op, opv, op as uint));
-			let mut dispatch_cascade = dispatch_table::get_cascade_ptr(op as uint) ;
-            error =  dispatch_cascade(opv, s, state);
+			dispatch_table::check_index(op as uint);
+            error =  (prop_dispatch[op as uint].cascade)(opv, s, state);
 
             match error {
                 CSS_OK => {},
