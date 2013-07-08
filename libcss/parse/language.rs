@@ -1044,8 +1044,9 @@ impl css_language {
          */
 
         match self.parseSimpleSelector(vector, ctx) {
-            (CSS_OK, Some(selector)) => {
-                let mut result = selector;
+            (CSS_OK, Some(selector_)) => {
+                let mut result = selector_;
+                let mut _selector = selector_;
                 loop {
                     if *ctx >= vector.len() || tokenIsChar(&vector[*ctx],',') {
                         return (CSS_OK, Some(result))
@@ -1068,15 +1069,15 @@ impl css_language {
                                 match self.parseSimpleSelector(vector, ctx) {
                                     (CSS_OK, Some(other_selector)) => {   
 										result = other_selector;
-                                        match css_stylesheet::css__stylesheet_selector_combine(*comb, selector, other_selector) {
-                                            CSS_OK => { selector = other_selector}
+                                        match css_stylesheet::css__stylesheet_selector_combine(*comb, _selector, other_selector) {
+                                            CSS_OK => { _selector = other_selector}
                                             x => return (x,None)
                                         }
                                     },
                                     (x,y) => return(x,y)
                                 } // End of match parseSimpleSelector
                             },  
-                            x => return (x, Some(selector))
+                            x => return (x, Some(_selector))
                         }// End of outer match parseCombinator
                     } // End of If Else
                 } //End of loop
@@ -1116,10 +1117,12 @@ impl css_language {
         }   
         else {
             /* Universal selector */
-            match self.default_namespace {
-                Some(ns) => qname.ns = ns,
-                None => qname.ns = self.strings.lwc_string_data(UNIVERSAL as uint)
-            }   
+            if self.default_namespace.is_some() {
+                qname.ns = self.default_namespace.get_ref().to_owned();
+            }
+            else {
+                qname.ns = self.strings.lwc_string_data(UNIVERSAL as uint)
+            }
             
             qname.name = self.strings.lwc_string_data(UNIVERSAL as uint);
 
@@ -1237,9 +1240,11 @@ impl css_language {
         } 
         else {
             /* No namespace prefix */
-            match self.default_namespace {
-                Some(ns) => qname.ns = ns,
-                None => qname.ns = self.strings.lwc_string_data(UNIVERSAL as uint)
+            if self.default_namespace.is_some() {
+                qname.ns = self.default_namespace.get_ref().to_owned();
+            }
+            else {
+                qname.ns = self.strings.lwc_string_data(UNIVERSAL as uint)
             }
 
 			debug!(fmt!("prefix=%?",prefix));
@@ -1891,7 +1896,10 @@ impl css_language {
                     } 
                     else {
                         /* 2n */
-                        let (ret_a, consumed) = css__number_from_lwc_string(token.idata.unwrap(), true);
+                        let ret_a: i32 = 0;
+                        let mut consumed:uint = 0;
+
+                        (ret_a, consumed) = css__number_from_lwc_string(token.idata.unwrap(), true);
                         a = ret_a;
                         if consumed == 0 || ((data[data_index + consumed] != 'n' as u8) && (data[data_index + consumed] != 'N' as u8)) {
                             debug!("Exiting: parseNth (7)");

@@ -1,5 +1,4 @@
 use wapcaplet::*;
-use extra::arc;
 
 use bytecode::bytecode::*;
 use bytecode::opcodes::*;
@@ -158,11 +157,9 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
 pub fn css__number_from_lwc_string(string: @mut lwc_string, int_only: bool) -> (i32 , uint) {
     
     debug!("Entering: css__number_from_lwc_string");
-    let mut ret_value = 0;
-    let mut consumed_length = 0;
 
     if lwc_string_length(string.clone()) == 0 {
-        return (ret_value , consumed_length);
+        return (0 , 0);
     }
     css__number_from_string(lwc_string_data(string.clone()), @mut 0, int_only)
 }
@@ -450,10 +447,9 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
             return (None , None , CSS_INVALID);
         } 
     }
-	unsafe {
-		debug!(fmt!("Token = %?", token));
-		debug!(fmt!("sheet.quirks_allowed = %?", sheet.quirks_allowed));
-	}
+	
+	debug!(fmt!("Token = %?", token));
+	debug!(fmt!("sheet.quirks_allowed = %?", sheet.quirks_allowed));
 	
     if token.token_type as int == CSS_TOKEN_IDENT as int  {
         if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , TRANSPARENT as uint) {
@@ -901,7 +897,7 @@ pub fn css__parse_hash_colour(data: @mut lwc_string) -> (Option<u32> , css_error
     let mut r: u8;
     let mut g: u8;
     let mut b: u8;
-    let mut a: u8 = 0xff;
+    let a: u8 = 0xff;
     let input_length = lwc_string_length(data.clone());
     let input_string = lwc_string_data(data.clone());
 
