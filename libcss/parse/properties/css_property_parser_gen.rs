@@ -160,7 +160,7 @@ pub fn output_ident(fp:@Writer, only_ident:bool, parseid:&keyval, IDENT:~[keyval
         if !only_ident {
             output.push_str("(match token.token_type { CSS_TOKEN_IDENT => true, _ => false}) && \n");
         }
-        output.push_str( fmt!("\tstrings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), %s as uint) {\n",i.key));
+        output.push_str( fmt!("\tstrings.lwc_string_caseless_isequal(token.idata.unwrap(), %s as uint) {\n",i.key));
         if i.key == ~"INHERIT" {
             output.push_str( fmt!("\t\tcss_stylesheet::css_stylesheet_style_inherit(result, %s)\n", parseid.val));
 
@@ -178,7 +178,7 @@ pub fn output_uri(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
         let mut output : ~str = ~" if match token.token_type { CSS_TOKEN_URI => true, _ => false} {\n";
         
         output.push_str("\n");
-        output.push_str("\t\tmatch (*sheet.resolve)(sheet.url, token.idata.get_ref().clone()) {\n");
+        output.push_str("\t\tmatch (*sheet.resolve)(sheet.url, token.idata.unwrap()) {\n");
         output.push_str("\t\t\t(CSS_OK, Some(uri)) => {\n");
         output.push_str("\t\t\t\tlet uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri));\n");
         output.push_str(fmt!("\t\t\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s );\n",parseid.val,kvlist[0].val));
@@ -199,9 +199,9 @@ pub fn output_number(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     
     let mut output : ~str = ~"\tif match token.token_type { CSS_TOKEN_NUMBER => true, _ => false} {\n";
   
-    output.push_str(fmt!("\t\tlet (num,consumed): (i32,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), %s);\n",kvlist[0].key));
+    output.push_str(fmt!("\t\tlet (num,consumed): (i32,uint)=  css__number_from_lwc_string(token.idata.unwrap(), %s);\n",kvlist[0].key));
     output.push_str("\t\t/* Invalid if there are trailing characters */\n");
-    output.push_str("\t\tif consumed != lwc_string_length(token.idata.get_ref().clone()) {\n");
+    output.push_str("\t\tif consumed != lwc_string_length(token.idata.unwrap()) {\n");
     output.push_str("\t\t\t*ctx = orig_ctx;\n");
     output.push_str("\t\t\treturn CSS_INVALID\n");
     output.push_str("\t\t}\n");
@@ -313,7 +313,7 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             output.push_str("\t\twhile !token_null && (match token.token_type {CSS_TOKEN_IDENT => true, _ => false}) {\n");
             output.push_str("\t\t\tlet mut num:css_fixed;\n");
             output.push_str("\t\t\tlet mut pctx:uint;\n\n");
-            output.push_str("\t\t\tlet snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref().clone()));\n");
+            output.push_str("\t\t\tlet snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap()));\n");
             output.push_str("\t\t\tcss_stylesheet::css__stylesheet_style_append(result, snumber as u32);\n"); 
             output.push_str("\t\t\tconsumeWhitespace(vector, ctx);\n\n");
             output.push_str("\t\t\tpctx = *ctx;\n");
@@ -325,9 +325,9 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             output.push_str("\t\t\t\t*ctx += 1; //Iterate\n");
             output.push_str("\t\t\t}\n");
             output.push_str("\t\t\tif !token_null && (match token.token_type { CSS_TOKEN_NUMBER => true, _ => false}) {\n");
-            output.push_str("\t\t\t\tlet (_num, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);\n");
+            output.push_str("\t\t\t\tlet (_num, consumed) = css__number_from_lwc_string(token.idata.unwrap(), true);\n");
             output.push_str("\t\t\t\tnum = _num;\n");
-            output.push_str("\t\t\t\tif consumed != lwc_string_length(token.idata.get_ref().clone()) {\n");
+            output.push_str("\t\t\t\tif consumed != lwc_string_length(token.idata.unwrap()) {\n");
             output.push_str("\t\t\t\t\t*ctx = orig_ctx;\n");
             output.push_str("\t\t\t\t\treturn CSS_INVALID\n");
             output.push_str("\t\t\t\t}\n");

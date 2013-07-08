@@ -71,15 +71,15 @@ pub struct css_system_font {
     weight: css_font_weight_e,
     size: size,
     line_height: line_height,
-    family: arc::RWARC<~lwc_string>
+    family: @mut lwc_string
 }
 
 pub type css_fixed = i32;
 
-pub type css_url_resolution_fn = @extern fn (base:@str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>);
-pub type css_font_resolution_fn = @extern fn (name: arc::RWARC<~lwc_string>) -> (css_error , Option<css_system_font>);
+pub type css_url_resolution_fn = @extern fn (base:@str, rel:@mut lwc_string) -> (css_error,Option<@mut lwc_string>);
+pub type css_font_resolution_fn = @extern fn (name: @mut lwc_string) -> (css_error , Option<css_system_font>);
 pub type css_import_notification_fn =  @extern fn(url:@str, media:@mut u64) -> css_error;
-pub type css_color_resolution_fn = @extern fn (name: arc::RWARC<~lwc_string>) -> (Option<u32> , css_error);
+pub type css_color_resolution_fn = @extern fn (name: @mut lwc_string) -> (Option<u32> , css_error);
 
 
 static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
@@ -522,7 +522,7 @@ impl css_stylesheet {
     */
     pub fn css__stylesheet_style_vappend(target : @mut css_style, bytecodes: &[u32] ) {
         debug!("Entering: css__stylesheet_style_vappend");
-        target.bytecode += bytecodes;
+        target.bytecode = target.bytecode + bytecodes;
     }
 
     /**

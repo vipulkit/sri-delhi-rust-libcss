@@ -366,9 +366,9 @@ impl css_parser {
     }
 
 
-    fn intern_string (&mut self, string: ~str) -> arc::RWARC<~lwc_string> {
+    fn intern_string (&mut self, string: ~str) -> @mut lwc_string {
         debug!("Entering: intern_string");
-        let mut interned_string: Option<arc::RWARC<~lwc_string>> = None;
+        let mut interned_string: Option<@mut lwc_string> = None;
 
         do self.lwc.write |lwc| {
             interned_string = Some(lwc.lwc_intern_string(copy string));

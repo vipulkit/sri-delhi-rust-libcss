@@ -212,17 +212,17 @@ impl css_properties {
         let token=&vector[*ctx];
 
         if (token.token_type as int == CSS_TOKEN_IDENT as int 
-            && strings.lwc_string_caseless_isequal(token.idata.get_ref(), INHERIT as uint)) {
+            && strings.lwc_string_caseless_isequal(token.idata.unwrap(), INHERIT as uint)) {
             *ctx += 1;
             flags = FLAG_INHERIT as u8 ;
         }
         else if (token.token_type as int == CSS_TOKEN_IDENT as int 
-            && strings.lwc_string_caseless_isequal(token.idata.get_ref(), LEFTWARDS as uint)) {
+            && strings.lwc_string_caseless_isequal(token.idata.unwrap(), LEFTWARDS as uint)) {
             *ctx += 1;
             value = AZIMUTH_LEFTWARDS ;
         }        
         else if (token.token_type as int == CSS_TOKEN_IDENT as int 
-            && strings.lwc_string_caseless_isequal(token.idata.get_ref(), RIGHTWARDS as uint)) {
+            && strings.lwc_string_caseless_isequal(token.idata.unwrap(), RIGHTWARDS as uint)) {
             *ctx += 1;
             value = AZIMUTH_RIGHTWARDS ;
         }
@@ -234,34 +234,34 @@ impl css_properties {
              * potentially followed by behind or other keyword, 
              * respectively */
 
-            if strings.lwc_string_caseless_isequal(token.idata.get_ref(), LEFT_SIDE as uint) {
+            if strings.lwc_string_caseless_isequal(token.idata.unwrap(), LEFT_SIDE as uint) {
                 value = AZIMUTH_LEFT_SIDE ;
             }
-            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref(), FAR_LEFT as uint)) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.unwrap(), FAR_LEFT as uint)) {
                 value = AZIMUTH_FAR_LEFT ;
             }
-            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref(), LEFT as uint)) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.unwrap(), LEFT as uint)) {
                 value = AZIMUTH_LEFT ;
             }
-            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref(), CENTER_LEFT as uint)) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.unwrap(), CENTER_LEFT as uint)) {
                 value = AZIMUTH_CENTER_LEFT ;
             }
-            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref(), CENTER as uint)) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.unwrap(), CENTER as uint)) {
                 value = AZIMUTH_CENTER;
             }
-            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref(),CENTER_RIGHT as uint)) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.unwrap(),CENTER_RIGHT as uint)) {
                 value = AZIMUTH_CENTER_RIGHT;
             }
-            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref(), RIGHT as uint)) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.unwrap(), RIGHT as uint)) {
                 value = AZIMUTH_RIGHT;
             }
-            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref(), FAR_RIGHT as uint)) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.unwrap(), FAR_RIGHT as uint)) {
                 value = AZIMUTH_FAR_RIGHT;
             }
-            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref(), RIGHT_SIDE as uint)) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.unwrap(), RIGHT_SIDE as uint)) {
                 value = AZIMUTH_RIGHT_SIDE;
             }
-            else if (strings.lwc_string_caseless_isequal(token.idata.get_ref(), BEHIND as uint)) {
+            else if (strings.lwc_string_caseless_isequal(token.idata.unwrap(), BEHIND as uint)) {
                 debug!("Entering: css__parse_azimuth :: BEHIND ");
                 value = AZIMUTH_BEHIND;
             }
@@ -293,39 +293,39 @@ impl css_properties {
                 *ctx += 1;
                 debug!("Entering: css__parse_azimuth:: !token_null && token.token_type as int == CSS_TOKEN_IDENT as int && value == AZIMUTH_BEHIND");
                 
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref(), LEFT_SIDE as uint) {
+                if strings.lwc_string_caseless_isequal(token.idata.unwrap(), LEFT_SIDE as uint) {
                     debug!("Entering: css__parse_azimuth:: LEFT_SIDE");
                     value |= AZIMUTH_LEFT_SIDE;
                 }
-                else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), FAR_LEFT as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), FAR_LEFT as uint) {
                     debug!("Entering: css__parse_azimuth:: FAR_LEFT");
                     value |= AZIMUTH_FAR_LEFT;
                 }
-                else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), LEFT as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), LEFT as uint) {
                     debug!("Entering: css__parse_azimuth:: LEFT");
                     value |= AZIMUTH_LEFT;
                 }
-                else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), CENTER_LEFT as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), CENTER_LEFT as uint) {
                     debug!("Entering: css__parse_azimuth:: CENTER_LEFT");
                     value |= AZIMUTH_CENTER_LEFT;
                 }
-                else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), CENTER as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), CENTER as uint) {
                     debug!("Entering: css__parse_azimuth:: CENTER");
                     value |=  AZIMUTH_CENTER;
                 }
-                else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), CENTER_RIGHT as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), CENTER_RIGHT as uint) {
                     debug!("Entering: css__parse_azimuth:: CENTER_RIGHT");
                     value |= AZIMUTH_CENTER_RIGHT;
                 }
-                else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), RIGHT as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), RIGHT as uint) {
                     debug!("Entering: css__parse_azimuth:: RIGHT");
                     value |= AZIMUTH_RIGHT;
                 }
-                else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), FAR_RIGHT as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), FAR_RIGHT as uint) {
                     debug!("Entering: css__parse_azimuth:: FAR_RIGHT");
                     value |= AZIMUTH_FAR_RIGHT;
                 }
-                else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), RIGHT_SIDE as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), RIGHT_SIDE as uint) {
                     debug!("Entering: css__parse_azimuth:: RIGHT_SIDE");
                     value |= AZIMUTH_RIGHT_SIDE;
                 }
@@ -339,7 +339,7 @@ impl css_properties {
 
                 *ctx += 1;
                 
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref(), BEHIND as uint) {
+                if strings.lwc_string_caseless_isequal(token.idata.unwrap(), BEHIND as uint) {
                     value |= AZIMUTH_BEHIND;
                 }
                 else {
@@ -610,7 +610,7 @@ impl css_properties {
         let token = &vector[*ctx];
 
         if match token.token_type { CSS_TOKEN_IDENT  => true, _ => false }  
-            && strings.lwc_string_caseless_isequal(token.idata.get_ref(),INHERIT as uint) {
+            && strings.lwc_string_caseless_isequal(token.idata.unwrap(),INHERIT as uint) {
             
             //token = &vector[*ctx]; Value assigned never used
             *ctx += 1;
@@ -628,19 +628,19 @@ impl css_properties {
 
                 match token.token_type {
                     CSS_TOKEN_IDENT  => {
-                        if strings.lwc_string_caseless_isequal(token.idata.get_ref(), LEFT as uint) {
+                        if strings.lwc_string_caseless_isequal(token.idata.unwrap(), LEFT as uint) {
                             value[i] = BACKGROUND_POSITION_HORZ_LEFT 
                         } 
-                        else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), RIGHT as uint) {
+                        else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), RIGHT as uint) {
                             value[i] = BACKGROUND_POSITION_HORZ_RIGHT 
                         } 
-                        else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), TOP as uint) {
+                        else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), TOP as uint) {
                             value[i] = BACKGROUND_POSITION_VERT_TOP 
                         }
-                        else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), BOTTOM as uint) {
+                        else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), BOTTOM as uint) {
                             value[i] = BACKGROUND_POSITION_VERT_BOTTOM 
                         }
-                        else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), CENTER as uint) {
+                        else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), CENTER as uint) {
                             value[i] = BACKGROUND_POSITION_VERT_CENTER 
                         }
                         else if (i == 1) {
@@ -1021,7 +1021,7 @@ impl css_properties {
             match (token.token_type) {
                 CSS_TOKEN_IDENT  => true,
                 _=> false
-            } && strings.lwc_string_caseless_isequal(token.idata.get_ref(), INHERIT as uint) 
+            } && strings.lwc_string_caseless_isequal(token.idata.unwrap(), INHERIT as uint) 
         ) {
             *ctx += 1;
             css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_SPACING , FLAG_INHERIT as u8 , 0);
@@ -1153,34 +1153,34 @@ impl css_properties {
 
             match token.token_type {
                 CSS_TOKEN_IDENT  => {
-                    if strings.lwc_string_caseless_isequal(token.idata.get_ref() , NONE as uint) {
+                    if strings.lwc_string_caseless_isequal(token.idata.unwrap() , NONE as uint) {
                         side_val_vec.push(BORDER_STYLE_NONE );
                     }
-                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , HIDDEN as uint) {
+                    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , HIDDEN as uint) {
                         side_val_vec.push(BORDER_STYLE_HIDDEN );
                     }
-                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , DOTTED as uint) {
+                    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , DOTTED as uint) {
                         side_val_vec.push(BORDER_STYLE_DOTTED );
                     }
-                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , DASHED as uint) {
+                    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , DASHED as uint) {
                         side_val_vec.push(BORDER_STYLE_DASHED );
                     }
-                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , SOLID as uint) {
+                    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , SOLID as uint) {
                         side_val_vec.push(BORDER_STYLE_SOLID );
                     }
-                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , LIBCSS_DOUBLE as uint) {
+                    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , LIBCSS_DOUBLE as uint) {
                         side_val_vec.push(BORDER_STYLE_DOUBLE );
                     }
-                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , GROOVE as uint) {
+                    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , GROOVE as uint) {
                         side_val_vec.push(BORDER_STYLE_GROOVE );
                     }
-                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , RIDGE as uint) {
+                    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , RIDGE as uint) {
                         side_val_vec.push(BORDER_STYLE_RIDGE );
                     }
-                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , INSET as uint) {
+                    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , INSET as uint) {
                         side_val_vec.push(BORDER_STYLE_INSET );
                     }
-                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , OUTSET as uint) {
+                    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , OUTSET as uint) {
                         side_val_vec.push(BORDER_STYLE_OUTSET );
                     }
                     else {
@@ -1297,7 +1297,7 @@ impl css_properties {
                     CSS_TOKEN_IDENT  => true,
                     _ => false
                 }
-                ) && strings.lwc_string_caseless_isequal(token.idata.get_ref() , THIN as uint) {
+                ) && strings.lwc_string_caseless_isequal(token.idata.unwrap() , THIN as uint) {
 
                 side_val.push(BORDER_WIDTH_THIN);
                 side_unit.push(0);
@@ -1310,7 +1310,7 @@ impl css_properties {
                     CSS_TOKEN_IDENT  => true,
                     _ => false
                 }
-                ) && strings.lwc_string_caseless_isequal(token.idata.get_ref() , MEDIUM as uint) {
+                ) && strings.lwc_string_caseless_isequal(token.idata.unwrap() , MEDIUM as uint) {
                 
                 side_val.push(BORDER_WIDTH_MEDIUM);
                 side_unit.push(0);
@@ -1321,7 +1321,7 @@ impl css_properties {
             else if (match token.token_type {
                 CSS_TOKEN_IDENT  => true,
                 _ => false
-            }) && strings.lwc_string_caseless_isequal(token.idata.get_ref() , THICK as uint) {
+            }) && strings.lwc_string_caseless_isequal(token.idata.unwrap() , THICK as uint) {
                 
                 side_val.push(BORDER_WIDTH_THICK);
                 side_unit.push(0);
@@ -1556,16 +1556,16 @@ impl css_properties {
 
         match token.token_type {
             CSS_TOKEN_IDENT  => {
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref() , INHERIT as uint) {
+                if strings.lwc_string_caseless_isequal(token.idata.unwrap() , INHERIT as uint) {
                     css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_CLIP , FLAG_INHERIT as u8 , 0);
                 }
-                else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , AUTO as uint) {
+                else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , AUTO as uint) {
                     css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_CLIP , 0 , CLIP_AUTO );
                 }
             },
             CSS_TOKEN_FUNCTION  => {
 
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref() , RECT as uint) {
+                if strings.lwc_string_caseless_isequal(token.idata.unwrap() , RECT as uint) {
                     let i: int = 0;
                     let value: u16 = CLIP_SHAPE_RECT ;
 
@@ -1581,7 +1581,7 @@ impl css_properties {
 
                         match token.token_type {
                             CSS_TOKEN_IDENT  => {
-                                if strings.lwc_string_caseless_isequal(token.idata.get_ref() , AUTO as uint) {
+                                if strings.lwc_string_caseless_isequal(token.idata.unwrap() , AUTO as uint) {
                                     value |= 1 << (i+3);
                                 }
                                 else {
@@ -1921,13 +1921,13 @@ impl css_properties {
 
         let token_ident_match_res = match token.token_type { CSS_TOKEN_IDENT  => true, _ => false};
 
-        if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref(),INHERIT as uint) {
+        if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.unwrap(),INHERIT as uint) {
            css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_CONTENT)        
         }
-        else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref(),NORMAL as uint) {
+        else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.unwrap(),NORMAL as uint) {
            css_stylesheet::css__stylesheet_style_appendOPV(result, CSS_PROP_CONTENT, 0, CONTENT_NORMAL )
         } 
-        else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref(), NONE as uint) {
+        else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.unwrap(), NONE as uint) {
            css_stylesheet::css__stylesheet_style_appendOPV(result, CSS_PROP_CONTENT, 0, CONTENT_NONE )
         } 
         else {
@@ -1953,32 +1953,32 @@ impl css_properties {
 
             loop {
 
-                if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref(),
+                if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.unwrap(),
                  OPEN_QUOTE as uint) {
                     CSS_APPEND(first, CONTENT_OPEN_QUOTE )
                 }
-                else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref(),
+                else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.unwrap(),
                  CLOSE_QUOTE as uint) {
                     CSS_APPEND(first, CONTENT_CLOSE_QUOTE )
                 }
-                else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref(),
+                else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.unwrap(),
                  NO_OPEN_QUOTE as uint) {
                     CSS_APPEND(first, CONTENT_NO_OPEN_QUOTE );
                 } 
-                else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.get_ref(),
+                else if token_ident_match_res && strings.lwc_string_caseless_isequal(token.idata.unwrap(),
                  NO_CLOSE_QUOTE as uint) {
                     CSS_APPEND(first, CONTENT_NO_CLOSE_QUOTE );
                 } 
                 else if match token.token_type {CSS_TOKEN_STRING  => true, _ => false} {
                     
-                    let snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref())) ;
+                    let snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap())) ;
                     CSS_APPEND(first, CONTENT_STRING );
                     
                     css_stylesheet::css__stylesheet_style_append(result, snumber as u32);
                 }
                 else if match token.token_type {CSS_TOKEN_URI  => true, _ => false} {
                     
-                    match (*sheet.resolve)(sheet.url, token.idata.get_ref()){
+                    match (*sheet.resolve)(sheet.url, token.idata.unwrap()){
                         (CSS_OK, Some(uri)) => {
                             let uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri));
                             CSS_APPEND(first, CONTENT_URI);
@@ -1992,7 +1992,7 @@ impl css_properties {
                     }
                 } 
                 else if match token.token_type {CSS_TOKEN_FUNCTION  => true, _ => false} &&
-                        strings.lwc_string_caseless_isequal(token.idata.get_ref(), ATTR as uint) {
+                        strings.lwc_string_caseless_isequal(token.idata.unwrap(), ATTR as uint) {
 
                     consumeWhitespace(vector, ctx);
 
@@ -2013,7 +2013,7 @@ impl css_properties {
                         }
                     }   
                     
-                    let snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref()));
+                    let snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap()));
                     CSS_APPEND(first, CONTENT_ATTR );
                     
                     css_stylesheet::css__stylesheet_style_append(result, snumber as u32);
@@ -2035,7 +2035,7 @@ impl css_properties {
                     }
                 }
                 else if match token.token_type {CSS_TOKEN_FUNCTION  => true, _ => false} &&
-                       strings.lwc_string_caseless_isequal(token.idata.get_ref(), COUNTER as uint) {
+                       strings.lwc_string_caseless_isequal(token.idata.unwrap(), COUNTER as uint) {
 
                     let opv = CONTENT_COUNTER as u32;
 
@@ -2058,7 +2058,7 @@ impl css_properties {
                         }
                     }   
 
-                    let name = token.idata.get_ref();
+                    let name = token.idata.unwrap();
 
                     consumeWhitespace(vector, ctx);
 
@@ -2136,7 +2136,7 @@ impl css_properties {
                     css_stylesheet::css__stylesheet_style_append(result, snumber as u32);
                 } 
                 else if match token.token_type {CSS_TOKEN_FUNCTION  => true, _ => false} &&
-                       strings.lwc_string_caseless_isequal(token.idata.get_ref(), COUNTERS as uint) {
+                       strings.lwc_string_caseless_isequal(token.idata.unwrap(), COUNTERS as uint) {
                                       
                     let opv = CONTENT_COUNTERS as u32;
 
@@ -2159,7 +2159,7 @@ impl css_properties {
                         }
                     }   
                     
-                    let name = token.idata.get_ref();
+                    let name = token.idata.unwrap();
 
                     consumeWhitespace(vector, ctx);
 
@@ -2196,7 +2196,7 @@ impl css_properties {
                         }
                     }    
 
-                    let sep = token.idata.get_ref();
+                    let sep = token.idata.unwrap();
 
                     consumeWhitespace(vector, ctx);
 
@@ -2452,7 +2452,7 @@ impl css_properties {
             match token.token_type {
                 CSS_TOKEN_IDENT  => true,
                 _=> false
-            } && strings.lwc_string_caseless_isequal(token.idata.get_ref(), INHERIT as uint)
+            } && strings.lwc_string_caseless_isequal(token.idata.unwrap(), INHERIT as uint)
             ) {
             css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_CURSOR);
         }
@@ -2466,8 +2466,8 @@ impl css_properties {
                    }
                    ) {
 
-                let uri:arc::RWARC<~lwc_string>;
-                match (*sheet.resolve)(sheet.url, token.idata.get_ref()) {
+                let uri:@mut lwc_string;
+                match (*sheet.resolve)(sheet.url, token.idata.unwrap()) {
                     (CSS_OK, Some(x)) => {
                         uri =x;
                     },
@@ -2520,7 +2520,7 @@ impl css_properties {
 
             match token.token_type {
                 CSS_TOKEN_IDENT =>{
-                   if strings.lwc_string_caseless_isequal(token.idata.get_ref(), AUTO as uint) {
+                   if strings.lwc_string_caseless_isequal(token.idata.unwrap(), AUTO as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_AUTO );
@@ -2530,7 +2530,7 @@ impl css_properties {
                             }
                         }
                     }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), CROSSHAIR as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), CROSSHAIR as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_CROSSHAIR );
@@ -2540,7 +2540,7 @@ impl css_properties {
                             }
                         }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), DEFAULT as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), DEFAULT as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_DEFAULT );
@@ -2550,7 +2550,7 @@ impl css_properties {
                             }
                         }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), POINTER as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), POINTER as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_POINTER );
@@ -2560,7 +2560,7 @@ impl css_properties {
                             }
                         }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), MOVE as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), MOVE as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_MOVE );
@@ -2570,7 +2570,7 @@ impl css_properties {
                             }
                         }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), E_RESIZE as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), E_RESIZE as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_E_RESIZE );
@@ -2580,7 +2580,7 @@ impl css_properties {
                             }
                         }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), NE_RESIZE as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), NE_RESIZE as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_NE_RESIZE );
@@ -2590,7 +2590,7 @@ impl css_properties {
                             }
                         }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), NW_RESIZE as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), NW_RESIZE as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_NW_RESIZE );
@@ -2600,7 +2600,7 @@ impl css_properties {
                             }
                         }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(),N_RESIZE as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(),N_RESIZE as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_N_RESIZE );
@@ -2610,7 +2610,7 @@ impl css_properties {
                             }
                         }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), SE_RESIZE as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), SE_RESIZE as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_SE_RESIZE );
@@ -2620,7 +2620,7 @@ impl css_properties {
                             }
                         }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), SW_RESIZE as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), SW_RESIZE as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_SW_RESIZE );
@@ -2630,7 +2630,7 @@ impl css_properties {
                             }
                         }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), S_RESIZE as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), S_RESIZE as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_S_RESIZE );
@@ -2640,7 +2640,7 @@ impl css_properties {
                             }
                         }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), W_RESIZE as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), W_RESIZE as uint) {
                          match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_W_RESIZE );
@@ -2650,7 +2650,7 @@ impl css_properties {
                             }
                         }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), LIBCSS_TEXT as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), LIBCSS_TEXT as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_TEXT );
@@ -2660,7 +2660,7 @@ impl css_properties {
                             }
                         }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), WAIT as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), WAIT as uint) {
                          match first{
                                 true=>{
                                     css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_WAIT );
@@ -2670,7 +2670,7 @@ impl css_properties {
                                 }
                             }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), HELP as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), HELP as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_HELP );
@@ -2680,7 +2680,7 @@ impl css_properties {
                             }
                         }
                    }
-                   else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), PROGRESS as uint) {
+                   else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), PROGRESS as uint) {
                         match first{
                             true=>{
                                 css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_PROGRESS );
@@ -2740,32 +2740,32 @@ impl css_properties {
         token=&vector[*ctx];
         
         if (token.token_type as int == CSS_TOKEN_IDENT as int&& 
-            strings.lwc_string_caseless_isequal(token.idata.get_ref(), INHERIT as uint)) {
+            strings.lwc_string_caseless_isequal(token.idata.unwrap(), INHERIT as uint)) {
             *ctx += 1;
             flags = FLAG_INHERIT as u8;
         }
         else if (token.token_type as int == CSS_TOKEN_IDENT as int &&
-            strings.lwc_string_caseless_isequal(token.idata.get_ref(), BELOW as uint)) {
+            strings.lwc_string_caseless_isequal(token.idata.unwrap(), BELOW as uint)) {
                 *ctx += 1;
                 value = ELEVATION_BELOW ;
             }
         else if (token.token_type as int == CSS_TOKEN_IDENT as int &&
-         strings.lwc_string_caseless_isequal(token.idata.get_ref(), LEVEL as uint)) {
+         strings.lwc_string_caseless_isequal(token.idata.unwrap(), LEVEL as uint)) {
                 *ctx += 1;
                 value = ELEVATION_LEVEL ;
             }
         else if (token.token_type as int == CSS_TOKEN_IDENT as int &&
-            strings.lwc_string_caseless_isequal(token.idata.get_ref(), ABOVE as uint)) {
+            strings.lwc_string_caseless_isequal(token.idata.unwrap(), ABOVE as uint)) {
                 *ctx += 1;
                 value = ELEVATION_ABOVE ;
             }
         else if (token.token_type as int == CSS_TOKEN_IDENT as int &&
-            strings.lwc_string_caseless_isequal(token.idata.get_ref(), HIGHER as uint)){
+            strings.lwc_string_caseless_isequal(token.idata.unwrap(), HIGHER as uint)){
                 *ctx += 1;
                 value = ELEVATION_HIGHER ;
             }
         else if (token.token_type as int == CSS_TOKEN_IDENT as int &&
-            strings.lwc_string_caseless_isequal(token.idata.get_ref(), LOWER as uint)) {
+            strings.lwc_string_caseless_isequal(token.idata.unwrap(), LOWER as uint)) {
                 *ctx += 1;
                 value = ELEVATION_LOWER ;
             }
@@ -2875,7 +2875,7 @@ impl css_properties {
         match sheet.font {
             None => {},
             Some(font_resolution) => {
-                let (sheet_font_error , some_sys_font) = (*font_resolution)(token.idata.get_ref());
+                let (sheet_font_error , some_sys_font) = (*font_resolution)(token.idata.unwrap());
                 match token.token_type {
                     CSS_TOKEN_IDENT  => {
                         let value_from_font = match some_sys_font {
@@ -3097,7 +3097,7 @@ impl css_properties {
         }
 
         if (token.token_type as int == CSS_TOKEN_IDENT as int ) 
-            && strings.lwc_string_caseless_isequal(token.idata.get_ref(), INHERIT as uint) {
+            && strings.lwc_string_caseless_isequal(token.idata.unwrap(), INHERIT as uint) {
             
             css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_FONT_FAMILY)
         } 
@@ -3162,13 +3162,13 @@ impl css_properties {
             return CSS_INVALID
         }
         
-        if strings.lwc_string_caseless_isequal(token.idata.get_ref(), INHERIT as uint) {
+        if strings.lwc_string_caseless_isequal(token.idata.unwrap(), INHERIT as uint) {
             flags |= FLAG_INHERIT as u8;
         }
         else if (token.token_type as int == CSS_TOKEN_NUMBER as int) {
-            let (num,consumed) =  css__number_from_lwc_string(token.idata.get_ref(), true);
+            let (num,consumed) =  css__number_from_lwc_string(token.idata.unwrap(), true);
 
-            if (consumed !=  lwc_string_length(token.idata.get_ref())){
+            if (consumed !=  lwc_string_length(token.idata.unwrap())){
                 *ctx = orig_ctx;
                 debug!("Exiting: css__parse_font_weight (3)");
                 return CSS_INVALID;
@@ -3194,16 +3194,16 @@ impl css_properties {
             }
         }
 
-        else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), NORMAL as uint) {
+        else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), NORMAL as uint) {
             value = FONT_WEIGHT_NORMAL ;
         }
-        else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), BOLD as uint) {
+        else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), BOLD as uint) {
             value = FONT_WEIGHT_BOLD ;
         }
-        else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), BOLDER as uint) {
+        else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), BOLDER as uint) {
             value = FONT_WEIGHT_BOLDER ;
         }
-        else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), LIGHTER as uint) {
+        else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), LIGHTER as uint) {
             value = FONT_WEIGHT_LIGHTER ;
         }
         else  {
@@ -3376,7 +3376,7 @@ impl css_properties {
             return CSS_INVALID;
         }
 
-        if strings.lwc_string_caseless_isequal(token.idata.get_ref() , INHERIT as uint) {
+        if strings.lwc_string_caseless_isequal(token.idata.unwrap() , INHERIT as uint) {
             flags |= FLAG_INHERIT as u8;
         }
         else {
@@ -3448,7 +3448,7 @@ impl css_properties {
             if (match token.token_type {
                 CSS_TOKEN_IDENT  => true,
                 _ => false
-            }) && strings.lwc_string_caseless_isequal(token.idata.get_ref() , AUTO as uint) {
+            }) && strings.lwc_string_caseless_isequal(token.idata.unwrap() , AUTO as uint) {
 
                 side_val.push(MARGIN_AUTO);
                 side_unit.push(0);
@@ -3672,14 +3672,14 @@ impl css_properties {
         
         match token.token_type {
             CSS_TOKEN_IDENT =>{
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref(), INHERIT as uint) {
+                if strings.lwc_string_caseless_isequal(token.idata.unwrap(), INHERIT as uint) {
                     css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_OPACITY);
                 }
             },
             CSS_TOKEN_NUMBER=>{
-                    let (num,consumed) =  css__number_from_lwc_string(token.idata.get_ref(), false);
+                    let (num,consumed) =  css__number_from_lwc_string(token.idata.unwrap(), false);
                     /* Invalid if there are trailing characters */
-                    if (consumed !=  lwc_string_length(token.idata.get_ref())){
+                    if (consumed !=  lwc_string_length(token.idata.unwrap())){
                         *ctx = orig_ctx;
                         return CSS_INVALID;
                     }
@@ -4104,13 +4104,13 @@ impl css_properties {
         }
 
         if (token.token_type as int == CSS_TOKEN_IDENT as int) {
-            if strings.lwc_string_caseless_isequal(token.idata.get_ref() , INHERIT as uint) {
+            if strings.lwc_string_caseless_isequal(token.idata.unwrap() , INHERIT as uint) {
                 flags = flags | FLAG_INHERIT as u8;
             }
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , NONE as uint) {
+            else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , NONE as uint) {
                 value = PLAY_DURING_NONE as u16;
             }
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , AUTO as uint) {
+            else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , AUTO as uint) {
                 value = PLAY_DURING_AUTO as u16;
             }
             else {
@@ -4121,8 +4121,8 @@ impl css_properties {
         else {
             let modifiers:int = 0;
             value = PLAY_DURING_URI as u16;
-            let uri:arc::RWARC<~lwc_string>;
-            match (*sheet.resolve)( sheet.url, token.idata.get_ref()) {
+            let uri:@mut lwc_string;
+            match (*sheet.resolve)( sheet.url, token.idata.unwrap()) {
                 (CSS_OK, Some(x)) => {
                     uri =x;
                 },
@@ -4148,7 +4148,7 @@ impl css_properties {
                 
 
                 if !token_null && token.token_type as int == CSS_TOKEN_IDENT as int {
-                    if strings.lwc_string_caseless_isequal(token.idata.get_ref() , MIX as uint) {
+                    if strings.lwc_string_caseless_isequal(token.idata.unwrap() , MIX as uint) {
                         if (value & (PLAY_DURING_MIX as u16)) == 0 {
                             value |= (PLAY_DURING_MIX as u16);
                         }
@@ -4157,7 +4157,7 @@ impl css_properties {
                             return CSS_INVALID;
                         }
                     }
-                    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , REPEAT as uint) {
+                    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , REPEAT as uint) {
                         if (value & (PLAY_DURING_REPEAT as u16)) == 0 {
                             value |= (PLAY_DURING_REPEAT as u16);
                         }
@@ -4222,10 +4222,10 @@ impl css_properties {
             return CSS_INVALID;
         }
 
-        if (token.token_type as int == CSS_TOKEN_IDENT as int) && strings.lwc_string_caseless_isequal(token.idata.get_ref(), INHERIT as uint) {
+        if (token.token_type as int == CSS_TOKEN_IDENT as int) && strings.lwc_string_caseless_isequal(token.idata.unwrap(), INHERIT as uint) {
             css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_QUOTES);
         }
-        else if (token.token_type as int == CSS_TOKEN_IDENT as int) && strings.lwc_string_caseless_isequal(token.idata.get_ref(), NONE as uint) {
+        else if (token.token_type as int == CSS_TOKEN_IDENT as int) && strings.lwc_string_caseless_isequal(token.idata.unwrap(), NONE as uint) {
             css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_QUOTES, 0, QUOTES_NONE );
         }
         else if (token.token_type as int == CSS_TOKEN_STRING as int){
@@ -4236,7 +4236,7 @@ impl css_properties {
 
                 let open_snumber:u32;
                 let close_snumber:u32;
-                open_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref())) as u32;
+                open_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap())) as u32;
                 consumeWhitespace(vector, ctx);
                 
                 if (*ctx >= vector.len()) {
@@ -4253,7 +4253,7 @@ impl css_properties {
                         return CSS_INVALID;
                     }
                 }
-                close_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref())) as u32;
+                close_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap())) as u32;
                 consumeWhitespace(vector, ctx); 
                 match first {
                     true => css_stylesheet::css__stylesheet_style_append(style,buildOPV(CSS_PROP_QUOTES, 0, QUOTES_STRING)),
@@ -4325,16 +4325,16 @@ impl css_properties {
 
         match token.token_type {
             CSS_TOKEN_IDENT  => {
-                if strings.lwc_string_caseless_isequal(token.idata.get_ref(), INHERIT as uint) {
+                if strings.lwc_string_caseless_isequal(token.idata.unwrap(), INHERIT as uint) {
                     css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_TEXT_DECORATION);
                 }
-                else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), NONE as uint)  {
+                else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), NONE as uint)  {
                     css_stylesheet::css__stylesheet_style_appendOPV(style,CSS_PROP_TEXT_DECORATION, 0, TEXT_DECORATION_NONE );
                 }
                 else {
                     let value: u16 = 0 ;
                     loop {
-                        if strings.lwc_string_caseless_isequal(token.idata.get_ref(), UNDERLINE as uint) {
+                        if strings.lwc_string_caseless_isequal(token.idata.unwrap(), UNDERLINE as uint) {
                             if ((value & TEXT_DECORATION_UNDERLINE ) == 0) {
                                 value |= TEXT_DECORATION_UNDERLINE ;
                             }
@@ -4345,7 +4345,7 @@ impl css_properties {
                                 return CSS_INVALID;
                             }
                         }
-                        else if  strings.lwc_string_caseless_isequal(token.idata.get_ref(), OVERLINE as uint) {
+                        else if  strings.lwc_string_caseless_isequal(token.idata.unwrap(), OVERLINE as uint) {
                             if ((value & TEXT_DECORATION_OVERLINE ) == 0) {
                                 value |= TEXT_DECORATION_OVERLINE ;
                             }
@@ -4355,7 +4355,7 @@ impl css_properties {
                                 return CSS_INVALID;
                             }
                         }
-                        else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), LINE_THROUGH as uint) {
+                        else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), LINE_THROUGH as uint) {
                             if ((value & TEXT_DECORATION_LINE_THROUGH ) == 0) {
                                 value |= TEXT_DECORATION_LINE_THROUGH ;
                             }
@@ -4366,7 +4366,7 @@ impl css_properties {
 
                             }
                         }
-                        else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), BLINK as uint) {
+                        else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), BLINK as uint) {
                             if ((value & (TEXT_DECORATION_BLINK )) == 0) {
                                 value |= TEXT_DECORATION_BLINK ;
                             }
@@ -4459,7 +4459,7 @@ impl css_properties {
         } 
 
         if match token.token_type { CSS_TOKEN_IDENT  => true, _ => false } &&
-                strings.lwc_string_caseless_isequal(token.idata.get_ref(), INHERIT as uint) {
+                strings.lwc_string_caseless_isequal(token.idata.unwrap(), INHERIT as uint) {
             
             css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_VOICE_FAMILY)
         } 
@@ -4500,49 +4500,49 @@ impl css_properties {
 pub fn css__parse_list_style_type_value(strings: &mut ~css_propstrings , token:&@css_token) -> (Option<u16> , css_error) {
     
     debug!("Entering: css__parse_list_style_type_value");
-    if strings.lwc_string_caseless_isequal(token.idata.get_ref() , DISC as uint) {
+    if strings.lwc_string_caseless_isequal(token.idata.unwrap() , DISC as uint) {
         return (Some(LIST_STYLE_TYPE_DISC ) , CSS_OK);
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , CIRCLE as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , CIRCLE as uint) {
         return (Some(LIST_STYLE_TYPE_CIRCLE ) , CSS_OK);
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , SQUARE as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , SQUARE as uint) {
         return (Some(LIST_STYLE_TYPE_SQUARE ) , CSS_OK);
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , DECIMAL as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , DECIMAL as uint) {
         return (Some(LIST_STYLE_TYPE_DECIMAL ) , CSS_OK);
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , DECIMAL_LEADING_ZERO as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , DECIMAL_LEADING_ZERO as uint) {
         return (Some(LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO ) , CSS_OK);
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , LOWER_ROMAN as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , LOWER_ROMAN as uint) {
         return (Some(LIST_STYLE_TYPE_LOWER_ROMAN ) , CSS_OK);
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , UPPER_ROMAN as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , UPPER_ROMAN as uint) {
         return (Some(LIST_STYLE_TYPE_UPPER_ROMAN ) , CSS_OK);
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , LOWER_GREEK as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , LOWER_GREEK as uint) {
         return (Some(LIST_STYLE_TYPE_LOWER_GREEK ) , CSS_OK);
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , LOWER_LATIN as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , LOWER_LATIN as uint) {
         return (Some(LIST_STYLE_TYPE_LOWER_LATIN ) , CSS_OK);
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , UPPER_LATIN as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , UPPER_LATIN as uint) {
         return (Some(LIST_STYLE_TYPE_UPPER_LATIN ) , CSS_OK);
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , ARMENIAN as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , ARMENIAN as uint) {
         return (Some(LIST_STYLE_TYPE_ARMENIAN ) , CSS_OK);
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , GEORGIAN as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , GEORGIAN as uint) {
         return (Some(LIST_STYLE_TYPE_GEORGIAN ) , CSS_OK);
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , LOWER_ALPHA as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , LOWER_ALPHA as uint) {
         return (Some(LIST_STYLE_TYPE_LOWER_ALPHA ) , CSS_OK);
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , UPPER_ALPHA as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , UPPER_ALPHA as uint) {
         return (Some(LIST_STYLE_TYPE_UPPER_ALPHA ) , CSS_OK);
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref() , NONE as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.unwrap() , NONE as uint) {
         return (Some(LIST_STYLE_TYPE_NONE ) , CSS_OK);
     }
     else {
@@ -4563,11 +4563,11 @@ pub fn css__parse_list_style_type_value(strings: &mut ~css_propstrings , token:&
 pub fn font_family_reserved(strings:&mut ~css_propstrings, ident:&@css_token) -> bool {
 
     debug!("Entering: font_family_reserved");
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), SERIF as uint) ||
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), SANS_SERIF as uint) ||
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), CURSIVE as uint) ||
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), FANTASY as uint) ||
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), MONOSPACE as uint)
+    strings.lwc_string_caseless_isequal(ident.idata.unwrap(), SERIF as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.unwrap(), SANS_SERIF as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.unwrap(), CURSIVE as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.unwrap(), FANTASY as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.unwrap(), MONOSPACE as uint)
 }
 
 
@@ -4589,19 +4589,19 @@ pub fn font_family_value(strings:&mut ~css_propstrings, token:&@css_token, first
     
     match token.token_type{
         CSS_TOKEN_IDENT  => {
-            if strings.lwc_string_caseless_isequal(token.idata.get_ref(), SERIF as uint) {
+            if strings.lwc_string_caseless_isequal(token.idata.unwrap(), SERIF as uint) {
                 value = FONT_FAMILY_SERIF
             }    
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), SANS_SERIF as uint) {
+            else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), SANS_SERIF as uint) {
                 value = FONT_FAMILY_SANS_SERIF 
             }    
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), CURSIVE as uint) {
+            else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), CURSIVE as uint) {
                 value = FONT_FAMILY_CURSIVE
             }    
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), FANTASY as uint) {
+            else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), FANTASY as uint) {
                 value = FONT_FAMILY_FANTASY
             }    
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), MONOSPACE as uint) {
+            else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), MONOSPACE as uint) {
                 value = FONT_FAMILY_MONOSPACE
             }    
             else {
@@ -4709,24 +4709,24 @@ pub fn parse_system_font(sheet: @mut css_stylesheet , strings:&mut ~css_propstri
     css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_LINE_HEIGHT , 0 , LINE_HEIGHT_DIMENSION as u16);
     css_stylesheet::css__stylesheet_style_vappend(style , [system_font.line_height.size as u32 , system_font.line_height.unit as u32]);
 
-    if strings.lwc_string_caseless_isequal(system_font.family.clone() , SERIF as uint) {
+    if strings.lwc_string_caseless_isequal(system_font.family , SERIF as uint) {
         css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_FAMILY , 0 , FONT_FAMILY_SERIF as u16);
     }
-    else if strings.lwc_string_caseless_isequal(system_font.family.clone() , SANS_SERIF as uint) {
+    else if strings.lwc_string_caseless_isequal(system_font.family , SANS_SERIF as uint) {
         css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_FAMILY , 0 , FONT_FAMILY_SANS_SERIF as u16);
     }
-    else if strings.lwc_string_caseless_isequal(system_font.family.clone() , CURSIVE as uint) {
+    else if strings.lwc_string_caseless_isequal(system_font.family , CURSIVE as uint) {
         css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_FAMILY , 0 , FONT_FAMILY_CURSIVE as u16);
     }
-    else if strings.lwc_string_caseless_isequal(system_font.family.clone() , FANTASY as uint) {
+    else if strings.lwc_string_caseless_isequal(system_font.family , FANTASY as uint) {
         css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_FAMILY , 0 , FONT_FAMILY_FANTASY as u16);
     }
-    else if strings.lwc_string_caseless_isequal(system_font.family.clone() , MONOSPACE as uint) {
+    else if strings.lwc_string_caseless_isequal(system_font.family , MONOSPACE as uint) {
         css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_FAMILY , 0 , FONT_FAMILY_MONOSPACE as u16);
     }
     else {
         let sNumber: u32;
-        sNumber = sheet.css__stylesheet_string_add(lwc_string_data(system_font.family.clone())) as u32;
+        sNumber = sheet.css__stylesheet_string_add(lwc_string_data(system_font.family)) as u32;
 
         css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_FAMILY , 0 , FONT_FAMILY_STRING as u16);           
         css_stylesheet::css__stylesheet_style_append(style , sNumber);
@@ -4750,9 +4750,9 @@ pub fn parse_system_font(sheet: @mut css_stylesheet , strings:&mut ~css_propstri
 pub fn voice_family_reserved(strings: &mut ~css_propstrings, ident:&@css_token) -> bool {
     
     debug!("Entering: voice_family_reserved");
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), MALE as uint) ||
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), FEMALE as uint) ||
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), CHILD as uint) 
+    strings.lwc_string_caseless_isequal(ident.idata.unwrap(), MALE as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.unwrap(), FEMALE as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.unwrap(), CHILD as uint) 
 }
 
 /**
@@ -4771,13 +4771,13 @@ pub fn voice_family_value(strings: &mut ~css_propstrings, token:&@css_token, fir
     debug!("Entering: voice_family_value");
     let value = match token.token_type {
         CSS_TOKEN_IDENT  => {
-            if strings.lwc_string_caseless_isequal(token.idata.get_ref(), MALE as uint){
+            if strings.lwc_string_caseless_isequal(token.idata.unwrap(), MALE as uint){
                 VOICE_FAMILY_MALE
             }
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), FEMALE as uint){
+            else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), FEMALE as uint){
                 VOICE_FAMILY_FEMALE   
             }
-            else if strings.lwc_string_caseless_isequal(token.idata.get_ref(), CHILD as uint){
+            else if strings.lwc_string_caseless_isequal(token.idata.unwrap(), CHILD as uint){
                 VOICE_FAMILY_CHILD
             }
             else{
@@ -4830,7 +4830,7 @@ pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings:
         CSS_TOKEN_STRING  => {
             token = &vector[*ctx];
             *ctx += 1; //Iterate
-            return (CSS_OK,Some(lwc_string_data(token.idata.get_ref())))
+            return (CSS_OK,Some(lwc_string_data(token.idata.unwrap())))
         },  
         CSS_TOKEN_IDENT  =>  return css__ident_list_to_string(sheet , strings , vector , ctx , reserved),
         _ => return (CSS_INVALID,None)
@@ -4888,7 +4888,7 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
                         }
                     }
                 }
-                token_buffer_string.push_str(lwc_string_data(token.idata.get_ref()));
+                token_buffer_string.push_str(lwc_string_data(token.idata.unwrap()));
             },
             CSS_TOKEN_S => {
 				/* S */
@@ -5001,7 +5001,7 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
                         value = (*get_value_function)(strings , token , first);
                     }
                 }
-                let snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.get_ref()));
+                let snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap()));
                 css_stylesheet::css__stylesheet_style_append(style , value);
                 css_stylesheet::css__stylesheet_style_append(style , snumber as u32);
             },
