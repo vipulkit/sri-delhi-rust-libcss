@@ -192,7 +192,7 @@ pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
                 rule = css_rule_page_x.base.next; 
             },
             RULE_UNKNOWN(css_rule_x)=>{
-                ptr += &"Unhandled rule type ";
+                ptr = ptr + &"Unhandled rule type ";
                 // add rule.type
                 ptr.push_char('\n');
                 rule = css_rule_x.next;
@@ -218,14 +218,15 @@ fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
     }
     
     unsafe { 
-        for s.selectors.eachi |i , &sel| {
-            dump_selector_list(sel, ptr);
-            
+        i = 0;
+        while i < s.selectors.len() {
+            dump_selector_list(s.selectors[i] , ptr);
             if !(i == s.selectors.len() - 1) {
                 ptr.push_char(',');
                 ptr.push_char(' ');
             }
-        }
+            i += 1;
+        } 
     }
     ptr.push_char('\n');
     if s.style.is_some() {
@@ -237,8 +238,8 @@ fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
 
 fn dump_rule_charset(s:@mut css_rule_charset, ptr:&mut ~str) {
     debug!("Entering: dump_rule_charset");
-    str::push_str(ptr , &"| @charset(");
-    str::push_str(ptr , copy s.encoding);
+    ptr.push_str( &"| @charset(");
+    ptr.push_str( copy s.encoding);
     ptr.push_char(')');
     ptr.push_char('\n');
 
@@ -247,8 +248,8 @@ fn dump_rule_charset(s:@mut css_rule_charset, ptr:&mut ~str) {
 
 fn dump_rule_import(s:@mut css_rule_import, ptr:&mut ~str){
     debug!("Entering: dump_rule_import");
-    str::push_str(ptr , &"| @import url(");
-    str::push_str(ptr, copy s.url);
+    ptr.push_str( &"| @import url(");
+    ptr.push_str( copy s.url);
     ptr.push_char('\n');
 
     debug!(fmt!("ptr == %?" , ptr));
@@ -257,7 +258,7 @@ fn dump_rule_import(s:@mut css_rule_import, ptr:&mut ~str){
 // TODO
 fn dump_rule_media(s:@mut css_rule_media, ptr: &mut ~str) {
     debug!("Entering: dump_rule_media");
-    str::push_str(ptr, &"| @media ");
+    ptr.push_str( &"| @media ");
     ptr.push_char('\n');
 
     let mut rule = s.first_child;
@@ -280,7 +281,7 @@ fn dump_rule_media(s:@mut css_rule_media, ptr: &mut ~str) {
 
 fn dump_rule_page(s:@ mut css_rule_page, ptr:&mut ~str){
     debug!("Entering: dump_rule_page");
-    str::push_str(ptr , &"| @page ");
+    ptr.push_str( &"| @page ");
 
     if s.selector.is_some() {
         dump_selector_list(s.selector.unwrap(), ptr);
@@ -297,7 +298,7 @@ fn dump_rule_page(s:@ mut css_rule_page, ptr:&mut ~str){
 
 fn dump_rule_font_face(s:@mut css_rule_font_face, ptr:&mut ~str){
     debug!("Entering: dump_rule_font_face");
-    str::push_str(ptr , &"| @font-face ");
+    ptr.push_str( &"| @font-face ");
     if s.font_face.is_some() {
         dump_font_face(s.font_face.unwrap(), ptr);
     }
@@ -358,19 +359,19 @@ fn dump_selector(selector:@mut css_selector, ptr:&mut ~str){
 fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_next:bool ) {
     debug!("Entering: dump_selector_detail");
     if detail.negate {
-        str::push_str(ptr,&":not(");
+        ptr.push_str(&":not(");
     }
     match detail.selector_type {
         CSS_SELECTOR_ELEMENT=>{
             unsafe{
                 if detail.qname.name.len() == 1 && detail.qname.name[0] == '*' as u8 && !detail_next {
                 
-                    str::push_str(ptr,copy detail.qname.name);
+                    ptr.push_str(copy detail.qname.name);
                 }
                 else if detail.qname.name.len() != 1 ||
                 
                    detail.qname.name[0] != '*' as u8 { 
-                   str::push_str(ptr,copy detail.qname.name)
+                   ptr.push_str(copy detail.qname.name)
                 }
             }
         },
@@ -378,94 +379,94 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
         CSS_SELECTOR_CLASS=> {
 
             ptr.push_char('.');
-            str::push_str(ptr,copy detail.qname.name);
+            ptr.push_str(copy detail.qname.name);
         },
 
         CSS_SELECTOR_ID =>{
             
             ptr.push_char('#');
-            str::push_str(ptr,copy detail.qname.name);
+            ptr.push_str(copy detail.qname.name);
         },
 
         CSS_SELECTOR_PSEUDO_CLASS | CSS_SELECTOR_PSEUDO_ELEMENT =>{
             ptr.push_char(':' );
-            str::push_str(ptr,copy detail.qname.name);
+            ptr.push_str(copy detail.qname.name);
             match detail.value_type {
                 CSS_SELECTOR_DETAIL_VALUE_STRING=> {
                     if detail.string.is_some() {
                         ptr.push_char('(' );
                         //let String = copy detail.string;
-                        str::push_str(ptr, (copy detail.string).unwrap());
+                        ptr.push_str( (copy detail.string).unwrap());
                         ptr.push_char(')' );
                     }
                 } ,
                 _=>{
-                    str::push_str(ptr,fmt!("%?n+%?",copy detail.a,copy detail.b));
+                    ptr.push_str(fmt!("%?n+%?",copy detail.a,copy detail.b));
                 }
             }
         },
 
         CSS_SELECTOR_ATTRIBUTE=>{
             ptr.push_char('[');
-            str::push_str(ptr,copy detail.qname.name);
+            ptr.push_str(copy detail.qname.name);
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_EQUAL =>{
             ptr.push_char('[');
-            str::push_str(ptr,copy detail.qname.name);
+            ptr.push_str(copy detail.qname.name);
             ptr.push_char('=');
             ptr.push_char('"');
-            str::push_str(ptr,(copy detail.string).unwrap());
+            ptr.push_str((copy detail.string).unwrap());
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_DASHMATCH=>{
             ptr.push_char('[');
-            str::push_str(ptr,copy detail.qname.name);
+            ptr.push_str(copy detail.qname.name);
             ptr.push_char('|');
             ptr.push_char('=');
             ptr.push_char('"');
-            str::push_str(ptr,(copy detail.string).unwrap());
+            ptr.push_str((copy detail.string).unwrap());
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_INCLUDES=>{
             ptr.push_char('[');
-            str::push_str(ptr,copy detail.qname.name);
+            ptr.push_str(copy detail.qname.name);
             ptr.push_char('~');
             ptr.push_char('=');
             ptr.push_char('"');
-            str::push_str(ptr,(copy detail.string).unwrap());
+            ptr.push_str((copy detail.string).unwrap());
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_PREFIX=>{
             ptr.push_char('[' );
-            str::push_str(ptr,copy detail.qname.name);
+            ptr.push_str(copy detail.qname.name);
             ptr.push_char('^' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            str::push_str(ptr,(copy detail.string).unwrap());
+            ptr.push_str((copy detail.string).unwrap());
             ptr.push_char('"' );
             ptr.push_char(']' );
         },
         CSS_SELECTOR_ATTRIBUTE_SUFFIX=>{
             ptr.push_char('[' );
-            str::push_str(ptr,copy detail.qname.name);
+            ptr.push_str(copy detail.qname.name);
             ptr.push_char('$' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            str::push_str(ptr,(copy detail.string).unwrap());
+            ptr.push_str((copy detail.string).unwrap());
             ptr.push_char('"' );
             ptr.push_char(']' );
         },
         CSS_SELECTOR_ATTRIBUTE_SUBSTRING=>{
             ptr.push_char('[' );
-            str::push_str(ptr,copy detail.qname.name);
+            ptr.push_str(copy detail.qname.name);
             ptr.push_char('*' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            str::push_str(ptr,(copy detail.string).unwrap());
+            ptr.push_str((copy detail.string).unwrap());
             ptr.push_char('"' );
             ptr.push_char(']' );
         }
@@ -506,13 +507,13 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             i+=1;
         }
         
-        str::push_str(ptr , opcode_names[op as int]);
+        ptr.push_str( opcode_names[op as int]);
         ptr.push_char(':');
         ptr.push_char(' ');
         
         if isInherit(opv) {
 
-            str::push_str(ptr , &"inherit");
+            ptr.push_str( &"inherit");
         }
         else {
             value = getValue(opv) as u32;
@@ -532,50 +533,50 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                 }
                 else if val as int == AZIMUTH_LEFTWARDS as int {
-                    str::push_str(ptr , &"leftwards");
+                    ptr.push_str( &"leftwards");
                 }
                 else if val as int == AZIMUTH_RIGHTWARDS as int {
-                    str::push_str(ptr , &"rightwards");
+                    ptr.push_str( &"rightwards");
                 }
                 else if val as int == AZIMUTH_LEFT_SIDE as int {
-                    str::push_str(ptr , &"left-side");
+                    ptr.push_str( &"left-side");
                 }
                 else if val as int == AZIMUTH_FAR_LEFT as int {
-                    str::push_str(ptr , &"far-left");
+                    ptr.push_str( &"far-left");
                 }
                 else if val as int == AZIMUTH_LEFT as int {
-                    str::push_str(ptr , &"left");
+                    ptr.push_str( &"left");
                 }
                 else if val as int == AZIMUTH_CENTER_LEFT as int {
-                    str::push_str(ptr , &"center-left");
+                    ptr.push_str( &"center-left");
                 }
                 else if val as int == AZIMUTH_CENTER as int {
-                    str::push_str(ptr , &"center");
+                    ptr.push_str( &"center");
                 }
                 else if val as int == AZIMUTH_CENTER_RIGHT as int {
-                    str::push_str(ptr , &"center-right");
+                    ptr.push_str( &"center-right");
                 }
                 else if val as int == AZIMUTH_RIGHT as int {
-                    str::push_str(ptr , &"right");
+                    ptr.push_str( &"right");
                 }
                 else if val as int == AZIMUTH_FAR_RIGHT as int {
-                    str::push_str(ptr , &"far-right");
+                    ptr.push_str( &"far-right");
                 }
                 else if val as int == AZIMUTH_RIGHT_SIDE as int {
-                    str::push_str(ptr , &"right-side");
+                    ptr.push_str( &"right-side");
                 }
 
                 if (value & (AZIMUTH_BEHIND as u32) > 0) {
-                    str::push_str(ptr , &"behind");
+                    ptr.push_str( &"behind");
                 }
             }
 
             else if op as int == CSS_PROP_BACKGROUND_ATTACHMENT as int {
                 if value as int == BACKGROUND_ATTACHMENT_FIXED as int {
-                    str::push_str(ptr , &"fixed");
+                    ptr.push_str( &"fixed");
                 }
                 else if value as int == BACKGROUND_ATTACHMENT_SCROLL as int {
-                    str::push_str(ptr , &"scroll");
+                    ptr.push_str( &"scroll");
                 }
             }
 
@@ -588,18 +589,18 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 assert!(BACKGROUND_COLOR_SET as int == BORDER_COLOR_SET as int);
 
                 if value as int == BACKGROUND_COLOR_TRANSPARENT as int {
-                    str::push_str(ptr , &"transparent");
+                    ptr.push_str( &"transparent");
                 }
 
                 else if value as int == BACKGROUND_COLOR_CURRENT_COLOR as int {
-                    str::push_str(ptr , &"currentColor");   
+                    ptr.push_str( &"currentColor");   
                 }
                 else if value as int == BACKGROUND_COLOR_SET as int {
                     
                     let colour: u32 = bytecode[iterator];
                     iterator += 1;
                     let string = fmt!("#%08x" , colour as uint);
-                    str::push_str(ptr , string);
+                    ptr.push_str( string);
                 }
             }
             
@@ -615,7 +616,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 assert!(BACKGROUND_IMAGE_URI as int == LIST_STYLE_IMAGE_URI as int);
 
                 if value as int == BACKGROUND_IMAGE_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
 
                 else if value as int == BACKGROUND_IMAGE_URI as int {
@@ -626,9 +627,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     iterator += 1;
 
                     if option_string.is_some() {
-                        str::push_str(ptr , &"url('");
-                        str::push_str(ptr , option_string.unwrap());
-                        str::push_str(ptr , &"')");    
+                        ptr.push_str( &"url('");
+                        ptr.push_str( option_string.unwrap());
+                        ptr.push_str( &"')");    
                     }
 
                 }
@@ -649,19 +650,19 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                 else if val as int == BACKGROUND_POSITION_HORZ_CENTER as int {
                     
-                    str::push_str(ptr , &"center");
+                    ptr.push_str( &"center");
                 }
 
 
                 else if val as int == BACKGROUND_POSITION_HORZ_RIGHT as int {
                     
-                    str::push_str(ptr , &"right");
+                    ptr.push_str( &"right");
                 }
 
 
                 else if val as int == BACKGROUND_POSITION_HORZ_LEFT as int {
                     
-                    str::push_str(ptr , &"left");
+                    ptr.push_str( &"left");
                 }
 
                 ptr.push_char(' ');
@@ -679,49 +680,49 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                 else if val as int == BACKGROUND_POSITION_VERT_CENTER as int {
                     
-                    str::push_str(ptr , &"center");
+                    ptr.push_str( &"center");
                 }
 
 
                 else if val as int == BACKGROUND_POSITION_VERT_BOTTOM as int {
                     
-                    str::push_str(ptr , &"bottom");
+                    ptr.push_str( &"bottom");
                 }
 
 
                 else if val as int == BACKGROUND_POSITION_VERT_TOP as int {
                     
-                    str::push_str(ptr , &"top");
+                    ptr.push_str( &"top");
                 }
             }
 
             else if op as int == CSS_PROP_BACKGROUND_REPEAT as int {
 
                 if value as int == BACKGROUND_REPEAT_NO_REPEAT as int {
-                    str::push_str(ptr , &"no-repeat");
+                    ptr.push_str( &"no-repeat");
                 }
 
                 else if value as int == BACKGROUND_REPEAT_REPEAT_X as int {
-                    str::push_str(ptr , &"repeat-x");
+                    ptr.push_str( &"repeat-x");
                 }
 
                 else if value as int == BACKGROUND_REPEAT_REPEAT_Y as int {
-                    str::push_str(ptr , &"repeat-y");
+                    ptr.push_str( &"repeat-y");
                 }
 
                 else if value as int == BACKGROUND_REPEAT_REPEAT as int {
-                    str::push_str(ptr , &"repeat-repeat");
+                    ptr.push_str( &"repeat-repeat");
                 }
             }
 
             else if op as int == CSS_PROP_BORDER_COLLAPSE as int {
                 
                 if value as int == BORDER_COLLAPSE_SEPARATE as int {
-                    str::push_str(ptr , &"separate");
+                    ptr.push_str( &"separate");
                 }
 
                 else if value as int == BORDER_COLLAPSE_COLLAPSE as int {
-                    str::push_str(ptr , &"collapse");
+                    ptr.push_str( &"collapse");
                 }
             }
 
@@ -769,43 +770,43 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 assert!(BORDER_STYLE_OUTSET as int == COLUMN_RULE_STYLE_OUTSET as int);
 
                 if value as int == BORDER_STYLE_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
 
                 else if value as int == BORDER_STYLE_HIDDEN as int {
-                    str::push_str(ptr , &"hidden");
+                    ptr.push_str( &"hidden");
                 }
 
                 else if value as int == BORDER_STYLE_DOTTED as int {
-                    str::push_str(ptr , &"dotted");
+                    ptr.push_str( &"dotted");
                 }
 
                 else if value as int == BORDER_STYLE_DASHED as int {
-                    str::push_str(ptr , &"dashed");
+                    ptr.push_str( &"dashed");
                 }
 
                 else if value as int == BORDER_STYLE_SOLID as int {
-                    str::push_str(ptr , &"solid");
+                    ptr.push_str( &"solid");
                 }
 
                 else if value as int == BORDER_STYLE_DOUBLE as int {
-                    str::push_str(ptr , &"double");
+                    ptr.push_str( &"double");
                 }
 
                 else if value as int == BORDER_STYLE_GROOVE as int {
-                    str::push_str(ptr , &"groove");
+                    ptr.push_str( &"groove");
                 }
 
                 else if value as int == BORDER_STYLE_RIDGE as int {
-                    str::push_str(ptr , &"ridge");
+                    ptr.push_str( &"ridge");
                 }
 
                 else if value as int == BORDER_STYLE_INSET as int {
-                    str::push_str(ptr , &"inset");
+                    ptr.push_str( &"inset");
                 }
 
                 else if value as int == BORDER_STYLE_OUTSET as int {
-                    str::push_str(ptr , &"outset");
+                    ptr.push_str( &"outset");
                 }
             }
 
@@ -828,15 +829,15 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
 
                 else if value as int == BORDER_WIDTH_THIN as int {
-                    str::push_str(ptr , &"thin");
+                    ptr.push_str( &"thin");
                 }
 
                 else if value as int == BORDER_WIDTH_MEDIUM as int {
-                    str::push_str(ptr , &"medium");
+                    ptr.push_str( &"medium");
                 }
 
                 else if value as int == BORDER_WIDTH_THICK as int {
-                    str::push_str(ptr , &"thick");
+                    ptr.push_str( &"thick");
                 }
             }
 
@@ -871,7 +872,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
 
                 else if value as int == BOTTOM_AUTO as int {
-                    str::push_str(ptr , &"auto");
+                    ptr.push_str( &"auto");
                 }
             }
 
@@ -888,69 +889,69 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 assert!(BREAK_AFTER_AVOID_COLUMN as int == BREAK_BEFORE_AVOID_COLUMN as int);
 
                 if value as int == BREAK_AFTER_AUTO as int {
-                    str::push_str(ptr , &"auto");
+                    ptr.push_str( &"auto");
                 }
 
                 else if value as int == BREAK_AFTER_ALWAYS as int {
-                    str::push_str(ptr , &"always");
+                    ptr.push_str( &"always");
                 }
 
                 else if value as int == BREAK_AFTER_AVOID as int {
-                    str::push_str(ptr , &"avoid");
+                    ptr.push_str( &"avoid");
                 }
 
                 else if value as int == BREAK_AFTER_LEFT as int {
-                    str::push_str(ptr , &"left");
+                    ptr.push_str( &"left");
                 }
 
                 else if value as int == BREAK_AFTER_RIGHT as int {
-                    str::push_str(ptr , &"right");
+                    ptr.push_str( &"right");
                 }
 
                 else if value as int == BREAK_AFTER_PAGE as int {
-                    str::push_str(ptr , &"page");
+                    ptr.push_str( &"page");
                 }
 
                 else if value as int == BREAK_AFTER_COLUMN as int {
-                    str::push_str(ptr , &"column");
+                    ptr.push_str( &"column");
                 }
 
                 else if value as int == BREAK_AFTER_AVOID_PAGE as int {
-                    str::push_str(ptr , &"avoid-page");
+                    ptr.push_str( &"avoid-page");
                 }
 
                 else if value as int == BREAK_AFTER_AVOID_COLUMN as int {
-                    str::push_str(ptr , &"avoid-column");
+                    ptr.push_str( &"avoid-column");
                 }
             }
 
             else if op as int == CSS_PROP_BREAK_INSIDE as int {
                 
                 if value as int == BREAK_INSIDE_AUTO as int {
-                    str::push_str(ptr , &"auto");
+                    ptr.push_str( &"auto");
                 }
 
                 else if value as int == BREAK_INSIDE_AVOID as int {
-                    str::push_str(ptr , &"avoid");
+                    ptr.push_str( &"avoid");
                 }
 
                 else if value as int == BREAK_INSIDE_AVOID_PAGE as int {
-                    str::push_str(ptr , &"avoid-page");
+                    ptr.push_str( &"avoid-page");
                 }
 
                 else if value as int == BREAK_INSIDE_AVOID_COLUMN as int {
-                    str::push_str(ptr , &"avoid-column");
+                    ptr.push_str( &"avoid-column");
                 }
             }
 
             else if op as int == CSS_PROP_CAPTION_SIDE as int {
                 
                 if value as int == CAPTION_SIDE_TOP as int {
-                    str::push_str(ptr , &"top");
+                    ptr.push_str( &"top");
                 }
 
                 else if value as int == CAPTION_SIDE_BOTTOM as int {
-                    str::push_str(ptr , &"bottom");
+                    ptr.push_str( &"bottom");
                 }
 
             }
@@ -958,30 +959,30 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == CSS_PROP_CLEAR as int {
                 
                 if value as int == CLEAR_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
 
                 else if value as int == CLEAR_LEFT as int {
-                    str::push_str(ptr , &"left");
+                    ptr.push_str( &"left");
                 }
 
                 else if value as int == CLEAR_RIGHT as int {
-                    str::push_str(ptr , &"right");
+                    ptr.push_str( &"right");
                 }
 
                 else if value as int == CLEAR_BOTH as int {
-                    str::push_str(ptr , &"both");
+                    ptr.push_str( &"both");
                 }
             }
 
             else if op as int == CSS_PROP_CLIP as int {
                 
                 if (value as int & CLIP_SHAPE_MASK as int) == CLIP_SHAPE_RECT as int {
-                    str::push_str(ptr , &"rect(");
+                    ptr.push_str( &"rect(");
 
                     if (value as int & CLIP_RECT_TOP_AUTO as int) > 0 {
 
-                        str::push_str(ptr , &"auto");
+                        ptr.push_str( &"auto");
                     }
                     else {
 
@@ -992,11 +993,11 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         dump_unit(some_val as i32 , unit , ptr);
                     }
 
-                    str::push_str(ptr , &", ");
+                    ptr.push_str( &", ");
 
                     if (value as int & CLIP_RECT_RIGHT_AUTO as int) > 0 {
 
-                        str::push_str(ptr , &"auto");
+                        ptr.push_str( &"auto");
                     }
                     else {
 
@@ -1007,11 +1008,11 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         dump_unit(some_val as i32 , unit , ptr);
                     }
 
-                    str::push_str(ptr , &", ");
+                    ptr.push_str( &", ");
 
                     if (value as int & CLIP_RECT_BOTTOM_AUTO as int) > 0 {
 
-                        str::push_str(ptr , &"auto");
+                        ptr.push_str( &"auto");
                     }
                     else {
 
@@ -1022,11 +1023,11 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         dump_unit(some_val as i32 , unit , ptr);
                     }
 
-                    str::push_str(ptr , &", ");
+                    ptr.push_str( &", ");
 
                     if (value as int & CLIP_RECT_LEFT_AUTO as int) > 0 {
 
-                        str::push_str(ptr , &"auto");
+                        ptr.push_str( &"auto");
                     }
                     else {
 
@@ -1039,17 +1040,17 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                     ptr.push_char(')');
                 }
-                str::push_str(ptr , &"auto");
+                ptr.push_str( &"auto");
             }
 
             else if op as int == CSS_PROP_COLOR as int {
                 
                 if value as int == COLOR_TRANSPARENT as int {
-                    str::push_str(ptr , &"transparent");
+                    ptr.push_str( &"transparent");
                 }
 
                 else if value as int == COLOR_CURRENT_COLOR as int {
-                    str::push_str(ptr , &"currentColor");
+                    ptr.push_str( &"currentColor");
                 }
 
                 else if value as int == COLOR_SET as int {
@@ -1057,7 +1058,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     let colour: u32 = bytecode[iterator];
                     iterator += 1;
                     let string = fmt!("#%08x" , colour as uint);
-                    str::push_str(ptr , string);
+                    ptr.push_str( string);
                 }
             }
 
@@ -1071,18 +1072,18 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
 
                 else if value as int == COLUMN_COUNT_AUTO as int {
-                    str::push_str(ptr , &"auto");
+                    ptr.push_str( &"auto");
                 }
             }
 
             else if op as int == CSS_PROP_COLUMN_FILL as int {
                 
                 if value as int == COLUMN_FILL_BALANCE as int {
-                    str::push_str(ptr , &"balance");
+                    ptr.push_str( &"balance");
                 }
 
                 else if value as int == COLUMN_FILL_AUTO as int {
-                    str::push_str(ptr , &"auto");
+                    ptr.push_str( &"auto");
                 }
             }
 
@@ -1098,18 +1099,18 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
 
                 else if value as int == COLUMN_GAP_NORMAL as int {
-                    str::push_str(ptr , &"normal");
+                    ptr.push_str( &"normal");
                 }
             }
 
             else if op as int == CSS_PROP_COLUMN_SPAN as int {
                 
                 if value as int == COLUMN_SPAN_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
 
                 else if value as int == COLUMN_SPAN_ALL as int {
-                    str::push_str(ptr , &"all");
+                    ptr.push_str( &"all");
                 }
             }
 
@@ -1144,33 +1145,33 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
 
                         if value as int == CONTENT_URI as int {
-                            str::push_str(ptr , &"url(");
+                            ptr.push_str( &"url(");
                         }
                         if value as int == CONTENT_ATTR as int {
-                            str::push_str(ptr , &"attr(");
+                            ptr.push_str( &"attr(");
                         }
                         if value as int == CONTENT_STRING as int {
-                            str::push_str(ptr , &")");
+                            ptr.push_str( &")");
                         }
 
                         iterator += 1;
 
                         if option_string.is_some() {
                             ptr.push_char('\'');
-                            str::push_str(ptr , option_string.unwrap());
+                            ptr.push_str( option_string.unwrap());
                         }
                     }
                     else if (value as int & 0xff) == CONTENT_OPEN_QUOTE as int {
-                        str::push_str(ptr , "open-quote");
+                        ptr.push_str( "open-quote");
                     }
                     else if (value as int & 0xff) == CONTENT_CLOSE_QUOTE as int {
-                        str::push_str(ptr , "close-quote");
+                        ptr.push_str( "close-quote");
                     }
                     else if (value as int & 0xff) == CONTENT_NO_OPEN_QUOTE as int {
-                        str::push_str(ptr , "no-open-quote");
+                        ptr.push_str( "no-open-quote");
                     }
                     else if (value as int & 0xff) == CONTENT_NO_CLOSE_QUOTE as int {
-                        str::push_str(ptr , "no-close-quote");
+                        ptr.push_str( "no-close-quote");
                     }
                     value = bytecode[iterator];
                     iterator += 1;
@@ -1196,7 +1197,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         iterator += 1;
                         
                         if option_string.is_some() {
-                            str::push_str(ptr , option_string.unwrap());
+                            ptr.push_str( option_string.unwrap());
                         }
                         ptr.push_char(' ');
                         let val = bytecode[iterator] as i32;
@@ -1213,7 +1214,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
 
                 else if value as int == COUNTER_INCREMENT_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
             }
 
@@ -1225,9 +1226,9 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     let(_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
 
                     if option_string.is_some() {
-                        str::push_str(ptr , &"url('");
-                        str::push_str(ptr , option_string.unwrap());
-                        str::push_str(ptr , &"'), ");
+                        ptr.push_str( &"url('");
+                        ptr.push_str( option_string.unwrap());
+                        ptr.push_str( &"'), ");
                     }
 
                     value = bytecode[iterator];
@@ -1235,117 +1236,117 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 }
 
                 if value as int == CURSOR_AUTO as int {
-                    str::push_str(ptr , &"auto");
+                    ptr.push_str( &"auto");
                 }
                 else if value as int == CURSOR_CROSSHAIR as int {
-                    str::push_str(ptr , &"crosshair");
+                    ptr.push_str( &"crosshair");
                 }
                 else if value as int == CURSOR_DEFAULT as int {
-                    str::push_str(ptr , &"default");
+                    ptr.push_str( &"default");
                 }
                 else if value as int == CURSOR_POINTER as int {
-                    str::push_str(ptr , &"pointer");
+                    ptr.push_str( &"pointer");
                 }
                 else if value as int == CURSOR_MOVE as int {
-                    str::push_str(ptr , &"move");
+                    ptr.push_str( &"move");
                 }
                 else if value as int == CURSOR_E_RESIZE as int {
-                    str::push_str(ptr , &"e-resize");
+                    ptr.push_str( &"e-resize");
                 }
                 else if value as int == CURSOR_NE_RESIZE as int {
-                    str::push_str(ptr , &"ne-resize");
+                    ptr.push_str( &"ne-resize");
                 }
                 else if value as int == CURSOR_NW_RESIZE as int {
-                    str::push_str(ptr , &"nw-resize");
+                    ptr.push_str( &"nw-resize");
                 }
                 else if value as int == CURSOR_N_RESIZE as int {
-                    str::push_str(ptr , &"n-resize");
+                    ptr.push_str( &"n-resize");
                 }
                 else if value as int == CURSOR_SE_RESIZE as int {
-                    str::push_str(ptr , &"se-resize");
+                    ptr.push_str( &"se-resize");
                 }
                 else if value as int == CURSOR_SW_RESIZE as int {
-                    str::push_str(ptr , &"sw-resize");
+                    ptr.push_str( &"sw-resize");
                 }
                 else if value as int == CURSOR_S_RESIZE as int {
-                    str::push_str(ptr , &"s-resize");
+                    ptr.push_str( &"s-resize");
                 }
                 else if value as int == CURSOR_W_RESIZE as int {
-                    str::push_str(ptr , &"w-resize");
+                    ptr.push_str( &"w-resize");
                 }
                 else if value as int == CURSOR_TEXT as int {
-                    str::push_str(ptr , &"text");
+                    ptr.push_str( &"text");
                 }
                 else if value as int == CURSOR_WAIT as int {
-                    str::push_str(ptr , &"wait");
+                    ptr.push_str( &"wait");
                 }
                 else if value as int == CURSOR_HELP as int {
-                    str::push_str(ptr , &"help");
+                    ptr.push_str( &"help");
                 }
                 else if value as int == CURSOR_PROGRESS as int {
-                    str::push_str(ptr , &"progress");
+                    ptr.push_str( &"progress");
                 }
             }
 
             else if op as int == CSS_PROP_DIRECTION as int {
 
                 if value as int == DIRECTION_LTR as int {
-                    str::push_str(ptr , &"ltr");
+                    ptr.push_str( &"ltr");
                 }
                 else if value as int == DIRECTION_RTL as int {
-                    str::push_str(ptr , &"rtl");
+                    ptr.push_str( &"rtl");
                 }
             }
 
             else if op as int == CSS_PROP_DISPLAY as int {
 
                 if value as int == DISPLAY_INLINE as int {
-                    str::push_str(ptr , &"inline");
+                    ptr.push_str( &"inline");
                 }
                 else if value as int == DISPLAY_BLOCK as int {
-                    str::push_str(ptr , &"block");
+                    ptr.push_str( &"block");
                 }
                 else if value as int == DISPLAY_LIST_ITEM as int {
-                    str::push_str(ptr , &"list-item");
+                    ptr.push_str( &"list-item");
                 }
                 else if value as int == DISPLAY_RUN_IN as int {
-                    str::push_str(ptr , &"run-in");
+                    ptr.push_str( &"run-in");
                 }
                 else if value as int == DISPLAY_INLINE_BLOCK as int {
-                    str::push_str(ptr , &"inline-block");
+                    ptr.push_str( &"inline-block");
                 }
                 else if value as int == DISPLAY_TABLE as int {
-                    str::push_str(ptr , &"table");
+                    ptr.push_str( &"table");
                 }
                 else if value as int == DISPLAY_INLINE_TABLE as int {
-                    str::push_str(ptr , &"inline-table");
+                    ptr.push_str( &"inline-table");
                 }
                 else if value as int == DISPLAY_TABLE_ROW_GROUP as int {
-                    str::push_str(ptr , &"table-row-group");
+                    ptr.push_str( &"table-row-group");
                 }
                 else if value as int == DISPLAY_TABLE_HEADER_GROUP as int {
-                    str::push_str(ptr , &"table-header-group");
+                    ptr.push_str( &"table-header-group");
                 }
                 else if value as int == DISPLAY_TABLE_FOOTER_GROUP as int {
-                    str::push_str(ptr , &"table-footer-group");
+                    ptr.push_str( &"table-footer-group");
                 }
                 else if value as int == DISPLAY_TABLE_ROW as int {
-                    str::push_str(ptr , &"table-row");
+                    ptr.push_str( &"table-row");
                 }
                 else if value as int == DISPLAY_TABLE_COLUMN_GROUP as int {
-                    str::push_str(ptr , &"table-column-group");
+                    ptr.push_str( &"table-column-group");
                 }
                 else if value as int == DISPLAY_TABLE_COLUMN as int {
-                    str::push_str(ptr , &"table-column");
+                    ptr.push_str( &"table-column");
                 }
                 else if value as int == DISPLAY_TABLE_CELL as int {
-                    str::push_str(ptr , &"table-cell");
+                    ptr.push_str( &"table-cell");
                 }
                 else if value as int == DISPLAY_TABLE_CAPTION as int {
-                    str::push_str(ptr , &"table-caption");
+                    ptr.push_str( &"table-caption");
                 }
                 else if value as int == DISPLAY_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
             }
 
@@ -1361,42 +1362,42 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     dump_unit(some_val , unit , ptr);
                 }
                 else if value as int == ELEVATION_BELOW as int {
-                    str::push_str(ptr , &"below");
+                    ptr.push_str( &"below");
                 }
                 else if value as int == ELEVATION_LEVEL as int {
-                    str::push_str(ptr , &"level");
+                    ptr.push_str( &"level");
                 }
                 else if value as int == ELEVATION_ABOVE as int {
-                    str::push_str(ptr , &"above");
+                    ptr.push_str( &"above");
                 }
                 else if value as int == ELEVATION_HIGHER as int {
-                    str::push_str(ptr , &"higher");
+                    ptr.push_str( &"higher");
                 }
                 else if value as int == ELEVATION_LOWER as int {
-                    str::push_str(ptr , &"lower");
+                    ptr.push_str( &"lower");
                 }
             }
 
             else if op as int == CSS_PROP_EMPTY_CELLS as int {
 
                 if value as int == EMPTY_CELLS_SHOW as int {
-                    str::push_str(ptr , &"show");
+                    ptr.push_str( &"show");
                 }
                 else if value as int == EMPTY_CELLS_HIDE as int {
-                    str::push_str(ptr , &"hide");
+                    ptr.push_str( &"hide");
                 }
             }
 
             else if op as int == CSS_PROP_FLOAT as int {
 
                 if value as int == FLOAT_LEFT as int {
-                    str::push_str(ptr , &"left");
+                    ptr.push_str( &"left");
                 }
                 else if value as int == FLOAT_RIGHT as int {
-                    str::push_str(ptr , &"right");
+                    ptr.push_str( &"right");
                 }
                 else if value as int == FLOAT_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
             }
 
@@ -1411,31 +1412,31 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         
                         if option_string.is_some() {
                             ptr.push_char('\'');
-                            str::push_str(ptr , option_string.unwrap());
+                            ptr.push_str( option_string.unwrap());
                             ptr.push_char('\'');
                         }
                     }
                     else if value as int == FONT_FAMILY_SERIF as int {
-                        str::push_str(ptr , &"serif");
+                        ptr.push_str( &"serif");
                     }
                     else if value as int == FONT_FAMILY_SANS_SERIF as int {
-                        str::push_str(ptr , &"sans-serif");
+                        ptr.push_str( &"sans-serif");
                     }
                     else if value as int == FONT_FAMILY_CURSIVE as int {
-                        str::push_str(ptr , &"cursive");
+                        ptr.push_str( &"cursive");
                     }
                     else if value as int == FONT_FAMILY_FANTASY as int {
-                        str::push_str(ptr , &"fantasy");
+                        ptr.push_str( &"fantasy");
                     }
                     else if value as int == FONT_FAMILY_MONOSPACE as int {
-                        str::push_str(ptr , &"monospace");
+                        ptr.push_str( &"monospace");
                     }
 
                     value = bytecode[iterator];
                     iterator += 1;
 
                     if value as int != FONT_FAMILY_END as int {
-                        str::push_str(ptr , &", ");
+                        ptr.push_str( &", ");
                     }
                 }
             }
@@ -1452,97 +1453,97 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     dump_unit(some_val , unit , ptr);
                 }
                 else if value as int == FONT_SIZE_XX_SMALL as int {
-                    str::push_str(ptr , &"right");
+                    ptr.push_str( &"right");
                 }
                 else if value as int == FONT_SIZE_X_SMALL as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
                 else if value as int == FONT_SIZE_SMALL as int {
-                    str::push_str(ptr , &"small");
+                    ptr.push_str( &"small");
                 }
                 else if value as int == FONT_SIZE_MEDIUM as int {
-                    str::push_str(ptr , &"medium");
+                    ptr.push_str( &"medium");
                 }
                 else if value as int == FONT_SIZE_LARGE as int {
-                    str::push_str(ptr , &"large");
+                    ptr.push_str( &"large");
                 }
                 else if value as int == FONT_SIZE_X_LARGE as int {
-                    str::push_str(ptr , &"x-large");
+                    ptr.push_str( &"x-large");
                 }
                 else if value as int == FONT_SIZE_XX_LARGE as int {
-                    str::push_str(ptr , &"xx-large");
+                    ptr.push_str( &"xx-large");
                 }
                 else if value as int == FONT_SIZE_LARGER as int {
-                    str::push_str(ptr , &"larger");
+                    ptr.push_str( &"larger");
                 }
                 else if value as int == FONT_SIZE_SMALLER as int {
-                    str::push_str(ptr , &"smaller");
+                    ptr.push_str( &"smaller");
                 }
             }
 
             else if op as int == CSS_PROP_FONT_STYLE as int {
 
                 if value as int == FONT_STYLE_NORMAL as int {
-                    str::push_str(ptr , &"normal");
+                    ptr.push_str( &"normal");
                 }
                 else if value as int == FONT_STYLE_ITALIC as int {
-                    str::push_str(ptr , &"italic");
+                    ptr.push_str( &"italic");
                 }
                 else if value as int == FONT_STYLE_OBLIQUE as int {
-                    str::push_str(ptr , &"oblique");
+                    ptr.push_str( &"oblique");
                 }
             }
 
             else if op as int == CSS_PROP_FONT_VARIANT as int {
 
                 if value as int == FONT_VARIANT_NORMAL as int {
-                    str::push_str(ptr , &"normal");
+                    ptr.push_str( &"normal");
                 }
                 else if value as int == FONT_VARIANT_SMALL_CAPS as int {
-                    str::push_str(ptr , &"small-caps");
+                    ptr.push_str( &"small-caps");
                 }
             }
 
             else if op as int == CSS_PROP_FONT_WEIGHT as int {
 
                 if value as int == FONT_WEIGHT_NORMAL as int {
-                    str::push_str(ptr , &"normal");
+                    ptr.push_str( &"normal");
                 }
                 else if value as int == FONT_WEIGHT_BOLD as int {
-                    str::push_str(ptr , &"bold");
+                    ptr.push_str( &"bold");
                 }
                 else if value as int == FONT_WEIGHT_BOLDER as int {
-                    str::push_str(ptr , &"bolder");
+                    ptr.push_str( &"bolder");
                 }
                 else if value as int == FONT_WEIGHT_LIGHTER as int {
-                    str::push_str(ptr , &"lighter");
+                    ptr.push_str( &"lighter");
                 }
                 else if value as int == FONT_WEIGHT_100 as int {
-                    str::push_str(ptr , &"100");
+                    ptr.push_str( &"100");
                 }
                 else if value as int == FONT_WEIGHT_200 as int {
-                    str::push_str(ptr , &"200");
+                    ptr.push_str( &"200");
                 }
                 else if value as int == FONT_WEIGHT_300 as int {
-                    str::push_str(ptr , &"300");
+                    ptr.push_str( &"300");
                 }
                 else if value as int == FONT_WEIGHT_400 as int {
-                    str::push_str(ptr , &"400");
+                    ptr.push_str( &"400");
                 }
                 else if value as int == FONT_WEIGHT_500 as int {
-                    str::push_str(ptr , &"500");
+                    ptr.push_str( &"500");
                 }
                 else if value as int == FONT_WEIGHT_600 as int {
-                    str::push_str(ptr , &"600");
+                    ptr.push_str( &"600");
                 }
                 else if value as int == FONT_WEIGHT_700 as int {
-                    str::push_str(ptr , &"700");
+                    ptr.push_str( &"700");
                 }
                 else if value as int == FONT_WEIGHT_800 as int {
-                    str::push_str(ptr , &"800");
+                    ptr.push_str( &"800");
                 }
                 else if value as int == FONT_WEIGHT_900 as int {
-                    str::push_str(ptr , &"900");
+                    ptr.push_str( &"900");
                 }
             }
 
@@ -1561,7 +1562,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     dump_unit(some_val , unit , ptr);
                 }
                 else if value as int == LETTER_SPACING_NORMAL as int {
-                    str::push_str(ptr , &"normal");
+                    ptr.push_str( &"normal");
                 }
             }
 
@@ -1584,66 +1585,66 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     dump_unit(some_val , unit , ptr);
                 }
                 else if value as int == LINE_HEIGHT_NORMAL as int {
-                    str::push_str(ptr , &"normal");
+                    ptr.push_str( &"normal");
                 }
             }
 
             else if op as int == CSS_PROP_LIST_STYLE_POSITION as int{
 
                 if value as int == LIST_STYLE_POSITION_INSIDE as int {
-                    str::push_str(ptr , &"inside");
+                    ptr.push_str( &"inside");
                 }
                 else if value as int == LIST_STYLE_POSITION_OUTSIDE as int {
-                    str::push_str(ptr , &"outside");
+                    ptr.push_str( &"outside");
                 }
             }
 
             else if op as int == CSS_PROP_LIST_STYLE_TYPE as int{
 
                 if value as int == LIST_STYLE_TYPE_DISC as int {
-                    str::push_str(ptr , &"disc");
+                    ptr.push_str( &"disc");
                 }
                 else if value as int == LIST_STYLE_TYPE_CIRCLE as int {
-                    str::push_str(ptr , &"circle");
+                    ptr.push_str( &"circle");
                 }
                 else if value as int == LIST_STYLE_TYPE_SQUARE as int {
-                    str::push_str(ptr , &"square");
+                    ptr.push_str( &"square");
                 }
                 else if value as int == LIST_STYLE_TYPE_DECIMAL as int {
-                    str::push_str(ptr , &"decimal");
+                    ptr.push_str( &"decimal");
                 }
                 else if value as int == LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO as int {
-                    str::push_str(ptr , &"decimal-leading-zero");
+                    ptr.push_str( &"decimal-leading-zero");
                 }
                 else if value as int == LIST_STYLE_TYPE_LOWER_ROMAN as int {
-                    str::push_str(ptr , &"lower-roman");
+                    ptr.push_str( &"lower-roman");
                 }
                 else if value as int == LIST_STYLE_TYPE_UPPER_ROMAN as int {
-                    str::push_str(ptr , &"upper-roman");
+                    ptr.push_str( &"upper-roman");
                 }
                 else if value as int == LIST_STYLE_TYPE_LOWER_GREEK as int {
-                    str::push_str(ptr , &"lower-greek");
+                    ptr.push_str( &"lower-greek");
                 }
                 else if value as int == LIST_STYLE_TYPE_LOWER_LATIN as int {
-                    str::push_str(ptr , &"lower-latin");
+                    ptr.push_str( &"lower-latin");
                 }
                 else if value as int == LIST_STYLE_TYPE_UPPER_LATIN as int {
-                    str::push_str(ptr , &"upper-latin");
+                    ptr.push_str( &"upper-latin");
                 }
                 else if value as int == LIST_STYLE_TYPE_ARMENIAN as int {
-                    str::push_str(ptr , &"armenian");
+                    ptr.push_str( &"armenian");
                 }
                 else if value as int == LIST_STYLE_TYPE_GEORGIAN as int {
-                    str::push_str(ptr , &"georgian");
+                    ptr.push_str( &"georgian");
                 }
                 else if value as int == LIST_STYLE_TYPE_LOWER_ALPHA as int {
-                    str::push_str(ptr , &"lower-alpha");
+                    ptr.push_str( &"lower-alpha");
                 }
                 else if value as int == LIST_STYLE_TYPE_UPPER_ALPHA as int {
-                    str::push_str(ptr , &"upper-alpha");
+                    ptr.push_str( &"upper-alpha");
                 }
                 else if value as int == LIST_STYLE_TYPE_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
             }
 
@@ -1662,7 +1663,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     dump_unit(some_val , unit , ptr);
                 }
                 else if value as int == MAX_HEIGHT_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
             }
 
@@ -1718,10 +1719,10 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
             else if op as int == CSS_PROP_OUTLINE_COLOR as int {
 
                 if value as int == OUTLINE_COLOR_TRANSPARENT as int {
-                    str::push_str(ptr , &"transparent");
+                    ptr.push_str( &"transparent");
                 }
                 else if value as int == OUTLINE_COLOR_CURRENT_COLOR as int {
-                    str::push_str(ptr , &"currentColor");
+                    ptr.push_str( &"currentColor");
                 }
                 else if value as int == OUTLINE_COLOR_SET as int {
                     
@@ -1729,23 +1730,23 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     iterator += 1;
 
                     let string = fmt!("#%08x" , colour as uint);
-                    str::push_str(ptr , string);
+                    ptr.push_str( string);
                 }
             }
 
             else if op as int == CSS_PROP_OVERFLOW as int {
 
                 if value as int == OVERFLOW_VISIBLE as int {
-                    str::push_str(ptr , &"visible");
+                    ptr.push_str( &"visible");
                 }
                 else if value as int == OVERFLOW_HIDDEN as int {
-                    str::push_str(ptr , &"hidden");
+                    ptr.push_str( &"hidden");
                 }
                 else if value as int == OVERFLOW_SCROLL as int {
-                    str::push_str(ptr , &"scroll");
+                    ptr.push_str( &"scroll");
                 }
                 else if value as int == OVERFLOW_AUTO as int {
-                    str::push_str(ptr , &"auto");
+                    ptr.push_str( &"auto");
                 }
             }
 
@@ -1758,29 +1759,29 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                 assert!(PAGE_BREAK_AFTER_RIGHT as int == PAGE_BREAK_BEFORE_RIGHT as int);
 
                 if value as int == PAGE_BREAK_AFTER_AUTO as int {
-                    str::push_str(ptr , &"auto");
+                    ptr.push_str( &"auto");
                 }
                 else if value as int == PAGE_BREAK_AFTER_ALWAYS as int {
-                    str::push_str(ptr , &"always");
+                    ptr.push_str( &"always");
                 }
                 else if value as int == PAGE_BREAK_AFTER_AVOID as int {
-                    str::push_str(ptr , &"avoid");
+                    ptr.push_str( &"avoid");
                 }
                 else if value as int == PAGE_BREAK_AFTER_LEFT as int {
-                    str::push_str(ptr , &"left");
+                    ptr.push_str( &"left");
                 }
                 else if value as int == PAGE_BREAK_AFTER_RIGHT as int {
-                    str::push_str(ptr , &"right");
+                    ptr.push_str( &"right");
                 }
             }
 
             else if op as int == CSS_PROP_PAGE_BREAK_INSIDE as int{
 
                 if value as int == PAGE_BREAK_INSIDE_AUTO as int {
-                    str::push_str(ptr , &"auto");
+                    ptr.push_str( &"auto");
                 }
                 else if value as int == PAGE_BREAK_INSIDE_AVOID as int {
-                    str::push_str(ptr , &"avoid");
+                    ptr.push_str( &"avoid");
                 }
             }
 
@@ -1796,19 +1797,19 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     dump_unit(some_val , unit , ptr);
                 }
                 else if value as int == PITCH_X_LOW as int {
-                    str::push_str(ptr , &"x-low");
+                    ptr.push_str( &"x-low");
                 }
                 else if value as int == PITCH_LOW as int {
-                    str::push_str(ptr , &"low");
+                    ptr.push_str( &"low");
                 }
                 else if value as int == PITCH_MEDIUM as int {
-                    str::push_str(ptr , &"medium");
+                    ptr.push_str( &"medium");
                 }
                 else if value as int == PITCH_HIGH as int {
-                    str::push_str(ptr , &"high");
+                    ptr.push_str( &"high");
                 }
                 else if value as int == PITCH_X_HIGH as int {
-                    str::push_str(ptr , &"x-high");
+                    ptr.push_str( &"x-high");
                 }
             }
 
@@ -1822,39 +1823,39 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                     if option_string.is_some() {
                         ptr.push_char('\'');
-                        str::push_str(ptr , option_string.unwrap());
+                        ptr.push_str( option_string.unwrap());
                         ptr.push_char('\'');
                     }
                 }
                 else if value as int == PLAY_DURING_AUTO as int {
-                    str::push_str(ptr , &"auto");
+                    ptr.push_str( &"auto");
                 }
                 else if value as int == PLAY_DURING_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
                 
                 if (value as int & PLAY_DURING_MIX as int > 0) {
-                    str::push_str(ptr , &"mix");
+                    ptr.push_str( &"mix");
                 }
 
                 if (value as int & PLAY_DURING_REPEAT as int > 0) {
-                    str::push_str(ptr , &"repeat");
+                    ptr.push_str( &"repeat");
                 }
             }
 
             else if op as int == CSS_PROP_POSITION as int{
 
                 if value as int == POSITION_STATIC as int {
-                    str::push_str(ptr , &"static");
+                    ptr.push_str( &"static");
                 }
                 else if value as int == POSITION_RELATIVE as int {
-                    str::push_str(ptr , &"relative");
+                    ptr.push_str( &"relative");
                 }
                 else if value as int == POSITION_ABSOLUTE as int {
-                    str::push_str(ptr , &"absolute");
+                    ptr.push_str( &"absolute");
                 }
                 else if value as int == POSITION_FIXED as int {
-                    str::push_str(ptr , &"fixed");
+                    ptr.push_str( &"fixed");
                 }
             }
 
@@ -1870,17 +1871,17 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
 
                         if option_string.is_some() {
-                            str::push_str(ptr , &" '");
-                            str::push_str(ptr , option_string.unwrap());
-                            str::push_str(ptr , &"' ");
+                            ptr.push_str( &" '");
+                            ptr.push_str( option_string.unwrap());
+                            ptr.push_str( &"' ");
                         }
 
                         let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
 
                         if option_string.is_some() {
-                            str::push_str(ptr , &" '");
-                            str::push_str(ptr , option_string.unwrap());
-                            str::push_str(ptr , &"' ");
+                            ptr.push_str( &" '");
+                            ptr.push_str( option_string.unwrap());
+                            ptr.push_str( &"' ");
                         }
                         iterator += 1;
                         value = bytecode[iterator];
@@ -1888,50 +1889,50 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     }
                 }
                 else if value as int == QUOTES_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
             }
 
             else if op as int == CSS_PROP_SPEAK_HEADER as int{
 
                 if value as int == SPEAK_HEADER_ONCE as int {
-                    str::push_str(ptr , &"once");
+                    ptr.push_str( &"once");
                 }
                 else if value as int == SPEAK_HEADER_ALWAYS as int {
-                    str::push_str(ptr , &"always");
+                    ptr.push_str( &"always");
                 }
             }
 
             else if op as int == CSS_PROP_SPEAK_NUMERAL as int{
 
                 if value as int == SPEAK_NUMERAL_DIGITS as int {
-                    str::push_str(ptr , &"digits");
+                    ptr.push_str( &"digits");
                 }
                 else if value as int == SPEAK_NUMERAL_CONTINUOUS as int {
-                    str::push_str(ptr , &"continuous");
+                    ptr.push_str( &"continuous");
                 }
             }
 
             else if op as int == CSS_PROP_SPEAK_PUNCTUATION as int{
 
                 if value as int == SPEAK_PUNCTUATION_CODE as int {
-                    str::push_str(ptr , &"code");
+                    ptr.push_str( &"code");
                 }
                 else if value as int == SPEAK_PUNCTUATION_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
             }
 
             else if op as int == CSS_PROP_SPEAK as int{
 
                 if value as int == SPEAK_NORMAL as int {
-                    str::push_str(ptr , &"normal");
+                    ptr.push_str( &"normal");
                 }
                 else if value as int == SPEAK_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
                 else if value as int == SPEAK_SPELL_OUT as int {
-                    str::push_str(ptr , &"spell-out");
+                    ptr.push_str( &"spell-out");
                 }
             }
 
@@ -1944,108 +1945,108 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     dump_number1(some_val , ptr);
                 }
                 else if value as int == SPEECH_RATE_X_SLOW as int {
-                    str::push_str(ptr , &"x-slow");
+                    ptr.push_str( &"x-slow");
                 }
                 else if value as int == SPEECH_RATE_SLOW as int {
-                    str::push_str(ptr , &"slow");
+                    ptr.push_str( &"slow");
                 }
                 else if value as int == SPEECH_RATE_MEDIUM as int {
-                    str::push_str(ptr , &"medium");
+                    ptr.push_str( &"medium");
                 }
                 else if value as int == SPEECH_RATE_FAST as int {
-                    str::push_str(ptr , &"fast");
+                    ptr.push_str( &"fast");
                 }
                 else if value as int == SPEECH_RATE_X_FAST as int {
-                    str::push_str(ptr , &"x-fast");
+                    ptr.push_str( &"x-fast");
                 }
                 else if value as int == SPEECH_RATE_FASTER as int {
-                    str::push_str(ptr , &"faster");
+                    ptr.push_str( &"faster");
                 }
                 else if value as int == SPEECH_RATE_SLOWER as int {
-                    str::push_str(ptr , &"slower");
+                    ptr.push_str( &"slower");
                 }
             }
 
             else if op as int == CSS_PROP_TABLE_LAYOUT as int{
 
                 if value as int == TABLE_LAYOUT_AUTO as int {
-                    str::push_str(ptr , &"auto");
+                    ptr.push_str( &"auto");
                 }
                 else if value as int == TABLE_LAYOUT_FIXED as int {
-                    str::push_str(ptr , &"fixed");
+                    ptr.push_str( &"fixed");
                 }
             }
 
             else if op as int == CSS_PROP_TEXT_ALIGN as int{
 
                 if value as int == TEXT_ALIGN_LEFT as int {
-                    str::push_str(ptr , &"left");
+                    ptr.push_str( &"left");
                 }
                 else if value as int == TEXT_ALIGN_RIGHT as int {
-                    str::push_str(ptr , &"right");
+                    ptr.push_str( &"right");
                 }
                 else if value as int == TEXT_ALIGN_CENTER as int {
-                    str::push_str(ptr , &"center");
+                    ptr.push_str( &"center");
                 }
                 else if value as int == TEXT_ALIGN_JUSTIFY as int {
-                    str::push_str(ptr , &"justify");
+                    ptr.push_str( &"justify");
                 }
                 else if value as int == TEXT_ALIGN_LIBCSS_LEFT as int {
-                    str::push_str(ptr , &"-libcss-left");
+                    ptr.push_str( &"-libcss-left");
                 }
                 else if value as int == TEXT_ALIGN_LIBCSS_CENTER as int {
-                    str::push_str(ptr , &"-libcss-center");
+                    ptr.push_str( &"-libcss-center");
                 }
                 else if value as int == TEXT_ALIGN_LIBCSS_RIGHT as int {
-                    str::push_str(ptr , &"-libcss-right");
+                    ptr.push_str( &"-libcss-right");
                 }
             }
 
             else if op as int == CSS_PROP_TEXT_DECORATION as int{
 
                 if value as int == TEXT_DECORATION_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
                 if value as int == TEXT_DECORATION_UNDERLINE as int {
-                    str::push_str(ptr , &" underline");
+                    ptr.push_str( &" underline");
                 }
                 if value as int == TEXT_DECORATION_OVERLINE as int {
-                    str::push_str(ptr , &" overline");
+                    ptr.push_str( &" overline");
                 }
                 if value as int == TEXT_DECORATION_LINE_THROUGH as int {
-                    str::push_str(ptr , &" line-through");
+                    ptr.push_str( &" line-through");
                 }
                 if value as int == TEXT_DECORATION_BLINK as int {
-                    str::push_str(ptr , &"blink");
+                    ptr.push_str( &"blink");
                 }
             }
 
             else if op as int == CSS_PROP_TEXT_TRANSFORM as int{
 
                 if value as int == TEXT_TRANSFORM_CAPITALIZE as int {
-                    str::push_str(ptr , &"capitalize");
+                    ptr.push_str( &"capitalize");
                 }
                 else if value as int == TEXT_TRANSFORM_UPPERCASE as int {
-                    str::push_str(ptr , &"uppercase");
+                    ptr.push_str( &"uppercase");
                 }
                 else if value as int == TEXT_TRANSFORM_LOWERCASE as int {
-                    str::push_str(ptr , &"lowercase");
+                    ptr.push_str( &"lowercase");
                 }
                 else if value as int == TEXT_TRANSFORM_NONE as int {
-                    str::push_str(ptr , &"none");
+                    ptr.push_str( &"none");
                 }
             }
 
             else if op as int == CSS_PROP_UNICODE_BIDI as int{
 
                 if value as int == UNICODE_BIDI_NORMAL as int {
-                    str::push_str(ptr , &"normal");
+                    ptr.push_str( &"normal");
                 }
                 else if value as int == UNICODE_BIDI_EMBED as int {
-                    str::push_str(ptr , &"embed");
+                    ptr.push_str( &"embed");
                 }
                 else if value as int == UNICODE_BIDI_BIDI_OVERRIDE as int {
-                    str::push_str(ptr , &"bidi-override");
+                    ptr.push_str( &"bidi-override");
                 }
             }
 
@@ -2060,28 +2061,28 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     dump_unit(some_val as i32 , unit , ptr);
                 }
                 else if value as int == VERTICAL_ALIGN_BASELINE as int {
-                    str::push_str(ptr , &"baseline");
+                    ptr.push_str( &"baseline");
                 }
                 else if value as int == VERTICAL_ALIGN_SUB as int {
-                    str::push_str(ptr , &"sub");
+                    ptr.push_str( &"sub");
                 }
                 else if value as int == VERTICAL_ALIGN_SUPER as int {
-                    str::push_str(ptr , &"super");
+                    ptr.push_str( &"super");
                 }
                 else if value as int == VERTICAL_ALIGN_TOP as int {
-                    str::push_str(ptr , &"top");
+                    ptr.push_str( &"top");
                 }
                 else if value as int == VERTICAL_ALIGN_TEXT_TOP as int {
-                    str::push_str(ptr , &"text-top");
+                    ptr.push_str( &"text-top");
                 }
                 else if value as int == VERTICAL_ALIGN_MIDDLE as int {
-                    str::push_str(ptr , &"middle");
+                    ptr.push_str( &"middle");
                 }
                 else if value as int == VERTICAL_ALIGN_BOTTOM as int {
-                    str::push_str(ptr , &"bottom");
+                    ptr.push_str( &"bottom");
                 }
                 else if value as int == VERTICAL_ALIGN_TEXT_BOTTOM as int {
-                    str::push_str(ptr , &"text-bottom");
+                    ptr.push_str( &"text-bottom");
                 }
             }
 
@@ -2097,25 +2098,25 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             ptr.push_char('\'');
-                            str::push_str(ptr , option_string.unwrap());
+                            ptr.push_str( option_string.unwrap());
                             ptr.push_char('\'');
                         }
                     }
                     else if value as int == VOICE_FAMILY_MALE as int {
-                        str::push_str(ptr , &"male");
+                        ptr.push_str( &"male");
                     }
                     else if value as int == VOICE_FAMILY_FEMALE as int {
-                        str::push_str(ptr , &"female");
+                        ptr.push_str( &"female");
                     }
                     else if value as int == VOICE_FAMILY_CHILD as int {
-                        str::push_str(ptr , &"child");
+                        ptr.push_str( &"child");
                     }
 
                     value = bytecode[iterator];
                     iterator += 1;
 
                     if value as int != VOICE_FAMILY_END as int {
-                        str::push_str(ptr , &", ");
+                        ptr.push_str( &", ");
                     }
                 }
             }
@@ -2137,41 +2138,41 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     dump_unit(some_val , unit , ptr);
                 }
                 else if value as int == VOLUME_SILENT as int {
-                    str::push_str(ptr , &"silent");
+                    ptr.push_str( &"silent");
                 }
                 else if value as int == VOLUME_X_SOFT as int {
-                    str::push_str(ptr , &"x-soft");
+                    ptr.push_str( &"x-soft");
                 }
                 else if value as int == VOLUME_SOFT as int {
-                    str::push_str(ptr , &"soft");
+                    ptr.push_str( &"soft");
                 }
                 else if value as int == VOLUME_MEDIUM as int {
-                    str::push_str(ptr , &"medium");
+                    ptr.push_str( &"medium");
                 }
                 else if value as int == VOLUME_LOUD as int {
-                    str::push_str(ptr , &"loud");
+                    ptr.push_str( &"loud");
                 }
                 else if value as int == VOLUME_X_LOUD as int {
-                    str::push_str(ptr , &"loud");
+                    ptr.push_str( &"loud");
                 }
             }
 
             else if op as int == CSS_PROP_VOLUME as int {
 
                 if value as int == WHITE_SPACE_NORMAL as int {
-                    str::push_str(ptr , &"normal");
+                    ptr.push_str( &"normal");
                 }
                 else if value as int == WHITE_SPACE_PRE as int {
-                    str::push_str(ptr , &"pre");
+                    ptr.push_str( &"pre");
                 }
                 else if value as int == WHITE_SPACE_NOWRAP as int {
-                    str::push_str(ptr , &"nowrap");
+                    ptr.push_str( &"nowrap");
                 }
                 else if value as int == WHITE_SPACE_PRE_WRAP as int {
-                    str::push_str(ptr , &"pre-wrap");
+                    ptr.push_str( &"pre-wrap");
                 }
                 else if value as int == WHITE_SPACE_PRE_LINE as int {
-                    str::push_str(ptr , &"pre-line");
+                    ptr.push_str( &"pre-line");
                 }
             }
 
@@ -2184,17 +2185,17 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                     dump_number1(some_val , ptr);
                 }
                 else if value as int == Z_INDEX_AUTO as int {
-                    str::push_str(ptr , &"auto");
+                    ptr.push_str( &"auto");
                 }
             }
 
             else {
                 let string = fmt!("Unknown opcode %x" , op as uint);
-                str::push_str(ptr , string);
+                ptr.push_str( string);
             }
 
             if (isImportant(opv)) {
-                str::push_str(ptr , &" !important")
+                ptr.push_str( &" !important")
             }
             ptr.push_char('\n');
 
@@ -2208,7 +2209,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 fn dump_number1(val: i32 , ptr: &mut ~str){
     debug!("Entering: dump_number");
     if css_int_to_fixed((val >> 10) as int) == val {
-        str::push_str(ptr , fmt!("%?" , val >> 10));
+        ptr.push_str( fmt!("%?" , val >> 10));
     }
     else {
         dump_css_fixed(val , ptr);
@@ -2276,52 +2277,52 @@ fn dump_unit(val: i32 , unit: u32 , ptr: &mut ~str) {
 
     match unit {
         UNIT_PX => {
-            str::push_str(ptr , &"px");
+            ptr.push_str( &"px");
         },
         UNIT_EX => {
-            str::push_str(ptr , &"ex");
+            ptr.push_str( &"ex");
         },
         UNIT_EM => {
-            str::push_str(ptr , &"em");
+            ptr.push_str( &"em");
         },
         UNIT_IN => {
-            str::push_str(ptr , &"in");
+            ptr.push_str( &"in");
         },
         UNIT_CM => {
-            str::push_str(ptr , &"cm");
+            ptr.push_str( &"cm");
         },
         UNIT_MM => {
-            str::push_str(ptr , &"mm");
+            ptr.push_str( &"mm");
         },
         UNIT_PT => {
-            str::push_str(ptr , &"pt");
+            ptr.push_str( &"pt");
         },
         UNIT_PC => {
-            str::push_str(ptr , &"pc");
+            ptr.push_str( &"pc");
         },
         UNIT_PCT => {
-            str::push_str(ptr , &"pct");
+            ptr.push_str( &"pct");
         },
         UNIT_DEG => {
-            str::push_str(ptr , &"deg");
+            ptr.push_str( &"deg");
         },
         UNIT_GRAD => {
-            str::push_str(ptr , &"grad");
+            ptr.push_str( &"grad");
         },
         UNIT_RAD => {
-            str::push_str(ptr , &"rad");
+            ptr.push_str( &"rad");
         },
         UNIT_MS => {
-            str::push_str(ptr , &"ms");
+            ptr.push_str( &"ms");
         },
         UNIT_S => {
-            str::push_str(ptr , &"s");
+            ptr.push_str( &"s");
         },
         UNIT_HZ => {
-            str::push_str(ptr , &"Hz");
+            ptr.push_str( &"Hz");
         },
         UNIT_KHZ => {
-            str::push_str(ptr , &"kHz");
+            ptr.push_str( &"kHz");
         },
         _ => {}
     }
@@ -2336,116 +2337,116 @@ fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
 
     if font_face.font_family.is_some() {
         ptr.push_char('\n');
-        str::push_str(ptr , &"| font_family: ");
-        unsafe{str::push_str(ptr , lwc_string_data(font_face.font_family.get_ref().clone()));}
+        ptr.push_str( &"| font_family: ");
+        unsafe{ptr.push_str( lwc_string_data(font_face.font_family.get_ref().clone()));}
     }
-    str::push_str(ptr , &"\n| font-style: ");
+    ptr.push_str( &"\n| font-style: ");
 
     style = css_font_face_font_style(font_face) as u8;
 
     if style as int == CSS_FONT_STYLE_INHERIT as int {
-        str::push_str(ptr , &"unspecified");
+        ptr.push_str( &"unspecified");
     }
     else if style as int == CSS_FONT_STYLE_NORMAL as int {
-        str::push_str(ptr , &"normal");
+        ptr.push_str( &"normal");
     }
     else if style as int == CSS_FONT_STYLE_ITALIC as int {
-        str::push_str(ptr , &"italic");
+        ptr.push_str( &"italic");
     }
     else if style as int == CSS_FONT_STYLE_OBLIQUE as int {
-        str::push_str(ptr , &"oblique");
+        ptr.push_str( &"oblique");
     }
 
-    str::push_str(ptr , &"\n| font-weight: ");
+    ptr.push_str( &"\n| font-weight: ");
 
     weight = css_font_face_font_weight(font_face) as u8;
 
     if weight as int == CSS_FONT_WEIGHT_INHERIT as int {
-        str::push_str(ptr , &"unspecified");
+        ptr.push_str( &"unspecified");
     }
     else if weight as int == CSS_FONT_WEIGHT_NORMAL as int {
-        str::push_str(ptr , &"normal");
+        ptr.push_str( &"normal");
     }
     else if weight as int == CSS_FONT_WEIGHT_BOLD as int {
-        str::push_str(ptr , &"normal");
+        ptr.push_str( &"normal");
     }
     else if weight as int == CSS_FONT_WEIGHT_100 as int {
-        str::push_str(ptr , &"100");
+        ptr.push_str( &"100");
     }
     else if weight as int == CSS_FONT_WEIGHT_200 as int {
-        str::push_str(ptr , &"200");
+        ptr.push_str( &"200");
     }
     else if weight as int == CSS_FONT_WEIGHT_300 as int {
-        str::push_str(ptr , &"300");
+        ptr.push_str( &"300");
     }
     else if weight as int == CSS_FONT_WEIGHT_400 as int {
-        str::push_str(ptr , &"400");
+        ptr.push_str( &"400");
     }
     else if weight as int == CSS_FONT_WEIGHT_500 as int {
-        str::push_str(ptr , &"500");
+        ptr.push_str( &"500");
     }
     else if weight as int == CSS_FONT_WEIGHT_600 as int {
-        str::push_str(ptr , &"600");
+        ptr.push_str( &"600");
     }
     else if weight as int == CSS_FONT_WEIGHT_700 as int {
-        str::push_str(ptr , &"700");
+        ptr.push_str( &"700");
     }
     else if weight as int == CSS_FONT_WEIGHT_800 as int {
-        str::push_str(ptr , &"800");
+        ptr.push_str( &"800");
     }
     else if weight as int == CSS_FONT_WEIGHT_900 as int {
-        str::push_str(ptr , &"900");
+        ptr.push_str( &"900");
     }
     else {
-        str::push_str(ptr , &"Unhandled weight");
-        str::push_str(ptr , fmt!("%d" , weight as int));
+        ptr.push_str( &"Unhandled weight");
+        ptr.push_str( fmt!("%d" , weight as int));
         ptr.push_char('\n');
     }
 
     unsafe {
-        for vec::each_mut(font_face.srcs) |i| {
-            str::push_str(ptr , &"\n| src: ");
+        for font_face.srcs.iter().advance |i| {
+            ptr.push_str( &"\n| src: ");
             let format = css_font_face_src_format(i);
-            str::push_str(ptr , &"\n| format: ");
+            ptr.push_str( &"\n| format: ");
 
             if format as int == CSS_FONT_FACE_FORMAT_UNSPECIFIED as int {
-                str::push_str(ptr , &"unspecified");
+                ptr.push_str( &"unspecified");
             }
             else if format as int == CSS_FONT_FACE_FORMAT_WOFF as int {
-                str::push_str(ptr , &"WOFF");
+                ptr.push_str( &"WOFF");
             }
             else if format as int == CSS_FONT_FACE_FORMAT_OPENTYPE as int {
-                str::push_str(ptr , &"OTF");
+                ptr.push_str( &"OTF");
             }
             else if format as int == CSS_FONT_FACE_FORMAT_EMBEDDED_OPENTYPE as int {
-                str::push_str(ptr , &"EOTF");
+                ptr.push_str( &"EOTF");
             }
             else if format as int == CSS_FONT_FACE_FORMAT_SVG as int {
-                str::push_str(ptr , &"SVG");
+                ptr.push_str( &"SVG");
             }
             else if format as int == CSS_FONT_FACE_FORMAT_UNKNOWN as int {
-                str::push_str(ptr , &"unknown");
+                ptr.push_str( &"unknown");
             }
             else {
-                str::push_str(ptr , &"UNEXPECTED");
+                ptr.push_str( &"UNEXPECTED");
             }
 
             if i.location.is_some() {
-                str::push_str(ptr , &"\n| location: ");
+                ptr.push_str( &"\n| location: ");
 
                 let location = css_font_face_src_location_type(i);
                 
                 if location as int == CSS_FONT_FACE_LOCATION_TYPE_LOCAL as int {
-                    str::push_str(ptr , &"local");
+                    ptr.push_str( &"local");
                 }
                 else if location as int == CSS_FONT_FACE_LOCATION_TYPE_URI as int {
-                    str::push_str(ptr , &"url");
+                    ptr.push_str( &"url");
                 }
                 else {
-                    str::push_str(ptr , &"UNKNOWN");
+                    ptr.push_str( &"UNKNOWN");
                 }
 
-                str::push_str(ptr , lwc_string_data(i.location.get_ref().clone()));
+                ptr.push_str( lwc_string_data(i.location.get_ref().clone()));
             }
 
         }
@@ -2457,54 +2458,54 @@ fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
 
 fn dump_counter(name: ~str , value: u32 , ptr: &mut ~str) {
     debug!("Entering: dump_counter");
-    str::push_str(ptr , &"counter(");
-    str::push_str(ptr , name);
+    ptr.push_str( &"counter(");
+    ptr.push_str( name);
     let val = value >> CONTENT_COUNTER_STYLE_SHIFT;
 
     if val as int == LIST_STYLE_TYPE_DISC as int {
-        str::push_str(ptr , &", disc");
+        ptr.push_str( &", disc");
     }
     else if val as int == LIST_STYLE_TYPE_CIRCLE as int {
-        str::push_str(ptr , &", circle");
+        ptr.push_str( &", circle");
     }
     else if val as int == LIST_STYLE_TYPE_SQUARE as int {
-        str::push_str(ptr , &", square");
+        ptr.push_str( &", square");
     }
     // else if (val as int == LIST_STYLE_TYPE_DECIMAL as int) {
 
     // }
     else if (val as int == LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO as int) {
-        str::push_str(ptr , &", decimal-leading-zero");
+        ptr.push_str( &", decimal-leading-zero");
     }
     else if val as int == LIST_STYLE_TYPE_LOWER_ROMAN as int {
-        str::push_str(ptr , &", lower-roman");
+        ptr.push_str( &", lower-roman");
     }
     else if val as int == LIST_STYLE_TYPE_UPPER_ROMAN as int {
-        str::push_str(ptr , &", upper-roman");
+        ptr.push_str( &", upper-roman");
     }
     else if val as int == LIST_STYLE_TYPE_LOWER_GREEK as int {
-        str::push_str(ptr , &", lower-greek");
+        ptr.push_str( &", lower-greek");
     }
     else if val as int == LIST_STYLE_TYPE_LOWER_LATIN as int {
-        str::push_str(ptr , &", lower-latin");
+        ptr.push_str( &", lower-latin");
     }
     else if val as int == LIST_STYLE_TYPE_UPPER_LATIN as int {
-        str::push_str(ptr , &", upper-latin");
+        ptr.push_str( &", upper-latin");
     }
     else if val as int == LIST_STYLE_TYPE_ARMENIAN as int {
-        str::push_str(ptr , &", armenian");
+        ptr.push_str( &", armenian");
     }
     else if val as int == LIST_STYLE_TYPE_GEORGIAN as int {
-        str::push_str(ptr , &", georgian");
+        ptr.push_str( &", georgian");
     }
     else if val as int == LIST_STYLE_TYPE_LOWER_ALPHA as int {
-        str::push_str(ptr , &", lower-alpha");
+        ptr.push_str( &", lower-alpha");
     }
     else if val as int == LIST_STYLE_TYPE_UPPER_ALPHA as int {
-        str::push_str(ptr , &", upper-alpha");
+        ptr.push_str( &", upper-alpha");
     }
     else if val as int == LIST_STYLE_TYPE_NONE as int {
-        str::push_str(ptr , &", none");
+        ptr.push_str( &", none");
     }
     ptr.push_char(')');
 
@@ -2514,53 +2515,53 @@ fn dump_counter(name: ~str , value: u32 , ptr: &mut ~str) {
 fn dump_counters(name: ~str , separator: ~str , value: u32 , ptr: &mut ~str) {
 
     debug!("Entering: dump_counters");
-    str::push_str(ptr , &"counter(");
-    str::push_str(ptr , name);
-    str::push_str(ptr , separator);
+    ptr.push_str( &"counter(");
+    ptr.push_str( name);
+    ptr.push_str( separator);
     let val = value >> CONTENT_COUNTER_STYLE_SHIFT;
 
     if val as int == LIST_STYLE_TYPE_DISC as int {
-        str::push_str(ptr , &", disc");
+        ptr.push_str( &", disc");
     }
     else if val as int == LIST_STYLE_TYPE_CIRCLE as int {
-        str::push_str(ptr , &", circle");
+        ptr.push_str( &", circle");
     }
     else if val as int == LIST_STYLE_TYPE_SQUARE as int {
-        str::push_str(ptr , &", square");
+        ptr.push_str( &", square");
     }
     // else if (val as int == LIST_STYLE_TYPE_DECIMAL as int) {}
     else if (val as int == LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO as int) {
-        str::push_str(ptr , &", decimal-leading-zero");
+        ptr.push_str( &", decimal-leading-zero");
     }
     else if val as int == LIST_STYLE_TYPE_LOWER_ROMAN as int {
-        str::push_str(ptr , &", lower-roman");
+        ptr.push_str( &", lower-roman");
     }
     else if val as int == LIST_STYLE_TYPE_UPPER_ROMAN as int {
-        str::push_str(ptr , &", upper-roman");
+        ptr.push_str( &", upper-roman");
     }
     else if val as int == LIST_STYLE_TYPE_LOWER_GREEK as int {
-        str::push_str(ptr , &", lower-greek");
+        ptr.push_str( &", lower-greek");
     }
     else if val as int == LIST_STYLE_TYPE_LOWER_LATIN as int {
-        str::push_str(ptr , &", lower-latin");
+        ptr.push_str( &", lower-latin");
     }
     else if val as int == LIST_STYLE_TYPE_UPPER_LATIN as int {
-        str::push_str(ptr , &", upper-latin");
+        ptr.push_str( &", upper-latin");
     }
     else if val as int == LIST_STYLE_TYPE_ARMENIAN as int {
-        str::push_str(ptr , &", armenian");
+        ptr.push_str( &", armenian");
     }
     else if val as int == LIST_STYLE_TYPE_GEORGIAN as int {
-        str::push_str(ptr , &", georgian");
+        ptr.push_str( &", georgian");
     }
     else if val as int == LIST_STYLE_TYPE_LOWER_ALPHA as int {
-        str::push_str(ptr , &", lower-alpha");
+        ptr.push_str( &", lower-alpha");
     }
     else if val as int == LIST_STYLE_TYPE_UPPER_ALPHA as int {
-        str::push_str(ptr , &", upper-alpha");
+        ptr.push_str( &", upper-alpha");
     }
     else if val as int == LIST_STYLE_TYPE_NONE as int {
-        str::push_str(ptr , &", none");
+        ptr.push_str( &", none");
     }
     ptr.push_char(')');
 

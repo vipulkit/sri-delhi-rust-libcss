@@ -4,6 +4,7 @@ extern mod wapcaplet;
 
 use css::parse::properties::common::*;
 use wapcaplet::*;
+use std::io;
 
 fn main() {
     debug!("number");
@@ -13,7 +14,7 @@ fn main() {
 
 fn number(file_name: ~str) {
     let r:@Reader = io::file_reader(&Path(file_name)).get();
-    let mut lwc = wapcaplet::lwc();
+    let lwc = wapcaplet::lwc();
     let mut dataFlag = false;
     let mut expectedFlag = false;
     let mut resetFlag = false;
@@ -54,18 +55,16 @@ fn number(file_name: ~str) {
         if (resetFlag && !dataFlag && !expectedFlag) {
              debug!(fmt!("data = %?" , data_string));
             // debug!(fmt!("expected_str = %?" , expected_str));
-            do lwc.write |l| {
-                let lwc_string= Some(l.lwc_intern_string(copy data_string));
-                //debug!(fmt!("lwc string = %?" , lwc_string.get_ref().clone()));
-                let (a , _) = css__number_from_lwc_string(lwc_string.unwrap() , false);
-                // debug!(fmt!("a = %?" , a));
+            let lwc_string= Some(lwc.lwc_intern_string(copy data_string));
+            //debug!(fmt!("lwc string = %?" , lwc_string.get_ref().clone()));
+            let (a , _) = css__number_from_lwc_string(lwc_string.unwrap() , false);
+            // debug!(fmt!("a = %?" , a));
                 
-                let b = print_css_fixed(256, a);
-                //debug!(fmt!("got: %s expected: %.*s\n", b, expected_str.len(), expected_str));
-                debug!(fmt!("expected is %?" , expected_str));
-                debug!(fmt!("found is %? \n" , b));
-                assert!(str::starts_with(b, expected_str));
-            }
+            let b = print_css_fixed(256, a);
+            //debug!(fmt!("got: %s expected: %.*s\n", b, expected_str.len(), expected_str));
+            debug!(fmt!("expected is %?" , expected_str));
+            debug!(fmt!("found is %? \n" , b));
+            assert!(b.starts_with(expected_str));
             // debug!(fmt!("lwc = %?" , lwc));
 
             data_string = ~"";

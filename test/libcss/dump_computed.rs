@@ -9,6 +9,7 @@ use css::stylesheet::*;
 use css::include::types::*;
 use css::include::properties::*;
 use css::include::fpmath::*;
+use std::cast;
 
 fn dump_css_fixed(f: css_fixed , ptr: &mut ~str){
     debug!(fmt!("\n Entering dump_css_fixed ")) ;
@@ -65,7 +66,7 @@ fn dump_css_fixed(f: css_fixed , ptr: &mut ~str){
 fn dump_css_number(val: css_fixed , ptr: &mut ~str){
       debug!(fmt!("\n Entering dump_css_number ")) ;
     if css_int_to_fixed((val >> 10) as int) == val {
-        str::push_str(ptr , fmt!("%?" , val >> 10));
+        ptr.push_str( fmt!("%?" , val >> 10));
     }
     else {
         dump_css_fixed(val , ptr);
@@ -78,52 +79,52 @@ fn dump_css_unit(val: css_fixed , unit: css_unit , ptr: &mut ~str) {
 
     match unit {
         CSS_UNIT_PX => {
-            str::push_str(ptr , &"px");
+            ptr.push_str( &"px");
         },
         CSS_UNIT_EX => {
-            str::push_str(ptr , &"ex");
+            ptr.push_str( &"ex");
         },
         CSS_UNIT_EM => {
-            str::push_str(ptr , &"em");
+            ptr.push_str( &"em");
         },
         CSS_UNIT_IN => {
-            str::push_str(ptr , &"in");
+            ptr.push_str( &"in");
         },
         CSS_UNIT_CM => {
-            str::push_str(ptr , &"cm");
+            ptr.push_str( &"cm");
         },
         CSS_UNIT_MM => {
-            str::push_str(ptr , &"mm");
+            ptr.push_str( &"mm");
         },
         CSS_UNIT_PT => {
-            str::push_str(ptr , &"pt");
+            ptr.push_str( &"pt");
         },
         CSS_UNIT_PC => {
-            str::push_str(ptr , &"pc");
+            ptr.push_str( &"pc");
         },
         CSS_UNIT_PCT => {
-            str::push_str(ptr , &"%");
+            ptr.push_str( &"%");
         },
         CSS_UNIT_DEG => {
-            str::push_str(ptr , &"deg");
+            ptr.push_str( &"deg");
         },
         CSS_UNIT_GRAD => {
-            str::push_str(ptr , &"grad");
+            ptr.push_str( &"grad");
         },
         CSS_UNIT_RAD => {
-            str::push_str(ptr , &"rad");
+            ptr.push_str( &"rad");
         },
         CSS_UNIT_MS => {
-            str::push_str(ptr , &"ms");
+            ptr.push_str( &"ms");
         },
         CSS_UNIT_S => {
-            str::push_str(ptr , &"s");
+            ptr.push_str( &"s");
         },
         CSS_UNIT_HZ => {
-            str::push_str(ptr , &"Hz");
+            ptr.push_str( &"Hz");
         },
         CSS_UNIT_KHZ => {
-            str::push_str(ptr , &"kHz");
+            ptr.push_str( &"kHz");
         }
     }
 }
