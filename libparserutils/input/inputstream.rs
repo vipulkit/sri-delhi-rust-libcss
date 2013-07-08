@@ -1,6 +1,6 @@
-extern mod extra;
 use std::vec::*;
 use extra::arc;
+use extra::time;
 
 use charset::aliases::*;
 use input::parserutils_filter::*;
@@ -49,9 +49,9 @@ pub fn inputstream(encoding: Option<~str>, charset_src: Option<int>, csdetect_in
         stream_charset_src = 0;
     }
 
-    let start_time = extra::time::precise_time_ns();
+    let start_time = time::precise_time_ns();
     let alias_instance = alias();
-    let end_time = extra::time::precise_time_ns();
+    let end_time = time::precise_time_ns();
     let alias_create_time = (end_time as float - start_time as float);
 
     match parserutils_filter(alias_instance , copy stream_encoding) {

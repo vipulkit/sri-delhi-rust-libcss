@@ -1,12 +1,9 @@
 /*
  * This file generates parts of LibCSS.
  */
-extern mod std;
-
 use std::io::WriterUtil;
 use std::io::*;
 use std::result::*;
-
 
 /**
 * #Description:
