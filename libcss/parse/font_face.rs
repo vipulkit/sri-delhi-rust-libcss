@@ -246,6 +246,7 @@ pub fn font_face_parse_font_weight(strings:&mut ~css_propstrings, vector:&~[@css
 pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, 
     location_type:@mut css_font_face_location_type, format:@mut css_font_face_format, lwc_instance:@mut lwc) -> (css_error, Option<@mut lwc_string>) {
 
+
     let mut token: &@css_token;
     let mut location:Option<@mut lwc_string> = None;
     /* spec-or-name    ::= font-face-spec | font-face-name

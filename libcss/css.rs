@@ -60,14 +60,14 @@ pub struct css_params {
 }
 
 impl css {
-	pub fn css_create(params: &css_params, lwc_instance: Option<arc::RWARC<~lwc>>) -> @mut css {
+	pub fn css_create(params: &css_params, lwc_instance: Option<@mut lwc>) -> @mut css {
             	let mut start_time = precise_time_ns();
 		// create lwc
 		let lwc = 	if lwc_instance.is_none() { 
 						lwc()
 					}  
 					else {
-						lwc_instance.get_ref().clone()
+						lwc_instance.unwrap()
 					} ;
             	let mut end_time = precise_time_ns();
 	        let create_lwc_time = (end_time as float - start_time as float);
@@ -77,8 +77,8 @@ impl css {
             	let mut start_time = precise_time_ns();
 		let (inputstream_option, _) =  
 			match copy params.charset {
-				None => inputstream(None, None ,Some(~css__charset_extract)),
-				Some(charset) => inputstream(Some(charset), Some(CSS_CHARSET_DICTATED as int), Some(~css__charset_extract))
+				None => inputstream(None, None ,Some(@css__charset_extract)),
+				Some(charset) => inputstream(Some(charset), Some(CSS_CHARSET_DICTATED as int), Some(@css__charset_extract))
 			};
 		
 
@@ -118,21 +118,21 @@ impl css {
 
 		// create language
             	let mut start_time = precise_time_ns();
-		let language = css_language(stylesheet, lwc.clone());
+		let language = css_language(stylesheet, lwc);
             	let mut end_time = precise_time_ns();
 	        let create_language_time = (end_time as float - start_time as float);
 
 		// create parser
             	let mut start_time = precise_time_ns();
 		let parser = match params.inline_style {
-		    false => css_parser::css__parser_create(language, lexer, lwc.clone()),
-		    true => css_parser::css__parser_create_for_inline_style(language, lexer, lwc.clone())
+		    false => css_parser::css__parser_create(language, lexer, lwc),
+		    true => css_parser::css__parser_create_for_inline_style(language, lexer, lwc)
 		}; 
             	let mut end_time = precise_time_ns();
 	        let create_parser_time = (end_time as float - start_time as float);
 
 		@mut css {
-			lwc:lwc.clone(),
+			lwc:lwc,
 			parser:parser.unwrap(),
 			stylesheet:stylesheet,
         	        css_create_lwc_time:create_lwc_time,
