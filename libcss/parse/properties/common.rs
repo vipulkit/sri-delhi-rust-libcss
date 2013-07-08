@@ -126,7 +126,8 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
 
                 match token.token_type {
                     CSS_TOKEN_IDENT => {
-                        let (unit , result) = css__parse_unit_keyword(lwc_string_data(token.idata.unwrap()));
+                        let (unit , result) = css__parse_unit_keyword(lwc_string_data(token.idata.get()));
+
                         match  result {
                             CSS_OK => {
                                 sheet.quirks_used = true;
@@ -166,6 +167,20 @@ pub fn css__number_from_lwc_string(string: @mut lwc_string, int_only: bool) -> (
     css__number_from_string(lwc_string_data(string.clone()), @mut 0, int_only)
 }
 
+#[inline(always)]
+pub fn string_lower(a:&str) -> ~str {
+    let mut result = a.to_str();
+    let mut z = 0 ;
+    let z_len = result.len();
+    while z<z_len {
+        if (result[z] > 64 && result[z] < 91) {
+            result[z] = result[z]+32 ;
+        }
+        z += 1;
+    }
+    result
+}
+
 /**
 * #Arguments:
 *  'ptr'  - keyword string. 
@@ -182,9 +197,9 @@ pub fn css__parse_unit_keyword(ptr:&str)-> (Option<u32>,css_error) {
     debug!("Entering: css__parse_unit_keyword");
     debug!(fmt!("css__parse_unit_keyword:: ptr == %s", copy ptr));
     let mut unit = UNIT_GRAD;
-    let ptr_lower = ptr.to_lower();
+    let ptr_lower = string_lower(ptr);
     match(ptr_lower.len()) {
-        4=> if (ptr_lower == ~"grad") {
+        4=> if( ptr_lower == ~"grad" ) {
                 unit= UNIT_GRAD;    
             },
         3=> {

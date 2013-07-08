@@ -74,14 +74,14 @@ pub struct lwc {
 pub fn lwc_single_threaded() -> ~lwc {
     let mut t_hash :  ~[hash_buck] = ~[] ;
     for uint::range(0, 65537) |_| {
-		let mut lh = hash_buck{ 
+		let lh = hash_buck{ 
 			hashes:~[] , 
 			lhashes:~[] ,
 			position:~[]
 		} ;
         t_hash.push(lh);
     }
-    let mut result = ~lwc{
+    let result = ~lwc{
         buck:~[],
         hash_buck:t_hash,
         unref_locations:~[]

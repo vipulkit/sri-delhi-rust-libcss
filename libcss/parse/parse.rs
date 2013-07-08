@@ -7,6 +7,7 @@ use wapcaplet::*;
 use std::arc;
 use extra::time::*;
 use std::cast::*;
+use std::str::raw::*;
 
 /**
  * Major state numbers
@@ -423,7 +424,7 @@ impl css_parser {
             }
 
             if ((t.token_type as int) < (CSS_TOKEN_LAST_INTERN as int)) {
-                let idata = Some(self.intern_string(t.data.data.from_bytes()));
+                let idata = Some(self.intern_string(from_bytes(t.data.data)));
 
                 let t1_data = css_token_data {
                     data: copy t.data.data,
