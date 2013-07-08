@@ -9,7 +9,7 @@ pub fn ENSURE_UNCOMMON ( style:@mut css_computed_style){
 	match style.uncommon {
 		Some(_)=>{},
 		None=>{
-			let mut uncommon_struct = @mut css_computed_uncommon {
+			let uncommon_struct = @mut css_computed_uncommon {
 				bits:~[ 
 						((CSS_LETTER_SPACING_INHERIT as u8) << 2) | (CSS_OUTLINE_COLOR_INVERT as u8),
 	  					((CSS_OUTLINE_WIDTH_MEDIUM as u8) << 1) | (CSS_BORDER_SPACING_INHERIT as u8),
@@ -42,7 +42,7 @@ pub fn ENSURE_PAGE ( style:@mut css_computed_style){
 	match style.uncommon {
 		Some(_)=>{},
 		None=>{
-			let mut page_struct = @mut css_computed_page {
+			let page_struct = @mut css_computed_page {
 				bits:~[ 
 						( ((CSS_PAGE_BREAK_INSIDE_AUTO as u8) <<  6) | 
         				  ((CSS_PAGE_BREAK_BEFORE_AUTO as u8) << 3) |
@@ -249,7 +249,7 @@ pub fn set_content(style: @mut css_computed_style,
 	ENSURE_UNCOMMON(style);
 
 	let mut bits = style.uncommon.get().bits[CSS_CONTENT_INDEX];
-	let mut mask_complement = (CSS_CONTENT_MASK as u8) ^ 0xff ;
+	let mask_complement = (CSS_CONTENT_MASK as u8) ^ 0xff ;
 	bits = ( bits & mask_complement ) |
 			( (ftype & 0x3)  << CSS_CONTENT_SHIFT);
 	// setting bits again in the place

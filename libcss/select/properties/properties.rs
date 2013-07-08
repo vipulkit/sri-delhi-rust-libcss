@@ -1,7 +1,5 @@
 use include::properties::*;
 
-use stylesheet::*;
-
 use std::managed::*;
 use std::cast::*;
 
@@ -24,7 +22,7 @@ pub fn css__outranks_existing(op:u16,
 							important:bool, 
 							state: @mut css_select_state,
 							inherit:bool) -> bool {
-	let mut existing = copy state.props[op][state.current_pseudo as uint];
+	let existing = &mut state.props[op][state.current_pseudo as uint];
 	let mut outranks : bool = false;
 
 	/* Sorting on origin & importance gives the following:
@@ -125,8 +123,6 @@ pub fn css__outranks_existing(op:u16,
 		existing.inherit = inherit;
 	}
 
-	// update existing in proptable of the select state machine 
-	state.props[op][state.current_pseudo as uint] = existing ;
 	outranks
 }
 
@@ -203,10 +199,10 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 			},
 			BACKGROUND_IMAGE_URI => {
 				value = (CSS_BACKGROUND_IMAGE_IMAGE);
-				unsafe { debug!("css__cascade_uri_none: bytecode is =%?=",style.bytecode) };
+				debug!("css__cascade_uri_none: bytecode is =%?=",style.bytecode);
 				let (_, ret_uri) = style.sheet.get().css__stylesheet_string_get(peek_bytecode(style) as uint);
 				uri = ret_uri;
-				unsafe { debug!("css__cascade_uri_none: bytecode is =%?=%?=",style.bytecode,uri) };
+				debug!("css__cascade_uri_none: bytecode is =%?=%?=",style.bytecode,uri);
 				advance_bytecode(style)	
 			},
 			_ => {}
@@ -540,7 +536,7 @@ pub fn css__cascade_azimuth(opv:u32 ,
 	let mut az : u16 ;
 
 	if( isInherit(opv) == false  ) {
-		let mut azimuth_mask = (AZIMUTH_BEHIND as u16) ^ 0xFFFF ; 
+		let azimuth_mask = (AZIMUTH_BEHIND as u16) ^ 0xFFFF ; 
 		az = (getValue(opv) & azimuth_mask) ;
 			if ( az == AZIMUTH_ANGLE) {
 				//not used val = peek_bytecode(style) as i32 ;
@@ -593,7 +589,7 @@ pub fn css__cascade_background_attachment(opv:u32, _:@mut css_style,
 	let mut value : u16 = (CSS_BACKGROUND_ATTACHMENT_INHERIT as u16);
 
 	if (isInherit(opv) == false) {
-		let mut attachment = getValue(opv) ;
+		let attachment = getValue(opv) ;
 		if ( attachment == BACKGROUND_ATTACHMENT_FIXED ) {
 			value = (CSS_BACKGROUND_ATTACHMENT_FIXED as u16);
 		}
@@ -684,12 +680,12 @@ pub fn css__compose_background_color(parent:@mut css_computed_style,
 
 	if (ftype == (CSS_BACKGROUND_COLOR_INHERIT as u8) ) {
 		let (ftype2,ocolor2) = css_computed_background_color(parent);
-		let mut color = ocolor2.get_or_default( ocolor.get_or_default(0) );
+		let color = ocolor2.get_or_default( ocolor.get_or_default(0) );
 		set_background_color(result, ftype2, color);
 		CSS_OK
 	}
 	else {
-		let mut color = ocolor.get_or_default(0);
+		let color = ocolor.get_or_default(0);
 		set_background_color(result, ftype, color);
 		CSS_OK
 	}
@@ -896,7 +892,7 @@ pub fn css__cascade_background_repeat(opv:u32, _:@mut css_style,
 	let mut value : u16  = CSS_BACKGROUND_REPEAT_INHERIT as u16;
 
 	if (isInherit(opv) == false) {
-		let mut match_val = getValue(opv) ;
+		let match_val = getValue(opv) ;
 		if (match_val == (BACKGROUND_REPEAT_NO_REPEAT as u16) ){
 			value = (CSS_BACKGROUND_REPEAT_NO_REPEAT as u16);
 		}
@@ -1226,10 +1222,11 @@ pub fn css__compose_clip(parent:@mut css_computed_style,
 						result:@mut css_computed_style) 
 						-> css_error {
 
-	let mut clip_type:u8=0;
-	let mut rect :Option<@mut css_computed_clip_rect> = None;
-	(clip_type, rect) = css_computed_clip(child);
-
+	
+	let (clip_type_, rect_) = css_computed_clip(child);
+	let mut clip_type = clip_type_;
+	let mut rect = rect_;
+	
 	if (match child.uncommon { None => true, _ => false} && match parent.uncommon { Some(_) => true,  None => false }) 
 		|| clip_type == CSS_CLIP_INHERIT as u8 || ( match child.uncommon {Some(_) => true, None => false} && 
 			!mut_ptr_eq(result,child)) {
@@ -1363,7 +1360,7 @@ pub fn css__cascade_border_collapse(opv:u32, _:@mut css_style,
 	let mut value : u16 = CSS_BORDER_COLLAPSE_INHERIT as u16;
 
 	if (isInherit(opv) == false) {
-		let mut match_val = getValue(opv) ; 
+		let match_val = getValue(opv) ; 
 		if ( match_val == (BORDER_COLLAPSE_SEPARATE as u16) ){ 
 			value = CSS_BORDER_COLLAPSE_SEPARATE as u16;
 		}
@@ -2161,7 +2158,7 @@ pub fn css__set_color_from_hint(hint:@mut css_hint, style:@mut css_computed_styl
 
 pub fn css__initial_color(state:@mut css_select_state) -> css_error {
 		
-	let mut hint = @mut css_hint{
+	let hint = @mut css_hint{
 		        hint_type:HINT_LENGTH,
 		        status:0,
 		        clip:None,
@@ -3008,7 +3005,7 @@ pub fn css__cascade_font_family(opv:u32, style:@mut css_style,
 			 * We don't want to inherit, because that will 
 			 * incorrectly overwrite the named fonts list too.
 			 */
-			let mut hint = @mut css_hint{
+			let hint = @mut css_hint{
 		        hint_type:HINT_LENGTH,
 		        status:0,
 		        clip:None,
@@ -3078,7 +3075,7 @@ pub fn css__set_font_family_from_hint(hint:@mut  css_hint,
 pub fn css__initial_font_family(state:@mut css_select_state) -> css_error {
 
 
-	let mut hint = @mut css_hint{
+	let hint = @mut css_hint{
         hint_type:HINT_LENGTH,
         status:0,
         clip:None,
@@ -5603,7 +5600,7 @@ pub fn css__set_quotes_from_hint(hint:@mut  css_hint,
 
 pub fn css__initial_quotes(state:@mut css_select_state) -> css_error {
 
-	let mut hint = @mut css_hint{
+	let hint = @mut css_hint{
         hint_type:HINT_LENGTH,
         status:0,
         clip:None,

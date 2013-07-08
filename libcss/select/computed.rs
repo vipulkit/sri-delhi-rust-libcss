@@ -215,7 +215,7 @@ pub fn css_computed_clip(
             style : @mut css_computed_style) 
             -> (u8,Option<@mut css_computed_clip_rect>) {
 
-    let mut result : @mut css_computed_clip_rect = 
+    let result : @mut css_computed_clip_rect = 
         @mut css_computed_clip_rect{
             top:0,
             right:0,
