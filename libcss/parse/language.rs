@@ -1,4 +1,3 @@
-use extra::arc;
 use wapcaplet::*;
 
 use bytecode::opcodes::*;
@@ -61,7 +60,7 @@ pub struct css_lang_time
 
 pub struct css_language {
     sheet:@mut css_stylesheet,
-    lwc_instance:arc::RWARC<~lwc>,      
+    lwc_instance:@mut lwc,      
     context:~[context_entry], 
     state:language_state,   
     strings: ~css_propstrings,  
@@ -73,7 +72,7 @@ pub struct css_language {
     lang_func_time:css_lang_time
 }
 
-pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~css_language {
+pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:@mut lwc ) -> ~css_language {
     debug!("Entering: css_language");
    
     let mut start_time = precise_time_ns();
@@ -926,11 +925,10 @@ impl css_language {
                 let mut prefix_match = false;
                 let mut idx = 0;
 
-                for self.namespaces.each |&ns| {
-                    do self.lwc_instance.read |l| {
-                        if l.lwc_string_isequal(ns.prefix.unwrap(), prefix){
-                            prefix_match = true;
-                        }
+                for self.namespaces.iter().advance |&ns| {
+                    
+                    if self.lwc_instance.lwc_string_isequal(ns.prefix.unwrap(), prefix){
+                        prefix_match = true;
                     }
                     if prefix_match {
                         break
@@ -1357,15 +1355,12 @@ impl css_language {
             },
             Some(value) => {
                 debug!("Entering: lookupNamespace (2)");
-                for self.namespaces.each |ns| {
+                for self.namespaces.iter().advance |ns| {
                     match ns.prefix {
                         Some(_) => {
                             debug!("Entering: lookupNamespace (3)");
-                            let ns_prefix = ns.prefix.get_ref();
-                            if (
-                                do self.lwc_instance.read |l| {
-                                    l.lwc_string_isequal(ns_prefix , value)
-                            }) {
+                            let ns_prefix = ns.prefix.get();
+                            if (self.lwc_instance.lwc_string_isequal(ns_prefix , value)) {
                                 break;
                             }
                         },  

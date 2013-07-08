@@ -4,10 +4,9 @@ use lex::lexer::*;
 use utils::errors::*;
 
 use wapcaplet::*;
-use std::arc;
 use extra::time::*;
 use std::cast::*;
-use std::str::raw::*;
+use std::str::*;
 
 /**
  * Major state numbers
@@ -46,7 +45,7 @@ type state =  ~extern fn(parser: &mut css_parser) ->css_error;
 pub struct css_parser {
     language: ~css_language,
     lexer: ~css_lexer,
-    priv lwc: arc::RWARC<~lwc>,
+    priv lwc: @mut lwc,
 
     priv last_was_ws : bool,
     priv match_char : char,
@@ -78,7 +77,7 @@ impl css_parser {
     * #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
     */
-    fn css__parser_create_internal(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>, initial:(uint, uint) ) 
+    fn css__parser_create_internal(language: ~css_language, lexer: ~css_lexer, lwc: @mut lwc, initial:(uint, uint) ) 
         -> Option<~css_parser> {
 
         debug!("Entering: css__parser_create_internal");
@@ -149,7 +148,7 @@ impl css_parser {
     * #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
     */
-    pub fn css__parser_create(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>) 
+    pub fn css__parser_create(language: ~css_language, lexer: ~css_lexer, lwc: @mut lwc) 
         -> Option<~css_parser> {
         debug!("Entering: css__parser_create");
         let initial = ( sStart as uint, 0u );
@@ -173,7 +172,7 @@ impl css_parser {
 
     *   'Option<~css_parser>' - location to receive parser instance.
     */
-    pub fn css__parser_create_for_inline_style(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>) 
+    pub fn css__parser_create_for_inline_style(language: ~css_language, lexer: ~css_lexer, lwc: @mut lwc) 
         -> Option<~css_parser> {
         debug!("Entering: css__parser_create_for_inline_style");
         let initial = (sInlineStyle as uint, 0);
@@ -371,9 +370,7 @@ impl css_parser {
         debug!("Entering: intern_string");
         let mut interned_string: Option<@mut lwc_string> = None;
 
-        do self.lwc.write |lwc| {
-            interned_string = Some(lwc.lwc_intern_string(copy string));
-        }
+        interned_string = Some(self.lwc.lwc_intern_string(copy string));
 
         interned_string.unwrap()
     }

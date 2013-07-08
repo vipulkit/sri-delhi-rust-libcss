@@ -2,7 +2,6 @@
 // CSS-FONT-FACE implementation/data-structs starts here 
 // ===========================================================================================================
 
-use extra::arc;
 use wapcaplet::*;
 
 use include::font_face::*;
@@ -32,7 +31,7 @@ pub fn font_rule_font_family_reserved(strings:&mut ~css_propstrings, ident:&@css
 }
 
 pub fn font_face_parse_font_family(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, 
-    font_face:@mut css_font_face, lwc_instance:arc::RWARC<~lwc>) -> css_error {
+    font_face:@mut css_font_face, lwc_instance:@mut lwc) -> css_error {
     
     match css__ident_list_or_string_to_string(sheet , strings , vector, ctx, Some(@font_rule_font_family_reserved)) {
         (CSS_OK,Some(string)) => { 
@@ -62,7 +61,7 @@ pub fn font_face_parse_font_family(sheet:@mut css_stylesheet, strings:&mut ~css_
           appropriate error otherwise..
 */
 pub fn css__parse_font_descriptor(sheet:@mut css_stylesheet, descriptor:&@css_token, strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, 
-    curRule:@mut css_rule_font_face, lwc_instance:arc::RWARC<~lwc>) -> css_error {
+    curRule:@mut css_rule_font_face, lwc_instance:@mut lwc) -> css_error {
     
     let mut font_face:Option<@mut css_font_face> = curRule.font_face;
 
@@ -95,7 +94,7 @@ pub fn css__parse_font_descriptor(sheet:@mut css_stylesheet, descriptor:&@css_to
 
 
 pub fn font_face_parse_src(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint,
-    font_face:@mut css_font_face, lwc_instance:arc::RWARC<~lwc>) -> css_error {
+    font_face:@mut css_font_face, lwc_instance:@mut lwc) -> css_error {
 
     let orig_ctx = *ctx;
     let mut srcs:~[~css_font_face_src]=~[];
@@ -245,10 +244,10 @@ pub fn font_face_parse_font_weight(strings:&mut ~css_propstrings, vector:&~[@css
 }
 
 pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, 
-    location_type:@mut css_font_face_location_type, format:@mut css_font_face_format, lwc_instance:arc::RWARC<~lwc>) -> (css_error, Option<arc::RWARC<~lwc_string>>) {
+    location_type:@mut css_font_face_location_type, format:@mut css_font_face_format, lwc_instance:@mut lwc) -> (css_error, Option<@mut lwc_string>) {
 
     let mut token: &@css_token;
-    let mut location:Option<arc::RWARC<~lwc_string>> = None;
+    let mut location:Option<@mut lwc_string> = None;
     /* spec-or-name    ::= font-face-spec | font-face-name
      * font-face-spec  ::= URI [ 'format(' STRING [ ',' STRING ]* ')' ]?
      * font-face-name  ::= 'local(' ident-list-or-string ')'
@@ -298,9 +297,7 @@ pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut 
 
                 match css__ident_list_or_string_to_string(sheet , strings , vector, ctx, None) {
                     (CSS_OK,Some(loc)) => {
-                        do lwc_instance.clone().write |lwc| {
-                            location = Some(lwc.lwc_intern_string(copy loc));
-                        }
+                        location = Some(lwc_instance.lwc_intern_string(copy loc));
                     },
                     (error,_) => return (error,None)
                 }
@@ -354,11 +351,9 @@ pub fn css__font_face_set_srcs(font_face:@mut css_font_face, srcs:~[~css_font_fa
 * #Return Value:
 *   'css_error' - CSS_OK .
 */
-pub fn css__font_face_set_font_family(font_face: @mut css_font_face, font_family:~str, lwc_instance:arc::RWARC<~lwc>) -> css_error {
+pub fn css__font_face_set_font_family(font_face: @mut css_font_face, font_family:~str, lwc_instance:@mut lwc) -> css_error {
     // if (font_face.font_family != NULL)
-    do lwc_instance.write |l|{
-        font_face.font_family = Some(l.lwc_intern_string(copy font_family))
-    }    
+    font_face.font_family = Some(lwc_instance.lwc_intern_string(copy font_family));
     // font_face.font_family = Some(font_family.clone());
 
     return CSS_OK
@@ -432,7 +427,7 @@ pub fn font_face_src_parse_format(strings:&mut ~css_propstrings, vector:&~[@css_
     return CSS_OK
 }
 
-pub fn css_font_face_get_font_family(font_face: @mut css_font_face) -> Option< arc::RWARC<~lwc_string> > {
+pub fn css_font_face_get_font_family(font_face: @mut css_font_face) -> Option<@mut lwc_string> {
     if (font_face.font_family.is_some()) {
         let ff = font_face.font_family.swap_unwrap();
 
@@ -488,7 +483,7 @@ pub fn css_font_face_get_src(font_face: @mut css_font_face, index: uint) -> Opti
     Some(new_src)
 }
 
-pub fn css_font_face_src_get_location(src: & ~css_font_face_src) -> Option<arc::RWARC<~lwc_string>> {
+pub fn css_font_face_src_get_location(src: & ~css_font_face_src) -> Option<@mut lwc_string> {
     match src.location {
         None => None,
         Some(_) => {
