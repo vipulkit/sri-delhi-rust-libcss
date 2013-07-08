@@ -12,7 +12,7 @@ use stylesheet::*;
 use utils::errors::*;
 
 pub struct css {
-	lwc:arc::RWARC<~lwc>,
+	lwc:@mut lwc,
 	stylesheet:@mut css_stylesheet,
 	parser:~css_parser,
 	css_create_lwc_time: float,
