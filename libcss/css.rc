@@ -32,7 +32,6 @@ pub mod parse {
 	pub mod common;
 
 	pub mod propstrings;
-	pub mod propstrings_parallel;
 
 	pub mod properties {
 		pub mod common;
