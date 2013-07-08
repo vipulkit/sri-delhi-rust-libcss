@@ -3678,9 +3678,10 @@ impl css_properties {
             CSS_TOKEN_NUMBER=>{
                     let mut num:i32 = 0;
 					let consumed:uint = 0;
-					(num,consumed) =  css__number_from_lwc_string(token.idata.unwrap(), false);
+					let (num_,consumed) =  css__number_from_lwc_string(token.idata.get(), false);
+                    num = num_;
                     /* Invalid if there are trailing characters */
-                    if (consumed !=  lwc_string_length(token.idata.unwrap())){
+                    if (consumed !=  lwc_string_length(token.idata.get())){
                         *ctx = orig_ctx;
                         return CSS_INVALID;
                     }
@@ -3689,7 +3690,7 @@ impl css_properties {
                     if num < 0 {
                         num = 0;
                     }
-                    if num as i32 > css_int_to_fixed(1) {
+                    if num > css_int_to_fixed(1) {
                         num = css_int_to_fixed(1);
                     }
 

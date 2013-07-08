@@ -1891,10 +1891,10 @@ impl css_language {
                     } 
                     else {
                         /* 2n */
-                        let ret_a: i32 = 0;
                         let mut consumed:uint = 0;
 
-                        (ret_a, consumed) = css__number_from_lwc_string(token.idata.unwrap(), true);
+                        let (ret_a, consumed_) = css__number_from_lwc_string(token.idata.unwrap(), true);
+                        consumed = consumed_;
                         a = ret_a;
                         if consumed == 0 || ((data[data_index + consumed] != 'n' as u8) && (data[data_index + consumed] != 'N' as u8)) {
                             debug!("Exiting: parseNth (7)");
