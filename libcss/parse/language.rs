@@ -381,7 +381,7 @@ impl css_language {
         else if self.strings.lwc_string_caseless_isequal(atkeyword.idata.unwrap(), LIBCSS_IMPORT as uint) {
             if self.state as uint <= IMPORT_PERMITTED as uint {
                 let mut url:@str;
-                let mut media:@mut u64 =@mut  0;
+                let media:@mut u64 =@mut  0;
 
                 /* any0 = (STRING | URI) ws 
                  *    (IDENT ws (',' ws IDENT ws)* )? */
@@ -1891,10 +1891,9 @@ impl css_language {
                     } 
                     else {
                         /* 2n */
-                        let mut consumed:uint = 0;
-
+                        
                         let (ret_a, consumed_) = css__number_from_lwc_string(token.idata.unwrap(), true);
-                        consumed = consumed_;
+                        let mut consumed = consumed_;
                         a = ret_a;
                         if consumed == 0 || ((data[data_index + consumed] != 'n' as u8) && (data[data_index + consumed] != 'N' as u8)) {
                             debug!("Exiting: parseNth (7)");

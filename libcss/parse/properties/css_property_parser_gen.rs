@@ -92,7 +92,7 @@ pub fn function_header(fp:@Writer, descriptor:~str, parser_id:&keyval, is_generi
     fp.write_line("*   ctx is updated with the next token to process");
     fp.write_line("*     If the input is invalid, then ctx remains unchanged.");
     fp.write_line("*/");
-    fp.write_line(fmt!("pub fn css__parse_%s(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings,",parser_id.key));
+    fp.write_line(fmt!("pub fn css__parse_%s(_sheet:@mut css_stylesheet, strings:&mut ~css_propstrings,",parser_id.key));
     fp.write_str("      vector:&~[@css_token], ctx:@mut uint,");
     fp.write_line(fmt!(" result:@mut css_style%s) -> css_error", if is_generic {", op:css_properties_e" } else {""}    ));
     fp.write_line("{");
@@ -175,9 +175,9 @@ pub fn output_uri(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
         let mut output : ~str = ~" if match token.token_type { CSS_TOKEN_URI => true, _ => false} {\n";
         
         output.push_str("\n");
-        output.push_str("\t\tmatch (*sheet.resolve)(sheet.url, token.idata.unwrap()) {\n");
+        output.push_str("\t\tmatch (*_sheet.resolve)(_sheet.url, token.idata.unwrap()) {\n");
         output.push_str("\t\t\t(CSS_OK, Some(uri)) => {\n");
-        output.push_str("\t\t\t\tlet uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri));\n");
+        output.push_str("\t\t\t\tlet uri_snumber = _sheet.css__stylesheet_string_add(lwc_string_data(uri));\n");
         output.push_str(fmt!("\t\t\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s );\n",parseid.val,kvlist[0].val));
         output.push_str("\t\t\t\tcss_stylesheet::css__stylesheet_style_append(result, uri_snumber as u32)\n");
         output.push_str("\n");
@@ -225,7 +225,7 @@ pub fn output_color(fp:@Writer, parseid:&keyval) {
     output.push_str("\t\t*ctx = orig_ctx;\n\n");
     output.push_str("\t\tlet mut value:u16;\n\n");
     output.push_str("\t\tlet mut color:u32;\n\n");
-    output.push_str("\t\tlet (value_option, color_option, res)= css__parse_color_specifier(sheet, strings, vector, ctx);\n");
+    output.push_str("\t\tlet (value_option, color_option, res)= css__parse_color_specifier(_sheet, strings, vector, ctx);\n");
     output.push_str("\t\terror = res;\n");
     output.push_str("\tdebug!(\"error == %? (1)\" , error)\n");
     output.push_str("\t\tmatch res {\n");
@@ -252,7 +252,7 @@ pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     output.push_str("\t\tlet length:u32;\n");
     output.push_str("\t\t*ctx = orig_ctx;\n\n");
     output.push_str("\t\tlet mut unit:u32;\n\n");
-    output.push_str(fmt!("\t\tlet (length_option, unit_option, res) =css__parse_unit_specifier(sheet, vector, ctx, %s as u32);\n",kvlist[0].key));
+    output.push_str(fmt!("\t\tlet (length_option, unit_option, res) =css__parse_unit_specifier(_sheet, vector, ctx, %s as u32);\n",kvlist[0].key));
     output.push_str("\t\terror = res;\n");
     output.push_str("\tdebug!(\"error == %?(1)\" , error)\n");
     output.push_str("\t\tmatch res {\n");
@@ -265,7 +265,7 @@ pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     output.push_str("\t\t\t\treturn res\n");
     output.push_str("\t\t\t}\n");
     output.push_str("\t\t}\n\n");
-    output.push_str("\t\t\tlet length_fixed = length_option.get();\n");
+    output.push_str("\t\t\tlet _length_fixed = length_option.get();\n");
         
 
     let mut i = 1;    
@@ -282,7 +282,7 @@ pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             output.push_str("\t\t\treturn CSS_INVALID\n");
             output.push_str("\t\t}\n\n")
         } else if kvlist[i].key == ~"RANGE" {
-            output.push_str(fmt!("\t\tif length_fixed %s {\n",kvlist[i].val));
+            output.push_str(fmt!("\t\tif _length_fixed %s {\n",kvlist[i].val));
             output.push_str("\t\t\t*ctx = orig_ctx;\n");
             output.push_str("\t\t\treturn CSS_INVALID\n");
             output.push_str("\t\t}\n\n")
@@ -310,7 +310,7 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             output.push_str("\t\twhile !token_null && (match token.token_type {CSS_TOKEN_IDENT => true, _ => false}) {\n");
             output.push_str("\t\t\tlet mut num:css_fixed;\n");
             output.push_str("\t\t\tlet mut pctx:uint;\n\n");
-            output.push_str("\t\t\tlet snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap()));\n");
+            output.push_str("\t\t\tlet snumber = _sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap()));\n");
             output.push_str("\t\t\tcss_stylesheet::css__stylesheet_style_append(result, snumber as u32);\n"); 
             output.push_str("\t\t\tconsumeWhitespace(vector, ctx);\n\n");
             output.push_str("\t\t\tpctx = *ctx;\n");
@@ -377,7 +377,7 @@ pub fn output_footer(fp:@Writer) {
 
 pub fn output_wrap(fp:@Writer, parseid:&keyval, WRAP:~[keyval]) {
     
-    fp.write_str(fmt!(" return %s(sheet, strings, vector, ctx, result, %s)\n}\n",WRAP[0].val,parseid.val));
+    fp.write_str(fmt!(" return %s(_sheet, strings, vector, ctx, result, %s)\n}\n",WRAP[0].val,parseid.val));
 }
 
 

@@ -429,7 +429,6 @@ impl css_properties {
         let orig_ctx = *ctx;
         let mut prev_ctx;
         let mut error = CSS_OK; 
-        let mut is_inherit_error = CSS_OK; 
         let mut attachment = true;
         let mut color = true;
         let mut image = true;
@@ -440,7 +439,7 @@ impl css_properties {
         let mut image_style:@mut css_style;
         let mut position_style:@mut css_style;
         let mut repeat_style:@mut css_style;
-        let mut background_cleanup = false;
+        
 
         /* Firstly, handle inherit */
         if *ctx >= vector.len() {
@@ -519,7 +518,7 @@ impl css_properties {
                 },
                 _ =>  {
                     debug!("css__parse_background :: in match error _");
-                    break //Forcibly cause loop to exit
+					break //Forcibly cause loop to exit
                 }
             }
 
@@ -528,43 +527,42 @@ impl css_properties {
             }
         } 
 
-        if !background_cleanup{
-            if attachment {
-                css_stylesheet::css__stylesheet_style_appendOPV(attachment_style, CSS_PROP_BACKGROUND_ATTACHMENT, 0, 
-                    BACKGROUND_ATTACHMENT_SCROLL ); 
-            }
-
-            if color {
-                css_stylesheet::css__stylesheet_style_appendOPV(color_style, CSS_PROP_BACKGROUND_COLOR, 0, 
-                    BACKGROUND_COLOR_TRANSPARENT );
-            }
-
-            if image {
-                css_stylesheet::css__stylesheet_style_appendOPV(image_style, CSS_PROP_BACKGROUND_IMAGE, 0, BACKGROUND_IMAGE_NONE );
-            }
-
-            if position {
-                css_stylesheet::css__stylesheet_style_appendOPV(position_style, CSS_PROP_BACKGROUND_POSITION, 0, 
-                    BACKGROUND_POSITION_HORZ_LEFT  |  BACKGROUND_POSITION_VERT_TOP )
-            }
-
-            if repeat {
-                css_stylesheet::css__stylesheet_style_appendOPV(repeat_style, CSS_PROP_BACKGROUND_REPEAT, 0,
-                 BACKGROUND_REPEAT_REPEAT ) 
-            }   
         
-            css_stylesheet::css__stylesheet_merge_style(result, attachment_style);
-            css_stylesheet::css__stylesheet_merge_style(result, color_style);
-            css_stylesheet::css__stylesheet_merge_style(result, image_style);
-            css_stylesheet::css__stylesheet_merge_style(result, position_style);
-            css_stylesheet::css__stylesheet_merge_style(result, repeat_style);
-        }
+		if attachment {
+			css_stylesheet::css__stylesheet_style_appendOPV(attachment_style, CSS_PROP_BACKGROUND_ATTACHMENT, 0, 
+				BACKGROUND_ATTACHMENT_SCROLL ); 
+		
+		}
 
-        if is_inherit_error as int != CSS_OK as int {
-            *ctx = orig_ctx;
-            return is_inherit_error;
-        }
-        
+		if color {
+			css_stylesheet::css__stylesheet_style_appendOPV(color_style, CSS_PROP_BACKGROUND_COLOR, 0, 
+				BACKGROUND_COLOR_TRANSPARENT );
+		
+		}
+
+		if image {
+			css_stylesheet::css__stylesheet_style_appendOPV(image_style, CSS_PROP_BACKGROUND_IMAGE, 0, BACKGROUND_IMAGE_NONE );
+		
+		}
+
+		if position {
+			css_stylesheet::css__stylesheet_style_appendOPV(position_style, CSS_PROP_BACKGROUND_POSITION, 0, 
+				BACKGROUND_POSITION_HORZ_LEFT  |  BACKGROUND_POSITION_VERT_TOP )
+		
+		}
+
+		if repeat {
+			css_stylesheet::css__stylesheet_style_appendOPV(repeat_style, CSS_PROP_BACKGROUND_REPEAT, 0,
+			 BACKGROUND_REPEAT_REPEAT )
+				
+		}   
+	
+		css_stylesheet::css__stylesheet_merge_style(result, attachment_style);
+		css_stylesheet::css__stylesheet_merge_style(result, color_style);
+		css_stylesheet::css__stylesheet_merge_style(result, image_style);
+		css_stylesheet::css__stylesheet_merge_style(result, position_style);
+		css_stylesheet::css__stylesheet_merge_style(result, repeat_style);
+               
         CSS_OK
     }
  
@@ -3676,10 +3674,9 @@ impl css_properties {
                 }
             },
             CSS_TOKEN_NUMBER=>{
-                    let mut num:i32 = 0;
-					let consumed:uint = 0;
+                    					
 					let (num_,consumed) =  css__number_from_lwc_string(token.idata.get(), false);
-                    num = num_;
+                    let mut num = num_;
                     /* Invalid if there are trailing characters */
                     if (consumed !=  lwc_string_length(token.idata.get())){
                         *ctx = orig_ctx;
