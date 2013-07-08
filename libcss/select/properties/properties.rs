@@ -711,7 +711,7 @@ pub fn css__set_background_image_from_hint(hint:@mut  css_hint,
     debug!("Entering: css__set_background_image_from_hint");
 	match hint.hint_type {
 		STRING=>{
-			match hint.string {
+			match copy hint.string {
 				Some(x)=>{
 					set_background_image(style, hint.status, x);
 				},
@@ -1226,8 +1226,9 @@ pub fn css__compose_clip(parent:@mut css_computed_style,
 						result:@mut css_computed_style) 
 						-> css_error {
 
-	
-	let (clip_type, rect) = css_computed_clip(child);
+	let mut clip_type:u8=0;
+	let mut rect :Option<@mut css_computed_clip_rect> = None;
+	(clip_type, rect) = css_computed_clip(child);
 
 	if (match child.uncommon { None => true, _ => false} && match parent.uncommon { Some(_) => true,  None => false }) 
 		|| clip_type == CSS_CLIP_INHERIT as u8 || ( match child.uncommon {Some(_) => true, None => false} && 
@@ -3062,7 +3063,7 @@ pub fn css__set_font_family_from_hint(hint:@mut  css_hint,
 										) -> css_error {
 
 	
-	match hint.strings {
+	match copy hint.strings {
 		Some(x)=>{
 			set_font_family(style, hint.status, x);
 		},
@@ -3767,7 +3768,7 @@ pub fn css__set_list_style_image_from_hint(hint:@mut  css_hint,
 
 	match hint.hint_type {
 		STRING=>{
-			match hint.string {
+			match copy hint.string {
 				Some(x)=>{
 					set_list_style_image(style, hint.status, x);
 				},
@@ -5588,7 +5589,7 @@ pub fn css__set_quotes_from_hint(hint:@mut  css_hint,
 								style:@mut css_computed_style
 								) -> css_error {
 
-	match hint.strings {
+	match copy hint.strings {
 		Some(x)=>{
 			set_quotes(style, hint.status, x);
 		},
@@ -7232,7 +7233,7 @@ pub fn css__set_counter_increment_from_hint(hint:@mut  css_hint,
 
 	match hint.hint_type {
 		COUNTER=>{
-			match hint.counters {
+			match copy hint.counters {
 				Some(x)=>{
 					set_counter_increment(style, hint.status, x);
 					if hint.status == (CSS_COUNTER_INCREMENT_NAMED as u8) {
@@ -7302,7 +7303,7 @@ pub fn css__set_counter_reset_from_hint(hint:@mut  css_hint,
 
 	match hint.hint_type {
 		COUNTER=>{
-			match hint.counters {
+			match copy hint.counters {
 				Some(x)=>{
 					set_counter_reset(style, hint.status, x);
 					if hint.status == (CSS_COUNTER_INCREMENT_NAMED as u8) {
@@ -7456,7 +7457,7 @@ pub fn css__set_cursor_from_hint(hint:@mut  css_hint,
 
 	match hint.hint_type {
 		STRINGS_VECTOR=>{
-			match hint.strings {
+			match copy hint.strings {
 				Some(x)=>{
 					set_cursor(style, hint.status, x);
 					hint.counters = None ;
@@ -7659,9 +7660,11 @@ pub fn css__compose_content( parent:@mut css_computed_style,
 							child:@mut css_computed_style,
     						result:@mut css_computed_style) 
 							-> css_error {
-
-    let (content_type, items) = css_computed_content(child);
-        
+	
+	
+    let (content_type_ret, items_ret) = css_computed_content(child);
+	let mut content_type = content_type_ret;
+    let mut items =  items_ret;   
     if ((match child.uncommon {None => true, _ => false } ) && (match parent.uncommon {Some(_) => true, None => false } )) ||
             content_type == CSS_CONTENT_INHERIT as u8 || (match child.uncommon { Some(_) => true, _ => false} && 
                 !mut_ptr_eq(result,child)) {
