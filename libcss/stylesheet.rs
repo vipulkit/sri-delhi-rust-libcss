@@ -496,7 +496,7 @@ impl css_stylesheet {
     */
     pub fn css__stylesheet_merge_style(target : @mut css_style, style: @mut css_style) {
         debug!("Entering: css__stylesheet_merge_style");
-        target.bytecode += copy style.bytecode;
+        target.bytecode.append(style.bytecode);
     }
 
     /**
