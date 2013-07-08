@@ -191,11 +191,11 @@ impl css_properties {
     fn css__parse_azimuth(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         debug!("Entering: css__parse_azimuth");
         let orig_ctx:uint = *ctx;
-        let flags:u8 = 0;
-        let  value:u16 = 0;
+        let mut flags:u8 = 0;
+        let mut value:u16 = 0;
         // let unit:u32 = 0;
-        let return_length_val = None;
-        let return_unit_val = None;
+        let mut return_length_val = None;
+        let mut return_unit_val = None;
 
         /* angle | [ IDENT(left-side, far-left, left, center-left, center, 
          *         center-right, right, far-right, right-side) || 
@@ -209,7 +209,7 @@ impl css_properties {
             return CSS_INVALID;
         }
         
-        let token=&vector[*ctx];
+        let mut token=&vector[*ctx];
 
         if (token.token_type as int == CSS_TOKEN_IDENT as int 
             && strings.lwc_string_caseless_isequal(token.idata.unwrap(), INHERIT as uint)) {
@@ -276,7 +276,7 @@ impl css_properties {
             debug!(fmt!("css__parse_azimuth:: ctx (2) == %?", *ctx));
             /* Get potential following token */
             /* parserutils_vector_peek(vector, *ctx); */
-            let token_null = false;
+            let mut token_null = false;
             
             debug!(fmt!("css__parse_azimuth:: ctx (3) == %?", *ctx));
             if *ctx >= vector.len() {
@@ -428,27 +428,27 @@ impl css_properties {
     pub fn css__parse_background(sheet:@mut css_stylesheet, strings: &mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, result:@mut css_style) -> css_error {
         debug!("Entering: css__parse_background");
         let orig_ctx = *ctx;
-        let prev_ctx;
-        let error = CSS_OK; 
-        let is_inherit_error = CSS_OK; 
-        let attachment = true;
-        let color = true;
-        let image = true;
-        let position = true;
-        let repeat = true;
-        let attachment_style:@mut css_style;
-        let color_style:@mut css_style;
-        let image_style:@mut css_style;
-        let position_style:@mut css_style;
-        let repeat_style:@mut css_style;
-        let background_cleanup = false;
+        let mut prev_ctx;
+        let mut error = CSS_OK; 
+        let mut is_inherit_error = CSS_OK; 
+        let mut attachment = true;
+        let mut color = true;
+        let mut image = true;
+        let mut position = true;
+        let mut repeat = true;
+        let mut attachment_style:@mut css_style;
+        let mut color_style:@mut css_style;
+        let mut image_style:@mut css_style;
+        let mut position_style:@mut css_style;
+        let mut repeat_style:@mut css_style;
+        let mut background_cleanup = false;
 
         /* Firstly, handle inherit */
         if *ctx >= vector.len() {
             return CSS_INVALID   
         }
             
-        let token = &vector[*ctx];
+        let mut token = &vector[*ctx];
             
         if is_css_inherit(strings, token) {
             css_stylesheet::css_stylesheet_style_inherit(result, CSS_PROP_BACKGROUND_ATTACHMENT);
@@ -595,10 +595,10 @@ impl css_properties {
         
         debug!("Entering: css__parse_background_position");
         let orig_ctx = *ctx;
-        let flags:u8 = 0;
-        let value = [0,0]; //u16
-        let length= [0,0]; //i32
-        let unit = [0,0]; //u32
+        let mut flags:u8 = 0;
+        let mut value = [0,0]; //u16
+        let mut length= [0,0]; //i32
+        let mut unit = [0,0]; //u32
         
 
         /* [length | percentage | IDENT(left, right, top, bottom, center)]{1,2}
@@ -607,7 +607,7 @@ impl css_properties {
             return CSS_INVALID   
         }
             
-        let token = &vector[*ctx];
+        let mut token = &vector[*ctx];
 
         if match token.token_type { CSS_TOKEN_IDENT  => true, _ => false }  
             && strings.lwc_string_caseless_isequal(token.idata.unwrap(),INHERIT as uint) {
@@ -617,7 +617,7 @@ impl css_properties {
             flags = FLAG_INHERIT as u8;
         } 
         else {
-            let second_pass = false;
+            let mut second_pass = false;
             let mut i = 0;
 			while i< 2 {
                 if *ctx >= vector.len() {
@@ -778,7 +778,7 @@ impl css_properties {
         
         debug!("Entering: css__parse_border");
         let orig_ctx = *ctx;
-        let error: css_error;
+        let mut error: css_error;
 
         error = css__parse_border_side(sheet , strings , vector , ctx , style , BORDER_SIDE_TOP);
         match error {
@@ -845,15 +845,15 @@ impl css_properties {
         
         debug!("Entering: css__parse_border_color");
         let orig_ctx = *ctx;
-        let prev_ctx: uint;
-        let side_count: u32 = 0;
+        let mut prev_ctx: uint;
+        let mut side_count: u32 = 0;
 
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
         }
         
-        let token=&vector[*ctx];
+        let mut token=&vector[*ctx];
 
         if is_css_inherit(strings , token) {
             css_stylesheet::css_stylesheet_style_inherit(style, CSS_PROP_BORDER_TOP_COLOR);
@@ -864,8 +864,8 @@ impl css_properties {
             return CSS_OK;
         }
 
-        let side_val_vec: ~[u16] = ~[]; 
-        let side_color_vec: ~[u32] = ~[];
+        let mut side_val_vec: ~[u16] = ~[]; 
+        let mut side_color_vec: ~[u32] = ~[];
 
         loop {
             prev_ctx = *ctx;
@@ -1006,9 +1006,9 @@ impl css_properties {
         
         debug!("Entering: css__parse_border_spacing");
         let orig_ctx = *ctx;
-        let error: css_error; 
-        let length:~[i32] = ~[];
-        let unit:~[u32] = ~[];
+        let mut error: css_error; 
+        let mut length:~[i32] = ~[];
+        let mut unit:~[u32] = ~[];
 
         /* Firstly, handle inherit */
         if *ctx >= vector.len() {
@@ -1027,7 +1027,7 @@ impl css_properties {
             css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_BORDER_SPACING , FLAG_INHERIT as u8 , 0);
         }
         else {
-            let num_lengths :int;
+            let mut num_lengths :int;
             let (length_opt,unit_opt,result) = css__parse_unit_specifier(sheet, vector, ctx, UNIT_PX as u32);
 
             error =result;
@@ -1124,9 +1124,9 @@ impl css_properties {
         
         debug!("Entering: css__parse_border_style");
         let orig_ctx = *ctx;
-        let prev_ctx: uint;
-        let token: &@css_token;
-        let side_count: u32 = 0;
+        let mut prev_ctx: uint;
+        let mut token: &@css_token;
+        let mut side_count: u32 = 0;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -1143,7 +1143,7 @@ impl css_properties {
             return CSS_OK;
         }
 
-        let side_val_vec: ~[u16] = ~[]; 
+        let mut side_val_vec: ~[u16] = ~[]; 
         loop {
             prev_ctx = *ctx;
             if is_css_inherit(strings , token) {
@@ -1263,12 +1263,12 @@ impl css_properties {
        
         debug!("Entering: css__parse_border_width");
         let orig_ctx = *ctx;
-        let error: css_error;
-        let token: &@css_token;
-        let side_val: ~[u16] = ~[];
-        let side_length: ~[i32] = ~[];
-        let side_unit: ~[u32] = ~[];
-        let side_count: u32 = 0;
+        let mut error: css_error;
+        let mut token: &@css_token;
+        let mut side_val: ~[u16] = ~[];
+        let mut side_length: ~[i32] = ~[];
+        let mut side_unit: ~[u32] = ~[];
+        let mut side_count: u32 = 0;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -1284,7 +1284,7 @@ impl css_properties {
             *ctx += 1;
             return CSS_OK;
         }
-        let prev_ctx: uint;
+        let mut prev_ctx: uint;
 
         loop {
             prev_ctx = *ctx;
@@ -1543,9 +1543,9 @@ impl css_properties {
         debug!("Entering: css__parse_clip");
         let orig_ctx = *ctx;
         let mut token: &@css_token;
-        let num_lengths: int = 0;
-        let length: ~[i32] = ~[];
-        let unit: ~[u32] = ~[]; 
+        let mut num_lengths: int = 0;
+        let mut length: ~[i32] = ~[];
+        let mut unit: ~[u32] = ~[]; 
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -1567,7 +1567,7 @@ impl css_properties {
 
                 if strings.lwc_string_caseless_isequal(token.idata.unwrap() , RECT as uint) {
                     let mut i: int = 0;
-                    let value: u16 = CLIP_SHAPE_RECT ;
+                    let mut value: u16 = CLIP_SHAPE_RECT ;
 
                     while i < 4 {
                         consumeWhitespace(vector , ctx);
@@ -1692,11 +1692,11 @@ impl css_properties {
         
         debug!("Entering: css__parse_columns");
         let orig_ctx = *ctx;
-        let prev_ctx:uint;
-        let token:&@css_token;
-        let width = true;
-        let count = true;
-        let error: css_error;
+        let mut prev_ctx:uint;
+        let mut token:&@css_token;
+        let mut width = true;
+        let mut count = true;
+        let mut error: css_error;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -1786,11 +1786,11 @@ impl css_properties {
        
         debug!("Entering: css__parse_column_rule");
         let orig_ctx = *ctx;
-        let color = true;
-        let bool_style = true;
-        let width = true;
-        let error: css_error = CSS_OK;
-        let token: &@css_token;
+        let mut color = true;
+        let mut bool_style = true;
+        let mut width = true;
+        let mut error: css_error = CSS_OK;
+        let mut token: &@css_token;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -1810,7 +1810,7 @@ impl css_properties {
         let style_style = css_stylesheet::css__stylesheet_style_create(sheet);
         let width_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
-        let prev_ctx: uint;
+        let mut prev_ctx: uint;
 
         loop {
             prev_ctx = *ctx;
@@ -2037,7 +2037,7 @@ impl css_properties {
                 else if match token.token_type {CSS_TOKEN_FUNCTION  => true, _ => false} &&
                        strings.lwc_string_caseless_isequal(token.idata.unwrap(), COUNTER as uint) {
 
-                    let opv = CONTENT_COUNTER as u32;
+                    let mut opv = CONTENT_COUNTER as u32;
 
                     consumeWhitespace(vector, ctx);
 
@@ -2846,14 +2846,14 @@ impl css_properties {
     fn css__parse_font(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings ,vector:&~[@css_token], ctx: @mut uint, style: @mut css_style)->css_error {
         
         debug!("Entering: css__parse_font");
-        let prev_ctx: uint;
-        let token: &@css_token;
-        let bool_style = true;
-        let variant = true;
-        let weight = true;
-        let line_height = true;
-        let svw: int;
-        let error: css_error;
+        let mut prev_ctx: uint;
+        let mut token: &@css_token;
+        let mut bool_style = true;
+        let mut variant = true;
+        let mut weight = true;
+        let mut line_height = true;
+        let mut svw: int;
+        let mut error: css_error;
 
         if *ctx >= vector.len() {
             return CSS_INVALID;
@@ -3145,7 +3145,7 @@ impl css_properties {
         
         debug!("Entering: css__parse_font_weight");
         let orig_ctx = *ctx;
-        let flags:u8 = 0;
+        let mut flags:u8 = 0;
         let mut value:u16= 0;
         let mut token:&@css_token;
 
@@ -3264,7 +3264,7 @@ impl css_properties {
         let position_style = css_stylesheet::css__stylesheet_style_create(sheet);
         let type_style = css_stylesheet::css__stylesheet_style_create(sheet);
 
-        let prev_ctx: uint;
+        let mut prev_ctx: uint;
         loop {
             prev_ctx = *ctx;
             if *ctx >= vector.len() {
@@ -3419,9 +3419,9 @@ impl css_properties {
         let orig_ctx = *ctx;
         let mut error: css_error;
         let mut token: &@css_token;
-        let side_val: ~[u16] = ~[];
-        let side_length: ~[i32] = ~[];
-        let side_unit: ~[u32] = ~[];
+        let mut side_val: ~[u16] = ~[];
+        let mut side_length: ~[i32] = ~[];
+        let mut side_unit: ~[u32] = ~[];
         let mut side_count: u32 = 0;
 
         if *ctx >= vector.len() {
@@ -3851,8 +3851,8 @@ impl css_properties {
         
         debug!("Entering: css__parse_padding");
         let orig_ctx = *ctx;
-        let side_length: ~[i32] = ~[];
-        let side_unit: ~[u32] = ~[];
+        let mut side_length: ~[i32] = ~[];
+        let mut side_unit: ~[u32] = ~[];
         let mut side_count: u32 = 0;
         let mut token: &@css_token;
 
