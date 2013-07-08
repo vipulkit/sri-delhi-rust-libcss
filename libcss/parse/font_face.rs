@@ -248,7 +248,7 @@ pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut 
 
 
     let mut token: &@css_token;
-    let mut location:Option<@mut lwc_string> = None;
+    let mut location:Option<@mut lwc_string>;
     /* spec-or-name    ::= font-face-spec | font-face-name
      * font-face-spec  ::= URI [ 'format(' STRING [ ',' STRING ]* ')' ]?
      * font-face-name  ::= 'local(' ident-list-or-string ')'
@@ -453,16 +453,12 @@ pub fn css_font_face_font_weight(font_face: @mut css_font_face) -> css_font_weig
 }
 
 pub fn css_font_face_count_srcs(font_face: @mut css_font_face) -> uint {
-    unsafe {
-        return (&mut font_face.srcs).len();
-    }
+    return (&mut font_face.srcs).len();
 }
 
 pub fn css_font_face_get_src(font_face: @mut css_font_face, index: uint) -> Option<~css_font_face_src> {
-    unsafe {
-        if (index > css_font_face_count_srcs(font_face)) {
-            return None;
-        }
+    if (index > css_font_face_count_srcs(font_face)) {
+        return None;
     }
 
     let src = &mut font_face.srcs[index];
@@ -471,10 +467,8 @@ pub fn css_font_face_get_src(font_face: @mut css_font_face, index: uint) -> Opti
         location: match src.location {
             None => None,
             Some(_) => {
-                unsafe {
-                    let new_location = src.location.get_ref();
-                    Some(new_location.clone())
-                }
+                let new_location = src.location.get_ref();
+                Some(new_location.clone())
             }
         },
 
@@ -488,10 +482,8 @@ pub fn css_font_face_src_get_location(src: & ~css_font_face_src) -> Option<@mut 
     match src.location {
         None => None,
         Some(_) => {
-            unsafe {
-                let new_location = src.location.get_ref();
-                Some(new_location.clone())
-            }
+            let new_location = src.location.get_ref();
+            Some(new_location.clone())
         }
     }
 }

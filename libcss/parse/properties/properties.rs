@@ -1,5 +1,4 @@
 use wapcaplet::*;
-use extra::arc;
 
 use bytecode::bytecode::*;
 use bytecode::opcodes::*;
@@ -3678,7 +3677,7 @@ impl css_properties {
             },
             CSS_TOKEN_NUMBER=>{
                     let mut num:i32 = 0;
-					let mut consumed:uint = 0;
+					let consumed:uint = 0;
 					(num,consumed) =  css__number_from_lwc_string(token.idata.unwrap(), false);
                     /* Invalid if there are trailing characters */
                     if (consumed !=  lwc_string_length(token.idata.unwrap())){
@@ -4894,7 +4893,7 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
             },
             CSS_TOKEN_S => {
 				/* S */
-                token_buffer_string.push_str(~" ");
+                token_buffer_string.push_str(" ");
             },
             _ => {
                 break;

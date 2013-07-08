@@ -75,14 +75,14 @@ pub struct css_language {
 pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:@mut lwc ) -> ~css_language {
     debug!("Entering: css_language");
    
-    let mut start_time = precise_time_ns();
+    let start_time = precise_time_ns();
     let propstring = css_propstrings::css_propstrings(lwc_inst);
-    let mut end_time = precise_time_ns();
+    let end_time = precise_time_ns();
     let create_propstring_time = (end_time as float - start_time as float);
 
-    let mut start_time = precise_time_ns();
+    let start_time = precise_time_ns();
     let cr_properties = css_properties::css_properties(sheet);
-    let mut end_time = precise_time_ns();
+    let end_time = precise_time_ns();
     let create_properties_time = (end_time as float - start_time as float);
 
     ~css_language {
@@ -131,82 +131,82 @@ impl css_language {
     pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:&~[@css_token])
         -> css_error {
 	let mut css_er:css_error;
-        let mut start_time = precise_time_ns();
+        let start_time = precise_time_ns();
         debug!("Entering: language_handle_event");
         match event_type {
             
             CSS_PARSER_START_STYLESHEET => {
-        	let mut start_time = precise_time_ns();
+        	let start_time = precise_time_ns();
                 css_er = self.handleStartStylesheet();
-        	let mut end_time = precise_time_ns();
+        	let end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handleStartStyleSheet_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_END_STYLESHEET=>{
-        	let mut start_time = precise_time_ns();
+        	let start_time = precise_time_ns();
                 css_er = self.handleEndStylesheet();
-        	let mut end_time = precise_time_ns();
+        	let end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handleEndStyleSheet_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_START_RULESET=>{
-        	let mut start_time = precise_time_ns();
+        	let start_time = precise_time_ns();
                 css_er = self.handleStartRuleset(tokens);
-        	let mut end_time = precise_time_ns();
+        	let end_time = precise_time_ns();
 		self.lang_func_time.parse_lange_handleStartRuleSet_time +=(end_time as float - start_time as float);
             }
             
             CSS_PARSER_END_RULESET=>{
-        	let mut start_time = precise_time_ns();
+        	let start_time = precise_time_ns();
                 css_er = self.handleEndRuleset();
-       	    	let mut end_time = precise_time_ns();
+       	    	let end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handleEndRuleSet_time +=(end_time as float - start_time as float);
             }
             
             CSS_PARSER_START_ATRULE=>{
-        	let mut start_time = precise_time_ns();
+        	let start_time = precise_time_ns();
                 css_er = self.handleStartAtRule(tokens);
-       	    	let mut end_time = precise_time_ns();
+       	    	let end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handleStartAtRule_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_END_ATRULE=>{
-        	let mut start_time = precise_time_ns();
+        	let start_time = precise_time_ns();
                 css_er = self.handleEndAtRule();
-       	    	let mut end_time = precise_time_ns();
+       	    	let end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handleEndAtRule_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_START_BLOCK=>{
-        	let mut start_time = precise_time_ns();
+        	let start_time = precise_time_ns();
                 css_er = self.handleStartBlock();
 
-            	let mut end_time = precise_time_ns();
+            	let end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handleStartBlock_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_END_BLOCK=>{
-        	let mut start_time = precise_time_ns();
+        	let start_time = precise_time_ns();
                 css_er = self.handleEndBlock();
-            	let mut end_time = precise_time_ns();
+            	let end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handleEndBlock_time += (end_time as float - start_time as float);
             }
             
             CSS_PARSER_BLOCK_CONTENT=>{
-        	let mut start_time = precise_time_ns();
+        	let start_time = precise_time_ns();
                 css_er = self.handleBlockContent(tokens);
-            	let mut end_time = precise_time_ns();
+            	let end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handle_block_content_time +=(end_time as float - start_time as float);
             }
             
             CSS_PARSER_DECLARATION=>{
-        	let mut start_time = precise_time_ns();
+        	let start_time = precise_time_ns();
                 css_er = self.handleDeclaration(tokens);
-            	let mut end_time = precise_time_ns();
+            	let end_time = precise_time_ns();
 		self.lang_func_time.parse_lang_handle_parse_declaration_time +=(end_time as float - start_time as float);
             }
         }
-        let mut end_time = precise_time_ns();
+        let end_time = precise_time_ns();
 	self.lang_func_time.parse_lang_handle_event_time += (end_time as float - start_time as float);
 	css_er
     }
@@ -254,7 +254,7 @@ impl css_language {
             }
         }
         
-        let mut curRule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_SELECTOR);
+        let curRule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_SELECTOR);
         
         //if !vec::is_empty(*tokens) {
         match self.parseSelectorList(tokens, curRule) {
@@ -264,7 +264,7 @@ impl css_language {
         }
         //}
 
-        let mut entry:context_entry = context_entry {
+        let entry:context_entry = context_entry {
             event_type: CSS_PARSER_START_RULESET, 
             data:Some(curRule)
         };
@@ -586,7 +586,7 @@ impl css_language {
             return CSS_INVALID;
         }
 
-        let mut entry:context_entry = context_entry {
+        let entry:context_entry = context_entry {
                 event_type: CSS_PARSER_START_ATRULE, 
                 data:curRule };
         
@@ -645,7 +645,7 @@ impl css_language {
             cur=self.context[self.context.len()-1];
             match cur.event_type {
                 CSS_PARSER_START_BLOCK => {
-                    let mut curRule = cur.data;
+                    let curRule = cur.data;
                     self.context.pop();
                     /* If the block we just popped off the stack was associated with a 
                     * non-block stack entry, and that entry is not a top-level statement,
@@ -753,17 +753,17 @@ impl css_language {
                                             match curRule {
                                                 RULE_FONT_FACE(font_face_rule) =>  
 							{
-        							let mut start_time = precise_time_ns();
+        							let start_time = precise_time_ns();
 								let css_er:css_error = css__parse_font_descriptor(self.sheet, ident, &mut self.strings, tokens, ctx, font_face_rule, self.lwc_instance);
-    								let mut end_time = precise_time_ns();
+    								let end_time = precise_time_ns();
 							        self.lang_func_time.parse_lang_font_desc_time += (end_time as float - start_time as float);
 		        	                                return css_er;
 								 
 							},
                                                 _ =>   {
-        						let mut start_time = precise_time_ns();
+        						let start_time = precise_time_ns();
 							let css_er:css_error = self.parseProperty(ident, tokens, ctx, curRule) ;  
-    							let mut end_time = precise_time_ns();
+    							let end_time = precise_time_ns();
 						        self.lang_func_time.parse_lang_parse_property_time += (end_time as float - start_time as float);
 		                                        return css_er;
 						       }
@@ -988,14 +988,10 @@ impl css_language {
         }
 
         style = css_stylesheet::css__stylesheet_style_create(self.sheet) ;
-        unsafe {
-            debug!(fmt!("parseProperty:: style.bytecode (1) == %?" , style.bytecode));
-        }
+        debug!(fmt!("parseProperty:: style.bytecode (1) == %?" , style.bytecode));
         let error = (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , &mut self.strings , vector , ctx , style);
 
-        unsafe {
-            debug!(fmt!("parseProperty:: style.bytecode (2)== %?" , style.bytecode));
-        }
+        debug!(fmt!("parseProperty:: style.bytecode (2)== %?" , style.bytecode));
 
         if error as int != CSS_OK as int {
             return error;
@@ -1762,19 +1758,18 @@ impl css_language {
     pub fn parseNth(&mut self, vector:&~[@css_token], ctx:@mut uint, qname:@mut css_qname) -> (css_error,Option<@mut css_selector_detail>) {
         debug!("Entering: parseNth");
         let mut token:&@css_token;
-        let mut negate:bool = false;
-        //let qname:css_qname = css_qname{ name:~"", ns:~""};
-        let mut value: @mut css_selector_detail = @mut css_selector_detail{
+
+        let value: @mut css_selector_detail = @mut css_selector_detail{
             qname:copy *qname,
             selector_type:CSS_SELECTOR_PSEUDO_CLASS,
             combinator_type:CSS_COMBINATOR_NONE,  
             value_type:CSS_SELECTOR_DETAIL_VALUE_NTH,
-            negate:negate,
+            negate:false,
     
             string:None,
             a:0,
             b:0
-        };;  
+        }; 
         /* nth -> [ DIMENSION | IDENT ] ws [ [ CHAR ws ]? NUMBER ws ]?
          *        (e.g. DIMENSION: 2n-1, 2n- 1, 2n -1, 2n - 1)
          *        (e.g. IDENT: -n-1, -n- 1, -n -1, -n - 1)

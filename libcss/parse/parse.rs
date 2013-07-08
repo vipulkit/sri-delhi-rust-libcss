@@ -82,7 +82,7 @@ impl css_parser {
 
         debug!("Entering: css__parser_create_internal");
         
-        let mut states = ~[
+        let states = ~[
             ~css_parser::parse_start,
             ~css_parser::parse_stylesheet,
             ~css_parser::parse_statement,
@@ -368,11 +368,9 @@ impl css_parser {
 
     fn intern_string (&mut self, string: ~str) -> @mut lwc_string {
         debug!("Entering: intern_string");
-        let mut interned_string: Option<@mut lwc_string> = None;
+        let interned_string = self.lwc.lwc_intern_string(copy string);
 
-        interned_string = Some(self.lwc.lwc_intern_string(copy string));
-
-        interned_string.unwrap()
+        interned_string
     }
 
     /**
@@ -392,10 +390,10 @@ impl css_parser {
             token_option = Some(self.pushback.swap_unwrap());
         }
         else {
-            let mut start_time = precise_time_ns();
+            let start_time = precise_time_ns();
             /* Otherwise, ask the lexer */
             let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
-            let mut end_time = precise_time_ns();
+            let end_time = precise_time_ns();
             let css_lexer_get_token_time = (end_time as float - start_time as float);
             self.css_lexer_get_token_time += css_lexer_get_token_time ;
 
@@ -405,12 +403,12 @@ impl css_parser {
 
             let mut t = lexer_token_option.unwrap();
 
-            let mut start_time = precise_time_ns();
+            let start_time = precise_time_ns();
             /* If the last token read was whitespace, keep reading
              * tokens until we encounter one that isn't whitespace */
             while (self.last_was_ws && t.token_type as int == CSS_TOKEN_S as int) {
                 let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
-            let mut end_time = precise_time_ns();
+            let end_time = precise_time_ns();
             let css_lexer_get_token_time = (end_time as float - start_time as float);
             self.css_lexer_get_token_time += css_lexer_get_token_time ;
                 if (lexer_error as int != CSS_OK as int) {
@@ -483,7 +481,7 @@ impl css_parser {
         };
 
         // debug!(fmt!("parse_start: state_stack (1) == %?", parser.state_stack));
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state,current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sStart as uint);
@@ -555,7 +553,7 @@ impl css_parser {
             WS = 1 
         };
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sStylesheet as uint);
@@ -658,7 +656,7 @@ impl css_parser {
             WS = 2 
         };
         
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sRuleset as uint);
@@ -795,7 +793,7 @@ impl css_parser {
 
         } /* while */
 
-        let mut to = (sRulesetEnd as uint, Initial as uint);
+        let to = (sRulesetEnd as uint, Initial as uint);
         parser.transition_no_ret(to);
 
         CSS_OK
@@ -811,7 +809,7 @@ impl css_parser {
             WS = 3 
         };
         
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sRulesetEnd as uint);
@@ -935,7 +933,7 @@ impl css_parser {
             AfterAny = 3 
         };
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sAtRule as uint);
@@ -1038,7 +1036,7 @@ impl css_parser {
             AfterBlock = 2 
         };
         
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sAtRuleEnd as uint);
@@ -1134,7 +1132,7 @@ impl css_parser {
             WS2 = 4 
         };
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sBlock as uint);
@@ -1254,7 +1252,7 @@ impl css_parser {
                 WS = 1 
             };
             
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sBlockContent as uint);
@@ -1413,7 +1411,7 @@ impl css_parser {
 
         /* declaration -> property ':' ws value1 */
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sDeclaration as uint);
@@ -1531,7 +1529,7 @@ impl css_parser {
          *           ->
          */
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sDeclList as uint);
@@ -1610,7 +1608,7 @@ impl css_parser {
          *               -> decl-list
          */
         
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sDeclListEnd as uint);
@@ -1665,7 +1663,7 @@ impl css_parser {
 
         /* property -> IDENT ws */
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sProperty as uint);
@@ -1730,7 +1728,7 @@ impl css_parser {
             AfterValue = 1 
         };
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sValue0 as uint);
@@ -1877,7 +1875,7 @@ impl css_parser {
          *        -> ATKEYWORD ws
          */
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sValue as uint);
@@ -1912,7 +1910,7 @@ impl css_parser {
                         _ => {
                             parser.push_back(token);
 
-                            let mut to = (sAny as uint, Initial as uint);
+                            let to = (sAny as uint, Initial as uint);
 
                             parser.transition_no_ret(to);
                             return CSS_OK;
@@ -1949,7 +1947,7 @@ impl css_parser {
             AfterAny = 1 
         };
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sAny0 as uint);
@@ -2107,7 +2105,7 @@ impl css_parser {
             WS2 = 3
         };
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sAny as uint);
@@ -2258,7 +2256,7 @@ impl css_parser {
             Go = 1 
         };
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sMalformedDecl as uint);
@@ -2354,7 +2352,7 @@ impl css_parser {
             Go = 1 
         };
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sMalformedSelector as uint);
@@ -2444,7 +2442,7 @@ impl css_parser {
             Go = 1 
         };
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sMalformedAtRule as uint);
@@ -2544,7 +2542,7 @@ impl css_parser {
             AfterISBody0 = 2 
         };
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sInlineStyle as uint);
@@ -2607,7 +2605,7 @@ impl css_parser {
             AfterISBody = 1 
         };
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sISBody0 as uint);
@@ -2668,7 +2666,7 @@ impl css_parser {
             WS = 3 
         };
 
-        let mut current_state:uint = 0;
+        let current_state:uint = 0;
         let mut current_substate:uint = 0;
         (current_state, current_substate) = parser.state_stack[parser.state_stack.len()-1];
         assert!(current_state == sISBody as uint);
