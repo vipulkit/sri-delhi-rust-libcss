@@ -553,8 +553,8 @@ pub enum index_property {
 
 
 pub struct css_propstrings {
-    lwc_instance: arc::RWARC<~lwc>,
-    propstrings: ~[arc::RWARC<~lwc_string>],
+    lwc_instance: @mut lwc,
+    propstrings: ~[@mut lwc_string],
     pseudo_class_list:~[index_property],
     pseudo_element_list:~[index_property]
 }
@@ -620,7 +620,7 @@ impl css_propstrings {
     }
 
 
-    pub fn lwc_string_caseless_isequal(&mut self , lwc_string_instance: arc::RWARC<~lwc_string> , string_index: uint) -> bool {
+    pub fn lwc_string_caseless_isequal(&mut self , lwc_string_instance: @mut lwc_string , string_index: uint) -> bool {
 
         let lwc_instance = self.lwc_instance.clone();
         do lwc_instance.write |l| {
@@ -628,7 +628,7 @@ impl css_propstrings {
         }
     }
 
-    pub fn lwc_string_isequal(&mut self , lwc_string_instance: arc::RWARC<~lwc_string> , string_index: uint) -> bool {
+    pub fn lwc_string_isequal(&mut self , lwc_string_instance: @mut lwc_string , string_index: uint) -> bool {
         let lwc_instance = self.lwc_instance.clone();
         do lwc_instance.read |l| {
             l.lwc_string_isequal(lwc_string_instance.clone() , self.propstrings[string_index].clone())
