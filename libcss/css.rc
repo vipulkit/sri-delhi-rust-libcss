@@ -50,7 +50,7 @@ pub mod utils {
 }
 
 pub mod stylesheet;
-/*
+
 pub mod select {
         pub mod common;
         pub mod propset;
@@ -61,5 +61,5 @@ pub mod select {
                 pub mod properties;
         }
 }
-*/
+
 pub mod css;
