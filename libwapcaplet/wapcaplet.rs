@@ -3,7 +3,7 @@
 
 extern mod extra;
 
-use std::{uint, borrow};
+use std::{uint, borrow, str};
 
 pub struct lwc_string {
     string: ~str,
@@ -23,6 +23,15 @@ impl lwc {
               return (c  + 32) ;
         }
         c
+    }
+
+    fn to_lower(string:&str) -> ~str {
+        let mut lower : ~[u8] = ~[];
+        for string.bytes_iter().advance |c| {
+            lower.push(lwc::dolower(c));
+        }
+        lower.push(0);
+        str::from_bytes(lower)
     }
 
     #[inline(always)]
@@ -92,7 +101,7 @@ impl lwc {
             }
             true=> { 
                 hash_value = lwc::lwc_calculate_lcase_hash(string_to_intern);
-                string_to_intern_actual = string_to_intern.to_ascii().to_lower().to_str_ascii();
+                string_to_intern_actual = lwc::to_lower(string_to_intern);
             }
         };
         
