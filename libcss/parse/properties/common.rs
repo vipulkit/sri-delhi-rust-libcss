@@ -126,7 +126,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
 
                 match token.token_type {
                     CSS_TOKEN_IDENT => {
-                        let (unit , result) = css__parse_unit_keyword(lwc_string_data(token.idata.get_ref()));
+                        let (unit , result) = css__parse_unit_keyword(lwc_string_data(token.idata.get()));
                         match  result {
                             CSS_OK => {
                                 sheet.quirks_used = true;
@@ -177,6 +177,7 @@ pub fn string_lower(a:&str) -> ~str {
         }
         z += 1;
     }
+    result
 }
 
 /**
