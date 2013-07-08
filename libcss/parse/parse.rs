@@ -77,7 +77,7 @@ impl css_parser {
     * #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
     */
-    fn css__parser_create_internal(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>, initial:(uint, uint) ) 
+    fn css__parser_create_internal(language: ~css_language, lexer: ~css_lexer, lwc: @mut lwc, initial:(uint, uint) ) 
         -> Option<~css_parser> {
 
         debug!("Entering: css__parser_create_internal");
@@ -172,7 +172,7 @@ impl css_parser {
 
     *   'Option<~css_parser>' - location to receive parser instance.
     */
-    pub fn css__parser_create_for_inline_style(language: ~css_language, lexer: ~css_lexer, lwc: arc::RWARC<~lwc>) 
+    pub fn css__parser_create_for_inline_style(language: ~css_language, lexer: ~css_lexer, lwc: @mut lwc) 
         -> Option<~css_parser> {
         debug!("Entering: css__parser_create_for_inline_style");
         let initial = (sInlineStyle as uint, 0);

@@ -73,7 +73,7 @@ pub struct css_language {
     lang_func_time:css_lang_time
 }
 
-pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:arc::RWARC<~lwc> ) -> ~css_language {
+pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:@mut lwc ) -> ~css_language {
     debug!("Entering: css_language");
    
     let mut start_time = precise_time_ns();
