@@ -1320,7 +1320,7 @@ impl css_select_ctx {
              * of an @media block that doesn't match the current media 
              * requirements. */
             if (css_select_ctx::_rule_applies_to_media(selector.rule, state.media)) {
-                error = self.match_selector_chain(Some(selector), state);
+                let error = self.match_selector_chain(Some(selector), state);
                 match error {
                     CSS_OK => {},
                     err => {
