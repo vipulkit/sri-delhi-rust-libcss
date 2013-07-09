@@ -639,24 +639,24 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
                     CSS_COMPUTED_CONTENT_STRING =>
                         ptr.push_str( fmt!(
                             "\"%s\"",
-                            unsafe{copy *content[content_index].data.get_ref()})) ,
+                           *content[content_index].data.get_ref())) ,
                     CSS_COMPUTED_CONTENT_URI =>
                         ptr.push_str( fmt!(
                             "uri(\"%s\")",
-                            unsafe{copy *content[content_index].data.get_ref()})),
+                            *content[content_index].data.get_ref())),
                     CSS_COMPUTED_CONTENT_COUNTER =>
                         ptr.push_str( fmt!(
                             "counter(%s)",
-                            unsafe{copy  content[content_index].counters_data.get_ref().name})),
+                            content[content_index].counters_data.get_ref().name)),
                     CSS_COMPUTED_CONTENT_COUNTERS =>
                         ptr.push_str( fmt!(
                             "counters(%s, \"%s\")",
-                            unsafe{copy content[content_index].counters_data.get_ref().name},
-                            unsafe{copy *content[content_index].counters_data.get_ref().sep.get_ref()})),
+                             content[content_index].counters_data.get_ref().name,
+                             *content[content_index].counters_data.get_ref().sep.get_ref())),
                     CSS_COMPUTED_CONTENT_ATTR =>
                         ptr.push_str( fmt!(
                             "attr(%s)",
-                            unsafe{copy *content[content_index].data.get_ref()})),
+                             *content[content_index].data.get_ref())),
                     CSS_COMPUTED_CONTENT_OPEN_QUOTE =>
                         ptr.push_str(
                             "open-quote"),
@@ -694,7 +694,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     
         while (counter[counter_index].name != ~"") {
             ptr.push_str(fmt!(" %s ",
-                copy counter[counter_index].name));
+                counter[counter_index].name));
             
             dump_css_fixed(counter[counter_index].value, ptr);
             
@@ -719,7 +719,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     
         while (counter[counter_index].name != ~"") {
             ptr.push_str(fmt!(" %s ",
-                copy counter[counter_index].name));
+                counter[counter_index].name));
             
             dump_css_fixed(counter[counter_index].value, ptr);
             
