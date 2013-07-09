@@ -114,7 +114,7 @@ impl css_parser {
         let mut parser = ~css_parser {
             language: language,
             lexer: lexer,
-            lwc: lwc.clone(),
+            lwc: lwc,
 
             last_was_ws: false,
             match_char: 0 as char,

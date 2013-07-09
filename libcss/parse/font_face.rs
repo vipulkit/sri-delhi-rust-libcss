@@ -20,14 +20,14 @@ use utils::errors::*;
 use std::cast::*;
 
 pub fn font_rule_font_family_reserved(strings:&mut ~css_propstrings, ident:&@css_token) -> bool {
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), SERIF as uint) ||
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(),SANS_SERIF as uint) ||
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), CURSIVE as uint) ||
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), FANTASY as uint) ||
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), MONOSPACE as uint) ||
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), INHERIT as uint) ||
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), INITIAL as uint) ||
-    strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone(), DEFAULT as uint)
+    strings.lwc_string_caseless_isequal(ident.idata.get(), SERIF as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.get(),SANS_SERIF as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.get(), CURSIVE as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.get(), FANTASY as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.get(), MONOSPACE as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.get(), INHERIT as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.get(), INITIAL as uint) ||
+    strings.lwc_string_caseless_isequal(ident.idata.get(), DEFAULT as uint)
 }
 
 pub fn font_face_parse_font_family(sheet:@mut css_stylesheet, strings:&mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, 
@@ -75,16 +75,16 @@ pub fn css__parse_font_descriptor(sheet:@mut css_stylesheet, descriptor:&@css_to
 
     font_face = curRule.font_face;
 
-    if strings.lwc_string_caseless_isequal(descriptor.idata.get_ref().clone(), FONT_FAMILY as uint) {
+    if strings.lwc_string_caseless_isequal(descriptor.idata.get(), FONT_FAMILY as uint) {
         return font_face_parse_font_family(sheet, strings, vector, ctx, *font_face.get_ref(), lwc_instance)
     }
-    else if strings.lwc_string_caseless_isequal(descriptor.idata.get_ref().clone(),SRC as uint) {
+    else if strings.lwc_string_caseless_isequal(descriptor.idata.get(),SRC as uint) {
         return font_face_parse_src(sheet, strings, vector, ctx, *font_face.get_ref(), lwc_instance)
     }
-    else if strings.lwc_string_caseless_isequal(descriptor.idata.get_ref().clone(),FONT_STYLE as uint) {
+    else if strings.lwc_string_caseless_isequal(descriptor.idata.get(),FONT_STYLE as uint) {
         return font_face_parse_font_style(strings, vector, ctx, *font_face.get_ref())
     }
-    else if strings.lwc_string_caseless_isequal(descriptor.idata.get_ref().clone(),FONT_WEIGHT as uint) {
+    else if strings.lwc_string_caseless_isequal(descriptor.idata.get(),FONT_WEIGHT as uint) {
         return font_face_parse_font_weight(strings, vector, ctx, *font_face.get_ref())
     }
     
@@ -115,7 +115,7 @@ pub fn font_face_parse_src(sheet:@mut css_stylesheet, strings:&mut ~css_propstri
         let format:@mut css_font_face_format =@mut CSS_FONT_FACE_FORMAT_UNSPECIFIED;
         let mut new_src:~css_font_face_src =~css_font_face_src{location:None, bits:~[]};            
 
-        match font_face_src_parse_spec_or_name(sheet, strings, vector, ctx, location_type, format, lwc_instance.clone()) {
+        match font_face_src_parse_spec_or_name(sheet, strings, vector, ctx, location_type, format, lwc_instance) {
             (CSS_OK,location) => {
                 new_src.location = location;
                 new_src.bits.push(*format as u8 << 2 | *location_type as u8 );
@@ -168,13 +168,13 @@ pub fn font_face_parse_font_style(strings:&mut ~css_propstrings, vector:&~[@css_
     let token = &vector[*ctx];
     *ctx += 1;
 
-    if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), NORMAL as uint) {
+    if strings.lwc_string_caseless_isequal(token.idata.get(), NORMAL as uint) {
         style = CSS_FONT_STYLE_NORMAL;
     } 
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ITALIC as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.get(), ITALIC as uint) {
         style = CSS_FONT_STYLE_ITALIC
     }
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), OBLIQUE as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.get(), OBLIQUE as uint) {
         style = CSS_FONT_STYLE_OBLIQUE
     } else {
         *ctx = orig_ctx;
@@ -205,9 +205,9 @@ pub fn font_face_parse_font_weight(strings:&mut ~css_propstrings, vector:&~[@css
 
 
     if match token.token_type { CSS_TOKEN_NUMBER => true, _ => false }  {
-        let (num, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
+        let (num, consumed) = css__number_from_lwc_string(token.idata.get(), true);
         /* Invalid if there are trailing characters */
-        if consumed != lwc_string_length(token.idata.get_ref().clone()) {
+        if consumed != lwc_string_length(token.idata.get()) {
             *ctx = orig_ctx;
             return CSS_INVALID;
         }
@@ -228,10 +228,10 @@ pub fn font_face_parse_font_weight(strings:&mut ~css_propstrings, vector:&~[@css
             }
         }   
     } 
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),NORMAL as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.get(),NORMAL as uint) {
         weight = CSS_FONT_WEIGHT_NORMAL
     } 
-    else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),BOLD as uint) {
+    else if strings.lwc_string_caseless_isequal(token.idata.get(),BOLD as uint) {
         weight = CSS_FONT_WEIGHT_BOLD
     } else {
         *ctx = orig_ctx;
@@ -265,7 +265,7 @@ pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut 
 
     match token.token_type {
         CSS_TOKEN_URI => {
-            match (*sheet.resolve)(sheet.url, token.idata.get_ref().clone())
+            match (*sheet.resolve)(sheet.url, token.idata.get())
             { 
                 (CSS_OK,loc) => location =loc,
                 (error,_) => return (error,None)
@@ -279,7 +279,7 @@ pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut 
                 
                 token = &vector[*ctx];
                 if match token.token_type { CSS_TOKEN_FUNCTION => true, _ => false}  &&
-                    strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(),FORMAT as uint) {
+                    strings.lwc_string_caseless_isequal(token.idata.get(),FORMAT as uint) {
                 
                     *ctx += 1;
 
@@ -293,7 +293,7 @@ pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&mut 
             }       
         },
         CSS_TOKEN_FUNCTION => {
-            if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), LOCAL as uint) {
+            if strings.lwc_string_caseless_isequal(token.idata.get(), LOCAL as uint) {
                 consumeWhitespace(vector, ctx);
 
                 match css__ident_list_or_string_to_string(sheet , strings , vector, ctx, None) {
@@ -353,10 +353,7 @@ pub fn css__font_face_set_srcs(font_face:@mut css_font_face, srcs:~[~css_font_fa
 *   'css_error' - CSS_OK .
 */
 pub fn css__font_face_set_font_family(font_face: @mut css_font_face, font_family:~str, lwc_instance:@mut lwc) -> css_error {
-    // if (font_face.font_family != NULL)
     font_face.font_family = Some(lwc_instance.lwc_intern_string(copy font_family));
-    // font_face.font_family = Some(font_family.clone());
-
     return CSS_OK
 }
 
@@ -383,17 +380,17 @@ pub fn font_face_src_parse_format(strings:&mut ~css_propstrings, vector:&~[@css_
         token =&vector[*ctx];
         *ctx +=1;   //Iterate
 
-        if strings.lwc_string_isequal(token.idata.get_ref().clone(), WOFF as uint) {
+        if strings.lwc_string_isequal(token.idata.get(), WOFF as uint) {
             *format = unsafe { transmute(*format as uint | CSS_FONT_FACE_FORMAT_WOFF as uint) }
         } 
-        else if strings.lwc_string_isequal(token.idata.get_ref().clone(),TRUETYPE as uint) ||
-            strings.lwc_string_isequal(token.idata.get_ref().clone(),OPENTYPE as uint) {
+        else if strings.lwc_string_isequal(token.idata.get(),TRUETYPE as uint) ||
+            strings.lwc_string_isequal(token.idata.get(),OPENTYPE as uint) {
             *format = unsafe { transmute(*format as uint | CSS_FONT_FACE_FORMAT_OPENTYPE as uint) }
         } 
-        else if strings.lwc_string_isequal(token.idata.get_ref().clone(), EMBEDDED_OPENTYPE as uint) {
+        else if strings.lwc_string_isequal(token.idata.get(), EMBEDDED_OPENTYPE as uint) {
             *format = unsafe { transmute(*format as uint | CSS_FONT_FACE_FORMAT_EMBEDDED_OPENTYPE as uint) }
         }
-        else if strings.lwc_string_isequal(token.idata.get_ref().clone(),SVG as uint) {
+        else if strings.lwc_string_isequal(token.idata.get(),SVG as uint) {
             *format = unsafe { transmute(*format as uint | CSS_FONT_FACE_FORMAT_SVG as uint) }    
         } 
         else {
@@ -432,7 +429,7 @@ pub fn css_font_face_get_font_family(font_face: @mut css_font_face) -> Option<@m
     if (font_face.font_family.is_some()) {
         let ff = font_face.font_family.swap_unwrap();
 
-        font_face.font_family = Some(ff.clone());
+        font_face.font_family = Some(ff);
         Some(ff)
     }
     else {
@@ -467,8 +464,8 @@ pub fn css_font_face_get_src(font_face: @mut css_font_face, index: uint) -> Opti
         location: match src.location {
             None => None,
             Some(_) => {
-                let new_location = src.location.get_ref();
-                Some(new_location.clone())
+                let new_location = src.location.get();
+                Some(new_location)
             }
         },
 
@@ -482,8 +479,8 @@ pub fn css_font_face_src_get_location(src: & ~css_font_face_src) -> Option<@mut 
     match src.location {
         None => None,
         Some(_) => {
-            let new_location = src.location.get_ref();
-            Some(new_location.clone())
+            let new_location = src.location.get();
+            Some(new_location)
         }
     }
 }

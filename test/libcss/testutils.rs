@@ -4,7 +4,7 @@
 
 #[crate_type = "lib"];
 extern mod css;
-use core::io::*;
+use std::io::*;
 
 pub type  line_func =  
     ~extern fn(data:~str , pw:LINE_CTX_DATA_TYPE) -> bool;
@@ -34,23 +34,26 @@ pub enum LINE_CTX_DATA_TYPE {
 
 pub fn css__parse_filesize( fileName:~str)->uint {
     // debug!(~"css__parse_filesize : "+ fileName);
-    let r:@Reader = io::file_reader(&Path(fileName)).get(); 
+    let r:@Reader = file_reader(&Path(fileName)).get(); 
     r.seek(0,SeekEnd);
     r.tell()
 }
 
 pub fn css__parse_strnchr(string:&~str, chr:char)-> (~str,uint) {
     let length = string.len();
-    for (*string).each_chari |i, ch| {
-        if ch == chr {
+	let mut i : uint = 0;
+    while i < length {
+        if (*string)[i] as char == chr {
             return (string.slice(i,length).to_owned(),i);
         }
+		
+		i = i + 1;
     }
     return (~"",string.len());
 }
 pub fn css__parse_testfile(filename:~str,  callback:line_func, pw:LINE_CTX_DATA_TYPE)->bool {
     // debug!(~"css__parse_testfile : "+ filename);
-    let r:@Reader = io::file_reader(&Path(filename)).get();
+    let r:@Reader = file_reader(&Path(filename)).get();
     let mut data:~str;
     let mut string: ~str;
 
