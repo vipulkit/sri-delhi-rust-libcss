@@ -423,8 +423,8 @@ impl css_lexer {
                 }
                 
                 /* Strip the trailing ')' */
-                let strip_close_bracket = match *t.data.data.last() {
-                    41 /* ')' */ => true,
+                let strip_close_bracket = match t.data.data.last() {
+                    &41 /* ')' */ => true,
                     _ => false
                 };
 
