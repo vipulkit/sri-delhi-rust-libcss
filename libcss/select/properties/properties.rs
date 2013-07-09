@@ -17,7 +17,7 @@ use select::computed::*;
 ///////////////////////////////////////////////////////////////////
 
 // moved from select , to resolve cyclic dependency between modules
-#[inline(always)]
+#[inline]
 pub fn css__outranks_existing(op:u16, 
 							important:bool, 
 							state: @mut css_select_state,
@@ -126,7 +126,7 @@ pub fn css__outranks_existing(op:u16,
 	outranks
 }
 
-#[inline(always)]
+#[inline]
 pub fn css__to_css_unit(u:u32) -> css_unit {
 	match u {
 		UNIT_PX => CSS_UNIT_PX,
@@ -153,7 +153,7 @@ pub fn css__to_css_unit(u:u32) -> css_unit {
 /******************************************************************************
  * Utilities below here							      *
  ******************************************************************************/
- #[inline(always)]
+ #[inline]
 pub fn css__cascade_bg_border_color(opv:u32, style:@mut css_style, state:@mut css_select_state, 
 		 fun:@extern fn (@mut css_computed_style, u8, css_color)) -> css_error {
 	
@@ -184,7 +184,7 @@ pub fn css__cascade_bg_border_color(opv:u32, style:@mut css_style, state:@mut cs
 	CSS_OK
 }
 
-#[inline(always)]
+#[inline]
 pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_select_state, 
 	fun:Option<@extern fn (@mut css_computed_style, u8, ~str)>) -> css_error {
 	
@@ -226,7 +226,7 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 	CSS_OK
 }
 
-#[inline(always)]
+#[inline]
 pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_select_state, 
 	fun:@extern fn (@mut css_computed_style, u8) ) -> css_error {
 	
@@ -256,7 +256,7 @@ pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_selec
 	CSS_OK
 }
 
-#[inline(always)]
+#[inline]
 pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_select_state, 
 	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit)) -> css_error {
 	
@@ -289,7 +289,7 @@ pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_s
 	CSS_OK
 }
 
-#[inline(always)]
+#[inline]
 pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_select_state,
 	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 	
@@ -321,7 +321,7 @@ pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_se
 
 }
 
-#[inline(always)]
+#[inline]
 pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_select_state,
 	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 	
@@ -352,7 +352,7 @@ pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_
 	CSS_OK
 }
 
-#[inline(always)]
+#[inline]
 pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_select_state,
 	fun:@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 
@@ -383,7 +383,7 @@ pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_se
 	CSS_OK
 }
 
-#[inline(always)]
+#[inline]
 pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_state,
 	fun:Option<@extern fn (@mut css_computed_style, u8, css_fixed, css_unit) >) -> css_error {
 
@@ -413,7 +413,7 @@ pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_
 }
 
 
-#[inline(always)]
+#[inline]
 pub fn css__cascade_number(opv:u32, style:@mut css_style, state:@mut css_select_state,
 	fun:Option<@extern fn (@mut css_computed_style, u8, css_fixed) -> css_error>) -> css_error {
 
@@ -440,7 +440,7 @@ pub fn css__cascade_number(opv:u32, style:@mut css_style, state:@mut css_select_
 	CSS_OK
 }
 
-#[inline(always)]
+#[inline]
 pub fn css__cascade_page_break_after_before_inside(opv:u32, _:@mut css_style, state:@mut css_select_state,
 		fun:Option<@extern fn (@mut css_computed_style, u8)>) -> css_error {
 	
@@ -469,7 +469,7 @@ pub fn css__cascade_page_break_after_before_inside(opv:u32, _:@mut css_style, st
 	
 }
 
-#[inline(always)]
+#[inline]
 pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state:@mut css_select_state,
 	fun:@extern fn (@mut css_computed_style, u8, ~[@mut css_computed_counter]) ) -> css_error {
 

@@ -37,35 +37,38 @@ pub enum shape {
 } 
 
 
-
-
-
+#[inline]
 pub fn buildOPV(opcode : css_properties_e , flags : u8 , value : u16 ) -> u32 {
 
     (( (opcode as int)  & 0x3ff) | ((flags as int)<< 10) | (((value as int)& 0x3fff)  << 18) ) as u32
 }
 
+#[inline]
 pub fn buildOPV_flag(opcode : css_properties_e , flags :flag , value : u16 ) -> u32 {
 
     (( (opcode as int)  & 0x3ff) | ((flags as int)<< 10) | (((value as int)& 0x3fff)  << 18) ) as u32
 }
 
+#[inline]
 pub fn getOpcode(OPV : u32 ) -> css_properties_e {
     //((OPV & 0x3ff) as int) as opcode_t
     let op_code = (OPV & 0x00003ff);
     unsafe { cast::transmute(op_code as uint) }
 }
 
+#[inline]
 pub fn getFlags(OPV : u32 ) -> u8 {
 
     ((OPV >> 10) & 0xff) as u8
 }
 
+#[inline]
 pub fn getValue(OPV : u32 ) -> u16 {
 
     (OPV >> 18) as u16
 }
 
+#[inline]
 pub fn isImportant(OPV : u32 ) -> bool {
 
     debug!("Entering: isImportant:: OPV  = %?" , OPV);
@@ -77,6 +80,7 @@ pub fn isImportant(OPV : u32 ) -> bool {
     }
 }
 
+#[inline]
 pub fn isInherit(OPV : u32 ) -> bool {
 
     if (getFlags(OPV) & 0x2)==0 {

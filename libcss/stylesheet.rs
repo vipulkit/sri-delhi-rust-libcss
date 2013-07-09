@@ -441,6 +441,7 @@ impl css_stylesheet {
         ( CSS_OK, Some(copy self.string_vector[num-1]) )
     }
 
+    #[inline]
     pub fn css__stylesheet_style_appendOPV(
                                         style: @mut css_style,
                                         opcode:css_properties_e,
@@ -453,6 +454,7 @@ impl css_stylesheet {
         )
     }
 
+    #[inline]
     pub fn css_stylesheet_style_inherit(
                                         style: @mut css_style,
                                         opcode:css_properties_e) {
@@ -1305,6 +1307,8 @@ impl css_selector_hash {
     * #Return Value:
     *  '~str' - class name.
     */
+
+    #[inline]
     pub fn _class_name(selector : @mut css_selector) 
                         -> ~str {
 
@@ -1332,6 +1336,8 @@ impl css_selector_hash {
     * #Return Value:
     *  '~str' - ID name.
     */
+
+    #[inline]
     pub fn _id_name(selector : @mut css_selector) 
                         -> ~str {
 
@@ -1360,6 +1366,8 @@ impl css_selector_hash {
     * #Return Value:
     *  'uint' - hash value.
     */
+
+    #[inline]
     pub fn _hash_name( string: ~str ) -> u32 {
         debug!("Entering _hash_name");
         let mut z: u32 = 0x811c9dc5;

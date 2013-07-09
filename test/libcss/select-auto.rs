@@ -659,6 +659,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_styles
             css_create_inputstream_alias_time:@mut float ,
             css_lang_create_propstring_time:@mut float,
             css_lang_create_properties_time:@mut float){
+    
     debug!("\n Entering css__parse_sheet ") ;
     let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
     let mut media = CSS_MEDIA_ALL as u64; 
@@ -893,14 +894,14 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_i
     parse_lang_handle_event_time:@mut float,
     parse_lang_handleStartStyleSheet_time:@mut float,
     parse_lang_handleEndStyleSheet_time:@mut float,
-        parse_lang_handleStartRuleSet_time:@mut float,
+    parse_lang_handleStartRuleSet_time:@mut float,
     parse_lang_handleEndRuleSet_time:@mut float,
     parse_lang_handleStartAtRule_time:@mut float,
     parse_lang_handleEndAtRule_time:@mut float,
     parse_lang_handleStartBlock_time:@mut float,
     parse_lang_handleEndBlock_time:@mut float, 
     parse_lang_handle_block_content_time:@mut float,
-        parse_lang_handle_parse_declaration_time :@mut float,
+    parse_lang_handle_parse_declaration_time :@mut float,
     parse_lang_parse_property_time:@mut float,
     parse_lang_font_desc_time:@mut float
 
@@ -1020,7 +1021,6 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_i
         }
     }
 
-    
     assert!(results.styles[ctx.pseudo_element].is_some());
     dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
 
@@ -1046,8 +1046,6 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_i
 
         i += 1;
     }
-
-
 
     debug!(fmt!(" CSS Selection result is =%?",results));
     let string:~str = copy ctx.exp;

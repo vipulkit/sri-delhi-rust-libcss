@@ -19,7 +19,7 @@ pub struct lwc {
 
 impl lwc {
 
-    #[inline(always)]
+    #[inline]
     pub fn dolower(c: u8 ) -> u8 {
         if (c > 64 && c < 91) {
               return (c  + 32) ;
