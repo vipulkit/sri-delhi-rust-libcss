@@ -197,7 +197,7 @@ impl css_select_ctx {
         //     return CSS_INVALID;
         // }   
             
-        let mut select_sheet = @mut css_select_sheet{
+        let select_sheet = @mut css_select_sheet{
             sheet:csheet,
             origin:corigin,
             media:cmedia
@@ -302,7 +302,7 @@ impl css_select_ctx {
         //let mut results : Option<css_select_results>  ;
         let mut parent : *c_void = null() ;
 
-        let mut state: @mut css_select_state = @mut css_select_state {
+        let state: @mut css_select_state = @mut css_select_state {
             node:node,
             media:media,       
             results:css_select_results{ 
@@ -337,7 +337,7 @@ impl css_select_ctx {
             let mut prop_vec : ~[@mut prop_state] = ~[] ;
             let mut m = 0;
 			while m < (CSS_PSEUDO_ELEMENT_COUNT as uint) {
-                let mut pstate = @mut prop_state{
+                let pstate = @mut prop_state{
                     specificity:0,
                     set:false,
                     origin:0,
@@ -404,7 +404,7 @@ impl css_select_ctx {
          * are not disabled */
         i=0;
         while(i < (self.sheets.len() as int) ) {
-            let mut s = self.sheets[i] ;
+            let s = self.sheets[i] ;
             if( s.media & media ) != 0 && 
                 s.sheet.disabled == false {
                     debug!(fmt!("css_select_style : selecting from sheet ")) ;
@@ -424,8 +424,7 @@ impl css_select_ctx {
 	   /* Consider any inline style for the node */
         if (inline_style.is_some()) {
             debug!(fmt!("css_select_style : considerng inline style")) ;
-            let mut  sel = 
-                        inline_style.get().rule_list;
+            let sel = inline_style.get().rule_list;
 
             /* Sanity check style */
             if (inline_style.get().rule_count != 1 ){
@@ -475,8 +474,7 @@ impl css_select_ctx {
         i = 0 ;
         while (i<(CSS_N_PROPERTIES as int)) {
             debug!(fmt!("css_select_style : setting initial hint of property =%?=",i)) ;
-            let mut prop2 = copy state.props[i] ;
-            let mut prop = prop2[CSS_PSEUDO_ELEMENT_NONE as uint];
+            let prop = state.props[i][CSS_PSEUDO_ELEMENT_NONE as uint];
 
             /* Apply presentational hints if the property is unset or 
              * the existing property value did not come from an author 
@@ -537,7 +535,7 @@ impl css_select_ctx {
             //     continue;
             i = 0 ;
             while (i < (CSS_N_PROPERTIES as int) ) {
-                let mut prop = state.props[i][j];
+                let prop = state.props[i][j];
                 
                 debug!(fmt!("css_select_style : property =%?=%?="j,i)) ;
                 /* If the property is still unset then set it 
@@ -623,7 +621,7 @@ impl css_select_ctx {
         let mut i = self.sheets.len() ;
         while (i>0) { 
             i -= 1 ;
-            let mut select_sheet = self.sheets[i] ;
+            let select_sheet = self.sheets[i] ;
             if ((select_sheet.media & media) != 0 ) && 
                 (select_sheet.sheet.disabled == false ) {
 
@@ -641,21 +639,19 @@ impl css_select_ctx {
         let results = @mut css_select_font_faces_results{
                     font_faces:~[]
             };
+          
+		let n_font_faces = state.ua_font_faces.font_faces.len() + 
+			state.user_font_faces.font_faces.len() +
+			state.author_font_faces.font_faces.len();
 
-        unsafe{    
-            let n_font_faces = state.ua_font_faces.font_faces.len() + 
-                state.user_font_faces.font_faces.len() +
-                state.author_font_faces.font_faces.len();
-
-            if (n_font_faces > 0) {
-                /* We found some matching faces.  Make a results structure with
-                 * the font faces in priority order. */
-                results.font_faces.push_all(state.ua_font_faces.font_faces);
-                results.font_faces.push_all(state.user_font_faces.font_faces);
-                results.font_faces.push_all(state.author_font_faces.font_faces);    
-            }
-        }    
-
+		if (n_font_faces > 0) {
+			/* We found some matching faces.  Make a results structure with
+			 * the font faces in priority order. */
+			results.font_faces.push_all(state.ua_font_faces.font_faces);
+			results.font_faces.push_all(state.user_font_faces.font_faces);
+			results.font_faces.push_all(state.author_font_faces.font_faces);    
+		}
+     
         (CSS_OK,Some(results))
     }
 
@@ -665,39 +661,39 @@ impl css_select_ctx {
      ******************************************************************************/
     pub fn intern_strings(&mut self) {
         
-        let mut l = self.lwc_instance ;
+        let l = self.lwc_instance ;
             /* Universal selector */
-        self.universal = Some(l.lwc_intern_string(~"*"));
+        self.universal = Some(l.lwc_intern_string("*"));
 
         /* Pseudo classes */
-        self.first_child = Some(l.lwc_intern_string(~"first-child"));
-        self.link = Some(l.lwc_intern_string(~"link"));
-        self.visited = Some(l.lwc_intern_string(~"visited"));
-        self.hover = Some(l.lwc_intern_string(~"hover"));
-        self.active = Some(l.lwc_intern_string(~"active"));
-        self.focus = Some(l.lwc_intern_string(~"focus"));
-        self.nth_child = Some(l.lwc_intern_string(~"nth-child"));
-        self.nth_last_child = Some(l.lwc_intern_string(~"nth-last-child"));
-        self.nth_of_type = Some(l.lwc_intern_string(~"nth-of-type"));
-        self.nth_last_of_type = Some(l.lwc_intern_string(~"nth-last-of-type"));
-        self.last_child = Some(l.lwc_intern_string(~"last-child"));
-        self.first_of_type = Some(l.lwc_intern_string(~"first-of-type"));
-        self.last_of_type = Some(l.lwc_intern_string(~"last-of-type"));
-        self.only_child = Some(l.lwc_intern_string(~"only-child"));
-        self.only_of_type = Some(l.lwc_intern_string(~"only-of-type"));
-        self.root = Some(l.lwc_intern_string(~"root"));
-        self.empty = Some(l.lwc_intern_string(~"empty"));
-        self.target = Some(l.lwc_intern_string(~"target"));
-        self.lang = Some(l.lwc_intern_string(~"lang"));
-        self.enabled = Some(l.lwc_intern_string(~"enabled"));
-        self.disabled = Some(l.lwc_intern_string(~"disabled"));
-        self.checked = Some(l.lwc_intern_string(~"checked"));
+        self.first_child = Some(l.lwc_intern_string("first-child"));
+        self.link = Some(l.lwc_intern_string("link"));
+        self.visited = Some(l.lwc_intern_string("visited"));
+        self.hover = Some(l.lwc_intern_string("hover"));
+        self.active = Some(l.lwc_intern_string("active"));
+        self.focus = Some(l.lwc_intern_string("focus"));
+        self.nth_child = Some(l.lwc_intern_string("nth-child"));
+        self.nth_last_child = Some(l.lwc_intern_string("nth-last-child"));
+        self.nth_of_type = Some(l.lwc_intern_string("nth-of-type"));
+        self.nth_last_of_type = Some(l.lwc_intern_string("nth-last-of-type"));
+        self.last_child = Some(l.lwc_intern_string("last-child"));
+        self.first_of_type = Some(l.lwc_intern_string("first-of-type"));
+        self.last_of_type = Some(l.lwc_intern_string("last-of-type"));
+        self.only_child = Some(l.lwc_intern_string("only-child"));
+        self.only_of_type = Some(l.lwc_intern_string("only-of-type"));
+        self.root = Some(l.lwc_intern_string("root"));
+        self.empty = Some(l.lwc_intern_string("empty"));
+        self.target = Some(l.lwc_intern_string("target"));
+        self.lang = Some(l.lwc_intern_string("lang"));
+        self.enabled = Some(l.lwc_intern_string("enabled"));
+        self.disabled = Some(l.lwc_intern_string("disabled"));
+        self.checked = Some(l.lwc_intern_string("checked"));
 
         /* Pseudo elements */
-        self.first_line = Some(l.lwc_intern_string(~"first-line"));
-        self.first_letter = Some(l.lwc_intern_string(~"first-letter"));
-        self.before = Some(l.lwc_intern_string(~"before"));
-        self.after = Some(l.lwc_intern_string(~"after"));
+        self.first_line = Some(l.lwc_intern_string("first-line"));
+        self.first_letter = Some(l.lwc_intern_string("first-letter"));
+        self.before = Some(l.lwc_intern_string("before"));
+        self.after = Some(l.lwc_intern_string("after"));
 
     }
 
@@ -750,7 +746,7 @@ impl css_select_ctx {
         if dispatch_table::get_inherited(prop) == 0 || match pseudo { CSS_PSEUDO_ELEMENT_NONE => true, _ => false} &&
             parent == null() {
             
-            let mut group : prop_group = dispatch_table::get_group(prop);
+            let group : prop_group = dispatch_table::get_group(prop);
 
             /* Remaining properties are neither inherited nor 
              * already set. Thus, we set them to their initial 
@@ -930,7 +926,7 @@ impl css_select_ctx {
                             loop ;
                         },
                         _ => {
-                            let mut ancestor_base = css_stylesheet::css__stylesheet_get_base_rule(ancestor_rule);
+                            let ancestor_base = css_stylesheet::css__stylesheet_get_base_rule(ancestor_rule);
                             if ancestor_base.parent_stylesheet.is_none() {
                                 ancestor = ancestor_base.parent_rule ;
                             }
@@ -961,29 +957,28 @@ impl css_select_ctx {
                 return CSS_BADPARM ;
             }
 
-            let mut res : bool = self.lwc_instance.lwc_string_isequal(rule.font_face.get().font_family.get(),
+            let res : bool = self.lwc_instance.lwc_string_isequal(rule.font_face.get().font_family.get(),
                                                     state.font_family.get() ) ;
 
             if ( res ) {
-                let mut faces = @mut css_select_font_faces_list{
+                let faces = @mut css_select_font_faces_list{
                     font_faces:~[]
                 };
-                unsafe {
-                    match (origin) {
-                        CSS_ORIGIN_UA => {
-                            state.ua_font_faces.font_faces.push(rule.font_face.get());
-                            faces.font_faces.push_all(state.ua_font_faces.font_faces);
-                        },
-                        CSS_ORIGIN_USER => {
-                            state.user_font_faces.font_faces.push(rule.font_face.get());
-                            faces.font_faces.push_all(state.user_font_faces.font_faces);
-                        },
-                        CSS_ORIGIN_AUTHOR => {
-                            state.author_font_faces.font_faces.push(rule.font_face.get());
-                            faces.font_faces.push_all(state.author_font_faces.font_faces);
-                        }
-                    }
-                }
+                
+				match (origin) {
+					CSS_ORIGIN_UA => {
+						state.ua_font_faces.font_faces.push(rule.font_face.get());
+						faces.font_faces.push_all(state.ua_font_faces.font_faces);
+					},
+					CSS_ORIGIN_USER => {
+						state.user_font_faces.font_faces.push(rule.font_face.get());
+						faces.font_faces.push_all(state.user_font_faces.font_faces);
+					},
+					CSS_ORIGIN_AUTHOR => {
+						state.author_font_faces.font_faces.push(rule.font_face.get());
+						faces.font_faces.push_all(state.author_font_faces.font_faces);
+					}
+				}
             }
         }
         CSS_OK
@@ -1057,7 +1052,7 @@ impl css_select_ctx {
                             }
                         },
                         RULE_FONT_FACE(x) => {
-                            let mut error : css_error = self._select_font_face_from_rule(
+                            let error : css_error = self._select_font_face_from_rule(
                                                             x,
                                                             origin,
                                                             state);
@@ -1150,8 +1145,8 @@ impl css_select_ctx {
             if( cand.get().rule.is_none() || refer.get().rule.is_none() ) {
                 fail!(~"_selector_less_specific:Base rule cannot be null");
             }
-            let mut cand_base = css_stylesheet::css__stylesheet_get_base_rule(cand.get().rule.get()) ;
-            let mut refer_base = css_stylesheet::css__stylesheet_get_base_rule(refer.get().rule.get()) ;
+            let cand_base = css_stylesheet::css__stylesheet_get_base_rule(cand.get().rule.get()) ;
+            let refer_base = css_stylesheet::css__stylesheet_get_base_rule(refer.get().rule.get()) ;
             /* Then by rule index -- earliest wins */
             if (cand_base.index < refer_base.index) {
                 result = true;
@@ -1206,7 +1201,7 @@ impl css_select_ctx {
             CSS_SELECT_RULE_SRC_ID | CSS_SELECT_RULE_SRC_CLASS => true,
             _ => false }) {
             
-            if (unsafe {selector.data[0].qname.name.len()} != 1 ||
+            if (selector.data[0].qname.name.len() != 1 ||
                    selector.data[0].qname.name[0] != '*' as u8) {
                 
                 if selector.data[0].qname.name != state.element.name {
@@ -1244,11 +1239,10 @@ impl css_select_ctx {
             node_selectors_option = Some(sel.get().selector) ;
         }
 
-        if ( unsafe {state.classes.len() != 0} ) {
+        if ( state.classes.len() != 0 ) {
              /* Find hash chains for node classes */
-			unsafe{
-				debug!(fmt!("state.classes=%?",state.classes));
-			}
+			debug!(fmt!("state.classes=%?",state.classes));
+			
             let mut z = 0 ;
             let z_len = state.classes.len();
             while z<z_len {
@@ -1267,10 +1261,10 @@ impl css_select_ctx {
                 z += 1;
             }
         }
-		unsafe {
-			debug!(fmt!("state.id=%?, state.id.len=%?", state.id, state.id.len()));
-		}		
-        if ( unsafe { state.id.len() != 0 } ) {
+		
+		debug!(fmt!("state.id=%?, state.id.len=%?", state.id, state.id.len()));
+				
+        if ( state.id.len() != 0 ) {
             /* Find hash chain for node ID */
             let (sel_id,error) = sheet.selectors.css__selector_hash_find_by_id(copy state.id);
             match error {
@@ -1310,7 +1304,7 @@ impl css_select_ctx {
              *
              * Pick the least specific/earliest occurring selector.
              */
-            let mut o_selector = css_select_ctx::_selector_next(
+            let o_selector = css_select_ctx::_selector_next(
                                     node_selectors_option, 
                                     id_selectors_option,
                                     &class_selectors_option_list, 
@@ -1397,8 +1391,8 @@ impl css_select_ctx {
             } 
             else {
                 let mut i = 0 ;
-                //let mut j = class_selectors_option_list.len()  ;
-                while i < class_selectors_option_list.len()  {
+                let n_classes = class_selectors_option_list.len()  ;
+                while i < n_classes  {
                     if ( class_selectors_option_list[i].is_some() &&
                          mut_ptr_eq(selector, class_selectors_option_list[i].get()) ) {
                         let (class_next_hash,error) = 
@@ -1421,6 +1415,7 @@ impl css_select_ctx {
                         }
                         break;
                     }
+					i = i + 1;
                 }
             }
 
@@ -1440,44 +1435,42 @@ impl css_select_ctx {
         debug!(fmt!("Entering update_reject_cache")) ;
         let mut  next_detail : Option<@mut css_selector_detail> = None;
 
-        unsafe {
-            if (s.data.len() > 1 ) {
-                next_detail = Some(s.data[1]);
-            }
+		if (s.data.len() > 1 ) {
+			next_detail = Some(s.data[1]);
+		}
 
-            if ( (state.next_reject < 0) ||
+		if ( (state.next_reject < 0) ||
 
-                (match comb {   
-                    CSS_COMBINATOR_ANCESTOR => { false },
-                    _=>{
-                        true
-                    }
-                })   ||
+			(match comb {   
+				CSS_COMBINATOR_ANCESTOR => { false },
+				_=>{
+					true
+				}
+			})   ||
 
-                (next_detail.is_none()) ||
+			(next_detail.is_none()) ||
 
-                (if (s.data.len() > 2) {
-                    true
-                } 
-                else {
-                    false
-                }) ||
+			(if (s.data.len() > 2) {
+				true
+			} 
+			else {
+				false
+			}) ||
 
-                (match next_detail.get().selector_type {   
-                    CSS_SELECTOR_CLASS=> { false },         
-                    CSS_SELECTOR_ID=>{false},
-                    _=>{
-                        true  
-                    }
-                }) 
-            ) {
+			(match next_detail.get().selector_type {   
+				CSS_SELECTOR_CLASS=> { false },         
+				CSS_SELECTOR_ID=>{false},
+				_=>{
+					true  
+				}
+			}) 
+		) {
 
-                return ;
-            }
-        }
-
+			return ;
+		}
+ 
         /* Insert */
-        let mut item : reject_item = reject_item{
+        let item : reject_item = reject_item{
             value: copy next_detail.get().qname.name ,
             sel_type: next_detail.get().selector_type
         };
@@ -1579,13 +1572,13 @@ impl css_select_ctx {
         debug!(fmt!("Entering match_selector_chain")) ;
         let mut s = selector;
         let mut node = state.node;
-        let mut match_b : @mut bool = @mut false;
+        let match_b : @mut bool = @mut false;
         let mut may_optimise = true;
-        let mut rejected_by_cache : @mut bool = @mut true ;
-        let mut pseudo : @mut css_pseudo_element = @mut CSS_PSEUDO_ELEMENT_NONE ;
+        let rejected_by_cache : @mut bool = @mut true ;
+        let pseudo : @mut css_pseudo_element = @mut CSS_PSEUDO_ELEMENT_NONE ;
         let mut error : css_error ;
-        let mut universal_string = self.universal.get() ;
-        //self.universal = Some(universal_string) ;     
+        let universal_string = self.universal.get() ;
+          
         
         /* Match the details of the first selector in the chain. 
          *
@@ -1594,9 +1587,9 @@ impl css_select_ctx {
          * any selector chains containing pseudo elements anywhere 
          * else.
          */
-        unsafe {
-            error = self.match_details(node, (s.get().data) , state, match_b, Some(pseudo) );
-        }
+      
+        error = self.match_details(node, (s.get().data) , state, match_b, Some(pseudo) );
+       
         match error {
             CSS_OK => {},
             err => { 
@@ -1609,92 +1602,92 @@ impl css_select_ctx {
             return CSS_OK;
         }
 
-        unsafe {
-            /* Iterate up the selector chain, matching combinators */
-            loop {
-                let mut next_node : *c_void = null();
+        
+		/* Iterate up the selector chain, matching combinators */
+		loop {
+			let mut next_node : *c_void = null();
 
-                /* Consider any combinator on this selector */
-                if ( (s.get().data.len() > 0 ) && 
-                     ( match s.get().data[0].combinator_type { 
-                        CSS_COMBINATOR_NONE=>{false},
-                        _=>{true} }
-                     ) && 
-                     (s.get().combinator.is_some() ) &&
-                     (self.universal.is_some() ) &&
-                     (s.get().combinator.get().data[0].qname.name != 
-                      lwc_string_data(universal_string)) ) {
+			/* Consider any combinator on this selector */
+			if ( (s.get().data.len() > 0 ) && 
+				 ( match s.get().data[0].combinator_type { 
+					CSS_COMBINATOR_NONE=>{false},
+					_=>{true} }
+				 ) && 
+				 (s.get().combinator.is_some() ) &&
+				 (self.universal.is_some() ) &&
+				 (s.get().combinator.get().data[0].qname.name != 
+				  lwc_string_data(universal_string)) ) {
 
-                    /* Named combinator */
-                    
-                        may_optimise &= match s.get().data[0].combinator_type {
-                            CSS_COMBINATOR_ANCESTOR=> { true },
-                            CSS_COMBINATOR_PARENT=>{ true },
-                            _=>{ false }
-                        } ;
-                    
+				/* Named combinator */
+				
+					may_optimise &= match s.get().data[0].combinator_type {
+						CSS_COMBINATOR_ANCESTOR=> { true },
+						CSS_COMBINATOR_PARENT=>{ true },
+						_=>{ false }
+					} ;
+				
 
-                    error = self.match_named_combinator(s.get().data[0].combinator_type, 
-                           s.get().combinator.get(), state, node, &mut next_node);
-                    match error {
-                        CSS_OK => {},
-                        err => { 
-                            return err ;
-                        }
-                    }
+				error = self.match_named_combinator(s.get().data[0].combinator_type, 
+					   s.get().combinator.get(), state, node, &mut next_node);
+				match error {
+					CSS_OK => {},
+					err => { 
+						return err ;
+					}
+				}
 
-                    /* No match for combinator, so reject selector chain */
-                    if (next_node == null() ) {
-                        return CSS_OK;
-                    }
-                } 
-                else if ( (s.get().data.len() > 0 ) &&
-                        ( match s.get().data[0].combinator_type { 
-                            CSS_COMBINATOR_NONE=>{false},
-                            _=>{true} }
-                        ) ) {
+				/* No match for combinator, so reject selector chain */
+				if (next_node == null() ) {
+					return CSS_OK;
+				}
+			} 
+			else if ( (s.get().data.len() > 0 ) &&
+					( match s.get().data[0].combinator_type { 
+						CSS_COMBINATOR_NONE=>{false},
+						_=>{true} }
+					) ) {
 
-                    /* Universal combinator */
-                    
-                        may_optimise &= match s.get().data[0].combinator_type {
-                            CSS_COMBINATOR_ANCESTOR=> { true },
-                            CSS_COMBINATOR_PARENT=>{ true },
-                            _=>{ false }
-                        } ;
-                    
+				/* Universal combinator */
+				
+					may_optimise &= match s.get().data[0].combinator_type {
+						CSS_COMBINATOR_ANCESTOR=> { true },
+						CSS_COMBINATOR_PARENT=>{ true },
+						_=>{ false }
+					} ;
+				
 
-                    error = self.match_universal_combinator(s.get().data[0].combinator_type, 
-                                                    s.get().combinator.get(), state, node, 
-                                                    may_optimise, rejected_by_cache,
-                                                    &mut next_node);
-                    match error {
-                        CSS_OK => {},
-                        err => { 
-                            return err ;
-                        }
-                    }
+				error = self.match_universal_combinator(s.get().data[0].combinator_type, 
+												s.get().combinator.get(), state, node, 
+												may_optimise, rejected_by_cache,
+												&mut next_node);
+				match error {
+					CSS_OK => {},
+					err => { 
+						return err ;
+					}
+				}
 
-                    /* No match for combinator, so reject selector chain */
-                    if (next_node == null()) {
-                        if (may_optimise && mut_ptr_eq(s.get(),selector.get()) &&
-                                rejected_by_cache == @mut false) {
-                            css_select_ctx::update_reject_cache(state, 
-                                                    s.get().data[0].combinator_type,
-                                                    s.get().combinator.get());
-                        }
+				/* No match for combinator, so reject selector chain */
+				if (next_node == null()) {
+					if (may_optimise && mut_ptr_eq(s.get(),selector.get()) &&
+							rejected_by_cache == @mut false) {
+						css_select_ctx::update_reject_cache(state, 
+												s.get().data[0].combinator_type,
+												s.get().combinator.get());
+					}
 
-                        return CSS_OK;
-                    }
-                }
+					return CSS_OK;
+				}
+			}
 
-                /* Details matched, so progress to combining selector */
-                s = s.get().combinator;
-                node = next_node;
+			/* Details matched, so progress to combining selector */
+			s = s.get().combinator;
+			node = next_node;
 
-                if s.is_none() {
-                    break;
-                }
-            } 
+			if s.is_none() {
+				break;
+			}
+             
         }
         /* If we got here, then the entire selector chain matched, so cascade */
         state.current_specificity = selector.get().specificity;
@@ -1705,7 +1698,7 @@ impl css_select_ctx {
         }
 
          /* No bytecode if rule body is empty or wholly invalid */
-        let mut rule = match selector.get().rule.get() {
+        let rule = match selector.get().rule.get() {
             RULE_SELECTOR(x)=>{
                 x
             },
@@ -1717,18 +1710,16 @@ impl css_select_ctx {
         if ( rule.style.is_none() ) {
             return CSS_OK ;
         }
+ 
+		if( state.results.styles.len() <= *pseudo as uint ) {
+			return CSS_INVALID ;
+		}
 
-        unsafe {
-            if( state.results.styles.len() <= *pseudo as uint ) {
-                return CSS_INVALID ;
-            }
-
-            /* Ensure that the appropriate computed style exists */
-            if ( state.results.styles[*pseudo as uint].is_none() ) {
-                state.results.styles[*pseudo as uint] = Some(css_computed_style_create()); 
-            }
-        }
-
+		/* Ensure that the appropriate computed style exists */
+		if ( state.results.styles[*pseudo as uint].is_none() ) {
+			state.results.styles[*pseudo as uint] = Some(css_computed_style_create()); 
+		}
+      
         state.current_pseudo = *pseudo;
         state.computed = state.results.styles[*pseudo as uint].get();
 
@@ -1763,7 +1754,7 @@ impl css_select_ctx {
             (match next_detail.get().selector_type { CSS_SELECTOR_CLASS | CSS_SELECTOR_ID => true, _ => false})) {
 
             let mut reject = state.next_reject + 1;
-            let last : int = (unsafe { state.reject_cache.len()} -1) as int ;
+            let last : int = (state.reject_cache.len() -1) as int ;
 
             while (reject <= last) {
                 /* Perform pessimistic matching (may hurt quirks) */
@@ -1781,7 +1772,7 @@ impl css_select_ctx {
         }
 
         loop {
-            let mut match_result = @mut false;
+            let match_result = @mut false;
 
             /* Find candidate node */
             match (combinator_type) {
@@ -1846,7 +1837,7 @@ impl css_select_ctx {
 
         debug!(fmt!("Entering match_details")) ;
         let mut error : css_error ;
-        let mut pseudo : @mut css_pseudo_element = @mut CSS_PSEUDO_ELEMENT_NONE;
+        let pseudo : @mut css_pseudo_element = @mut CSS_PSEUDO_ELEMENT_NONE;
         let mut index:uint = 0;
 
         /* Skip the element selector detail, which is always first.
@@ -1910,7 +1901,7 @@ impl css_select_ctx {
             return (count == b);
         } 
         else {
-            let mut delta : i32 = count - b;
+            let  delta : i32 = count - b;
 
             /* (count - b) / a is positive or (count - b) is 0 */
             if (((delta > 0) == (a > 0)) || delta == 0) {
@@ -1963,14 +1954,14 @@ impl css_select_ctx {
 				if (*is_root == false && 
 					   self.lwc_instance.lwc_string_isequal(lwc_name , self.first_child.get() ) ) { 
 
-                    let mut num_before:i32 = 0;
+                    let num_before:@mut i32 =@mut 0;
 
                     error = (*state.handler.get().node_count_siblings)( 
-                            node, false, false, @mut num_before);
+                            node, false, false, num_before);
 
                     match error {
                         CSS_OK => {
-                            if  (num_before == 0) {
+                            if  (*num_before == 0) {
                                 *matched = true
                             }
                             else {
@@ -1983,17 +1974,17 @@ impl css_select_ctx {
                 else if (*is_root == false && 
 							self.lwc_instance.lwc_string_isequal(lwc_name , self.nth_child.get() )
 					   ) { 
-                    let mut num_before:i32 = 0;
+                    let num_before:@mut i32 =@mut 0;
 
                     error = (*state.handler.get().node_count_siblings)( 
-                            node, false, false, @mut num_before);
+                            node, false, false, num_before);
                 
                     match error {
                         CSS_OK => {
                             let a = detail.a;
                             let b = detail.b;
 
-                            *matched = css_select_ctx::match_nth(a, b, num_before + 1);
+                            *matched = css_select_ctx::match_nth(a, b, *num_before + 1);
                         },
                         _ => {}
                     }
@@ -2001,63 +1992,63 @@ impl css_select_ctx {
                 else if (*is_root == false && 
 						  self.lwc_instance.lwc_string_isequal(lwc_name , self.nth_last_child.get() )
 						)  { 
-                    let mut num_after:i32 = 0;
+                    let num_after:@mut i32 = @mut 0;
 
                     error = (*state.handler.get().node_count_siblings)( 
-                            node, false, true, @mut num_after);
+                            node, false, true, num_after);
                     
                     match error {
                         CSS_OK => {
                             let a = detail.a;
                             let b = detail.b;
 
-                            *matched = css_select_ctx::match_nth(a, b, num_after + 1);
+                            *matched = css_select_ctx::match_nth(a, b, *num_after + 1);
                         },
                         _ => {}
                     }
                 }
                 else if (*is_root == false && 
                         self.lwc_instance.lwc_string_isequal(lwc_name , self.nth_of_type.get() ) ) { 
-                    let mut num_before:i32 = 0;
+                    let num_before:@mut i32 = @mut 0;
 
                     error = (*state.handler.get().node_count_siblings)( 
-                            node, true, false, @mut num_before);
+                            node, true, false, num_before);
                     
                     match error {
                         CSS_OK => {
                             let a = detail.a;
                             let b = detail.b;
 
-                            *matched = css_select_ctx::match_nth(a, b, num_before + 1);
+                            *matched = css_select_ctx::match_nth(a, b, *num_before + 1);
                         },
                         _ => {}
                     }
                 } 
                 else if (*is_root == false && 
                         self.lwc_instance.lwc_string_isequal(lwc_name , self.nth_last_of_type.get() ) ) { 
-                    let mut num_after:i32 = 0;
+                    let num_after:@mut i32 =@mut  0;
 
                     error = (*state.handler.get().node_count_siblings)( 
-                            node, true, true, @mut num_after);
+                            node, true, true, num_after);
                     
                     match error {
                         CSS_OK => {
                             let a = detail.a;
                             let b = detail.b;
 
-                            *matched = css_select_ctx::match_nth(a, b, num_after + 1);
+                            *matched = css_select_ctx::match_nth(a, b, *num_after + 1);
                         },
                         _ => {}
                     }
                 } else if (*is_root == false &&
                         self.lwc_instance.lwc_string_isequal(lwc_name , self.last_child.get() ) ) { 
-                    let mut num_after:i32 = 0;
+                    let num_after:@mut i32 =@mut  0;
 
                     error = (*state.handler.get().node_count_siblings)(
-                            node, false, true, @mut num_after);
+                            node, false, true, num_after);
                     match error {
                                 CSS_OK => {
-                                    if  (num_after == 0) {
+                                    if  (*num_after == 0) {
                                         *matched = true
                                     }
                                     else {
@@ -2069,14 +2060,14 @@ impl css_select_ctx {
                 } 
                 else if (*is_root == false &&
                         self.lwc_instance.lwc_string_isequal(lwc_name , self.first_of_type.get() ) ) { 
-                    let mut num_before:i32 = 0;
+                    let num_before:@mut i32 =@mut 0;
 
                     error = (*state.handler.get().node_count_siblings)( 
-                            node, true, false, @mut num_before);
+                            node, true, false, num_before);
                     
                     match error {
                         CSS_OK => {
-                            if  (num_before == 0) {
+                            if  (*num_before == 0) {
                                 *matched = true
                             }
                             else {
@@ -2088,14 +2079,14 @@ impl css_select_ctx {
                 } 
                 else if (*is_root == false &&
                         self.lwc_instance.lwc_string_isequal(lwc_name , self.last_of_type.get() ) ) { 
-                    let mut num_after:i32 = 0;
+                    let num_after:@mut i32 = @mut 0;
 
                     error = (*state.handler.get().node_count_siblings)( 
-                            node, true, true, @mut num_after);
+                            node, true, true, num_after);
                 
                     match error {
                         CSS_OK => {
-                            if  (num_after == 0) {
+                            if  (*num_after == 0) {
                                 *matched = true
                             }
                             else {
@@ -2108,21 +2099,21 @@ impl css_select_ctx {
                 else if (*is_root == false && 
                         self.lwc_instance.lwc_string_isequal(lwc_name , self.only_child.get() ) ) { 
                     
-                    let mut num_before = 0;
-                    let mut num_after = 0;
+                    let num_before = @mut 0;
+                    let num_after = @mut 0;
 
                     error = (*state.handler.get().node_count_siblings)( 
-                            node, false, false, @mut num_before);
+                            node, false, false, num_before);
                     
                     match error {
                         CSS_OK => {
                             error = (*state.handler.get().node_count_siblings)(
-                                 node, false, true, @mut num_after);
+                                 node, false, true, num_after);
                                     
                             match error {
                                 CSS_OK => {
-                                    if  (num_before == 0) && 
-                                            (num_after == 0) {
+                                    if  (*num_before == 0) && 
+                                            (*num_after == 0) {
                                         *matched = true
                                     }
                                     else {
@@ -2138,20 +2129,20 @@ impl css_select_ctx {
                 else if (*is_root == false && 
                         self.lwc_instance.lwc_string_isequal(lwc_name , self.only_of_type.get() ) ) { 
                 
-                    let mut num_before = 0;
-                    let mut num_after = 0;
+                    let num_before = @mut 0;
+                    let num_after = @mut 0;
 
                     error = (*state.handler.get().node_count_siblings)( 
-                            node, true, false, @mut num_before);
+                            node, true, false, num_before);
                 
                     if (match error { CSS_OK => true, _  => false}) {
                         error = (*state.handler.get().node_count_siblings)(
-                                    node, true, true, @mut num_after);
+                                    node, true, true, num_after);
                 
                         match error {
                             CSS_OK => {
-                                if  (num_before == 0) && 
-                                            (num_after == 0) {
+                                if  (*num_before == 0) && 
+                                            (*num_after == 0) {
                                         *matched = true
                                 }
                                 else {
@@ -2275,17 +2266,15 @@ impl css_select_ctx {
     }
 
     pub fn cascade_style(style:@mut css_style, state:@mut css_select_state) -> css_error {
-        let mut s = style;
+        let s = style;
 
         debug!(fmt!("Entering cascade_style")) ;
-
-		unsafe{
-			debug!(fmt!("s_used=%?, s_len=%?", s.used, s.bytecode.len())) ;
-		}	
-        while (unsafe { s.used  < s.bytecode.len()} ) {
+		debug!(fmt!("s_used=%?, s_len=%?", s.used, s.bytecode.len())) ;
+			
+        while (s.used  < s.bytecode.len() ) {
             let mut op: u32;
             let mut error : css_error ;
-            let mut opv = peek_bytecode(s);
+            let opv = peek_bytecode(s);
 
             advance_bytecode(s);
 
