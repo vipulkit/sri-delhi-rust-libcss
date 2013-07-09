@@ -909,7 +909,7 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_i
 ) {
 	//debug!("\n Entering run test =%?=",ctx) ;
     let mut select: ~css_select_ctx;
-    let mut results: css_select_results;
+    let mut results: @mut css_select_results;
 
     let mut i:u32=0;
     let mut buf:~str= ~"";
