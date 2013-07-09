@@ -16,4 +16,4 @@ rustc --test -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet lex.r
 rustc --test -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet -L . lex-auto.rs
 rustc --test -L ../../libparserutils/ -L ../../libcss -L ../../libwapcaplet -L . csdetect.rs
 rustc --test -L ../../libparserutils -L ../../libwapcaplet/ -L ../../libcss number.rs
-#rustc --test -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet -L . select-auto.rs -Z verbose -Z debug-info
+rustc --test -L ../../libparserutils -L ../../libcss -L ../../libwapcaplet -L . select-auto.rs -Z verbose -Z debug-info
