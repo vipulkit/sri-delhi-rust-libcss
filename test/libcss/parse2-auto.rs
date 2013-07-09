@@ -30,20 +30,24 @@ pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<
 
 pub fn check_newline(x: &u8) -> bool { *x == ('\n' as u8) }
 
-fn match_vec_u8(expected_data: &[u8] , found_string: &str) -> bool {
+fn match_vec_u8(vector: &[u8] , string: &str) -> bool {
 
-    let found_string_vector = found_string.to_str().as_bytes_with_null_consume();
-    if found_string_vector.len() != expected_data.len() {
-        // debug!("lenghts don't match");
+    debug!("Entering: match_vec_u8 :: vector == %?, found_string == %?", vector, string);
+
+    let string_vector = string.as_bytes();
+    if string_vector.len() != vector.len() {
+        debug!("Exiting: match_vec_u8 (1)");
         return false;
     }
 
-	let mut iter_both = expected_data.iter().zip(found_string_vector.iter());
+	let mut iter_both = vector.iter().zip(string_vector.iter());
     for iter_both.advance() |(e , f)| {
         if e != f {
+            debug!("Exiting: match_vec_u8 (2)");
             return false;
         }
-    } 
+    }
+    debug!("Exiting: match_vec_u8 (3)");
     true
 }
 
@@ -80,50 +84,60 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
     let data : ~[u8] = args ;
     // unsafe{debug!(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
     if  (data.len() == 0) {
-        // debug!("error");
+        debug!("error");
         return true;
     }
 
     if (data[0] == '#' as u8) {
         if (ctx.inexp) {
             /* This marks end of testcase, so run it */
+            debug!("Entering: handle_line :: if (ctx.inexp)");
 
             run_test(copy ctx.buf , copy ctx.exp);
             ctx.exp= ~[];
             ctx.buf=~[];
         }
         if (ctx.indata  && match_vec_u8(data , &"#errors")) {
+            debug!("Entering: handle_line :: if (ctx.indata  && match_vec_u8(data , &\"#errors\"))");
             ctx.indata = false;
             ctx.inerrors = false;
             ctx.inexp = false;
         }
         else if (ctx.indata && match_vec_u8(data, &"#expected")) {
+            debug!("Entering: handle_line :: if (ctx.indata  && match_vec_u8(data , &\"#expected\"))");
             ctx.indata = false;
             ctx.inexp = true;
             ctx.inerrors = false;
             ctx.inrule = false;
         }
         else if (ctx.inexp && match_vec_u8(data , &"#data")) {
+            debug!("Entering: handle_line :: if (ctx.indata  && match_vec_u8(data , &\"#data\"))");
             ctx.indata = true;
             ctx.inerrors = false;
             ctx.inexp = false;
         }
         else if (ctx.indata) {
+            debug!("Entering: handle_line :: if (ctx.indata) (1)");
             ctx.buf = ctx.buf + copy data;
             ctx.buf.push('\n' as u8);
         } 
         else {
+            debug!("Entering: handle_line :: else (1)");
             ctx.indata = match_vec_u8(data , &"#data");
             ctx.inerrors = match_vec_u8(data , &"#errors");
             ctx.inexp = match_vec_u8(data , &"#expected");
         }
     }
     else {
+        debug!("Entering: handle_line :: else (2)");
+
         if ctx.indata {
+            debug!("Entering: handle_line :: if (ctx.indata) (2)");
             ctx.buf = ctx.buf + copy data;
             ctx.buf.push('\n' as u8);
         }
         if (ctx.inexp) {
+            debug!("Entering: handle_line :: if (ctx.inexp)");
             ctx.exp.push(data);
         }
     }
