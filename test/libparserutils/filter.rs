@@ -9,7 +9,7 @@ use parserutils::input::parserutils_filter::*;
 #[test]
 fn main(){                  
 
-    let mut Alias = alias();
+    let Alias = alias();
     
     let (filterinstance,filterResult) = parserutils_filter(Alias, ~"UTF-8");
 
@@ -150,7 +150,7 @@ fn main(){
                         assert!(false);  
                     }
                 }  //hell\xef\xbf\xbd\xef\xbf\xbdo!"
-                let mut tempbuf = ~[ 104, 101, 108 , 108 , 239, 191 , 189 , 239 , 191 , 189 , 111 , 33];
+                let tempbuf = ~[ 104, 101, 108 , 108 , 239, 191 , 189 , 239 , 191 , 189 , 111 , 33];
                 if !vec::eq(outbuf,tempbuf){                  
                     assert!(false)  
                 }

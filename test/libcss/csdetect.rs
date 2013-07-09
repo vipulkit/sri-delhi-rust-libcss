@@ -10,8 +10,6 @@ use parserutils::utils::errors::*;
 use css::charset::csdetect::*;
 
 use testutils::*;
-use std::str::*;
-use extra::arc;
 use std::io;
 
 fn testMain(fileName: ~str) {
@@ -46,10 +44,8 @@ pub fn handle_line(data:~str, pw:LINE_CTX_DATA_TYPE)-> bool {
     }
     if data[0] == '#' as u8 {
         if ctx.inenc {
-            unsafe {
-                if (ctx.buf.last() == &('\n' as u8)) {
-                    ctx.buf.pop();
-                }
+            if (ctx.buf.last() == &('\n' as u8)) {
+                ctx.buf.pop();
             }
             result = run_test(copy ctx.buf, copy  ctx.enc); 
             ctx.buf = ~[];
@@ -66,11 +62,9 @@ pub fn handle_line(data:~str, pw:LINE_CTX_DATA_TYPE)-> bool {
         }
         if (ctx.inenc) {
             ctx.enc = (data);
-             unsafe {
-                if (ctx.enc[ctx.enc.len() - 1] == '\n' as u8) {
-                    ctx.enc.pop_char();
-                }
-             }  
+            if (ctx.enc[ctx.enc.len() - 1] == '\n' as u8) {
+                ctx.enc.pop_char();
+            }
         }
     }
 
