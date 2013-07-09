@@ -447,7 +447,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
         else if ( ctx.insheet ) {
             len = unsafe { ctx.sheets.len() -1 } ;
             let start_time = time::precise_time_ns();
-            error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.to_str().as_bytes_with_null_consume());
+            error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.as_bytes().to_owned());
             let end_time = time::precise_time_ns();
             *css_stylesheet_append_data_time += (end_time - start_time);
             assert!( match error {
