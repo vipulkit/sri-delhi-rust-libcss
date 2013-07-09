@@ -5,9 +5,7 @@ extern mod wapcaplet;
 extern mod dump;
 
 use std::io::*;
-use extra::arc;
 use css::css::*;
-//use css::css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use wapcaplet::*;
@@ -35,7 +33,7 @@ fn css_create_params() -> css_params {
 }
 
 fn create_css() -> @mut css{
-    let mut lwc = wapcaplet::lwc();
+    let lwc = wapcaplet::lwc();
     let css = css::css_create( &css_create_params() , Some(lwc));
     css
 }
@@ -46,13 +44,13 @@ fn main() {
 }
 
 fn css(file_name: ~str) {
-    let mut css = create_css();
+    let css = create_css();
     let CHUNK_SIZE = 4096;
     let mut buf: ~[u8];
     let r:@Reader = file_reader(&Path(file_name)).get(); 
     r.seek(0 , SeekEnd);
     let mut len = r.tell();
-    let mut origlen = len; 
+    let origlen = len; 
     r.seek(0 , SeekSet);
     while len>CHUNK_SIZE {
         buf = r.read_bytes(CHUNK_SIZE as uint);
@@ -86,7 +84,7 @@ fn css(file_name: ~str) {
                     CSS_OK => {
                         let mut params: css_params = css_create_params();
                         params.url = option_url.unwrap();
-                        let mut css_import = create_css();
+                        let css_import = create_css();
                         let err = css_import.css_stylesheet_data_done();
                         match err {
                             CSS_OK => {},

@@ -1,15 +1,15 @@
 extern mod std;
+extern mod extra;
 extern mod css;
 extern mod wapcaplet;
 
-use std::arc;
+use std::io::*;
 use css::css::*;
-use css::css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use wapcaplet::*;
 
-pub fn resolve_url(_:@str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>) {
+pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
@@ -31,19 +31,19 @@ fn fill_params() -> css_params {
 }
 
 fn css_create_fn() -> @mut css{
-    let mut lwc = wapcaplet::lwc();
-    let css = css_create( &fill_params() , Some(lwc));
+    let lwc = wapcaplet::lwc();
+    let css = css::css_create( &fill_params() , Some(lwc));
     css
 }
 
 fn main() {
-    io::println("parse");
+    println("parse");
     // parse(~"../data/parse/atrules.dat");
 }
 
 fn parse(file_name: ~str) {
-    let mut css = css_create_fn();
-    let r:@Reader = io::file_reader(&Path(file_name)).get();
+    let css = css_create_fn();
+    let r:@Reader = file_reader(&Path(file_name)).get();
     let mut dataFlag = false;
     // let mut expectedFlag: bool;
 
@@ -68,10 +68,10 @@ fn parse(file_name: ~str) {
         }
         else if dataFlag {
             let mut final_buf :~[u8] = ~[];
-            for str::each_char(buf) |i| {
+            for buf.iter().advance |i| {
                 final_buf.push(i as u8);
             }
-            vec::reverse(final_buf);
+            final_buf.reverse();
             let error = css.css_stylesheet_append_data(final_buf);
             match error {
                 CSS_OK => {},
