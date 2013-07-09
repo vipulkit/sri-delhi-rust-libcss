@@ -27,6 +27,7 @@ impl lwc {
         c
     }
 
+    #[inline]
     fn to_lower(string:&str) -> ~str{
         let mut lower : ~[u8] = ~[];
         for string.bytes_iter().advance |c| {
@@ -66,7 +67,7 @@ impl lwc {
     }
 
     
-
+    #[inline]
     pub fn lwc_string_isequal(&self, str1: @mut lwc_string , str2: @mut lwc_string) -> bool {
         str1.id == str2.id
     }
@@ -121,10 +122,12 @@ impl lwc {
 
 } // impl wapcaplet
 
+#[inline]
 pub fn lwc_string_length(string: @mut lwc_string) -> uint {
     string.string.len()
 }
 
+#[inline]
 pub fn lwc_string_data(string: @mut lwc_string) -> ~str {
     copy string.string
 }
