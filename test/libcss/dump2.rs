@@ -138,28 +138,6 @@ pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
     
     debug!("Entering: dump_sheet");
 
-    
-    unsafe {
-        // debug!("Entering: unsafe");
-        // // debug!(fmt!("sheet.selectors == %?" , sheet.selectors));
-        // debug!(fmt!("sheet.rule_count == %?" , sheet.rule_count));
-        // // debug!(fmt!("sheet.last_rule == %?" , sheet.last_rule));
-        // debug!(fmt!("sheet.disabled == %?" , sheet.disabled));
-        // debug!(fmt!("sheet.url == %?" , sheet.url));
-        // debug!(fmt!("sheet.title == %?" , sheet.title));
-        // debug!(fmt!("sheet.level == %?" , sheet.level));
-        // debug!(fmt!("sheet.quirks_allowed == %?" , sheet.quirks_allowed));
-        // debug!(fmt!("sheet.quirks_used == %?" , sheet.quirks_used));
-        // debug!(fmt!("sheet.inline_style == %?" , sheet.inline_style));
-        // debug!(fmt!("sheet.cached_style == %?" , sheet.cached_style));
-        // debug!(fmt!("sheet.string_vector == %?" , sheet.string_vector));
-        // debug!(fmt!("sheet.resolve == %?" , sheet.resolve));
-        // debug!(fmt!("sheet.import == %?" , sheet.import));
-        // debug!(fmt!("sheet.font == %?" , sheet.font));
-        // debug!(fmt!("sheet.color == %?" , sheet.color));
-        
-        // debug!(fmt!("sheet.rule_list == %?" , sheet.rule_list));
-    }
     let mut rule: Option<CSS_RULE_DATA_TYPE> = sheet.rule_list ;
     let mut ptr: ~str = ~"";
     //debug!(fmt!("rule == %?" , rule));
@@ -217,17 +195,15 @@ fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
         i += 1;
     }
     
-    unsafe { 
-        i = 0;
-        while i < s.selectors.len() {
-            dump_selector_list(s.selectors[i] , ptr);
-            if !(i == s.selectors.len() - 1) {
-                ptr.push_char(',');
-                ptr.push_char(' ');
-            }
-            i += 1;
-        } 
-    }
+    i = 0;
+    while i < s.selectors.len() {
+        dump_selector_list(s.selectors[i] , ptr);
+        if !(i == s.selectors.len() - 1) {
+            ptr.push_char(',');
+            ptr.push_char(' ');
+        }
+        i += 1;
+    } 
     ptr.push_char('\n');
     if s.style.is_some() {
         dump_bytecode(s.style.unwrap() , ptr, depth +1);
@@ -255,7 +231,6 @@ fn dump_rule_import(s:@mut css_rule_import, ptr:&mut ~str){
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-// TODO
 fn dump_rule_media(s:@mut css_rule_media, ptr: &mut ~str) {
     debug!("Entering: dump_rule_media");
     ptr.push_str( &"| @media ");
@@ -346,7 +321,7 @@ fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
 
 fn dump_selector(selector:@mut css_selector, ptr:&mut ~str){
     debug!("Entering: dump_selector");
-    let mut d:~[@mut css_selector_detail] = copy selector.data;
+    let d:~[@mut css_selector_detail] = copy selector.data;
     let mut iter:uint = 0;
     while iter < d.len() {
         dump_selector_detail(d[iter], ptr, (iter != (d.len() - 1)));
@@ -363,16 +338,14 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
     }
     match detail.selector_type {
         CSS_SELECTOR_ELEMENT=>{
-            unsafe{
-                if detail.qname.name.len() == 1 && detail.qname.name[0] == '*' as u8 && !detail_next {
-                
-                    ptr.push_str(copy detail.qname.name);
-                }
-                else if detail.qname.name.len() != 1 ||
-                
-                   detail.qname.name[0] != '*' as u8 { 
-                   ptr.push_str(copy detail.qname.name)
-                }
+            if detail.qname.name.len() == 1 && detail.qname.name[0] == '*' as u8 && !detail_next {
+            
+                ptr.push_str(copy detail.qname.name);
+            }
+            else if detail.qname.name.len() != 1 ||
+            
+               detail.qname.name[0] != '*' as u8 { 
+               ptr.push_str(copy detail.qname.name)
             }
         },
 
@@ -481,7 +454,7 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
     
     debug!("Entering: dump_bytecode");
-    let mut bytecode = copy style.bytecode;
+    let bytecode = copy style.bytecode;
     let mut op: css_properties_e;
     let mut value: u32;
     let opcode_names = opcode_names();
@@ -490,7 +463,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
     // for bytecode.each|&opv| {
     while iterator < bytecode.len() {
     
-        let mut opv = bytecode[iterator];
+        let opv = bytecode[iterator];
         debug!(fmt!("iterator == %?" , iterator));
         debug!(fmt!("opv == %?" , opv));    
         debug!(fmt!("bytecode == %?" , bytecode));
@@ -2338,7 +2311,7 @@ fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
     if font_face.font_family.is_some() {
         ptr.push_char('\n');
         ptr.push_str( &"| font_family: ");
-        unsafe{ptr.push_str( lwc_string_data(font_face.font_family.get_ref().clone()));}
+        ptr.push_str( lwc_string_data(font_face.font_family.get_ref().clone()));
     }
     ptr.push_str( &"\n| font-style: ");
 
@@ -2403,55 +2376,52 @@ fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
         ptr.push_char('\n');
     }
 
-    unsafe {
-        for font_face.srcs.iter().advance |i| {
-            ptr.push_str( &"\n| src: ");
-            let format = css_font_face_src_format(i);
-            ptr.push_str( &"\n| format: ");
+    for font_face.srcs.iter().advance |i| {
+        ptr.push_str( &"\n| src: ");
+        let format = css_font_face_src_format(i);
+        ptr.push_str( &"\n| format: ");
 
-            if format as int == CSS_FONT_FACE_FORMAT_UNSPECIFIED as int {
-                ptr.push_str( &"unspecified");
+        if format as int == CSS_FONT_FACE_FORMAT_UNSPECIFIED as int {
+            ptr.push_str( &"unspecified");
+        }
+        else if format as int == CSS_FONT_FACE_FORMAT_WOFF as int {
+            ptr.push_str( &"WOFF");
+        }
+        else if format as int == CSS_FONT_FACE_FORMAT_OPENTYPE as int {
+            ptr.push_str( &"OTF");
+        }
+        else if format as int == CSS_FONT_FACE_FORMAT_EMBEDDED_OPENTYPE as int {
+            ptr.push_str( &"EOTF");
+        }
+        else if format as int == CSS_FONT_FACE_FORMAT_SVG as int {
+            ptr.push_str( &"SVG");
+        }
+        else if format as int == CSS_FONT_FACE_FORMAT_UNKNOWN as int {
+            ptr.push_str( &"unknown");
+        }
+        else {
+            ptr.push_str( &"UNEXPECTED");
+        }
+
+        if i.location.is_some() {
+            ptr.push_str( &"\n| location: ");
+
+            let location = css_font_face_src_location_type(i);
+            
+            if location as int == CSS_FONT_FACE_LOCATION_TYPE_LOCAL as int {
+                ptr.push_str( &"local");
             }
-            else if format as int == CSS_FONT_FACE_FORMAT_WOFF as int {
-                ptr.push_str( &"WOFF");
-            }
-            else if format as int == CSS_FONT_FACE_FORMAT_OPENTYPE as int {
-                ptr.push_str( &"OTF");
-            }
-            else if format as int == CSS_FONT_FACE_FORMAT_EMBEDDED_OPENTYPE as int {
-                ptr.push_str( &"EOTF");
-            }
-            else if format as int == CSS_FONT_FACE_FORMAT_SVG as int {
-                ptr.push_str( &"SVG");
-            }
-            else if format as int == CSS_FONT_FACE_FORMAT_UNKNOWN as int {
-                ptr.push_str( &"unknown");
+            else if location as int == CSS_FONT_FACE_LOCATION_TYPE_URI as int {
+                ptr.push_str( &"url");
             }
             else {
-                ptr.push_str( &"UNEXPECTED");
+                ptr.push_str( &"UNKNOWN");
             }
 
-            if i.location.is_some() {
-                ptr.push_str( &"\n| location: ");
-
-                let location = css_font_face_src_location_type(i);
-                
-                if location as int == CSS_FONT_FACE_LOCATION_TYPE_LOCAL as int {
-                    ptr.push_str( &"local");
-                }
-                else if location as int == CSS_FONT_FACE_LOCATION_TYPE_URI as int {
-                    ptr.push_str( &"url");
-                }
-                else {
-                    ptr.push_str( &"UNKNOWN");
-                }
-
-                ptr.push_str( lwc_string_data(i.location.get_ref().clone()));
-            }
-
+            ptr.push_str( lwc_string_data(i.location.get_ref().clone()));
         }
-    }
 
+    }
     debug!(fmt!("ptr == %?" , ptr));
 
 }
