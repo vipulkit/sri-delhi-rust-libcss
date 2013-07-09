@@ -760,7 +760,7 @@ pub struct css_select_handler {
 pub struct css_select_state {
     node:*c_void,
     media:u64,         
-    results:css_select_results,
+    results:@mut css_select_results,
     current_pseudo:css_pseudo_element,  
     computed:@mut css_computed_style,  
 

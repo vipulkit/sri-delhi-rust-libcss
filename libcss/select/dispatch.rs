@@ -1281,7 +1281,7 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
     let state: @mut css_select_state = @mut css_select_state {
         node:null(),
         media:(CSS_MEDIA_ALL as u64),       
-        results:css_select_results{ 
+        results:@mut css_select_results{ 
         	styles:~[] 
         },    
         current_pseudo:CSS_PSEUDO_ELEMENT_NONE,  

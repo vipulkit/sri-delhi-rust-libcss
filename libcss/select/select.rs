@@ -290,7 +290,7 @@ impl css_select_ctx {
                                 inline_style:Option<@mut css_stylesheet>,
                                 handler:@mut css_select_handler,
 								pw:*c_void) 
-                                -> (css_error,Option<css_select_results>) {
+                                -> (css_error,Option<@mut css_select_results>) {
 
         debug!(fmt!("Entering css_select_style")) ;
         if( node == null() || handler.handler_version != (CSS_SELECT_HANDLER_VERSION_1  as uint) ) {
@@ -305,7 +305,7 @@ impl css_select_ctx {
         let state: @mut css_select_state = @mut css_select_state {
             node:node,
             media:media,       
-            results:css_select_results{ 
+            results:@mut css_select_results{ 
                 styles:~[] 
             },    
             current_pseudo:CSS_PSEUDO_ELEMENT_NONE,  
@@ -571,7 +571,7 @@ impl css_select_ctx {
             }
         }
 
-        (CSS_OK,Some(copy state.results))
+        (CSS_OK,Some(state.results))
     }
 
 
