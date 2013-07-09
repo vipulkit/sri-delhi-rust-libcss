@@ -202,9 +202,9 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
 
     buf = dump_sheet(css.stylesheet);
     //debug!(fmt!("\n == sheet ==%?=" , buf));
-    let mut dvec = ~[];
+    let mut dvec : ~[~[u8]] = ~[];
     for buf.any_line_iter().advance |s| {
-        dvec.push(s.to_owned().as_bytes_with_null_consume());
+        dvec.push(s.as_bytes().to_owned());
     }
     let a = vec::concat(dvec) ;
     let b = vec::concat(exp) ;
