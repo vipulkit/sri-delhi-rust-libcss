@@ -1161,7 +1161,7 @@ pub type  compute_absolute_color_set =
 */
 #[inline(always)]
 pub fn css_computed_style_create() -> @mut css_computed_style {
-	let mut result = @mut css_computed_style {
+	let result = @mut css_computed_style {
 	    bits:~[],
 	    unused:~[],
 
@@ -1278,7 +1278,7 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 pub fn css_computed_style_initialise(style: @mut css_computed_style ,
                                     fn_handler:@mut css_select_handler) -> css_error {
 
-    let mut state: @mut css_select_state = @mut css_select_state {
+    let state: @mut css_select_state = @mut css_select_state {
         node:null(),
         media:(CSS_MEDIA_ALL as u64),       
         results:css_select_results{ 
@@ -1307,7 +1307,7 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
         let mut prop_vec : ~[@mut prop_state] = ~[] ;
         let mut k = 0;
 		while k < CSS_PSEUDO_ELEMENT_COUNT as uint {
-			let mut pstate = @mut prop_state{
+			let pstate = @mut prop_state{
                 specificity:0,
                 set:false,
                 origin:0,
@@ -1446,7 +1446,7 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
                                     compute_font_size_ptr:css_fnptr_compute_font_size) 
                                     -> css_error {
 
-    let mut psize = @mut css_hint{
+    let psize = @mut css_hint{
         hint_type:HINT_LENGTH,
         status:0,
         clip:None,
@@ -1460,7 +1460,7 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
         string:None,
         strings:None
     };
-    let mut size = @mut css_hint{
+    let size = @mut css_hint{
         hint_type:HINT_LENGTH,
         status:0,
         clip:None,
@@ -1474,7 +1474,7 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
         string:None,
         strings:None
     };
-    let mut ex_size = @mut css_hint{
+    let ex_size = @mut css_hint{
         hint_type:HINT_LENGTH,
         status:0,
         clip:None,
@@ -1788,7 +1788,7 @@ pub fn  compute_absolute_color(style: @mut css_computed_style,
     if ( result == (CSS_BACKGROUND_COLOR_CURRENT_COLOR as u8) ) {
 
         let (_,ocomputed_color) = css_computed_color(style);
-        let mut computed_color = ocomputed_color.get_or_default(0);
+        let computed_color = ocomputed_color.get_or_default(0);
 
         (*setfn)(style, (CSS_BACKGROUND_COLOR_COLOR as u8), computed_color);
     }
@@ -1809,7 +1809,7 @@ pub fn  compute_absolute_color(style: @mut css_computed_style,
 pub fn compute_border_colors(style: @mut css_computed_style) -> css_error {
 
     let (_,ocomputed_color) = css_computed_color(style);
-    let mut computed_color = ocomputed_color.get_or_default(0);
+    let computed_color = ocomputed_color.get_or_default(0);
 
     //let mut (result,border_color) : (u8,u32) = (0,0);
     let (result,_) = css_computed_border_top_color(style) ;
@@ -1964,9 +1964,8 @@ pub fn compute_absolute_clip(style: @mut css_computed_style,
         None=> { 
             return CSS_BADPARM ;
         },
-        Some(x)=> {
-            let mut rect = x ;
-
+        Some(rect)=> {
+            
             if ( result == (CSS_CLIP_RECT as u8) ) {
                 if (rect.top_auto == false) {
                     match rect.tunit {
