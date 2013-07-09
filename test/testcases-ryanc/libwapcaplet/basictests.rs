@@ -43,8 +43,8 @@ fn main() {
 
 fn lwc_string() -> @mut lwc_string {
     let s = @mut lwc_string {
+        id:0,
         string: ~"",
-        hash: 0,
         insensitive: None
     };
     return s;
@@ -147,7 +147,7 @@ fn ops_with_a_filled_context() {
 
         // lwc_string_hash_value_ok
         // FIXME: this is a function.
-        wapcaplet::lwc_string_hash_value(intern_one);
+        //wapcaplet::lwc_string_hash_value(intern_one);
 
         // lwc_string_is_nul_terminated
         // NOTE: not applicable
