@@ -80,14 +80,12 @@ pub struct line_ctx {
 } 
 
 pub fn select_test(file:~str) {
-	let mut lwc_ins = lwc() ;
+	let mut lwc_ins = wapcaplet::lwc() ;
 	let mut lwc_attr_class : Option<@mut lwc_string> = None;
 	let mut lwc_attr_id : Option<@mut lwc_string> = None ;
 
-	do lwc_ins.write |l| {
-        lwc_attr_class = Some(l.lwc_intern_string(~"class"));
-        lwc_attr_id = Some(l.lwc_intern_string(~"id"));
-    }
+    lwc_attr_class = Some(lwc_ins.lwc_intern_string(~"class"));
+    lwc_attr_id = Some(lwc_ins.lwc_intern_string(~"id"));
 
 	let mut ctx : @mut line_ctx = @mut line_ctx{
 		//explen:0,
@@ -343,13 +341,13 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
         	debug!("ctx insheet");
             if(data.len() >= 7 && is_string_caseless_equal(data.slice(1,7), "errors")){
                 len = unsafe { ctx.sheets.len() -1 } ;
-                let mut start_time = time::precise_time_ns();
+                let start_time = time::precise_time_ns();
                 assert!( 
                         match ctx.sheets[len].sheet.css_stylesheet_data_done() {
                                 CSS_OK=>{true},
                                 _=>{false}
                         });
-            	let mut end_time = time::precise_time_ns();
+            	let end_time = time::precise_time_ns();
 	        let css_style_diff_time = (end_time as float - start_time as float);
         	*css_stylesheet_data_done_time += css_style_diff_time;
                 ctx.intree = false;
@@ -362,13 +360,13 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
                         data.len() >= 7 && is_string_caseless_equal(data.slice(1,7), "author") {
                 
                 len = unsafe { ctx.sheets.len() -1 } ;
-                let mut start_time = time::precise_time_ns();
+                let start_time = time::precise_time_ns();
                 assert!( 
                         match ctx.sheets[len].sheet.css_stylesheet_data_done() {
                             CSS_OK=>{true},
                             _=>{false}
                         });
-            	let mut end_time = time::precise_time_ns();
+            	let end_time = time::precise_time_ns();
 	        let css_style_diff_time = (end_time as float - start_time as float);
         	*css_stylesheet_data_done_time += css_style_diff_time;
                 css__parse_sheet(ctx, data,1, css_stylesheet_create_time, 
@@ -386,7 +384,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
             else {
                 len = unsafe { ctx.sheets.len() -1 } ;
                 let start_time = time::precise_time_ns();
-                let mut error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.to_bytes());
+                let mut error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.as_bytes().to_owned());
                 let end_time = time::precise_time_ns();
                 *css_stylesheet_append_data_time += (end_time - start_time);
 
@@ -449,7 +447,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
         else if ( ctx.insheet ) {
             len = unsafe { ctx.sheets.len() -1 } ;
             let start_time = time::precise_time_ns();
-            error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.to_bytes());
+            error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.to_str().as_bytes_with_null_consume());
             let end_time = time::precise_time_ns();
             *css_stylesheet_append_data_time += (end_time - start_time);
             assert!( match error {
@@ -467,7 +465,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
 
 fn css__parse_expected(ctx: @mut line_ctx , data: &str) {
 
-	ctx.exp += data;
+	ctx.exp = ctx.exp + data;
 }
 
 
@@ -874,15 +872,19 @@ pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> u
 		}
 
     }
-	*data += string.slice(p,/*string.len()*/end).to_owned();
+	*data = *data + string.slice(p,/*string.len()*/end).to_owned();
 	
 	0
 }
 
-//Not Needed
-//pub fn css__parse_expected(ctx:@mut line_ctx, data:&str) {
-//
-//}
+fn to_lower(string:&str) -> ~str {
+    let mut lower : ~[u8] = ~[];
+    for string.bytes_iter().advance |c| {
+        lower.push(lwc::dolower(c));
+    }
+    lower.push(0);
+    str::from_bytes(lower)
+}
 
 pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_inputstream_peek_time:@mut float, 
 	parseutils_inputstream_append_time:@mut float, 
@@ -932,77 +934,77 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_i
         }
     }
     let select_handler: @mut css_select_handler = @mut css_select_handler {
-    node_name: @node_name,
+	    node_name: @node_name,
 
-    node_classes: @node_classes,
+	    node_classes: @node_classes,
 
-    node_id: @node_id,
+	    node_id: @node_id,
 
-    named_ancestor_node: @named_ancestor_node,
-   
-    named_parent_node: @named_parent_node,
-    
-    named_sibling_node: @named_sibling_node,
+	    named_ancestor_node: @named_ancestor_node,
+	   
+	    named_parent_node: @named_parent_node,
+	    
+	    named_sibling_node: @named_sibling_node,
 
-    named_generic_sibling_node: @named_generic_sibling_node,
-    
-    parent_node: @parent_node,
+	    named_generic_sibling_node: @named_generic_sibling_node,
+	    
+	    parent_node: @parent_node,
 
-    sibling_node: @sibling_node,
+	    sibling_node: @sibling_node,
 
-    node_has_name: @node_has_name,
+	    node_has_name: @node_has_name,
 
-    node_has_class: @node_has_class,
+	    node_has_class: @node_has_class,
 
-    node_has_id: @node_has_id,
+	    node_has_id: @node_has_id,
 
-    node_has_attribute: @node_has_attribute,
-    
-    node_has_attribute_equal: @node_has_attribute_equal,
-   
-    node_has_attribute_dashmatch: @node_has_attribute_dashmatch,
+	    node_has_attribute: @node_has_attribute,
+	    
+	    node_has_attribute_equal: @node_has_attribute_equal,
+	   
+	    node_has_attribute_dashmatch: @node_has_attribute_dashmatch,
 
-    node_has_attribute_includes: @node_has_attribute_includes,
+	    node_has_attribute_includes: @node_has_attribute_includes,
 
-    node_has_attribute_prefix: @node_has_attribute_prefix,
+	    node_has_attribute_prefix: @node_has_attribute_prefix,
 
-    node_has_attribute_suffix: @node_has_attribute_suffix,
+	    node_has_attribute_suffix: @node_has_attribute_suffix,
 
-    node_has_attribute_substring: @node_has_attribute_substring,
+	    node_has_attribute_substring: @node_has_attribute_substring,
 
-    node_is_root: @node_is_root,
-   
-    node_count_siblings: @node_count_siblings,
-    
-    node_is_empty: @node_is_empty,
-    
-    node_is_link: @node_is_link,
+	    node_is_root: @node_is_root,
+	   
+	    node_count_siblings: @node_count_siblings,
+	    
+	    node_is_empty: @node_is_empty,
+	    
+	    node_is_link: @node_is_link,
 
-    node_is_visited: @node_is_visited,
+	    node_is_visited: @node_is_visited,
 
-    node_is_hover: @node_is_hover,
+	    node_is_hover: @node_is_hover,
 
-    node_is_active: @node_is_active,
+	    node_is_active: @node_is_active,
 
-    node_is_focus: @node_is_focus,
+	    node_is_focus: @node_is_focus,
 
-    node_is_enabled: @node_is_enabled,
+	    node_is_enabled: @node_is_enabled,
 
-    node_is_disabled: @node_is_disabled,
+	    node_is_disabled: @node_is_disabled,
 
-    node_is_checked: @node_is_checked,
- 
-    node_is_target: @node_is_target,
+	    node_is_checked: @node_is_checked,
+	 
+	    node_is_target: @node_is_target,
 
-    node_is_lang: @node_is_lang,
+	    node_is_lang: @node_is_lang,
 
-    node_presentational_hint: @node_presentational_hint,
+	    node_presentational_hint: @node_presentational_hint,
 
-    compute_font_size: @compute_font_size,
-   
-    ua_default_for_property: @ua_default_for_property,
-    handler_version:1
-};
+	    compute_font_size: @compute_font_size,
+	   
+	    ua_default_for_property: @ua_default_for_property,
+	    handler_version:1
+	};
 		
     unsafe {
 		let pw = @mut ctx_pw{attr_class:lwc_string_data(ctx.attr_class.clone()), attr_id:lwc_string_data(ctx.attr_id.clone())};
@@ -1011,41 +1013,41 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_i
     	let pw_ptr = ::cast::transmute(pw);
 
     	let start_time = time::precise_time_ns();
-	let mut result = select.css_select_style(target,ctx.media as u64,None, select_handler,pw_ptr);
-	let end_time = time::precise_time_ns();
+		let mut result = select.css_select_style(target,ctx.media as u64,None, select_handler,pw_ptr);
+		let end_time = time::precise_time_ns();
 
-	*css_select_style_time += (end_time - start_time);
+		*css_select_style_time += (end_time - start_time);
 
     	match result {
     	    (CSS_OK,Some(x)) => results = x,
    		       _=> fail!(~"During css_select_style in select-auto")
     	}
-    }
+	}
 
     
     assert!(results.styles[ctx.pseudo_element].is_some());
     dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
 
     unsafe {
-	let mut i = 0;
+		let mut i = 0;
         while i < (ctx.sheets.len() as u32) {
-    *parseutils_inputstream_peek_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_peek_time;
-    *parseutils_inputstream_append_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_append_time;
-    *parseutils_inputstream_advance_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_advance_time;
-    *css_lexer_get_token_time += ctx.sheets[i].sheet.parser.css_lexer_get_token_time;
-    *parse_lang_handle_event_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_event_time;
-    *parse_lang_handleStartStyleSheet_time +=ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartStyleSheet_time;
-    *parse_lang_handleEndStyleSheet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndStyleSheet_time;
-    *parse_lang_handleStartRuleSet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lange_handleStartRuleSet_time;
-    *parse_lang_handleEndRuleSet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndRuleSet_time;
-    *parse_lang_handleStartAtRule_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartAtRule_time;
-    *parse_lang_handleEndAtRule_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndAtRule_time;
-    *parse_lang_handleStartBlock_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartBlock_time;
-    *parse_lang_handleEndBlock_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndBlock_time;
-    *parse_lang_handle_block_content_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_block_content_time;
-    *parse_lang_handle_parse_declaration_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_parse_declaration_time;
-    *parse_lang_parse_property_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_parse_property_time;
-    *parse_lang_font_desc_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_font_desc_time;
+		    *parseutils_inputstream_peek_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_peek_time;
+		    *parseutils_inputstream_append_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_append_time;
+		    *parseutils_inputstream_advance_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_advance_time;
+		    *css_lexer_get_token_time += ctx.sheets[i].sheet.parser.css_lexer_get_token_time;
+		    *parse_lang_handle_event_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_event_time;
+		    *parse_lang_handleStartStyleSheet_time +=ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartStyleSheet_time;
+		    *parse_lang_handleEndStyleSheet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndStyleSheet_time;
+		    *parse_lang_handleStartRuleSet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lange_handleStartRuleSet_time;
+		    *parse_lang_handleEndRuleSet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndRuleSet_time;
+		    *parse_lang_handleStartAtRule_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartAtRule_time;
+		    *parse_lang_handleEndAtRule_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndAtRule_time;
+		    *parse_lang_handleStartBlock_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartBlock_time;
+		    *parse_lang_handleEndBlock_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndBlock_time;
+		    *parse_lang_handle_block_content_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_block_content_time;
+		    *parse_lang_handle_parse_declaration_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_parse_declaration_time;
+		    *parse_lang_parse_property_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_parse_property_time;
+		    *parse_lang_font_desc_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_font_desc_time;
 
             i += 1;
         }
@@ -1058,7 +1060,7 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_i
     debug!(fmt!("Expected : %s ",string));
     debug!(fmt!("Result: %s",buf));
 
-    if !str::eq( &buf.to_owned().to_lower(), &(copy string).to_lower() ) {
+    if !str::eq(&to_lower(buf), &to_lower(string)) {
         fail!(~"Select result mismatched with expected");
     }
     else {
@@ -1089,6 +1091,7 @@ fn node_classes(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[~str] ) -> cs
 	debug!("node_classes");
 	let mut node : @mut node;
 	let mut lc : @mut ctx_pw;
+	let mut lwc = wapcaplet::lwc() ;
 	unsafe {
 		node = ::cast::transmute(n);
 		cast::forget(node);
@@ -1099,11 +1102,9 @@ fn node_classes(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[~str] ) -> cs
 		let n_attrs = node.attrs.len();
 		while i < n_attrs {
 			let mut matched = false;
-			do lwc().write |l| {
-				let lwc_attr_class = l.lwc_intern_string(copy lc.attr_class);
-				let lwc_node_attrs_name = l.lwc_intern_string(copy node.attrs[i].name);
-				matched = l.lwc_string_caseless_isequal(lwc_node_attrs_name,lwc_attr_class); 
-			}
+		        let lwc_attr_class = lwc.lwc_intern_string(copy lc.attr_class);
+			let lwc_node_attrs_name = lwc.lwc_intern_string(copy node.attrs[i].name);
+			matched = lwc.lwc_string_caseless_isequal(lwc_node_attrs_name,lwc_attr_class); 
 			
 			if matched {break;}
 			i += 1;
@@ -1126,6 +1127,7 @@ fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut ~str ) -> css_error{
 	debug!("node_id");
 	let mut node : @mut node;
 	let mut lc : @mut ctx_pw;
+	let mut lwc = wapcaplet::lwc() ;
 	unsafe {
 		node = ::cast::transmute(n);
 		cast::forget(node);
@@ -1136,11 +1138,9 @@ fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut ~str ) -> css_error{
 		let n_attrs = node.attrs.len();
 		while i < n_attrs {
 			let mut matched = false;
-			do lwc().write |l| {
-				let lwc_attr_id = l.lwc_intern_string(copy lc.attr_id);
-				let lwc_attrs_name = l.lwc_intern_string(copy node.attrs[i].name);
-				matched = l.lwc_string_caseless_isequal(lwc_attrs_name,lwc_attr_id); 
-			}
+			let lwc_attr_id = lwc.lwc_intern_string(copy lc.attr_id);
+			let lwc_attrs_name = lwc.lwc_intern_string(copy node.attrs[i].name);
+			matched = lwc.lwc_string_caseless_isequal(lwc_attrs_name,lwc_attr_id); 
 
 			if matched {break;}
 			i += 1;
@@ -1374,6 +1374,7 @@ fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:@mut lwc_string, matched:
 	let mut ctx: @mut  ctx_pw;
 	let mut i:uint = 0 ;
 	let len:uint;
+	let mut lwc = wapcaplet::lwc() ;
 	
 	unsafe {
 		node1 = ::cast::transmute(n);
@@ -1384,11 +1385,9 @@ fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:@mut lwc_string, matched:
 		
 		while i  < len {
 			let mut amatched: bool = false;
-			do lwc().write |l| {
-					let lwc_attr_id = l.lwc_intern_string(copy ctx.attr_id);
-					let lwc_attrs_name = l.lwc_intern_string(copy node1.attrs[i].name);
-					amatched = l.lwc_string_caseless_isequal(lwc_attrs_name,lwc_attr_id); 
-				}
+			let lwc_attr_id = lwc.lwc_intern_string(copy ctx.attr_id);
+			let lwc_attrs_name = lwc.lwc_intern_string(copy node1.attrs[i].name);
+			amatched = lwc.lwc_string_caseless_isequal(lwc_attrs_name,lwc_attr_id); 
 			if amatched {
 				break;
 			}
@@ -1646,7 +1645,7 @@ fn node_has_attribute_substring(n:*libc::c_void, qname:css_qname,value:~str, mat
 		}
 		if *matched {
 			let mut len = node1.attrs[i].value.len();
-			let mut data = copy node1.attrs[i].value;
+			let data = copy node1.attrs[i].value;
 			let vlen = value.len();
 			let last_start_len = len -vlen;
 			if len < vlen {
@@ -1697,7 +1696,7 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
 		while node1.next.is_some() {
 			if same_name {
 				let mut next_name: ~str ;
-				let mut temp_node = (copy node1.next).unwrap();
+				let temp_node = (copy node1.next).unwrap();
 				unsafe {
 					next_name = copy *temp_node.name.get_ref();
 				}
@@ -1718,7 +1717,7 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
 		while node1.prev.is_some() {
 			if same_name {
 				let mut prev_name: ~str;
-				let mut temp_node = (copy node1.prev).unwrap();
+				let temp_node = (copy node1.prev).unwrap();
 				unsafe {
 					prev_name = copy *temp_node.name.get_ref();
 				}
@@ -1840,7 +1839,7 @@ fn compute_font_size(parent: Option<@mut css_hint>, size: Option<@mut css_hint>)
 	debug!("\n Entering compute ") ;
 	let mut parent_value:@mut css_hint;
 	let mut size_val : @mut css_hint;
-	let mut sizes:~[@mut css_hint_length] =
+	let sizes:~[@mut css_hint_length] =
 	 	~[
 			@mut css_hint_length{value:FLTTOFIX(6.75),unit:CSS_UNIT_PT},
 	   		@mut css_hint_length{value:FLTTOFIX(7.50),unit:CSS_UNIT_PT},
@@ -1933,7 +1932,7 @@ pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
         return false ;
     }
     
-    let mut i :uint = a.len() ;
+    let i :uint = a.len() ;
     let mut e = 0;
     while e < i {
         if a[e] == b[e] {
