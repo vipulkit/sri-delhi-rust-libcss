@@ -5,7 +5,6 @@ extern mod extra;
 
 use std::str;
 use std::hashmap::HashMap;
-use std::cast;
 
 pub struct lwc_string {
     id: uint,
@@ -110,7 +109,15 @@ impl lwc {
         string.insensitive = Some(self.idx);
     }
 
-    
+    pub fn lwc_intern_substring(&mut self , substring_to_intern: @mut lwc_string , ssoffset: u32, sslen: u32) -> Option<@mut lwc_string> {
+        
+        if (substring_to_intern.string.len() <= ssoffset as uint) || (substring_to_intern.string.len() <= (ssoffset+sslen) as uint) {
+            None
+        }
+        else{
+            Some(self.lwc_intern_string((substring_to_intern.string.slice(ssoffset as uint , (ssoffset+sslen) as uint)).to_owned()))
+        }
+    }
 
 } // impl wapcaplet
 
