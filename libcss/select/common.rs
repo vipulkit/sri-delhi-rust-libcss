@@ -795,6 +795,7 @@ pub struct css_select_font_faces_results {
     font_faces:~[@mut css_font_face],
 }
 
+#[inline]
 pub fn advance_bytecode(style: @mut css_style) {
     
 	if (style.bytecode.len() - style.used > 0) {

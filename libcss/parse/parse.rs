@@ -462,7 +462,7 @@ impl css_parser {
         (CSS_OK, token_option)
     }
 
-    #[inline(always)]
+    #[inline]
     fn update_current_substate(&mut self, new_substate:uint) {
         debug!("Entering update_current_substate");
         debug!(fmt!("update_current_substate: state stack1 == %?" , self.state_stack));

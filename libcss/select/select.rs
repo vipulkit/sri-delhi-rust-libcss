@@ -898,6 +898,7 @@ impl css_select_ctx {
         CSS_OK
     }
 
+    #[inline]
     pub fn _rule_applies_to_media(rule: Option<CSS_RULE_DATA_TYPE>, media:u64) -> bool {
 
         debug!(fmt!("Entering _rule_applies_to_media")) ;
@@ -1076,7 +1077,7 @@ impl css_select_ctx {
         CSS_OK
     }
 
-    #[inline(always)]
+    #[inline]
     pub fn _selectors_pending(node: Option<@mut css_selector>, id: Option<@mut css_selector>,
                 classes: &~[Option<@mut css_selector>], 
                 univ: Option<@mut css_selector>) -> bool {
@@ -1117,7 +1118,7 @@ impl css_select_ctx {
         pending
     }
 
-    #[inline(always)]
+    #[inline]
     pub fn _selector_less_specific(refer:Option<@mut css_selector>, 
                                 cand:Option<@mut css_selector>) 
                                 -> bool {
@@ -1159,7 +1160,7 @@ impl css_select_ctx {
         result
     }
 
-    #[inline(always)]
+    #[inline]
     pub fn _selector_next(node: Option<@mut css_selector>, 
                             id: Option<@mut css_selector>,
                             classes: &~[Option<@mut css_selector>], 
@@ -1893,7 +1894,7 @@ impl css_select_ctx {
         CSS_OK
     }
     
-
+    #[inline]
     pub fn match_nth(a:i32  , b:i32 , count:i32) -> bool {
 
         debug!(fmt!("Entering match_nth")) ;
