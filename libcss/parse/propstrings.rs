@@ -625,11 +625,11 @@ impl css_propstrings {
 
     pub fn lwc_string_isequal(&mut self , lwc_string_instance: @mut lwc_string , string_index: uint) -> bool {
 	
-        self.lwc_instance.lwc_string_isequal(lwc_string_instance.clone() , self.propstrings[string_index].clone())    
+        self.lwc_instance.lwc_string_isequal(lwc_string_instance , self.propstrings[string_index])    
     }
 
     pub fn lwc_string_data(&mut self, string_index:uint) -> ~str {
-        lwc_string_data(self.propstrings[string_index].clone())
+        lwc_string_data(self.propstrings[string_index])
     }
 
     pub fn is_selector_pseudo(&mut self, name: ~str) -> Option<(css_selector_type, index_property)> {
