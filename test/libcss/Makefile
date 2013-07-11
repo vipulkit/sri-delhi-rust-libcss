@@ -38,11 +38,17 @@ debug:
 	rustc  -Z verbose -Z debug-info --test $(LIB_PAR) $(LIB_CSS) $(LIB_WAP) -L . select-auto.rs  -Z verbose -Z debug-info
 
 run: 
-	./lex-auto
 	./css21
+	./csdetect
+	./parse
 	./parse-auto
 	./parse2-auto
+	./lex
 	./select-auto
+	./lex-auto
 
 clean:
 	rm -f *css21 *csdetect *parse *parse-auto *parse2-auto *lex *select-auto *number *lex-auto *.so
+
+copy-demo:
+	cp -f select-auto ../utils/
