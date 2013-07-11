@@ -1,34 +1,6 @@
-//////////////////////////////////////////////////////////////////////
-//
-// Filename         : lex.rs
-// Author           : Ryan Choi
-// Created on       : Monday, 13 May 2013
-// Last Modified on : Monday, 13 May 2013
-// Version          : 1.00
-// Title            :
-//
-//////////////////////////////////////////////////////////////////////
-
-/*
-FIXME
-inconsistent names: lex, lexer, css_lexer.
-
-not implemented
-lexer.css__lexer_destroy();
-
-In rust we do not need
-token.data.data
-token.data.len
-
-
-Internal compile error
-*/
-
 extern mod std;
 extern mod parserutils;
 extern mod css;
-
-use core::io::*;
 
 use parserutils::input::inputstream::*;
 use css::utils::errors::*;
@@ -37,192 +9,205 @@ use css::charset::csdetect::*;
 use css::lex::lexer::*;
 
 fn main() {
-    io::println("parse");
+    debug!("lex");
+    lex(~"data/lex/tests1.dat");
+}
+
+fn lex(fileName: ~str) {
+
+    let r: @Reader = io::file_reader(&Path(fileName)).get();
+    let mut dataFlag = false;
+    let mut expectedFlag = false;
+    let mut resetFlag = false;
+    let mut finalstr: ~str = ~"";
+    let mut expectedstr: ~str = ~"";
+    let mut final_buf: ~[u8] = ~[];
+
+    while !r.eof() {
+        let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
+        let inputstream =
+            match(inputStreamOption) {
+                Some(x) => x,
+                None => {
+                    debug!("InputStream is not created, hence lexer can't be initialised");
+                    fail!(~"inputstream is None");
+                }
+            };
+        let mut lexer = css_lexer::css__lexer_create(inputstream);
+        let buf = r.read_line();
+
+        if buf == ~"#data" {
+            // debug!(buf);
+            dataFlag = true;
+            expectedFlag = false;
+            resetFlag = false;
+        }
+        else if buf == ~"#errors" || buf == ~"" {
+            dataFlag = false;
+            expectedFlag = false;
+            resetFlag = false;
+        }
+        else if buf == ~"#expected" {
+            expectedFlag = true;
+            dataFlag = false;
+            resetFlag = false;
+
+        }
+        else if buf == ~"#reset" {
+            dataFlag = false;
+            expectedFlag = false;
+            resetFlag = true;
+        }
+        else if dataFlag {
+            // debug!(buf);
+            finalstr.push_str(buf);
+            finalstr.push_char('\n');
+            // debug!(finalstr);
+        }
+        else if expectedFlag {
+            expectedstr.push_str(buf);
+        }
+
+        if resetFlag && !dataFlag && !expectedFlag {
+            for str::each_char(finalstr) |i| {
+                final_buf.push(i as u8);
+            }
+            finalstr = ~"";
+
+            lexer.css__lexer_append_data(final_buf);
+            final_buf = ~[];
+            //io::println(fmt!("final_buf is %s",str::from_bytes(final_buf)));
+            loop {
+                let mut (error, token_option) = lexer.css__lexer_get_token();
+                match error {
+                    CSS_OK => {
+                        let token = token_option.unwrap();
+                        //io::println(fmt!("token == %?", token));
+
+                        let token_type_string = token_to_string(token.token_type);
+                        let token_data = str::from_bytes(copy token.data.data);
+
+                        let found = fmt!("%s%s" , token_type_string , token_data);
+
+                        // ryanc
+                        io::println(fmt!("found == %?", found));
+                        // io::println(fmt!("Expected token == %?", (exp[index])));
+                        match token_type_string {
+                            ~"EOF" => {io::println("EOF"); break;},
+                            _=>{}
+                        }
+
+                    },
+                    _=>{
+                        io::println(fmt!("error = %?", error));
+                        if token_option.is_some() {
+
+                            let token = token_option.unwrap();
+                            // debug!(fmt!("token == %?", token));
+
+                            let token_type_string = token_to_string(token.token_type);
+                            let token_data = str::from_bytes(copy token.data.data);
+
+                            let found = fmt!("%s%s" , token_type_string , token_data);
+
+                            io::println(fmt!("found error == %?", found));
+                            // match token_type_string {
+                                // ~"EOF" => break,
+                                // _=>{}
+                            // }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn token_to_string(token:css_token_type)-> ~str {
+    let mut returnString =~"";
+    match token {
+        CSS_TOKEN_IDENT=>{
+            returnString += ~"IDENT:";
+        },
+        CSS_TOKEN_ATKEYWORD=>{
+            returnString += ~"ATKEYWORD:";
+        },
+        CSS_TOKEN_HASH=>{
+            returnString += ~"HASH:";
+        },
+        CSS_TOKEN_FUNCTION=>{
+            returnString += ~"FUNCTION:";
+        },
+        CSS_TOKEN_STRING=>{
+            returnString += ~"STRING:";
+        },
+        CSS_TOKEN_INVALID_STRING=>{
+            returnString += ~"INVALID_STRING";
+        },
+        CSS_TOKEN_URI=>{
+            returnString += ~"URI:";
+        },
+        CSS_TOKEN_UNICODE_RANGE=>{
+            returnString += ~"UNICODE_RANGE: ";
+        },
+        CSS_TOKEN_CHAR=>{
+            returnString += ~"CHAR:";
+        },
+        CSS_TOKEN_NUMBER=>{
+            returnString += ~"NUMBER:";
+        },
+        CSS_TOKEN_PERCENTAGE=>{
+            returnString += ~"PERCENTAGE:";
+        },
+        CSS_TOKEN_DIMENSION=>{
+            returnString += ~"DIMENSION:";
+        },
+        CSS_TOKEN_CDO=>{
+            returnString += ~"CDO";
+        },
+        CSS_TOKEN_CDC=>{
+            returnString += ~"CDC";
+        },
+        CSS_TOKEN_S=>{
+            returnString += ~"S";
+        },
+        CSS_TOKEN_COMMENT => {
+            returnString += ~"COMMENT";
+        },
+        CSS_TOKEN_INCLUDES => {
+            returnString += ~"INCLUDES";
+        },
+        CSS_TOKEN_DASHMATCH => {
+            returnString += ~"DASHMATCH";
+        },
+        CSS_TOKEN_PREFIXMATCH => {
+            returnString += ~"PREFIXMATCH";
+        },
+        CSS_TOKEN_SUFFIXMATCH => {
+            returnString += ~"SUFFIXMATCH";
+        },
+        CSS_TOKEN_SUBSTRINGMATCH => {
+            returnString += ~"SUBSTRINGMATCH";
+        }
+        CSS_TOKEN_EOF =>{
+            returnString += ~"EOF";
+        }
+    }
+    return returnString;
 }
 
 #[test]
 fn tests1() {
-    lex(~"../data/lex/tests1.dat");
+    lex(~"data/lex/tests1.dat");
 }
 
-#[test]
-fn tests2() {
-    lex(~"../data/lex/tests2.dat");
-}
+// #[test]
+// fn tests2() {
+    // lex(~"data/lex/tests2.dat");
+// }
 
-#[test]
-fn regression() {
-    lex(~"../data/lex/regression.dat");
-}
-
-
-fn lex(file: ~str) {
-    let ITERATIONS = 1;
-
-    for int::range(0, ITERATIONS) |_i| {
-        let (streamOption, PARSERUTILS_STATUS) = inputstream(Some(~"UTF-8"), Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
-        match(PARSERUTILS_STATUS) {
-            PARSERUTILS_OK=>{}
-            //_ => {assert!(false);}
-        }
-
-        let mut stream = streamOption.unwrap();
-        let mut lexer = css_lexer::css__lexer_create(stream);
-        // FIXME: need to check the status of lexer
-
-        let CHUNK_SIZE = 4096;
-        let mut buf: ~[u8] = ~[];
-        let r: @Reader = io::file_reader(&Path(file)).get();
-
-        r.seek(0, SeekEnd);
-        let mut len = r.tell();
-        r.seek(0, SeekSet);
-
-        while len >= CHUNK_SIZE {
-            let buf = r.read_bytes(CHUNK_SIZE);
-
-            assert!(buf.len() == CHUNK_SIZE);
-            // FIXME: Need to check the status
-            lexer.css__lexer_append_data(buf);
-
-            len -= CHUNK_SIZE;
-
-            loop {
-                let mut (status, tokOption) = lexer.css__lexer_get_token();
-                match(status) {
-                    CSS_OK => {
-                        let tok = tokOption.unwrap();
-                        //printToken(tok);
-                        match(tok.token_type) { // FIXME: token_type => type
-                            CSS_TOKEN_EOF => {break;}
-                            _ => {}
-                        }
-                    }
-                    _ => {break;}
-                }
-            }
-        }
-
-        if len > 0 {
-            let read_size = r.read(buf, len);
-            assert!(read_size == len);
-
-            // FIXME: Need to check the status
-            lexer.css__lexer_append_data(buf);
-
-            len = 0;
-            assert!(len == 0); // to remove the warning;
-        }
-
-        /*
-        FIXME: use of stream
-        let empty_buf : ~[u8] = ~[];
-        match(stream.parserutils_inputstream_append(empty_buf)) {
-            PARSERUTILS_OK => {}
-            //_ => {assert!(false);}
-        }
-        */
-
-        loop {
-            let (status, tokOption) = lexer.css__lexer_get_token();
-            match(status) {
-                CSS_OK => {
-                    let tok = tokOption.unwrap();
-                    //printToken(tok);
-                    match(tok.token_type) {
-                        CSS_TOKEN_EOF => {break;}
-                        _ => {}
-                    }
-                }
-                _ => {break;}
-            }
-        }
-
-        // FIXME: not implemented
-        //lexer.css__lexer_destroy();
-        //stream.parserutils_inputstream_destroy();
-    }
-}
-
-// FIXME: change the name: css_token_type -> css_token
-fn printToken(token: @mut css_token) {
-    let mut toPrint;
-
-    io::println(fmt!("[%?, %?] : ", token.line, token.col));
-
-    match token.token_type {
-        CSS_TOKEN_IDENT => {
-            toPrint = fmt!("IDENT %?", token.data.data);
-        },
-        CSS_TOKEN_ATKEYWORD => {
-            toPrint = fmt!("ATKEYWORD %?", token.data.data);
-        },
-        CSS_TOKEN_STRING => {
-            toPrint = fmt!("STRING %?", token.data.data);
-        },
-        CSS_TOKEN_INVALID_STRING => {
-            toPrint = fmt!("INVALID %?", token.data.data);
-        },
-        CSS_TOKEN_HASH => {
-            toPrint = fmt!("HASH %?", token.data.data);
-        },
-        CSS_TOKEN_NUMBER => {
-            toPrint = fmt!("NUMBER %?", token.data.data);
-        },
-        CSS_TOKEN_PERCENTAGE => {
-            toPrint = fmt!("PERCENTAGE %?", token.data.data);
-        },
-        CSS_TOKEN_DIMENSION => {
-            toPrint = fmt!("DIMENSION %?", token.data.data);
-        },
-        CSS_TOKEN_URI => {
-            toPrint = fmt!("URI %?", token.data.data);
-        },
-        CSS_TOKEN_UNICODE_RANGE => {
-            toPrint = fmt!("UNICODE_RANGE %?", token.data.data);
-        },
-        CSS_TOKEN_CDO => {
-            toPrint = ~"CDO";
-        },
-        CSS_TOKEN_CDC => {
-            toPrint = ~"CDC";
-        },
-        CSS_TOKEN_S => {
-            toPrint = ~"S";
-        },
-        CSS_TOKEN_COMMENT => {
-            toPrint = fmt!("COMMENT %?", token.data.data);
-        },
-        CSS_TOKEN_FUNCTION => {
-            toPrint = fmt!("FUNCTION %?", token.data.data);
-        },
-        CSS_TOKEN_INCLUDES => {
-           toPrint = fmt!("INCLUDES %?", token.data.data);
-        },
-        CSS_TOKEN_DASHMATCH => {
-            toPrint = ~"DASHMATCH";
-        },
-        CSS_TOKEN_PREFIXMATCH => {
-            toPrint = ~"PREFIXMATCH";
-        },
-        CSS_TOKEN_SUFFIXMATCH => {
-            toPrint = ~"SUFFIXMATCH";
-        },
-        CSS_TOKEN_SUBSTRINGMATCH => {
-            toPrint = ~"SUBSTRINGMATCH";
-        },
-        CSS_TOKEN_CHAR => {
-            toPrint = fmt!("CHAR %?", token.data.data);
-        },
-        CSS_TOKEN_EOF => {
-            toPrint = ~"EOF ";
-        }
-        // FIXME: unreachable pattern
-        //CSS_TOKEN_LAST_INTERN_LOWER => {}
-        CSS_TOKEN_LAST_INTERN => {}
-        // _ => {fail!(~"Invalid type")}
-    }
-    io::println(toPrint);
-
-}
-
+// #[test]
+// fn regression() {
+    // lex(~"data/lex/regression.dat");
+// }

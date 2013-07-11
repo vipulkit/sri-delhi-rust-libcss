@@ -1,169 +1,155 @@
-//////////////////////////////////////////////////////////////////////
-//
-// Filename         : number.rs
-// Author           : Ryan Choi
-// Created on       : Monday, 13 May 2013
-// Last Modified on : Monday, 13 May 2013
-// Version          : 1.00
-// Title            :
-//
-//////////////////////////////////////////////////////////////////////
-
-/*
-data type of css_fixed?
-
-*/
-
-
 extern mod std;
 extern mod css;
 extern mod wapcaplet;
-extern mod testutils;
 
 use css::parse::properties::common::*;
 use wapcaplet::*;
-use testutils::*;
 
 fn main() {
-    io::println("number");
+    debug!("number");
+    // number(~"data/number/number.dat");
+    // let i = print_css_fixed(1);
 }
 
+fn number(file_name: ~str) {
+    let r:@Reader = io::file_reader(&Path(file_name)).get();
+    let mut lwc = wapcaplet::lwc();
+    let mut dataFlag = false;
+    let mut expectedFlag = false;
+    let mut resetFlag = false;
+    let mut data_string: ~str = ~"";
+    let mut expected_str: ~str = ~"";
 
-#[test]
-fn numberTest() {
-    number(~"data/number/number.dat");
-}
+    while !r.eof() {
+        let buf = r.read_line();
+        // debug!(buf);
+        if buf == ~"#data" {
+            dataFlag = true;
+            expectedFlag = false;
+            resetFlag = false;
+        }
+        else if buf == ~"#errors" || buf == ~"" {
+            dataFlag = false;
+            expectedFlag = false;
+            resetFlag = false;
+        }
+        else if buf == ~"#expected" {
+            expectedFlag = true;
+            dataFlag = false;
+            resetFlag = false;
 
-fn number(filename: ~str) {
-    let len = css__parse_filesize(filename);
-    if len == 0 {
-        return;
+        }
+        else if buf == ~"#reset" {
+            dataFlag = false;
+            expectedFlag = false;
+            resetFlag = true;
+        }
+        else if dataFlag {
+            data_string = buf;
+        }
+        else if expectedFlag {
+            expected_str = buf;
+        }
+
+        if (resetFlag && !dataFlag && !expectedFlag) {
+             debug!(fmt!("data = %?" , data_string));
+            // debug!(fmt!("expected_str = %?" , expected_str));
+
+            // ryanc
+            io::println("#expected");
+            do lwc.write |l| {
+                let lwc_string= Some(l.lwc_intern_string(copy data_string));
+                //debug!(fmt!("lwc string = %?" , lwc_string.get_ref().clone()));
+                let (a , _) = css__number_from_lwc_string(lwc_string.unwrap() , false);
+                // debug!(fmt!("a = %?" , a));
+
+                let b = print_css_fixed(256, a);
+                //debug!(fmt!("got: %s expected: %.*s\n", b, expected_str.len(), expected_str));
+                debug!(fmt!("expected is %?" , expected_str));
+                debug!(fmt!("found is %? \n" , b));
+                assert!(str::starts_with(b, expected_str));
+
+                // ryanc
+                io::println(fmt!("%s", b));
+            }
+            // debug!(fmt!("lwc = %?" , lwc));
+            // ryanc
+            io::println("#reset");
+
+            data_string = ~"";
+            expected_str = ~"";
+        }
     }
-
-    let ctx = @mut line_ctx_number {
-        buf: ~[],
-        exp: ~[],
-        indata: false,
-        inexp: false
-    };
-
-    assert!(css__parse_testfile(filename, ~handle_line, Number(ctx)));
-    /* and run final test */
-    // ryanc: the last testcase
-    run_test(copy ctx.buf, copy ctx.exp);
 }
 
-fn handle_line(data: ~str, pw: line_ctx) -> bool {
-    let ctx: @mut line_ctx_number;
-    match pw {
-        Number(x) => {ctx = x;},
-        _ => {fail!(~"Type mismatch");}
-    }
-
-    if data.char_at(0) == '#' {
-        if ctx.inexp {
-            /* This marks end of testcase, so run it */
-            run_test(copy ctx.buf, copy ctx.exp);
-            ctx.buf = ~[];
-            ctx.exp = ~[];
-        }
-
-        let line = data.slice(1,data.len()).to_owned().to_lower();
-        if ctx.indata && str::eq(&line, &~"expected") {
-            ctx.indata = false;
-            ctx.inexp = true;
-        }
-        else if !ctx.indata {
-            ctx.indata = str::eq(&line, &~"data");
-            ctx.inexp = str::eq(&line, &~"expected");
-        }
-        else {
-            ctx.buf += data.to_bytes();
-        }
+fn print_css_fixed(mut len:uint, a: i32) -> ~str {
+    let b: u32;
+    let mut buf: ~str = ~"";
+    if a < 0 {
+        b = -a as u32;
     }
     else {
-        if ctx.indata {
-            ctx.buf += data.to_bytes();
-        }
-        if ctx.inexp {
-            ctx.exp += data.to_bytes();
-        }
+        b = a as u32;
     }
-
-    return true;
-}
-
-fn run_test(data: ~[u8], exp: ~[u8]) {
-    let mut lwc = wapcaplet::lwc();
-
-    do lwc.write|l| {
-        let lwc_str = l.lwc_intern_string(str::from_bytes(data));
-        let (num, _) = css__number_from_lwc_string(lwc_str, false);
-
-        let result = print_css_fixed(num);
-        assert_eq!(result.slice(0, exp.len()).to_owned(), str::from_bytes(exp));
-    }
-}
-
-fn print_css_fixed(f: i32) -> ~str {
-    let mut uintpart = fixToInt(abs(f));
-    let mut fracpart = ((abs(f) & 0x3ff) * 1000 + 500) / (1 << 10);
-
-    let mut buf = ~"";
-    let mut tmp: ~[char] = ~[];
+    //debug!(fmt!("Result %?", a));
+    let mut unitpart:u32 = b >> 10;
+    debug!(fmt!("Expected Unitpart %?", unitpart));
+    //debug!(fmt!("b %?", b));
+    let mut fracpart:u32 = ((b & 0x3ff)*1000 + 500)/(1 << 10);
+    debug!(fmt!("Expected Fracpart %?", fracpart));
     let mut flen: uint = 0;
+    let mut tmp: ~[char] = ~[];
 
-    if f < 0 {
+    if a < 0 {
         buf.push_char('-');
+        len -= 1;
     }
+    let string_number = ~"0123456789";
 
-    let nums = ~"0123456789";
     loop {
-        tmp.push(nums.char_at((uintpart % 10) as uint));
-        uintpart /= 10;
-        if !(tmp.len() < 20 && uintpart != 0) {
+        tmp.push(string_number[unitpart%10] as char);
+        unitpart /= 10;
+        if unitpart == 0 || tmp.len() >= 20 {
             break;
         }
     }
 
-    while !tmp.is_empty() {
+    while (len > 0 && tmp.len() > 0) {
         buf.push_char(tmp.pop());
+        len -= 1;
     }
-
-    buf.push_char('.');
-
+    //debug!(fmt!("Buffer Length %?", buf.len()));
+    if len > 0 {
+        buf.push_char('.');
+        len -=1;
+    }
+    //debug!(fmt!("Fracpart %?", fracpart));
     loop {
-        tmp.push(nums.char_at((fracpart % 10) as uint));
+        tmp.push(string_number[fracpart%10] as char);
         fracpart /= 10;
-        if !(tmp.len() < 20 && fracpart != 0) {
+        if !(tmp.len() < 20 && fracpart != 0 ) {
             break;
         }
     }
+    //debug!(fmt!("Fracpart %?", fracpart));
 
-    while !tmp.is_empty() {
+    while (len > 0 && tmp.len() > 0) {
         buf.push_char(tmp.pop());
         flen += 1;
+        len -= 1;
     }
 
-    while flen < 3 {
+
+    while len > 0 && flen < 3 {
         buf.push_char('0');
+        len -= 1;
         flen += 1;
     }
 
     return buf;
 }
 
-#[inline(always)]
-fn abs(x: i32) -> u32 {
-    if x < 0 {
-        return -x as u32;
-    }
-    else {
-        return x as u32;
-    }
-}
-
-#[inline(always)]
-fn fixToInt(x: u32) -> u32 {
-    return (x >> 10) as u32;
+#[test]
+fn test_number() {
+    number(~"data/number/number.dat");
 }

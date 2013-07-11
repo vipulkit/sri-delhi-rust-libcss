@@ -1,277 +1,345 @@
-//////////////////////////////////////////////////////////////////////
-//
-// Filename         : lex-auto.rs
-// Author           : Ryan Choi
-// Created on       : Friday, 31 May 2013
-// Last Modified on : Friday, 31 May 2013
-// Version          : 1.00
-// Title            :
-//
-//////////////////////////////////////////////////////////////////////
-
-/*
-FIXME
-inconsistent names: lex, lexer, css_lexer.
-
-get_token() => css__lexer_get_token()
-
-not implemented
-lexer.css__lexer_destroy();
-
-lexer_create() takes ~stream. cannot use stream afterward
-*/
-
 extern mod std;
-extern mod parserutils;
 extern mod css;
-extern mod testutils;
+extern mod parserutils ;
+extern mod wapcaplet;
+
+use css::utils::errors::*;
+use css::lex::lexer::*;
+use css::charset::csdetect::*;
 
 use parserutils::input::inputstream::*;
-use css::utils::errors::*;
 
-use css::charset::csdetect::*;
-use css::lex::lexer::*;
+pub struct line_ctx_lex {
+    buf:~[u8],
 
-use testutils::*;
+    exp:~[~[u8]],
 
-fn main() {
-    io::println("lex");
+    indata:bool,
+    inexp:bool
 }
 
-#[test]
-fn tests1() {
-    lexAuto(~"data/lex/tests1.dat");
+fn check_newline(x: &u8) -> bool { *x == ('\n' as u8) }
+
+pub type  line_func =
+    ~extern fn(data:~str , pw:&mut line_ctx_lex) -> bool;
+
+fn token_to_string(token:css_token_type)-> ~str {
+    let mut returnString =~"";
+    match token {
+        CSS_TOKEN_IDENT=>{
+            returnString += ~"IDENT:";
+        },
+        CSS_TOKEN_ATKEYWORD=>{
+            returnString += ~"ATKEYWORD:";
+        },
+        CSS_TOKEN_HASH=>{
+            returnString += ~"HASH:";
+        },
+        CSS_TOKEN_FUNCTION=>{
+            returnString += ~"FUNCTION:";
+        },
+        CSS_TOKEN_STRING=>{
+            returnString += ~"STRING:";
+        },
+        CSS_TOKEN_INVALID_STRING=>{
+            returnString += ~"INVALID:";
+        },
+        CSS_TOKEN_URI=>{
+            returnString += ~"URI:";
+        },
+        CSS_TOKEN_UNICODE_RANGE=>{
+            returnString += ~"UNICODE-RANGE:";
+        },
+        CSS_TOKEN_CHAR=>{
+            returnString += ~"CHAR:";
+        },
+        CSS_TOKEN_NUMBER=>{
+            returnString += ~"NUMBER:";
+        },
+        CSS_TOKEN_PERCENTAGE=>{
+            returnString += ~"PERCENTAGE:";
+        },
+        CSS_TOKEN_DIMENSION=>{
+            returnString += ~"DIMENSION:";
+        },
+        CSS_TOKEN_CDO=>{
+            returnString += ~"CDO";
+        },
+        CSS_TOKEN_CDC=>{
+            returnString += ~"CDC";
+        },
+        CSS_TOKEN_S=>{
+            returnString += ~"S";
+        },
+        CSS_TOKEN_COMMENT => {
+            returnString += ~"COMMENT";
+        },
+        CSS_TOKEN_INCLUDES => {
+            returnString += ~"INCLUDES";
+        },
+        CSS_TOKEN_DASHMATCH => {
+            returnString += ~"DASHMATCH";
+        },
+        CSS_TOKEN_PREFIXMATCH => {
+            returnString += ~"PREFIXMATCH";
+        },
+        CSS_TOKEN_SUFFIXMATCH => {
+            returnString += ~"SUFFIXMATCH";
+        },
+        CSS_TOKEN_SUBSTRINGMATCH => {
+            returnString += ~"SUBSTRINGMATCH";
+        }
+        CSS_TOKEN_EOF =>{
+            returnString += ~"EOF";
+        }
+    }
+    return returnString;
 }
 
-#[test]
-fn tests2() {
-    lexAuto(~"data/lex/tests2.dat");
-}
 
-#[test]
-fn regression() {
-    lexAuto(~"data/lex/regression.dat");
-}
+fn match_vec_u8(expected_data: &[u8] , found_string: &str) -> bool {
 
-
-fn lexAuto(filename: ~str) {
-    let len = css__parse_filesize(filename);
-    if len == 0 {
-        return;
+    let mut found_string_vector = str::to_bytes(found_string);
+    if found_string_vector.len() != expected_data.len() {
+        // debug!("lenghts don't match");
+        return false;
     }
 
-    let ctx = @mut line_ctx_lex {
-        buf: ~[],
-        exp: ~[],
-        indata: false,
-        inexp: false
-    };
-
-    assert!(css__parse_testfile(filename, ~handle_line, Lex(ctx)));
-
-    /* and run final test */
-    // ryanc: the last testcase
-    run_test(copy ctx.buf, copy ctx.exp);
+    for vec::each2(expected_data , found_string_vector) |&e , &f| {
+        if e != f {
+            return false;
+        }
+    }
+    true
 }
 
-fn handle_line(data: ~str, pw: line_ctx) -> bool {
-    let ctx: @mut line_ctx_lex;
-    match pw {
-        Lex(x) => {ctx = x},
-        _ => {fail!(~"Type mismatch")}
-    };
+pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx_lex)->bool
+{
+    let mut data : ~[u8] = args ;
+    // unsafe{debug!(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
+    if  (data.len() == 0) {
+        // debug!("error");
+        return true;
+    }
 
-    if data.char_at(0) == '#' {
-        if ctx.inexp {
-            run_test(copy ctx.buf, copy ctx.exp);
-            ctx.buf = ~[];
-            ctx.exp = ~[];
+    if (data[0] == '#' as u8) {
+        if (ctx.inexp) {
+            /* This marks end of testcase, so run it */
+
+            run_test(copy ctx.buf , copy ctx.exp);
+            ctx.exp= ~[];
+            ctx.buf=~[];
         }
-
-        let line = data.slice(1, data.len()).to_owned().to_lower();
-        if ctx.indata && str::eq(&line, &~"expected") {
+        if (ctx.indata && match_vec_u8(data, &"#expected")) {
             ctx.indata = false;
             ctx.inexp = true;
-        }
-        else if !ctx.indata {
-            ctx.indata = str::eq(&line, &~"data");
-            ctx.inexp = str::eq(&line, &~"expected");
-        }
-        else {
-            ctx.buf += data.to_bytes();
+        } else if (!ctx.indata) {
+            ctx.indata = match_vec_u8(data,&"#data");
+            ctx.inexp  = match_vec_u8(data,&"#expected");
+        } else {
+            ctx.buf += copy data;
+            ctx.buf.push('\n' as u8);
         }
     }
     else {
         if ctx.indata {
-            ctx.buf += data.to_bytes();
+            ctx.buf += copy data;
+            ctx.buf.push('\n' as u8);
+
         }
-        if ctx.inexp {
-            css__parse_expected(ctx, data);
+        if (ctx.inexp) {
+
+            let mut unescaped_data = ~[];
+            let mut counter = 1;
+
+            while (counter <= data.len()) {
+                if (data[counter -1] == 92) && (data[counter] == 110) {
+                    unescaped_data.push(10 as u8);
+                    counter += 2;
+                }
+                else if (data[counter -1] == 92) && (data[counter] == 116) {
+                    unescaped_data.push(9 as u8);
+                    counter += 2;
+                }
+                else if (data[counter -1] == 92) && (data[counter] == 92) {
+                    unescaped_data.push(92 as u8);
+                    counter += 2;
+                }
+                else {
+                    unescaped_data.push(data[counter - 1]);
+                    counter +=1;
+                }
+            }
+            if counter <= data.len() {
+                unescaped_data.push(data[counter-1]);
+            }
+
+            ctx.exp.push(unescaped_data);
         }
     }
 
     return true;
 }
 
-fn css__parse_expected(ctx: @mut line_ctx_lex, data: ~str) {
-    let mut token: ~str;
-    let mut text = ~"";
-    let mut hasText = false;
+fn testMain(fileName: ~str) {
+    // debug!(~"testMain : "+ fileName);
+    let ctx: @mut line_ctx_lex = @mut line_ctx_lex
+    {
+        mut buf:~[],
+        mut exp : ~[],
 
-    match str::find_char(data, ':') {
-        Some(x) => {
-            token = data.slice(0, x).to_owned();
-            text = data.slice(x+1, data.len()).to_owned();
-            hasText=true;
-        }
-        None => {
-            token = data;
-        }
-    }
-
-    let entry = ~exp_entry {
-        token_type: string_to_type(token),
-        text: text,
-        hasText: hasText
+        mut indata:false,
+        mut inexp:false
     };
 
-    ctx.exp.push(entry);
-}
-
-fn run_test(data: ~[u8], exp: ~[~exp_entry]) {
-    let (inputStreamOption, status) =
-        inputstream(Some(~"UTF-8"), Some(CSS_CHARSET_DEFAULT as int),
-                    Some(~css__charset_extract));
-
-    match(status) {
-        PARSERUTILS_OK => {},
-        //_ => {assert!(false);}
-    }
-
-    let mut inputStream = inputStreamOption.unwrap();
-    let mut lexer = css_lexer::css__lexer_create(inputStream);
-
-    lexer.css__lexer_append_data(data);
-
-    let mut i=0;
-    loop {
-        let mut (status, tokOption) = lexer.css__lexer_get_token();
-        match status {
-            CSS_OK => {
-                let tok = tokOption.unwrap();
-
-                if string_from_type(tok.token_type) != string_from_type(exp[i].token_type) {
-                    io::println(fmt!("Got token %?, Expected %?",
-                                     tok, exp[i].token_type));
-                }
-
-                if exp[i].hasText {
-                    if str::from_bytes(copy tok.data.data) != exp[i].text {
-                        io::println(fmt!("Got data %?, Expected %?",
-                                         tok, exp[i].text));
-                    }
-                }
-                i+=1;
-
-                match tok.token_type {
-                    CSS_TOKEN_EOF => {
-                        break;
-                    }
-                    _ => {}
-                }
-            }
-            _ => {
-                break;
-            }
+    let file_content_result = io::read_whole_file(&Path(fileName)) ;
+    let mut file_content : ~[u8] ;
+    match file_content_result {
+        Ok(x) => {
+            file_content = x ;
+        },
+        Err(_) => {
+            file_content = ~[] ;
+            debug!(fmt!("\n Error opening file"));
+            assert!(false) ;
         }
     }
-    // FIXME: not implemented
-    //lexer.data_done();
-}
+    let mut vec_lines = vec::split(file_content, check_newline) ;
 
-fn string_to_type(data: ~str) -> css_token_type {
-    match data {
-        ~"IDENT"         => {return CSS_TOKEN_IDENT},
-        ~"ATKEYWORD"     => {return CSS_TOKEN_ATKEYWORD},
-        ~"STRING"        => {return CSS_TOKEN_STRING},
-        ~"INVALID"       => {return CSS_TOKEN_INVALID_STRING},
-        ~"HASH"          => {return CSS_TOKEN_HASH},
-        ~"NUMBER"        => {return CSS_TOKEN_NUMBER},
-        ~"PERCENTAGE"    => {return CSS_TOKEN_PERCENTAGE},
-        ~"DIMENSION"     => {return CSS_TOKEN_DIMENSION},
-        ~"URI"           => {return CSS_TOKEN_URI},
-        ~"UNICODE-RANGE" => {return CSS_TOKEN_UNICODE_RANGE},
-        ~"CDO"           => {return CSS_TOKEN_CDO},
-        ~"CDC"           => {return CSS_TOKEN_CDC},
-        ~"S"             => {return CSS_TOKEN_S},
-        ~"COMMENT"       => {return CSS_TOKEN_COMMENT},
-        ~"FUNCTION"      => {return CSS_TOKEN_FUNCTION},
-        ~"INCLUDES"      => {return CSS_TOKEN_INCLUDES},
-        ~"DASHMATCH"     => {return CSS_TOKEN_DASHMATCH},
-        ~"PREFIXMATCH"   => {return CSS_TOKEN_PREFIXMATCH},
-        ~"SUFFIXMATCH"   => {return CSS_TOKEN_SUFFIXMATCH},
-        ~"SUBSTRINGMATCH"=> {return CSS_TOKEN_SUBSTRINGMATCH},
-        ~"CHAR"          => {return CSS_TOKEN_CHAR},
-        ~"EOF"           => {return CSS_TOKEN_EOF},
-        _                => {fail!(~"Type mismatch");}
+    for vec_lines.each |&each_line| {
+        handle_line(each_line,ctx);
+    }
+
+    if unsafe {copy ctx.buf.len()} > 0 {
+        run_test(copy ctx.buf,copy ctx.exp);
     }
 }
 
 
-fn string_from_type(token_type: css_token_type) -> ~str {
-    match token_type {
-        CSS_TOKEN_IDENT           => {return ~"IDENT";},
-        CSS_TOKEN_ATKEYWORD       => {return ~"ATKEYWORD";},
-        CSS_TOKEN_HASH            => {return ~"HASH";},
-        CSS_TOKEN_FUNCTION        => {return ~"FUNCTION";},
-        CSS_TOKEN_STRING          => {return ~"STRING";},
-        CSS_TOKEN_INVALID_STRING  => {return ~"INVALID_STRING";},
-        CSS_TOKEN_URI             => {return ~"URI";},
-        CSS_TOKEN_UNICODE_RANGE   => {return ~"UNICODE_RANGE";},
-        CSS_TOKEN_CHAR            => {return ~"CHAR";},
-        CSS_TOKEN_NUMBER          => {return ~"NUMBER";},
-        CSS_TOKEN_PERCENTAGE      => {return ~"PERCENTAGE";},
-        CSS_TOKEN_DIMENSION       => {return ~"DIMENSION";},
-        CSS_TOKEN_CDO             => {return ~"CDO";},
-        CSS_TOKEN_CDC             => {return ~"CDC";},
-        CSS_TOKEN_S               => {return ~"S";},
-        CSS_TOKEN_COMMENT         => {return ~"COMMENT";},
-        CSS_TOKEN_INCLUDES        => {return ~"INCLUDES";},
-        CSS_TOKEN_DASHMATCH       => {return ~"DASHMATCH";},
-        CSS_TOKEN_PREFIXMATCH     => {return ~"PREFIXMATCH";},
-        CSS_TOKEN_SUFFIXMATCH     => {return ~"SUFFIXMATCH";},
-        CSS_TOKEN_SUBSTRINGMATCH  => {return ~"SUBSTRINGMATCH";},
-        CSS_TOKEN_EOF             => {return~"EOF";},
-        //_                         => {fail!(~"Type mismatch")}
+pub fn run_test(data:~[u8], exp:~[~[u8]]) {
+    // debug!("run test");
+    let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
+
+    let inputstream =
+        match(inputStreamOption) {
+            Some(x)   => x,
+            None        => {
+                fail!(~"InputStream is not created, hence lexer can't be initialised");
+            }
+        };
+
+    let mut start_time = std::time::precise_time_ns();
+    let mut lexer = css_lexer::css__lexer_create(inputstream);
+    let mut end_time = std::time::precise_time_ns();
+
+    let creation_time = (end_time as float - start_time as float);
+
+    start_time = std::time::precise_time_ns();
+    lexer.css__lexer_append_data(data);
+    lexer.css__lexer_append_data(~[]);
+    end_time = std::time::precise_time_ns();
+
+    let append_time = (end_time as float - start_time as float);
+    let mut get_token_time = 0 as float;
+    // debug!(~"after append data="+ from_bytes(*data));
+    let mut index = 0;
+
+    // ryanc
+    io::println("#expected");
+    loop {
+        start_time = std::time::precise_time_ns();
+        let (error,token_option)= lexer.css__lexer_get_token();
+        end_time = std::time::precise_time_ns();
+
+        get_token_time += (end_time as float - start_time as float);
+
+        match(error)    {
+            CSS_OK => {
+                let token = token_option.unwrap();
+                // debug!(foundmt!("token == %?", token));
+
+                let token_type_string = token_to_string(token.token_type);
+                // unsafe{debug!(fmt!("token bytes == %?", token.data.data));}
+                let token_data = str::from_bytes(copy token.data.data);
+                let mut found = token_type_string;
+
+                if ((token.token_type as int) < (CSS_TOKEN_LAST_INTERN as int)) {
+                    found += token_data;
+                }
+
+                if  !match_vec_u8(exp[index] , found) {
+                    debug!("Expected token == %?", (&exp[index]));
+                    debug!("Found token == %?", (found));
+                    fail!(~"Expected and Found tokens do not match.");
+
+                }
+
+                // ryanc
+                let s = str::replace(found, "\n", "\\n");
+                let s = str::replace(s, "\t", "\\t");
+                // let s = str::replace(found, "\\", "\\\\");
+                io::println(fmt!("%s", s));
+
+                index += 1;
+            },
+            _=>{
+                debug!("error = %?", error);
+                    if token_option.is_some() {
+
+                        let token = token_option.unwrap();
+                        // debug!(fmt!("token == %?", token));
+
+                        let token_type_string = token_to_string(token.token_type);
+                        let token_data = str::from_bytes(copy token.data.data);
+
+                        let found = fmt!("%s%s" , token_type_string , token_data);
+
+                        debug!("found == %?", found);
+                        debug!("Expected token == %?", (exp[index]));
+                        if  !match_vec_u8(exp[index] , found) {
+                        debug!("Expected token == %?", (exp[index]));
+                        debug!("Found token == %?", (found));
+                        fail!(~"Expected and Found tokens do not match.");
+
+                    }
+                    index += 1;
+                }
+                break;
+            }
+        } // match
+
+        if (index == exp.len()) {break;}
     }
+    io::println("#reset");
+
+    assert!(index == exp.len());
+    // io::println     ("-----------------------");
+    // io::println(fmt!("creation  : %.3f usec", creation_time / 1000f));
+    // io::println(fmt!("appending : %.3f usec", append_time / 1000f));
+    // io::println(fmt!("lexing    : %.3f usec", get_token_time / 1000f));
+    // io::println     ("-----------------------");
+
+    io::println(fmt!("%.3f, %.3f, %.3f", creation_time, append_time, get_token_time));
 }
 
-/*
-fn text_from_type(token_type: css_token_type) -> ~str {
-    match token_type {
-        CSS_TOKEN_IDENT(x)       => {return x},
-        CSS_TOKEN_ATKEYWORD(x)   => {return x;},
-        CSS_TOKEN_HASH(x)        => {return x;},
-        CSS_TOKEN_FUNCTION(x)    => {return x;},
-        CSS_TOKEN_STRING(x)      => {return x;},
-        CSS_TOKEN_INVALID_STRING  => {return ~""},
-        CSS_TOKEN_URI(x)         => {return x;},
-        //CSS_TOKEN_UNICODE_RANGE(ch1 , ch2)=>{return ~"UNICODE_RANGE";},
-        CSS_TOKEN_CHAR(x)        => {return str::from_char(x);},
-        //CSS_TOKEN_NUMBER(x)=>{return ~"NUMBER";},
-        //CSS_TOKEN_PERCENTAGE(x)=>{return ~"PERCENTAGE";},
-        //CSS_TOKEN_DIMENSION(x)   => {return ~"DIMENSION";},
-        CSS_TOKEN_CDO             => {return ~"";},
-        CSS_TOKEN_CDC             => {return ~"";},
-        CSS_TOKEN_S               => {return ~"";},
-        // CSS_TOKEN_COMMENT=>{return ~"COMMENT";},
-        // CSS_TOKEN_INCLUDES=>{return ~"INCLUDES";},
-        //CSS_TOKEN_DASHMATCH=>{return ~"DASHMATCH";},
-        //CSS_TOKEN_PREFIXMATCH=>{return ~"PREFIXMATCH";},
-        // CSS_TOKEN_SUFFIXMATCH=>{return ~"SUFFIXMATCH";},
-        //CSS_TOKEN_SUBSTRINGMATCH=>{return ~"SUBSTRINGMATCH";},
-        CSS_TOKEN_EOF             => {return ~"";},
-        _                         => {fail!(~"Type mismatch")}
-    }
+
+#[test]
+fn tests1() {
+    testMain(~"data/lex/tests1.dat");
 }
-*/
+
+#[test]
+fn tests2() {
+    testMain(~"data/lex/tests2.dat");
+}
+
+#[test]
+fn regression() {
+    testMain(~"data/lex/regression.dat");
+}
+
+fn main() {
+    testMain(~"data/lex/tests1.dat");
+    testMain(~"data/lex/tests2.dat");
+    testMain(~"data/lex/regression.dat");
+}

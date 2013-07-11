@@ -60,7 +60,7 @@ fn simple() {
     css21(~"data/css/simple.css");
 }
 
-fn resolve_url(_:~str, rel:arc::RWARC<~lwc_string>) ->
+fn resolve_url(_:@str, rel:arc::RWARC<~lwc_string>) ->
     (css_error,Option<arc::RWARC<~lwc_string>>) {
     return (CSS_OK,Some(rel.clone()));
 }
@@ -73,9 +73,9 @@ fn css21(filename: ~str) {
         params_version: CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
         charset: Some(~"UTF-8"),
-        url: copy filename,
+        url: @"",   // FIXME: why?
         //title: None, // FIXME: need to support None?
-        title: ~"",
+        title: @"", // FIXME: why?
         allow_quirks: false,
         inline_style: false,
         resolve: @resolve_url,
@@ -87,7 +87,7 @@ fn css21(filename: ~str) {
     let CHUNK_SIZE = 4096;
 
     for uint::range(0, ITERATIONS) |_i| {
-        let mut sheet = css_create(copy params, Some(wapcaplet::lwc())); // FIXME: rename it to css_stylesheet_create()
+        let mut sheet = css_create(&params, Some(wapcaplet::lwc())); // FIXME: rename it to css_stylesheet_create()
 
         let r: @Reader = io::file_reader(&Path(filename)).get();
 

@@ -32,42 +32,44 @@ fn main() {
     io::println("csdetect");
 }
 
+
 #[test]
 fn bom_charset() {
     csdetect(~"data/csdetect/bom-charset.dat");
 }
 
-// #[test]
-// fn bom() {
-    // csdetect(~"data/csdetect/bom.dat");
-// }
+
+/*
+#[test]
+fn bom() {
+    csdetect(~"data/csdetect/bom.dat");
+}
+*/
 
 fn csdetect(filename: ~str) {
-    let len = css__parse_filesize(filename);
+    let len = css__parse_filesize(copy filename);
     if len == 0 {
         return;
     }
 
     let ctx = @mut line_ctx_csdetect {
-        buflen: len,
-        bufused: 0,
         buf: ~[],
         enc: ~"",
         indata: false,
         inenc: false
     };
 
-    assert!(css__parse_testfile(filename, ~handle_line, Csdetect(ctx)));
+    assert!(css__parse_testfile(copy filename, ~handle_line, CSDETECT(ctx)));
 
     /* and run final test */
     // ryanc: the last testcase
     run_test(copy ctx.buf, copy ctx.enc);
 }
 
-fn handle_line(data: ~str, pw: line_ctx) -> bool {
+fn handle_line(data: ~str, pw: LINE_CTX_DATA_TYPE) -> bool {
     let ctx: @mut line_ctx_csdetect;
     match pw {
-        Csdetect(x) => {ctx = x},
+        CSDETECT(x) => {ctx = x},
         _ => {fail!(~"Type mismatch")}
     };
 
@@ -76,7 +78,6 @@ fn handle_line(data: ~str, pw: line_ctx) -> bool {
             run_test(copy ctx.buf, copy ctx.enc);
             ctx.buf = ~[];
             ctx.enc = ~"";
-            ctx.bufused=0;
         }
 
         let line = data.slice(1,data.len()).to_owned().to_lower();
@@ -86,7 +87,6 @@ fn handle_line(data: ~str, pw: line_ctx) -> bool {
     else {
         if ctx.indata {
             ctx.buf += data.to_bytes();
-            ctx.bufused+=data.len();
         }
         if ctx.inenc {
             ctx.enc = data;
@@ -102,7 +102,7 @@ fn run_test(data: ~[u8], expected: ~str) {
 
     let alias = alias();
     let (charsetOption, srcOption, status) =
-        css__charset_extract(&data, mibenum, source as int, alias.clone());
+        css__charset_extract(data, mibenum, source as int, alias.clone());
     match status {
         PARSERUTILS_OK => {},
         _ => {assert!(false);}
