@@ -1,4 +1,7 @@
 use select::common::*;
+
+use std::cast::*;
+
 use include::fpmath::*;
 use include::types::*;
 use include::properties::*;
@@ -20,7 +23,7 @@ pub fn css_computed_letter_spacing(
 
             if (bits&3) == (CSS_LETTER_SPACING_SET as u8) { 
                 length = Some(uncommon_struct.letter_spacing);
-                unit = Some(unsafe { cast::transmute((bits >> 2)as int) }) ;
+                unit = Some(unsafe { transmute((bits >> 2)as int) }) ;
             }
 
             ((bits&3),length,unit)
@@ -71,7 +74,7 @@ pub fn css_computed_outline_width(
 
             if (bits&7) == (CSS_OUTLINE_WIDTH_WIDTH as u8) { 
                 width = Some(uncommon_struct.outline_width);
-                unit = Some(unsafe { cast::transmute((bits >> 3)as int) }) ;
+                unit = Some(unsafe { transmute((bits >> 3)as int) }) ;
             }
 
             ((bits&3),width,unit)
@@ -107,10 +110,10 @@ pub fn css_computed_border_spacing(
                 bits1 = bits1 >> CSS_BORDER_SPACING_SHIFT1 ;
 
                 result.hlength = uncommon_struct.border_spacing[0];
-                result.hunit = unsafe { cast::transmute((bits1 >> 4)as int) } ;
+                result.hunit = unsafe { transmute((bits1 >> 4)as int) } ;
 
                 result.vlength = uncommon_struct.border_spacing[1];
-                result.vunit = unsafe { cast::transmute((bits1 & 0xf)as int) } ;
+                result.vunit = unsafe { transmute((bits1 & 0xf)as int) } ;
             }
 
             result.result = bits ;
@@ -136,7 +139,7 @@ pub fn css_computed_word_spacing(
 
             if (bits&3) == (CSS_WORD_SPACING_SET as u8) { 
                 length = Some(uncommon_struct.word_spacing);
-                unit = Some(unsafe { cast::transmute((bits >> 2)as int) }) ;
+                unit = Some(unsafe { transmute((bits >> 2)as int) }) ;
             }
 
             ((bits&3),length,unit)
@@ -212,7 +215,7 @@ pub fn css_computed_clip(
             style : @mut css_computed_style) 
             -> (u8,Option<@mut css_computed_clip_rect>) {
 
-    let mut result : @mut css_computed_clip_rect = 
+    let result : @mut css_computed_clip_rect = 
         @mut css_computed_clip_rect{
             top:0,
             right:0,
@@ -257,10 +260,10 @@ pub fn css_computed_clip(
                 }
 
                 result.top = uncommon_struct.clip[0];
-                result.tunit = unsafe { cast::transmute((bits1 >> 4)as int)};
+                result.tunit = unsafe { transmute((bits1 >> 4)as int)};
 
                 result.right = uncommon_struct.clip[1];
-                result.runit = unsafe { cast::transmute((bits1 & 0xf)as int)};
+                result.runit = unsafe { transmute((bits1 & 0xf)as int)};
 
                 if (result.bottom_auto == false ||
                         result.left_auto == false) {
@@ -274,10 +277,10 @@ pub fn css_computed_clip(
                 }
 
                 result.bottom = uncommon_struct.clip[2];
-                result.bunit = unsafe { cast::transmute((bits1 >> 4)as int)};
+                result.bunit = unsafe { transmute((bits1 >> 4)as int)};
 
                 result.left = uncommon_struct.clip[3];
-                result.lunit = unsafe { cast::transmute((bits1 & 0xf)as int)} ;
+                result.lunit = unsafe { transmute((bits1 & 0xf)as int)} ;
             }
 
             ((bits&0x3),Some(result))
@@ -315,7 +318,7 @@ pub fn css_computed_vertical_align(
 
     if ((bits&0xf)==(CSS_VERTICAL_ALIGN_SET as u8)) {
         length = Some(style.vertical_align);
-        unit = Some(unsafe { cast::transmute((bits >> 4) as int)});
+        unit = Some(unsafe { transmute((bits >> 4) as int)});
         return ((bits&0xf),length,unit);
     }
 
@@ -334,7 +337,7 @@ pub fn css_computed_font_size(
 
     if ((bits&0xf)==(CSS_FONT_SIZE_DIMENSION as u8)) {
         length = Some(style.font_size);
-        unit = Some(unsafe { cast::transmute((bits >> 4) as int)});
+        unit = Some(unsafe { transmute((bits >> 4) as int)});
         return ((bits&0xf),length,unit);
     }
 
@@ -353,7 +356,7 @@ pub fn css_computed_border_top_width(
 
     if ((bits&0x7)==(CSS_BORDER_WIDTH_WIDTH as u8)) {
         length = Some(style.border_width[0]);
-        unit = Some(unsafe { cast::transmute((bits >> 3) as int)});
+        unit = Some(unsafe { transmute((bits >> 3) as int)});
         return ((bits&0x7),length,unit);
     }
 
@@ -372,7 +375,7 @@ pub fn css_computed_border_right_width(
 
     if ((bits&0x7)==(CSS_BORDER_WIDTH_WIDTH as u8)) {
         length = Some(style.border_width[1]);
-        unit = Some(unsafe { cast::transmute((bits >> 3) as int)});
+        unit = Some(unsafe { transmute((bits >> 3) as int)});
         return ((bits&0x7),length,unit);
     }
 
@@ -391,7 +394,7 @@ pub fn css_computed_border_bottom_width(
 
     if ((bits&0x7)==(CSS_BORDER_WIDTH_WIDTH as u8)) {
         length = Some(style.border_width[2]);
-        unit = Some(unsafe { cast::transmute((bits >> 3) as int)});
+        unit = Some(unsafe { transmute((bits >> 3) as int)});
         return ((bits&0x7),length,unit);
     }
 
@@ -410,7 +413,7 @@ pub fn css_computed_border_left_width(
 
     if ((bits&0x7)==(CSS_BORDER_WIDTH_WIDTH as u8)) {
         length = Some(style.border_width[3]);
-        unit = Some(unsafe { cast::transmute((bits >> 3) as int)});
+        unit = Some(unsafe { transmute((bits >> 3) as int)});
         return ((bits&0x7),length,unit);
     }
 
@@ -494,18 +497,18 @@ pub fn css_computed_top(
         }
         else if ( (bits&0x3)==(CSS_TOP_AUTO as u8) ) {
             length = Some(-style.bottom);
-            unit = Some(unsafe { cast::transmute((bottom >> 2) as int)});
+            unit = Some(unsafe { transmute((bottom >> 2) as int)});
         }
         else {
             length = Some(style.top);
-            unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+            unit = Some(unsafe { transmute((bits >> 2) as int)});
         }
 
         bits = (CSS_TOP_SET as u8);
     }
     else if ( (bits&0x3)==(CSS_TOP_SET as u8) ) {
         length = Some(style.top);
-        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        unit = Some(unsafe { transmute((bits >> 2) as int)});
     }
 
     ((bits&0x3),length,unit)
@@ -536,18 +539,18 @@ pub fn css_computed_right(
         }
         else if ( (bits&0x3)==(CSS_RIGHT_AUTO as u8) ) {
             length = Some(-style.left);
-            unit = Some(unsafe { cast::transmute((left >> 2) as int)});
+            unit = Some(unsafe { transmute((left >> 2) as int)});
         }
         else {
             length = Some(style.right);
-            unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+            unit = Some(unsafe { transmute((bits >> 2) as int)});
         }
 
         bits = (CSS_RIGHT_SET as u8);
     }
     else if ( (bits&0x3)==(CSS_RIGHT_SET as u8) ) {
         length = Some(style.right);
-        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        unit = Some(unsafe { transmute((bits >> 2) as int)});
     }
 
     ((bits&0x3),length,unit)
@@ -579,18 +582,18 @@ pub fn css_computed_bottom(
         else if ( (bits&0x3)==(CSS_BOTTOM_AUTO as u8) || 
                    (top&0x3)==(CSS_TOP_AUTO as u8) ) {
             length = Some(-style.top);
-            unit = Some(unsafe { cast::transmute((top >> 2) as int)});
+            unit = Some(unsafe { transmute((top >> 2) as int)});
         }
         else {
             length = Some(style.bottom);
-            unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+            unit = Some(unsafe { transmute((bits >> 2) as int)});
         }
 
         bits = (CSS_BOTTOM_SET as u8);
     }
     else if ( (bits&0x3)==(CSS_BOTTOM_SET as u8) ) {
         length = Some(style.bottom);
-        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        unit = Some(unsafe { transmute((bits >> 2) as int)});
     }
 
     ((bits&0x3),length,unit)
@@ -621,18 +624,18 @@ pub fn css_computed_left(
         }
         else if ( (bits&0x3)==(CSS_LEFT_AUTO as u8) ) {
             length = Some(-style.right);
-            unit = Some(unsafe { cast::transmute((right >> 2) as int)});
+            unit = Some(unsafe { transmute((right >> 2) as int)});
         }
         else {
             length = Some(style.left);
-            unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+            unit = Some(unsafe { transmute((bits >> 2) as int)});
         }
 
         bits = (CSS_LEFT_SET as u8);
     }
     else if ( (bits&0x3)==(CSS_LEFT_SET as u8) ) {
         length = Some(style.left);
-        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        unit = Some(unsafe { transmute((bits >> 2) as int)});
     }
 
     ((bits&0x3),length,unit)
@@ -689,7 +692,7 @@ pub fn css_computed_height(style: @mut css_computed_style)
 
     if ( (bits&0x3) == (CSS_HEIGHT_SET as u8) ) {
         length = Some(style.height);
-        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        unit = Some(unsafe { transmute((bits >> 2) as int)});
     }
 
     ((bits&0x3),length,unit)
@@ -710,7 +713,7 @@ pub fn css_computed_line_height(style: @mut css_computed_style)
     }
 
     if ( (bits&0x3) == (CSS_LINE_HEIGHT_DIMENSION as u8) ) {
-        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        unit = Some(unsafe { transmute((bits >> 2) as int)});
     }
 
     ((bits&0x3),length,unit)
@@ -747,7 +750,7 @@ pub fn css_computed_margin_top(style: @mut css_computed_style)
 
     if ( (bits&0x3) == (CSS_MARGIN_SET as u8) ) {
         length = Some(style.margin[0]);
-        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        unit = Some(unsafe { transmute((bits >> 2) as int)});
     }
 
     ((bits&0x3),length,unit)
@@ -764,7 +767,7 @@ pub fn css_computed_margin_right(style: @mut css_computed_style)
 
     if ( (bits&0x3) == (CSS_MARGIN_SET as u8) ) {
         length = Some(style.margin[1]);
-        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        unit = Some(unsafe { transmute((bits >> 2) as int)});
     }
 
     ((bits&0x3),length,unit)
@@ -781,7 +784,7 @@ pub fn css_computed_margin_bottom(style: @mut css_computed_style)
 
     if ( (bits&0x3) == (CSS_MARGIN_SET as u8) ) {
         length = Some(style.margin[2]);
-        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        unit = Some(unsafe { transmute((bits >> 2) as int)});
     }
 
     ((bits&0x3),length,unit)
@@ -798,7 +801,7 @@ pub fn css_computed_margin_left(style: @mut css_computed_style)
 
     if ( (bits&0x3) == (CSS_MARGIN_SET as u8) ) {
         length = Some(style.margin[3]);
-        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        unit = Some(unsafe { transmute((bits >> 2) as int)});
     }
 
     ((bits&0x3),length,unit)
@@ -855,7 +858,7 @@ pub fn css_computed_max_height(style: @mut css_computed_style)
 
     if ( (bits&0x3) == (CSS_MAX_HEIGHT_SET as u8) ) {
         length = Some(style.max_height);
-        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        unit = Some(unsafe { transmute((bits >> 2) as int)});
     }
 
     ((bits&0x3),length,unit)
@@ -872,7 +875,7 @@ pub fn css_computed_max_width(style: @mut css_computed_style)
 
     if ( (bits&0x3) == (CSS_MAX_WIDTH_SET as u8) ) {
         length = Some(style.max_width);
-        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        unit = Some(unsafe { transmute((bits >> 2) as int)});
     }
 
     ((bits&0x3),length,unit)
@@ -889,7 +892,7 @@ pub fn css_computed_width(style: @mut css_computed_style)
 
     if ( (bits&0x3) == (CSS_WIDTH_SET as u8) ) {
         length = Some(style.width);
-        unit = Some(unsafe { cast::transmute((bits >> 2) as int)});
+        unit = Some(unsafe { transmute((bits >> 2) as int)});
     }
 
     ((bits&0x3),length,unit)
@@ -941,7 +944,7 @@ pub fn css_computed_min_height(style:@mut css_computed_style)
 
     if ( (bits&0x1) == (CSS_MIN_HEIGHT_SET as u8) ) {
         length = Some(style.min_height);
-        unit = Some(unsafe { cast::transmute((bits >> 1) as int)});
+        unit = Some(unsafe { transmute((bits >> 1) as int)});
     }
 
     ((bits&0x1),length,unit)
@@ -958,7 +961,7 @@ pub fn css_computed_min_width(style:@mut css_computed_style)
 
     if ( (bits&0x1) == (CSS_MIN_WIDTH_SET as u8) ) {
         length = Some(style.min_width);
-        unit = Some(unsafe { cast::transmute((bits >> 1) as int)});
+        unit = Some(unsafe { transmute((bits >> 1) as int)});
     }
 
     ((bits&0x1),length,unit)
@@ -995,7 +998,7 @@ pub fn css_computed_padding_top(style:@mut css_computed_style)
 
     if ( (bits&0x1) == (CSS_PADDING_SET as u8) ) {
         length = Some(style.padding[0]);
-        unit = Some(unsafe { cast::transmute((bits >> 1) as int)});
+        unit = Some(unsafe { transmute((bits >> 1) as int)});
     }
 
     ((bits&0x1),length,unit)
@@ -1012,7 +1015,7 @@ pub fn css_computed_padding_right(style:@mut css_computed_style)
 
     if ( (bits&0x1) == (CSS_PADDING_SET as u8) ) {
         length = Some(style.padding[1]);
-        unit = Some(unsafe { cast::transmute((bits >> 1) as int)});
+        unit = Some(unsafe { transmute((bits >> 1) as int)});
     }
 
     ((bits&0x1),length,unit)
@@ -1029,7 +1032,7 @@ pub fn css_computed_padding_bottom(style:@mut css_computed_style)
 
     if ( (bits&0x1) == (CSS_PADDING_SET as u8) ) {
         length = Some(style.padding[2]);
-        unit = Some(unsafe { cast::transmute((bits >> 1) as int)});
+        unit = Some(unsafe { transmute((bits >> 1) as int)});
     }
 
     ((bits&0x1),length,unit)
@@ -1046,7 +1049,7 @@ pub fn css_computed_padding_left(style:@mut css_computed_style)
 
     if ( (bits&0x1) == (CSS_PADDING_SET as u8) ) {
         length = Some(style.padding[3]);
-        unit = Some(unsafe { cast::transmute((bits >> 1) as int)});
+        unit = Some(unsafe { transmute((bits >> 1) as int)});
     }
 
     ((bits&0x1),length,unit)
@@ -1108,7 +1111,7 @@ pub fn css_computed_text_indent(style:@mut css_computed_style)
 
     if ( (bits&0x1) == (CSS_TEXT_INDENT_SET as u8) ) {
         length = Some(style.text_indent);
-        unit = Some(unsafe { cast::transmute((bits >> 1) as int)});
+        unit = Some(unsafe { transmute((bits >> 1) as int)});
     }
 
     ((bits&0x1),length,unit)
@@ -1148,10 +1151,10 @@ pub fn css_computed_background_position(
         bits1 = bits1 >> CSS_BACKGROUND_POSITION_SHIFT1 ;
 
         result.hlength = style.background_position[0];
-        result.hunit = unsafe { cast::transmute((bits1 >> 4)as int) } ;
+        result.hunit = unsafe { transmute((bits1 >> 4)as int) } ;
 
         result.vlength = style.background_position[1];
-        result.vunit = unsafe { cast::transmute((bits1 & 0xf)as int) } ;
+        result.vunit = unsafe { transmute((bits1 & 0xf)as int) } ;
         
         result.result = bits ; 
     }

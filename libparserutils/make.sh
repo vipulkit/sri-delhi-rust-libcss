@@ -6,4 +6,4 @@ rm -f aliases.rs
 rustc aliases_gen.rs
 ./aliases_gen
 cd ..
-rustc -L . parserutils.rc
+rustc -O -L . parserutils.rc --link-args -liconv_wrapper

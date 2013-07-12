@@ -1,14 +1,14 @@
-use std::arc;
-
 use charset::aliases::*;
 use input::riconv;
 use utils::errors::*;
+
+use extra::arc;
 
 pub struct filter {
     int_enc: u16,               // The internal encoding
     encoding : u16,
     iconv_h : u64,
-    instance: arc::ARC<~alias>
+    alias: arc::ARC<~alias>
 }
 
 impl filter {
@@ -19,7 +19,7 @@ impl filter {
             return PARSERUTILS_BADPARM;
         }
 
-        let mibenum_search_result  = arc::get(&self.instance).parserutils_charset_mibenum_from_name(enc);
+        let mibenum_search_result  = self.alias.get().parserutils_charset_mibenum_from_name(enc);
         if mibenum_search_result==0 {
             return PARSERUTILS_BADPARM;
         }
@@ -35,8 +35,8 @@ impl filter {
             self.iconv_h=riconv::riconv_initialize();
         }
 
-        let totype: Option<~str> = arc::get(&self.instance).parserutils_charset_mibenum_to_name(self.int_enc) ;
-        let fromtype: Option<~str> = arc::get(&self.instance).parserutils_charset_mibenum_to_name(mibenum) ;
+        let totype: Option<~str> = self.alias.get().parserutils_charset_mibenum_to_name(self.int_enc) ;
+        let fromtype: Option<~str> = self.alias.get().parserutils_charset_mibenum_to_name(mibenum) ;
         if totype.is_none() || fromtype.is_none() {
             return PARSERUTILS_BADPARM;
         }
@@ -97,7 +97,7 @@ impl filter {
 
     pub fn parserutils__filter_reset(&mut self ) -> parserutils_error {
         if riconv::riconv_initialized(self.iconv_h) {
-            riconv::safe_riconv(self.iconv_h, ~[]);
+            riconv::safe_riconv(self.iconv_h, []);
             return PARSERUTILS_OK;
         }
         else {
@@ -129,13 +129,13 @@ impl filter {
     }
 }
 
-pub fn parserutils_filter(mut existing_instance: arc::ARC<~alias> , int_enc: ~str) -> (Option<~filter> , parserutils_error) {
+pub fn parserutils_filter(alias_instance: arc::ARC<~alias> , int_enc: ~str) -> (Option<~filter> , parserutils_error) {
 
     let mut filter = ~filter{
-        int_enc: arc::get(&existing_instance).parserutils_charset_mibenum_from_name(int_enc),               // The internal encoding
+        int_enc: alias_instance.get().parserutils_charset_mibenum_from_name(int_enc),               // The internal encoding
         encoding : 0,
         iconv_h : riconv::riconv_initialize(),
-        instance : existing_instance.clone()
+        alias : alias_instance.clone()
     };
     match filter.filter_set_encoding(~"UTF-8") {
         PARSERUTILS_OK => {

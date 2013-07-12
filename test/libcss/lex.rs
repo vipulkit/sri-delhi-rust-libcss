@@ -1,6 +1,11 @@
+
 extern mod std;
 extern mod parserutils;
 extern mod css;
+extern mod extra;
+
+
+use std::{io,str};
 
 use parserutils::input::inputstream::*;
 use css::utils::errors::*;
@@ -24,7 +29,7 @@ fn lex(fileName: ~str) {
     let mut final_buf: ~[u8] = ~[];
 
     while !r.eof() {
-        let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(~css__charset_extract));
+        let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(@css__charset_extract));
         let inputstream =
             match(inputStreamOption) {
                 Some(x) => x,
@@ -69,8 +74,11 @@ fn lex(fileName: ~str) {
         }
 
         if resetFlag && !dataFlag && !expectedFlag {
-            for str::each_char(finalstr) |i| {
-                final_buf.push(i as u8);
+            let mut z = 0 ;
+            let z_len = finalstr.len() ;
+            while z<z_len {
+                final_buf.push(finalstr[z]);
+                z += 1;
             }
             finalstr = ~"";
             
@@ -78,7 +86,7 @@ fn lex(fileName: ~str) {
             final_buf = ~[];
             // debug!(fmt!("final_buf is %s",str::from_bytes(final_buf)));
             loop {
-                let mut (error, token_option) = lexer.css__lexer_get_token();
+                let (error, token_option) = lexer.css__lexer_get_token();
                 match error {
                     CSS_OK => {
                         let token = token_option.unwrap();
@@ -126,70 +134,70 @@ fn token_to_string(token:css_token_type)-> ~str {
     let mut returnString =~"";
     match token {
         CSS_TOKEN_IDENT=>{
-            returnString += ~"IDENT:";
+            returnString = returnString + "IDENT:";
         },
         CSS_TOKEN_ATKEYWORD=>{
-            returnString += ~"ATKEYWORD:";
+            returnString = returnString + "ATKEYWORD:";
         },
         CSS_TOKEN_HASH=>{
-            returnString += ~"HASH:";
+            returnString = returnString + "HASH:";
         },
         CSS_TOKEN_FUNCTION=>{
-            returnString += ~"FUNCTION:";
+            returnString = returnString + "FUNCTION:";
         }, 
         CSS_TOKEN_STRING=>{
-            returnString += ~"STRING:";
+            returnString = returnString + "STRING:";
         }, 
         CSS_TOKEN_INVALID_STRING=>{
-            returnString += ~"INVALID_STRING";
+            returnString = returnString + "INVALID_STRING";
         }, 
         CSS_TOKEN_URI=>{
-            returnString += ~"URI:";
+            returnString = returnString + "URI:";
         }, 
         CSS_TOKEN_UNICODE_RANGE=>{
-            returnString += ~"UNICODE_RANGE: ";
+            returnString = returnString + "UNICODE_RANGE: ";
         }, 
         CSS_TOKEN_CHAR=>{
-            returnString += ~"CHAR:";
+            returnString = returnString + "CHAR:";
         },
         CSS_TOKEN_NUMBER=>{
-            returnString += ~"NUMBER:";
+            returnString = returnString + "NUMBER:";
         }, 
         CSS_TOKEN_PERCENTAGE=>{
-            returnString += ~"PERCENTAGE:";
+            returnString = returnString + "PERCENTAGE:";
         }, 
         CSS_TOKEN_DIMENSION=>{
-            returnString += ~"DIMENSION:";
+            returnString = returnString + "DIMENSION:";
         },
         CSS_TOKEN_CDO=>{
-            returnString += ~"CDO";
+            returnString = returnString + "CDO";
         }, 
         CSS_TOKEN_CDC=>{
-            returnString += ~"CDC";
+            returnString = returnString + "CDC";
         }, 
         CSS_TOKEN_S=>{
-            returnString += ~"S";
+            returnString = returnString + "S";
         },
         CSS_TOKEN_COMMENT => {
-            returnString += ~"COMMENT";
+            returnString = returnString + "COMMENT";
         },
         CSS_TOKEN_INCLUDES => {
-            returnString += ~"INCLUDES";
+            returnString = returnString + "INCLUDES";
         },
         CSS_TOKEN_DASHMATCH => {
-            returnString += ~"DASHMATCH";
+            returnString = returnString + "DASHMATCH";
         },
         CSS_TOKEN_PREFIXMATCH => {
-            returnString += ~"PREFIXMATCH";
+            returnString = returnString + "PREFIXMATCH";
         },
         CSS_TOKEN_SUFFIXMATCH => {
-            returnString += ~"SUFFIXMATCH";
+            returnString = returnString + "SUFFIXMATCH";
         },
         CSS_TOKEN_SUBSTRINGMATCH => {
-            returnString += ~"SUBSTRINGMATCH";
+            returnString = returnString + "SUBSTRINGMATCH";
         }
         CSS_TOKEN_EOF =>{
-            returnString += ~"EOF";
+            returnString = returnString + "EOF";
         }
     }
     return returnString;   

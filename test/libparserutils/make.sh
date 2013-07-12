@@ -1,2 +1,3 @@
 rm *filter 
-rustc --test -L ../../libparserutils filter.rs -L .
+cp ./../../libparserutils/*.so .
+rustc --test -L ../../libparserutils filter.rs  --link-args -liconv_wrapper -L./../../libparserutils/

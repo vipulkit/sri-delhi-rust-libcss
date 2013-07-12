@@ -1,3 +1,6 @@
+
+use std::{int};
+
 pub static CSS_RADIX_POINT : int = 10 ;
 pub static INT_MIN : int = int::min_value ;
 pub static INT_MAX : int = int::max_value ;
@@ -52,7 +55,7 @@ pub fn css_multiply_fixed(x: i32 , y: i32) -> i32 {
 
 pub fn css_add_fixed(x: i32 , y: i32) -> i32 {
     let mut ux: i32 = x;
-    let mut uy: i32 = y;
+    let uy: i32 = y;
     let mut res = ux + uy;
     
     /* Calculate overflowed result. (Don't change the sign bit of ux) */
@@ -70,7 +73,7 @@ pub fn css_subtract_fixed(x: i32 , y: i32) -> i32{
     debug!((fmt!("x = %?", x)));
 	debug!((fmt!("y = %?", y)));
 	let mut ux: i32 = x;
-    let mut uy: i32 = y;
+    let uy: i32 = y;
     let mut res = ux - uy;
     
     ux = (ux >> 31) + I32_MAX;

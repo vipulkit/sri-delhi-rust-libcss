@@ -1,6 +1,5 @@
 use wapcaplet::*;
-use std::arc;
-
+use extra::time::*;
 use parserutils::input::inputstream::*;
 
 // libcss uses
@@ -12,7 +11,7 @@ use stylesheet::*;
 use utils::errors::*;
 
 pub struct css {
-	lwc:arc::RWARC<~lwc>,
+	lwc:@mut lwc,
 	stylesheet:@mut css_stylesheet,
 	parser:~css_parser,
 	css_create_lwc_time: float,
@@ -59,41 +58,41 @@ pub struct css_params {
 		font : Option<css_font_resolution_fn>,
 }
 
-pub impl css {
-	pub fn css_create(params: &css_params, lwc_instance: Option<arc::RWARC<~lwc>>) -> @mut css {
-            	let mut start_time = std::time::precise_time_ns();
+impl css {
+	pub fn css_create(params: &css_params, lwc_instance: Option<@mut lwc>) -> @mut css {
+        let start_time = precise_time_ns();
 		// create lwc
 		let lwc = 	if lwc_instance.is_none() { 
 						lwc()
 					}  
 					else {
-						lwc_instance.get_ref().clone()
+						lwc_instance.unwrap()
 					} ;
-            	let mut end_time = std::time::precise_time_ns();
+            	let end_time = precise_time_ns();
 	        let create_lwc_time = (end_time as float - start_time as float);
 
 
 		// create inputstream
-            	let mut start_time = std::time::precise_time_ns();
+            	let start_time = precise_time_ns();
 		let (inputstream_option, _) =  
 			match copy params.charset {
-				None => inputstream(None, None ,Some(~css__charset_extract)),
-				Some(charset) => inputstream(Some(charset), Some(CSS_CHARSET_DICTATED as int), Some(~css__charset_extract))
+				None => inputstream(None, None ,Some(@css__charset_extract)),
+				Some(charset) => inputstream(Some(charset), Some(CSS_CHARSET_DICTATED as int), Some(@css__charset_extract))
 			};
 		
 
-            	let mut end_time = std::time::precise_time_ns();
+            	let end_time = precise_time_ns();
 	        let create_input_stream_time = (end_time as float - start_time as float);
 
 		// create lexer
 		
-            	let mut start_time = std::time::precise_time_ns();
+            	let start_time = precise_time_ns();
 		let lexer = css_lexer::css__lexer_create(inputstream_option.unwrap());
-            	let mut end_time = std::time::precise_time_ns();
+            	let end_time = precise_time_ns();
 	        let create_lexer_time = (end_time as float - start_time as float);
 
 		// create stylesheet
-            	let mut start_time = std::time::precise_time_ns();
+            	let start_time = precise_time_ns();
 		let stylesheet = @mut css_stylesheet {
 			selectors:css_selector_hash::css__selector_hash_create(),       
 			rule_count:0,                        
@@ -113,26 +112,26 @@ pub impl css {
 			font : params.font,   
 			color: params.color
 		};
-            	let mut end_time = std::time::precise_time_ns();
+            	let end_time = precise_time_ns();
 	        let create_stylesheet_time = (end_time as float - start_time as float);
 
 		// create language
-            	let mut start_time = std::time::precise_time_ns();
-		let language = css_language(stylesheet, lwc.clone());
-            	let mut end_time = std::time::precise_time_ns();
+            	let start_time = precise_time_ns();
+		let language = css_language(stylesheet, lwc);
+            	let end_time = precise_time_ns();
 	        let create_language_time = (end_time as float - start_time as float);
 
 		// create parser
-            	let mut start_time = std::time::precise_time_ns();
+            	let start_time = precise_time_ns();
 		let parser = match params.inline_style {
-		    false => css_parser::css__parser_create(language, lexer, lwc.clone()),
-		    true => css_parser::css__parser_create_for_inline_style(language, lexer, lwc.clone())
+		    false => css_parser::css__parser_create(language, lexer, lwc),
+		    true => css_parser::css__parser_create_for_inline_style(language, lexer, lwc)
 		}; 
-            	let mut end_time = std::time::precise_time_ns();
+            	let end_time = precise_time_ns();
 	        let create_parser_time = (end_time as float - start_time as float);
 
 		@mut css {
-			lwc:lwc.clone(),
+			lwc:lwc,
 			parser:parser.unwrap(),
 			stylesheet:stylesheet,
         	        css_create_lwc_time:create_lwc_time,

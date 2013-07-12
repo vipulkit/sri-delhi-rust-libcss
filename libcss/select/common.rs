@@ -2,9 +2,9 @@ use include::types::*;
 use include::font_face::*;
 use stylesheet::*;
 use utils::errors::*;
-use std::arc;
+//use extra::arc;
 use wapcaplet::*;
-
+use std::libc::*;
 
 pub enum css_computed_content_item_type {
     CSS_COMPUTED_CONTENT_NONE       = 0,
@@ -575,7 +575,7 @@ pub struct css_computed_style {
 
     font_family:~[~str],
 
-    //lwc_string **quotes;
+    //quotes chaned from wapcaplet-strings to strings
     quotes:~[~str],
 
     uncommon:Option<@mut css_computed_uncommon>, /**< Uncommon properties */
@@ -684,71 +684,71 @@ pub enum css_select_handler_version {
 
 pub struct css_select_handler {
 
-    node_name: @extern fn( node:*libc::c_void, qname: &mut css_qname ) -> css_error,
+    node_name: @extern fn( node:*c_void, qname: &mut css_qname ) -> css_error,
 
-    node_classes: @extern fn(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[~str] ) -> css_error,
+    node_classes: @extern fn(pw:*c_void, n:*c_void, classes: &mut ~[~str] ) -> css_error,
 
-    node_id: @extern fn(pw:*libc::c_void, node:*libc::c_void, id:&mut ~str ) -> css_error,
+    node_id: @extern fn(pw:*c_void, node:*c_void, id:&mut ~str ) -> css_error,
 
-    named_ancestor_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, ancestor:*mut*libc::c_void) -> css_error,
+    named_ancestor_node: @extern fn(node:*c_void, qname:&mut css_qname, ancestor:*mut*c_void) -> css_error,
    
-    named_parent_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_void) -> css_error,
+    named_parent_node: @extern fn(node:*c_void, qname:&mut css_qname, parent:*mut*c_void) -> css_error,
     
-    named_sibling_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error,
+    named_sibling_node: @extern fn(node:*c_void, qname:&mut css_qname, sibling:*mut*c_void) -> css_error,
 
-    named_generic_sibling_node: @extern fn(node:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error,
+    named_generic_sibling_node: @extern fn(node:*c_void, qname:&mut css_qname, sibling:*mut*c_void) -> css_error,
     
-    parent_node: @extern fn(node:*libc::c_void, parent:*mut*libc::c_void) -> css_error,
+    parent_node: @extern fn(node:*c_void, parent:*mut*c_void) -> css_error,
 
-    sibling_node: @extern fn(node:*libc::c_void, sibling:*mut*libc::c_void) -> css_error,
+    sibling_node: @extern fn(node:*c_void, sibling:*mut*c_void) -> css_error,
 
-    node_has_name: @extern fn(pw:*libc::c_void,node:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error,
+    node_has_name: @extern fn(pw:*c_void,node:*c_void, qname:css_qname, matched:@mut bool) -> css_error,
 
-    node_has_class: @extern fn(pw:*libc::c_void, node:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error,
+    node_has_class: @extern fn(pw:*c_void, node:*c_void, name:@mut lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_id: @extern fn(pw:*libc::c_void, node:*libc::c_void, name:arc::RWARC<~lwc_string>, matched:@mut bool) -> css_error,
+    node_has_id: @extern fn(pw:*c_void, node:*c_void, name:@mut lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute: @extern fn(node:*libc::c_void, name:css_qname, matched:@mut bool) -> css_error,
+    node_has_attribute: @extern fn(node:*c_void, name:css_qname, matched:@mut bool) -> css_error,
     
-    node_has_attribute_equal: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_equal: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
    
-    node_has_attribute_dashmatch: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_dashmatch: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
 
-    node_has_attribute_includes: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_includes: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
 
-    node_has_attribute_prefix: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_prefix: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
 
-    node_has_attribute_suffix: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_suffix: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
 
-    node_has_attribute_substring: @extern fn(node:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_substring: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
 
-    node_is_root: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+    node_is_root: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
    
-    node_count_siblings: @extern fn(node:*libc::c_void, same_name:bool, after:bool, count:@mut i32) -> css_error,
+    node_count_siblings: @extern fn(node:*c_void, same_name:bool, after:bool, count:@mut i32) -> css_error,
     
-    node_is_empty: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+    node_is_empty: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
     
-    node_is_link: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+    node_is_link: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
 
-    node_is_visited: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+    node_is_visited: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
 
-    node_is_hover: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+    node_is_hover: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
 
-    node_is_active: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+    node_is_active: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
 
-    node_is_focus: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+    node_is_focus: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
 
-    node_is_enabled: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+    node_is_enabled: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
 
-    node_is_disabled: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+    node_is_disabled: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
 
-    node_is_checked: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+    node_is_checked: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
  
-    node_is_target: @extern fn(node:*libc::c_void, matched:@mut bool) -> css_error,
+    node_is_target: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
 
-    node_is_lang: @extern fn(node:*libc::c_void, lang:~str, matched:@mut bool) -> css_error,
+    node_is_lang: @extern fn(node:*c_void, lang:~str, matched:@mut bool) -> css_error,
 
-    node_presentational_hint: @extern fn(node:*libc::c_void, property:u32) -> 
+    node_presentational_hint: @extern fn(node:*c_void, property:u32) -> 
         (css_error,Option<@mut css_hint>),
 
     compute_font_size: @extern fn(parent: Option<@mut css_hint>, size: Option<@mut css_hint>) -> css_error,
@@ -758,23 +758,23 @@ pub struct css_select_handler {
 }
 
 pub struct css_select_state {
-    node:*libc::c_void,
+    node:*c_void,
     media:u64,         
-    results:css_select_results,
+    results:@mut css_select_results,
     current_pseudo:css_pseudo_element,  
     computed:@mut css_computed_style,  
 
     handler:Option<@mut css_select_handler>,    
-    pw:*libc::c_void,
+    pw:*c_void,
     sheet:Option<@mut css_stylesheet>,   
 
     current_origin:css_origin, 
     current_specificity:uint,  
 
     element:css_qname,       
-     //TODO :lwc_string *id;         /* Node id, if any */
+     //changed id from wapcaplet-string to string
     id:~str,
-     //TODO :lwc_string **classes;       /* Node classes, if any */
+     //changes classes from wapcaplet  to string
     classes:~[~str],
     n_classes:u32,           
 
@@ -795,27 +795,28 @@ pub struct css_select_font_faces_results {
     font_faces:~[@mut css_font_face],
 }
 
+#[inline]
 pub fn advance_bytecode(style: @mut css_style) {
-    unsafe{
-        if (style.bytecode.len() - style.used > 0) {
-            style.used += 1 
-        }
-        else {
-            fail!(~"Advancing Bytecode vector after end index")
-        }
-    }
+    
+	if (style.bytecode.len() - style.used > 0) {
+		style.used += 1 
+	}
+	else {
+		fail!(~"Advancing Bytecode vector after end index")
+	}
+    
 }   
 
 pub fn peek_bytecode(style: @mut css_style) -> u32 {
-    unsafe{
-        if style.bytecode.len() - style.used > 0 {
-            debug!(fmt!("bytecode=%?",style.bytecode)); 
-			style.bytecode[style.used] 
-        }
-        else {
-            fail!(~"Advancing Bytecode vector after end index")
-        }
-    }
+    
+	if style.bytecode.len() - style.used > 0 {
+		debug!(fmt!("bytecode=%?",style.bytecode)); 
+		style.bytecode[style.used] 
+	}
+	else {
+		fail!(~"Advancing Bytecode vector after end index")
+	}
+    
 }
 
 /////////////////////////////////////////////////////////////////

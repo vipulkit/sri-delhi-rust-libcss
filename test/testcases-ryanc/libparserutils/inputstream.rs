@@ -11,11 +11,12 @@
 
 
 extern mod std;
-extern mod core;
 extern mod parserutils;
+extern mod wapcaplet;
 extern mod css;
+//extern mod css;
 
-use core::io::*;
+use std::{io,vec};
 use parserutils::input::*;
 use parserutils::utils::errors::*;
 use css::charset::csdetect::*;
@@ -42,9 +43,9 @@ fn inputstream(filename: ~str) {
     let r: @Reader = io::file_reader(&Path(filename)).get();
     let mut stream = streamOption.unwrap();
 
-    r.seek(0, SeekEnd);
+    r.seek(0, io::SeekEnd);
     let mut len = r.tell();
-    r.seek(0, SeekSet);
+    r.seek(0, io::SeekSet);
 
 
     while len >= CHUNK_SIZE {
@@ -63,11 +64,12 @@ fn inputstream(filename: ~str) {
                 PARSERUTILS_NEEDDATA => {break;}
                 PARSERUTILS_EOF      => {break;}
                 PARSERUTILS_OK       => {
-                    let mut (c, clen) = cOption.get();
+                    let (c, clen) = cOption.get();
                     stream.parserutils_inputstream_advance(clen);
 
                     if c[0].to_str() == ~"a" {
-                        let STATUS3 = stream.parserutils_inputstream_insert("hello!!!".to_bytes());
+                        let insertdata : ~[u8] = ~['h' as u8,'e' as u8,'l' as u8,'l' as u8,'o' as u8,'!' as u8,'!' as u8,'!' as u8];
+                        let STATUS3 = stream.parserutils_inputstream_insert(insertdata);
                         match(STATUS3) {
                             PARSERUTILS_OK => {}
                             _ => {assert!(false);}
@@ -92,7 +94,8 @@ fn inputstream(filename: ~str) {
         assert!(len == 0); // to remove the warning;
     }
 
-    match(stream.parserutils_inputstream_insert("hello!!!".to_bytes())) {
+    let insertdata : ~[u8] = ~['h' as u8,'e' as u8,'l' as u8,'l' as u8,'o' as u8,'!' as u8,'!' as u8,'!' as u8];
+    match(stream.parserutils_inputstream_insert(insertdata)) {
         PARSERUTILS_OK => {}
         _ => {assert!(false);}
     }
@@ -108,7 +111,7 @@ fn inputstream(filename: ~str) {
         match(STATUS) {
             PARSERUTILS_EOF => {break;}
             PARSERUTILS_OK  => {
-                let mut (_c, clen) = cOption.get();
+                let (_c, clen) = cOption.get();
                 stream.parserutils_inputstream_advance(clen);
             }
             _ => {assert!(false);}

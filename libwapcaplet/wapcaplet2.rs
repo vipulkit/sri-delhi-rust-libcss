@@ -8,8 +8,8 @@
  *  Test-cases are checked in ../test/libwapcaplet/* 
  */
 
-extern mod std;
-use std::arc;
+extern mod extra;
+use std::{uint,  str};
 
 // convert string elements to lower-type for case-insensitive matching
 #[inline(always)]
@@ -26,7 +26,7 @@ pub fn dolower(c: u8 ) -> u8 {
 pub fn lwc_calculate_hash(string: &str) -> (u64,u64) {
     let mut z: u64 = 0x811c9dc5;                // 
     let mut iz : u64 = 0x811c9dc5 ;
-    let string_index = str::char_len(string);
+    let string_index = string.len();
     for uint::range(0, string_index) |i| { 
         z *= 0x01000193;
         iz *= 0x01000193;
@@ -74,40 +74,20 @@ pub struct lwc {
 pub fn lwc_single_threaded() -> ~lwc {
     let mut t_hash :  ~[hash_buck] = ~[] ;
     for uint::range(0, 65537) |_| {
-		let mut lh = hash_buck{ 
+		let lh = hash_buck{ 
 			hashes:~[] , 
 			lhashes:~[] ,
 			position:~[]
 		} ;
         t_hash.push(lh);
     }
-    let mut result = ~lwc{
+    let result = ~lwc{
         buck:~[],
         hash_buck:t_hash,
         unref_locations:~[]
     };    
     result
 }
-
-// thread safe version of lwc
-pub fn lwc_thread_safe() -> arc::RWARC<~lwc> {
-    let mut t_hash :  ~[hash_buck] = ~[] ;
-    for uint::range(0, 65536) |_| {
-		let mut lh = hash_buck{ 
-			hashes:~[] , 
-			lhashes:~[] ,
-			position:~[]
-		} ;
-        t_hash.push(lh);
-    }
-    let mut result = ~lwc{
-        buck:~[],
-        hash_buck:t_hash,
-        unref_locations:~[]
-    };    
-    arc::RWARC(result)
-}
-
 
 // Is strings are equal
 pub fn lwc_string_isequal(first:lwc_string , second:lwc_string) -> bool {
@@ -130,11 +110,13 @@ impl lwc {
 		let slot = string.slot_num ;
 		let mut j = 0 ;
 		let mut found : bool = false ;
-
-		for self.hash_buck[slot].position.eachi |i,&elem| {
-			if elem == pos {
+		let mut i = 0 ;
+		let pos_len = self.hash_buck[slot].position.len() ;
+		while i< pos_len {
+			if self.hash_buck[slot].position[i] == pos {
 				found = true ;
 				j = i ;
+				i += 1;
 			}
 		}
 
@@ -167,11 +149,13 @@ impl lwc {
 		let (hash,lhash)  = lwc_calculate_hash(data) ;
 		let slot : uint = (lhash & 0xFFFF ) as uint ;
 		let final_lhash = (lhash & 0xFFFFFFFFFFFF0000) | ((data.len() as u16) as u64) ; 
-		let mut pos : uint = 0 ;
+		let mut pos : uint ;
+		let mut i = 0 ;
+		let hashes_len = self.hash_buck[slot].hashes.len();
 
-		for self.hash_buck[slot].hashes.eachi |i,&elem| {
+		while i<hashes_len {
 			//io::println(fmt!("Hash Bucket is =%?=",self.hash_buck[slot]));
-			if elem == hash {
+			if self.hash_buck[slot].hashes[i] == hash {
 				if self.hash_buck[slot].lhashes[i] == final_lhash {
 					pos = self.hash_buck[slot].position[i] ;
 					if str::eq_slice(data,self.buck[pos]) {
@@ -181,6 +165,7 @@ impl lwc {
 					}
 				}
 			}
+			i += 1;
 		}
 		self.hash_buck[slot].hashes.push(hash);
 		self.hash_buck[slot].lhashes.push(final_lhash);
@@ -204,18 +189,18 @@ impl lwc {
 		if first.position == second.position {
 			return true ;
 		}
-		io::println(fmt!("check1 caseless isequal"));
+		
 		if first.hash_icase != second.hash_icase {
 			//io::println(fmt!("hashes matched are =%?=%?=",first.hash_icase,second.hash_icase)) ;
 			return false ;
 		}
 		let mut len1 = self.buck[first.position].len() ;
-		let mut len2 = self.buck[second.position].len() ;
+		let len2 = self.buck[second.position].len() ;
 		//io::println(fmt!("check2 caseless isequal"));
 		if len1 != len2 {
 			return false ;
 		}
-		io::println(fmt!("check3 caseless isequal"));
+		
 		while len1 !=0 {
 			len1 -= 1;
 			if dolower(self.buck[first.position][len1]) == dolower(self.buck[second.position][len1]) {
@@ -240,8 +225,8 @@ impl lwc {
 }
 
 // implementing clone for
-pub impl<'self> lwc_string {
-    fn clone(&self) -> lwc_string {
+impl<'self> lwc_string {
+    pub fn clone(&self) -> lwc_string {
         lwc_string{
         	hash_case:self.hash_case,
         	hash_icase:self.hash_icase,

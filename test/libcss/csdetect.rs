@@ -1,5 +1,5 @@
-
-extern mod std; 
+extern mod std;
+extern mod extra;
 extern mod testutils;
 extern mod parserutils; 
 extern mod css;
@@ -9,8 +9,7 @@ use parserutils::utils::errors::*;
 use css::charset::csdetect::*;
 
 use testutils::*;
-use core::str::*;
-use std::arc;
+use std::io;
 
 fn testMain(fileName: ~str) {
     let len = css__parse_filesize(copy fileName);
@@ -44,30 +43,27 @@ pub fn handle_line(data:~str, pw:LINE_CTX_DATA_TYPE)-> bool {
     }
     if data[0] == '#' as u8 {
         if ctx.inenc {
-            unsafe {
-                if (vec::last(ctx.buf) == &('\n' as u8)) {
-                    ctx.buf.pop();
-                }
+            if (ctx.buf.last() == &('\n' as u8)) {
+                ctx.buf.pop();
             }
             result = run_test(copy ctx.buf, copy  ctx.enc); 
             ctx.buf = ~[];
             ctx.enc=~"";
         }
-        ctx.indata = str::ends_with(data,&"data");
-        ctx.inenc = str::ends_with(data,&"encoding");
+        ctx.indata = data.ends_with(&"data");
+        ctx.inenc = data.ends_with(&"encoding");
 
     }
     else {
         if (ctx.indata) {
-            ctx.buf += data.to_bytes();
+                
+            ctx.buf = ctx.buf + data.to_str().as_bytes_with_null_consume();
         }
         if (ctx.inenc) {
             ctx.enc = (data);
-             unsafe {
-                if (ctx.enc[ctx.enc.len() - 1] == '\n' as u8) {
-                    pop_char(&mut ctx.enc);
-                }
-             }  
+            if (ctx.enc[ctx.enc.len() - 1] == '\n' as u8) {
+                ctx.enc.pop_char();
+            }
         }
     }
 
@@ -78,7 +74,7 @@ pub fn run_test(data:~[u8],  expected_encoding:~str) -> bool {
     let alias_instance = alias();
     
     let expected_mibenum = 
-        arc::get(&alias_instance).parserutils_charset_mibenum_from_name(copy expected_encoding);
+        alias_instance.get().parserutils_charset_mibenum_from_name(copy expected_encoding);
     
     let mut mibenum:u16 = 0;
     let alias_instance = alias();
@@ -93,7 +89,7 @@ pub fn run_test(data:~[u8],  expected_encoding:~str) -> bool {
     assert!(mibenum != 0);
 
     let detected_charset = 
-        arc::get(&alias_instance).parserutils_charset_mibenum_to_name(mibenum).unwrap();
+        alias_instance.get().parserutils_charset_mibenum_to_name(mibenum).unwrap();
 
     io::println(fmt!(" Detected mibenum == %?, Expected mibenum == %? ", mibenum, expected_mibenum));
     io::println(fmt!(" Detected charset == %?, Source == %? Expected charset ==%?",detected_charset,srcOption.unwrap(), expected_encoding));    

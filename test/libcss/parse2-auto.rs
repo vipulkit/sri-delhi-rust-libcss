@@ -1,11 +1,12 @@
 extern mod std;
+extern mod extra;
 extern mod css;
 extern mod wapcaplet;
 extern mod dump;
 
-use std::arc;
+use std::io;
+use std::vec;
 use css::css::*;
-use css::css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use wapcaplet::*;
@@ -23,25 +24,30 @@ pub struct line_ctx {
     inrule: bool
 }
 
-pub fn resolve_url(_:@str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>) {
+pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
 pub fn check_newline(x: &u8) -> bool { *x == ('\n' as u8) }
 
-fn match_vec_u8(expected_data: &[u8] , found_string: &str) -> bool {
+fn match_vec_u8(vector: &[u8] , string: &str) -> bool {
 
-    let mut found_string_vector = str::to_bytes(found_string);
-    if found_string_vector.len() != expected_data.len() {
-        // debug!("lenghts don't match");
+    debug!("Entering: match_vec_u8 :: vector == %?, found_string == %?", vector, string);
+
+    let string_vector = string.as_bytes();
+    if string_vector.len() != vector.len() {
+        debug!("Exiting: match_vec_u8 (1)");
         return false;
     }
 
-    for vec::each2(expected_data , found_string_vector) |&e , &f| {
+	let mut iter_both = vector.iter().zip(string_vector.iter());
+    for iter_both.advance() |(e , f)| {
         if e != f {
+            debug!("Exiting: match_vec_u8 (2)");
             return false;
         }
-    } 
+    }
+    debug!("Exiting: match_vec_u8 (3)");
     true
 }
 
@@ -68,60 +74,70 @@ fn main() {
 
 fn create_css() -> @mut css{
     debug!("Entering: create_css");
-    let mut lwc = wapcaplet::lwc();
-    let css = css_create( &(css_create_params()) , Some(lwc));
+    let lwc = wapcaplet::lwc();
+    let css = css::css_create( &(css_create_params()) , Some(lwc));
     css
 }
 
 pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
     debug!("Entering: handle_line");
-    let mut data : ~[u8] = args ;
+    let data : ~[u8] = args ;
     // unsafe{debug!(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
     if  (data.len() == 0) {
-        // debug!("error");
+        debug!("error");
         return true;
     }
 
     if (data[0] == '#' as u8) {
         if (ctx.inexp) {
             /* This marks end of testcase, so run it */
+            debug!("Entering: handle_line :: if (ctx.inexp)");
 
             run_test(copy ctx.buf , copy ctx.exp);
             ctx.exp= ~[];
             ctx.buf=~[];
         }
         if (ctx.indata  && match_vec_u8(data , &"#errors")) {
+            debug!("Entering: handle_line :: if (ctx.indata  && match_vec_u8(data , &\"#errors\"))");
             ctx.indata = false;
             ctx.inerrors = false;
             ctx.inexp = false;
         }
         else if (ctx.indata && match_vec_u8(data, &"#expected")) {
+            debug!("Entering: handle_line :: if (ctx.indata  && match_vec_u8(data , &\"#expected\"))");
             ctx.indata = false;
             ctx.inexp = true;
             ctx.inerrors = false;
             ctx.inrule = false;
         }
         else if (ctx.inexp && match_vec_u8(data , &"#data")) {
+            debug!("Entering: handle_line :: if (ctx.indata  && match_vec_u8(data , &\"#data\"))");
             ctx.indata = true;
             ctx.inerrors = false;
             ctx.inexp = false;
         }
         else if (ctx.indata) {
-            ctx.buf += copy data;
+            debug!("Entering: handle_line :: if (ctx.indata) (1)");
+            ctx.buf = ctx.buf + copy data;
             ctx.buf.push('\n' as u8);
         } 
         else {
+            debug!("Entering: handle_line :: else (1)");
             ctx.indata = match_vec_u8(data , &"#data");
             ctx.inerrors = match_vec_u8(data , &"#errors");
             ctx.inexp = match_vec_u8(data , &"#expected");
         }
     }
     else {
+        debug!("Entering: handle_line :: else (2)");
+
         if ctx.indata {
-            ctx.buf += copy data;
+            debug!("Entering: handle_line :: if (ctx.indata) (2)");
+            ctx.buf = ctx.buf + copy data;
             ctx.buf.push('\n' as u8);
         }
         if (ctx.inexp) {
+            debug!("Entering: handle_line :: if (ctx.inexp)");
             ctx.exp.push(data);
         }
     }
@@ -131,15 +147,15 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
 
 fn testMain(fileName: ~str) {
     debug!(~"testMain : "+ fileName);
-    let ctx: @mut line_ctx = @mut line_ctx
+    let ctx = @mut line_ctx
     {
-        mut buf:~[],
-        mut exp : ~[],
-        mut expused: 0,
-        mut indata:false,
-        mut inexp:false,
-        mut inerrors: false,
-        mut inrule: false
+        buf:~[],
+        exp : ~[],
+        expused: 0,
+        indata:false,
+        inexp:false,
+        inerrors: false,
+        inrule: false
     };
 
     let file_content_result = io::read_whole_file(&Path(fileName)) ;
@@ -154,13 +170,13 @@ fn testMain(fileName: ~str) {
             assert!(false) ;
         }
     }        
-    let mut vec_lines = vec::split(file_content, check_newline) ;
+    let vec_lines = vec::split(file_content, check_newline) ;
 
-    for vec_lines.each |&each_line| {
+    for vec_lines.iter().advance |&each_line| {
         handle_line(each_line,ctx);
     }
     
-    if unsafe {copy ctx.buf.len()} > 0 {
+    if copy ctx.buf.len() > 0 {
         run_test(copy ctx.buf,copy ctx.exp);
     }
 }
@@ -169,7 +185,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     debug!("Entering :: run_test");
     // debug!("\n == data == %?" , str::from_bytes(data));
     
-    let mut css = create_css();
+    let css = create_css();
     let mut buf: ~str;
     let mut error = css.css_stylesheet_append_data(data);
     match error {
@@ -186,12 +202,12 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
 
     buf = dump_sheet(css.stylesheet);
     //debug!(fmt!("\n == sheet ==%?=" , buf));
-    let mut dvec = ~[];
-    for str::each_line(buf) |s| {
-        dvec.push(s.to_owned().to_bytes());
+    let mut dvec : ~[~[u8]] = ~[];
+    for buf.any_line_iter().advance |s| {
+        dvec.push(s.as_bytes().to_owned());
     }
-    let mut a = vec::concat(dvec) ;
-    let mut b = vec::concat(exp) ;
+    let a = vec::concat(dvec) ;
+    let b = vec::concat(exp) ;
     // debug!("============================================================" );
     // debug!(fmt!(" == sheet ==%?=" , vec));
     // debug!("============================================================" );
@@ -207,7 +223,8 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
         fail!(~"Expected lines not equal to sheet dump lines");
     }
 
-    for vec::each2(a,b) |&s,&e| {
+	let mut iter_both = a.iter().zip(b.iter());
+    for iter_both.advance |(s,e)| {
         if s != e {
             debug!("============================================================" );
             debug!(" == sheet ==%?=" , (a));

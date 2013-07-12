@@ -20,17 +20,14 @@ parserutils_error parserutils__filter_process_chunk(parserutils_filter *input,
 
 pub fn parserutils__filter_process_chunk(&mut self, inbuf : ~[u8] ) -> (~riconv::chunk_result, parserutils_error)
 */
-
-
 extern mod std;
-extern mod core;
 extern mod parserutils;
 
-//use parserutils::input::*;
-use parserutils::input::parserutils_filter::*;
-//use parserutils::charset::*;
+use std::{vec,str,io};
 use parserutils::charset::aliases::*;
 use parserutils::utils::errors::*;
+use parserutils::input::parserutils_filter::*;
+
 
 
 fn main() {
@@ -40,14 +37,16 @@ fn main() {
 
 #[test]
 fn filter() {
-    let mut alias = alias();
-    let mut (filterOption, status) =
+    let alias = alias();
+    let (filterOption, status) =
         parserutils_filter(alias, ~"UTF-8"); // FIXME: rename
 
     match(status) {
-        PARSERUTILS_OK => {},
-        _ => {assert!(false);}
-    }
+        PARSERUTILS_OK => {}
+        _ => {
+            assert!(false);
+        }
+    };
 
     let mut input = filterOption.unwrap();
 
@@ -60,7 +59,7 @@ fn filter() {
 
     /* Simple case: valid input & output buffer large enough
      * ryanc: normal case. buffer size does not matter in Rust */
-    let mut in: ~[u8] = "hell\xc2\xa0o!".to_bytes();
+    let in: ~[u8] =  ~['h' as u8,'e' as u8,'l' as u8 ,'l' as u8, 0xc2 as u8 , 0xa0 as u8,'o' as u8,'!' as u8] ; // "hell\xc2\xa0o!".to_bytes();
     let mut out: ~[u8] = ~[];
 
     match(input.parserutils__filter_process_chunk(in)) {
@@ -71,7 +70,7 @@ fn filter() {
         (_, _, _) => {assert!(false);}
     }
 
-    assert_eq!(str::from_bytes(out), ~"hell\xc2\xa0o!");
+    assert_eq!(copy out, copy in /*~"hell\xc2\xa0o!"*/);
 
     match(input.parserutils__filter_reset()) {
         PARSERUTILS_OK => {},
@@ -89,7 +88,7 @@ fn filter() {
     // Hence, a sequence of ascii code equivalent to "hell\x96o!"
     // is created and used for this test case
     //let mut in: ~[u8] = "hell\x96o!".to_bytes();
-    let mut in: ~[u8] = ~[104,101,108,108,150,111,33];
+    let in: ~[u8] = ~[104,101,108,108,150,111,33];
 
 
     /* Input does loose decoding, converting to U+FFFD if illegal
@@ -109,10 +108,11 @@ fn filter() {
 
     // FIXME: fails
     //assert_eq!(str::from_bytes(out), ~"hell\xef\xbf\xbdo!");
-    assert!(vec::eq(out, ~[104,101,108,108,239,191,189,111,33]));
+    assert!(vec::eq(out, [104,101,108,108,239,191,189,111,33]));
 
     /* Input ends mid-sequence */
-    let mut in: ~[u8] = "hell\xc2\xa0o!".to_bytes();
+    //let mut in: ~[u8] = "hell\xc2\xa0o!".to_bytes();
+    let in: ~[u8] =  ~['h' as u8,'e' as u8,'l' as u8 ,'l' as u8, 0xc2 as u8 , 0xa0 as u8,'o' as u8,'!' as u8] ;
     let mut inlen = in.len()-3;
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
         (PARSERUTILS_OK, outbuf, _) => {
@@ -137,7 +137,7 @@ fn filter() {
         _ => {assert!(false);}
     }
 
-    assert_eq!(str::from_bytes(out), ~"hell\xc2\xa0o!");
+    assert_eq!(copy out, copy in);
 
     /* Input ends mid-sequence, but second attempt has too small a
      * buffer, but large enough to write out the incomplete character.
@@ -153,7 +153,7 @@ fn filter() {
 
     //let mut in: ~[u8] = "hell\xc2\xc2o!".to_bytes();
     // ryanc: invalid utf-8 string is emulated by a sequence of ascii chars
-    let mut in: ~[u8] = ~[104,101,108,108,194,194,111,33];
+    let in: ~[u8] = ~[104,101,108,108,194,194,111,33];
     let mut inlen = in.len()-3;
 
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
@@ -183,11 +183,12 @@ fn filter() {
     }
 
     //assert_eq!(str::from_bytes(out), ~"hell\xef\xbf\xbd\xef\xbf\xbdo!");
-    assert!(vec::eq(out, ~[104,101,108,108, 239,191,189,239,191,189,111,33]));
+    assert!(vec::eq(out, [104,101,108,108, 239,191,189,239,191,189,111,33]));
 
     /* Input ends mid-sequence, but second attempt contains another
      * incomplete character */
-    let mut in: ~[u8] = "hell\xc2\xa0\xc2\xa1o!".to_bytes();
+    //let mut in: ~[u8] = "hell\xc2\xa0\xc2\xa1o!".to_bytes();
+    let in: ~[u8] =  ~['h' as u8,'e' as u8,'l' as u8 ,'l' as u8, 0xc2 as u8 , 0xa0 as u8,0xc2 as u8, 0xa1 as u8,'o' as u8,'!' as u8] ;
     let mut inlen = in.len()-5;
 
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
@@ -223,13 +224,14 @@ fn filter() {
         _ => {assert!(false);}
     }
 
-    assert_eq!(str::from_bytes(out), ~"hell\xc2\xa0\xc2\xa1o!");
+    assert_eq!(copy out, copy in);
 
 
     /* Input ends mid-sequence, but second attempt contains insufficient
      * data to complete the incomplete character */
 
-    let mut in: ~[u8] = "hell\xe2\x80\xa2o!".to_bytes();
+    //let mut in: ~[u8] = "hell\xe2\x80\xa2o!".to_bytes();
+    let in: ~[u8] =  ~['h' as u8,'e' as u8,'l' as u8 ,'l' as u8, 0xe2 as u8 , 0x80 as u8,0xa2 as u8,'o' as u8,'!' as u8] ;
     let mut inlen = in.len()-4;
 
     match(input.parserutils__filter_process_chunk(in.slice(0, inlen).to_owned())) {
@@ -265,7 +267,7 @@ fn filter() {
         _ => {assert!(false);}
     }
 
-    assert_eq!(str::from_bytes(out), ~"hell\xe2\x80\xa2o!");
+    assert_eq!(out, in);
 
     /* Clean up */
     input.parserutils__filter_destroy();

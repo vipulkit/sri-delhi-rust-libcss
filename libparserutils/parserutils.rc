@@ -4,7 +4,7 @@
 
 #[crate_type = "lib"];
 
-extern mod std;
+extern mod extra;
 
 pub mod charset {
     pub mod aliases;
