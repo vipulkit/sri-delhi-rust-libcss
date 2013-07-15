@@ -4,7 +4,6 @@ use lex::lexer::*;
 use utils::errors::*;
 
 use wapcaplet::*;
-use extra::time::*;
 use std::cast::*;
 use std::str::*;
 
@@ -55,7 +54,6 @@ pub struct css_parser {
     priv state_stack: ~[(uint,uint)], /*Parser state stack*/
     priv states: ~[state],
     priv tokens: ~[@css_token],
-    css_lexer_get_token_time: float
 }
 
 impl css_parser {
@@ -124,7 +122,6 @@ impl css_parser {
             state_stack: ~[],
             states: states,
             tokens: ~[],
-        css_lexer_get_token_time:0f
         };
 
         parser.state_stack.push(initial);
@@ -390,12 +387,8 @@ impl css_parser {
             token_option = Some(self.pushback.swap_unwrap());
         }
         else {
-            let start_time = precise_time_ns();
             /* Otherwise, ask the lexer */
             let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
-            let end_time = precise_time_ns();
-            let css_lexer_get_token_time = (end_time as float - start_time as float);
-            self.css_lexer_get_token_time += css_lexer_get_token_time ;
 
             if (lexer_error as int != CSS_OK as int) {
                 return (lexer_error, None);
@@ -403,14 +396,10 @@ impl css_parser {
 
             let mut t = lexer_token_option.unwrap();
 
-            let start_time = precise_time_ns();
             /* If the last token read was whitespace, keep reading
              * tokens until we encounter one that isn't whitespace */
             while (self.last_was_ws && t.token_type as int == CSS_TOKEN_S as int) {
                 let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
-            let end_time = precise_time_ns();
-            let css_lexer_get_token_time = (end_time as float - start_time as float);
-            self.css_lexer_get_token_time += css_lexer_get_token_time ;
                 if (lexer_error as int != CSS_OK as int) {
                     return (lexer_error, None);
                 }
@@ -1745,7 +1734,7 @@ impl css_parser {
                                 parser.done();
                                 return CSS_OK;
                             }
-                            parser.push_back(token);
+							parser.push_back(token);
                             
                             let to = ( sValue as uint, Initial as uint );
                             let subsequent = ( sValue0 as uint, AfterValue as uint );

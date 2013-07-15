@@ -129,33 +129,7 @@ pub fn select_test(file:~str) {
     let css_stylesheet_create_time = @mut 0;
     let css_stylesheet_append_data_time = @mut 0;
     let css_select_style_time = @mut 0;
-    let parseutils_inputstream_peek_time = @mut 0f;
-    let parseutils_inputstream_append_time = @mut 0f;
-    let parseutils_inputstream_advance_time = @mut 0f;
-    let css_lexer_get_token_time = @mut 0f;
     let css_stylesheet_data_done_time= @mut 0f;
-    let css_create_lwc_time = @mut 0f;
-    let css_create_inputstream_time = @mut 0f;
-    let css_create_lexer_time = @mut 0f;
-    let css_create_stylesheet_time = @mut 0f;
-    let css_create_language_time = @mut 0f;
-    let css_create_parser_time = @mut 0f;
-    let css_create_inputstream_alias_time = @mut 0f;
-    let css_lang_create_propstring_time = @mut 0f;
-    let css_lang_create_properties_time = @mut 0f;
-    let parse_lang_handle_event_time = @mut 0f;
-    let parse_lang_handleStartStyleSheet_time = @mut 0f;
-    let parse_lang_handleEndStyleSheet_time = @mut 0f;
-    let parse_lang_handleStartRuleSet_time = @mut 0f;
-    let parse_lang_handleEndRuleSet_time = @mut 0f;
-    let parse_lang_handleStartAtRule_time = @mut 0f;
-    let parse_lang_handleEndAtRule_time = @mut 0f;
-    let parse_lang_handleStartBlock_time = @mut 0f;
-    let parse_lang_handleEndBlock_time = @mut 0f; 
-    let parse_lang_handle_block_content_time = @mut 0f;
-    let parse_lang_handle_parse_declaration_time = @mut 0f;
-    let parse_lang_parse_property_time =@mut 0f;
-    let parse_lang_font_desc_time = @mut 0f;
 
     for file_content.any_line_iter().advance |line| { 
         let mut line_string: ~str = line.to_str(); 
@@ -164,91 +138,18 @@ pub fn select_test(file:~str) {
         handle_line(&mut line_string,ctx, css_stylesheet_create_time, 
                 css_stylesheet_append_data_time, 
                 css_select_style_time, 
-                parseutils_inputstream_peek_time, 
-                parseutils_inputstream_append_time,
-                css_lexer_get_token_time, 
-                css_stylesheet_data_done_time,  
-                parseutils_inputstream_advance_time,
-                css_create_lwc_time,  
-                css_create_inputstream_time, 
-                css_create_lexer_time, 
-                css_create_stylesheet_time, 
-                css_create_language_time,
-                css_create_parser_time ,
-                css_create_inputstream_alias_time,
-                css_lang_create_propstring_time,
-                css_lang_create_properties_time,
-                parse_lang_handle_event_time,
-                parse_lang_handleStartStyleSheet_time,
-                parse_lang_handleEndStyleSheet_time,
-                parse_lang_handleStartRuleSet_time,
-                parse_lang_handleEndRuleSet_time,
-                parse_lang_handleStartAtRule_time,
-                parse_lang_handleEndAtRule_time,
-                parse_lang_handleStartBlock_time,
-                parse_lang_handleEndBlock_time, 
-                parse_lang_handle_block_content_time,
-                parse_lang_handle_parse_declaration_time,
-                parse_lang_parse_property_time,
-                parse_lang_font_desc_time
-                );
+                css_stylesheet_data_done_time  );
 
     }   
 
     if (ctx.tree.is_some() ) {
-        run_test(ctx, css_select_style_time, parseutils_inputstream_peek_time, parseutils_inputstream_append_time, css_lexer_get_token_time, parseutils_inputstream_advance_time,
-                parse_lang_handle_event_time,
-                parse_lang_handleStartStyleSheet_time,
-                parse_lang_handleEndStyleSheet_time,
-                parse_lang_handleStartRuleSet_time,
-                parse_lang_handleEndRuleSet_time,
-                parse_lang_handleStartAtRule_time,
-                parse_lang_handleEndAtRule_time,
-                parse_lang_handleStartBlock_time,
-                parse_lang_handleEndBlock_time, 
-                parse_lang_handle_block_content_time, 
-                parse_lang_handle_parse_declaration_time,
-                parse_lang_parse_property_time,
-                parse_lang_font_desc_time);
+        run_test(ctx, css_select_style_time);
 
     }
 
     io::println(fmt!("#css_stylesheet_create_time:%?",(*css_stylesheet_create_time as float /1000f))) ;
-    io::println(fmt!("#css_create_lwc_time:%?",(*css_create_lwc_time/1000f))) ;
-    io::println(fmt!("#css_create_input_stream_time:%?",(*css_create_inputstream_time/1000f))) ;
-    io::println(fmt!("#css_create_inputstream_alias_time:%?",(*css_create_inputstream_alias_time/1000f))) ;
-
-    io::println(fmt!("#css_create_lexer_time:%?",(*css_create_lexer_time/1000f))) ;
-    io::println(fmt!("#css_create_stylesheet_time:%?",(*css_create_stylesheet_time/1000f))) ;
-    io::println(fmt!("#css_create_language_time:%?",(*css_create_language_time/1000f))) ;
-
-    io::println(fmt!("#parse_language_handle_event_time:%?",(*parse_lang_handle_event_time/1000f))) ;
-    io::println(fmt!("#parse_lang_handleStartStyleSheet_time:%?",(*parse_lang_handleStartStyleSheet_time/1000f))); 
-    io::println(fmt!("#parse_lang_handleEndStyleSheet_time:%?",(*parse_lang_handleEndStyleSheet_time/1000f)));
-        io::println(fmt!("#parse_lang_handleStartRuleSet_time:%?",(*parse_lang_handleStartRuleSet_time/1000f)));
-    io::println(fmt!("#parse_lang_handleEndRuleSet_time:%?",(*parse_lang_handleEndRuleSet_time/1000f)));
-    io::println(fmt!("#parse_lang_handleStartAtRule_time:%?",(*parse_lang_handleStartAtRule_time/1000f)));
-    io::println(fmt!("#parse_lang_handleEndAtRule_time :%?",(*parse_lang_handleEndAtRule_time/1000f)));
-    io::println(fmt!("#parse_lang_handleStartBlock_time:%?",(*parse_lang_handleStartBlock_time/1000f)));
-    io::println(fmt!("#parse_lang_handleEndBlock_time :%?",(*parse_lang_handleEndBlock_time/1000f)));
-    io::println(fmt!("#parse_lang_handle_block_content_time:%?",(*parse_lang_handle_block_content_time/1000f)));
-    io::println(fmt!("#parse_lang_handle_parse_declaration_time:%?",(*parse_lang_handle_parse_declaration_time/1000f)));
-
-    io::println(fmt!("#parse_lang_parse_property_time:%?",(*parse_lang_parse_property_time/1000f)));
-    io::println(fmt!("#parse_lang_font_desc_time:%?",(*parse_lang_font_desc_time/1000f)));
-                
-    io::println(fmt!("#css_lang_create_propstring_time:%?",(*css_lang_create_propstring_time/1000f))) ;
-    io::println(fmt!("#css_lang_create_properties_time:%?",(*css_lang_create_properties_time/1000f))) ;
-
-    io::println(fmt!("#css_create_parser_time:%?",(*css_create_parser_time/1000f))) ;
-
-
     io::println(fmt!("#css_stylesheet_append_data_time:%?",(*css_stylesheet_append_data_time as float/1000f))) ;
     io::println(fmt!("#css_stylesheet_data_done_time:%?",(*css_stylesheet_data_done_time/1000f))) ;
-    io::println(fmt!("#css_lexer_get_token_time:%?",(*css_lexer_get_token_time/1000f))) ;
-    io::println(fmt!("#parseutils_inputstream_peek_time:%?",(*parseutils_inputstream_peek_time/1000f))) ;
-    io::println(fmt!("#parseutils_inputstream_append_time:%?",(*parseutils_inputstream_append_time/1000f))) ;
-    io::println(fmt!("#parseutils_inputstream_advance_time:%?",(*parseutils_inputstream_advance_time/1000f))) ;
     io::println(fmt!("#css_select_style_time:%?",(*css_select_style_time as float /1000f))) ;
 }
 
@@ -277,33 +178,7 @@ pub fn css_create_params() -> css_params {
 pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_time:@mut u64, 
     css_stylesheet_append_data_time:@mut u64, 
     css_select_style_time:@mut u64, 
-    parseutils_inputstream_peek_time:@mut float, 
-    parseutils_inputstream_append_time:@mut float, 
-    css_lexer_get_token_time:@mut float, 
-    css_stylesheet_data_done_time:@mut float, 
-    parseutils_inputstream_advance_time:@mut float,
-    css_create_lwc_time:@mut float,
-    css_create_inputstream_time:@mut float,
-    css_create_lexer_time:@mut float,
-    css_create_stylesheet_time:@mut float,
-    css_create_language_time:@mut float,
-    css_create_parser_time:@mut float ,
-    css_create_inputstream_alias_time:@mut float,
-    css_lang_create_propstring_time:@mut float,
-    css_lang_create_properties_time:@mut float,
-    parse_lang_handle_event_time:@mut float,
-    parse_lang_handleStartStyleSheet_time:@mut float,
-    parse_lang_handleEndStyleSheet_time:@mut float,
-    parse_lang_handleStartRuleSet_time:@mut float,
-    parse_lang_handleEndRuleSet_time:@mut float,
-    parse_lang_handleStartAtRule_time:@mut float,
-    parse_lang_handleEndAtRule_time:@mut float,
-    parse_lang_handleStartBlock_time:@mut float,
-    parse_lang_handleEndBlock_time:@mut float, 
-    parse_lang_handle_block_content_time:@mut float,
-    parse_lang_handle_parse_declaration_time:@mut float,
-    parse_lang_parse_property_time:@mut float,
-    parse_lang_font_desc_time:@mut float
+    css_stylesheet_data_done_time:@mut float
     ) -> bool 
 {
     let mut error : css_error ;
@@ -320,16 +195,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
             }
             else {
                 /* Assume start of stylesheet */
-                css__parse_sheet(ctx, data,1, css_stylesheet_create_time, 
-                css_create_lwc_time,  
-                css_create_inputstream_time, 
-                css_create_lexer_time, 
-                css_create_stylesheet_time, 
-                css_create_language_time,
-                css_create_parser_time,
-                css_create_inputstream_alias_time ,
-                css_lang_create_propstring_time,
-                css_lang_create_properties_time);
+                css__parse_sheet(ctx, data,1, css_stylesheet_create_time );
                 debug!("Sheet parsed 1");
                 ctx.intree = false;
                 ctx.insheet = true;
@@ -369,16 +235,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
                 let end_time = time::precise_time_ns();
             let css_style_diff_time = (end_time as float - start_time as float);
             *css_stylesheet_data_done_time += css_style_diff_time;
-                css__parse_sheet(ctx, data,1, css_stylesheet_create_time, 
-                css_create_lwc_time,  
-                css_create_inputstream_time, 
-                css_create_lexer_time, 
-                css_create_stylesheet_time, 
-                css_create_language_time,
-                css_create_parser_time,
-                css_create_inputstream_alias_time,
-                css_lang_create_propstring_time,
-                css_lang_create_properties_time);
+                css__parse_sheet(ctx, data,1, css_stylesheet_create_time);
                 debug!("Sheet parsed 2");
             }
             else {
@@ -405,20 +262,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
         else if (ctx.inexp) {
             debug!("in ctx inexp");
             /* This marks end of testcase, so run it */
-            run_test(ctx, css_select_style_time, parseutils_inputstream_peek_time, parseutils_inputstream_append_time,css_lexer_get_token_time , parseutils_inputstream_advance_time,
-                parse_lang_handle_event_time,
-                parse_lang_handleStartStyleSheet_time,
-                parse_lang_handleEndStyleSheet_time,
-                parse_lang_handleStartRuleSet_time,
-                parse_lang_handleEndRuleSet_time,
-                parse_lang_handleStartAtRule_time,
-                parse_lang_handleEndAtRule_time,
-                parse_lang_handleStartBlock_time,
-                parse_lang_handleEndBlock_time, 
-                parse_lang_handle_block_content_time,
-                parse_lang_handle_parse_declaration_time,
-                parse_lang_parse_property_time,
-                parse_lang_font_desc_time);
+            run_test(ctx, css_select_style_time);
             //ctx.expused = 0;
 
             ctx.intree = false;
@@ -649,16 +493,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 
 }
 
-pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_stylesheet_create_time:@mut u64,
-            css_create_lwc_time:@mut float,
-            css_create_inputstream_time:@mut float,
-            css_create_lexer_time:@mut float,
-            css_create_stylesheet_time:@mut float,
-            css_create_language_time:@mut float,
-            css_create_parser_time:@mut float,
-            css_create_inputstream_alias_time:@mut float ,
-            css_lang_create_propstring_time:@mut float,
-            css_lang_create_properties_time:@mut float){
+pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_stylesheet_create_time:@mut u64){
     
     debug!("\n Entering css__parse_sheet ") ;
     let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
@@ -700,15 +535,6 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_styles
     let end_time = time::precise_time_ns();
     *css_stylesheet_create_time += (end_time - start_time);
 
-    *css_create_lwc_time += sheet.css_create_lwc_time;
-    *css_create_inputstream_time += sheet.css_create_inputstream_time;
-    *css_create_lexer_time += sheet.css_create_lexer_time;
-    *css_create_stylesheet_time += sheet.css_create_stylesheet_time;
-    *css_create_language_time   += sheet.css_create_language_time;
-    *css_create_parser_time    += sheet.css_create_parser_time;
-    *css_create_inputstream_alias_time += sheet.parser.lexer.input.inputstream_alias_create_time;
-    *css_lang_create_propstring_time += sheet.parser.language.css_lang_create_propstring_time;
-    *css_lang_create_properties_time += sheet.parser.language.css_lang_create_properties_time;
  
 
     debug!("Sheet created in select-auto ");
@@ -887,27 +713,7 @@ fn to_lower(string:&str) -> ~str {
     str::from_bytes(lower)
 }
 
-pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_inputstream_peek_time:@mut float, 
-    parseutils_inputstream_append_time:@mut float, 
-    css_lexer_get_token_time:@mut float,
-    parseutils_inputstream_advance_time:@mut float,
-    parse_lang_handle_event_time:@mut float,
-    parse_lang_handleStartStyleSheet_time:@mut float,
-    parse_lang_handleEndStyleSheet_time:@mut float,
-    parse_lang_handleStartRuleSet_time:@mut float,
-    parse_lang_handleEndRuleSet_time:@mut float,
-    parse_lang_handleStartAtRule_time:@mut float,
-    parse_lang_handleEndAtRule_time:@mut float,
-    parse_lang_handleStartBlock_time:@mut float,
-    parse_lang_handleEndBlock_time:@mut float, 
-    parse_lang_handle_block_content_time:@mut float,
-    parse_lang_handle_parse_declaration_time :@mut float,
-    parse_lang_parse_property_time:@mut float,
-    parse_lang_font_desc_time:@mut float
-
-
-
-) {
+pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64) {
     //debug!("\n Entering run test =%?=",ctx) ;
     let mut select: ~css_select_ctx;
     let mut results: @mut css_select_results;
@@ -1024,28 +830,6 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_i
     assert!(results.styles[ctx.pseudo_element].is_some());
     dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
 
-    let mut i = 0;
-    while i < (ctx.sheets.len() as u32) {
-        *parseutils_inputstream_peek_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_peek_time;
-        *parseutils_inputstream_append_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_append_time;
-        *parseutils_inputstream_advance_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_advance_time;
-        *css_lexer_get_token_time += ctx.sheets[i].sheet.parser.css_lexer_get_token_time;
-        *parse_lang_handle_event_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_event_time;
-        *parse_lang_handleStartStyleSheet_time +=ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartStyleSheet_time;
-        *parse_lang_handleEndStyleSheet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndStyleSheet_time;
-        *parse_lang_handleStartRuleSet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lange_handleStartRuleSet_time;
-        *parse_lang_handleEndRuleSet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndRuleSet_time;
-        *parse_lang_handleStartAtRule_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartAtRule_time;
-        *parse_lang_handleEndAtRule_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndAtRule_time;
-        *parse_lang_handleStartBlock_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartBlock_time;
-        *parse_lang_handleEndBlock_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndBlock_time;
-        *parse_lang_handle_block_content_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_block_content_time;
-        *parse_lang_handle_parse_declaration_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_parse_declaration_time;
-        *parse_lang_parse_property_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_parse_property_time;
-        *parse_lang_font_desc_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_font_desc_time;
-
-        i += 1;
-    }
 
     debug!(fmt!(" CSS Selection result is =%?",results));
     let string:~str = copy ctx.exp;
