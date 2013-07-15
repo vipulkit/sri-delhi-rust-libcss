@@ -289,13 +289,13 @@ pub static CSS_PAGE_BREAK_INSIDE_MASK : int =  0xc0;
 
 
 pub struct css_computed_counter {
-    name:~str ,
+    name:@str ,
     value:i32
 }
 
 pub struct css_computed_content_item_counter {
-    name:~str,
-    sep:Option<~str>,
+    name:@str,
+    sep:Option<@str>,
     style:u8
 }
 
@@ -303,7 +303,7 @@ pub struct css_computed_content_item {
   
     item_type:css_computed_content_item_type,
 
-    data:Option<~str>,
+    data:Option<@str>,
     counters_data:Option<css_computed_content_item_counter>
 }
 
@@ -374,7 +374,7 @@ pub struct css_computed_uncommon {
     counter_increment:~[@mut css_computed_counter],
     counter_reset:~[@mut css_computed_counter],
 
-    cursor:~[~str],
+    cursor:~[@str],
 
     content:~[@mut css_computed_content_item],
 }
@@ -531,7 +531,7 @@ pub struct css_computed_style {
 
     background_color:u32,
 
-    background_image:~str,
+    background_image:@str,
 
     background_position:~[i32],
 
@@ -551,7 +551,7 @@ pub struct css_computed_style {
 
     line_height:i32,
 
-    list_style_image:~str,
+    list_style_image:@str,
 
     margin:~[i32],
 
@@ -573,10 +573,10 @@ pub struct css_computed_style {
 
     z_index:i32,
 
-    font_family:~[~str],
+    font_family:~[@str],
 
     //quotes chaned from wapcaplet-strings to strings
-    quotes:~[~str],
+    quotes:~[@str],
 
     uncommon:Option<@mut css_computed_uncommon>, /**< Uncommon properties */
     aural:Option<@mut css_aural>,         /*< Aural properties */
@@ -626,8 +626,8 @@ pub struct css_hint {
     color:Option<u32>,
     fixed:Option<i32>,
     integer:Option<i32>,
-    string:Option<~str>,
-    strings:Option<~[~str]>
+    string:Option<@str>,
+    strings:Option<~[@str]>
 }
 
 pub struct rect_result {
@@ -666,7 +666,7 @@ pub struct css_select_results {
 }
 
 pub struct reject_item {
-    value:~str,
+    value:@str,
     sel_type:css_selector_type 
 } 
 
@@ -686,9 +686,9 @@ pub struct css_select_handler {
 
     node_name: @extern fn( node:*c_void, qname: &mut css_qname ) -> css_error,
 
-    node_classes: @extern fn(pw:*c_void, n:*c_void, classes: &mut ~[~str] ) -> css_error,
+    node_classes: @extern fn(pw:*c_void, n:*c_void, classes: &mut ~[@str] ) -> css_error,
 
-    node_id: @extern fn(pw:*c_void, node:*c_void, id:&mut ~str ) -> css_error,
+    node_id: @extern fn(pw:*c_void, node:*c_void, id:&mut @str ) -> css_error,
 
     named_ancestor_node: @extern fn(node:*c_void, qname:&mut css_qname, ancestor:*mut*c_void) -> css_error,
    
@@ -704,23 +704,23 @@ pub struct css_select_handler {
 
     node_has_name: @extern fn(pw:*c_void,node:*c_void, qname:css_qname, matched:@mut bool) -> css_error,
 
-    node_has_class: @extern fn(pw:*c_void, node:*c_void, name:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_class: @extern fn(pw:*c_void, node:*c_void, name:@lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_id: @extern fn(pw:*c_void, node:*c_void, name:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_id: @extern fn(pw:*c_void, node:*c_void, name:@lwc_string, matched:@mut bool) -> css_error,
 
     node_has_attribute: @extern fn(node:*c_void, name:css_qname, matched:@mut bool) -> css_error,
     
-    node_has_attribute_equal: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_equal: @extern fn(node:*c_void, qname:css_qname,value:@str, matched:@mut bool) -> css_error,
    
-    node_has_attribute_dashmatch: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_dashmatch: @extern fn(node:*c_void, qname:css_qname,value:@str, matched:@mut bool) -> css_error,
 
-    node_has_attribute_includes: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_includes: @extern fn(node:*c_void, qname:css_qname,value:@str, matched:@mut bool) -> css_error,
 
-    node_has_attribute_prefix: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_prefix: @extern fn(node:*c_void, qname:css_qname,value:@str, matched:@mut bool) -> css_error,
 
-    node_has_attribute_suffix: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_suffix: @extern fn(node:*c_void, qname:css_qname,value:@str, matched:@mut bool) -> css_error,
 
-    node_has_attribute_substring: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_substring: @extern fn(node:*c_void, qname:css_qname,value:@str, matched:@mut bool) -> css_error,
 
     node_is_root: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
    
@@ -746,7 +746,7 @@ pub struct css_select_handler {
  
     node_is_target: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
 
-    node_is_lang: @extern fn(node:*c_void, lang:~str, matched:@mut bool) -> css_error,
+    node_is_lang: @extern fn(node:*c_void, lang:@str, matched:@mut bool) -> css_error,
 
     node_presentational_hint: @extern fn(node:*c_void, property:u32) -> 
         (css_error,Option<@mut css_hint>),
@@ -773,9 +773,9 @@ pub struct css_select_state {
 
     element:css_qname,       
      //changed id from wapcaplet-string to string
-    id:~str,
+    id:@str,
      //changes classes from wapcaplet  to string
-    classes:~[~str],
+    classes:~[@str],
     n_classes:u32,           
 
     reject_cache: ~[Option<reject_item>],     /* Reject cache (filled from end) */  
@@ -798,24 +798,24 @@ pub struct css_select_font_faces_results {
 #[inline]
 pub fn advance_bytecode(style: @mut css_style) {
     
-	if (style.bytecode.len() - style.used > 0) {
-		style.used += 1 
-	}
-	else {
-		fail!(~"Advancing Bytecode vector after end index")
-	}
+    if (style.bytecode.len() - style.used > 0) {
+        style.used += 1 
+    }
+    else {
+        fail!(~"Advancing Bytecode vector after end index")
+    }
     
 }   
 
 pub fn peek_bytecode(style: @mut css_style) -> u32 {
     
-	if style.bytecode.len() - style.used > 0 {
-		debug!(fmt!("bytecode=%?",style.bytecode)); 
-		style.bytecode[style.used] 
-	}
-	else {
-		fail!(~"Advancing Bytecode vector after end index")
-	}
+    if style.bytecode.len() - style.used > 0 {
+        debug!(fmt!("bytecode=%?",style.bytecode)); 
+        style.bytecode[style.used] 
+    }
+    else {
+        fail!(~"Advancing Bytecode vector after end index")
+    }
     
 }
 

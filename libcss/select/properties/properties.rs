@@ -186,10 +186,10 @@ pub fn css__cascade_bg_border_color(opv:u32, style:@mut css_style, state:@mut cs
 
 #[inline]
 pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_select_state, 
-	fun:Option<@extern fn (@mut css_computed_style, u8, ~str)>) -> css_error {
+	fun:Option<@extern fn (@mut css_computed_style, u8, @str)>) -> css_error {
 	
 	let mut value : uint = CSS_BACKGROUND_IMAGE_INHERIT as uint;
-	let mut uri: Option<~str> = None;
+	let mut uri: Option<@str> = None;
 	//let mut error:css_error;
 
 	if !isInherit(opv) {
@@ -217,7 +217,7 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 			}
 			else {
 				debug!("URI is none in css__cascade_uri_none ") ;
-				(*fun_fn)(state.computed, value as u8, ~"")	
+				(*fun_fn)(state.computed, value as u8, @"")	
 			}
 		},
 		None => {}
@@ -509,7 +509,7 @@ pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state
 	
 	/* If we have some counters, terminate the array with a blank entry */
 	// if !counters.is_empty() {
-	// 	let temp = @mut css_computed_counter{name:~"",value:0};
+	// 	let temp = @mut css_computed_counter{name:@"",value:0};
 	// 	counters.push(temp);
 	// }
 
@@ -712,7 +712,7 @@ pub fn css__set_background_image_from_hint(hint:@mut  css_hint,
 					set_background_image(style, hint.status, x);
 				},
 				None=>{
-					set_background_image(style, hint.status, ~"");
+					set_background_image(style, hint.status, @"");
 				}
 			}
 			CSS_OK
@@ -727,7 +727,7 @@ pub fn css__initial_background_image(state:@mut css_select_state) -> css_error {
 
     debug!("Entering: css__initial_background_image");
 	set_background_image(state.computed, 
-		(CSS_BACKGROUND_IMAGE_NONE as u8), ~"");
+		(CSS_BACKGROUND_IMAGE_NONE as u8), @"");
 	CSS_OK
 }
 
@@ -2922,13 +2922,13 @@ pub fn css__cascade_font_family(opv:u32, style:@mut css_style,
 									state:@mut css_select_state) -> css_error {
 
 	let mut value = CSS_FONT_FAMILY_INHERIT as u16;
-	let mut fonts : ~[~str] = ~[] ;
+	let mut fonts : ~[@str] = ~[] ;
 
 	if (isInherit(opv) == false) {
 		let mut v : u32 = getValue(opv) as u32;
 
 		while (v != (FONT_FAMILY_END as u32) ) {
-			let mut font : Option<~str> = None  ;
+			let mut font : Option<@str> = None  ;
 
 			match (v as u16) {
 				FONT_FAMILY_STRING | 
@@ -3770,7 +3770,7 @@ pub fn css__set_list_style_image_from_hint(hint:@mut  css_hint,
 					set_list_style_image(style, hint.status, x);
 				},
 				None=>{
-					set_list_style_image(style, hint.status, ~"");
+					set_list_style_image(style, hint.status, @"");
 				}
 			}
 			hint.string = None ;
@@ -3785,7 +3785,7 @@ pub fn css__set_list_style_image_from_hint(hint:@mut  css_hint,
 pub fn css__initial_list_style_image(state:@mut css_select_state) -> css_error {
 
 	set_list_style_image(state.computed, 
-			(CSS_LIST_STYLE_IMAGE_URI_OR_NONE as u8) , ~"" );
+			(CSS_LIST_STYLE_IMAGE_URI_OR_NONE as u8) , @"" );
 	CSS_OK
 }
 
@@ -5400,7 +5400,7 @@ pub fn css__cascade_play_during(opv:u32 ,
 							state: @mut css_select_state 
 							) -> css_error {
 
-	// let mut uri : ~str;
+	// let mut uri : @str;
 
 	if (isInherit(opv) == false) {
 		match (getValue(opv)) {
@@ -5531,7 +5531,7 @@ pub fn css__cascade_quotes(opv:u32, style:@mut css_style,
 
 	
 	let mut value : u16 = CSS_QUOTES_INHERIT as u16;
-	let mut quotes : ~[~str] = ~[] ;
+	let mut quotes : ~[@str] = ~[] ;
 
 	if (isInherit(opv) == false) {
 		let mut v : u32 = getValue(opv) as u32 ;
@@ -6693,7 +6693,7 @@ pub fn css__cascade_voice_family(opv:u32 ,
 								) -> css_error {
 
 	let mut value : u16 = 0;
-	let mut voices : ~[~str] = ~[];
+	let mut voices : ~[@str] = ~[];
 
 	if (isInherit(opv) == false) {
 		let mut v : u32 = getValue(opv) as u32;
@@ -7359,7 +7359,7 @@ pub fn css__cascade_cursor(opv:u32, style:@mut css_style,
 							state:@mut css_select_state) -> css_error {
 
 	let mut value : u16= CSS_CURSOR_INHERIT as u16;
-	let mut uris : ~[~str] = ~[] ;
+	let mut uris : ~[@str] = ~[] ;
 
 	if (isInherit(opv) == false) {
 		let mut v : u32 = getValue(opv) as u32;

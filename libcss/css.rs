@@ -11,7 +11,7 @@ use stylesheet::*;
 use utils::errors::*;
 
 pub struct css {
-	lwc:@mut lwc,
+	lwc:@lwc,
 	stylesheet:@mut css_stylesheet,
 	parser:~css_parser,
 	css_create_lwc_time: float,
@@ -59,7 +59,7 @@ pub struct css_params {
 }
 
 impl css {
-	pub fn css_create(params: &css_params, lwc_instance: Option<@mut lwc>) -> @mut css {
+	pub fn css_create(params: &css_params, lwc_instance: Option<@lwc>) -> @mut css {
         let start_time = precise_time_ns();
 		// create lwc
 		let lwc = 	if lwc_instance.is_none() { 
@@ -68,12 +68,12 @@ impl css {
 					else {
 						lwc_instance.unwrap()
 					} ;
-            	let end_time = precise_time_ns();
-	        let create_lwc_time = (end_time as float - start_time as float);
+        let end_time = precise_time_ns();
+        let create_lwc_time = (end_time as float - start_time as float);
 
 
 		// create inputstream
-            	let start_time = precise_time_ns();
+    	let start_time = precise_time_ns();
 		let (inputstream_option, _) =  
 			match copy params.charset {
 				None => inputstream(None, None ,Some(@css__charset_extract)),

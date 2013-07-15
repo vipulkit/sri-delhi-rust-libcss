@@ -70,15 +70,15 @@ pub struct css_system_font {
     weight: css_font_weight_e,
     size: size,
     line_height: line_height,
-    family: @mut lwc_string
+    family: @lwc_string
 }
 
 pub type css_fixed = i32;
 
-pub type css_url_resolution_fn = @extern fn (base:@str, rel:@mut lwc_string) -> (css_error,Option<@mut lwc_string>);
-pub type css_font_resolution_fn = @extern fn (name: @mut lwc_string) -> (css_error , Option<css_system_font>);
+pub type css_url_resolution_fn = @extern fn (base:@str, rel:@lwc_string) -> (css_error,Option<@lwc_string>);
+pub type css_font_resolution_fn = @extern fn (name: @lwc_string) -> (css_error , Option<css_system_font>);
 pub type css_import_notification_fn =  @extern fn(url:@str, media:@mut u64) -> css_error;
-pub type css_color_resolution_fn = @extern fn (name: @mut lwc_string) -> (Option<u32> , css_error);
+pub type css_color_resolution_fn = @extern fn (name: @lwc_string) -> (Option<u32> , css_error);
 
 
 static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
@@ -86,8 +86,8 @@ static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
 
 // /**< Qualified name of selector */
 pub struct css_qname {  
-    name:~str,
-    ns:~str
+    name:@str,
+    ns:@str
 }
 
 pub struct css_selector_detail {
@@ -98,7 +98,7 @@ pub struct css_selector_detail {
     negate:bool,                        /**< Detail match is inverted */
 
     //css_selector_detail_value - union merged
-    string:Option<~str>,
+    string:Option<@str>,
     a:i32,
     b:i32
 }
@@ -144,7 +144,7 @@ pub struct css_stylesheet {
     quirks_used:bool,                       /**< Quirks actually used */
     inline_style:bool,                      /**< Is an inline style */
     cached_style:Option<@mut css_style>,    /**< Cache for style parsing */
-    string_vector:~[~str],
+    string_vector:~[@str],
     resolve : css_url_resolution_fn, // URL resolution function */
     import : Option<css_import_notification_fn>, // Import notification function */
     font : Option<css_font_resolution_fn>,   //Import font_resolution function
@@ -192,7 +192,7 @@ pub struct css_rule_import {
 } 
 pub struct css_rule_charset {
     base:@mut css_rule,
-    encoding:~str   
+    encoding:@str   
 } 
 
 
@@ -407,7 +407,7 @@ impl css_stylesheet {
     * #Return Value:
     *   'uint' - index next to the index of insertion is returned.
     */
-    pub fn css__stylesheet_string_add(&mut self, string: ~str) -> uint {
+    pub fn css__stylesheet_string_add(&mut self, string: @str) -> uint {
         debug!("Entering: css__stylesheet_string_add");
         let mut i : uint = self.string_vector.len() ;
         while(i!=0) {
@@ -428,17 +428,17 @@ impl css_stylesheet {
     *  'num' - The index of string to retrive.
     
     * #Return Value:
-    *   '(css_error,Option<~str>)' - (CSS_BADPARM,None) if num param is not correct, 
+    *   '(css_error,Option<@str>)' - (CSS_BADPARM,None) if num param is not correct, 
     *                               else ( CSS_OK, option of the string. )
     */
     pub fn css__stylesheet_string_get(&mut self, num:uint) 
-                                    -> (css_error,Option<~str>) {
+                                    -> (css_error,Option<@str>) {
         debug!("Entering: css__stylesheet_string_get");
 
         if( (self.string_vector.len() < num) || (num == 0) ) {
             return (CSS_BADPARM,None) ;
         }
-        ( CSS_OK, Some(copy self.string_vector[num-1]) )
+        ( CSS_OK, Some(self.string_vector[num-1]) )
     }
 
     #[inline]
@@ -578,7 +578,7 @@ impl css_stylesheet {
     *  'sel_type' - The type of selector to create.
     *  'qname' - Qualified name of selector.
     *  'value_type' - type of the value.
-    *  'string_value' - Option<~str>
+    *  'string_value' - Option<@str>
     *  'ab_value' - Option<(i32,i32)>  css_selector_detail_value.
     *  'negate' - Whether the detail match should be negated.
     
@@ -589,7 +589,7 @@ impl css_stylesheet {
         sel_type: css_selector_type,
         qname : css_qname, 
         value_type : css_selector_detail_value_type,
-        string_value : Option<~str> , 
+        string_value : Option<@str> , 
         ab_value : Option<(i32,i32)>,
         negate:bool
     )  -> (css_error, Option<@mut css_selector_detail>) 
@@ -745,7 +745,7 @@ impl css_stylesheet {
             CSS_RULE_CHARSET=>  {   
                 let ret_rule = @mut css_rule_charset{
                     base:base_rule,
-                    encoding:~""
+                    encoding:@""
                 };  
                 RULE_CHARSET(ret_rule) 
             },
@@ -864,7 +864,7 @@ impl css_stylesheet {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css__stylesheet_rule_set_charset(css_rule : CSS_RULE_DATA_TYPE, charset: ~str) -> css_error {
+    pub fn css__stylesheet_rule_set_charset(css_rule : CSS_RULE_DATA_TYPE, charset: @str) -> css_error {
         debug!("Entering: css__stylesheet_rule_set_charset");
         
         if charset.len() <= 0 {
@@ -1287,12 +1287,12 @@ impl css_selector_hash {
                         universal:~[] 
         };
         let mut i = 0;
-		while i < hash.default_slots {
+        while i < hash.default_slots {
             hash.elements.push(None);
             hash.classes.push(None);
             hash.ids.push(None);
             hash.universal.push(None);
-			i = i + 1;
+            i = i + 1;
         }
         hash
     }
@@ -1305,25 +1305,25 @@ impl css_selector_hash {
     *  'selector '  - Selector to consider. 
 
     * #Return Value:
-    *  '~str' - class name.
+    *  '@str' - class name.
     */
 
     #[inline]
     pub fn _class_name(selector : @mut css_selector) 
-                        -> ~str {
+                        -> @str {
 
         for selector.data.mut_iter().advance |&element| {
             match element.selector_type {
                 CSS_SELECTOR_CLASS=>{
                     if (element.negate == false) {
-                    return copy element.qname.name;
+                    return element.qname.name;
                     }
                 },
                 _=>{}
             }
         }
 
-        ~""
+        @""
     }
 
     /**
@@ -1334,25 +1334,25 @@ impl css_selector_hash {
     *  'selector '  - Selector to consider. 
 
     * #Return Value:
-    *  '~str' - ID name.
+    *  '@str' - ID name.
     */
 
     #[inline]
     pub fn _id_name(selector : @mut css_selector) 
-                        -> ~str {
+                        -> @str {
 
         for selector.data.mut_iter().advance |&element| {
             match element.selector_type {
                 CSS_SELECTOR_ID=>{
                     if (element.negate == false) {
-                    return copy element.qname.name;
+                    return element.qname.name;
                     }
                 },
                 _=>{}
             }
         }
 
-        ~""
+        @""
     }
 
 
@@ -1368,7 +1368,7 @@ impl css_selector_hash {
     */
 
     #[inline]
-    pub fn _hash_name( string: ~str ) -> u32 {
+    pub fn _hash_name( string: @str ) -> u32 {
         debug!("Entering _hash_name");
         let mut z: u32 = 0x811c9dc5;
         let mut i: uint = 0;
@@ -1398,7 +1398,7 @@ impl css_selector_hash {
 
         let mut mask :u32 ;
         let mut index:u32=0;
-        let mut name :~str ;
+        let mut name :@str ;
         if (selector.data.len() > 0) {
 
             // Named Element
@@ -1406,7 +1406,7 @@ impl css_selector_hash {
                 (selector.data[0].qname.name.char_at(0) != '*' ) {
                     debug!("Entering: css__selector_hash_insert:: Named Element");
                     mask = self.default_slots-1 ;
-                    index = css_selector_hash::_hash_name(copy (selector.data[0].qname.name)) & mask ;
+                    index = css_selector_hash::_hash_name((selector.data[0].qname.name)) & mask ;
                     return self._insert_into_chain(Element,index,selector);
             }
 
@@ -1555,14 +1555,14 @@ impl css_selector_hash {
                                     -> css_error {
         let mut mask :u32 ;
         let mut index:u32=0;
-        let mut name :~str ;
+        let mut name :@str ;
         if (selector.data.len() > 0){
 
             // Named Element
             if ( selector.data[0].qname.name.len() != 1) || 
                 (selector.data[0].qname.name.char_at(0) != '*' ) {
                     mask = self.default_slots-1 ;
-                    index = css_selector_hash::_hash_name(copy (selector.data[0].qname.name)) & mask ;
+                    index = css_selector_hash::_hash_name((selector.data[0].qname.name)) & mask ;
                     return self._remove_from_chain(Element,index,selector);
             }
 
@@ -1665,15 +1665,15 @@ impl css_selector_hash {
     
     let i :uint = a.len() ;
     let mut e = 0;
-	while e < i {
+    while e < i {
         if a[e] == b[e] {
             e = e + 1 ;
-			loop;
+            loop;
         }
 
         if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
             if (a[e]+32) == b[e] {
-				e = e + 1 ;
+                e = e + 1 ;
                 loop;
             }
             else {
@@ -1683,7 +1683,7 @@ impl css_selector_hash {
 
         if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
             if (b[e]+32) == a[e] {
-				e = e + 1 ;
+                e = e + 1 ;
                 loop;
             }
             else {
@@ -1705,7 +1705,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find(&mut self, name : @str) -> (Option<@mut hash_entry>,css_error) {
         debug!("Entering: css__selector_hash_find");
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(copy name) & mask ; 
@@ -1751,7 +1751,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_class(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_by_class(&mut self, name : @str) -> (Option<@mut hash_entry>,css_error) {
 
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(copy name) & mask ; 
@@ -1795,7 +1795,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_id(&mut self, name : ~str) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_by_id(&mut self, name : @str) -> (Option<@mut hash_entry>,css_error) {
 
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(copy name) & mask ; 

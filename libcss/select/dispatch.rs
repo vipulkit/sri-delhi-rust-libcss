@@ -1167,7 +1167,7 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 
         background_color:0,
 
-        background_image:~"",
+        background_image:@"",
 
         background_position:~[],
 
@@ -1187,7 +1187,7 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 
         line_height:0,
 
-        list_style_image:~"",
+        list_style_image:@"",
 
         margin:~[],
 
@@ -1292,10 +1292,10 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
         current_origin:CSS_ORIGIN_UA,  
         current_specificity:0,   
         element:css_qname{ 
-            name:~"" , 
-            ns:~"" 
+            name:@"" , 
+            ns:@"" 
         },
-        id:~"",
+        id:@"",
         classes:~[],
         n_classes:0,             
         reject_cache: ~[],       

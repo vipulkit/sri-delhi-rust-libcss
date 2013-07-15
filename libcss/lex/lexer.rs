@@ -52,7 +52,7 @@ pub struct css_token {
     data: css_token_data,
 
     token_type: css_token_type,
-    idata: Option<@mut lwc_string>,
+    idata: Option<@lwc_string>,
 
     col: uint,
     line: uint
@@ -118,11 +118,11 @@ impl css_lexer {
     /**
     * #Description:
     *   Create a lexer instance.
-	
+    
     * #Arguments:
     *  'inputstream' - The inputstream to read from
     
-	* #Return Value:
+    * #Return Value:
     *   'css_lexer' - location to receive lexer instance.
     */
     pub fn css__lexer_create(inputstream: ~inputstream) -> ~css_lexer {
@@ -175,15 +175,15 @@ impl css_lexer {
     /**
     * #Description:
     *   Retrieve a token from a lexer.
-	* The returned token object is owned by the lexer. However, the client is
-	* permitted to modify the data members of the token. The token must not be
-	* freed by the client (it may not have been allocated in the first place),
-	* nor may any of the pointers contained within it. The client may, if they
-	* wish, overwrite any data member of the returned token object -- the lexer
-	* does not depend on these remaining constant. This allows the client code
+    * The returned token object is owned by the lexer. However, the client is
+    * permitted to modify the data members of the token. The token must not be
+    * freed by the client (it may not have been allocated in the first place),
+    * nor may any of the pointers contained within it. The client may, if they
+    * wish, overwrite any data member of the returned token object -- the lexer
+    * does not depend on these remaining constant. This allows the client code
     * to efficiently implement a push-back buffer with interned string data.
-	
-	* #Return Value:
+    
+    * #Return Value:
     *   '(css_error , Option<@mut css_token>)' - (CSS_OK,location to receive lexer instance), (appropriate error, None) otherwise.
     */
     pub fn css__lexer_get_token(&mut self) -> (css_error , Option<@mut css_token>){
@@ -277,7 +277,7 @@ impl css_lexer {
     /**
     * #Description:
     *   Append some data to the current token.
-	
+    
     * #Arguments:
     *  'data' - The data to append.
     *  'len' - Length, in bytes, of data.
@@ -299,11 +299,11 @@ impl css_lexer {
     /**
     * #Description:
     *   Prepare a token for consumption and emit it to the client.
-	
+    
     * #Arguments:
     *  'input_token_type' - The type of token to emit.
 
-	* #Return Value:
+    * #Return Value:
     *   '(css_error , Option<@mut css_token>)' - (CSS_OK,location to receive receive pointer to token), (appropriate error, None) otherwise.
     */
     pub fn emit_token(&mut self , input_token_type: Option<css_token_type>) -> (css_error, Option<@mut css_token>) {
@@ -1229,11 +1229,11 @@ impl css_lexer {
             // debug!(fmt!("start:: self.bytes_read_for_token == %?", self.bytes_read_for_token));
             /* Advance past the input read for the previous token */
             if (self.bytes_read_for_token > 0) {
-        	let start_time = precise_time_ns();
+            let start_time = precise_time_ns();
                 self.input.parserutils_inputstream_advance(self.bytes_read_for_token);
-        	let end_time = precise_time_ns();
-	        let advance_time = (end_time as float - start_time as float);
-        	self.parseutils_inputstream_advance_time += advance_time ;
+            let end_time = precise_time_ns();
+            let advance_time = (end_time as float - start_time as float);
+            self.parseutils_inputstream_advance_time += advance_time ;
 
                 self.bytes_read_for_token = 0;
             }

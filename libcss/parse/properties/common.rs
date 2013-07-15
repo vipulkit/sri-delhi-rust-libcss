@@ -154,7 +154,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
     return(Some(num) , Some(unit_retVal) , CSS_OK);
 }
 
-pub fn css__number_from_lwc_string(string: @mut lwc_string, int_only: bool) -> (i32 , uint) {
+pub fn css__number_from_lwc_string(string: @lwc_string, int_only: bool) -> (i32 , uint) {
     
     debug!("Entering: css__number_from_lwc_string");
 
@@ -263,7 +263,7 @@ pub fn css__parse_unit_keyword(ptr:&str)-> (Option<u32>,css_error) {
     (Some(unit) , CSS_OK)
 }
 
-pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool) -> (i32 , uint){
+pub fn css__number_from_string(data: @str, data_index:@mut uint, int_only: bool) -> (i32 , uint){
 
     debug!("Entering: css__number_from_string");
     let mut length = data.len() - *data_index;
@@ -279,7 +279,7 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
     if length <=0 {
         return (ret_value , consumed_length);
     }
-		
+        
     // number = [+-]? ([0-9]+ | [0-9]* '.' [0-9]+) 
 
     // Extract sign, if any 
@@ -293,7 +293,7 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
         *data_index += 1;
     }
 
-	/* Ensure we have either a digit or a '.' followed by a digit */
+    /* Ensure we have either a digit or a '.' followed by a digit */
     if length == 0 {
         return (ret_value , consumed_length);
     }
@@ -308,14 +308,14 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
         }
     }
 
-	/* Now extract intpart, assuming base 10 */
+    /* Now extract intpart, assuming base 10 */
     while length>0 {
-		/* Stop on first non-digit */
+        /* Stop on first non-digit */
         if (data[0 + *data_index] < ('0' as u8))||(('9' as u8) < data[0 + *data_index]) {
             break
         }
-		
-		/* Prevent overflow of 'intpart'; proper clamping below */
+        
+        /* Prevent overflow of 'intpart'; proper clamping below */
         if intpart < (1i32<<22) {
             intpart *= 10;
             intpart += (data[0 + *data_index] as i32) - ('0' as i32);
@@ -324,16 +324,16 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
         length -= 1;
     }
 
-	/* And fracpart, again, assuming base 10 */
+    /* And fracpart, again, assuming base 10 */
     if int_only == false && length > 1 && (data[0 + *data_index] == '.' as u8) && ('0' as u8 <= data[1 + *data_index] && data[1 + *data_index] <= '9' as u8) {
         *data_index += 1; 
         length -= 1;
-		
+        
         while length >0 {
             if ((data[0 + *data_index] < '0' as u8))|| (('9' as u8) < data[0 + *data_index]) {
                 break
             }
-			
+            
             if pwr < 1000000 {
                 pwr *= 10;
                 fracpart *= 10;
@@ -353,15 +353,15 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
 
     if sign > 0 {
         /* If the result is larger than we can represent,
-		 * then clamp to the maximum value we can store. */
-		if intpart >= (1i32 << 21) {
+         * then clamp to the maximum value we can store. */
+        if intpart >= (1i32 << 21) {
             intpart = (1i32 << 21) - 1;
             fracpart = (1i32 << 10) - 1;
         }
     }
     else {
         /* If the negated result is smaller than we can represent
-		 * then clamp to the minimum value we can store. */
+         * then clamp to the minimum value we can store. */
         if intpart >= (1i32 << 21) {
             intpart = -(1i32 << 21);
             fracpart = 0;
@@ -406,7 +406,7 @@ pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->boo
 * 'css_error' - CSS_OK on success,  
                 CSS_INVALID if the input is not valid.
 
-				* #Post condition:
+                * #Post condition:
 *   ctx is updated with the next token to process.
 *   If the input is invalid, then ctx remains unchanged.
 */
@@ -447,10 +447,10 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
             return (None , None , CSS_INVALID);
         } 
     }
-	
-	debug!(fmt!("Token = %?", token));
-	debug!(fmt!("sheet.quirks_allowed = %?", sheet.quirks_allowed));
-	
+    
+    debug!(fmt!("Token = %?", token));
+    debug!(fmt!("sheet.quirks_allowed = %?", sheet.quirks_allowed));
+    
     if token.token_type as int == CSS_TOKEN_IDENT as int  {
         if strings.lwc_string_caseless_isequal(token.idata.get() , TRANSPARENT as uint) {
             ret_value = COLOR_TRANSPARENT ;
@@ -537,14 +537,14 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
 
                 component = components[i];
                 consumeWhitespace(vector , ctx);
-				
-				if *ctx >= vector.len() {
-					*ctx = orig_ctx;
-					return (None , None , CSS_INVALID);
-				}
-				token = &vector[*ctx];
                 
-				match token.token_type {
+                if *ctx >= vector.len() {
+                    *ctx = orig_ctx;
+                    return (None , None , CSS_INVALID);
+                }
+                token = &vector[*ctx];
+                
+                match token.token_type {
                     CSS_TOKEN_NUMBER => {},
                     CSS_TOKEN_PERCENTAGE => {},
                     _ => {
@@ -561,7 +561,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                 }
 
                
-				/* The alpha channel may be a float */
+                /* The alpha channel may be a float */
                 if i<3 {
                     int_only = match valid {
                     CSS_TOKEN_NUMBER => true,
@@ -578,10 +578,10 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                     return (None , None , CSS_INVALID);
                 }
                 
-				match valid {
+                match valid {
                     CSS_TOKEN_NUMBER=>{
                         if (i==3) {
-							/* alpha channel */
+                            /* alpha channel */
                             intval = css_multiply_fixed((num as i32), F_255 as i32)>> CSS_RADIX_POINT;
                             //FIXTOINT(FMUL(num, F_255));
                         }
@@ -608,14 +608,14 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
 
                 *ctx = *ctx + 1; //Iterate
                 
-				consumeWhitespace(vector , ctx);
+                consumeWhitespace(vector , ctx);
 
                 if *ctx >= vector.len() {
                     *ctx = orig_ctx;
                     return (None , None , CSS_INVALID);     
                 }
-				token = &vector[*ctx];
-				
+                token = &vector[*ctx];
+                
                 if (i != (colour_channels - 1) && tokenIsChar(token , ',')) {
                     *ctx = *ctx + 1; //Iterate
                 }
@@ -631,23 +631,23 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
         }
         else if colour_channels == 5 || colour_channels == 6 {
             /* hue - saturation - lightness */
-			
-			let mut hue: i32;
+            
+            let mut hue: i32;
             let mut sat: i32;
             let mut lit: i32;
             let mut alpha: i32 = 255;
-			
-			/* hue is a number without a unit representing an 
-			 * angle (0-360) degrees  
-			 */
+            
+            /* hue is a number without a unit representing an 
+             * angle (0-360) degrees  
+             */
             consumeWhitespace(vector , ctx);
 
             if *ctx >= vector.len() {
                 *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
-			
-			token = &vector[*ctx];
+            
+            token = &vector[*ctx];
             *ctx = *ctx + 1; //Iterate
             
             match token.token_type {
@@ -657,18 +657,18 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                     return (None , None , CSS_INVALID);
                 }
             }
-			
+            
             let (hue_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get() , false);
             hue = hue_res as i32;
             
-			if consumed_length_from_lwc_string != lwc_string_length(token.idata.get()) {
+            if consumed_length_from_lwc_string != lwc_string_length(token.idata.get()) {
                 /* failed to consume the whole string as a number */
-				*ctx = orig_ctx;
+                *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
             
-			/* Normalise hue to the range [0, 360) */
-			while hue < 0 {
+            /* Normalise hue to the range [0, 360) */
+            while hue < 0 {
                 hue += F_360 as i32;
             }
             while hue >= F_360 as i32 {
@@ -681,23 +681,23 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                 *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
-			token = &vector[*ctx];
+            token = &vector[*ctx];
             *ctx = *ctx + 1;
             
             if !tokenIsChar(token , ',') {
                 *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
-			
-			/* saturation */
+            
+            /* saturation */
             consumeWhitespace(vector , ctx);
             
             if *ctx >= vector.len() {
                 *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
-			
-			token = &vector[*ctx];
+            
+            token = &vector[*ctx];
             *ctx = *ctx + 1;
             
             match token.token_type {
@@ -708,15 +708,15 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                 }
             }
             
-			let (sat_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get() , false);
+            let (sat_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get() , false);
             sat = sat_res as i32;
             if consumed_length_from_lwc_string != lwc_string_length(token.idata.get()) {
-				/* failed to consume the whole string as a number */
-				*ctx = orig_ctx;
+                /* failed to consume the whole string as a number */
+                *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
-			
-			/* Normalise saturation to the range [0, 100] */
+            
+            /* Normalise saturation to the range [0, 100] */
             if sat < css_int_to_fixed(0) {
                 sat = css_int_to_fixed(0);
             }
@@ -730,8 +730,8 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                 *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
-			
-			token = &vector[*ctx];
+            
+            token = &vector[*ctx];
             *ctx = *ctx + 1;
 
             if !tokenIsChar(token , ',') {
@@ -739,14 +739,14 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                 return (None , None , CSS_INVALID);
             }
 
-			/* lightness */	
+            /* lightness */ 
             consumeWhitespace(vector , ctx);
-			
-			if *ctx >= vector.len() {
+            
+            if *ctx >= vector.len() {
                 *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
-			
+            
             token = &vector[*ctx];
             *ctx = *ctx + 1;
 
@@ -761,11 +761,11 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
             lit = lit_res as i32;
             if consumed_length_from_lwc_string != lwc_string_length(token.idata.get()) {
                 /* failed to consume the whole string as a number */
-				*ctx = orig_ctx;
+                *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
-			
-			/* Normalise lightness to the range [0, 100] */
+            
+            /* Normalise lightness to the range [0, 100] */
             if lit < css_int_to_fixed(0) {
                 lit = css_int_to_fixed(0);
             }
@@ -779,24 +779,24 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                 *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
-			
-			token = &vector[*ctx];
+            
+            token = &vector[*ctx];
             *ctx = *ctx + 1;
 
             if colour_channels == 6 {
                 /* alpha */
-				
-				if !tokenIsChar(token , ',') {
+                
+                if !tokenIsChar(token , ',') {
                     *ctx = orig_ctx;
                     return (None , None , CSS_INVALID);
                 }
                 consumeWhitespace(vector , ctx);
 
                 if *ctx >= vector.len() {
-					*ctx = orig_ctx;
-					return (None , None , CSS_INVALID);
-				}
-				token = &vector[*ctx];
+                    *ctx = orig_ctx;
+                    return (None , None , CSS_INVALID);
+                }
+                token = &vector[*ctx];
                 *ctx = *ctx + 1;
 
                 match token.token_type {
@@ -807,42 +807,42 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
                     }
                 }
                 
-				let (alpha_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get() , false);
+                let (alpha_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get() , false);
                 alpha = alpha_res as i32;
                 if consumed_length_from_lwc_string != lwc_string_length(token.idata.get()) {
                     /* failed to consume the whole string as a number */
-					*ctx = orig_ctx;
+                    *ctx = orig_ctx;
                     return (None , None , CSS_INVALID);
                 }
 
                 alpha = ((css_multiply_fixed(alpha as i32 , F_255 as i32) as int) >> CSS_RADIX_POINT) as i32;
                 
-				consumeWhitespace(vector , ctx);
+                consumeWhitespace(vector , ctx);
 
                 if *ctx >= vector.len() {
-					*ctx = orig_ctx;
-					return (None , None , CSS_INVALID);
-				}
-				token = &vector[*ctx];
+                    *ctx = orig_ctx;
+                    return (None , None , CSS_INVALID);
+                }
+                token = &vector[*ctx];
                 *ctx = *ctx + 1;
             }
-			
+            
             if !tokenIsChar(token , ')') {
                 *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
-			
-			debug!(fmt!("hue= %?, sat= %?, lit= %?", hue as i32, sat as i32, lit as i32)); //DEBUG
             
-			/* have a valid HSV entry, convert to RGB */
-			let (ra , ga , ba) = HSL_to_RGB(hue as i32, sat as i32, lit as i32);
+            debug!(fmt!("hue= %?, sat= %?, lit= %?", hue as i32, sat as i32, lit as i32)); //DEBUG
+            
+            /* have a valid HSV entry, convert to RGB */
+            let (ra , ga , ba) = HSL_to_RGB(hue as i32, sat as i32, lit as i32);
             *r = ra;
             *g = ga;
             *b = ba;
-			
-			debug!(fmt!("ra= %?, ga= %?, ba= %?", ra, ga, ba)); //DEBUG
             
-			if alpha > 255 {
+            debug!(fmt!("ra= %?, ga= %?, ba= %?", ra, ga, ba)); //DEBUG
+            
+            if alpha > 255 {
                 *a = 255;
             }
             else if alpha < 0 {
@@ -856,9 +856,9 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
             *ctx = orig_ctx;
             return (None , None , CSS_INVALID);
         }
-		debug!(fmt!("a= %?, r= %?, g= %?, b= %?", *a, *r, *g, *b)); //DEBUG
-		debug!(fmt!("a= %?, r= %?, g= %?, b= %?", *a as u32 << 24, *r as u32 << 16, *g as u32 << 8, *b as u32)); //DEBUG
-		
+        debug!(fmt!("a= %?, r= %?, g= %?, b= %?", *a, *r, *g, *b)); //DEBUG
+        debug!(fmt!("a= %?, r= %?, g= %?, b= %?", *a as u32 << 24, *r as u32 << 16, *g as u32 << 8, *b as u32)); //DEBUG
+        
         ret_result = (*a as u32 << 24 | *r as u32 << 16 | *g as u32 << 8 | *b as u32);
         
     }
@@ -867,12 +867,12 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
         *ctx = orig_ctx;
         return (None , None , CSS_INVALID);
     }
-	
-	ret_value = COLOR_SET ;
-	
-	debug!(fmt!("css__parse_color_specifier :: Return value= %?, result= %?", ret_value, ret_result)); //DEBUG
     
-	(Some(ret_value) , Some(ret_result) , CSS_OK)
+    ret_value = COLOR_SET ;
+    
+    debug!(fmt!("css__parse_color_specifier :: Return value= %?, result= %?", ret_value, ret_result)); //DEBUG
+    
+    (Some(ret_value) , Some(ret_result) , CSS_OK)
 }
 
 
@@ -890,7 +890,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~cs
 *   ctx is updated with the next token to process.
 *   If the input is invalid, then ctx remains unchanged.
 */
-pub fn css__parse_hash_colour(data: @mut lwc_string) -> (Option<u32> , css_error){
+pub fn css__parse_hash_colour(data: @lwc_string) -> (Option<u32> , css_error){
 
     debug!("Entering: css__parse_hash_colour");
     let mut result_val: u32;
@@ -905,12 +905,12 @@ pub fn css__parse_hash_colour(data: @mut lwc_string) -> (Option<u32> , css_error
         r = charToHex(input_string[0]) as u8;
         g = charToHex(input_string[1]) as u8;
         b = charToHex(input_string[2]) as u8;
-		debug!(fmt!("r=%?, g=%?, b=%? ",r, g, b));
+        debug!(fmt!("r=%?, g=%?, b=%? ",r, g, b));
 
         r |= (r << 4);
         g |= (g << 4);
         b |= (b << 4);
-		
+        
     }
     else if (input_length == 6 && isHex(input_string[0]) && isHex(input_string[1]) &&   isHex(input_string[2]) && isHex(input_string[3]) && isHex(input_string[4]) && isHex(input_string[5])) {
         r = (charToHex(input_string[0]) << 4) as u8;
@@ -923,11 +923,11 @@ pub fn css__parse_hash_colour(data: @mut lwc_string) -> (Option<u32> , css_error
     else {
         return(None , CSS_INVALID)
     }
-	debug!(fmt!("r=%?, g=%?, b=%? ",r, g, b));
-	
+    debug!(fmt!("r=%?, g=%?, b=%? ",r, g, b));
+    
     result_val = (a as u32 << 24) | (r as u32 << 16) | (g as u32 << 8) | b as u32;
-	
-	debug!(fmt!("result_val=%?",result_val));
+    
+    debug!(fmt!("result_val=%?",result_val));
     return (Some(result_val) , CSS_OK);
 }
 
@@ -1032,12 +1032,12 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
     else {
         max_rgb = css_divide_fixed(css_subtract_fixed(css_multiply_fixed(css_add_fixed(lit, sat), F_100 as i32), css_multiply_fixed(lit, sat)), F_100 as i32);
     }
-	debug!(fmt!("max_rgb= %?", max_rgb));
-	
+    debug!(fmt!("max_rgb= %?", max_rgb));
+    
     /* Compute min(r,g,b) */
     min_rgb = css_subtract_fixed(css_multiply_fixed(lit, css_int_to_fixed(2)), max_rgb);
-	debug!(fmt!("min_rgb= %?", min_rgb));
-	
+    debug!(fmt!("min_rgb= %?", min_rgb));
+    
     /* We know that the value of at least one of the components is 
      * max(r,g,b) and that the value of at least one of the other
      * components is min(r,g,b).
@@ -1060,36 +1060,36 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 
     /* Chroma is the difference between min and max */
     chroma = css_subtract_fixed(max_rgb, min_rgb);
-	debug!(fmt!("chroma= %?", chroma));
-	
+    debug!(fmt!("chroma= %?", chroma));
+    
     /* Compute which sextant the hue lies in (truncates result) */
     let hue = css_divide_fixed(css_multiply_fixed(hue, css_int_to_fixed(6)), F_360 as i32);
     sextant = (hue as int) >> CSS_RADIX_POINT;
-	debug!(fmt!("hue= %?", hue));
-	debug!(fmt!("sextant= %?", sextant));
+    debug!(fmt!("hue= %?", hue));
+    debug!(fmt!("sextant= %?", sextant));
 
     /* Compute offset of hue from start of sextant */
     relative_hue = css_subtract_fixed(hue, css_int_to_fixed(sextant));
-	debug!(fmt!("relative_hue= %?", relative_hue));
-	
+    debug!(fmt!("relative_hue= %?", relative_hue));
+    
     /* Scale offset by chroma */
     scaled_hue = css_multiply_fixed(relative_hue, chroma);
-	debug!(fmt!("scaled_hue= %?", scaled_hue));
-	
+    debug!(fmt!("scaled_hue= %?", scaled_hue));
+    
     /* Compute potential values of the third colour component */
     mid1 = css_add_fixed(min_rgb, scaled_hue);
     mid2 = css_subtract_fixed(max_rgb, scaled_hue);
-	debug!(fmt!("mid1= %?", mid1));
-	debug!(fmt!("mid2= %?", mid2));
-	
+    debug!(fmt!("mid1= %?", mid1));
+    debug!(fmt!("mid2= %?", mid2));
+    
     match sextant {
         0 => {
             let r = (css_divide_fixed(css_multiply_fixed((max_rgb), F_255 as i32), F_100 as i32 )) >> CSS_RADIX_POINT;
             debug!(fmt!("r= %?", r));
-			let g = (css_divide_fixed(css_multiply_fixed((mid1), F_255 as i32), F_100 as i32    )) >> CSS_RADIX_POINT;
-			debug!(fmt!("g= %?", g));
+            let g = (css_divide_fixed(css_multiply_fixed((mid1), F_255 as i32), F_100 as i32    )) >> CSS_RADIX_POINT;
+            debug!(fmt!("g= %?", g));
             let b = (css_divide_fixed(css_multiply_fixed((min_rgb), F_255 as i32), F_100 as i32 )) >> CSS_RADIX_POINT;
-			debug!(fmt!("b= %?", b));
+            debug!(fmt!("b= %?", b));
             return (r as u8 , g as u8 , b as u8);
         },
         1 => {
@@ -1136,7 +1136,7 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 * 'css_error' - CSS_OK on success,  
                 CSS_INVALID if the input is not valid.
 */
-fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , data: @mut lwc_string) -> (Option<u32> , css_error){
+fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , data: @lwc_string) -> (Option<u32> , css_error){
     
     debug!("Entering: css__parse_named_color");
     let mut result_val: u32;

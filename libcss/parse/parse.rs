@@ -45,7 +45,7 @@ type state =  ~extern fn(parser: &mut css_parser) ->css_error;
 pub struct css_parser {
     language: ~css_language,
     lexer: ~css_lexer,
-    priv lwc: @mut lwc,
+    priv lwc: @lwc,
 
     priv last_was_ws : bool,
     priv match_char : char,
@@ -77,7 +77,7 @@ impl css_parser {
     * #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
     */
-    fn css__parser_create_internal(language: ~css_language, lexer: ~css_lexer, lwc: @mut lwc, initial:(uint, uint) ) 
+    fn css__parser_create_internal(language: ~css_language, lexer: ~css_lexer, lwc: @lwc, initial:(uint, uint) ) 
         -> Option<~css_parser> {
 
         debug!("Entering: css__parser_create_internal");
@@ -124,7 +124,7 @@ impl css_parser {
             state_stack: ~[],
             states: states,
             tokens: ~[],
-	    css_lexer_get_token_time:0f
+        css_lexer_get_token_time:0f
         };
 
         parser.state_stack.push(initial);
@@ -148,7 +148,7 @@ impl css_parser {
     * #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
     */
-    pub fn css__parser_create(language: ~css_language, lexer: ~css_lexer, lwc: @mut lwc) 
+    pub fn css__parser_create(language: ~css_language, lexer: ~css_lexer, lwc: @lwc) 
         -> Option<~css_parser> {
         debug!("Entering: css__parser_create");
         let initial = ( sStart as uint, 0u );
@@ -172,7 +172,7 @@ impl css_parser {
 
     *   'Option<~css_parser>' - location to receive parser instance.
     */
-    pub fn css__parser_create_for_inline_style(language: ~css_language, lexer: ~css_lexer, lwc: @mut lwc) 
+    pub fn css__parser_create_for_inline_style(language: ~css_language, lexer: ~css_lexer, lwc: @lwc) 
         -> Option<~css_parser> {
         debug!("Entering: css__parser_create_for_inline_style");
         let initial = (sInlineStyle as uint, 0);
@@ -366,7 +366,7 @@ impl css_parser {
     }
 
 
-    fn intern_string (&mut self, string: ~str) -> @mut lwc_string {
+    fn intern_string (&mut self, string: ~str) -> @lwc_string {
         debug!("Entering: intern_string");
         let interned_string = self.lwc.lwc_intern_string(copy string);
 
@@ -1745,7 +1745,7 @@ impl css_parser {
                                 parser.done();
                                 return CSS_OK;
                             }
-							parser.push_back(token);
+                            parser.push_back(token);
                             
                             let to = ( sValue as uint, Initial as uint );
                             let subsequent = ( sValue0 as uint, AfterValue as uint );

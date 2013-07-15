@@ -518,7 +518,7 @@ impl css_properties {
                 },
                 _ =>  {
                     debug!("css__parse_background :: in match error _");
-					break //Forcibly cause loop to exit
+                    break //Forcibly cause loop to exit
                 }
             }
 
@@ -528,40 +528,40 @@ impl css_properties {
         } 
 
         
-		if attachment {
-			css_stylesheet::css__stylesheet_style_appendOPV(attachment_style, CSS_PROP_BACKGROUND_ATTACHMENT, 0, 
-				BACKGROUND_ATTACHMENT_SCROLL ); 
-		
-		}
+        if attachment {
+            css_stylesheet::css__stylesheet_style_appendOPV(attachment_style, CSS_PROP_BACKGROUND_ATTACHMENT, 0, 
+                BACKGROUND_ATTACHMENT_SCROLL ); 
+        
+        }
 
-		if color {
-			css_stylesheet::css__stylesheet_style_appendOPV(color_style, CSS_PROP_BACKGROUND_COLOR, 0, 
-				BACKGROUND_COLOR_TRANSPARENT );
-		
-		}
+        if color {
+            css_stylesheet::css__stylesheet_style_appendOPV(color_style, CSS_PROP_BACKGROUND_COLOR, 0, 
+                BACKGROUND_COLOR_TRANSPARENT );
+        
+        }
 
-		if image {
-			css_stylesheet::css__stylesheet_style_appendOPV(image_style, CSS_PROP_BACKGROUND_IMAGE, 0, BACKGROUND_IMAGE_NONE );
-		
-		}
+        if image {
+            css_stylesheet::css__stylesheet_style_appendOPV(image_style, CSS_PROP_BACKGROUND_IMAGE, 0, BACKGROUND_IMAGE_NONE );
+        
+        }
 
-		if position {
-			css_stylesheet::css__stylesheet_style_appendOPV(position_style, CSS_PROP_BACKGROUND_POSITION, 0, 
-				BACKGROUND_POSITION_HORZ_LEFT  |  BACKGROUND_POSITION_VERT_TOP )
-		
-		}
+        if position {
+            css_stylesheet::css__stylesheet_style_appendOPV(position_style, CSS_PROP_BACKGROUND_POSITION, 0, 
+                BACKGROUND_POSITION_HORZ_LEFT  |  BACKGROUND_POSITION_VERT_TOP )
+        
+        }
 
-		if repeat {
-			css_stylesheet::css__stylesheet_style_appendOPV(repeat_style, CSS_PROP_BACKGROUND_REPEAT, 0,
-			 BACKGROUND_REPEAT_REPEAT )
-				
-		}   
-	
-		css_stylesheet::css__stylesheet_merge_style(result, attachment_style);
-		css_stylesheet::css__stylesheet_merge_style(result, color_style);
-		css_stylesheet::css__stylesheet_merge_style(result, image_style);
-		css_stylesheet::css__stylesheet_merge_style(result, position_style);
-		css_stylesheet::css__stylesheet_merge_style(result, repeat_style);
+        if repeat {
+            css_stylesheet::css__stylesheet_style_appendOPV(repeat_style, CSS_PROP_BACKGROUND_REPEAT, 0,
+             BACKGROUND_REPEAT_REPEAT )
+                
+        }   
+    
+        css_stylesheet::css__stylesheet_merge_style(result, attachment_style);
+        css_stylesheet::css__stylesheet_merge_style(result, color_style);
+        css_stylesheet::css__stylesheet_merge_style(result, image_style);
+        css_stylesheet::css__stylesheet_merge_style(result, position_style);
+        css_stylesheet::css__stylesheet_merge_style(result, repeat_style);
                
         CSS_OK
     }
@@ -616,7 +616,7 @@ impl css_properties {
         else {
             let mut second_pass = false;
             let mut i = 0;
-			while i< 2 {
+            while i< 2 {
                 if *ctx >= vector.len() {
                     break   
                 }
@@ -686,7 +686,7 @@ impl css_properties {
                     }
                 }    
                 consumeWhitespace(vector, ctx);
-				i = i + 1;
+                i = i + 1;
             }
 
             //assert(i != 0);
@@ -2463,7 +2463,7 @@ impl css_properties {
                    }
                    ) {
 
-                let uri:@mut lwc_string;
+                let uri:@lwc_string;
                 match (*sheet.resolve)(sheet.url, token.idata.unwrap()) {
                     (CSS_OK, Some(x)) => {
                         uri =x;
@@ -3674,8 +3674,8 @@ impl css_properties {
                 }
             },
             CSS_TOKEN_NUMBER=>{
-                    					
-					let (num_,consumed) =  css__number_from_lwc_string(token.idata.get(), false);
+                                        
+                    let (num_,consumed) =  css__number_from_lwc_string(token.idata.get(), false);
                     let mut num = num_;
                     /* Invalid if there are trailing characters */
                     if (consumed !=  lwc_string_length(token.idata.get())){
@@ -4120,7 +4120,7 @@ impl css_properties {
         else {
             let mut modifiers:int = 0;
             value = PLAY_DURING_URI as u16;
-            let uri:@mut lwc_string;
+            let uri:@lwc_string;
             match (*sheet.resolve)( sheet.url, token.idata.unwrap()) {
                 (CSS_OK, Some(x)) => {
                     uri =x;
@@ -4435,7 +4435,7 @@ impl css_properties {
     
         debug!("Entering: css__parse_voice_family");
         let orig_ctx = *ctx;
-		debug!(fmt!("ctx == %?", *ctx));
+        debug!(fmt!("ctx == %?", *ctx));
         /* [ IDENT+ | STRING ] [ ',' [ IDENT+ | STRING ] ]* | IDENT(inherit)
          * 
          * In the case of IDENT+, any whitespace between tokens is collapsed to
@@ -4474,7 +4474,7 @@ impl css_properties {
             }
             css_stylesheet::css__stylesheet_style_append(result, VOICE_FAMILY_END as u32);
         }
-		debug!(fmt!("ctx == %?", *ctx));
+        debug!(fmt!("ctx == %?", *ctx));
         CSS_OK
     }
       
@@ -4816,7 +4816,7 @@ pub fn voice_family_value(strings: &mut ~css_propstrings, token:&@css_token, fir
         If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token], ctx:@mut uint, reserved:Option<reserved_fn>)
-    -> (css_error, Option<~str>) {
+    -> (css_error, Option<@str>) {
     
     debug!("Entering: css__ident_list_or_string_to_string");
     if *ctx >= vector.len() {
@@ -4856,7 +4856,7 @@ pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings:
         If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_propstrings, vector:&~[@css_token],
-    ctx: @mut uint , reserved:Option<reserved_fn>) -> (css_error , Option<~str>) {
+    ctx: @mut uint , reserved:Option<reserved_fn>) -> (css_error , Option<@str>) {
 
     debug!("Entering: css__ident_list_to_string");
     let orig_ctx = *ctx;
@@ -4864,20 +4864,20 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
     let mut token_buffer_string: ~str = ~"";
 
     /* We know this token exists, and is an IDENT */
-	//Iterate
-	if *ctx >= vector.len() {
-		*ctx +=1;
+    //Iterate
+    if *ctx >= vector.len() {
+        *ctx +=1;
         return (CSS_INVALID , None);
     }
 
     token = &vector[*ctx];
     *ctx += 1;
-	
-	/* Consume all subsequent IDENT or S tokens */
+    
+    /* Consume all subsequent IDENT or S tokens */
     loop {
         match token.token_type {
             /* IDENT -- if reserved, reject style */
-			CSS_TOKEN_IDENT  => {
+            CSS_TOKEN_IDENT  => {
                 match reserved {
                     None => {},
                     Some(reserved_function) => {
@@ -4890,7 +4890,7 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
                 token_buffer_string.push_str(lwc_string_data(token.idata.unwrap()));
             },
             CSS_TOKEN_S => {
-				/* S */
+                /* S */
                 token_buffer_string.push_str(" ");
             },
             _ => {
@@ -4899,23 +4899,22 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: &mut ~css_pro
         }
         if *ctx >= vector.len() {
             *ctx+=1;
-			break;
+            break;
         }
-		else{
-			token = &vector[*ctx];
-			*ctx += 1;
-		}	
+        else{
+            token = &vector[*ctx];
+            *ctx += 1;
+        }   
     }
-	
-	/* Rewind context by one step if we consumed an unacceptable token */
+    
+    /* Rewind context by one step if we consumed an unacceptable token */
     if *ctx < vector.len() {
         *ctx -= 1;
     }
-	
+    
     /* Strip trailing whitespace */
-    token_buffer_string = token_buffer_string.trim_right().to_str();
 
-    return (CSS_OK , Some(token_buffer_string));
+    return (CSS_OK , Some(token_buffer_string.trim_right().to_managed()));
 }
 
 
@@ -5012,21 +5011,21 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
 
         consumeWhitespace(vector , ctx);
         
-		if (*ctx >= vector.len()) {
+        if (*ctx >= vector.len()) {
             break;
         }
-		
+        
         token = &vector[*ctx];
         if  tokenIsChar(token , ',') {
             *ctx = *ctx + 1;
             
-			consumeWhitespace(vector , ctx);
+            consumeWhitespace(vector , ctx);
             
-			if *ctx >= vector.len() {
+            if *ctx >= vector.len() {
                 *ctx = orig_ctx;
                 return CSS_INVALID;
             }
-			token = &vector[*ctx]; //peek
+            token = &vector[*ctx]; //peek
             
             match token.token_type {
                 CSS_TOKEN_IDENT |CSS_TOKEN_STRING  => {},
@@ -5040,17 +5039,17 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: &mut ~css_
             break;
         }
         
-		first = false;
+        first = false;
         
-		prev_ctx = *ctx;
+        prev_ctx = *ctx;
         
-		if *ctx >= vector.len(){
-			break;
-		}
-		else {
-			token = &vector[*ctx];
-			*ctx += 1; //Iterate
-		}
+        if *ctx >= vector.len(){
+            break;
+        }
+        else {
+            token = &vector[*ctx];
+            *ctx += 1; //Iterate
+        }
     }
 
     CSS_OK
