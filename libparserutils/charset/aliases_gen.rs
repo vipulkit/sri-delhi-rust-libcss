@@ -91,8 +91,6 @@ impl alias_gen {
         fp.write_line(" * Mozilla Samsung Servo Browser Project.");
         fp.write_line(" */");
         fp.write_line("");
-        fp.write_line("use extra::arc;");
-        fp.write_line("");
         fp.write_line("pub struct parserutils_charset_aliases_canon {");
         fp.write_line("    mib_enum:u16,");
         fp.write_line("    name_len:u16,");
@@ -100,7 +98,7 @@ impl alias_gen {
         fp.write_line("}");
         fp.write_line("");
         fp.write_line("pub struct alias {");
-        fp.write_line("    canonical_name_list: ~[~str]");
+        fp.write_line("    canonical_name_list: @[~str]");
         fp.write_line("}");
         fp.write_line("");
 
@@ -157,13 +155,16 @@ impl alias_gen {
 
     fn write_alias_function(&mut self, fp:@Writer) {
         fp.write_line("");
-        fp.write_line("pub fn alias() -> arc::ARC<~alias> {");
-        fp.write_line("    let new_alias = ~alias {");
+        fp.write_line("pub fn alias() -> @alias {");
+        fp.write_line("    let new_alias = @alias {");
         fp.write_line("        canonical_name_list :");
-        fp.write_line(fmt!("%?", self.canonical_name_list));
+        let mut temp_canonical_name_list = fmt!("%?", self.canonical_name_list);
+        temp_canonical_name_list.shift_char();
+        temp_canonical_name_list.unshift_char('@');
+        fp.write_line(temp_canonical_name_list);
         fp.write_line("    };");
         fp.write_line("");
-        fp.write_line("    arc::ARC(new_alias)");
+        fp.write_line("    new_alias");
         fp.write_line("}");
         fp.write_line("");
     }
