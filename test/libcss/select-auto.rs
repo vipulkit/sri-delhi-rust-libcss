@@ -1073,7 +1073,7 @@ fn node_name(n:*libc::c_void, qname : &mut css_qname) -> css_error {
     unsafe {
         node = ::cast::transmute(n);
         cast::forget(node);
-        qname.name = copy *node.name.get_ref();
+        qname.name = node.name.get();
     }
 
     CSS_OK
@@ -1166,7 +1166,7 @@ fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *lib
     while node1.parent.is_some() {
         node1 = node1.parent.unwrap();
         let matched:bool;
-        matched = is_string_caseless_equal(copy *node1.name.get_ref(),qname.name);
+        matched = is_string_caseless_equal(node1.name.get(),qname.name);
         if matched {
             break;
         }
@@ -1190,7 +1190,7 @@ fn named_parent_node(n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_
         let matched: bool ;
         let parent_node : @mut node;
         parent_node = node1.parent.unwrap();
-        matched = is_string_caseless_equal(qname.name,copy *parent_node.name.get_ref());
+        matched = is_string_caseless_equal(qname.name,parent_node.name.get());
         if matched {
             unsafe {
                 *parent = ::cast::transmute(parent_node);
@@ -1212,8 +1212,8 @@ fn named_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc:
     if node1.prev.is_some() {
         let matched: bool ;
         let prev_node: @mut node;
-        prev_node = *node1.prev.get_ref();
-        matched = is_string_caseless_equal(qname.name,copy *prev_node.name.get_ref());
+        prev_node = node1.prev.get();
+        matched = is_string_caseless_equal(qname.name,prev_node.name.get());
         if matched {
             unsafe {
                 *sibling = ::cast::transmute(prev_node);
@@ -1241,7 +1241,7 @@ fn named_generic_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mu
     while node1.prev.is_some() {
         node1 = node1.prev.unwrap();
         let matched:bool;
-        matched = is_string_caseless_equal(copy *node1.name.get_ref(),qname.name);
+        matched = is_string_caseless_equal(node1.name.get(),qname.name);
         if matched {
             break;
         }
@@ -1298,7 +1298,7 @@ fn node_has_name(_:*libc::c_void, n:*libc::c_void, qname:css_qname, matched:@mut
         *matched = true;
     }
     else {
-        *matched = is_string_caseless_equal(copy *node1.name.get_ref(),qname.name);
+        *matched = is_string_caseless_equal(node1.name.get(),qname.name);
     }
     CSS_OK
 }
@@ -1657,7 +1657,7 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
     unsafe {
         node1 = ::cast::transmute(n);
         cast::forget(node1);
-        name = copy *(node1.name).get_ref();
+        name = node1.name.get();
     }
     
     if after {
@@ -1665,7 +1665,7 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
             if same_name {
                 let mut next_name: @str ;
                 let temp_node = (copy node1.next).unwrap();
-                next_name = copy *temp_node.name.get_ref();
+                next_name = temp_node.name.get();
                 
                 matched = is_string_caseless_equal(name, next_name); 
                 
@@ -1684,7 +1684,7 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
             if same_name {
                 let mut prev_name: @str;
                 let temp_node = (copy node1.prev).unwrap();
-                prev_name = copy *temp_node.name.get_ref();
+                prev_name = temp_node.name.get();
                 
                 matched = is_string_caseless_equal(name,prev_name); 
                 

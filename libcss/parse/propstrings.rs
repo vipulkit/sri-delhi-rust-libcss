@@ -1,3 +1,5 @@
+
+use extra::time::*;
 use wapcaplet::*;
 use stylesheet::*;
 
@@ -554,8 +556,8 @@ pub enum index_property {
 pub struct css_propstrings {
     lwc_instance: @lwc,
     propstrings: ~[@lwc_string],
-    pseudo_class_list:~[index_property],
-    pseudo_element_list:~[index_property]
+    pseudo_class_list:@[index_property],
+    pseudo_element_list:@[index_property]
 }
 
 impl css_propstrings {
@@ -564,7 +566,7 @@ impl css_propstrings {
         let mut css_propstrings_instance = ~css_propstrings {
             lwc_instance: lwc_instance,
             propstrings: ~[],
-            pseudo_class_list : ~[ 
+            pseudo_class_list : @[ 
                                     FIRST_CHILD,
                                     LINK,
                                     VISITED,
@@ -593,7 +595,7 @@ impl css_propstrings {
                                     NOT,
                                 ],
 
-            pseudo_element_list : ~[
+            pseudo_element_list : @[
                                     FIRST_LINE, 
                                     FIRST_LETTER, 
                                     BEFORE, 
@@ -601,33 +603,92 @@ impl css_propstrings {
                                 ]
         };
 
-        let propstrings_list = ~[~"yellowgreen", ~"yellow", ~"whitesmoke", ~"white", ~"wheat", ~"violetred", ~"violet", ~"turquoise", ~"tomato", ~"thistle", ~"teal", ~"tan", ~"steelblue", ~"springgreen", ~"snow", ~"slategrey", ~"slategray", ~"slateblue", ~"skyblue", ~"silver", ~"sienna", ~"seashell", ~"seagreen", ~"sandybrown", ~"salmon", ~"saddlebrown", ~"royalblue", ~"rosybrown", ~"red", ~"purple", ~"powderblue", ~"plum", ~"pink", ~"peru", ~"peachpuff", ~"papayawhip", ~"palevioletred", ~"paleturquoise", ~"palegreen", ~"palegoldenrod", ~"orchid", ~"orangered", ~"orange", ~"olivedrab", ~"olive", ~"oldlace", ~"navy", ~"navajowhite", ~"moccasin", ~"mistyrose", ~"mintcream", ~"midnightblue", ~"mediumvioletred", ~"mediumturquoise", ~"mediumspringgreen", ~"mediumslateblue", ~"mediumseagreen", ~"mediumpurple", ~"mediumorchid", ~"mediumblue", ~"mediumaquamarine", ~"maroon", ~"magenta", ~"linen", ~"limegreen", ~"lime", ~"lightyellow", ~"lightsteelblue", ~"lightslategrey", ~"lightslategray", ~"lightslateblue", ~"lightskyblue", ~"lightseagreen", ~"lightsalmon", ~"lightpink", ~"lightgrey", ~"lightgreen", ~"lightgray", ~"lightgoldenrodyellow", ~"lightcyan", ~"lightcoral", ~"lightblue", ~"lemonchiffon", ~"lawngreen", ~"lavenderblush", ~"lavender", ~"khaki", ~"ivory", ~"indigo", ~"indianred", ~"hotpink", ~"honeydew", ~"grey", ~"greenyellow", ~"green", ~"gray", ~"goldenrod", ~"gold", ~"ghostwhite", ~"gainsboro", ~"fuchsia", ~"forestgreen", ~"floralwhite", ~"firebrick", ~"feldspar", ~"dodgerblue", ~"dimgrey", ~"dimgray", ~"deepskyblue", ~"deeppink", ~"darkviolet", ~"darkturquoise", ~"darkslategrey", ~"darkslategray", ~"darkslateblue", ~"darkseagreen", ~"darksalmon", ~"darkred", ~"darkorchid", ~"darkorange", ~"darkolivegreen", ~"darkmagenta", ~"darkkhaki", ~"darkgrey", ~"darkgreen", ~"darkgray", ~"darkgoldenrod", ~"darkcyan", ~"darkblue", ~"cyan", ~"crimson", ~"cornsilk", ~"cornflowerblue", ~"coral", ~"chocolate", ~"chartreuse", ~"cadetblue", ~"burlywood", ~"brown", ~"blueviolet", ~"blue", ~"blanchedalmond", ~"black", ~"bisque", ~"beige", ~"azure", ~"aquamarine", ~"aqua", ~"antiquewhite", ~"aliceblue", ~"balance", ~"avoid-column", ~"avoid-page", ~"column", ~"svg", ~"embedded-opentype", ~"opentype", ~"truetype", ~"woff", ~"format", ~"initial", ~"local", ~"src", ~"even", ~"odd", ~"currentColor", ~"-libcss-right", ~"-libcss-center", ~"-libcss-left", ~"hsla", ~"hsl", ~"rgba", ~"rgb", ~"blink", ~"line-through", ~"overline", ~"underline", ~"mix", ~"child", ~"female", ~"male", ~"monospace", ~"fantasy", ~"cursive", ~"sans-serif", ~"serif", ~"progress", ~"help", ~"wait", ~"text", ~"w-resize", ~"s-resize", ~"sw-resize", ~"se-resize", ~"n-resize", ~"nw-resize", ~"ne-resize", ~"e-resize", ~"move", ~"pointer", ~"default", ~"crosshair", ~"counters", ~"counter", ~"attr", ~"no-close-quote", ~"no-open-quote", ~"close-quote", ~"open-quote", ~"rect", ~"behind", ~"right-side", ~"far-right", ~"center-right", ~"center-left", ~"far-left", ~"left-side", ~"rightwards", ~"leftwards", ~"pre-line", ~"pre-wrap", ~"nowrap", ~"pre", ~"x-loud", ~"loud", ~"soft", ~"x-soft", ~"silent", ~"text-bottom", ~"middle", ~"text-top", ~"super", ~"sub", ~"baseline", ~"bidi-override", ~"embed", ~"lowercase", ~"uppercase", ~"capitalize", ~"justify", ~"center", ~"slower", ~"faster", ~"x-fast", ~"fast", ~"slow", ~"x-slow", ~"spell-out", ~"code", ~"continuous", ~"digits", ~"once", ~"absolute", ~"relative", ~"static", ~"x-high", ~"high", ~"low", ~"x-low", ~"avoid", ~"always", ~"visible", ~"invert", ~"upper-alpha", ~"lower-alpha", ~"georgian", ~"armenian", ~"upper-latin", ~"lower-latin", ~"lower-greek", ~"upper-roman", ~"lower-roman", ~"decimal-leading-zero", ~"decimal", ~"square", ~"circle", ~"disc", ~"outside", ~"inside", ~"lighter", ~"bolder", ~"bold", ~"small-caps", ~"oblique", ~"italic", ~"normal", ~"smaller", ~"larger", ~"xx-large", ~"x-large", ~"large", ~"small", ~"x-small", ~"xx-small", ~"hide", ~"show", ~"lower", ~"higher", ~"above", ~"level", ~"below", ~"table-caption", ~"table-cell", ~"table-column", ~"table-column-group", ~"table-row", ~"table-footer-group", ~"table-header-group", ~"table-row-group", ~"inline-table", ~"table", ~"inline-block", ~"run-in", ~"list-item", ~"block", ~"inline", ~"rtl", ~"ltr", ~"auto", ~"separate", ~"collapse", ~"thick", ~"medium", ~"thin", ~"outset", ~"inset", ~"ridge", ~"groove", ~"double", ~"solid", ~"dashed", ~"dotted", ~"hidden", ~"repeat", ~"repeat-y", ~"repeat-x", ~"no-repeat", ~"transparent", ~"scroll", ~"fixed", ~"both", ~"none", ~"important", ~"inherit", ~"z-index", ~"word-spacing", ~"width", ~"widows", ~"white-space", ~"volume", ~"voice-family", ~"visibility", ~"vertical-align", ~"unicode-bidi", ~"top", ~"text-transform", ~"text-indent", ~"text-decoration", ~"text-align", ~"table-layout", ~"stress", ~"speech-rate", ~"speak", ~"speak-punctuation", ~"speak-numeral", ~"speak-header", ~"right", ~"richness", ~"quotes", ~"position", ~"play-during", ~"pitch", ~"pitch-range", ~"pause-before", ~"pause-after", ~"pause", ~"page-break-inside", ~"page-break-before", ~"page-break-after", ~"padding-top", ~"padding-right", ~"padding-left", ~"padding-bottom", ~"padding", ~"overflow", ~"outline-width", ~"outline-style", ~"outline-color", ~"outline", ~"orphans", ~"opacity", ~"min-width", ~"min-height", ~"max-width", ~"max-height", ~"margin-top", ~"margin-right", ~"margin-left", ~"margin-bottom", ~"margin", ~"list-style-type", ~"list-style-position", ~"list-style-image", ~"list-style", ~"line-height", ~"letter-spacing", ~"left", ~"height", ~"font-weight", ~"font-variant", ~"font-style", ~"font-size", ~"font-family", ~"font", ~"float", ~"empty-cells", ~"elevation", ~"display", ~"direction", ~"cursor", ~"cue-before", ~"cue-after", ~"cue", ~"counter-reset", ~"counter-increment", ~"content", ~"column-width", ~"column-span", ~"column-rule-width", ~"column-rule-style", ~"column-rule-color", ~"column-rule", ~"column-gap", ~"column-fill", ~"column-count", ~"columns", ~"color", ~"clip", ~"clear", ~"caption-side", ~"break-inside", ~"break-before", ~"break-after", ~"bottom", ~"border-width", ~"border-top-width", ~"border-top-style", ~"border-top-color", ~"border-top", ~"border-style", ~"border-spacing", ~"border-right-width", ~"border-right-style", ~"border-right-color", ~"border-right", ~"border-left-width", ~"border-left-style", ~"border-left-color", ~"border-left", ~"border-color", ~"border-collapse", ~"border-bottom-width", ~"border-bottom-style", ~"border-bottom-color", ~"border-bottom", ~"border", ~"background-repeat", ~"background-position", ~"background-image", ~"background-color", ~"background-attachment", ~"background", ~"azimuth", ~"after", ~"before", ~"first-letter", ~"first-line", ~"not", ~"checked", ~"disabled", ~"enabled", ~"target", ~"empty", ~"only-of-type", ~"only-child", ~"last-of-type", ~"first-of-type", ~"last-child", ~"nth-last-of-type", ~"nth-of-type", ~"nth-last-child", ~"nth-child", ~"root", ~"first", ~"lang", ~"focus", ~"active", ~"hover", ~"visited", ~"link", ~"first-child", ~"all", ~"tv", ~"tty", ~"speech", ~"screen", ~"projection", ~"print", ~"handheld", ~"embossed", ~"braille", ~"aural", ~"page", ~"font-face", ~"namespace", ~"media", ~"import", ~"charset", ~"*"];
+        let propstrings_list = &[@"*", @"charset",@"import",@"media", @"namespace", @"font-face", @"page", @"aural",@"braille", @"embossed",@"handheld", @"print",
+                @"projection", @"screen", @"speech", @"tty", @"tv", @"all",@"first-child", @"link", @"visited", @"hover", @"active", @"focus",
+                @"lang",@"first",@"root", @"nth-child", @"nth-last-child", @"nth-of-type",@"nth-last-of-type", @"last-child",@"first-of-type",
+                @"last-of-type", @"only-child", @"only-of-type",@"empty", @"target",@"enabled", @"disabled", @"checked", @"not", @"first-line", 
+                @"first-letter", @"before",@"after",@"azimuth",@"background", @"background-attachment", @"background-color", @"background-image", 
+                @"background-position",@"background-repeat", @"border",@"border-bottom", @"border-bottom-color", @"border-bottom-style", @"border-bottom-width",
+                @"border-collapse",@"border-color",@"border-left", @"border-left-color", @"border-left-style", @"border-left-width",@"border-right",
+                @"border-right-color", @"border-right-style",@"border-right-width",@"border-spacing",@"border-style", @"border-top",@"border-top-color",
+                @"border-top-style",@"border-top-width",@"border-width", @"bottom", @"break-after", @"break-before", @"break-inside",@"caption-side",
+                @"clear",@"clip",@"color",@"columns",@"column-count",@"column-fill",@"column-gap",@"column-rule", @"column-rule-color",
+                @"column-rule-style",@"column-rule-width",@"column-span",@"column-width",@"content", @"counter-increment", @"counter-reset",@"cue",
+                @"cue-after", @"cue-before",@"cursor", @"direction",@"display",@"elevation", @"empty-cells",@"float",@"font", @"font-family",@"font-size",
+                @"font-style", @"font-variant",@"font-weight", @"height", @"left", @"letter-spacing", @"line-height",@"list-style", @"list-style-image",
+                @"list-style-position",@"list-style-type",@"margin", @"margin-bottom",@"margin-left",@"margin-right", @"margin-top", @"max-height",
+                @"max-width", @"min-height", @"min-width",@"opacity", @"orphans",@"outline", @"outline-color", @"outline-style",@"outline-width", @"overflow",
+                @"padding", @"padding-bottom",@"padding-left",@"padding-right",@"padding-top",@"page-break-after", @"page-break-before",@"page-break-inside",
+                @"pause",@"pause-after",@"pause-before", @"pitch-range",@"pitch",@"play-during",@"position",@"quotes", @"richness",@"right", @"speak-header",
+                @"speak-numeral",@"speak-punctuation",@"speak", @"speech-rate",@"stress",@"table-layout", @"text-align",@"text-decoration",@"text-indent",
+                @"text-transform",@"top", @"unicode-bidi", @"vertical-align",@"visibility",@"voice-family", @"volume",@"white-space",@"widows", @"width",
+                @"word-spacing",@"z-index",@"inherit",@"important",@"none",@"both", @"fixed",@"scroll",@"transparent", @"no-repeat",@"repeat-x",@"repeat-y",
+                @"repeat",@"hidden",@"dotted", @"dashed", @"solid",@"double",@"groove", @"ridge",@"inset",@"outset",@"thin", @"medium",@"thick", @"collapse",
+                @"separate",@"auto",@"ltr",@"rtl", @"inline", @"block",@"list-item",@"run-in",@"inline-block", @"table",@"inline-table",@"table-row-group",
+                @"table-header-group",@"table-footer-group",@"table-row", @"table-column-group", @"table-column",@"table-cell",@"table-caption",@"below",
+                @"level",@"above",@"higher",@"lower",@"show",@"hide",@"xx-small",@"x-small",@"small",@"large",@"x-large",@"xx-large",@"larger",
+                @"smaller", @"normal",@"italic",@"oblique",@"small-caps",@"bold",@"bolder", @"lighter",@"inside",@"outside", @"disc",
+                @"circle",@"square",@"decimal",@"decimal-leading-zero", @"lower-roman", @"upper-roman", @"lower-greek",@"lower-latin",@"upper-latin",
+                @"armenian",@"georgian", @"lower-alpha",@"upper-alpha",@"invert",@"visible",@"always",@"avoid",@"x-low",@"low", @"high", @"x-high",
+                @"static",@"relative", @"absolute",@"once",@"digits",@"continuous", @"code", @"spell-out",@"x-slow",@"slow",@"fast",@"x-fast",@"faster",
+                @"slower",@"center",@"justify",@"capitalize",@"uppercase",@"lowercase",@"embed",@"bidi-override",@"baseline",@"sub",@"super", 
+                @"text-top",@"middle",@"text-bottom",@"silent",@"x-soft",@"soft",@"loud", @"x-loud", @"pre",@"nowrap",@"pre-wrap",@"pre-line",
+                @"leftwards",@"rightwards",@"left-side", @"far-left", @"center-left",@"center-right",@"far-right",@"right-side",@"behind",@"rect",@"open-quote",
+                @"close-quote",@"no-open-quote",@"no-close-quote",@"attr",@"counter",@"counters",@"crosshair",@"default",@"pointer",@"move",@"e-resize",
+                @"ne-resize",@"nw-resize",@"n-resize", @"se-resize",@"sw-resize",@"s-resize",@"w-resize",@"text",@"wait",@"help",@"progress",@"serif",
+                @"sans-serif",@"cursive",@"fantasy",@"monospace",@"male",@"female",@"child",@"mix",@"underline",@"overline",@"line-through",@"blink",
+                @"rgb", @"rgba",@"hsl",@"hsla",@"-libcss-left",@"-libcss-center",@"-libcss-right",@"currentColor", @"odd", @"even",@"src",@"local",
+                @"initial",@"format",@"woff",@"truetype",@"opentype", @"embedded-opentype", @"svg",@"column",@"avoid-page", @"avoid-column",@"balance",
+                @"aliceblue",@"antiquewhite",@"aqua",@"aquamarine",@"azure",@"beige",@"bisque",@"black",@"blanchedalmond",@"blue",@"blueviolet",@"brown",
+                @"burlywood",@"cadetblue",@"chartreuse",@"chocolate", @"coral",@"cornflowerblue", @"cornsilk", @"crimson", @"cyan",@"darkblue",@"darkcyan",
+                @"darkgoldenrod",@"darkgray",@"darkgreen",@"darkgrey",@"darkkhaki", @"darkmagenta",@"darkolivegreen",@"darkorange",@"darkorchid",@"darkred",
+                @"darksalmon",@"darkseagreen",@"darkslateblue",@"darkslategray",@"darkslategrey",@"darkturquoise",@"darkviolet",@"deeppink", @"deepskyblue",
+                @"dimgray",@"dimgrey",@"dodgerblue",@"feldspar",@"firebrick",@"floralwhite", @"forestgreen",@"fuchsia", @"gainsboro",@"ghostwhite",
+                @"gold",@"goldenrod",@"gray",@"green",@"greenyellow",@"grey",@"honeydew",@"hotpink",@"indianred",@"indigo",@"ivory",@"khaki",@"lavender",
+                @"lavenderblush",@"lawngreen",@"lemonchiffon",@"lightblue",@"lightcoral",@"lightcyan",@"lightgoldenrodyellow",@"lightgray",@"lightgreen",
+                @"lightgrey",@"lightpink",@"lightsalmon",@"lightseagreen",@"lightskyblue", @"lightslateblue", @"lightslategray",@"lightslategrey",
+                @"lightsteelblue", @"lightyellow",@"lime",@"limegreen",@"linen", @"magenta",@"maroon",@"mediumaquamarine",@"mediumblue", @"mediumorchid",
+                @"mediumpurple", @"mediumseagreen",@"mediumslateblue",@"mediumspringgreen",@"mediumturquoise",@"mediumvioletred", @"midnightblue",@"mintcream", 
+                @"mistyrose",@"moccasin",@"navajowhite",@"navy", @"oldlace", @"olive",@"olivedrab",@"orange",@"orangered",@"orchid",@"palegoldenrod",
+                @"palegreen",@"paleturquoise",@"palevioletred", @"papayawhip",@"peachpuff",@"peru",@"pink",@"plum",@"powderblue", @"purple",@"red",
+                @"rosybrown",@"royalblue", @"saddlebrown",@"salmon",@"sandybrown",@"seagreen",@"seashell",@"sienna", @"silver", @"skyblue",@"slateblue",
+                @"slategray", @"slategrey",@"snow",@"springgreen",@"steelblue", @"tan", @"teal",@"thistle",@"tomato",@"turquoise",@"violet",@"violetred",
+                @"wheat",@"white", @"whitesmoke",@"yellow",@"yellowgreen"];
 
         let length = propstrings_list.len();
-        
-        let mut i =0;
-        while(i < length) {
-            css_propstrings_instance.propstrings.push(
-                lwc_instance.lwc_intern_string(propstrings_list[length-i-1])
-            );
-            i += 1;
-        }
+		let mut i =0;
+        let lwc_string_init_val = @lwc_string { 
+            id:-1,
+            string: @"",
+            insensitive: @mut None
+        };
 
+
+        css_propstrings_instance.propstrings.grow(length , &lwc_string_init_val);
+        let start_time = precise_time_ns();
+		while(i < length) {
+			css_propstrings_instance.propstrings[i] = lwc_instance.lwc_intern_string_managed(propstrings_list[i]);
+			i += 1;
+		}
+        let end_time = precise_time_ns();
+        debug!("css_propstrings:: time for intern string calls == %? ns" , end_time-start_time);
         css_propstrings_instance
     }
 
-
+    #[inline]
     pub fn lwc_string_caseless_isequal(&mut self , lwc_string_instance: @lwc_string , string_index: uint) -> bool {
 
         self.lwc_instance.lwc_string_caseless_isequal(lwc_string_instance, self.propstrings[string_index])
         
     }
 
+    #[inline]
     pub fn lwc_string_isequal(&mut self , lwc_string_instance: @lwc_string , string_index: uint) -> bool {
-    
+	
         self.lwc_instance.lwc_string_isequal(lwc_string_instance , self.propstrings[string_index])    
     }
 
+    #[inline]
     pub fn lwc_string_data(&mut self, string_index:uint) -> @str {
         lwc_string_data(self.propstrings[string_index])
     }
@@ -635,29 +696,29 @@ impl css_propstrings {
     pub fn is_selector_pseudo(&mut self, name: @str) -> Option<(css_selector_type, index_property)> {
         
         let mut return_value : Option<(css_selector_type, index_property)> = None;
-        let name_intern = self.lwc_instance.lwc_intern_string_managed(name);
+		let name_intern = self.lwc_instance.lwc_intern_string_managed(name);
 
-        for self.pseudo_class_list.mut_iter().advance |&string_index| {
-            if  (
-                    self.lwc_instance.lwc_string_caseless_isequal(
-                        name_intern,
-                        self.propstrings[string_index as uint]
-                    )
-                ) {
-                return_value = Some((CSS_SELECTOR_PSEUDO_CLASS, string_index));
-            }
-        }
+		for self.pseudo_class_list.iter().advance |&string_index| {
+			if  (
+					self.lwc_instance.lwc_string_caseless_isequal(
+						name_intern,
+						self.propstrings[string_index as uint]
+					)
+				) {
+				return_value = Some((CSS_SELECTOR_PSEUDO_CLASS, string_index));
+			}
+		}
 
-        for self.pseudo_element_list.mut_iter().advance|&string_index| {
-            if (
-                self.lwc_instance.lwc_string_caseless_isequal(
-                    name_intern, 
-                    self.propstrings[string_index as uint]
-                )
-            ) {
-                return_value = Some((CSS_SELECTOR_PSEUDO_ELEMENT , string_index));
-            }
-        }
+		for self.pseudo_element_list.iter().advance|&string_index| {
+			if (
+				self.lwc_instance.lwc_string_caseless_isequal(
+					name_intern, 
+					self.propstrings[string_index as uint]
+				)
+			) {
+				return_value = Some((CSS_SELECTOR_PSEUDO_ELEMENT , string_index));
+			}
+		}
         
 
         return_value

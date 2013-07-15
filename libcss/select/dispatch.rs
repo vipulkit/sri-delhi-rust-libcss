@@ -11,6 +11,8 @@ use select::propset::*;
 use select::properties::properties::*;
 use include::types::*;
 use std::ptr::*;
+use std::vec::from_elem;
+
 
 
 pub enum prop_group {
@@ -1302,24 +1304,18 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
         next_reject:128-1,             
         props: ~[~[]] 
     };
-    let mut l = 0;
-    while l < CSS_N_PROPERTIES as uint {
-        let mut prop_vec : ~[@mut prop_state] = ~[] ;
-        let mut k = 0;
-        while k < CSS_PSEUDO_ELEMENT_COUNT as uint {
-            let pstate = @mut prop_state{
-                specificity:0,
-                set:false,
-                origin:0,
-                important:false,
-                inherit:false    
-            };
-            prop_vec.push(pstate);
-            k = k + 1;
-        }
-        state.props.push(prop_vec);
-        l = l + 1;
-    }
+    
+	let pstate = prop_state{
+			specificity:0,
+			set:false,
+			origin:0,
+			important:false,
+			inherit:false    
+		};	
+	
+	let prop_vec: ~[prop_state] = from_elem(CSS_PSEUDO_ELEMENT_COUNT as uint,pstate);
+		
+	state.props = from_elem(CSS_N_PROPERTIES as uint, prop_vec);
 
     let mut i: uint = 0 ;
     let mut error: css_error;

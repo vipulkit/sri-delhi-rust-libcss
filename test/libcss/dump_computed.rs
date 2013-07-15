@@ -541,7 +541,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     }
 
     /* clip */
-    let mut rect : @mut css_computed_clip_rect = 
+	let mut rect : @mut css_computed_clip_rect = 
         @mut css_computed_clip_rect{
             top:0,
             right:0,
@@ -556,13 +556,13 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
             bottom_auto:false,
             left_auto:false
     } ;
-    
-    
+	
+	
     let (val,rect_option) = css_computed_clip(style);
-    match rect_option{
-        Some(T) => {rect = T;}
-        None => {}
-    }
+	match rect_option{
+		Some(T) => {rect = T;}
+		None => {}
+	}
 
     let val_enum: css_clip_e =  unsafe {cast::transmute(val as uint)};
     match (val_enum) {
@@ -639,11 +639,11 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
                     CSS_COMPUTED_CONTENT_STRING =>
                         ptr.push_str( fmt!(
                             "\"%s\"",
-                           *content[content_index].data.get_ref())) ,
+                           content[content_index].data.get_ref().to_owned())) ,
                     CSS_COMPUTED_CONTENT_URI =>
                         ptr.push_str( fmt!(
                             "uri(\"%s\")",
-                            *content[content_index].data.get_ref())),
+                            content[content_index].data.get_ref().to_owned())),
                     CSS_COMPUTED_CONTENT_COUNTER =>
                         ptr.push_str( fmt!(
                             "counter(%s)",
@@ -652,11 +652,11 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
                         ptr.push_str( fmt!(
                             "counters(%s, \"%s\")",
                              content[content_index].counters_data.get_ref().name,
-                             *content[content_index].counters_data.get_ref().sep.get_ref())),
+                             content[content_index].counters_data.get_ref().sep.get_ref().to_owned())),
                     CSS_COMPUTED_CONTENT_ATTR =>
                         ptr.push_str( fmt!(
                             "attr(%s)",
-                             *content[content_index].data.get_ref())),
+                             content[content_index].data.get_ref().to_owned())),
                     CSS_COMPUTED_CONTENT_OPEN_QUOTE =>
                         ptr.push_str(
                             "open-quote"),
