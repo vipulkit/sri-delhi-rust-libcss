@@ -12,26 +12,26 @@ use css::utils::errors::*;
 use wapcaplet::*;
 
 pub fn find_char_between(s: &str, c: char, start: uint, end: uint) -> Option<uint>{
-	let length = s.len();
-	let mut i : uint = start;
-	while i < length && i < end {
-		if(s[i] as char == c){
-			return Some(i);
-		}
-		
-		i = i + 1;
-	}
-	
-	return None;
+    let length = s.len();
+    let mut i : uint = start;
+    while i < length && i < end {
+        if(s[i] as char == c){
+            return Some(i);
+        }
+        
+        i = i + 1;
+    }
+    
+    return None;
 }
 
-pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
-    return (CSS_OK,Some(rel.clone()));
+pub fn resolve_url(_:@str, rel:@wapcaplet::lwc_string) -> (css_error,Option<@wapcaplet::lwc_string>) {
+    return (CSS_OK,Some(rel));
 }
 
 enum expected_value {
     bytecode(u32),
-    string(~str)
+    string(@str)
 }
 
 pub struct exp_entry{
@@ -394,7 +394,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
                     if start.is_none() {
                         assert!(false);
                     }
-					
+                    
                     len = start.get();
                     let end = find_char_between( data,')' ,len+1,data.len()) ;
                     if end.is_none() {
@@ -402,7 +402,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
                     }
 
                     len = end.get()+1;  
-                    rule.expected.push(string(data.slice( start.get()+1,end.get() ).to_str()));
+                    rule.expected.push(string(data.slice( start.get()+1,end.get() ).to_managed()));
                     if len == data.len() {
                         break ;
                     }
@@ -635,8 +635,8 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
     // Build selector string
      debug!("Entering: validate_rule_selector: unsafe");
      debug!(fmt!("Parsed Rule List:%?",copy s.selectors.len()));
-	 let mut i : uint = 0;
-	 let length = s.selectors.len();
+     let mut i : uint = 0;
+     let length = s.selectors.len();
      while i < length {
         dump_selector_list(s.selectors[i],&mut ptr) ;
         if ( i != (s.selectors.len()-1) ) {
@@ -648,7 +648,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
             debug!(fmt!("else name == %?" , name));
         }
         ptr = ~"" ;
-		i = i + 1;
+        i = i + 1;
     }
 
     /* Compare with expected selector */
@@ -710,7 +710,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 
                     let p = match (op) {
                         Some(val) => val,
-                        None => ~""
+                        None => @""
                     };
 
                     if p != s {
@@ -798,16 +798,16 @@ fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
 fn dump_selector(selector:@mut css_selector, ptr:&mut ~str){
     let d:~[@mut css_selector_detail] = copy selector.data;
     debug!(fmt!("Selector Data:%?",d));
-  	let mut iter:uint = 0;
+    let mut iter:uint = 0;
     while iter < d.len() {
-		debug!(fmt!("Selector Data len:%?, Iter:%?",d.len(), iter));
+        debug!(fmt!("Selector Data len:%?, Iter:%?",d.len(), iter));
         dump_selector_detail(d[iter], ptr, (iter != d.len()-1) );
         iter += 1;
     }   
 }
 
 fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_next:bool ) {
-	debug!(fmt!("Detail == %?",detail));
+    debug!(fmt!("Detail == %?",detail));
     if detail.negate {
         str::push_str(ptr,&":not(");
     }

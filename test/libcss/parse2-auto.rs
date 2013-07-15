@@ -24,7 +24,7 @@ pub struct line_ctx {
     inrule: bool
 }
 
-pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
+pub fn resolve_url(_:@str, rel:@wapcaplet::lwc_string) -> (css_error,Option<@wapcaplet::lwc_string>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
@@ -40,7 +40,7 @@ fn match_vec_u8(vector: &[u8] , string: &str) -> bool {
         return false;
     }
 
-	let mut iter_both = vector.iter().zip(string_vector.iter());
+    let mut iter_both = vector.iter().zip(string_vector.iter());
     for iter_both.advance() |(e , f)| {
         if e != f {
             debug!("Exiting: match_vec_u8 (2)");
@@ -223,7 +223,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
         fail!(~"Expected lines not equal to sheet dump lines");
     }
 
-	let mut iter_both = a.iter().zip(b.iter());
+    let mut iter_both = a.iter().zip(b.iter());
     for iter_both.advance |(s,e)| {
         if s != e {
             debug!("============================================================" );

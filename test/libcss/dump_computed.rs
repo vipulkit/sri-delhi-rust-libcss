@@ -165,7 +165,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
         if (val == CSS_BACKGROUND_IMAGE_INHERIT as u8) {
             ptr.push_str("background-image: inherit\n");
     }
-    else if (val == CSS_BACKGROUND_IMAGE_IMAGE as u8 && url != ~"") {
+    else if (val == CSS_BACKGROUND_IMAGE_IMAGE as u8 && url != @"") {
         ptr.push_str(fmt!("background-image: url('%s')\n",
                 url));
     }
@@ -541,7 +541,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     }
 
     /* clip */
-	let mut rect : @mut css_computed_clip_rect = 
+    let mut rect : @mut css_computed_clip_rect = 
         @mut css_computed_clip_rect{
             top:0,
             right:0,
@@ -556,13 +556,13 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
             bottom_auto:false,
             left_auto:false
     } ;
-	
-	
+    
+    
     let (val,rect_option) = css_computed_clip(style);
-	match rect_option{
-		Some(T) => {rect = T;}
-		None => {}
-	}
+    match rect_option{
+        Some(T) => {rect = T;}
+        None => {}
+    }
 
     let val_enum: css_clip_e =  unsafe {cast::transmute(val as uint)};
     match (val_enum) {
@@ -692,7 +692,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     else {
         ptr.push_str("counter-increment:");
     
-        while (counter[counter_index].name != ~"") {
+        while (counter[counter_index].name != @"") {
             ptr.push_str(fmt!(" %s ",
                 counter[counter_index].name));
             
@@ -717,7 +717,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     else {
         ptr.push_str("counter-reset:");
     
-        while (counter[counter_index].name != ~"") {
+        while (counter[counter_index].name != @"") {
             ptr.push_str(fmt!(" %s ",
                 counter[counter_index].name));
             
@@ -1077,7 +1077,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     if (val == CSS_LIST_STYLE_IMAGE_INHERIT as u8) {
         ptr.push_str("list-style-image: inherit\n");
     }
-    else if (url != ~"") {
+    else if (url != @"") {
         ptr.push_str(fmt!("list-style-image => url('%s')\n",url));
     }
     else if (val == CSS_LIST_STYLE_IMAGE_URI_OR_NONE as u8) {

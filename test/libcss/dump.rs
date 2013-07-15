@@ -2483,7 +2483,7 @@ fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
 
 }
 
-fn dump_counter(name: ~str , value: u32 , ptr: &mut ~str) {
+fn dump_counter(name: @str , value: u32 , ptr: &mut ~str) {
     debug!("Entering: dump_counter");
     ptr.push_str( &"counter(");
     ptr.push_str( name);
@@ -2539,7 +2539,7 @@ fn dump_counter(name: ~str , value: u32 , ptr: &mut ~str) {
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_counters(name: ~str , separator: ~str , value: u32 , ptr: &mut ~str) {
+fn dump_counters(name: @str , separator: ~str , value: u32 , ptr: &mut ~str) {
 
     debug!("Entering: dump_counters");
     ptr.push_str( &"counter(");

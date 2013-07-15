@@ -41,13 +41,13 @@ pub fn css__parse_filesize( fileName:~str)->uint {
 
 pub fn css__parse_strnchr(string:&~str, chr:char)-> (~str,uint) {
     let length = string.len();
-	let mut i : uint = 0;
+    let mut i : uint = 0;
     while i < length {
         if (*string)[i] as char == chr {
             return (string.slice(i,length).to_owned(),i);
         }
-		
-		i = i + 1;
+        
+        i = i + 1;
     }
     return (~"",string.len());
 }
