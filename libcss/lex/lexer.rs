@@ -159,7 +159,7 @@ impl css_lexer {
 
 
     #[inline]
-    pub fn css__lexer_append_data(&mut self, input_data: ~[u8]) {
+    pub fn css__lexer_append_data(&mut self, input_data: &[u8]) {
         self.input.parserutils_inputstream_append(input_data);
     }
 

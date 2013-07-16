@@ -231,7 +231,7 @@ impl css_parser {
     #[inline]
     pub fn css__parser_completed(&mut self) -> css_error {
         //debug!("Entering: css__parser_completed ");
-        self.lexer.css__lexer_append_data(~[]);
+        self.lexer.css__lexer_append_data([]);
         loop {
             if self.state_stack.is_empty() {
                 break;

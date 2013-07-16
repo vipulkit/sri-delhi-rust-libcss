@@ -499,11 +499,10 @@ impl css_select_ctx {
         j = (CSS_PSEUDO_ELEMENT_NONE as int) + 1;
         while ( j < (CSS_PSEUDO_ELEMENT_COUNT as int) ) {
             //debug!(fmt!("css_select_style : pseudo element of property =%?=",j)) ;
-            state.current_pseudo = unsafe { transmute(j)};
-
             unsafe {
-                forget(state.current_pseudo);
+                state.current_pseudo = transmute(j);
             }
+
 			let computed_opt = state.results.styles[j];
 			
 			match computed_opt {
