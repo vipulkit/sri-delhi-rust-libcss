@@ -157,6 +157,7 @@ impl css_lexer {
         }
     }
 
+
     #[inline]
     pub fn css__lexer_append_data(&mut self, input_data: ~[u8]) {
         self.input.parserutils_inputstream_append(input_data);
@@ -684,7 +685,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("cdo1: character read is %c" , c));
             if (c == '!') {
                 self.APPEND(cptr, clen);
@@ -715,7 +715,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("cdo2: character read is %c" , c));
             if (c == '-') {
                 self.APPEND(cptr, clen);
@@ -749,7 +748,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("cdo3: character read is %c" , c));
 
             if (c == '-') {
@@ -766,7 +764,6 @@ impl css_lexer {
     }
 
     pub fn comment(&mut self) -> (css_error, Option<@mut css_token>) {
-
         //debug!("entering : comment");
         enum comment_substates { Initial = 0, InComment = 1 };
 
@@ -789,7 +786,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("comment1: character read is %c" , c));
             if (c != '*') {
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
@@ -817,7 +813,6 @@ impl css_lexer {
 
                 let (cptr , clen) = pu_peek_result.unwrap();
                 let c = cptr[0] as char;
-
                 //debug!(fmt!("comment2: character read is %c" , c));
                 self.APPEND(cptr, clen);
                 
@@ -843,7 +838,6 @@ impl css_lexer {
     }
 
     pub fn escaped_ident_or_function(&mut self) -> (css_error, Option<@mut css_token>) {
-
         //debug!("entering : escaped_ident_or_function");
     /* IDENT = ident = [-]? nmstart nmchar*
      * FUNCTION = ident '(' = [-]? nmstart nmchar* '('
@@ -869,7 +863,6 @@ impl css_lexer {
     }
 
     pub fn hash(&mut self) -> (css_error, Option<@mut css_token>) {
-
         //debug!("entering : hash");
         /* HASH = '#' name  = '#' nmchar+ 
          *
@@ -890,7 +883,6 @@ impl css_lexer {
     }
 
     pub fn ident_or_function(&mut self) -> (css_error, Option<@mut css_token>) {
-
 
         //debug!("entering : ident_or_function");
         enum ident_or_function_substates { Initial = 0, Bracket = 1 };
@@ -927,7 +919,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("ident_or_function: character read is %c" , c));
             if (c == '(') {
                 self.APPEND(cptr, clen);
@@ -941,7 +932,6 @@ impl css_lexer {
     }
 
     pub fn match_prefix(&mut self) -> (css_error, Option<@mut css_token>) {
-
 
         //debug!("entering : match_prefix");
         /* INCLUDES       = "~="
@@ -966,7 +956,6 @@ impl css_lexer {
 
         let (cptr , clen) = pu_peek_result.unwrap();
         let c = cptr[0] as char;
-
         //debug!(fmt!("match_prefix: character read is %c" , c));
         if (c != '=') {
             return self.emit_token(Some(CSS_TOKEN_CHAR));
@@ -988,7 +977,6 @@ impl css_lexer {
     }
 
     pub fn number_or_percentage_or_dimension(&mut self) -> (css_error, Option<@mut css_token>) {
-
 
         //debug!("entering : number_or_percentage_or_dimension");
         enum number_or_percentage_or_dimension_substates { 
@@ -1035,7 +1023,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("number_or_percentage_or_dimension1: character read is %c" , c));
             /* Bail if we've not got a '.' or we've seen one already */
             if c != '.' || self.context.first == '.' as u8 {
@@ -1093,7 +1080,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("number_or_percentage_or_dimension2: character read is %c" , c));
             /* A solitary '.' or '+' is a CHAR, not numeric */
             let mut emit_char = false;
@@ -1161,7 +1147,6 @@ impl css_lexer {
     }
 
     pub fn s(&mut self) -> (css_error, Option<@mut css_token>) {
-
         //debug!("entering : s");
         /* S = wc*
          * 
@@ -1169,7 +1154,6 @@ impl css_lexer {
          */
 
         let error = self.consume_w_chars();
-
         //debug!(fmt!("s:: error == %?", error));
         if (error as int != CSS_OK as int) {
             return (error, None);
@@ -1179,7 +1163,6 @@ impl css_lexer {
     }
 
     pub fn start(&mut self) -> (css_error, Option<@mut css_token>) {
-
         //debug!("entering : start");
         //debug!(fmt!("self.input == %?", self.input));
         loop {
@@ -1204,19 +1187,16 @@ impl css_lexer {
                 self.unescaped_token_data = None;
             }
 
-
             //debug!(fmt!("start:: self.bytes_read_for_token == %?", self.bytes_read_for_token));
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
-
                 //debug!("Entering: perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int");
                 return (css_error_from_parserutils_error(perror), None);
             }
 
             if (perror as int == PARSERUTILS_EOF as int) {
-
                 //debug!("perror as int == PARSERUTILS_EOF as int");
                 //debug!(fmt!("pu_peek_result.is_some() == %?", pu_peek_result.is_some()));
                 return self.emit_token(Some(CSS_TOKEN_EOF));
@@ -1224,7 +1204,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("start: character read is %c" , c));
             self.APPEND(cptr, clen);
 
@@ -1334,7 +1313,6 @@ impl css_lexer {
     }
 
     pub fn string(&mut self) -> (css_error, Option<@mut css_token>) {
-
         //debug!("entering : string");
         /* STRING = string
          *
@@ -1359,7 +1337,6 @@ impl css_lexer {
     }
 
     pub fn uri_or_unicode_range_or_ident_or_function(&mut self) -> (css_error, Option<@mut css_token>) {
-
         //debug!("entering : uri_or_unicode_range_or_ident_or_function");
         /* URI = "url(" w (string | urlchar*) w ')' 
          * UNICODE-RANGE = [Uu] '+' [0-9a-fA-F?]{1,6}(-[0-9a-fA-F]{1,6})?
@@ -1383,7 +1360,6 @@ impl css_lexer {
 
         let (cptr , clen) = pu_peek_result.unwrap();
         let c = cptr[0] as char;
-
         //debug!(fmt!("uri_or_unicode_range_or_ident_or_function: character read is %c" , c));
         if (c == 'r' || c == 'R') {
             self.APPEND(cptr, clen);
@@ -1408,7 +1384,6 @@ impl css_lexer {
     }
     
     pub fn uri(&mut self) -> (css_error, Option<@mut css_token>) {
-
         //debug!("entering : uri");
         enum uri_substates { Initial = 0, LParen = 1, W1 = 2, Quote = 3, 
         URL = 4, W2 = 5, RParen = 6, String = 7 };
@@ -1433,7 +1408,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("uri1: character read is %c" , c));
             if (c == 'l' || c == 'L') {
                 self.APPEND(cptr, clen);
@@ -1464,7 +1438,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("uri2: character read is %c" , c));
             if (c == '(') {
                 self.APPEND(cptr, clen);
@@ -1515,7 +1488,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("uri3: character read is %c" , c));
             if (c == '"' || c == '\'') {
                 self.APPEND(cptr, clen);
@@ -1534,7 +1506,6 @@ impl css_lexer {
                 self.substate = URL as uint;
             }
         }
-
 
         //debug!(fmt!("uri:: self.substate == %?", self.substate));
         /* re-ordered states to avoid goto */
@@ -1596,7 +1567,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("uri4: character read is %c" , c));
             if (c != ')') {
                 /* Rewind to "url(" */
@@ -1613,7 +1583,6 @@ impl css_lexer {
     }
 
     pub fn unicode_range(&mut self) -> (css_error, Option<@mut css_token>) {
-
         //debug!("entering : unicode_range");
         enum unicode_range_states { Initial = 0, MoreDigits = 1 };
 
@@ -1650,7 +1619,6 @@ impl css_lexer {
 
                 let (cptr , clen) = pu_peek_result.unwrap();
                 c = cptr[0] as char;
-
                 //debug!(fmt!("unicode_range1: character read is %c" , c));
                 if (c.is_digit_radix(16) || c == '?') {
                     self.APPEND(cptr, clen);
@@ -1687,7 +1655,6 @@ impl css_lexer {
 
                 let (cptr , clen) = pu_peek_result.unwrap();
                 c = cptr[0] as char;
-
                 //debug!(fmt!("unicode_range2: character read is %c" , c));
                 /* If we've got a '-', then we may have a 
                  * second range component */
@@ -1706,7 +1673,6 @@ impl css_lexer {
                 /* don't check error, this succeded in while loop above */
                 let (cptr , clen) = pu_peek_result.unwrap();
                 c = cptr[0] as char;
-
                 //debug!(fmt!("unicode_range3: character read is %c" , c));
                 /* If we've got a '-', then we may have a 
                  * second range component */
@@ -1751,7 +1717,6 @@ impl css_lexer {
 
                 let (cptr , clen) = pu_peek_result.unwrap();
                 c = cptr[0] as char;
-
                 //debug!(fmt!("unicode_range4: character read is %c" , c));
                 if (c.is_digit_radix(16)) {
                     self.APPEND(cptr, clen);
@@ -1778,7 +1743,6 @@ impl css_lexer {
      ******************************************************************************/ 
 
     pub fn consume_digits(&mut self) -> css_error {
-
         //debug!("entering : consume_digits");
         /* digit = [0-9] */
 
@@ -1797,7 +1761,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("consume_digits: character read is %c" , c));
             if (c.is_digit()) {
                 self.APPEND(cptr, clen);
@@ -1811,7 +1774,6 @@ impl css_lexer {
     }
 
     fn consume_escape(&mut self, nl : bool) -> css_error {
-
         //debug!("entering : consume_escape");
         /* escape = unicode | '\' [^\n\r\f0-9a-fA-F] 
              * 
@@ -1841,7 +1803,6 @@ impl css_lexer {
 
         let (cptr , clen) = pu_peek_result.unwrap();
         let mut c = cptr[0] as char;
-
         //debug!(fmt!("consume_escape1: character read is %c" , c));
         if (!nl && (c=='\n' || c=='\r' /* || c=='\f'*/)) {
             //debug!("!nl && (c==)");
@@ -1851,7 +1812,6 @@ impl css_lexer {
 
         /* Create unescaped buffer, if it doesn't already exist */
         if (self.unescaped_token_data.is_none()) {
-
             //debug!("self.unescaped_token_data.is_none()");
             self.unescaped_token_data = Some(~[]);
         }
@@ -1859,7 +1819,6 @@ impl css_lexer {
         /* If this is the first escaped character we've seen for this token,
          * we must copy the characters we've read to the unescaped buffer */
         if (!self.escape_seen) {
-
             //debug!("!self.escape_seen");
             if (self.bytes_read_for_token > 1) {
                 let (pu_peek_result , perror) = 
@@ -1868,7 +1827,6 @@ impl css_lexer {
                 assert!(perror as int == PARSERUTILS_OK as int);
 
                 let (sdata , _) = pu_peek_result.unwrap();
-
                 //debug!("-1 to skip \\");
                 /* -1 to skip '\\' */
                 self.unescaped_token_data.get_mut_ref().push_all(sdata.slice(0, self.bytes_read_for_token-1));
@@ -1879,7 +1837,6 @@ impl css_lexer {
         }
 
         if (c.is_digit_radix(16)) {
-
             //debug!("char::is_digit_radix(c,16)");
             //debug!(fmt!("c== %?" , c));
             self.bytes_read_for_token += clen;
@@ -1898,7 +1855,6 @@ impl css_lexer {
 
         /* If we're handling escaped newlines, convert CR(LF)? to LF */
         if (nl && c=='\r') {
-
             //debug!("nl && c=='\r'");
             let (pu_peek_result , perror) = 
                 self.input.parserutils_inputstream_peek(self.bytes_read_for_token+clen);
@@ -1922,7 +1878,6 @@ impl css_lexer {
             c=cptr[0] as char;
             
             if (c=='\n') {
-
                 //debug!("c=='\n'");
                 self.APPEND(cptr, 1);
                 /* And skip the '\r' in the input */
@@ -1938,7 +1893,6 @@ impl css_lexer {
             return CSS_OK;
         }
         else if (nl && (c == '\n'/* || c == '\f'*/)) {
-
             //debug!("consume_escape:: nl && ");
             /* APPEND will increment this appropriately */
             self.current_col = 0;
@@ -1949,7 +1903,6 @@ impl css_lexer {
         }
 
         /* Append the unescaped character */
-
         //debug!("consume_escape:: Append the unescaped character");
         self.APPEND(cptr, clen);
 
@@ -1958,7 +1911,6 @@ impl css_lexer {
 
     pub fn consume_nm_chars(&mut self) -> css_error
     {
-
         //debug!("entering : consume_nm_chars");
         /* nmchar = [a-zA-Z] | '-' | '_' | nonascii | escape */
 
@@ -1977,7 +1929,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("consume_nm_chars: character read is %c" , c));
             if (start_nm_char(c) && c != '\\') {
                 self.APPEND(cptr, clen);
@@ -2016,7 +1967,6 @@ impl css_lexer {
 
     pub fn consume_string(&mut self) -> css_error
     {
-
         //debug!("entering : consume_string");
         let quote = self.context.first as char;
         let permittedquote = 
@@ -2045,7 +1995,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("consume_string: character read is %c" , c));
             if (c == permittedquote) {
                 self.APPEND(cptr, clen);
@@ -2071,7 +2020,6 @@ impl css_lexer {
 
     pub fn consume_string_chars(&mut self) -> css_error
     {
-
         //debug!("entering : consume_string_chars");
         /* stringchar = urlchar | ' ' | ')' | '\' nl */
 
@@ -2090,7 +2038,6 @@ impl css_lexer {
 
             let (cptr , clen) = pu_peek_result.unwrap();
             let c = cptr[0] as char;
-
             //debug!(fmt!("consume_string_chars: character read is %c" , c));
             if (start_string_char(c) && c != '\\') {
                 self.APPEND(cptr, clen);
@@ -2126,7 +2073,6 @@ impl css_lexer {
     }
 
     fn consume_unicode(&mut self, mut ucs : u32) -> css_error {
-
         //debug!("entering : consume_unicode");
         let mut count : int = 0;
         let bytes_read_init : uint = self.bytes_read_for_token;
@@ -2238,7 +2184,6 @@ impl css_lexer {
     }
 
     pub fn consume_url_chars(&mut self) -> css_error {
-
         //debug!("entering : consume_url_chars");
         loop {
             
@@ -2255,7 +2200,6 @@ impl css_lexer {
 
             let (_cptr , clen) = pu_peek_result.unwrap();
             let c = _cptr[0] as char;
-
             //debug!(fmt!("consume_url_chars: character read is %c" , c));
             if start_url_char(c) && c != '\\' {
                 self.APPEND(_cptr , clen);
@@ -2283,7 +2227,6 @@ impl css_lexer {
     } 
 
     pub fn consume_w_chars(&mut self) -> css_error {
-
         //debug!("entering : consume_w_chars");
         loop {
             
@@ -2300,7 +2243,6 @@ impl css_lexer {
             
             let (_cptr , clen) = pu_peek_result.unwrap();
             let c = _cptr[0] as char;
-
             //debug!(fmt!("consume_w_chars: character read is %c" , c));
             if is_space(c) {
                 self.APPEND(_cptr , clen);
@@ -2337,7 +2279,6 @@ impl css_lexer {
 
 #[inline]
 fn start_nm_char(c: char) -> bool{
-
     //debug!("entering : start_nm_char");
     return c == '_' || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || 
         ('0' <= c && c <= '9') || c == '-' || c >= 0x80 as char || c == '\\';
@@ -2345,7 +2286,6 @@ fn start_nm_char(c: char) -> bool{
 
 #[inline]
 fn start_nm_start(c: char) -> bool{
-
     //debug!("entering : start_nm_start");
     return c == '_' || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') ||
         c >= 0x80 as char || c == '\\';
@@ -2353,14 +2293,12 @@ fn start_nm_start(c: char) -> bool{
 
 #[inline]
 fn start_string_char(c: char) -> bool{
-
     //debug!("entering : start_string_char");
     return start_url_char(c) || c == ' ' || c == ')';
 }
 
 #[inline]
 fn start_url_char(c: char) -> bool{
-
     //debug!("entering : start_url_char");
     return c == '\t' || c == '!' || ('#' <= c && c <= '&') || c == '(' ||
         ('*' <= c && c <= '~') || c >= 0x80 as char || c == '\\';
@@ -2368,7 +2306,6 @@ fn start_url_char(c: char) -> bool{
 
 #[inline]
 fn is_space(c: char) -> bool{
-
     //debug!("entering : is_space");
     return c == ' ' || c == '\r' || c == '\n' || c == '\t';
 }

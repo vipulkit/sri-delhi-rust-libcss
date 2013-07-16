@@ -77,7 +77,7 @@ impl css {
 
 		// create stylesheet
 		let stylesheet = @mut css_stylesheet {
-			selectors:css_selector_hash::css__selector_hash_create(),       
+			selectors:css_selector_hash::css__selector_hash_create(lwc),       
 			rule_count:0,                        
 			rule_list:None,   
 			last_rule:None,   

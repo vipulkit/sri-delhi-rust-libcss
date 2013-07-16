@@ -86,8 +86,8 @@ static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
 
 // /**< Qualified name of selector */
 pub struct css_qname {  
-    name:@str,
-    ns:@str
+    name:@lwc_string,
+    ns:@lwc_string
 }
 
 pub struct css_selector_detail {
@@ -98,7 +98,7 @@ pub struct css_selector_detail {
     negate:bool,                        /**< Detail match is inverted */
 
     //css_selector_detail_value - union merged
-    string:Option<@str>,
+    string:Option<@lwc_string>,
     a:i32,
     b:i32
 }
@@ -128,7 +128,8 @@ pub struct css_selector_hash {
     elements:~[Option<@mut hash_entry>],
     classes:~[Option<@mut hash_entry>],
     ids:~[Option<@mut hash_entry>],
-    universal:~[Option<@mut hash_entry>]
+    universal:~[Option<@mut hash_entry>],
+    lwc_instance:@lwc
 }
 
 pub struct css_stylesheet {
@@ -546,7 +547,7 @@ impl css_stylesheet {
                 if self.inline_style {
                     CSS_SPECIFICITY_A
                 }
-                else if (qname.name.len() != 1 || qname.name.char_at(0) != '*') {
+                else if (lwc_string_length(qname.name) != 1 || lwc_string_data(qname.name).char_at(0) != '*') {
                     CSS_SPECIFICITY_D
                 }
                 else {
@@ -589,7 +590,7 @@ impl css_stylesheet {
         sel_type: css_selector_type,
         qname : css_qname, 
         value_type : css_selector_detail_value_type,
-        string_value : Option<@str> , 
+        string_value : Option<@lwc_string> , 
         ab_value : Option<(i32,i32)>,
         negate:bool
     )  -> (css_error, Option<@mut css_selector_detail>) 
@@ -1277,14 +1278,15 @@ impl css_selector_hash {
     * #Return Value:
     *  'css_selector_hash' - Hash table of selectors.
     */
-    pub fn css__selector_hash_create() -> @mut css_selector_hash {
+    pub fn css__selector_hash_create(lwc_inst:@lwc) -> @mut css_selector_hash {
         //debug!("Entering: css__selector_hash_create");
         let hash = @mut css_selector_hash{ 
                         default_slots:(1<<6),
                         elements:~[], 
                         classes:~[], 
                         ids:~[],
-                        universal:~[] 
+                        universal:~[],
+                        lwc_instance:lwc_inst
         };
         let mut i = 0;
 		while i < hash.default_slots {
@@ -1309,8 +1311,8 @@ impl css_selector_hash {
     */
 
     #[inline]
-    pub fn _class_name(selector : @mut css_selector) 
-                        -> @str {
+    pub fn _class_name(&mut self , selector : @mut css_selector) 
+                        -> @lwc_string {
 
         for selector.data.mut_iter().advance |&element| {
             match element.selector_type {
@@ -1323,7 +1325,7 @@ impl css_selector_hash {
             }
         }
 
-        @""
+        self.lwc_instance.lwc_intern_string_managed(@"")
     }
 
     /**
@@ -1338,8 +1340,8 @@ impl css_selector_hash {
     */
 
     #[inline]
-    pub fn _id_name(selector : @mut css_selector) 
-                        -> @str {
+    pub fn _id_name(&mut self , selector : @mut css_selector) 
+                        -> @lwc_string {
 
         for selector.data.mut_iter().advance |&element| {
             match element.selector_type {
@@ -1352,7 +1354,7 @@ impl css_selector_hash {
             }
         }
 
-        @""
+        self.lwc_instance.lwc_intern_string_managed(@"")
     }
 
 
@@ -1368,10 +1370,11 @@ impl css_selector_hash {
     */
 
     #[inline]
-    pub fn _hash_name( string: @str ) -> u32 {
+    pub fn _hash_name(_string: @lwc_string ) -> u32 {
         //debug!("Entering _hash_name");
         let mut z: u32 = 0x811c9dc5;
         let mut i: uint = 0;
+        let string = lwc_string_data(_string);
         let string_index = string.char_len();
         while i<string_index {
             z *= 0x01000193;
@@ -1398,12 +1401,12 @@ impl css_selector_hash {
 
         let mut mask :u32 ;
         let mut index:u32=0;
-        let mut name :@str ;
+        let mut name :@lwc_string ;
         if (selector.data.len() > 0) {
 
             // Named Element
-            if ( selector.data[0].qname.name.len() != 1) || 
-                (selector.data[0].qname.name.char_at(0) != '*' ) {
+            if ( lwc_string_length(selector.data[0].qname.name) != 1) || 
+                (lwc_string_data(selector.data[0].qname.name).char_at(0) != '*' ) {
                     //debug!("Entering: css__selector_hash_insert:: Named Element");
                     mask = self.default_slots-1 ;
                     index = css_selector_hash::_hash_name((selector.data[0].qname.name)) & mask ;
@@ -1411,18 +1414,18 @@ impl css_selector_hash {
             }
 
             // Named Class
-            else if css_selector_hash::_class_name(selector).len() != 0  {
+            else if lwc_string_length(self._class_name(selector)) != 0  {
                 //debug!("Entering: css__selector_hash_insert:: Named Class");
-                name = css_selector_hash::_class_name(selector);
+                name = self._class_name(selector);
                 mask = self.default_slots-1 ;
                 index = css_selector_hash::_hash_name(name) & mask ;
                 return self._insert_into_chain(Class,index,selector);
             }
 
             // Named Id
-            else if css_selector_hash::_id_name(selector).len() != 0 {
+            else if lwc_string_length(self._id_name(selector)) != 0 {
                 //debug!("Entering: css__selector_hash_insert:: Named Id");
-                name = css_selector_hash::_id_name(selector);
+                name = self._id_name(selector);
                 mask = self.default_slots-1 ;
                 index = css_selector_hash::_hash_name(name) & mask ;
                 return self._insert_into_chain(Ids,index,selector);
@@ -1555,28 +1558,28 @@ impl css_selector_hash {
                                     -> css_error {
         let mut mask :u32 ;
         let mut index:u32=0;
-        let mut name :@str ;
+        let mut name :@lwc_string ;
         if (selector.data.len() > 0){
 
             // Named Element
-            if ( selector.data[0].qname.name.len() != 1) || 
-                (selector.data[0].qname.name.char_at(0) != '*' ) {
+            if ( lwc_string_length(selector.data[0].qname.name) != 1) || 
+                (lwc_string_data(selector.data[0].qname.name).char_at(0) != '*' ) {
                     mask = self.default_slots-1 ;
                     index = css_selector_hash::_hash_name((selector.data[0].qname.name)) & mask ;
                     return self._remove_from_chain(Element,index,selector);
             }
 
             // Named Class
-            else if css_selector_hash::_class_name(selector).len() == 0  {
-                name = css_selector_hash::_class_name(selector);
+            else if lwc_string_length(self._class_name(selector)) == 0  {
+                name = self._class_name(selector);
                 mask = self.default_slots-1 ;
                 index = css_selector_hash::_hash_name(name) & mask ;
                 return self._remove_from_chain(Class,index,selector);
             }
 
             // Named Id
-            else if css_selector_hash::_id_name(selector).len() == 0 {
-                name = css_selector_hash::_id_name(selector);
+            else if lwc_string_length(self._id_name(selector)) == 0 {
+                name = self._id_name(selector);
                 mask = self.default_slots-1 ;
                 index = css_selector_hash::_hash_name(name) & mask ;
                 return self._remove_from_chain(Ids,index,selector);
@@ -1656,45 +1659,45 @@ impl css_selector_hash {
         CSS_OK
     }
 
-#[inline]
-    pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
+// #[inline]
+//     pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
 
-    //debug!(fmt!("Strtol : strings are %? ====== %? ",a,b));
-    if ( a.len() != b.len() ) {
-        return false ;
-    }
+//     //debug!(fmt!("Strtol : strings are %? ====== %? ",a,b));
+//     if ( a.len() != b.len() ) {
+//         return false ;
+//     }
     
-    let i :uint = a.len() ;
-    let mut e = 0;
-	while e < i {
-        if a[e] == b[e] {
-            e = e + 1 ;
-			loop;
-        }
+//     let i :uint = a.len() ;
+//     let mut e = 0;
+// 	while e < i {
+//         if a[e] == b[e] {
+//             e = e + 1 ;
+// 			loop;
+//         }
 
-        if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
-            if (a[e]+32) == b[e] {
-				e = e + 1 ;
-                loop;
-            }
-            else {
-                return false ;
-            }
-        }
+//         if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
+//             if (a[e]+32) == b[e] {
+// 				e = e + 1 ;
+//                 loop;
+//             }
+//             else {
+//                 return false ;
+//             }
+//         }
 
-        if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
-            if (b[e]+32) == a[e] {
-				e = e + 1 ;
-                loop;
-            }
-            else {
-                return false ;
-            }
-        }
-        return false ;
-    }
-    return true ;
-    }
+//         if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
+//             if (b[e]+32) == a[e] {
+// 				e = e + 1 ;
+//                 loop;
+//             }
+//             else {
+//                 return false ;
+//             }
+//         }
+//         return false ;
+//     }
+//     return true ;
+//     }
 
     /**
     * #Description:
@@ -1706,10 +1709,10 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find(&mut self, name : @str) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find(&mut self, name : @lwc_string) -> (Option<@mut hash_entry>,css_error) {
         //debug!("Entering: css__selector_hash_find");
         let mask  = self.default_slots-1 ;
-        let index = css_selector_hash::_hash_name(copy name) & mask ; 
+        let index = css_selector_hash::_hash_name(name) & mask ; 
         let mut head = self.elements[index];
 
         //debug!(fmt!("css__selector_hash_find:: name=%?  mask=%?, index=%? ", name, mask, index ));
@@ -1720,7 +1723,7 @@ impl css_selector_hash {
                 },
                 Some(node_element)=>{
 
-                    if css_selector_hash::is_string_caseless_equal(
+                    if self.lwc_instance.lwc_string_caseless_isequal(
                                 node_element.selector.data[0].qname.name,name) {
                                 //debug!("Exiting: css__selector_hash_find (1)");
                                 return (head,CSS_OK);
@@ -1752,10 +1755,10 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_class(&mut self, name : @str) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_by_class(&mut self, name : @lwc_string) -> (Option<@mut hash_entry>,css_error) {
 
         let mask  = self.default_slots-1 ;
-        let index = css_selector_hash::_hash_name(copy name) & mask ; 
+        let index = css_selector_hash::_hash_name(name) & mask ; 
         let mut head = self.classes[index];
 
         //debug!(fmt!("name=%?  mask=%?, index=%? ", name, mask, index ));
@@ -1766,9 +1769,9 @@ impl css_selector_hash {
                 },
                 Some(node_element)=>{
 
-                    let n = css_selector_hash::_class_name(node_element.selector);
+                    let n = self._class_name(node_element.selector);
 
-                    if css_selector_hash::is_string_caseless_equal(n, name) {
+                    if self.lwc_instance.lwc_string_caseless_isequal(n, name) {
                         return (head,CSS_OK);
                     }
 
@@ -1796,10 +1799,10 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_id(&mut self, name : @str) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_by_id(&mut self, name : @lwc_string) -> (Option<@mut hash_entry>,css_error) {
 
         let mask  = self.default_slots-1 ;
-        let index = css_selector_hash::_hash_name(copy name) & mask ; 
+        let index = css_selector_hash::_hash_name(name) & mask ; 
         let mut head = self.ids[index];
 
         loop {
@@ -1809,9 +1812,9 @@ impl css_selector_hash {
                 },
                 Some(node_element)=>{
 
-                    let n = css_selector_hash::_id_name(node_element.selector);
+                    let n = self._id_name(node_element.selector);
 
-                    if css_selector_hash::is_string_caseless_equal(n, name) {
+                    if self.lwc_instance.lwc_string_caseless_isequal(n, name) {
                         return (head,CSS_OK);
                     }
 
@@ -1860,7 +1863,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_elements(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_elements(&mut self , current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
 
@@ -1874,7 +1877,7 @@ impl css_selector_hash {
                         next_entry.selector.data.len()==0 {
                         return (None,CSS_INVALID);
                     }
-                    if css_selector_hash::is_string_caseless_equal(
+                    if self.lwc_instance.lwc_string_caseless_isequal(
                         current.selector.data[0].qname.name,
                         next_entry.selector.data[0].qname.name) == true {
 
@@ -1897,11 +1900,11 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_classes(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_classes(&mut self ,current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
 
-        let current_refer = css_selector_hash::_class_name(current.selector);
+        let current_refer = self._class_name(current.selector);
 
         loop {
             match head.next {
@@ -1909,11 +1912,11 @@ impl css_selector_hash {
                     return (None,CSS_OK);
                 },
                 Some(next_entry)=>{
-                    let name = css_selector_hash::_class_name(next_entry.selector);
-                    if( name.len()==0){
+                    let name = self._class_name(next_entry.selector);
+                    if( lwc_string_length(name)==0){
                         loop;
                     }
-                    if css_selector_hash::is_string_caseless_equal(name,current_refer) == true {
+                    if self.lwc_instance.lwc_string_caseless_isequal(name,current_refer) == true {
                         return (current.next,CSS_OK);
                     }
                     head = next_entry ;
@@ -1933,11 +1936,11 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_ids(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_ids(&mut self ,current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
 
-        let current_refer = css_selector_hash::_id_name(current.selector);
+        let current_refer = self._id_name(current.selector);
 
         loop {
             match head.next {
@@ -1945,11 +1948,11 @@ impl css_selector_hash {
                     return (None,CSS_OK);
                 },
                 Some(next_entry)=>{
-                    let name = css_selector_hash::_id_name(next_entry.selector);
-                    if( name.len()==0){
+                    let name = self._id_name(next_entry.selector);
+                    if( lwc_string_length(name)==0){
                         loop;
                     }
-                    if css_selector_hash::is_string_caseless_equal(name,current_refer) == true {
+                    if self.lwc_instance.lwc_string_caseless_isequal(name,current_refer) == true {
                         return (current.next,CSS_OK);
                     }
                     head = next_entry ;

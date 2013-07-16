@@ -6,6 +6,7 @@ pub static INT_MIN : int = int::min_value ;
 pub static INT_MAX : int = int::max_value ;
 pub static I32_MAX : i32 = 2147483647 ;
 
+#[inline]
 pub fn css_int_to_fixed(a:int) -> i32 {
 
     let mut xx:i64 = (a as i64) << CSS_RADIX_POINT;
@@ -21,6 +22,7 @@ pub fn css_int_to_fixed(a:int) -> i32 {
     xx as i32
 }
 
+#[inline]
 pub fn css_divide_fixed(x : i32, y : i32) -> i32 {
     let mut xx :i64 = ((x as i64) << CSS_RADIX_POINT) / (y as i64);
 
@@ -35,6 +37,7 @@ pub fn css_divide_fixed(x : i32, y : i32) -> i32 {
     xx as i32
 }
 
+#[inline]
 pub fn css_multiply_fixed(x: i32 , y: i32) -> i32 {
     debug!((fmt!("x = %?", x)));
 	debug!((fmt!("y = %?", y)));
@@ -53,6 +56,7 @@ pub fn css_multiply_fixed(x: i32 , y: i32) -> i32 {
     xx as i32
 }
 
+#[inline]
 pub fn css_add_fixed(x: i32 , y: i32) -> i32 {
     let mut ux: i32 = x;
     let uy: i32 = y;
@@ -69,6 +73,7 @@ pub fn css_add_fixed(x: i32 , y: i32) -> i32 {
     return res;
 }
 
+#[inline]
 pub fn css_subtract_fixed(x: i32 , y: i32) -> i32{
     debug!((fmt!("x = %?", x)));
 	debug!((fmt!("y = %?", y)));
@@ -112,6 +117,7 @@ pub static F_255: i32 = 0x0003FC00; /* 255 */
 pub static F_300: i32 = 0x0004b000; /* 300 */
 pub static F_400: i32 = 0x00064000; /* 400 */
 
+#[inline]
 pub fn FLTTOFIX(a:float)->i32 {
     a * ((1 << CSS_RADIX_POINT) as float) as i32
 }

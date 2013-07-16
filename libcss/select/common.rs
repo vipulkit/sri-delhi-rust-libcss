@@ -666,7 +666,7 @@ pub struct css_select_results {
 }
 
 pub struct reject_item {
-    value:@str,
+    value:@lwc_string,
     sel_type:css_selector_type 
 } 
 
@@ -686,9 +686,9 @@ pub struct css_select_handler {
 
     node_name: @extern fn( node:*c_void, qname: &mut css_qname ) -> css_error,
 
-    node_classes: @extern fn(pw:*c_void, n:*c_void, classes: &mut ~[@str] ) -> css_error,
+    node_classes: @extern fn(pw:*c_void, n:*c_void, classes: &mut ~[@lwc_string] ) -> css_error,
 
-    node_id: @extern fn(pw:*c_void, node:*c_void, id:&mut @str ) -> css_error,
+    node_id: @extern fn(pw:*c_void, node:*c_void, id:&mut @lwc_string ) -> css_error,
 
     named_ancestor_node: @extern fn(node:*c_void, qname:&mut css_qname, ancestor:*mut*c_void) -> css_error,
    
@@ -710,17 +710,17 @@ pub struct css_select_handler {
 
     node_has_attribute: @extern fn(node:*c_void, name:css_qname, matched:@mut bool) -> css_error,
     
-    node_has_attribute_equal: @extern fn(node:*c_void, qname:css_qname,value:@str, matched:@mut bool) -> css_error,
+    node_has_attribute_equal: @extern fn(node:*c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
    
-    node_has_attribute_dashmatch: @extern fn(node:*c_void, qname:css_qname,value:@str, matched:@mut bool) -> css_error,
+    node_has_attribute_dashmatch: @extern fn(node:*c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute_includes: @extern fn(node:*c_void, qname:css_qname,value:@str, matched:@mut bool) -> css_error,
+    node_has_attribute_includes: @extern fn(node:*c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute_prefix: @extern fn(node:*c_void, qname:css_qname,value:@str, matched:@mut bool) -> css_error,
+    node_has_attribute_prefix: @extern fn(node:*c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute_suffix: @extern fn(node:*c_void, qname:css_qname,value:@str, matched:@mut bool) -> css_error,
+    node_has_attribute_suffix: @extern fn(node:*c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute_substring: @extern fn(node:*c_void, qname:css_qname,value:@str, matched:@mut bool) -> css_error,
+    node_has_attribute_substring: @extern fn(node:*c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
 
     node_is_root: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
    
@@ -746,7 +746,7 @@ pub struct css_select_handler {
  
     node_is_target: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
 
-    node_is_lang: @extern fn(node:*c_void, lang:@str, matched:@mut bool) -> css_error,
+    node_is_lang: @extern fn(node:*c_void, lang:@lwc_string, matched:@mut bool) -> css_error,
 
     node_presentational_hint: @extern fn(node:*c_void, property:u32) -> 
         (css_error,Option<@mut css_hint>),
@@ -773,9 +773,9 @@ pub struct css_select_state {
 
     element:css_qname,       
      //changed id from wapcaplet-string to string
-    id:@str,
+    id:@lwc_string,
      //changes classes from wapcaplet  to string
-    classes:~[@str],
+    classes:~[@lwc_string],
     n_classes:u32,           
 
     reject_cache: ~[Option<reject_item>],     /* Reject cache (filled from end) */  

@@ -681,15 +681,21 @@ impl css_propstrings {
         lwc_string_data(self.propstrings[string_index])
     }
 
-    pub fn is_selector_pseudo(&mut self, name: @str) -> Option<(css_selector_type, index_property)> {
+    #[inline]
+    pub fn get_lwc_string(&mut self, string_index:uint) -> @lwc_string {
+        self.propstrings[string_index]
+    }
+
+    
+
+    pub fn is_selector_pseudo(&mut self, name: @lwc_string) -> Option<(css_selector_type, index_property)> {
         
         let mut return_value : Option<(css_selector_type, index_property)> = None;
-		let name_intern = self.lwc_instance.lwc_intern_string_managed(name);
 
 		for self.pseudo_class_list.iter().advance |&string_index| {
 			if  (
 					self.lwc_instance.lwc_string_caseless_isequal(
-						name_intern,
+						name,
 						self.propstrings[string_index as uint]
 					)
 				) {
@@ -700,7 +706,7 @@ impl css_propstrings {
 		for self.pseudo_element_list.iter().advance|&string_index| {
 			if (
 				self.lwc_instance.lwc_string_caseless_isequal(
-					name_intern, 
+					name, 
 					self.propstrings[string_index as uint]
 				)
 			) {

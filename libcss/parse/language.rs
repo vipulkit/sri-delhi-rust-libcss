@@ -48,7 +48,7 @@ pub struct css_language {
     state:language_state,   
     strings: ~css_propstrings,  
     properties: ~css_properties,
-    default_namespace:Option<@str>, 
+    default_namespace:Option<@lwc_string>, 
     namespaces:~[~css_namespace]
 }
 
@@ -878,7 +878,7 @@ impl css_language {
                     self.default_namespace = None
                 }
                 else {
-                    self.default_namespace = Some(lwc_string_data(uri))
+                    self.default_namespace = Some(uri)
                 }
             } 
         }    
@@ -1014,7 +1014,7 @@ impl css_language {
         let token = &vector[*ctx];
 
         let mut selector : @mut css_selector;
-        let qname: @mut css_qname = @mut css_qname{ name:@"", ns:@""};
+        let qname: @mut css_qname = @mut css_qname{ name:self.lwc_instance.lwc_intern_string_managed(@""), ns:self.lwc_instance.lwc_intern_string_managed(@"") };
 
         //match ( vector[*ctx].token_type as uint ==    CSS_TOKEN_IDENT as uint )
         if token.token_type as int == CSS_TOKEN_IDENT as int ||  tokenIsChar(token, '*') || tokenIsChar(token, '|') {
@@ -1036,10 +1036,10 @@ impl css_language {
                 qname.ns = self.default_namespace.get();
             }
             else {
-                qname.ns = self.strings.lwc_string_data(UNIVERSAL as uint)
+                qname.ns = self.strings.get_lwc_string(UNIVERSAL as uint)
             }
             
-            qname.name = self.strings.lwc_string_data(UNIVERSAL as uint);
+            qname.name = self.strings.get_lwc_string(UNIVERSAL as uint);
 
             selector =  self.sheet.css__stylesheet_selector_create(copy *qname);
             /* Ensure we have at least one specific selector */
@@ -1149,7 +1149,7 @@ impl css_language {
             *ctx += 1; //Iterate
 
             match self.lookupNamespace(prefix, qname) {
-                CSS_OK  => qname.name = lwc_string_data(token.idata.unwrap()),
+                CSS_OK  => qname.name = token.idata.unwrap(),
                 error   => return error
             }   
         } 
@@ -1159,13 +1159,13 @@ impl css_language {
                 qname.ns = self.default_namespace.get();
             }
             else {
-                qname.ns = self.strings.lwc_string_data(UNIVERSAL as uint)
+                qname.ns = self.strings.get_lwc_string(UNIVERSAL as uint)
             }
 
 			//debug!(fmt!("prefix=%?",prefix));
             qname.name = match prefix {
-                Some(x) => lwc_string_data(x),
-                None => @""
+                Some(x) => x,
+                None => self.lwc_instance.lwc_intern_string_managed(@"")
             };
 			//debug!(fmt!("qname=%?",qname));
         }
@@ -1226,7 +1226,7 @@ impl css_language {
 
         match token.token_type {
             CSS_TOKEN_HASH   => {
-                let qname:css_qname=css_qname{ns:@"", name:lwc_string_data(token.idata.unwrap())};
+                let qname:css_qname=css_qname{ns:self.lwc_instance.lwc_intern_string_managed(@""), name:token.idata.unwrap()};
                 match css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_ID, qname, 
                                             CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false) {
                     (CSS_OK, res) => {
@@ -1271,7 +1271,7 @@ impl css_language {
         match prefix {
             None => {
                 //debug!("Entering: lookupNamespace (1)");
-                qname.ns = @""
+                qname.ns = self.lwc_instance.lwc_intern_string_managed(@"")
             },
             Some(value) => {
                 //debug!("Entering: lookupNamespace (2)");
@@ -1296,11 +1296,11 @@ impl css_language {
                 match self.namespaces[idx].uri {
                     Some(_)=> {
                         //debug!("Entering: lookupNamespace (4)");
-                        qname.ns = lwc_string_data(self.namespaces[idx].uri.unwrap())
+                        qname.ns = self.namespaces[idx].uri.unwrap()
                     },
                     None => {
                         //debug!("Entering: lookupNamespace (5)");
-                        qname.ns = @""
+                        qname.ns = self.lwc_instance.lwc_intern_string_managed(@"")
                     }
                 }
             }
@@ -1332,7 +1332,7 @@ impl css_language {
 
         match token.token_type {
             CSS_TOKEN_IDENT => {
-                let qname:css_qname=css_qname{ns:@"", name:lwc_string_data(token.idata.unwrap())};
+                let qname:css_qname=css_qname{ns:self.lwc_instance.lwc_intern_string_managed(@""), name:token.idata.unwrap()};
                 return css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_CLASS, qname, 
                                                     CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false)
             }
@@ -1406,10 +1406,10 @@ impl css_language {
             return (CSS_INVALID, None)
         }   
 
-        let qname:@mut css_qname=@mut css_qname{ns:@"", name:@""};
+        let qname:@mut css_qname=@mut css_qname{ns:self.lwc_instance.lwc_intern_string_managed(@""), name:self.lwc_instance.lwc_intern_string_managed(@"")};
         match self.lookupNamespace(prefix, qname) { CSS_OK  => {}, error   => return (error,None)}   
 
-        qname.name = lwc_string_data(token.idata.unwrap());
+        qname.name = token.idata.unwrap();
 		//debug!(fmt!("Qname=%?",copy qname.name));
 		
         consumeWhitespace(vector, ctx);
@@ -1467,7 +1467,7 @@ impl css_language {
         
          
         return css_stylesheet::css__stylesheet_selector_detail_init (tkn_type,copy *qname, CSS_SELECTOR_DETAIL_VALUE_STRING,
-                            match value {Some(tkn)=>Some(lwc_string_data(tkn.idata.unwrap())), None => None }, None, false)
+                            match value {Some(tkn)=>Some(tkn.idata.unwrap()), None => None }, None, false)
     }
 
 
@@ -1480,10 +1480,10 @@ impl css_language {
         let mut negate:bool = false;
         let mut lut_idx:uint;
         let mut selector_type:css_selector_type;
-        let qname:@mut css_qname=@mut css_qname{ns:@"", name:@""};
+        let qname:@mut css_qname=@mut css_qname{ns:self.lwc_instance.lwc_intern_string_managed(@""), name:self.lwc_instance.lwc_intern_string_managed(@"")};
         /* pseudo    -> ':' ':'? [ IDENT | FUNCTION ws any1 ws ')' ] */
 
-        let mut detail_value_string:Option<@str> = None;
+        let mut detail_value_string:Option<@lwc_string> = None;
 
         if *ctx >= vector.len() {
                 return (CSS_INVALID, None)
@@ -1524,7 +1524,7 @@ impl css_language {
             _ => return (CSS_INVALID, None)
         } 
             
-        qname.name=lwc_string_data(token.idata.unwrap());
+        qname.name=token.idata.unwrap();
         
         /* Search lut for selector type */
         match self.strings.is_selector_pseudo(qname.name) {
@@ -1571,7 +1571,7 @@ impl css_language {
                         _ => return (CSS_INVALID, None)
                      } 
                         
-                    detail_value_string = Some(lwc_string_data(token.idata.unwrap()));
+                    detail_value_string = Some(token.idata.unwrap());
                     value_type = CSS_SELECTOR_DETAIL_VALUE_STRING;
 
                     consumeWhitespace(vector, ctx);

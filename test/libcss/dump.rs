@@ -364,38 +364,38 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
     match detail.selector_type {
         CSS_SELECTOR_ELEMENT=>{
             debug!("Entering: CSS_SELECTOR_ELEMENT");
-            if detail.qname.name.len() == 1 && detail.qname.name[0] == '*' as u8 && !detail_next {
+            if lwc_string_length(detail.qname.name) == 1 && lwc_string_data(detail.qname.name)[0] == '*' as u8 && !detail_next {
             
-                ptr.push_str(copy detail.qname.name);
+                ptr.push_str(lwc_string_data(detail.qname.name));
             }
-            else if detail.qname.name.len() != 1 ||
+            else if lwc_string_length(detail.qname.name) != 1 ||
             
-               detail.qname.name[0] != '*' as u8 { 
-               ptr.push_str(copy detail.qname.name)
+               lwc_string_data(detail.qname.name)[0] != '*' as u8 { 
+               ptr.push_str(lwc_string_data(detail.qname.name))
             }
         },
 
         CSS_SELECTOR_CLASS=> {
 
             ptr.push_char('.');
-            ptr.push_str(copy detail.qname.name);
+            ptr.push_str(lwc_string_data(detail.qname.name));
         },
 
         CSS_SELECTOR_ID =>{
             
             ptr.push_char('#');
-            ptr.push_str(copy detail.qname.name);
+            ptr.push_str(lwc_string_data(detail.qname.name));
         },
 
         CSS_SELECTOR_PSEUDO_CLASS | CSS_SELECTOR_PSEUDO_ELEMENT =>{
             ptr.push_char(':' );
-            ptr.push_str(copy detail.qname.name);
+            ptr.push_str(lwc_string_data(detail.qname.name));
             match detail.value_type {
                 CSS_SELECTOR_DETAIL_VALUE_STRING=> {
                     if detail.string.is_some() {
                         ptr.push_char('(' );
                         //let String = copy detail.string;
-                        ptr.push_str( (copy detail.string).unwrap());
+                        ptr.push_str( lwc_string_data(detail.string.unwrap()));
                         ptr.push_char(')' );
                     }
                 } ,
@@ -407,65 +407,65 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 
         CSS_SELECTOR_ATTRIBUTE=>{
             ptr.push_char('[');
-            ptr.push_str(copy detail.qname.name);
+            ptr.push_str(lwc_string_data(detail.qname.name));
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_EQUAL =>{
             ptr.push_char('[');
-            ptr.push_str(copy detail.qname.name);
+            ptr.push_str(lwc_string_data(detail.qname.name));
             ptr.push_char('=');
             ptr.push_char('"');
-            ptr.push_str((copy detail.string).unwrap());
+            ptr.push_str(lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_DASHMATCH=>{
             ptr.push_char('[');
-            ptr.push_str(copy detail.qname.name);
+            ptr.push_str(lwc_string_data(detail.qname.name));
             ptr.push_char('|');
             ptr.push_char('=');
             ptr.push_char('"');
-            ptr.push_str((copy detail.string).unwrap());
+            ptr.push_str(lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_INCLUDES=>{
             ptr.push_char('[');
-            ptr.push_str(copy detail.qname.name);
+            ptr.push_str(lwc_string_data(detail.qname.name));
             ptr.push_char('~');
             ptr.push_char('=');
             ptr.push_char('"');
-            ptr.push_str((copy detail.string).unwrap());
+            ptr.push_str(lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_PREFIX=>{
             ptr.push_char('[' );
-            ptr.push_str(copy detail.qname.name);
+            ptr.push_str(lwc_string_data(detail.qname.name));
             ptr.push_char('^' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            ptr.push_str((copy detail.string).unwrap());
+            ptr.push_str(lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"' );
             ptr.push_char(']' );
         },
         CSS_SELECTOR_ATTRIBUTE_SUFFIX=>{
             ptr.push_char('[' );
-            ptr.push_str(copy detail.qname.name);
+            ptr.push_str(lwc_string_data(detail.qname.name));
             ptr.push_char('$' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            ptr.push_str((copy detail.string).unwrap());
+            ptr.push_str(lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"' );
             ptr.push_char(']' );
         },
         CSS_SELECTOR_ATTRIBUTE_SUBSTRING=>{
             ptr.push_char('[' );
-            ptr.push_str(copy detail.qname.name);
+            ptr.push_str(lwc_string_data(detail.qname.name));
             ptr.push_char('*' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            ptr.push_str((copy detail.string).unwrap());
+            ptr.push_str(lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"' );
             ptr.push_char(']' );
         }

@@ -12,6 +12,7 @@ use select::properties::properties::*;
 use include::types::*;
 use std::ptr::*;
 use std::vec::from_elem;
+use wapcaplet::*;
 
 
 
@@ -1278,7 +1279,7 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 */
 #[inline]
 pub fn css_computed_style_initialise(style: @mut css_computed_style ,
-                                    fn_handler:@mut css_select_handler) -> css_error {
+                                    fn_handler:@mut css_select_handler, lwc_ins:@lwc) -> css_error {
 
     let state: @mut css_select_state = @mut css_select_state {
         node:null(),
@@ -1294,10 +1295,10 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
         current_origin:CSS_ORIGIN_UA,  
         current_specificity:0,   
         element:css_qname{ 
-            name:@"" , 
-            ns:@"" 
+            name:lwc_ins.lwc_intern_string("") , 
+            ns:lwc_ins.lwc_intern_string("") 
         },
-        id:@"",
+        id:lwc_ins.lwc_intern_string(""),
         classes:~[],
         n_classes:0,             
         reject_cache: ~[],       
