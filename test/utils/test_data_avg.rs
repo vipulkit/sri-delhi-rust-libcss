@@ -52,8 +52,8 @@ fn main() {
            	
     }
 
-
-    io::println(fmt!("rust:: parsing time ==  %10.3f, selection time == %10.3f", (rust_creation_time + rust_append_time + rust_data_done_time)/500f, rust_select_time/500f));
+    let overall_time_rust = ((rust_creation_time + rust_append_time)/500f) + ((rust_data_done_time + rust_select_time)/500f) ;
+    io::println(fmt!("rust:: parsing time ==  %10.3f, selection time == %10.3f,   OVERALL TIME == %10.3f", (rust_creation_time + rust_append_time + rust_data_done_time)/500f, rust_select_time/500f,overall_time_rust));
 
 	let c_file_content_result = io::read_whole_file_str(&Path("c_output.txt"));
 
@@ -104,10 +104,12 @@ fn main() {
     	}      	
     }
 
-    io::println(fmt!("c::    parsing time ==  %10.3f, selection time == %10.3f", (c_creation_time + c_append_time + c_data_done_time)/500f, c_select_time/500f));
+    let overall_time_c =  ((c_creation_time + c_append_time)/500f) + ((c_data_done_time + c_select_time)/500f) ;
+    io::println(fmt!("c::    parsing time ==  %10.3f, selection time == %10.3f,   OVERALL TIME == %10.3f", (c_creation_time + c_append_time + c_data_done_time)/500f, c_select_time/500f,overall_time_c));
 
     let parsing_perf:float = (rust_creation_time + rust_append_time + rust_data_done_time) / (c_creation_time + c_append_time + c_data_done_time);
     let selection_perf:float = (rust_select_time / c_select_time);
+    let overall_perf : float = (overall_time_rust/overall_time_c) ;
 
-    io::println(fmt!("perf:: parsing:        %10.3fx, selection:       %10.3fx", parsing_perf, selection_perf));
+    io::println(fmt!("perf:: parsing:        %10.3fx, selection:       %10.3fx,   OVERALL      ==%10.3fx", parsing_perf, selection_perf,overall_perf));
 }
