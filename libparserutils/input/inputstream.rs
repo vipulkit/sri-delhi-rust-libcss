@@ -113,13 +113,14 @@ impl inputstream {
     * #Return Value:
     * 'parserutils_error' - return PARSERUTILS_OK on success, appropriate error otherwise
     */
+#[inline]	
     pub fn parserutils_inputstream_append(&mut self, data: &[u8]) -> parserutils_error {
         // io::println("Entering: parserutils_inputstream_append");
         if data.len()==0 {
             self.had_eof = true;
             return PARSERUTILS_OK;
         }
-        self.raw = self.raw + data;
+        self.raw.push_all(data);
         PARSERUTILS_OK
     }
 
@@ -432,17 +433,17 @@ impl inputstream {
                     if (!self.done_first_chunk) {
                         self.done_first_chunk = true;
                         if outbuf[0]== 0xFF && outbuf[1]== 0xFE && outbuf[2]== 0x00 && outbuf[3]== 0x00{
-                            self.utf8 = self.utf8 + outbuf.slice(4,outbuf.len()).to_owned();
+                            self.utf8.push_all(outbuf.slice(4,outbuf.len()));
                         }
                         else if outbuf[0]== 0xFF && outbuf[1]== 0xFE {
-                            self.utf8 = self.utf8 + outbuf.slice(2,outbuf.len()).to_owned();
+                            self.utf8.push_all(outbuf.slice(2,outbuf.len()));
                         }
                         else {
-                            self.utf8 = self.utf8 + outbuf;
+                            self.utf8.push_all(outbuf);
                         }
                 }
                 else {
-                    self.utf8 = self.utf8 + outbuf;
+                    self.utf8.push_all(outbuf);
                 }
                 processed_length = len_processed as uint
             },
