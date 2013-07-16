@@ -14,7 +14,7 @@ pub struct lwc_string {
 
 pub struct lwc {
     priv map: @mut HashMap<@str, uint>,
-    priv vect: @mut ~[@str]
+    priv vect: @mut ~[@lwc_string]
 }
 
 impl lwc {
@@ -45,51 +45,45 @@ impl lwc {
 
         match self.map.find_equiv(&val) {
             Some(&idx) => {
-                return 
-                    @lwc_string {
-                        id:idx,
-                        string: self.vect[idx],
-                        insensitive: @mut None
-                    }
+                return self.vect[idx];
             },
             None => (),
         }
         
         let new_idx = self.vect.len();
         let val = val.to_managed();
-        self.map.insert(val, new_idx);
-        self.vect.push(val);
         
-        @lwc_string {
+        self.map.insert(val, new_idx);
+
+        let new_lwc_string = @lwc_string {
             id:new_idx,
             string: val,
             insensitive: @mut None
-        }
+        };
+
+        self.vect.push(new_lwc_string);
+        new_lwc_string
     }
 
     #[inline]
     pub fn lwc_intern_string_managed(&self, val: @str) -> @lwc_string {
-
-        match self.map.find_equiv(&val) {
-            Some(&idx) => {
-                return 
-                    @lwc_string {
-                        id:idx,
-                        string: val,
-                        insensitive: @mut None
-                    }
-            },
-            None => (),
-        }
-        
         let new_idx = self.vect.len();
-        self.map.insert(val, new_idx);
-        self.vect.push(val);
         
-        @lwc_string {
-            id:new_idx,
-            string: val,
-            insensitive: @mut None
+        let find_idx = self.map.find_or_insert(val, new_idx); 
+        
+
+        if (*find_idx != new_idx) {
+            self.vect[*find_idx]
+        }
+        else{
+            let new_lwc_string = @lwc_string {
+                id:new_idx,
+                string: val,
+                insensitive: @mut None
+            };
+
+            self.vect.push(new_lwc_string);
+            new_lwc_string
         }
     }
 
@@ -133,7 +127,13 @@ impl lwc {
 			*string.insensitive = Some(*find_idx);
 		}
         else{
-			self.vect.push(val);
+			let new_insensitive = @lwc_string {
+                id:new_idx,
+                string: val,
+                insensitive: @mut None
+            };
+
+            self.vect.push(new_insensitive);
             *string.insensitive = Some(new_idx);
 		}	
     }
