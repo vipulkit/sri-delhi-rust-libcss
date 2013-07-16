@@ -810,7 +810,7 @@ pub fn advance_bytecode(style: @mut css_style) {
 pub fn peek_bytecode(style: @mut css_style) -> u32 {
     
 	if style.bytecode.len() - style.used > 0 {
-		debug!(fmt!("bytecode=%?",style.bytecode)); 
+		//debug!(fmt!("bytecode=%?",style.bytecode)); 
 		style.bytecode[style.used] 
 	}
 	else {
