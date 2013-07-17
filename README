@@ -15,14 +15,12 @@ make
 cd test/libcss
 # 3 Building test cases 
 make
-# 4 copy test binary to performance measuring folder
-cp select-auto ../utils
-# 5 Entering performance directory
+# 4 Entering performance directory
 cd ../utils
-# 6 Build performance measuring binary
+# 5 Build performance measuring binary
 make 
-# 7 copy netsurf-libcss C implementation with name "test_select-auto"
+# 6 copy netsurf-libcss C implementation with name "test_select-auto"
 # Download netsurf and build libcss test case , search and copy test_select-auto
-# 8 Do performance test 
+# 7 Do performance test 
 ./perform_test_avg
 

@@ -1,6 +1,0 @@
-#!/bin/bash
-
-./select-auto > r_output.txt
-./test_select-auto data/select/tests1.dat > c_output.txt
-./test_data
-
