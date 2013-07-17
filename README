@@ -8,6 +8,11 @@ libcss
 Instructions to build:
 run make in root or run make in individual folders (libwapcaplet,libparserutils,libcss).
 
+Test Code
+libcss 		--> test/libcss
+libparserutils	--> testcases-ryanc/libparserutils
+libwapcaplet 	--> testcases-ryanc/libwapcaplet
+
 Measuring Performance with respect to netsurf-libcss C build.
 # 1 Building Libcss
 make
