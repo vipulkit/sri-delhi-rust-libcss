@@ -1020,7 +1020,7 @@ impl css_language {
             /* Have type selector */
             match self.parseTypeSelector(vector, ctx, qname) {
                 CSS_OK => {
-                    selector = self.sheet.css__stylesheet_selector_create(copy *qname);
+                    selector = self.sheet.css__stylesheet_selector_create(qname);
                 },
                 x => {
                     *ctx = orig_ctx;
@@ -1039,7 +1039,7 @@ impl css_language {
             
             qname.name = self.strings.get_lwc_string(UNIVERSAL as uint);
 
-            selector =  self.sheet.css__stylesheet_selector_create(copy *qname);
+            selector =  self.sheet.css__stylesheet_selector_create(qname);
             /* Ensure we have at least one specific selector */
             match self.parseAppendSpecific(vector, ctx, selector) {
                 CSS_OK => {},
@@ -1224,7 +1224,7 @@ impl css_language {
 
         match token.token_type {
             CSS_TOKEN_HASH   => {
-                let qname:css_qname=css_qname{ns:self.lwc_instance.lwc_intern_string_managed(@""), name:token.idata.unwrap()};
+                let qname=@mut css_qname{ns:self.lwc_instance.lwc_intern_string_managed(@""), name:token.idata.unwrap()};
                 match css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_ID, qname, 
                                             CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false) {
                     (CSS_OK, res) => {
@@ -1330,7 +1330,7 @@ impl css_language {
 
         match token.token_type {
             CSS_TOKEN_IDENT => {
-                let qname:css_qname=css_qname{ns:self.lwc_instance.lwc_intern_string_managed(@""), name:token.idata.unwrap()};
+                let qname=@mut css_qname{ns:self.lwc_instance.lwc_intern_string_managed(@""), name:token.idata.unwrap()};
                 return css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_CLASS, qname, 
                                                     CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false)
             }
@@ -1464,7 +1464,7 @@ impl css_language {
         }
         
          
-        return css_stylesheet::css__stylesheet_selector_detail_init (tkn_type,copy *qname, CSS_SELECTOR_DETAIL_VALUE_STRING,
+        return css_stylesheet::css__stylesheet_selector_detail_init (tkn_type,qname, CSS_SELECTOR_DETAIL_VALUE_STRING,
                             match value {Some(tkn)=>Some(tkn.idata.unwrap()), None => None }, None, false)
     }
 
@@ -1669,7 +1669,7 @@ impl css_language {
         
         }
 
-        return css_stylesheet::css__stylesheet_selector_detail_init(selector_type,copy *qname, value_type, detail_value_string, None, negate);
+        return css_stylesheet::css__stylesheet_selector_detail_init(selector_type,qname, value_type, detail_value_string, None, negate);
     }
 
     pub fn parseNth(&mut self, vector:&~[@css_token], ctx:@mut uint, qname:@mut css_qname) -> (css_error,Option<@mut css_selector_detail>) {

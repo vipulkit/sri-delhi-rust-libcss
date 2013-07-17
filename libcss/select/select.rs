@@ -69,22 +69,15 @@ struct css_select_ctx {
 }
 
 /*
- * Container for selected font faces
- */
-pub struct css_select_font_faces_list {
-    font_faces:~[@mut css_font_face]
-}
-
-/*
  * Font face selection state
  */
 pub struct css_select_font_faces_state {
     font_family:Option<@mut lwc_string>,
     media:u64,
 
-    ua_font_faces:css_select_font_faces_list,
-    user_font_faces:css_select_font_faces_list,
-    author_font_faces:css_select_font_faces_list
+    ua_font_faces:@mut ~[@mut css_font_face],
+    user_font_faces:@mut ~[@mut css_font_face],
+    author_font_faces:@mut ~[@mut css_font_face]
 }
 
 pub enum source_type {
@@ -303,11 +296,20 @@ impl css_select_ctx {
         //let mut results : Option<css_select_results>  ;
         let mut parent : *c_void = null() ;
 
+        let pstate = prop_state{
+            specificity:0,
+            set:false,
+            origin:0,
+            important:false,
+            inherit:false    
+        };  
+        let prop_vec: ~[prop_state] = from_elem(CSS_PSEUDO_ELEMENT_COUNT as uint,pstate);
+
         let state: @mut css_select_state = @mut css_select_state {
             node:node,
             media:media,       
             results:@mut css_select_results{ 
-                styles:~[] 
+                styles:from_elem(CSS_PSEUDO_ELEMENT_COUNT as uint,None) 
             },    
             current_pseudo:CSS_PSEUDO_ELEMENT_NONE,  
             computed:css_computed_style_create(),   
@@ -323,26 +325,11 @@ impl css_select_ctx {
             id:self.lwc_instance.lwc_intern_string(""),
             classes:~[],
             n_classes:0,             
-            reject_cache: ~[],       
+            reject_cache: from_elem(128,None),       
             next_reject:128-1,             
-            props: ~[] 
+            props: from_elem(CSS_N_PROPERTIES as uint, prop_vec) 
         };
-        state.reject_cache = from_elem(128,None) ;;
 		
-		let pstate = prop_state{
-			specificity:0,
-			set:false,
-			origin:0,
-			important:false,
-			inherit:false    
-		};	
-		let prop_vec: ~[prop_state] = from_elem(CSS_PSEUDO_ELEMENT_COUNT as uint,pstate);
-		
-		state.props = from_elem(CSS_N_PROPERTIES as uint, prop_vec);
-        
-		
-        state.results.styles = from_elem(CSS_PSEUDO_ELEMENT_COUNT as uint,None) ;
-
         /* Base element style is guaranteed to exist */
         state.results.styles[0] = (Some(css_computed_style_create()));
 
@@ -389,7 +376,8 @@ impl css_select_ctx {
          * from those which apply to our current media requirements and
          * are not disabled */
         i=0;
-        while(i < (self.sheets.len() as int) ) {
+        let sheets_len = self.sheets.len() as int;
+        while i< sheets_len {
             let s = self.sheets[i] ;
             if( s.media & media ) != 0 && 
                 s.sheet.disabled == false {
@@ -595,9 +583,9 @@ impl css_select_ctx {
             font_family:Some(font_family),
             media:media,
 
-            ua_font_faces:css_select_font_faces_list{font_faces:~[]},
-            user_font_faces:css_select_font_faces_list{font_faces:~[]},
-            author_font_faces:css_select_font_faces_list{font_faces:~[]}
+            ua_font_faces:@mut ~[],
+            user_font_faces:@mut ~[],
+            author_font_faces:@mut ~[]
         };
 
         /* Iterate through the top-level stylesheets, selecting font-faces
@@ -625,17 +613,17 @@ impl css_select_ctx {
                     font_faces:~[]
             };
           
-		let n_font_faces = state.ua_font_faces.font_faces.len() + 
-			state.user_font_faces.font_faces.len() +
-			state.author_font_faces.font_faces.len();
-
-		if (n_font_faces > 0) {
-			/* We found some matching faces.  Make a results structure with
-			 * the font faces in priority order. */
-			results.font_faces.push_all(state.ua_font_faces.font_faces);
-			results.font_faces.push_all(state.user_font_faces.font_faces);
-			results.font_faces.push_all(state.author_font_faces.font_faces);    
-		}
+		/* We found some matching faces.  Make a results structure with
+		 * the font faces in priority order. */
+        if (state.ua_font_faces.len() > 0) {
+            results.font_faces.push(state.ua_font_faces); 
+        }
+        if (state.user_font_faces.len() > 0) {
+		  results.font_faces.push(state.user_font_faces);
+        }
+        if (state.author_font_faces.len() > 0) {
+		  results.font_faces.push(state.author_font_faces);
+        }
      
         (CSS_OK,Some(results))
     }
@@ -695,7 +683,6 @@ impl css_select_ctx {
 
         /* Hint defined -- set it in the result */
         let hint = hint_option.unwrap();
-        dispatch_table::check_index(prop as uint);
         let error =  (prop_dispatch[prop as uint].set_from_hint)(hint, state.computed);
 
         match error {
@@ -745,7 +732,6 @@ impl css_select_ctx {
 
             match group {
                 GROUP_NORMAL => {
-                    dispatch_table::check_index(prop);
                     error = (prop_dispatch[prop].initial)(state);
                     match error {
                         CSS_OK => {},
@@ -759,7 +745,6 @@ impl css_select_ctx {
                     match state.computed.uncommon {
                         None => {},
                         Some(_) => {
-                            dispatch_table::check_index(prop);
                             error = (prop_dispatch[prop].initial)(state);
                             match error {
                                 CSS_OK => {},
@@ -775,7 +760,6 @@ impl css_select_ctx {
                     match state.computed.page {
                         None => {},
                         Some(_) => {
-                            dispatch_table::check_index(prop);
                             error = (prop_dispatch[prop].initial)(state);
                             match error {
                                 CSS_OK => {},
@@ -791,7 +775,6 @@ impl css_select_ctx {
                     match state.computed.aural {
                         None => {},
                         Some(_) => {
-                            dispatch_table::check_index(prop);
                             error = (prop_dispatch[prop].initial)(state);
                             match error {
                                 CSS_OK => {},
@@ -947,22 +930,15 @@ impl css_select_ctx {
                                                     state.font_family.get() ) ;
 
             if ( res ) {
-                let faces = @mut css_select_font_faces_list{
-                    font_faces:~[]
-                };
-                
 				match (origin) {
 					CSS_ORIGIN_UA => {
-						state.ua_font_faces.font_faces.push(rule.font_face.get());
-						faces.font_faces.push_all(state.ua_font_faces.font_faces);
+						state.ua_font_faces.push(rule.font_face.get());
 					},
 					CSS_ORIGIN_USER => {
-						state.user_font_faces.font_faces.push(rule.font_face.get());
-						faces.font_faces.push_all(state.user_font_faces.font_faces);
+						state.user_font_faces.push(rule.font_face.get());
 					},
 					CSS_ORIGIN_AUTHOR => {
-						state.author_font_faces.font_faces.push(rule.font_face.get());
-						faces.font_faces.push_all(state.author_font_faces.font_faces);
+						state.author_font_faces.push(rule.font_face.get());
 					}
 				}
             }
@@ -1470,7 +1446,6 @@ impl css_select_ctx {
         node:*c_void, next_node:*mut *c_void) -> css_error {
 
         //debug!(fmt!("Entering match_named_combinator")) ;
-        let detail :~[@mut css_selector_detail] = copy selector.data;
         let mut n = node;
         let mut error:css_error;
 
@@ -1519,7 +1494,7 @@ impl css_select_ctx {
             if n != null() {
                 /* Match its details */
                 //debug!("");
-                error = self.match_details(n, detail, state, match_result, None);
+                error = self.match_details(n, selector.data, state, match_result, None);
                 match error {
                     CSS_OK => {},
                     err => return err
@@ -1719,7 +1694,6 @@ impl css_select_ctx {
         next_node:*mut *c_void) -> css_error  {
         
         //debug!(fmt!("Entering match_universal_combinator")) ;
-        let detail :~[@mut css_selector_detail] = copy selector.data;
         let mut n:*c_void = node;
         //println(fmt!("n = %?", n));
 		if ( n == null()){
@@ -1728,8 +1702,8 @@ impl css_select_ctx {
 		let mut next_detail:Option<@mut css_selector_detail> = None; 
         let mut error:css_error;
         
-        if (detail.len() > 1){
-            next_detail = Some(detail[1]);   
+        if (selector.data.len() > 1){
+            next_detail = Some(selector.data[1]);   
         }
             
         *rejected_by_cache = false;
@@ -1785,7 +1759,7 @@ impl css_select_ctx {
 
             if (n != null()) {
                 /* Match its details */
-                error = self.match_details(n, detail.slice(1,detail.len()), state, match_result, None);
+                error = self.match_details(n, selector.data.slice(1,selector.data.len()), state, match_result, None);
                 match error {
                     CSS_OK => {},
                     err => return err
@@ -1861,7 +1835,7 @@ impl css_select_ctx {
                 return CSS_OK;
             }
 
-            if(copy detail.len() -1 > index){
+            if(detail.len() -1 > index){
                 index += 1;
             }
             else {
@@ -2174,7 +2148,7 @@ impl css_select_ctx {
                 }
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.lang.get() ) ) { 
                     error = (*state.handler.get().node_is_lang)(
-                            node, (copy detail.string).unwrap(), matched);
+                            node, (detail.string).unwrap(), matched);
                 }
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.enabled.get() ) ) { 
                     error = (*state.handler.get().node_is_enabled)(
@@ -2258,8 +2232,9 @@ impl css_select_ctx {
 
         //debug!(fmt!("Entering cascade_style")) ;
 		//debug!(fmt!("s_used=%?, s_len=%?", s.used, s.bytecode.len())) ;
-			
-        while (s.used  < s.bytecode.len() ) {
+		
+        let bytecode_len = s.bytecode.len();
+        while s.used < bytecode_len {
             let mut op: u32;
             let mut error : css_error ;
             let opv = peek_bytecode(s);
@@ -2268,7 +2243,6 @@ impl css_select_ctx {
 
             op = getOpcode(opv) as u32;
             //debug!(fmt!("op=%?, opv=%?, op_m=%?", op, opv, op as uint));
-			dispatch_table::check_index(op as uint);
             error =  (prop_dispatch[op as uint].cascade)(opv, s, state);
 
             match error {

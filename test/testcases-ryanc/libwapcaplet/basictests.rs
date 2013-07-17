@@ -41,11 +41,11 @@ fn main() {
     println(fmt!("libwapcaplet"));
 }
 
-fn lwc_string() -> @lwc_string {
-    let s = @lwc_string {
+fn lwc_string() -> @mut lwc_string {
+    let s = @mut lwc_string {
         id:-1,
         string: @"",
-        insensitive: @mut None
+        insensitive: None
     };
     return s;
 }

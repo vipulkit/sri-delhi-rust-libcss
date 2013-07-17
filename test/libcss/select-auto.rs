@@ -1188,10 +1188,11 @@ fn node_has_attribute(n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> c
         node1 = ::cast::transmute(n);
         cast::forget(node1);
     }
-    let mut i:u32 = 0 ;
+    let mut i:uint = 0 ;
     //let mut vlen = value.len();
     *matched = false;
-    while (i as uint) < node1.attrs.len() {
+    let attr_len = node1.attrs.len();
+    while i < attr_len {
         *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
@@ -1209,10 +1210,11 @@ fn  node_has_attribute_equal(n:*libc::c_void, qname:&css_qname,value:@mut lwc_st
         node1 = ::cast::transmute(n);
         cast::forget(node1);
     }
-    let mut i:u32 = 0 ;
+    let mut i:uint = 0 ;
     
     *matched = false;
-    while (i as uint) < node1.attrs.len() {
+    let attr_len = node1.attrs.len();
+    while i < attr_len { 
         *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
@@ -1236,12 +1238,13 @@ fn node_has_attribute_includes(n:*libc::c_void, qname:&css_qname,value:@mut lwc_
         cast::forget(node1);
     }
     
-    let mut i:u32 = 0 ;
+    let mut i:uint = 0 ;
     let vlen = lwc_string_length(value);
     
     *matched = false;
     
-    while (i as uint) < node1.attrs.len() {
+    let attr_len = node1.attrs.len();
+    while i < attr_len { 
         *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
@@ -1279,10 +1282,11 @@ fn node_has_attribute_dashmatch(n:*libc::c_void, qname:&css_qname,value:@mut lwc
         node1 = ::cast::transmute(n);
         cast::forget(node1);
     }
-    let mut i:u32 = 0 ;
+    let mut i:uint = 0 ;
     let vlen = lwc_string_length(value);
     *matched = false;
-    while (i as uint) < node1.attrs.len() {
+    let attr_len = node1.attrs.len();
+    while i < attr_len { 
         *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
@@ -1320,9 +1324,10 @@ fn node_has_attribute_prefix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_st
         node1 = ::cast::transmute(n);
         cast::forget(node1);
     }
-    let mut i:u32 = 0 ;
+    let mut i:uint = 0 ;
     *matched = false;
-    while (i as uint) < node1.attrs.len() {
+    let attr_len = node1.attrs.len();
+    while i < attr_len { 
         *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
@@ -1351,9 +1356,10 @@ fn node_has_attribute_suffix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_st
         node1 = ::cast::transmute(n);
         cast::forget(node1);
     }
-    let mut i:u32 = 0 ;
+    let mut i:uint = 0 ;
     *matched = false;
-    while (i as uint) < node1.attrs.len() {
+    let attr_len = node1.attrs.len();
+    while i < attr_len { 
         *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
@@ -1386,9 +1392,10 @@ fn node_has_attribute_substring(n:*libc::c_void, qname:&css_qname,value:@mut lwc
         node1 = ::cast::transmute(n);
         cast::forget(node1);
     }
-    let mut i:u32 = 0 ;
+    let mut i:uint = 0 ;
     *matched = false;
-    while (i as uint) < node1.attrs.len() {
+    let attr_len = node1.attrs.len();
+    while i < attr_len { 
         *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;

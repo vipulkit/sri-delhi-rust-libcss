@@ -1050,26 +1050,13 @@ pub struct dispatch_table ;
 impl dispatch_table {
 
     #[inline]
-    pub fn check_index(index:uint) {
-        if( index >= CSS_N_PROPERTIES as uint) {
-            fail!(~"In dispatch_table::check_index : index should be less that CSS_N_PROPERTIES value") ;
-        }
-    }
-
-    #[inline]
     pub fn get_inherited(index:uint) -> uint {
-
-        dispatch_table::check_index(index);
-        let dispatch_inherited = prop_dispatch[index].inherited;
-        dispatch_inherited
+        prop_dispatch[index].inherited
     }
 
     #[inline]
     pub fn get_group(index:uint) -> prop_group {
-
-        dispatch_table::check_index(index);
-        let dispatch_group = prop_dispatch[index].group;
-        dispatch_group
+        prop_dispatch[index].group
     }
 }
 
@@ -1164,18 +1151,17 @@ pub type  compute_absolute_color_set =
 */
 #[inline]
 pub fn css_computed_style_create() -> @mut css_computed_style {
-    let result = @mut css_computed_style {
-        bits:~[],
-        unused:~[],
+    @mut css_computed_style {
+        bits:~[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 
         background_color:0,
 
         background_image:None,
 
-        background_position:~[],
+        background_position:~[0,0],
 
-        border_color:~[],
-        border_width:~[],
+        border_color:~[0,0,0,0],
+        border_width:~[0,0,0,0],
 
         top:0,
         right:0,
@@ -1192,7 +1178,7 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 
         list_style_image:None,
 
-        margin:~[],
+        margin:~[0,0,0,0],
 
         max_height:0,
         max_width:0,
@@ -1202,7 +1188,7 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 
         opacity:0,
 
-        padding:~[],
+        padding:~[0,0,0,0],
 
         text_indent:0,
 
@@ -1219,50 +1205,7 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
         uncommon:None, 
         aural:None,         
         page:None 
-    };
-    let mut k = 0;
-    while k < 34 {
-        result.bits.push(0) ;
-        k = k + 1;
     }
-    
-    k = 0;
-    while k < 2 {
-        result.unused.push(0) ;
-        k = k + 1;
-    }
-    
-    k = 0;
-    while k < 2 {
-        result.background_position.push(0) ;
-        k = k + 1;
-    }
-    
-    k = 0;
-    while k < 4 {
-        result.border_color.push(0) ;
-        k = k + 1;
-    }
-    
-    k = 0;
-    while k < 4 {
-        result.border_width.push(0) ;
-        k = k + 1;
-    }
-    
-    k = 0;
-    while k < 4 {
-        result.margin.push(0) ;
-        k = k + 1;
-    }   
-    
-    k = 0;
-    while k < 4 {
-        result.padding.push(0) ;
-        k = k + 1;
-    }
-
-    result
 }
 
 /**
@@ -1329,7 +1272,6 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
 
         /* No need to initialise anything other than the normal
          * properties -- the others are handled by the accessors */
-        dispatch_table::check_index(i);
         match prop_dispatch[i].group {
             GROUP_NORMAL => {
                 if ( prop_dispatch[i].inherited == 0 ) {
@@ -1377,7 +1319,6 @@ pub fn css_computed_style_compose(parent: @mut css_computed_style,
     while i < (CSS_N_PROPERTIES as uint) {
         
         /* Skip any in extension blocks if the block does not exist */
-        dispatch_table::check_index(i);
         match prop_dispatch[i].group {
             GROUP_UNCOMMON => {
                 if ( parent.uncommon.is_none() &&
@@ -1401,7 +1342,6 @@ pub fn css_computed_style_compose(parent: @mut css_computed_style,
         }
 
         /* Compose the property */
-        dispatch_table::check_index(i);
         error =  (prop_dispatch[i].compose)(parent, child, result);
         match error {
             CSS_OK=>{},
