@@ -627,7 +627,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                     if option_string.is_some() {
                         ptr.push_str( &"url('");
-                        ptr.push_str( option_string.unwrap());
+                        ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned() );
                         ptr.push_str( &"')");    
                     }
 
@@ -1135,7 +1135,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             debug!("dump_bytecode :: CONTENT_COUNTER :: option_string == %?" , copy option_string.get_ref());
-                            dump_counter(option_string.unwrap() , value , ptr);
+                            dump_counter( lwc_string_data(option_string.unwrap()), value , ptr);
                         }
                     }
                     else if (value as int & 0xff) == CONTENT_COUNTERS as int {
@@ -1147,7 +1147,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             debug!("dump_bytecode :: CONTENT_COUNTERS :: option_string == %?" , copy option_string.get_ref());
-                            dump_counters(option_string.unwrap() , fmt!("%?" , sep) , value , ptr);
+                            dump_counters( lwc_string_data(option_string.unwrap()) , fmt!("%?" , sep) , value , ptr);
                         }
                     }
                     else if (value as int & 0xff) == CONTENT_URI as int || (value as int & 0xff) == CONTENT_ATTR as int || (value as int & 0xff) == CONTENT_STRING as int {
@@ -1169,7 +1169,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         if option_string.is_some() {
                             debug!("dump_bytecode :: CONTENT_URI_ATTR_STRING :: option_string == %?" , copy option_string.get_ref());
                             ptr.push_str( &"'");
-                            ptr.push_str( option_string.unwrap());
+                            ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned());
                             ptr.push_str( &"'");
                         }
                     }
@@ -1210,7 +1210,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         iterator += 1;
                         
                         if option_string.is_some() {
-                            ptr.push_str( option_string.unwrap());
+                            ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned());
                         }
                         ptr.push_char(' ');
                         let val = bytecode[iterator] as i32;
@@ -1240,7 +1240,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                     if option_string.is_some() {
                         ptr.push_str( &"url('");
-                        ptr.push_str( option_string.unwrap());
+                        ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned());
                         ptr.push_str( &"'), ");
                     }
 
@@ -1425,7 +1425,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         
                         if option_string.is_some() {
                             ptr.push_char('\'');
-                            ptr.push_str( option_string.unwrap());
+                            ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned() );
                             ptr.push_char('\'');
                         }
                     }
@@ -1839,7 +1839,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                     if option_string.is_some() {
                         ptr.push_char('\'');
-                        ptr.push_str( option_string.unwrap());
+                        ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned() );
                         ptr.push_char('\'');
                     }
                 }
@@ -1888,7 +1888,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             ptr.push_str( &" '");
-                            ptr.push_str( option_string.unwrap());
+                            ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned() );
                             ptr.push_str( &"' ");
                         }
 
@@ -1896,7 +1896,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             ptr.push_str( &" '");
-                            ptr.push_str( option_string.unwrap());
+                            ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned() );
                             ptr.push_str( &"' ");
                         }
                         iterator += 1;
@@ -2127,7 +2127,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             ptr.push_char('\'');
-                            ptr.push_str( option_string.unwrap());
+                            ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned() );
                             ptr.push_char('\'');
                         }
                     }

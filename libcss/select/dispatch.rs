@@ -1170,7 +1170,7 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 
         background_color:0,
 
-        background_image:@"",
+        background_image:None,
 
         background_position:~[],
 
@@ -1190,7 +1190,7 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 
         line_height:0,
 
-        list_style_image:@"",
+        list_style_image:None,
 
         margin:~[],
 
@@ -1279,7 +1279,7 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 */
 #[inline]
 pub fn css_computed_style_initialise(style: @mut css_computed_style ,
-                                    fn_handler:@mut css_select_handler, lwc_ins:@lwc) -> css_error {
+                                    fn_handler:@mut css_select_handler, lwc_ins:@mut lwc) -> css_error {
 
     let state: @mut css_select_state = @mut css_select_state {
         node:null(),

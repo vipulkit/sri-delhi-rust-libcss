@@ -51,7 +51,7 @@ pub struct css_token {
     data: css_token_data,
 
     token_type: css_token_type,
-    idata: Option<@lwc_string>,
+    idata: Option<@mut lwc_string>,
 
     col: uint,
     line: uint

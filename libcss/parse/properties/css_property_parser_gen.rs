@@ -177,7 +177,7 @@ pub fn output_uri(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
         output.push_str("\n");
         output.push_str("\t\tmatch (*_sheet.resolve)(_sheet.url, token.idata.unwrap()) {\n");
         output.push_str("\t\t\t(CSS_OK, Some(uri)) => {\n");
-        output.push_str("\t\t\t\tlet uri_snumber = _sheet.css__stylesheet_string_add(lwc_string_data(uri));\n");
+        output.push_str("\t\t\t\tlet uri_snumber = _sheet.css__stylesheet_string_add(uri);\n");
         output.push_str(fmt!("\t\t\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s );\n",parseid.val,kvlist[0].val));
         output.push_str("\t\t\t\tcss_stylesheet::css__stylesheet_style_append(result, uri_snumber as u32)\n");
         output.push_str("\n");
@@ -310,7 +310,7 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             output.push_str("\t\twhile !token_null && (match token.token_type {CSS_TOKEN_IDENT => true, _ => false}) {\n");
             output.push_str("\t\t\tlet mut num:css_fixed;\n");
             output.push_str("\t\t\tlet mut pctx:uint;\n\n");
-            output.push_str("\t\t\tlet snumber = _sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap()));\n");
+            output.push_str("\t\t\tlet snumber = _sheet.css__stylesheet_string_add(token.idata.unwrap());\n");
             output.push_str("\t\t\tcss_stylesheet::css__stylesheet_style_append(result, snumber as u32);\n"); 
             output.push_str("\t\t\tconsumeWhitespace(vector, ctx);\n\n");
             output.push_str("\t\t\tpctx = *ctx;\n");

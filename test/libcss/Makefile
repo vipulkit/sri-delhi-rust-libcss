@@ -9,7 +9,6 @@ all:
 	rustc  $(LIB_PAR) $(LIB_CSS) $(LIB_WAP) testutils.rs -O
 	rustc  $(LIB_PAR) $(LIB_CSS) $(LIB_WAP) parse.rs -O
 	rustc  $(LIB_PAR) $(LIB_CSS) $(LIB_WAP) dump.rs  -O
-	rustc  $(LIB_PAR) $(LIB_CSS) $(LIB_WAP) dump2.rs  -O
 	rustc  $(LIB_PAR) $(LIB_CSS) $(LIB_WAP) dump_computed.rs 
 	rustc  --test $(LIB_PAR) $(LIB_CSS) $(LIB_WAP) -L . css21.rs  -O
 	rustc  --test $(LIB_PAR) $(LIB_CSS) $(LIB_WAP) -L . parse-auto.rs  -O

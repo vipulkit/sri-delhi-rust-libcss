@@ -37,35 +37,35 @@ pub struct css_select_sheet {
  */
 struct css_select_ctx {
     sheets:~[@mut css_select_sheet],
-    lwc_instance:@lwc,
+    lwc_instance:@mut lwc,
     /* Useful interned strings */
-    universal:Option<@lwc_string>,
-    first_child:Option<@lwc_string>,
-    link:Option<@lwc_string>,
-    visited:Option<@lwc_string>,
-    hover:Option<@lwc_string>,
-    active:Option<@lwc_string>,
-    focus:Option<@lwc_string>,
-    nth_child:Option<@lwc_string>,
-    nth_last_child:Option<@lwc_string>,
-    nth_of_type:Option<@lwc_string>,
-    nth_last_of_type:Option<@lwc_string>,
-    last_child:Option<@lwc_string>,
-    first_of_type:Option<@lwc_string>,
-    last_of_type:Option<@lwc_string>,
-    only_child:Option<@lwc_string>,
-    only_of_type:Option<@lwc_string>,
-    root:Option<@lwc_string>,
-    empty:Option<@lwc_string>,
-    target:Option<@lwc_string>,
-    lang:Option<@lwc_string>,
-    enabled:Option<@lwc_string>,
-    disabled:Option<@lwc_string>,
-    checked:Option<@lwc_string>,
-    first_line:Option<@lwc_string>,
-    first_letter:Option<@lwc_string>,
-    before:Option<@lwc_string>,
-    after:Option<@lwc_string>
+    universal:Option<@mut lwc_string>,
+    first_child:Option<@mut lwc_string>,
+    link:Option<@mut lwc_string>,
+    visited:Option<@mut lwc_string>,
+    hover:Option<@mut lwc_string>,
+    active:Option<@mut lwc_string>,
+    focus:Option<@mut lwc_string>,
+    nth_child:Option<@mut lwc_string>,
+    nth_last_child:Option<@mut lwc_string>,
+    nth_of_type:Option<@mut lwc_string>,
+    nth_last_of_type:Option<@mut lwc_string>,
+    last_child:Option<@mut lwc_string>,
+    first_of_type:Option<@mut lwc_string>,
+    last_of_type:Option<@mut lwc_string>,
+    only_child:Option<@mut lwc_string>,
+    only_of_type:Option<@mut lwc_string>,
+    root:Option<@mut lwc_string>,
+    empty:Option<@mut lwc_string>,
+    target:Option<@mut lwc_string>,
+    lang:Option<@mut lwc_string>,
+    enabled:Option<@mut lwc_string>,
+    disabled:Option<@mut lwc_string>,
+    checked:Option<@mut lwc_string>,
+    first_line:Option<@mut lwc_string>,
+    first_letter:Option<@mut lwc_string>,
+    before:Option<@mut lwc_string>,
+    after:Option<@mut lwc_string>
 }
 
 /*
@@ -79,7 +79,7 @@ pub struct css_select_font_faces_list {
  * Font face selection state
  */
 pub struct css_select_font_faces_state {
-    font_family:Option<@lwc_string>,
+    font_family:Option<@mut lwc_string>,
     media:u64,
 
     ua_font_faces:css_select_font_faces_list,
@@ -108,7 +108,7 @@ impl css_select_ctx {
     * #Return Value:
 	* 'css_select_ctx' - Pointer to created context.
     */
-    pub fn css_select_ctx_create(lwc_ins : @lwc) -> ~css_select_ctx {
+    pub fn css_select_ctx_create(lwc_ins : @mut lwc) -> ~css_select_ctx {
         
         let mut result = ~css_select_ctx {
             sheets:~[],
@@ -583,7 +583,7 @@ impl css_select_ctx {
     */
     pub fn css_select_font_faces(&mut self,
                                 media:u64,
-                                font_family:@lwc_string) 
+                                font_family:@mut lwc_string) 
                                 -> (css_error,Option<@mut css_select_font_faces_results>) {
 
         //debug!(fmt!("Entering css_select_font_faces")) ;
@@ -1168,7 +1168,8 @@ impl css_select_ctx {
         }
 
         let mut i : uint = 0;
-        while i < classes.len() {
+		let classes_len : uint = classes.len();
+        while i < classes_len {
             if (css_select_ctx::_selector_less_specific(ret,classes[i])){
                 ret = Some(classes[i].get());
             }

@@ -25,7 +25,7 @@ pub fn find_char_between(s: &str, c: char, start: uint, end: uint) -> Option<uin
 	return None;
 }
 
-pub fn resolve_url(_:@str, rel:@wapcaplet::lwc_string) -> (css_error,Option<@wapcaplet::lwc_string>) {
+pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
     return (CSS_OK,Some(rel));
 }
 
@@ -49,7 +49,8 @@ pub struct line_ctx {
     inerrors:bool,
     inexp:bool,
 
-    inrule:bool
+    inrule:bool,
+    lwc_instance:@mut lwc
 }
 
 
@@ -221,7 +222,8 @@ fn parse_auto(file: ~str) {
         indata:false,
         inerrors:false,
         inexp:false,
-        inrule:false
+        inrule:false,
+        lwc_instance:lwc()
     };
 
     for file_content.any_line_iter().advance |line| {
@@ -475,13 +477,14 @@ pub fn run_test(ctx:@mut line_ctx) {
 
         /* Font resolution function */
         font : None,
-        lwc_instance: None,
+        lwc_instance: Some(ctx.lwc_instance),
         propstrings_instance: None
     };
 
-    // let lwc_instance = lwc() ;
+    //let lwc_instance = lwc() ;
 
     let css_instance = css::css_create( &params) ;
+
 
     error = css_instance.css_stylesheet_append_data(copy (ctx.buf));
     match error {
@@ -710,8 +713,8 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 
                     assert!(res as int == CSS_OK as int);
 
-                    let p = match (op) {
-                        Some(val) => val,
+                    let p : @str = match (op) {
+                        Some(val) => lwc_string_data(val),
                         None => @""
                     };
 

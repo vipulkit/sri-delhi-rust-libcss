@@ -23,26 +23,27 @@ pub fn try_utf32_charset(data : &[u8], alias_instance: @alias) -> (Option<u16>, 
     let UTF32 : &[u8] = ['U' as u8 , 'T' as u8 , 'F' as u8 , '-' as u8 , '3' as u8 , '2' as u8];
 
 
-    if data.len() <= CHARSET_LE.len() {
+    let data_len : uint = data.len();
+    if data_len <= CHARSET_LE.len() {
         return (None, PARSERUTILS_BADPARM);
     }
     
     if (memcmp(data, CHARSET_LE, CHARSET_LE.len()) == 0) {
     
-        let startIndex : uint =/* data.len() +*/ CHARSET_LE.len();
+        let startIndex : uint =/* data_len +*/ CHARSET_LE.len();
         let mut endIndex : uint = startIndex;
 
         // values are only for initialization
         let mut buffMemory: ~[u8] = ~[];
         let mut buffMemoryIndex: u8 = 0;
         
-        while endIndex < ( data.len() -4) {
+        while endIndex < ( data_len -4) {
             let value1 : u32 = (data[endIndex] as u32 | data[endIndex + 1] as u32 << 8 | data[endIndex + 2] as u32<< 16 | data[endIndex + 3] as u32<< 24) as u32 ;          
             if value1 > 0x007f {
                 break;
             }   
 
-            if (value1 == '"' as u32) && (endIndex < data.len()  - 8) {
+            if (value1 == '"' as u32) && (endIndex < data_len  - 8) {
                 let value2 = (data[endIndex + 4]as u32 | data[endIndex + 5] as u32<< 8 | data[endIndex + 6] as u32<< 16 | data[endIndex + 7] as u32<< 24)as u32 ;
                 if value2 == ';' as u32 {
                     break;
@@ -62,7 +63,7 @@ pub fn try_utf32_charset(data : &[u8], alias_instance: @alias) -> (Option<u16>, 
             endIndex += 4;  
         } // while loop ends        
                 
-        if (endIndex == data.len() - 4) {
+        if (endIndex == data_len - 4) {
             return (None, PARSERUTILS_NEEDDATA);
         }
 
@@ -81,15 +82,14 @@ pub fn try_utf32_charset(data : &[u8], alias_instance: @alias) -> (Option<u16>, 
         // values are only for initialization
         let mut buffMemory : ~[u8] = ~[];
         let mut buffMemoryIndex : uint = 0;
-        
-        while (endIndex < (data.len() - 4)) {
+        while (endIndex < (data_len - 4)) {
             let value1 : u8 = data[endIndex + 3] | data[endIndex + 2] << 8 | data[endIndex + 1] << 16 | data[endIndex] << 24 ;
             
             if value1 > 0x007f {
                 break;
             }   
             
-            if (value1 == '"' as u8) && (endIndex < data.len() + CHARSET_BE.len() - 8) {
+            if (value1 == '"' as u8) && (endIndex < data_len + CHARSET_BE.len() - 8) {
                 let value2 = data[endIndex + 7] | data[endIndex + 6] << 8 | data[endIndex + 5] << 16 | data[endIndex + 4] << 24 ;
                 if value2 == ';' as u8 {
                     break;
@@ -108,7 +108,7 @@ pub fn try_utf32_charset(data : &[u8], alias_instance: @alias) -> (Option<u16>, 
             endIndex += 4;  
         } // while loop ends
 
-        if (endIndex == data.len() - 4) {
+        if (endIndex == data_len - 4) {
             return (None, PARSERUTILS_NEEDDATA);
         }
 
@@ -135,7 +135,8 @@ pub fn try_utf16_charset(data : &[u8], alias_instance: @alias) -> (Option<u16>, 
     let UTF16 : &[u8] = ['U' as u8 , 'T' as u8 , 'F' as u8 , '-' as u8 , '1' as u8 , '6' as u8];
 
     
-    if data.len() <= CHARSET_LE.len() {
+	let data_len : uint = data.len();
+    if data_len <= CHARSET_LE.len() {
         return (None, PARSERUTILS_BADPARM);
     }
 
@@ -147,7 +148,7 @@ pub fn try_utf16_charset(data : &[u8], alias_instance: @alias) -> (Option<u16>, 
         let mut buffMemory : ~[u8] = ~[];
         let mut buffMemoryIndex: uint = 0;
 
-        while endIndex < (data.len()- 2) {
+        while endIndex < (data_len- 2) {
 
             let value1 : u32 = (data[endIndex] | (data[endIndex + 1] << 8)) as u32 ;
 
@@ -155,7 +156,7 @@ pub fn try_utf16_charset(data : &[u8], alias_instance: @alias) -> (Option<u16>, 
                 break;
             }   
 
-            if (value1 == '"' as u32) && (endIndex < data.len() + CHARSET_LE.len() - 4) {
+            if (value1 == '"' as u32) && (endIndex < data_len + CHARSET_LE.len() - 4) {
                 let value2 : u32 = (data[endIndex + 2] | data[endIndex + 3] << 8) as u32 ;
                 if value2 == ';' as u32 {                   
                     break;
@@ -176,7 +177,7 @@ pub fn try_utf16_charset(data : &[u8], alias_instance: @alias) -> (Option<u16>, 
         } // while loop ends        
         
         // After while loop ends
-        if (endIndex == data.len() + CHARSET_LE.len() - 2) {
+        if (endIndex == data_len + CHARSET_LE.len() - 2) {
             return (None, PARSERUTILS_NEEDDATA);
         }
 
@@ -196,8 +197,7 @@ pub fn try_utf16_charset(data : &[u8], alias_instance: @alias) -> (Option<u16>, 
         // values are only for initialization
         let mut buffMemory : ~[u8] = ~[];
         let mut buffMemoryIndex : u8 = 0;
-
-        while endIndex < (data.len() - 2) {
+        while endIndex < (data_len - 2) {
             // Since it is Big-endian, data at MSB would be at lower address space
             // let value1 : u16 = (data[endIndex + 1] | data[endIndex] << 8) as u16 ;
             let value1 : u32 = data[endIndex] as u32;
@@ -206,7 +206,7 @@ pub fn try_utf16_charset(data : &[u8], alias_instance: @alias) -> (Option<u16>, 
                 break;
             }
 
-            if (value1 == '"' as u32) && (endIndex < data.len() - 4) {
+            if (value1 == '"' as u32) && (endIndex < data_len - 4) {
                 let value2 = (data[endIndex + 3] | data[endIndex + 2] << 8) as u32;
                 if value2 == ';' as u32 {
                     break;
@@ -226,7 +226,7 @@ pub fn try_utf16_charset(data : &[u8], alias_instance: @alias) -> (Option<u16>, 
             endIndex += 2;  
         } // while loop ends        
         
-        if (endIndex == data.len()- 2) {
+        if (endIndex == data_len - 2) {
             return (None, PARSERUTILS_NEEDDATA);
         }       
 
@@ -247,7 +247,8 @@ pub fn  try_ascii_compatible_charset(data : &[u8], alias_instance: @alias) -> (O
     let mut mibenum : u16 = 0;
     let charset_decl_string : ~[u8] = ~[ '@' as u8, 'c' as u8, 'h' as u8, 'a' as u8 , 'r' as u8, 's' as u8, 'e' as u8, 't' as u8, ' ' as u8 , '\"'  as u8] ;
 
-    if (data.len() <= charset_decl_string.len() ) {
+	let data_len : uint = data.len();
+    if (data_len <= charset_decl_string.len() ) {
         return (None, PARSERUTILS_NEEDDATA);
     }
 
@@ -257,7 +258,7 @@ pub fn  try_ascii_compatible_charset(data : &[u8], alias_instance: @alias) -> (O
     if (retVal == 0) {
         let mut indexVal = charset_decl_string.len();
         // Looking for "; at the end of charset declaration
-        while (indexVal < data.len()) {
+        while (indexVal < data_len) {
             //debug!(fmt!("indexVal == %?", indexVal));
             if (data[indexVal] == ('"' as u8) || data[indexVal+1] == (';' as u8)) {
                 break;
@@ -265,7 +266,7 @@ pub fn  try_ascii_compatible_charset(data : &[u8], alias_instance: @alias) -> (O
             indexVal = indexVal + 1 ;
         }
         // if this condition is true then, the input CSS file doesn't have anything except <charset>  string
-        if indexVal == data.len() {
+        if indexVal == data_len {
             return (None, PARSERUTILS_NEEDDATA);
         }
         

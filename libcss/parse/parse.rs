@@ -44,7 +44,7 @@ type state =  ~extern fn(parser: &mut css_parser) ->css_error;
 pub struct css_parser {
     language: ~css_language,
     lexer: ~css_lexer,
-    priv lwc: @lwc,
+    priv lwc: @mut lwc,
 
     priv last_was_ws : bool,
     priv match_char : char,
@@ -75,7 +75,7 @@ impl css_parser {
     * #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
     */
-    fn css__parser_create_internal(language: ~css_language, lexer: ~css_lexer, lwc: @lwc, initial:(uint, uint) ) 
+    fn css__parser_create_internal(language: ~css_language, lexer: ~css_lexer, lwc: @mut lwc, initial:(uint, uint) ) 
         -> Option<~css_parser> {
 
         //debug!("Entering: css__parser_create_internal");
@@ -146,7 +146,7 @@ impl css_parser {
     *   'Option<~css_parser>' - location to receive parser instance.
     */
     #[inline]
-    pub fn css__parser_create(language: ~css_language, lexer: ~css_lexer, lwc: @lwc) 
+    pub fn css__parser_create(language: ~css_language, lexer: ~css_lexer, lwc: @mut lwc) 
         -> Option<~css_parser> {
         //debug!("Entering: css__parser_create");
         let initial = ( sStart as uint, 0u );
@@ -171,7 +171,7 @@ impl css_parser {
     *   'Option<~css_parser>' - location to receive parser instance.
     */
     #[inline]
-    pub fn css__parser_create_for_inline_style(language: ~css_language, lexer: ~css_lexer, lwc: @lwc) 
+    pub fn css__parser_create_for_inline_style(language: ~css_language, lexer: ~css_lexer, lwc: @mut lwc) 
         -> Option<~css_parser> {
         //debug!("Entering: css__parser_create_for_inline_style");
         let initial = (sInlineStyle as uint, 0);
@@ -373,7 +373,7 @@ impl css_parser {
     }
 
     #[inline]
-    fn intern_string (&mut self, string: &str) -> @lwc_string {
+    fn intern_string (&mut self, string: &str) -> @mut lwc_string {
         //debug!("Entering: intern_string");
         let interned_string = self.lwc.lwc_intern_string(string);
 

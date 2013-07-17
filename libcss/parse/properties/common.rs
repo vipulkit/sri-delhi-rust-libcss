@@ -154,7 +154,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[@css_tok
     return(Some(num) , Some(unit_retVal) , CSS_OK);
 }
 
-pub fn css__number_from_lwc_string(string: @lwc_string, int_only: bool) -> (i32 , uint) {
+pub fn css__number_from_lwc_string(string: @mut lwc_string, int_only: bool) -> (i32 , uint) {
     
     //debug!("Entering: css__number_from_lwc_string");
 
@@ -890,7 +890,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
 *   ctx is updated with the next token to process.
 *   If the input is invalid, then ctx remains unchanged.
 */
-pub fn css__parse_hash_colour(data: @lwc_string) -> (Option<u32> , css_error){
+pub fn css__parse_hash_colour(data: @mut lwc_string) -> (Option<u32> , css_error){
 
     //debug!("Entering: css__parse_hash_colour");
     let mut result_val: u32;
@@ -1136,7 +1136,7 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 * 'css_error' - CSS_OK on success,  
                 CSS_INVALID if the input is not valid.
 */
-fn css__parse_named_color(sheet: @mut css_stylesheet , strings: @css_propstrings , data: @lwc_string) -> (Option<u32> , css_error){
+fn css__parse_named_color(sheet: @mut css_stylesheet , strings: @css_propstrings , data: @mut lwc_string) -> (Option<u32> , css_error){
     
     //debug!("Entering: css__parse_named_color");
     let mut result_val: u32;

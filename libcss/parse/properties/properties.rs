@@ -1968,7 +1968,7 @@ impl css_properties {
                 } 
                 else if match token.token_type {CSS_TOKEN_STRING  => true, _ => false} {
                     
-                    let snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap())) ;
+                    let snumber = sheet.css__stylesheet_string_add(token.idata.unwrap()) ;
                     CSS_APPEND(first, CONTENT_STRING );
                     
                     css_stylesheet::css__stylesheet_style_append(result, snumber as u32);
@@ -1977,7 +1977,7 @@ impl css_properties {
                     
                     match (*sheet.resolve)(sheet.url, token.idata.unwrap()){
                         (CSS_OK, Some(uri)) => {
-                            let uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri));
+                            let uri_snumber = sheet.css__stylesheet_string_add(uri);
                             CSS_APPEND(first, CONTENT_URI);
                     
                             css_stylesheet::css__stylesheet_style_append(result, uri_snumber as u32)
@@ -2010,7 +2010,7 @@ impl css_properties {
                         }
                     }   
                     
-                    let snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap()));
+                    let snumber = sheet.css__stylesheet_string_add(token.idata.unwrap());
                     CSS_APPEND(first, CONTENT_ATTR );
                     
                     css_stylesheet::css__stylesheet_style_append(result, snumber as u32);
@@ -2126,7 +2126,7 @@ impl css_properties {
                         return CSS_INVALID;
                     }
 
-                    let snumber = sheet.css__stylesheet_string_add(lwc_string_data(name));
+                    let snumber = sheet.css__stylesheet_string_add(name);
                     
                     CSS_APPEND(first, opv as u16);
                     
@@ -2268,9 +2268,9 @@ impl css_properties {
                     }
 
 
-                    let name_snumber = sheet.css__stylesheet_string_add(lwc_string_data(name));
+                    let name_snumber = sheet.css__stylesheet_string_add(name);
                    
-                    let sep_snumber = sheet.css__stylesheet_string_add(lwc_string_data(sep));
+                    let sep_snumber = sheet.css__stylesheet_string_add(sep);
                     
                     CSS_APPEND(first, opv as u16);
                     
@@ -2457,14 +2457,15 @@ impl css_properties {
         else {
             let mut first : bool =true;
             let mut uri_snumber:u32;
-            while (*ctx < vector.len() 
+			let vector_len : uint = vector.len();
+            while (*ctx <  vector_len
                 && match token.token_type {
                         CSS_TOKEN_URI  => true,
                         _ => false
                    }
                    ) {
 
-                let uri:@lwc_string;
+                let uri:@mut lwc_string;
                 match (*sheet.resolve)(sheet.url, token.idata.unwrap()) {
                     (CSS_OK, Some(x)) => {
                         uri =x;
@@ -2474,7 +2475,7 @@ impl css_properties {
                         return error;
                     }
                 }
-                uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri)) as u32;
+                uri_snumber = sheet.css__stylesheet_string_add(uri) as u32;
                 match first{
                     true=>{
                          css_stylesheet::css__stylesheet_style_appendOPV(style, CSS_PROP_CURSOR, 0,CURSOR_URI );
@@ -2486,7 +2487,7 @@ impl css_properties {
                 css_stylesheet::css__stylesheet_style_append(style,uri_snumber);
 
                 consumeWhitespace(vector, ctx);
-                if *ctx >= vector.len() {
+                if *ctx >= vector_len {
                     *ctx = orig_ctx;
                     return CSS_INVALID;
                 }
@@ -2499,7 +2500,7 @@ impl css_properties {
                 }
 
                 consumeWhitespace(vector, ctx);
-                if *ctx >= vector.len() {
+                if *ctx >= vector_len {
                     *ctx = orig_ctx;
                     return CSS_INVALID;
                 }
@@ -4122,7 +4123,7 @@ impl css_properties {
         else {
             let mut modifiers:int = 0;
             value = PLAY_DURING_URI as u16;
-            let uri:@lwc_string;
+            let uri:@mut lwc_string;
             match (*sheet.resolve)( sheet.url, token.idata.unwrap()) {
                 (CSS_OK, Some(x)) => {
                     uri =x;
@@ -4132,7 +4133,7 @@ impl css_properties {
                     return error;
                 }
             }
-            uri_snumber = sheet.css__stylesheet_string_add(lwc_string_data(uri)) as u32;
+            uri_snumber = sheet.css__stylesheet_string_add(uri) as u32;
 
             while modifiers < 2 {
                 consumeWhitespace(vector, ctx);
@@ -4237,7 +4238,7 @@ impl css_properties {
 
                 let open_snumber:u32;
                 let close_snumber:u32;
-                open_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap())) as u32;
+                open_snumber = sheet.css__stylesheet_string_add(token.idata.unwrap()) as u32;
                 consumeWhitespace(vector, ctx);
                 
                 if (*ctx >= vector.len()) {
@@ -4254,7 +4255,7 @@ impl css_properties {
                         return CSS_INVALID;
                     }
                 }
-                close_snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap())) as u32;
+                close_snumber = sheet.css__stylesheet_string_add(token.idata.unwrap()) as u32;
                 consumeWhitespace(vector, ctx); 
                 match first {
                     true => css_stylesheet::css__stylesheet_style_append(style,buildOPV(CSS_PROP_QUOTES, 0, QUOTES_STRING)),
@@ -4727,7 +4728,7 @@ pub fn parse_system_font(sheet: @mut css_stylesheet , strings:@css_propstrings ,
     }
     else {
         let sNumber: u32;
-        sNumber = sheet.css__stylesheet_string_add(lwc_string_data(system_font.family)) as u32;
+        sNumber = sheet.css__stylesheet_string_add(system_font.family) as u32;
 
         css_stylesheet::css__stylesheet_style_appendOPV(style , CSS_PROP_FONT_FAMILY , 0 , FONT_FAMILY_STRING as u16);           
         css_stylesheet::css__stylesheet_style_append(style , sNumber);
@@ -4984,7 +4985,7 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: @css_props
                                 }
                             }
 
-                            let snumber = sheet.css__stylesheet_string_add(some_string.unwrap());
+                            let snumber = sheet.css__stylesheet_string_add(sheet.lwc_instance.lwc_intern_string(some_string.unwrap()));
                             css_stylesheet::css__stylesheet_style_append(style , value);
                             css_stylesheet::css__stylesheet_style_append(style , snumber as u32);
                         }
@@ -5001,7 +5002,7 @@ pub fn css__comma_list_to_style(sheet: @mut css_stylesheet , strings: @css_props
                         value = (*get_value_function)(strings , token , first);
                     }
                 }
-                let snumber = sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap()));
+                let snumber = sheet.css__stylesheet_string_add(token.idata.unwrap());
                 css_stylesheet::css__stylesheet_style_append(style , value);
                 css_stylesheet::css__stylesheet_style_append(style , snumber as u32);
             },

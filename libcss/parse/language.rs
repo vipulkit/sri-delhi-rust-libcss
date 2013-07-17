@@ -35,24 +35,24 @@ pub struct context_entry {
 } 
 
 pub struct css_namespace {
-    prefix:Option<@lwc_string> ,        /**< Namespace prefix */
-    uri:Option<@lwc_string>     //< Namespace URI */
+    prefix:Option<@mut lwc_string> ,        /**< Namespace prefix */
+    uri:Option<@mut lwc_string>     //< Namespace URI */
 }
 
 	
 
 pub struct css_language {
     sheet:@mut css_stylesheet,
-    lwc_instance:@lwc,      
+    lwc_instance:@mut lwc,      
     context:~[context_entry], 
     state:language_state,   
     strings: @css_propstrings,  
     properties: ~css_properties,
-    default_namespace:Option<@lwc_string>, 
+    default_namespace:Option<@mut lwc_string>, 
     namespaces:~[~css_namespace]
 }
 
-pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:@lwc  , propstring: @css_propstrings) -> ~css_language {
+pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:@mut lwc  , propstring: @css_propstrings) -> ~css_language {
     //debug!("Entering: css_language");
    
     let cr_properties = css_properties::css_properties(sheet);
@@ -378,7 +378,7 @@ impl css_language {
         } 
         else if self.strings.lwc_string_caseless_isequal(atkeyword.idata.unwrap(), NAMESPACE as uint) {
             if self.state as uint <= NAMESPACE_PERMITTED as uint {
-                let mut prefix:Option<@lwc_string> = None;
+                let mut prefix:Option<@mut lwc_string> = None;
 
                 /* any0 = (IDENT ws)? (STRING | URI) ws */
 
@@ -834,7 +834,7 @@ impl css_language {
     * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
     */
-    pub fn addNamespace(&mut self, _prefix:Option<@lwc_string>, uri:@lwc_string) -> css_error {
+    pub fn addNamespace(&mut self, _prefix:Option<@mut lwc_string>, uri:@mut lwc_string) -> css_error {
         //debug!("Entering: addNamespace");
         match _prefix {
             Some(prefix) => {
@@ -1107,7 +1107,7 @@ impl css_language {
     pub fn parseTypeSelector(&mut self, vector:&~[@css_token], ctx:@mut uint, qname:@mut css_qname) -> css_error {
         //debug!("Entering: parseTypeSelector");
         let mut token:&@css_token;
-        let mut prefix:Option<@lwc_string> =None;
+        let mut prefix:Option<@mut lwc_string> =None;
 
         /* type_selector    -> namespace_prefix? element_name
          * namespace_prefix -> [ IDENT | '*' ]? '|'
@@ -1262,7 +1262,7 @@ impl css_language {
     * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
     */
-    pub fn lookupNamespace(&mut self, prefix:Option<@lwc_string>, qname:@mut css_qname) -> css_error {
+    pub fn lookupNamespace(&mut self, prefix:Option<@mut lwc_string>, qname:@mut css_qname) -> css_error {
         //debug!("Entering: lookupNamespace");
         let mut idx:uint=0;
         
@@ -1379,7 +1379,7 @@ impl css_language {
             return (CSS_INVALID, None)
         }   
         
-        let mut prefix: Option<@lwc_string> = None;
+        let mut prefix: Option<@mut lwc_string> = None;
 
         if tokenIsChar(token, '|') {
             if *ctx >= vector.len() {
@@ -1481,7 +1481,7 @@ impl css_language {
         let qname:@mut css_qname=@mut css_qname{ns:self.lwc_instance.lwc_intern_string(&""), name:self.lwc_instance.lwc_intern_string(&"")};
         /* pseudo    -> ':' ':'? [ IDENT | FUNCTION ws any1 ws ')' ] */
 
-        let mut detail_value_string:Option<@lwc_string> = None;
+        let mut detail_value_string:Option<@mut lwc_string> = None;
 
         if *ctx >= vector.len() {
                 return (CSS_INVALID, None)
@@ -2011,8 +2011,8 @@ impl css_language {
         //debug!("Entering: css__make_style_important");
         let bytecode:&mut ~[u32] = &mut style.bytecode;
         let mut offset = 0;
-
-        while offset < bytecode.len() {
+		let bytecode_len : uint = bytecode.len();
+        while offset < bytecode_len {
             
             let opv = copy bytecode[offset];
 

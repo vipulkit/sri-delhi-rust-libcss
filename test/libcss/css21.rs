@@ -12,11 +12,11 @@ use dump::*;
 use wapcaplet::*;
 use css::parse::propstrings::*;
 
-pub fn resolve_url(_:@str, rel:@wapcaplet::lwc_string) -> (css_error,Option<@wapcaplet::lwc_string>) {
+pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
-fn css_create_params(lwc_instance: @lwc , propstrings_instance: @css_propstrings) -> css_params {
+fn css_create_params(lwc_instance: @mut lwc , propstrings_instance: @css_propstrings) -> css_params {
     let css_param = css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,

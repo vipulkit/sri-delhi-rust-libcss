@@ -11,7 +11,7 @@ use utils::errors::*;
 use parse::propstrings::*;
 
 pub struct css {
-    lwc:@lwc,
+    lwc:@mut lwc,
     stylesheet:@mut css_stylesheet,
     parser:~css_parser,
 }
@@ -52,13 +52,14 @@ pub struct css_params {
     font : Option<css_font_resolution_fn>,
 
     /** libwapcaplet library Instance */
-    lwc_instance : Option<@lwc>,
+    lwc_instance : Option<@mut lwc>,
 
     /** Propstrings Instance */
     propstrings_instance : Option<@css_propstrings>
 }
 
 impl css {
+
     pub fn css_create(params: &css_params) -> @mut css {
     
         assert!(!(params.propstrings_instance.is_some() && params.lwc_instance.is_none()));
@@ -109,7 +110,8 @@ impl css {
             resolve : params.resolve, 
             import : params.import, 
             font : params.font,   
-            color: params.color
+            color: params.color,
+            lwc_instance:lwc
         };
 
         // create language
