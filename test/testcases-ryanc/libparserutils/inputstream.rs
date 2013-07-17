@@ -64,7 +64,7 @@ fn inputstream(filename: ~str) {
                 PARSERUTILS_NEEDDATA => {break;}
                 PARSERUTILS_EOF      => {break;}
                 PARSERUTILS_OK       => {
-                    let (c, clen) = cOption.get();
+                    let (c, _ , clen) = cOption.get();
                     stream.parserutils_inputstream_advance(clen);
 
                     if c[0].to_str() == ~"a" {
@@ -111,7 +111,7 @@ fn inputstream(filename: ~str) {
         match(STATUS) {
             PARSERUTILS_EOF => {break;}
             PARSERUTILS_OK  => {
-                let (_c, clen) = cOption.get();
+                let (_c, _ , clen) = cOption.get();
                 stream.parserutils_inputstream_advance(clen);
             }
             _ => {assert!(false);}
