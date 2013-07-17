@@ -475,11 +475,13 @@ pub fn run_test(ctx:@mut line_ctx) {
 
         /* Font resolution function */
         font : None,
+        lwc_instance: None,
+        propstrings_instance: None
     };
 
-    let lwc_instance = lwc() ;
+    // let lwc_instance = lwc() ;
 
-    let css_instance = css::css_create( &params,Some(lwc_instance.clone())) ;
+    let css_instance = css::css_create( &params) ;
 
     error = css_instance.css_stylesheet_append_data(copy (ctx.buf));
     match error {
@@ -522,7 +524,7 @@ pub fn run_test(ctx:@mut line_ctx) {
             CSS_OK=> {
                 params.url = copy url;
 
-                let import = css::css_create(&params,Some(lwc_instance.clone())) ;
+                let import = css::css_create(&params) ;
                 
                 assert!(    match css_instance.css_stylesheet_register_import(
                                                         Some(import.stylesheet)) {

@@ -46,17 +46,15 @@ pub struct css_language {
     lwc_instance:@lwc,      
     context:~[context_entry], 
     state:language_state,   
-    strings: ~css_propstrings,  
+    strings: @css_propstrings,  
     properties: ~css_properties,
     default_namespace:Option<@lwc_string>, 
     namespaces:~[~css_namespace]
 }
 
-pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:@lwc ) -> ~css_language {
+pub fn css_language(sheet:@mut css_stylesheet, lwc_inst:@lwc  , propstring: @css_propstrings) -> ~css_language {
     //debug!("Entering: css_language");
    
-    let propstring = css_propstrings::css_propstrings(lwc_inst);
-
     let cr_properties = css_properties::css_properties(sheet);
 
     ~css_language {
@@ -678,7 +676,7 @@ impl css_language {
                                             match curRule {
                                                 RULE_FONT_FACE(font_face_rule) =>  
 							{
-								let css_er:css_error = css__parse_font_descriptor(self.sheet, ident, &mut self.strings, tokens, ctx, font_face_rule, self.lwc_instance);
+								let css_er:css_error = css__parse_font_descriptor(self.sheet, ident, self.strings, tokens, ctx, font_face_rule, self.lwc_instance);
 		        	                                return css_er;
 								 
 							},
@@ -908,7 +906,7 @@ impl css_language {
 
         style = css_stylesheet::css__stylesheet_style_create(self.sheet) ;
         //debug!(fmt!("parseProperty:: style.bytecode (1) == %?" , style.bytecode));
-        let error = (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , &mut self.strings , vector , ctx , style);
+        let error = (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , self.strings , vector , ctx , style);
 
         //debug!(fmt!("parseProperty:: style.bytecode (2)== %?" , style.bytecode));
 
@@ -1480,7 +1478,7 @@ impl css_language {
         let mut negate:bool = false;
         let mut lut_idx:uint;
         let mut selector_type:css_selector_type;
-        let qname:@mut css_qname=@mut css_qname{ns:self.lwc_instance.lwc_intern_string_managed(@""), name:self.lwc_instance.lwc_intern_string_managed(@"")};
+        let qname:@mut css_qname=@mut css_qname{ns:self.lwc_instance.lwc_intern_string(&""), name:self.lwc_instance.lwc_intern_string(&"")};
         /* pseudo    -> ':' ':'? [ IDENT | FUNCTION ws any1 ws ')' ] */
 
         let mut detail_value_string:Option<@lwc_string> = None;
@@ -1679,7 +1677,7 @@ impl css_language {
         let mut token:&@css_token;
 
         let value: @mut css_selector_detail = @mut css_selector_detail{
-            qname:copy *qname,
+            qname:qname,
             selector_type:CSS_SELECTOR_PSEUDO_CLASS,
             combinator_type:CSS_COMBINATOR_NONE,  
             value_type:CSS_SELECTOR_DETAIL_VALUE_NTH,

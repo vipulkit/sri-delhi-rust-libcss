@@ -561,10 +561,70 @@ pub struct css_propstrings {
 
 impl css_propstrings {
 
-    pub fn css_propstrings(lwc_instance: @lwc) -> ~css_propstrings {
-        let mut css_propstrings_instance = ~css_propstrings {
+    pub fn css_propstrings(lwc_instance: @lwc) -> @css_propstrings {
+
+        let propstrings_list = &[&"*", &"charset",&"import",&"media", &"namespace", &"font-face", &"page", &"aural",&"braille", &"embossed",&"handheld", &"print",
+            &"projection", &"screen", &"speech", &"tty", &"tv", &"all",&"first-child", &"link", &"visited", &"hover", &"active", &"focus",
+            &"lang",&"first",&"root", &"nth-child", &"nth-last-child", &"nth-of-type",&"nth-last-of-type", &"last-child",&"first-of-type",
+            &"last-of-type", &"only-child", &"only-of-type",&"empty", &"target",&"enabled", &"disabled", &"checked", &"not", &"first-line", 
+            &"first-letter", &"before",&"after",&"azimuth",&"background", &"background-attachment", &"background-color", &"background-image", 
+            &"background-position",&"background-repeat", &"border",&"border-bottom", &"border-bottom-color", &"border-bottom-style", &"border-bottom-width",
+            &"border-collapse",&"border-color",&"border-left", &"border-left-color", &"border-left-style", &"border-left-width",&"border-right",
+            &"border-right-color", &"border-right-style",&"border-right-width",&"border-spacing",&"border-style", &"border-top",&"border-top-color",
+            &"border-top-style",&"border-top-width",&"border-width", &"bottom", &"break-after", &"break-before", &"break-inside",&"caption-side",
+            &"clear",&"clip",&"color",&"columns",&"column-count",&"column-fill",&"column-gap",&"column-rule", &"column-rule-color",
+            &"column-rule-style",&"column-rule-width",&"column-span",&"column-width",&"content", &"counter-increment", &"counter-reset",&"cue",
+            &"cue-after", &"cue-before",&"cursor", &"direction",&"display",&"elevation", &"empty-cells",&"float",&"font", &"font-family",&"font-size",
+            &"font-style", &"font-variant",&"font-weight", &"height", &"left", &"letter-spacing", &"line-height",&"list-style", &"list-style-image",
+            &"list-style-position",&"list-style-type",&"margin", &"margin-bottom",&"margin-left",&"margin-right", &"margin-top", &"max-height",
+            &"max-width", &"min-height", &"min-width",&"opacity", &"orphans",&"outline", &"outline-color", &"outline-style",&"outline-width", &"overflow",
+            &"padding", &"padding-bottom",&"padding-left",&"padding-right",&"padding-top",&"page-break-after", &"page-break-before",&"page-break-inside",
+            &"pause",&"pause-after",&"pause-before", &"pitch-range",&"pitch",&"play-during",&"position",&"quotes", &"richness",&"right", &"speak-header",
+            &"speak-numeral",&"speak-punctuation",&"speak", &"speech-rate",&"stress",&"table-layout", &"text-align",&"text-decoration",&"text-indent",
+            &"text-transform",&"top", &"unicode-bidi", &"vertical-align",&"visibility",&"voice-family", &"volume",&"white-space",&"widows", &"width",
+            &"word-spacing",&"z-index",&"inherit",&"important",&"none",&"both", &"fixed",&"scroll",&"transparent", &"no-repeat",&"repeat-x",&"repeat-y",
+            &"repeat",&"hidden",&"dotted", &"dashed", &"solid",&"double",&"groove", &"ridge",&"inset",&"outset",&"thin", &"medium",&"thick", &"collapse",
+            &"separate",&"auto",&"ltr",&"rtl", &"inline", &"block",&"list-item",&"run-in",&"inline-block", &"table",&"inline-table",&"table-row-group",
+            &"table-header-group",&"table-footer-group",&"table-row", &"table-column-group", &"table-column",&"table-cell",&"table-caption",&"below",
+            &"level",&"above",&"higher",&"lower",&"show",&"hide",&"xx-small",&"x-small",&"small",&"large",&"x-large",&"xx-large",&"larger",
+            &"smaller", &"normal",&"italic",&"oblique",&"small-caps",&"bold",&"bolder", &"lighter",&"inside",&"outside", &"disc",
+            &"circle",&"square",&"decimal",&"decimal-leading-zero", &"lower-roman", &"upper-roman", &"lower-greek",&"lower-latin",&"upper-latin",
+            &"armenian",&"georgian", &"lower-alpha",&"upper-alpha",&"invert",&"visible",&"always",&"avoid",&"x-low",&"low", &"high", &"x-high",
+            &"static",&"relative", &"absolute",&"once",&"digits",&"continuous", &"code", &"spell-out",&"x-slow",&"slow",&"fast",&"x-fast",&"faster",
+            &"slower",&"center",&"justify",&"capitalize",&"uppercase",&"lowercase",&"embed",&"bidi-override",&"baseline",&"sub",&"super", 
+            &"text-top",&"middle",&"text-bottom",&"silent",&"x-soft",&"soft",&"loud", &"x-loud", &"pre",&"nowrap",&"pre-wrap",&"pre-line",
+            &"leftwards",&"rightwards",&"left-side", &"far-left", &"center-left",&"center-right",&"far-right",&"right-side",&"behind",&"rect",&"open-quote",
+            &"close-quote",&"no-open-quote",&"no-close-quote",&"attr",&"counter",&"counters",&"crosshair",&"default",&"pointer",&"move",&"e-resize",
+            &"ne-resize",&"nw-resize",&"n-resize", &"se-resize",&"sw-resize",&"s-resize",&"w-resize",&"text",&"wait",&"help",&"progress",&"serif",
+            &"sans-serif",&"cursive",&"fantasy",&"monospace",&"male",&"female",&"child",&"mix",&"underline",&"overline",&"line-through",&"blink",
+            &"rgb", &"rgba",&"hsl",&"hsla",&"-libcss-left",&"-libcss-center",&"-libcss-right",&"currentColor", &"odd", &"even",&"src",&"local",
+            &"initial",&"format",&"woff",&"truetype",&"opentype", &"embedded-opentype", &"svg",&"column",&"avoid-page", &"avoid-column",&"balance",
+            &"aliceblue",&"antiquewhite",&"aqua",&"aquamarine",&"azure",&"beige",&"bisque",&"black",&"blanchedalmond",&"blue",&"blueviolet",&"brown",
+            &"burlywood",&"cadetblue",&"chartreuse",&"chocolate", &"coral",&"cornflowerblue", &"cornsilk", &"crimson", &"cyan",&"darkblue",&"darkcyan",
+            &"darkgoldenrod",&"darkgray",&"darkgreen",&"darkgrey",&"darkkhaki", &"darkmagenta",&"darkolivegreen",&"darkorange",&"darkorchid",&"darkred",
+            &"darksalmon",&"darkseagreen",&"darkslateblue",&"darkslategray",&"darkslategrey",&"darkturquoise",&"darkviolet",&"deeppink", &"deepskyblue",
+            &"dimgray",&"dimgrey",&"dodgerblue",&"feldspar",&"firebrick",&"floralwhite", &"forestgreen",&"fuchsia", &"gainsboro",&"ghostwhite",
+            &"gold",&"goldenrod",&"gray",&"green",&"greenyellow",&"grey",&"honeydew",&"hotpink",&"indianred",&"indigo",&"ivory",&"khaki",&"lavender",
+            &"lavenderblush",&"lawngreen",&"lemonchiffon",&"lightblue",&"lightcoral",&"lightcyan",&"lightgoldenrodyellow",&"lightgray",&"lightgreen",
+            &"lightgrey",&"lightpink",&"lightsalmon",&"lightseagreen",&"lightskyblue", &"lightslateblue", &"lightslategray",&"lightslategrey",
+            &"lightsteelblue", &"lightyellow",&"lime",&"limegreen",&"linen", &"magenta",&"maroon",&"mediumaquamarine",&"mediumblue", &"mediumorchid",
+            &"mediumpurple", &"mediumseagreen",&"mediumslateblue",&"mediumspringgreen",&"mediumturquoise",&"mediumvioletred", &"midnightblue",&"mintcream", 
+            &"mistyrose",&"moccasin",&"navajowhite",&"navy", &"oldlace", &"olive",&"olivedrab",&"orange",&"orangered",&"orchid",&"palegoldenrod",
+            &"palegreen",&"paleturquoise",&"palevioletred", &"papayawhip",&"peachpuff",&"peru",&"pink",&"plum",&"powderblue", &"purple",&"red",
+            &"rosybrown",&"royalblue", &"saddlebrown",&"salmon",&"sandybrown",&"seagreen",&"seashell",&"sienna", &"silver", &"skyblue",&"slateblue",
+            &"slategray", &"slategrey",&"snow",&"springgreen",&"steelblue", &"tan", &"teal",&"thistle",&"tomato",&"turquoise",&"violet",&"violetred",
+            &"wheat",&"white", &"whitesmoke",&"yellow",&"yellowgreen"];
+
+        let length = propstrings_list.len();
+        let mut _propstrings = ~[];
+        _propstrings.reserve_at_least(length);
+        for propstrings_list.iter().advance |&ele| {
+            _propstrings.push(lwc_instance.lwc_intern_string(ele));
+        }
+
+        let css_propstrings_instance = @css_propstrings {
             lwc_instance: lwc_instance,
-            propstrings: ~[],
+            propstrings: _propstrings,
             pseudo_class_list : @[ 
                                     FIRST_CHILD,
                                     LINK,
@@ -602,93 +662,35 @@ impl css_propstrings {
                                 ]
         };
 
-        let propstrings_list = &[&"*", &"charset",&"import",&"media", &"namespace", &"font-face", &"page", &"aural",&"braille", &"embossed",&"handheld", &"print",
-                &"projection", &"screen", &"speech", &"tty", &"tv", &"all",&"first-child", &"link", &"visited", &"hover", &"active", &"focus",
-                &"lang",&"first",&"root", &"nth-child", &"nth-last-child", &"nth-of-type",&"nth-last-of-type", &"last-child",&"first-of-type",
-                &"last-of-type", &"only-child", &"only-of-type",&"empty", &"target",&"enabled", &"disabled", &"checked", &"not", &"first-line", 
-                &"first-letter", &"before",&"after",&"azimuth",&"background", &"background-attachment", &"background-color", &"background-image", 
-                &"background-position",&"background-repeat", &"border",&"border-bottom", &"border-bottom-color", &"border-bottom-style", &"border-bottom-width",
-                &"border-collapse",&"border-color",&"border-left", &"border-left-color", &"border-left-style", &"border-left-width",&"border-right",
-                &"border-right-color", &"border-right-style",&"border-right-width",&"border-spacing",&"border-style", &"border-top",&"border-top-color",
-                &"border-top-style",&"border-top-width",&"border-width", &"bottom", &"break-after", &"break-before", &"break-inside",&"caption-side",
-                &"clear",&"clip",&"color",&"columns",&"column-count",&"column-fill",&"column-gap",&"column-rule", &"column-rule-color",
-                &"column-rule-style",&"column-rule-width",&"column-span",&"column-width",&"content", &"counter-increment", &"counter-reset",&"cue",
-                &"cue-after", &"cue-before",&"cursor", &"direction",&"display",&"elevation", &"empty-cells",&"float",&"font", &"font-family",&"font-size",
-                &"font-style", &"font-variant",&"font-weight", &"height", &"left", &"letter-spacing", &"line-height",&"list-style", &"list-style-image",
-                &"list-style-position",&"list-style-type",&"margin", &"margin-bottom",&"margin-left",&"margin-right", &"margin-top", &"max-height",
-                &"max-width", &"min-height", &"min-width",&"opacity", &"orphans",&"outline", &"outline-color", &"outline-style",&"outline-width", &"overflow",
-                &"padding", &"padding-bottom",&"padding-left",&"padding-right",&"padding-top",&"page-break-after", &"page-break-before",&"page-break-inside",
-                &"pause",&"pause-after",&"pause-before", &"pitch-range",&"pitch",&"play-during",&"position",&"quotes", &"richness",&"right", &"speak-header",
-                &"speak-numeral",&"speak-punctuation",&"speak", &"speech-rate",&"stress",&"table-layout", &"text-align",&"text-decoration",&"text-indent",
-                &"text-transform",&"top", &"unicode-bidi", &"vertical-align",&"visibility",&"voice-family", &"volume",&"white-space",&"widows", &"width",
-                &"word-spacing",&"z-index",&"inherit",&"important",&"none",&"both", &"fixed",&"scroll",&"transparent", &"no-repeat",&"repeat-x",&"repeat-y",
-                &"repeat",&"hidden",&"dotted", &"dashed", &"solid",&"double",&"groove", &"ridge",&"inset",&"outset",&"thin", &"medium",&"thick", &"collapse",
-                &"separate",&"auto",&"ltr",&"rtl", &"inline", &"block",&"list-item",&"run-in",&"inline-block", &"table",&"inline-table",&"table-row-group",
-                &"table-header-group",&"table-footer-group",&"table-row", &"table-column-group", &"table-column",&"table-cell",&"table-caption",&"below",
-                &"level",&"above",&"higher",&"lower",&"show",&"hide",&"xx-small",&"x-small",&"small",&"large",&"x-large",&"xx-large",&"larger",
-                &"smaller", &"normal",&"italic",&"oblique",&"small-caps",&"bold",&"bolder", &"lighter",&"inside",&"outside", &"disc",
-                &"circle",&"square",&"decimal",&"decimal-leading-zero", &"lower-roman", &"upper-roman", &"lower-greek",&"lower-latin",&"upper-latin",
-                &"armenian",&"georgian", &"lower-alpha",&"upper-alpha",&"invert",&"visible",&"always",&"avoid",&"x-low",&"low", &"high", &"x-high",
-                &"static",&"relative", &"absolute",&"once",&"digits",&"continuous", &"code", &"spell-out",&"x-slow",&"slow",&"fast",&"x-fast",&"faster",
-                &"slower",&"center",&"justify",&"capitalize",&"uppercase",&"lowercase",&"embed",&"bidi-override",&"baseline",&"sub",&"super", 
-                &"text-top",&"middle",&"text-bottom",&"silent",&"x-soft",&"soft",&"loud", &"x-loud", &"pre",&"nowrap",&"pre-wrap",&"pre-line",
-                &"leftwards",&"rightwards",&"left-side", &"far-left", &"center-left",&"center-right",&"far-right",&"right-side",&"behind",&"rect",&"open-quote",
-                &"close-quote",&"no-open-quote",&"no-close-quote",&"attr",&"counter",&"counters",&"crosshair",&"default",&"pointer",&"move",&"e-resize",
-                &"ne-resize",&"nw-resize",&"n-resize", &"se-resize",&"sw-resize",&"s-resize",&"w-resize",&"text",&"wait",&"help",&"progress",&"serif",
-                &"sans-serif",&"cursive",&"fantasy",&"monospace",&"male",&"female",&"child",&"mix",&"underline",&"overline",&"line-through",&"blink",
-                &"rgb", &"rgba",&"hsl",&"hsla",&"-libcss-left",&"-libcss-center",&"-libcss-right",&"currentColor", &"odd", &"even",&"src",&"local",
-                &"initial",&"format",&"woff",&"truetype",&"opentype", &"embedded-opentype", &"svg",&"column",&"avoid-page", &"avoid-column",&"balance",
-                &"aliceblue",&"antiquewhite",&"aqua",&"aquamarine",&"azure",&"beige",&"bisque",&"black",&"blanchedalmond",&"blue",&"blueviolet",&"brown",
-                &"burlywood",&"cadetblue",&"chartreuse",&"chocolate", &"coral",&"cornflowerblue", &"cornsilk", &"crimson", &"cyan",&"darkblue",&"darkcyan",
-                &"darkgoldenrod",&"darkgray",&"darkgreen",&"darkgrey",&"darkkhaki", &"darkmagenta",&"darkolivegreen",&"darkorange",&"darkorchid",&"darkred",
-                &"darksalmon",&"darkseagreen",&"darkslateblue",&"darkslategray",&"darkslategrey",&"darkturquoise",&"darkviolet",&"deeppink", &"deepskyblue",
-                &"dimgray",&"dimgrey",&"dodgerblue",&"feldspar",&"firebrick",&"floralwhite", &"forestgreen",&"fuchsia", &"gainsboro",&"ghostwhite",
-                &"gold",&"goldenrod",&"gray",&"green",&"greenyellow",&"grey",&"honeydew",&"hotpink",&"indianred",&"indigo",&"ivory",&"khaki",&"lavender",
-                &"lavenderblush",&"lawngreen",&"lemonchiffon",&"lightblue",&"lightcoral",&"lightcyan",&"lightgoldenrodyellow",&"lightgray",&"lightgreen",
-                &"lightgrey",&"lightpink",&"lightsalmon",&"lightseagreen",&"lightskyblue", &"lightslateblue", &"lightslategray",&"lightslategrey",
-                &"lightsteelblue", &"lightyellow",&"lime",&"limegreen",&"linen", &"magenta",&"maroon",&"mediumaquamarine",&"mediumblue", &"mediumorchid",
-                &"mediumpurple", &"mediumseagreen",&"mediumslateblue",&"mediumspringgreen",&"mediumturquoise",&"mediumvioletred", &"midnightblue",&"mintcream", 
-                &"mistyrose",&"moccasin",&"navajowhite",&"navy", &"oldlace", &"olive",&"olivedrab",&"orange",&"orangered",&"orchid",&"palegoldenrod",
-                &"palegreen",&"paleturquoise",&"palevioletred", &"papayawhip",&"peachpuff",&"peru",&"pink",&"plum",&"powderblue", &"purple",&"red",
-                &"rosybrown",&"royalblue", &"saddlebrown",&"salmon",&"sandybrown",&"seagreen",&"seashell",&"sienna", &"silver", &"skyblue",&"slateblue",
-                &"slategray", &"slategrey",&"snow",&"springgreen",&"steelblue", &"tan", &"teal",&"thistle",&"tomato",&"turquoise",&"violet",&"violetred",
-                &"wheat",&"white", &"whitesmoke",&"yellow",&"yellowgreen"];
-
-	let length = propstrings_list.len();
-	css_propstrings_instance.propstrings.reserve_at_least(length);
-	for propstrings_list.iter().advance |&ele| {
-	    css_propstrings_instance.propstrings.push(lwc_instance.lwc_intern_string(ele));
-	}			
-		
         css_propstrings_instance
     }
 
     #[inline]
-    pub fn lwc_string_caseless_isequal(&mut self , lwc_string_instance: @lwc_string , string_index: uint) -> bool {
+    pub fn lwc_string_caseless_isequal(&self , lwc_string_instance: @lwc_string , string_index: uint) -> bool {
 
         self.lwc_instance.lwc_string_caseless_isequal(lwc_string_instance, self.propstrings[string_index])
         
     }
 
     #[inline]
-    pub fn lwc_string_isequal(&mut self , lwc_string_instance: @lwc_string , string_index: uint) -> bool {
+    pub fn lwc_string_isequal(&self , lwc_string_instance: @lwc_string , string_index: uint) -> bool {
 	
         self.lwc_instance.lwc_string_isequal(lwc_string_instance , self.propstrings[string_index])    
     }
 
     #[inline]
-    pub fn lwc_string_data(&mut self, string_index:uint) -> @str {
+    pub fn lwc_string_data(&self, string_index:uint) -> @str {
         lwc_string_data(self.propstrings[string_index])
     }
 
     #[inline]
-    pub fn get_lwc_string(&mut self, string_index:uint) -> @lwc_string {
+    pub fn get_lwc_string(&self, string_index:uint) -> @lwc_string {
         self.propstrings[string_index]
     }
 
     
 
-    pub fn is_selector_pseudo(&mut self, name: @lwc_string) -> Option<(css_selector_type, index_property)> {
+    pub fn is_selector_pseudo(&self, name: @lwc_string) -> Option<(css_selector_type, index_property)> {
         
         let mut return_value : Option<(css_selector_type, index_property)> = None;
 

@@ -379,7 +379,7 @@ pub fn css__number_from_string(data: @str, data_index:@mut uint, int_only: bool)
     (ret_value , consumed_length)
 }
 
-pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->bool {
+pub fn is_css_inherit(strings: @css_propstrings , token: &@css_token) ->bool {
     
     //debug!("Entering: is_css_inherit");
     match token.token_type {
@@ -410,7 +410,7 @@ pub fn is_css_inherit(strings: &mut ~css_propstrings , token: &@css_token) ->boo
 *   ctx is updated with the next token to process.
 *   If the input is invalid, then ctx remains unchanged.
 */
-pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , vector: &~[@css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_error) {
+pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_propstrings , vector: &~[@css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_error) {
     
     //debug!("Entering: css__parse_color_specifier");
     let mut token:&@css_token;
@@ -1136,7 +1136,7 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 * 'css_error' - CSS_OK on success,  
                 CSS_INVALID if the input is not valid.
 */
-fn css__parse_named_color(sheet: @mut css_stylesheet , strings: &mut ~css_propstrings , data: @lwc_string) -> (Option<u32> , css_error){
+fn css__parse_named_color(sheet: @mut css_stylesheet , strings: @css_propstrings , data: @lwc_string) -> (Option<u32> , css_error){
     
     //debug!("Entering: css__parse_named_color");
     let mut result_val: u32;

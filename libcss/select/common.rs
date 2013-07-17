@@ -702,25 +702,25 @@ pub struct css_select_handler {
 
     sibling_node: @extern fn(node:*c_void, sibling:*mut*c_void) -> css_error,
 
-    node_has_name: @extern fn(pw:*c_void,node:*c_void, qname:css_qname, matched:@mut bool) -> css_error,
+    node_has_name: @extern fn(pw:*c_void,node:*c_void, qname:&css_qname, matched:@mut bool) -> css_error,
 
     node_has_class: @extern fn(pw:*c_void, node:*c_void, name:@lwc_string, matched:@mut bool) -> css_error,
 
     node_has_id: @extern fn(pw:*c_void, node:*c_void, name:@lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute: @extern fn(node:*c_void, name:css_qname, matched:@mut bool) -> css_error,
+    node_has_attribute: @extern fn(node:*c_void, name:&css_qname, matched:@mut bool) -> css_error,
     
-    node_has_attribute_equal: @extern fn(node:*c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_equal: @extern fn(node:*c_void, qname:&css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
    
-    node_has_attribute_dashmatch: @extern fn(node:*c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_dashmatch: @extern fn(node:*c_void, qname:&css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute_includes: @extern fn(node:*c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_includes: @extern fn(node:*c_void, qname:&css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute_prefix: @extern fn(node:*c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_prefix: @extern fn(node:*c_void, qname:&css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute_suffix: @extern fn(node:*c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_suffix: @extern fn(node:*c_void, qname:&css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute_substring: @extern fn(node:*c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_substring: @extern fn(node:*c_void, qname:&css_qname,value:@lwc_string, matched:@mut bool) -> css_error,
 
     node_is_root: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
    

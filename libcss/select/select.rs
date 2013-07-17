@@ -1480,7 +1480,7 @@ impl css_select_ctx {
             match combinator_type {
                 CSS_COMBINATOR_ANCESTOR => {
                     error = (*state.handler.unwrap().named_ancestor_node)( 
-                            n, &mut selector.data[0].qname, &mut n);
+                            n, selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1488,7 +1488,7 @@ impl css_select_ctx {
                 }   
                 CSS_COMBINATOR_PARENT => {
                     error = (*state.handler.unwrap().named_parent_node)( 
-                            n, &mut selector.data[0].qname, &mut n);
+                            n, selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1496,7 +1496,7 @@ impl css_select_ctx {
                 }    
                 CSS_COMBINATOR_SIBLING => {
                     error = (*state.handler.unwrap().named_sibling_node)( 
-                            n, &mut selector.data[0].qname, &mut n);
+                            n, selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1505,7 +1505,7 @@ impl css_select_ctx {
                     
                 CSS_COMBINATOR_GENERIC_SIBLING => {
                     error = (*state.handler.unwrap().named_generic_sibling_node)(
-                            n, &mut selector.data[0].qname, &mut n);
+                            n, selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1917,7 +1917,7 @@ impl css_select_ctx {
                      * it will have been considered as a named node
                      * otherwise. */
                     error = (*state.handler.get().node_has_name)(state.pw, node,
-                            copy detail.qname, matched);
+                            detail.qname, matched);
                 }
             }
             CSS_SELECTOR_CLASS => {
@@ -2225,7 +2225,7 @@ impl css_select_ctx {
             }
             CSS_SELECTOR_ATTRIBUTE_INCLUDES => {
                 error = (*state.handler.get().node_has_attribute_includes)( 
-                        node, copy detail.qname, (detail.string).unwrap(),
+                        node, detail.qname, (detail.string).unwrap(),
                         matched);
             }
             CSS_SELECTOR_ATTRIBUTE_PREFIX => {

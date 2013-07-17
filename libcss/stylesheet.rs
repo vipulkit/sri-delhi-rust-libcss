@@ -91,7 +91,7 @@ pub struct css_qname {
 }
 
 pub struct css_selector_detail {
-    qname:css_qname,                     /**< Interned name */
+    qname:@mut css_qname,                     /**< Interned name */
     selector_type:css_selector_type,     /**< The type of selector  */
     combinator_type:css_combinator,      /**< The combinator type */
     value_type:css_selector_detail_value_type,  /**<   Value of selector  */
@@ -498,7 +498,7 @@ impl css_stylesheet {
     */
     pub fn css__stylesheet_merge_style(target : @mut css_style, style: @mut css_style) {
         //debug!("Entering: css__stylesheet_merge_style");
-        target.bytecode = target.bytecode + style.bytecode;
+        target.bytecode.push_all(style.bytecode);
     }
 
     /**
@@ -524,7 +524,7 @@ impl css_stylesheet {
     */
     pub fn css__stylesheet_style_vappend(target : @mut css_style, bytecodes: &[u32] ) {
         //debug!("Entering: css__stylesheet_style_vappend");
-        target.bytecode = target.bytecode + bytecodes;
+        target.bytecode.push_all(bytecodes);
     }
 
     /**
@@ -558,7 +558,7 @@ impl css_stylesheet {
         };
 
         let sel_data = @mut css_selector_detail{
-            qname:qname,
+            qname:@mut qname,
             selector_type: CSS_SELECTOR_ELEMENT,
             combinator_type: CSS_COMBINATOR_NONE,
             value_type:CSS_SELECTOR_DETAIL_VALUE_STRING,
@@ -597,7 +597,7 @@ impl css_stylesheet {
     {
         //debug!("Entering: css__stylesheet_selector_detail_init");
         let detail : @mut css_selector_detail = @mut css_selector_detail{
-            qname:qname,
+            qname:@mut qname,
             selector_type:sel_type,
             combinator_type:CSS_COMBINATOR_NONE,  
             value_type:value_type,
@@ -1133,8 +1133,8 @@ impl css_stylesheet {
                 }
 
                 let mut i : int = 0 ;
-
-                while (i< (x.selectors.len() as int) ) {
+                let length = x.selectors.len() as int;
+                while (i< length ) {
                     match self.selectors.css__selector_hash_insert(x.selectors[i]) {
                         CSS_OK=> { 
                             i += 1;
@@ -1288,12 +1288,20 @@ impl css_selector_hash {
                         universal:~[],
                         lwc_instance:lwc_inst
         };
-        let mut i = 0;
-		while i < hash.default_slots {
-            hash.elements.push(None);
-            hash.classes.push(None);
-            hash.ids.push(None);
-            hash.universal.push(None);
+        let size = hash.default_slots as uint;
+        hash.elements.reserve(size);
+		hash.classes.reserve(size);
+        hash.ids.reserve(size);
+        hash.universal.reserve(size);
+		
+		let mut i = 0;
+		while i < size {
+            unsafe{
+				hash.elements.push_fast(None);
+				hash.classes.push_fast(None);
+				hash.ids.push_fast(None);
+				hash.universal.push_fast(None);
+			}	
 			i = i + 1;
         }
         hash

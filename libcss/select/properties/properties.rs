@@ -707,7 +707,7 @@ pub fn css__set_background_image_from_hint(hint:@mut  css_hint,
     //debug!("Entering: css__set_background_image_from_hint");
 	match hint.hint_type {
 		STRING=>{
-			match copy hint.string {
+			match hint.string {
 				Some(x)=>{
 					set_background_image(style, hint.status, x);
 				},
@@ -3765,7 +3765,7 @@ pub fn css__set_list_style_image_from_hint(hint:@mut  css_hint,
 
 	match hint.hint_type {
 		STRING=>{
-			match copy hint.string {
+			match hint.string {
 				Some(x)=>{
 					set_list_style_image(style, hint.status, x);
 				},

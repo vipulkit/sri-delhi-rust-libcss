@@ -18,6 +18,7 @@ use css::select::common::*;
 use css::stylesheet::*;
 use css::select::select::*;
 use dumpcomputed::*;
+use css::parse::propstrings::*;
 // use dump2::dump_sheet;
 
 use css::include::properties::*;
@@ -77,11 +78,13 @@ pub struct line_ctx {
     attr_class:@lwc_string,
     attr_id:@lwc_string,
 
-    lwc_instance:@lwc
+    lwc_instance:@lwc,
+    propstrings_instance: @css_propstrings
 } 
 
 pub fn select_test(file:~str) {
     let lwc_ins = wapcaplet::lwc() ;
+    let propstring = css_propstrings::css_propstrings(lwc_ins);
     let mut lwc_attr_class : Option<@lwc_string>;
     let mut lwc_attr_id : Option<@lwc_string>;
 
@@ -111,7 +114,8 @@ pub fn select_test(file:~str) {
         attr_class:lwc_attr_class.swap_unwrap(),
         attr_id:lwc_attr_id.swap_unwrap(),
 
-        lwc_instance:lwc_ins.clone()
+        lwc_instance:lwc_ins,
+        propstrings_instance: propstring
     };
 
     let file_content_result = io::read_whole_file_str(&Path(file)) ;
@@ -159,7 +163,7 @@ pub fn resolve_url(_:@str, rel:@lwc_string) -> (css_error,Option<@lwc_string>){
     (CSS_OK, Some(rel.clone()))
 }
 
-pub fn css_create_params() -> css_params {
+pub fn css_create_params(lwc_instance: @lwc , propstrings_instance: @css_propstrings) -> css_params {
     let css_param = css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
@@ -171,7 +175,9 @@ pub fn css_create_params() -> css_params {
         resolve : @resolve_url,
         import : None,
         color : None,
-        font : None
+        font : None,
+        lwc_instance: Some(lwc_instance),
+        propstrings_instance: Some(propstrings_instance)
     };
      return css_param;
 }
@@ -529,11 +535,11 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_styles
     if p < end {
        css__parse_media_list(data,p,&mut media);
     }
-    let params = css_create_params();
+    let params = css_create_params(ctx.lwc_instance , ctx.propstrings_instance);
     // let lwc_ins = ctx.lwc_instance;
 
     let start_time = time::precise_time_ns();
-    let sheet:@mut css = css::css_create(&params, Some(ctx.lwc_instance) );
+    let sheet:@mut css = css::css_create(&params);
     let end_time = time::precise_time_ns();
     *css_stylesheet_create_time += (end_time - start_time);
 
@@ -1067,7 +1073,7 @@ fn sibling_node(n:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
 
-fn node_has_name(_:*libc::c_void, n:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error {
+fn node_has_name(_:*libc::c_void, n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> css_error {
     // debug!("node_has_name");
     let mut node1:@mut node;
     unsafe {
@@ -1175,7 +1181,7 @@ fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:@lwc_string, matched:@mut
 }
 
 
-fn node_has_attribute(n:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error {
+fn node_has_attribute(n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute");
     let mut node1:@mut node;
     unsafe {
@@ -1196,7 +1202,7 @@ fn node_has_attribute(n:*libc::c_void, qname:css_qname, matched:@mut bool) -> cs
 }
     
 
-fn  node_has_attribute_equal(n:*libc::c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error {
+fn  node_has_attribute_equal(n:*libc::c_void, qname:&css_qname,value:@lwc_string, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_equal");
     let mut node1:@mut node;
     unsafe {
@@ -1222,7 +1228,7 @@ fn  node_has_attribute_equal(n:*libc::c_void, qname:css_qname,value:@lwc_string,
 
 
 
-fn node_has_attribute_includes(n:*libc::c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_includes(n:*libc::c_void, qname:&css_qname,value:@lwc_string, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_includes");
     let mut node1:@mut node;
     unsafe {
@@ -1266,7 +1272,7 @@ fn node_has_attribute_includes(n:*libc::c_void, qname:css_qname,value:@lwc_strin
 }
 
 
-fn node_has_attribute_dashmatch(n:*libc::c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_dashmatch(n:*libc::c_void, qname:&css_qname,value:@lwc_string, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_dashmatch");
     let mut node1:@mut node;
     unsafe {
@@ -1307,7 +1313,7 @@ fn node_has_attribute_dashmatch(n:*libc::c_void, qname:css_qname,value:@lwc_stri
 }
 
 
-fn node_has_attribute_prefix(n:*libc::c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_prefix(n:*libc::c_void, qname:&css_qname,value:@lwc_string, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_prefix");
     let mut node1:@mut node;
     unsafe {
@@ -1338,7 +1344,7 @@ fn node_has_attribute_prefix(n:*libc::c_void, qname:css_qname,value:@lwc_string,
     CSS_OK
 }
 
-fn node_has_attribute_suffix(n:*libc::c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_suffix(n:*libc::c_void, qname:&css_qname,value:@lwc_string, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_suffix");
     let mut node1:@mut node;
     unsafe {
@@ -1373,7 +1379,7 @@ fn node_has_attribute_suffix(n:*libc::c_void, qname:css_qname,value:@lwc_string,
     CSS_OK
 }
 
-fn node_has_attribute_substring(n:*libc::c_void, qname:css_qname,value:@lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_substring(n:*libc::c_void, qname:&css_qname,value:@lwc_string, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_substring");
     let mut node1:@mut node;
     unsafe {
