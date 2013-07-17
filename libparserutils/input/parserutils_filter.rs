@@ -54,7 +54,7 @@ impl filter {
         self.filter_set_encoding(~"UTF-8")
     }
 
-    pub fn parserutils_charset_utf8_char_byte_length(s: &[u8]) -> Option<u8> {
+    pub fn parserutils_charset_utf8_char_byte_length(s: &[u8], counter:uint) -> Option<u8> {
         let  numContinuations : ~[u8] = ~[
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -74,11 +74,11 @@ impl filter {
         3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5,
         ] ;
 
-        if s.len()==0 {
+        if s.len() - counter ==0 {
             None
         }
         else {
-            Some(numContinuations[s[0]] + 1)  
+            Some(numContinuations[s[0 + counter]] + 1)  
         }
     }
 

@@ -389,7 +389,8 @@ impl css_select_ctx {
          * from those which apply to our current media requirements and
          * are not disabled */
         i=0;
-        while(i < (self.sheets.len() as int) ) {
+        let sheets_len = self.sheets.len() as int;
+        while i< sheets_len {
             let s = self.sheets[i] ;
             if( s.media & media ) != 0 && 
                 s.sheet.disabled == false {
@@ -2258,8 +2259,9 @@ impl css_select_ctx {
 
         //debug!(fmt!("Entering cascade_style")) ;
 		//debug!(fmt!("s_used=%?, s_len=%?", s.used, s.bytecode.len())) ;
-			
-        while (s.used  < s.bytecode.len() ) {
+		
+        let bytecode_len = s.bytecode.len();
+        while s.used < bytecode_len {
             let mut op: u32;
             let mut error : css_error ;
             let opv = peek_bytecode(s);

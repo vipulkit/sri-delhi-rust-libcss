@@ -258,12 +258,12 @@ impl css_lexer {
      ******************************************************************************/
 
     #[inline]
-    pub fn APPEND(&mut self, data: &[u8], len: uint) {
+    pub fn APPEND(&mut self, data: &[u8], counter:uint, len: uint) {
         //debug!("entering APPEND");
-        self.append_to_token_data(data, len);
+        self.append_to_token_data(data, counter, len);
 
         self.bytes_read_for_token += len;
-        self.current_col += len;
+        self.current_col += len ;
     }
 
     /**
@@ -275,14 +275,16 @@ impl css_lexer {
     *  'len' - Length, in bytes, of data.
     */
     #[inline]
-    pub fn append_to_token_data(&mut self , data: &[u8], len: uint) {
+    pub fn append_to_token_data(&mut self , data: &[u8], counter:uint, len: uint) {
         
         //debug!("entering append_to_token_data");
         //debug!(fmt!("append_to_token_data:: data == %?" , data));
         if self.escape_seen {
             //debug!("inside: append_to_token_data in if self.escape_seen");
             //debug!(fmt!("unescaped token data == %?" , self.unescaped_token_data));
-            self.unescaped_token_data.get_mut_ref().push_all(data.slice(0,len));
+			//debug!(fmt!("data.len=%?, counter=%?, len =%?" ,  data.len(), counter, len));
+            self.unescaped_token_data.get_mut_ref().push_all(data.slice(0+counter,counter+len));
+			//debug!(fmt!("unescaped token data == %?" , self.unescaped_token_data));
         }
 
         //debug!("inside: append_to_token_data");
@@ -343,8 +345,8 @@ impl css_lexer {
                     t.data.data = ~[];
                 }
                 _ => {
-                    let (cptr, _) = pu_peek_result.unwrap();
-                    t.data.data = cptr.slice(0, t.data.len).to_owned();
+                    let (cptr,counter, _) = pu_peek_result.unwrap();
+                    t.data.data = cptr.slice(0+counter, counter+t.data.len).to_owned();
                 }
             }
         }
@@ -480,8 +482,8 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr, counter , clen) = pu_peek_result.unwrap();
+            let c = cptr[0+counter] as char;
             //debug!(fmt!("at_keyword: character read is %c" , c));
 
             if (!start_nm_char(c)) {
@@ -489,7 +491,7 @@ impl css_lexer {
             }
 
             if (c != '\\') {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter,clen);
                 self.substate = NMChar as uint; // fall through
             } else {
                 self.bytes_read_for_token += clen;
@@ -564,13 +566,13 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("cdc_or_ident_or_function_or_npd1: character read is %c" , c));
 
             if (c.is_digit() || c == '.') {
                 /* NPD */
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
                 self.state = sNUMBER;
                 self.substate = 0;
                 /* Abuse "first" to store first non-sign character */
@@ -586,7 +588,7 @@ impl css_lexer {
 
 
             if (c != '\\') {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
             }
 
             if (c != '-') {
@@ -625,11 +627,11 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("cdc_or_ident_or_function_or_npd2: character read is %c" , c));
             if (c == '>') {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
                 self.token.get_mut_ref().token_type = CSS_TOKEN_CDC;
             } else {
                 /* Remove the '-' we read above */
@@ -683,11 +685,11 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("cdo1: character read is %c" , c));
             if (c == '!') {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
             } else {
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
@@ -713,11 +715,11 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("cdo2: character read is %c" , c));
             if (c == '-') {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
             } else {
                 /* Remove the '!' we read above */
                 self.bytes_read_for_token -= 1;
@@ -746,12 +748,12 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("cdo3: character read is %c" , c));
 
             if (c == '-') {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
             } else {
                 /* Remove the '-' and the '!' we read above */
                 self.bytes_read_for_token -= 2;
@@ -784,14 +786,14 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("comment1: character read is %c" , c));
             if (c != '*') {
                 return self.emit_token(Some(CSS_TOKEN_CHAR));
             }
 
-            self.APPEND(cptr, clen);
+            self.APPEND(*cptr, counter, clen);
             /* Fall through */
             self.substate = InComment as uint;
         }
@@ -811,10 +813,10 @@ impl css_lexer {
                     return self.emit_token(Some(CSS_TOKEN_EOF));
                 }
 
-                let (cptr , clen) = pu_peek_result.unwrap();
-                let c = cptr[0] as char;
+                let (cptr , counter, clen) = pu_peek_result.unwrap();
+                let c = cptr[0 + counter] as char;
                 //debug!(fmt!("comment2: character read is %c" , c));
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
                 
                 if (self.context.last_was_star && c == '/') {
                     break;
@@ -917,11 +919,11 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_IDENT));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("ident_or_function: character read is %c" , c));
             if (c == '(') {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
                 self.token.get_mut_ref().token_type = CSS_TOKEN_FUNCTION;
             } else {
                 self.token.get_mut_ref().token_type = CSS_TOKEN_IDENT;
@@ -954,14 +956,14 @@ impl css_lexer {
             return self.emit_token(Some(CSS_TOKEN_CHAR));
         }
 
-        let (cptr , clen) = pu_peek_result.unwrap();
-        let c = cptr[0] as char;
+        let (cptr , counter, clen) = pu_peek_result.unwrap();
+        let c = cptr[0 + counter] as char;
         //debug!(fmt!("match_prefix: character read is %c" , c));
         if (c != '=') {
             return self.emit_token(Some(CSS_TOKEN_CHAR));
         }
 
-        self.APPEND(cptr, clen);
+        self.APPEND(*cptr, counter, clen);
 
         let token_type = 
             match (self.context.first as char) {
@@ -1021,8 +1023,8 @@ impl css_lexer {
                 self.emit_token(Some(token_type));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("number_or_percentage_or_dimension1: character read is %c" , c));
             /* Bail if we've not got a '.' or we've seen one already */
             if c != '.' || self.context.first == '.' as u8 {
@@ -1034,7 +1036,7 @@ impl css_lexer {
                 self.context.orig_bytes = self.bytes_read_for_token;
                 
                 /* Append the '.' to the token */
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
 
                 /* Fall through */
                 self.substate = MoreDigits as uint;
@@ -1078,8 +1080,8 @@ impl css_lexer {
                 return self.emit_token(Some(token_type));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("number_or_percentage_or_dimension2: character read is %c" , c));
             /* A solitary '.' or '+' is a CHAR, not numeric */
             let mut emit_char = false;
@@ -1092,14 +1094,14 @@ impl css_lexer {
             }
 
             if (c == '%') {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
                 return self.emit_token(Some(CSS_TOKEN_PERCENTAGE));
             } else if (!start_nm_start(c)) {
                 return self.emit_token(Some(CSS_TOKEN_NUMBER));
             }
 
             if (c != '\\') {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
 
                 /* Fall through */
                 self.substate = NMChars as uint;
@@ -1202,12 +1204,12 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_EOF));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("start: character read is %c" , c));
-            self.APPEND(cptr, clen);
+            self.APPEND(*cptr, counter, clen);
 
-            if (clen > 1 || c >= 0x80 as char) {
+            if ( clen > 1 || c >= 0x80 as char) {
                 self.state = sIDENT;
                 self.substate = 0;
 
@@ -1358,17 +1360,17 @@ impl css_lexer {
             return self.emit_token(Some(CSS_TOKEN_IDENT));
         }
 
-        let (cptr , clen) = pu_peek_result.unwrap();
-        let c = cptr[0] as char;
+        let (cptr , counter, clen) = pu_peek_result.unwrap();
+        let c = cptr[0 + counter] as char;
         //debug!(fmt!("uri_or_unicode_range_or_ident_or_function: character read is %c" , c));
         if (c == 'r' || c == 'R') {
-            self.APPEND(cptr, clen);
+            self.APPEND(*cptr, counter, clen);
 
             self.state = sURL;
             self.substate = 0;
             return self.uri();
         } else if (c == '+') {
-            self.APPEND(cptr, clen);
+            self.APPEND(*cptr, counter, clen);
 
             self.state = sUCR;
             self.substate = 0;
@@ -1406,11 +1408,11 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_IDENT));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("uri1: character read is %c" , c));
             if (c == 'l' || c == 'L') {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
             }
             else {
                 self.state = sIDENT;
@@ -1436,11 +1438,11 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_IDENT));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("uri2: character read is %c" , c));
             if (c == '(') {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
             }
             else {
                 self.state = sIDENT;
@@ -1486,11 +1488,11 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_FUNCTION));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("uri3: character read is %c" , c));
             if (c == '"' || c == '\'') {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
                 self.context.first = c as u8;
 
                 // goto string;
@@ -1565,8 +1567,8 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_FUNCTION));
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("uri4: character read is %c" , c));
             if (c != ')') {
                 /* Rewind to "url(" */
@@ -1575,7 +1577,7 @@ impl css_lexer {
                 return self.emit_token(Some(CSS_TOKEN_FUNCTION));
             }
 
-            self.APPEND(cptr, clen);
+            self.APPEND(*cptr, counter, clen);
             // break;
         }
 
@@ -1617,11 +1619,11 @@ impl css_lexer {
                     }
                 }
 
-                let (cptr , clen) = pu_peek_result.unwrap();
-                c = cptr[0] as char;
+                let (cptr , counter, clen) = pu_peek_result.unwrap();
+                c = cptr[0 + counter] as char;
                 //debug!(fmt!("unicode_range1: character read is %c" , c));
                 if (c.is_digit_radix(16) || c == '?') {
-                    self.APPEND(cptr, clen);
+                    self.APPEND(*cptr, counter, clen);
                 }
                 else {
                     break;
@@ -1653,8 +1655,8 @@ impl css_lexer {
                     return self.emit_token(Some(CSS_TOKEN_UNICODE_RANGE));
                 }
 
-                let (cptr , clen) = pu_peek_result.unwrap();
-                c = cptr[0] as char;
+                let (cptr , counter, clen) = pu_peek_result.unwrap();
+                c = cptr[0 + counter] as char;
                 //debug!(fmt!("unicode_range2: character read is %c" , c));
                 /* If we've got a '-', then we may have a 
                  * second range component */
@@ -1663,7 +1665,7 @@ impl css_lexer {
                     return self.emit_token(Some(CSS_TOKEN_UNICODE_RANGE));
                 }
 
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
             }
             else {
                 // hex count > 0 && <  6
@@ -1671,8 +1673,8 @@ impl css_lexer {
                 let (pu_peek_result , _) = 
                     self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
                 /* don't check error, this succeded in while loop above */
-                let (cptr , clen) = pu_peek_result.unwrap();
-                c = cptr[0] as char;
+                let (cptr , counter, clen) = pu_peek_result.unwrap();
+                c = cptr[0 + counter] as char;
                 //debug!(fmt!("unicode_range3: character read is %c" , c));
                 /* If we've got a '-', then we may have a 
                  * second range component */
@@ -1681,7 +1683,7 @@ impl css_lexer {
                     return self.emit_token(Some(CSS_TOKEN_UNICODE_RANGE));
                 }
 
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
             }
 
             /* Reset count for next set of digits */
@@ -1715,11 +1717,11 @@ impl css_lexer {
                     }
                 }
 
-                let (cptr , clen) = pu_peek_result.unwrap();
-                c = cptr[0] as char;
+                let (cptr , counter, clen) = pu_peek_result.unwrap();
+                c = cptr[0 + counter] as char;
                 //debug!(fmt!("unicode_range4: character read is %c" , c));
                 if (c.is_digit_radix(16)) {
-                    self.APPEND(cptr, clen);
+                    self.APPEND(*cptr, counter, clen);
                 }
                 else {
                     break;
@@ -1759,11 +1761,11 @@ impl css_lexer {
                 return CSS_OK;
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("consume_digits: character read is %c" , c));
             if (c.is_digit()) {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
             }
             else {
                 break;
@@ -1801,8 +1803,8 @@ impl css_lexer {
             }
         }
 
-        let (cptr , clen) = pu_peek_result.unwrap();
-        let mut c = cptr[0] as char;
+        let (cptr , counter, clen) = pu_peek_result.unwrap();
+        let mut c = cptr[0 + counter] as char;
         //debug!(fmt!("consume_escape1: character read is %c" , c));
         if (!nl && (c=='\n' || c=='\r' /* || c=='\f'*/)) {
             //debug!("!nl && (c==)");
@@ -1826,10 +1828,10 @@ impl css_lexer {
 
                 assert!(perror as int == PARSERUTILS_OK as int);
 
-                let (sdata , _) = pu_peek_result.unwrap();
+                let (sdata ,counter, _) = pu_peek_result.unwrap();
                 //debug!("-1 to skip \\");
                 /* -1 to skip '\\' */
-                self.unescaped_token_data.get_mut_ref().push_all(sdata.slice(0, self.bytes_read_for_token-1));
+                self.unescaped_token_data.get_mut_ref().push_all(sdata.slice(0+counter, counter+self.bytes_read_for_token-1));
             }
 
             self.token.get_mut_ref().data.len = self.bytes_read_for_token-1;
@@ -1857,7 +1859,7 @@ impl css_lexer {
         if (nl && c=='\r') {
             //debug!("nl && c=='\r'");
             let (pu_peek_result , perror) = 
-                self.input.parserutils_inputstream_peek(self.bytes_read_for_token+clen);
+                self.input.parserutils_inputstream_peek(self.bytes_read_for_token + clen);
 
             if (perror as int != PARSERUTILS_OK as int && perror as int != PARSERUTILS_EOF as int) {
                 return css_error_from_parserutils_error(perror);
@@ -1865,7 +1867,7 @@ impl css_lexer {
 
             if (perror as int == PARSERUTILS_EOF as int) {
                 c='\n';
-                self.APPEND(&[c as u8], 1);
+                self.APPEND(&[c as u8],0, 1);
 
                 self.current_col = 1;
                 self.current_line += 1;
@@ -1873,13 +1875,13 @@ impl css_lexer {
                 return CSS_OK;
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
 
-            c=cptr[0] as char;
+            c=cptr[0 + counter] as char;
             
             if (c=='\n') {
                 //debug!("c=='\n'");
-                self.APPEND(cptr, 1);
+                self.APPEND(*cptr, counter, 1);
                 /* And skip the '\r' in the input */
                 self.bytes_read_for_token += clen;
 
@@ -1889,7 +1891,7 @@ impl css_lexer {
                 return CSS_OK;
             }
             
-            self.APPEND(cptr, clen); // cptr has been redefined above
+            self.APPEND(*cptr, counter, clen); // cptr has been redefined above
             return CSS_OK;
         }
         else if (nl && (c == '\n'/* || c == '\f'*/)) {
@@ -1904,7 +1906,7 @@ impl css_lexer {
 
         /* Append the unescaped character */
         //debug!("consume_escape:: Append the unescaped character");
-        self.APPEND(cptr, clen);
+        self.APPEND(*cptr, counter, clen);
 
         CSS_OK
     }
@@ -1927,11 +1929,11 @@ impl css_lexer {
                 return CSS_OK;
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("consume_nm_chars: character read is %c" , c));
             if (start_nm_char(c) && c != '\\') {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
             }
 
             if (c == '\\') {
@@ -1993,11 +1995,11 @@ impl css_lexer {
                 return CSS_OK;
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("consume_string: character read is %c" , c));
             if (c == permittedquote) {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
             } else if (start_string_char(c)) {
                 let error = self.consume_string_chars();
                 if (error as int!= CSS_OK as int) {
@@ -2010,7 +2012,7 @@ impl css_lexer {
 
             if (c == quote) {
                 /* Append closing quote to token data */
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
                 break;
             }
         }
@@ -2036,11 +2038,11 @@ impl css_lexer {
                 return CSS_OK;
             }
 
-            let (cptr , clen) = pu_peek_result.unwrap();
-            let c = cptr[0] as char;
+            let (cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = cptr[0 + counter] as char;
             //debug!(fmt!("consume_string_chars: character read is %c" , c));
             if (start_string_char(c) && c != '\\') {
-                self.APPEND(cptr, clen);
+                self.APPEND(*cptr, counter, clen);
             }
 
             if (c == '\\') {
@@ -2093,11 +2095,11 @@ impl css_lexer {
             }
 
             if perror as int == PARSERUTILS_OK as int {
-                let (cptr , clen) = pu_peek_result.unwrap();
-                let c = cptr[0] as char;
+                let (cptr , counter, clen) = pu_peek_result.unwrap();
+                let c = cptr[0 + counter] as char;
                 if c.is_digit_radix(16){
                     self.bytes_read_for_token += clen;
-                    ucs = (ucs << 4) | from_str_radix(from_char(cptr[0] as char), 16).unwrap();
+                    ucs = (ucs << 4) | from_str_radix(from_char(cptr[0 + counter] as char), 16).unwrap();
                 }
                 else{
                     break;
@@ -2131,9 +2133,9 @@ impl css_lexer {
         }
 
         if perror as int == PARSERUTILS_OK as int {
-            let (cptr , _) = pu_peek_result.unwrap();
-            if (cptr[0] as char == '\r') { // Potential CRLF 
-                //let mut p_cr : u8 = _cptr[0];
+            let (cptr , counter, _) = pu_peek_result.unwrap();
+            if (cptr[0 + counter] as char == '\r') { // Potential CRLF 
+                //let mut p_cr : u8 = _cptr[0 + counter];
 
                 let (pu_peek_result2 , perror2) = 
                     self.input.parserutils_inputstream_peek(self.bytes_read_for_token+1);
@@ -2146,8 +2148,8 @@ impl css_lexer {
                 }
                 if perror2 as int == PARSERUTILS_OK as int {
 
-                    let (cptr2 , _) = pu_peek_result2.unwrap();
-                    if (cptr2[0] as char == '\n') { // Potential CRLF 
+                    let (cptr2 , counter,  _) = pu_peek_result2.unwrap();
+                    if (cptr2[0+counter] as char == '\n') { // Potential CRLF 
                         self.bytes_read_for_token += 1;
                     }
                 }
@@ -2157,21 +2159,21 @@ impl css_lexer {
         let (pu_peek_result , perror) = 
             self.input.parserutils_inputstream_peek(self.bytes_read_for_token);
 
-        let (cptr , clen) = pu_peek_result.unwrap();
+        let (cptr , counter, clen) = pu_peek_result.unwrap();
         let utf8data = utf8data_option.unwrap();
-        self.append_to_token_data(utf8data, utf8data.len());
+        self.append_to_token_data(utf8data, 0, utf8data.len());
 
         /* Deal with the whitespace character */
         if perror as int == PARSERUTILS_EOF as int {
             return CSS_OK;
         }
 
-        if (is_space(cptr[0] as char)) {
+        if (is_space(cptr[0 + counter] as char)) {
            self.bytes_read_for_token += clen;
         }
 
         /* Fixup cursor position */
-        if cptr[0] as char=='\r' || cptr[0] as char == '\n' /*|| _cptr[0] == '\f'*/ {
+        if cptr[0 + counter] as char=='\r' || cptr[0 + counter] as char == '\n' /*|| _cptr[0 + counter] == '\f'*/ {
            self.current_col = 1;
            self.current_line += 1;
         }
@@ -2198,11 +2200,11 @@ impl css_lexer {
                 return CSS_OK;
             }
 
-            let (_cptr , clen) = pu_peek_result.unwrap();
-            let c = _cptr[0] as char;
+            let (_cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = _cptr[0 + counter] as char;
             //debug!(fmt!("consume_url_chars: character read is %c" , c));
             if start_url_char(c) && c != '\\' {
-                self.APPEND(_cptr , clen);
+                self.APPEND(*_cptr , counter, clen);
             }
 
             if c == ('\\') {
@@ -2212,7 +2214,7 @@ impl css_lexer {
                 match lex_error {
                     CSS_OK => {},
                     _ => {
-                        self.bytes_read_for_token -= clen;
+                        self.bytes_read_for_token -= clen ;
                         return CSS_OK;
                     }
                 }
@@ -2241,11 +2243,11 @@ impl css_lexer {
                 return CSS_OK;
             }
             
-            let (_cptr , clen) = pu_peek_result.unwrap();
-            let c = _cptr[0] as char;
+            let (_cptr , counter, clen) = pu_peek_result.unwrap();
+            let c = _cptr[0 + counter] as char;
             //debug!(fmt!("consume_w_chars: character read is %c" , c));
             if is_space(c) {
-                self.APPEND(_cptr , clen);
+                self.APPEND(*_cptr , counter, clen);
             }
 
             if c == ('\n'){
