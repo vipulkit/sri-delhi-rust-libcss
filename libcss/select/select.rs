@@ -333,7 +333,7 @@ impl css_select_ctx {
         /* Base element style is guaranteed to exist */
         state.results.styles[0] = (Some(css_computed_style_create()));
 
-        error = (*(handler.parent_node))(node, &mut parent);
+        error = ((handler.parent_node))(node, &mut parent);
         match error {
             CSS_OK=>{},
             x =>  {
@@ -342,7 +342,7 @@ impl css_select_ctx {
         }
 
         /* Get node's name */
-        error = (*(handler.node_name))(node, &mut state.element);
+        error = ((handler.node_name))(node, &mut state.element);
         match error {
             CSS_OK=>{},
             x =>  {
@@ -351,7 +351,7 @@ impl css_select_ctx {
         }
 
         /* Get node's ID, if any */
-        error = (*(handler.node_id))(pw, node, &mut state.id);
+        error = ((handler.node_id))(pw, node, &mut state.id);
         match error {
             CSS_OK=>{},
             x =>  {
@@ -363,7 +363,7 @@ impl css_select_ctx {
         /* \todo Do we really want to force the client to allocate a new array 
          * every time we call this? It seems hugely inefficient, given they can 
          * cache the data. */
-        error = (*(handler.node_classes))(pw, node, 
+        error = ((handler.node_classes))(pw, node, 
                 &mut (state.classes));
         match error {
             CSS_OK=>{},
@@ -674,7 +674,7 @@ impl css_select_ctx {
         
         //debug!(fmt!("Entering set_hint")) ;
         /* Retrieve this property's hint from the client */
-        let (error,hint_option) = (*state.handler.get().node_presentational_hint)(state.node, prop);
+        let (error,hint_option) = (state.handler.get().node_presentational_hint)(state.node, prop);
         match error {
             CSS_OK => {},
             CSS_PROPERTY_NOT_SET => return CSS_OK, 
@@ -1455,7 +1455,7 @@ impl css_select_ctx {
             /* Find candidate node */
             match combinator_type {
                 CSS_COMBINATOR_ANCESTOR => {
-                    error = (*state.handler.unwrap().named_ancestor_node)( 
+                    error = (state.handler.unwrap().named_ancestor_node)( 
                             n, selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
@@ -1463,7 +1463,7 @@ impl css_select_ctx {
                     }
                 }   
                 CSS_COMBINATOR_PARENT => {
-                    error = (*state.handler.unwrap().named_parent_node)( 
+                    error = (state.handler.unwrap().named_parent_node)( 
                             n, selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
@@ -1471,7 +1471,7 @@ impl css_select_ctx {
                     }
                 }    
                 CSS_COMBINATOR_SIBLING => {
-                    error = (*state.handler.unwrap().named_sibling_node)( 
+                    error = (state.handler.unwrap().named_sibling_node)( 
                             n, selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
@@ -1480,7 +1480,7 @@ impl css_select_ctx {
                 }    
                     
                 CSS_COMBINATOR_GENERIC_SIBLING => {
-                    error = (*state.handler.unwrap().named_generic_sibling_node)(
+                    error = (state.handler.unwrap().named_generic_sibling_node)(
                             n, selector.data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
@@ -1740,7 +1740,7 @@ impl css_select_ctx {
                 CSS_COMBINATOR_ANCESTOR | 
                 CSS_COMBINATOR_PARENT => {
 					//println(fmt!("n = %?", n));
-                    error = (*state.handler.get().parent_node)(n, &mut n);
+                    error = (state.handler.get().parent_node)(n, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1748,7 +1748,7 @@ impl css_select_ctx {
                 }
                 CSS_COMBINATOR_SIBLING |
                 CSS_COMBINATOR_GENERIC_SIBLING => {
-                    error = (*state.handler.get().sibling_node)(n, &mut n);
+                    error = (state.handler.get().sibling_node)(n, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1891,20 +1891,20 @@ impl css_select_ctx {
                     /* Only need to test this inside not(), since
                      * it will have been considered as a named node
                      * otherwise. */
-                    error = (*state.handler.get().node_has_name)(state.pw, node,
+                    error = (state.handler.get().node_has_name)(state.pw, node,
                             detail.qname, matched);
                 }
             }
             CSS_SELECTOR_CLASS => {
-                error = (*state.handler.get().node_has_class)(state.pw, node,
+                error = (state.handler.get().node_has_class)(state.pw, node,
                         lwc_name , matched);
             }       
             CSS_SELECTOR_ID => {
-                error = (*state.handler.get().node_has_id)(state.pw, node,
+                error = (state.handler.get().node_has_id)(state.pw, node,
                         lwc_name , matched);
             }
             CSS_SELECTOR_PSEUDO_CLASS => {
-                error = (*state.handler.get().node_is_root)( node, is_root);
+                error = (state.handler.get().node_is_root)( node, is_root);
                 match error {
                     CSS_OK => {},
                     _=> {
@@ -1917,7 +1917,7 @@ impl css_select_ctx {
 
                     let num_before:@mut i32 =@mut 0;
 
-                    error = (*state.handler.get().node_count_siblings)( 
+                    error = (state.handler.get().node_count_siblings)( 
                             node, false, false, num_before);
 
                     match error {
@@ -1937,7 +1937,7 @@ impl css_select_ctx {
 					   ) { 
                     let num_before:@mut i32 =@mut 0;
 
-                    error = (*state.handler.get().node_count_siblings)( 
+                    error = (state.handler.get().node_count_siblings)( 
                             node, false, false, num_before);
                 
                     match error {
@@ -1955,7 +1955,7 @@ impl css_select_ctx {
 						)  { 
                     let num_after:@mut i32 = @mut 0;
 
-                    error = (*state.handler.get().node_count_siblings)( 
+                    error = (state.handler.get().node_count_siblings)( 
                             node, false, true, num_after);
                     
                     match error {
@@ -1972,7 +1972,7 @@ impl css_select_ctx {
                         self.lwc_instance.lwc_string_isequal(lwc_name , self.nth_of_type.get() ) ) { 
                     let num_before:@mut i32 = @mut 0;
 
-                    error = (*state.handler.get().node_count_siblings)( 
+                    error = (state.handler.get().node_count_siblings)( 
                             node, true, false, num_before);
                     
                     match error {
@@ -1989,7 +1989,7 @@ impl css_select_ctx {
                         self.lwc_instance.lwc_string_isequal(lwc_name , self.nth_last_of_type.get() ) ) { 
                     let num_after:@mut i32 =@mut  0;
 
-                    error = (*state.handler.get().node_count_siblings)( 
+                    error = (state.handler.get().node_count_siblings)( 
                             node, true, true, num_after);
                     
                     match error {
@@ -2005,7 +2005,7 @@ impl css_select_ctx {
                         self.lwc_instance.lwc_string_isequal(lwc_name , self.last_child.get() ) ) { 
                     let num_after:@mut i32 =@mut  0;
 
-                    error = (*state.handler.get().node_count_siblings)(
+                    error = (state.handler.get().node_count_siblings)(
                             node, false, true, num_after);
                     match error {
                                 CSS_OK => {
@@ -2024,7 +2024,7 @@ impl css_select_ctx {
                     let num_before:@mut i32 =@mut 0;
 
 
-                    error = (*state.handler.get().node_count_siblings)( 
+                    error = (state.handler.get().node_count_siblings)( 
                             node, true, false, num_before);
                     
                     match error {
@@ -2043,7 +2043,7 @@ impl css_select_ctx {
                         self.lwc_instance.lwc_string_isequal(lwc_name , self.last_of_type.get() ) ) { 
                     let num_after:@mut i32 = @mut 0;
 
-                    error = (*state.handler.get().node_count_siblings)( 
+                    error = (state.handler.get().node_count_siblings)( 
                             node, true, true, num_after);
                 
                     match error {
@@ -2064,12 +2064,12 @@ impl css_select_ctx {
                     let num_before = @mut 0;
                     let num_after = @mut 0;
 
-                    error = (*state.handler.get().node_count_siblings)( 
+                    error = (state.handler.get().node_count_siblings)( 
                             node, false, false, num_before);
                     
                     match error {
                         CSS_OK => {
-                            error = (*state.handler.get().node_count_siblings)(
+                            error = (state.handler.get().node_count_siblings)(
                                  node, false, true, num_after);
                                     
                             match error {
@@ -2094,11 +2094,11 @@ impl css_select_ctx {
                     let num_before = @mut 0;
                     let num_after = @mut 0;
 
-                    error = (*state.handler.get().node_count_siblings)( 
+                    error = (state.handler.get().node_count_siblings)( 
                             node, true, false, num_before);
                 
                     if (match error { CSS_OK => true, _  => false}) {
-                        error = (*state.handler.get().node_count_siblings)(
+                        error = (state.handler.get().node_count_siblings)(
                                     node, true, true, num_after);
                 
                         match error {
@@ -2119,47 +2119,47 @@ impl css_select_ctx {
                     *matched = *is_root;
                 } 
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.empty.get() ) ) {
-                    error = (*state.handler.get().node_is_empty)(
+                    error = (state.handler.get().node_is_empty)(
                             node, matched);
                 } 
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.link.get() ) ) { 
-                    error = (*state.handler.get().node_is_link)(
+                    error = (state.handler.get().node_is_link)(
                             node, matched);
                 }
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.visited.get() ) ) { 
-                    error = (*state.handler.get().node_is_visited)(
+                    error = (state.handler.get().node_is_visited)(
                             node, matched);
                 }
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.hover.get() ) ) { 
-                    error = (*state.handler.get().node_is_hover)(
+                    error = (state.handler.get().node_is_hover)(
                             node, matched);
                 }
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.active.get() ) ) { 
-                    error = (*state.handler.get().node_is_active)(
+                    error = (state.handler.get().node_is_active)(
                             node, matched);
                 } 
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.focus.get() ) ) { 
-                    error = (*state.handler.get().node_is_focus)(
+                    error = (state.handler.get().node_is_focus)(
                             node, matched);
                 } 
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.target.get() ) ) { 
-                    error = (*state.handler.get().node_is_target)(
+                    error = (state.handler.get().node_is_target)(
                             node, matched);
                 }
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.lang.get() ) ) { 
-                    error = (*state.handler.get().node_is_lang)(
+                    error = (state.handler.get().node_is_lang)(
                             node, (detail.string).unwrap(), matched);
                 }
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.enabled.get() ) ) { 
-                    error = (*state.handler.get().node_is_enabled)(
+                    error = (state.handler.get().node_is_enabled)(
                             node, matched);
                 }
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.disabled.get() ) ) { 
-                    error = (*state.handler.get().node_is_disabled)(
+                    error = (state.handler.get().node_is_disabled)(
                             node, matched);
                 }
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.checked.get() ) ) { 
-                    error = (*state.handler.get().node_is_checked)(
+                    error = (state.handler.get().node_is_checked)(
                             node, matched);
                 }
                 else {
@@ -2185,36 +2185,36 @@ impl css_select_ctx {
                 }
             }
             CSS_SELECTOR_ATTRIBUTE => {
-                error = (*state.handler.get().node_has_attribute)( node,
+                error = (state.handler.get().node_has_attribute)( node,
                         detail.qname, matched);
             }
             CSS_SELECTOR_ATTRIBUTE_EQUAL => {
-                error = (*state.handler.get().node_has_attribute_equal)( 
+                error = (state.handler.get().node_has_attribute_equal)( 
                         node, detail.qname, (detail.string).unwrap(), 
                         matched);
             }
             CSS_SELECTOR_ATTRIBUTE_DASHMATCH => {
-                error = (*state.handler.get().node_has_attribute_dashmatch)(
+                error = (state.handler.get().node_has_attribute_dashmatch)(
                         node, detail.qname, (detail.string).unwrap(),
                         matched);
             }
             CSS_SELECTOR_ATTRIBUTE_INCLUDES => {
-                error = (*state.handler.get().node_has_attribute_includes)( 
+                error = (state.handler.get().node_has_attribute_includes)( 
                         node, detail.qname, (detail.string).unwrap(),
                         matched);
             }
             CSS_SELECTOR_ATTRIBUTE_PREFIX => {
-                error = (*state.handler.get().node_has_attribute_prefix)(
+                error = (state.handler.get().node_has_attribute_prefix)(
                         node, detail.qname, (detail.string).unwrap(),
                         matched);
             }
             CSS_SELECTOR_ATTRIBUTE_SUFFIX => {
-                error = (*state.handler.get().node_has_attribute_suffix)(
+                error = (state.handler.get().node_has_attribute_suffix)(
                         node, detail.qname,(detail.string).unwrap(),
                         matched);
             }
             CSS_SELECTOR_ATTRIBUTE_SUBSTRING => {
-                error = (*state.handler.get().node_has_attribute_substring)(
+                error = (state.handler.get().node_has_attribute_substring)(
                         node, detail.qname,(detail.string).unwrap(),
                         matched);
             }
