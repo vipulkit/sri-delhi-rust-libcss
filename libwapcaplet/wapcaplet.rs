@@ -30,12 +30,20 @@ impl lwc {
     #[inline]
     fn to_lower(string:@str) -> ~str{
         let mut lower : ~[u8] = ~[];
-        for string.bytes_iter().advance |c| {
-            if (c > 64 && c < 91) {
-                lower.push(c + 32);
-            } else {
-                lower.push(c);
-            }
+        let len = string.len();
+		lower.reserve(len);
+		let mut c = 0;
+		let mut ch : u8;
+		while c < len {
+			ch = string[c] as u8;
+			unsafe{
+				if (ch > 64 && ch < 91) {
+					lower.push_fast(ch + 32);
+				} else {
+					lower.push_fast(ch);
+				}
+			}	
+			c += 1;
         }
         str::from_bytes_owned(lower)
     }

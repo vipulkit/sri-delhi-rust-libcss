@@ -805,6 +805,7 @@ pub fn advance_bytecode(style: @mut css_style) {
     
 }   
 
+#[inline]
 pub fn peek_bytecode(style: @mut css_style) -> u32 {
     
 	if style.bytecode.len() - style.used > 0 {
