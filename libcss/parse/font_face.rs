@@ -298,7 +298,7 @@ pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:@css_
 
                 match css__ident_list_or_string_to_string(sheet , strings , vector, ctx, None) {
                     (CSS_OK,Some(loc)) => {
-                        location = Some(lwc_instance.lwc_intern_string(copy loc));
+                        location = Some(lwc_instance.lwc_intern_string(loc));
                     },
                     (error,_) => return (error,None)
                 }

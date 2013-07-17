@@ -3061,15 +3061,14 @@ pub fn css__set_font_family_from_hint(hint:@mut  css_hint,
 										) -> css_error {
 
 	
-	match copy hint.strings {
-		Some(x)=>{
-			set_font_family(style, hint.status, x);
-		},
-		None=>{
-			set_font_family(style, hint.status, ~[]);
-		}
+	if hint.strings.is_some() {
+		
+			set_font_family(style, hint.status, hint.strings.swap_unwrap());
 	}
-	hint.strings = Some(~[]);
+	else {
+		set_font_family(style, hint.status, ~[]);
+	}
+	
 	CSS_OK
 }
 
@@ -5587,15 +5586,13 @@ pub fn css__set_quotes_from_hint(hint:@mut  css_hint,
 								style:@mut css_computed_style
 								) -> css_error {
 
-	match copy hint.strings {
-		Some(x)=>{
-			set_quotes(style, hint.status, x);
-		},
-		None=>{
-			set_quotes(style, hint.status, ~[] );
-		}
-	} 
-	hint.strings= None ;
+	if (hint.strings.is_some()) {
+		set_quotes(style, hint.status, hint.strings.swap_unwrap());
+	}
+	else {
+		set_quotes(style, hint.status, ~[] );
+	}
+	
 	CSS_OK 
 }
 

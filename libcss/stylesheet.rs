@@ -538,7 +538,7 @@ impl css_stylesheet {
     * #Return Value:
     *   'css_selector' - Pointer to box containing selector object.
     */
-    pub fn css__stylesheet_selector_create(&mut self, qname : css_qname ) -> @mut css_selector {
+    pub fn css__stylesheet_selector_create(&mut self, qname : @mut css_qname ) -> @mut css_selector {
         //debug!("Entering: css__stylesheet_selector_create");
         //debug!(fmt!("css__stylesheet_selector_create:: qname == %?", qname));
         let sel = @mut css_selector{  
@@ -559,7 +559,7 @@ impl css_stylesheet {
         };
 
         let sel_data = @mut css_selector_detail{
-            qname:@mut qname,
+            qname:qname,
             selector_type: CSS_SELECTOR_ELEMENT,
             combinator_type: CSS_COMBINATOR_NONE,
             value_type:CSS_SELECTOR_DETAIL_VALUE_STRING,
@@ -589,7 +589,7 @@ impl css_stylesheet {
     */
     pub fn css__stylesheet_selector_detail_init (
         sel_type: css_selector_type,
-        qname : css_qname, 
+        qname : @mut css_qname, 
         value_type : css_selector_detail_value_type,
         string_value : Option<@mut lwc_string> , 
         ab_value : Option<(i32,i32)>,
@@ -598,7 +598,7 @@ impl css_stylesheet {
     {
         //debug!("Entering: css__stylesheet_selector_detail_init");
         let detail : @mut css_selector_detail = @mut css_selector_detail{
-            qname:@mut qname,
+            qname:qname,
             selector_type:sel_type,
             combinator_type:CSS_COMBINATOR_NONE,  
             value_type:value_type,
@@ -1667,46 +1667,6 @@ impl css_selector_hash {
         }
         CSS_OK
     }
-
-// #[inline]
-//     pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
-
-//     //debug!(fmt!("Strtol : strings are %? ====== %? ",a,b));
-//     if ( a.len() != b.len() ) {
-//         return false ;
-//     }
-    
-//     let i :uint = a.len() ;
-//     let mut e = 0;
-// 	while e < i {
-//         if a[e] == b[e] {
-//             e = e + 1 ;
-// 			loop;
-//         }
-
-//         if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
-//             if (a[e]+32) == b[e] {
-// 				e = e + 1 ;
-//                 loop;
-//             }
-//             else {
-//                 return false ;
-//             }
-//         }
-
-//         if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
-//             if (b[e]+32) == a[e] {
-// 				e = e + 1 ;
-//                 loop;
-//             }
-//             else {
-//                 return false ;
-//             }
-//         }
-//         return false ;
-//     }
-//     return true ;
-//     }
 
     /**
     * #Description:

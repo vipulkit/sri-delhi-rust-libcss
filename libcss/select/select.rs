@@ -1446,7 +1446,6 @@ impl css_select_ctx {
         node:*c_void, next_node:*mut *c_void) -> css_error {
 
         //debug!(fmt!("Entering match_named_combinator")) ;
-        let detail :~[@mut css_selector_detail] = copy selector.data;
         let mut n = node;
         let mut error:css_error;
 
@@ -1495,7 +1494,7 @@ impl css_select_ctx {
             if n != null() {
                 /* Match its details */
                 //debug!("");
-                error = self.match_details(n, detail, state, match_result, None);
+                error = self.match_details(n, selector.data, state, match_result, None);
                 match error {
                     CSS_OK => {},
                     err => return err
@@ -1695,7 +1694,6 @@ impl css_select_ctx {
         next_node:*mut *c_void) -> css_error  {
         
         //debug!(fmt!("Entering match_universal_combinator")) ;
-        let detail :~[@mut css_selector_detail] = copy selector.data;
         let mut n:*c_void = node;
         //println(fmt!("n = %?", n));
 		if ( n == null()){
@@ -1704,8 +1702,8 @@ impl css_select_ctx {
 		let mut next_detail:Option<@mut css_selector_detail> = None; 
         let mut error:css_error;
         
-        if (detail.len() > 1){
-            next_detail = Some(detail[1]);   
+        if (selector.data.len() > 1){
+            next_detail = Some(selector.data[1]);   
         }
             
         *rejected_by_cache = false;
@@ -1761,7 +1759,7 @@ impl css_select_ctx {
 
             if (n != null()) {
                 /* Match its details */
-                error = self.match_details(n, detail.slice(1,detail.len()), state, match_result, None);
+                error = self.match_details(n, selector.data.slice(1,selector.data.len()), state, match_result, None);
                 match error {
                     CSS_OK => {},
                     err => return err
@@ -1837,7 +1835,7 @@ impl css_select_ctx {
                 return CSS_OK;
             }
 
-            if(copy detail.len() -1 > index){
+            if(detail.len() -1 > index){
                 index += 1;
             }
             else {
@@ -2150,7 +2148,7 @@ impl css_select_ctx {
                 }
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.lang.get() ) ) { 
                     error = (*state.handler.get().node_is_lang)(
-                            node, (copy detail.string).unwrap(), matched);
+                            node, (detail.string).unwrap(), matched);
                 }
                 else if ( self.lwc_instance.lwc_string_isequal(lwc_name , self.enabled.get() ) ) { 
                     error = (*state.handler.get().node_is_enabled)(
