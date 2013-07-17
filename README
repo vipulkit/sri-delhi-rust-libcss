@@ -6,4 +6,23 @@ libparserutils
 libcss
 
 Instructions to build:
-run make.sh in root or run make.sh in individual folders (libwapcaplet,libparserutils,libcss).
+run make in root or run make in individual folders (libwapcaplet,libparserutils,libcss).
+
+Measuring Performance with respect to netsurf-libcss C build.
+# 1 Building Libcss
+make
+# 2 Entering test cases directory
+cd test/libcss
+# 3 Building test cases 
+make
+# 4 copy test binary to performance measuring folder
+cp select-auto ../utils
+# 5 Entering performance directory
+cd ../utils
+# 6 Build performance measuring binary
+make 
+# 7 copy netsurf-libcss C implementation with name "test_select-auto"
+# Download netsurf and build libcss test case , search and copy test_select-auto
+# 8 Do performance test 
+./perform_test_avg
+
