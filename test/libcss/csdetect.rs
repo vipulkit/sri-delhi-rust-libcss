@@ -74,7 +74,7 @@ pub fn run_test(data:~[u8],  expected_encoding:~str) -> bool {
     let alias_instance = alias();
     
     let expected_mibenum = 
-        alias_instance.get().parserutils_charset_mibenum_from_name(copy expected_encoding);
+        alias_instance.parserutils_charset_mibenum_from_name(copy expected_encoding);
     
     let mut mibenum:u16 = 0;
     let alias_instance = alias();
@@ -89,7 +89,7 @@ pub fn run_test(data:~[u8],  expected_encoding:~str) -> bool {
     assert!(mibenum != 0);
 
     let detected_charset = 
-        alias_instance.get().parserutils_charset_mibenum_to_name(mibenum).unwrap();
+        alias_instance.parserutils_charset_mibenum_to_name(mibenum).unwrap();
 
     io::println(fmt!(" Detected mibenum == %?, Expected mibenum == %? ", mibenum, expected_mibenum));
     io::println(fmt!(" Detected charset == %?, Source == %? Expected charset ==%?",detected_charset,srcOption.unwrap(), expected_encoding));    

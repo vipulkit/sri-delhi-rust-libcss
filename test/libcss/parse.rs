@@ -7,7 +7,6 @@ use std::io::*;
 use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
-use wapcaplet::*;
 
 pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
     return (CSS_OK,Some(rel.clone()));
@@ -25,14 +24,16 @@ fn fill_params() -> css_params {
         resolve : @resolve_url,
         import : None,
         color : None,
-        font : None
+        font : None,
+        lwc_instance: None,
+        propstrings_instance: None
+
     };
     return css_param;
 }
 
 fn css_create_fn() -> @mut css{
-    let lwc = wapcaplet::lwc();
-    let css = css::css_create( &fill_params() , Some(lwc));
+    let css = css::css_create( &fill_params());
     css
 }
 

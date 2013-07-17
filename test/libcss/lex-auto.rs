@@ -245,7 +245,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
 
     start_time = extra::time::precise_time_ns();
     lexer.css__lexer_append_data(data);
-    lexer.css__lexer_append_data(~[]);
+    lexer.css__lexer_append_data([]);
     end_time = extra::time::precise_time_ns();
 
     let append_time = (end_time as float - start_time as float);

@@ -9,7 +9,6 @@ use std::vec;
 use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
-use wapcaplet::*;
 use dump::*;
 
 pub struct line_ctx {
@@ -63,7 +62,9 @@ pub fn css_create_params() -> css_params {
         resolve : @resolve_url,
         import : None,
         color : None,
-        font : None
+        font : None,
+        lwc_instance: None,
+        propstrings_instance: None
     };
     return css_param;
 }
@@ -74,8 +75,7 @@ fn main() {
 
 fn create_css() -> @mut css{
     debug!("Entering: create_css");
-    let lwc = wapcaplet::lwc();
-    let css = css::css_create( &(css_create_params()) , Some(lwc));
+    let css = css::css_create( &(css_create_params()));
     css
 }
 

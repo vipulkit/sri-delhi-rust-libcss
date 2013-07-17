@@ -5,6 +5,7 @@ use std::cast::*;
 use include::fpmath::*;
 use include::types::*;
 use include::properties::*;
+use wapcaplet::*;
 
 pub fn css_computed_letter_spacing(
         style : @mut css_computed_style) 
@@ -192,9 +193,9 @@ pub fn css_computed_counter_reset(
 
 pub fn css_computed_cursor(
                 style : @mut css_computed_style)
-                -> (u8,Option<~[~str]>) {
+                -> (u8,Option<~[@mut lwc_string]>) {
 
-    let mut urls :Option<~[~str]> = None;
+    let mut urls :Option<~[@mut lwc_string]> = None;
     match style.uncommon {
         None=>{
             (CSS_CURSOR_AUTO as u8,urls)
@@ -422,16 +423,16 @@ pub fn css_computed_border_left_width(
 
 pub fn css_computed_background_image(
                                     style:@mut css_computed_style)
-                                    -> (u8,~str) {
+                                    -> (u8,Option<@mut lwc_string>) {
 
-    let mut url : ~str ;
+    //let mut url : @mut lwc_string ;
     let mut bits = style.bits[CSS_BACKGROUND_IMAGE_INDEX];
     bits = bits & (CSS_BACKGROUND_IMAGE_MASK as u8);
     bits = bits >> CSS_BACKGROUND_IMAGE_SHIFT;
 
-    url = copy style.background_image;
+    //url = style.background_image;
 
-    (bits,url)
+    (bits,style.background_image)
 }
 
 pub fn css_computed_color(
@@ -447,29 +448,29 @@ pub fn css_computed_color(
 
 pub fn css_computed_list_style_image(
                                     style : @mut css_computed_style)
-                                    ->(u8,~str) {
+                                    ->(u8,Option<@mut lwc_string>) {
 
-    let mut url : ~str ;
+    //let mut url : @mut lwc_string ;
     let mut bits = style.bits[CSS_LIST_STYLE_IMAGE_INDEX];
     bits = bits & (CSS_LIST_STYLE_IMAGE_MASK as u8);
     bits = bits >> CSS_LIST_STYLE_IMAGE_SHIFT;
 
-    url = copy style.list_style_image;
+    //url = style.list_style_image;
 
-    (bits,url)
+    (bits,style.list_style_image)
 }
 
 pub fn css_computed_quotes(
                         style:@mut css_computed_style)
-                        -> (u8,~[~str]) {
+                        -> (u8,~[@mut lwc_string]) {
 
-    let mut result : ~[~str] ;
+    //let mut result : ~[@mut lwc_string] ;
     let mut bits = style.bits[CSS_QUOTES_INDEX];
     bits = bits & (CSS_QUOTES_MASK as u8);
     bits = bits >> CSS_QUOTES_SHIFT;
 
-    result = copy style.quotes;
-    (bits,result)
+    //result = style.quotes;
+    (bits,copy style.quotes)
 }
 
 pub fn css_computed_top(
@@ -1233,7 +1234,7 @@ pub fn css_computed_text_decoration(style:@mut css_computed_style)
 }
 
 pub fn css_computed_font_family(style:@mut css_computed_style)
-                                        -> (u8,~[~str]) {
+                                        -> (u8,~[@mut lwc_string]) {
 
     let mut bits : u8 = style.bits[CSS_FONT_FAMILY_INDEX];
     bits = bits & (CSS_FONT_FAMILY_MASK as u8);

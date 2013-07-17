@@ -289,13 +289,13 @@ pub static CSS_PAGE_BREAK_INSIDE_MASK : int =  0xc0;
 
 
 pub struct css_computed_counter {
-    name:~str ,
+    name:@mut lwc_string ,
     value:i32
 }
 
 pub struct css_computed_content_item_counter {
-    name:~str,
-    sep:Option<~str>,
+    name:@mut lwc_string,
+    sep:Option<@mut lwc_string>,
     style:u8
 }
 
@@ -303,7 +303,7 @@ pub struct css_computed_content_item {
   
     item_type:css_computed_content_item_type,
 
-    data:Option<~str>,
+    data:Option<@mut lwc_string>,
     counters_data:Option<css_computed_content_item_counter>
 }
 
@@ -374,7 +374,7 @@ pub struct css_computed_uncommon {
     counter_increment:~[@mut css_computed_counter],
     counter_reset:~[@mut css_computed_counter],
 
-    cursor:~[~str],
+    cursor:~[@mut lwc_string],
 
     content:~[@mut css_computed_content_item],
 }
@@ -531,7 +531,7 @@ pub struct css_computed_style {
 
     background_color:u32,
 
-    background_image:~str,
+    background_image:Option<@mut lwc_string>,
 
     background_position:~[i32],
 
@@ -551,7 +551,7 @@ pub struct css_computed_style {
 
     line_height:i32,
 
-    list_style_image:~str,
+    list_style_image:Option<@mut lwc_string>,
 
     margin:~[i32],
 
@@ -573,10 +573,10 @@ pub struct css_computed_style {
 
     z_index:i32,
 
-    font_family:~[~str],
+    font_family:~[@mut lwc_string],
 
     //quotes chaned from wapcaplet-strings to strings
-    quotes:~[~str],
+    quotes:~[@mut lwc_string],
 
     uncommon:Option<@mut css_computed_uncommon>, /**< Uncommon properties */
     aural:Option<@mut css_aural>,         /*< Aural properties */
@@ -626,8 +626,8 @@ pub struct css_hint {
     color:Option<u32>,
     fixed:Option<i32>,
     integer:Option<i32>,
-    string:Option<~str>,
-    strings:Option<~[~str]>
+    string:Option<@mut lwc_string>,
+    strings:Option<~[@mut lwc_string]>
 }
 
 pub struct rect_result {
@@ -666,7 +666,7 @@ pub struct css_select_results {
 }
 
 pub struct reject_item {
-    value:~str,
+    value:@mut lwc_string,
     sel_type:css_selector_type 
 } 
 
@@ -686,9 +686,9 @@ pub struct css_select_handler {
 
     node_name: @extern fn( node:*c_void, qname: &mut css_qname ) -> css_error,
 
-    node_classes: @extern fn(pw:*c_void, n:*c_void, classes: &mut ~[~str] ) -> css_error,
+    node_classes: @extern fn(pw:*c_void, n:*c_void, classes: &mut ~[@mut lwc_string] ) -> css_error,
 
-    node_id: @extern fn(pw:*c_void, node:*c_void, id:&mut ~str ) -> css_error,
+    node_id: @extern fn(pw:*c_void, node:*c_void, id:&mut @mut lwc_string ) -> css_error,
 
     named_ancestor_node: @extern fn(node:*c_void, qname:&mut css_qname, ancestor:*mut*c_void) -> css_error,
    
@@ -702,25 +702,25 @@ pub struct css_select_handler {
 
     sibling_node: @extern fn(node:*c_void, sibling:*mut*c_void) -> css_error,
 
-    node_has_name: @extern fn(pw:*c_void,node:*c_void, qname:css_qname, matched:@mut bool) -> css_error,
+    node_has_name: @extern fn(pw:*c_void,node:*c_void, qname:&css_qname, matched:@mut bool) -> css_error,
 
     node_has_class: @extern fn(pw:*c_void, node:*c_void, name:@mut lwc_string, matched:@mut bool) -> css_error,
 
     node_has_id: @extern fn(pw:*c_void, node:*c_void, name:@mut lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute: @extern fn(node:*c_void, name:css_qname, matched:@mut bool) -> css_error,
+    node_has_attribute: @extern fn(node:*c_void, name:&css_qname, matched:@mut bool) -> css_error,
     
-    node_has_attribute_equal: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_equal: @extern fn(node:*c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
    
-    node_has_attribute_dashmatch: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_dashmatch: @extern fn(node:*c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute_includes: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_includes: @extern fn(node:*c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute_prefix: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_prefix: @extern fn(node:*c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute_suffix: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_suffix: @extern fn(node:*c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
 
-    node_has_attribute_substring: @extern fn(node:*c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error,
+    node_has_attribute_substring: @extern fn(node:*c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
 
     node_is_root: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
    
@@ -746,7 +746,7 @@ pub struct css_select_handler {
  
     node_is_target: @extern fn(node:*c_void, matched:@mut bool) -> css_error,
 
-    node_is_lang: @extern fn(node:*c_void, lang:~str, matched:@mut bool) -> css_error,
+    node_is_lang: @extern fn(node:*c_void, lang:@mut lwc_string, matched:@mut bool) -> css_error,
 
     node_presentational_hint: @extern fn(node:*c_void, property:u32) -> 
         (css_error,Option<@mut css_hint>),
@@ -773,15 +773,15 @@ pub struct css_select_state {
 
     element:css_qname,       
      //changed id from wapcaplet-string to string
-    id:~str,
+    id:@mut lwc_string,
      //changes classes from wapcaplet  to string
-    classes:~[~str],
+    classes:~[@mut lwc_string],
     n_classes:u32,           
 
     reject_cache: ~[Option<reject_item>],     /* Reject cache (filled from end) */  
     next_reject:int,                        /* Next free slot in reject cache */
 
-    props: ~[~[@mut prop_state]] 
+    props: ~[~[prop_state]] 
 } 
 
 /*
@@ -810,7 +810,7 @@ pub fn advance_bytecode(style: @mut css_style) {
 pub fn peek_bytecode(style: @mut css_style) -> u32 {
     
 	if style.bytecode.len() - style.used > 0 {
-		debug!(fmt!("bytecode=%?",style.bytecode)); 
+		//debug!(fmt!("bytecode=%?",style.bytecode)); 
 		style.bytecode[style.used] 
 	}
 	else {

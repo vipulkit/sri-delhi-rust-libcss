@@ -92,11 +92,11 @@ pub fn function_header(fp:@Writer, descriptor:~str, parser_id:&keyval, is_generi
     fp.write_line("*   ctx is updated with the next token to process");
     fp.write_line("*     If the input is invalid, then ctx remains unchanged.");
     fp.write_line("*/");
-    fp.write_line(fmt!("pub fn css__parse_%s(_sheet:@mut css_stylesheet, strings:&mut ~css_propstrings,",parser_id.key));
+    fp.write_line(fmt!("pub fn css__parse_%s(_sheet:@mut css_stylesheet, strings:@css_propstrings,",parser_id.key));
     fp.write_str("      vector:&~[@css_token], ctx:@mut uint,");
     fp.write_line(fmt!(" result:@mut css_style%s) -> css_error", if is_generic {", op:css_properties_e" } else {""}    ));
     fp.write_line("{");
-    fp.write_line(fmt!("debug!(\"Entering: css__parse_%s\");", parser_id.key));
+    fp.write_line(fmt!("//debug!(\"Entering: css__parse_%s\");", parser_id.key));
 }
 
 
@@ -177,7 +177,7 @@ pub fn output_uri(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
         output.push_str("\n");
         output.push_str("\t\tmatch (*_sheet.resolve)(_sheet.url, token.idata.unwrap()) {\n");
         output.push_str("\t\t\t(CSS_OK, Some(uri)) => {\n");
-        output.push_str("\t\t\t\tlet uri_snumber = _sheet.css__stylesheet_string_add(lwc_string_data(uri));\n");
+        output.push_str("\t\t\t\tlet uri_snumber = _sheet.css__stylesheet_string_add(uri);\n");
         output.push_str(fmt!("\t\t\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s );\n",parseid.val,kvlist[0].val));
         output.push_str("\t\t\t\tcss_stylesheet::css__stylesheet_style_append(result, uri_snumber as u32)\n");
         output.push_str("\n");
@@ -227,7 +227,7 @@ pub fn output_color(fp:@Writer, parseid:&keyval) {
     output.push_str("\t\tlet mut color:u32;\n\n");
     output.push_str("\t\tlet (value_option, color_option, res)= css__parse_color_specifier(_sheet, strings, vector, ctx);\n");
     output.push_str("\t\terror = res;\n");
-    output.push_str("\tdebug!(\"error == %? (1)\" , error)\n");
+    output.push_str("\t//debug!(\"error == %? (1)\" , error)\n");
     output.push_str("\t\tmatch res {\n");
     output.push_str("\t\t\tCSS_OK => {\n");
     output.push_str("\t\t\t\tvalue = value_option.unwrap();\n");
@@ -254,7 +254,7 @@ pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     output.push_str("\t\tlet mut unit:u32;\n\n");
     output.push_str(fmt!("\t\tlet (length_option, unit_option, res) =css__parse_unit_specifier(_sheet, vector, ctx, %s as u32);\n",kvlist[0].key));
     output.push_str("\t\terror = res;\n");
-    output.push_str("\tdebug!(\"error == %?(1)\" , error)\n");
+    output.push_str("\t//debug!(\"error == %?(1)\" , error)\n");
     output.push_str("\t\tmatch res {\n");
     output.push_str("\t\t\tCSS_OK => {\n");
     output.push_str("\t\t\t\tunit = unit_option.unwrap();\n");
@@ -310,7 +310,7 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             output.push_str("\t\twhile !token_null && (match token.token_type {CSS_TOKEN_IDENT => true, _ => false}) {\n");
             output.push_str("\t\t\tlet mut num:css_fixed;\n");
             output.push_str("\t\t\tlet mut pctx:uint;\n\n");
-            output.push_str("\t\t\tlet snumber = _sheet.css__stylesheet_string_add(lwc_string_data(token.idata.unwrap()));\n");
+            output.push_str("\t\t\tlet snumber = _sheet.css__stylesheet_string_add(token.idata.unwrap());\n");
             output.push_str("\t\t\tcss_stylesheet::css__stylesheet_style_append(result, snumber as u32);\n"); 
             output.push_str("\t\t\tconsumeWhitespace(vector, ctx);\n\n");
             output.push_str("\t\t\tpctx = *ctx;\n");
@@ -369,7 +369,7 @@ pub fn output_footer(fp:@Writer) {
     let mut output : ~str = ~"\tif match error {CSS_OK => false, _ => true} {\n";
     output.push_str("\t\t*ctx = orig_ctx;\n\t}\n");
     output.push_str(" \n");
-    output.push_str("\tdebug!(\"error == %? (2)\" , error)\n");
+    output.push_str("\t//debug!(\"error == %? (2)\" , error)\n");
     output.push_str("\treturn error\n");
     output.push_str("}\n\n");
     fp.write_str(output);

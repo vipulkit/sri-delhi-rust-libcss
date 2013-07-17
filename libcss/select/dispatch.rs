@@ -11,6 +11,9 @@ use select::propset::*;
 use select::properties::properties::*;
 use include::types::*;
 use std::ptr::*;
+use std::vec::from_elem;
+use wapcaplet::*;
+
 
 
 pub enum prop_group {
@@ -1167,7 +1170,7 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 
         background_color:0,
 
-        background_image:~"",
+        background_image:None,
 
         background_position:~[],
 
@@ -1187,7 +1190,7 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 
         line_height:0,
 
-        list_style_image:~"",
+        list_style_image:None,
 
         margin:~[],
 
@@ -1276,7 +1279,7 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 */
 #[inline]
 pub fn css_computed_style_initialise(style: @mut css_computed_style ,
-                                    fn_handler:@mut css_select_handler) -> css_error {
+                                    fn_handler:@mut css_select_handler, lwc_ins:@mut lwc) -> css_error {
 
     let state: @mut css_select_state = @mut css_select_state {
         node:null(),
@@ -1292,34 +1295,28 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
         current_origin:CSS_ORIGIN_UA,  
         current_specificity:0,   
         element:css_qname{ 
-            name:~"" , 
-            ns:~"" 
+            name:lwc_ins.lwc_intern_string("") , 
+            ns:lwc_ins.lwc_intern_string("") 
         },
-        id:~"",
+        id:lwc_ins.lwc_intern_string(""),
         classes:~[],
         n_classes:0,             
         reject_cache: ~[],       
         next_reject:128-1,             
         props: ~[~[]] 
     };
-    let mut l = 0;
-    while l < CSS_N_PROPERTIES as uint {
-        let mut prop_vec : ~[@mut prop_state] = ~[] ;
-        let mut k = 0;
-        while k < CSS_PSEUDO_ELEMENT_COUNT as uint {
-            let pstate = @mut prop_state{
-                specificity:0,
-                set:false,
-                origin:0,
-                important:false,
-                inherit:false    
-            };
-            prop_vec.push(pstate);
-            k = k + 1;
-        }
-        state.props.push(prop_vec);
-        l = l + 1;
-    }
+    
+	let pstate = prop_state{
+			specificity:0,
+			set:false,
+			origin:0,
+			important:false,
+			inherit:false    
+		};	
+	
+	let prop_vec: ~[prop_state] = from_elem(CSS_PSEUDO_ELEMENT_COUNT as uint,pstate);
+		
+	state.props = from_elem(CSS_N_PROPERTIES as uint, prop_vec);
 
     let mut i: uint = 0 ;
     let mut error: css_error;

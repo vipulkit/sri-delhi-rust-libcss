@@ -3,7 +3,7 @@ extern mod std;
 extern mod css;
 extern mod wapcaplet;
 extern mod dumpcomputed;
-extern mod dump2;
+// extern mod dump2;
 
 use css::css::*;
 use wapcaplet::*;
@@ -18,7 +18,8 @@ use css::select::common::*;
 use css::stylesheet::*;
 use css::select::select::*;
 use dumpcomputed::*;
-use dump2::dump_sheet;
+use css::parse::propstrings::*;
+// use dump2::dump_sheet;
 
 use css::include::properties::*;
 use css::include::fpmath::*;
@@ -27,19 +28,20 @@ use extra::time;
 use std::io;
 
 pub struct attribute {
-    name:~str,
-    value:~str
+    name:@mut lwc_string,
+    value:@mut lwc_string
 }
 
 pub struct node {
-    name:Option<~str>,
+    name:Option<@mut lwc_string>,
     attrs:~[attribute],
 
     parent:Option<@mut node>,
     next:Option<@mut node>,
     prev:Option<@mut node>,
     children:Option<@mut node>,
-    last_child:Option<@mut node>
+    last_child:Option<@mut node>,
+    lwc_instance: @mut lwc
 }
 
 pub struct sheet_ctx {
@@ -49,8 +51,8 @@ pub struct sheet_ctx {
 }
 
 pub struct ctx_pw {
-    attr_class:~str,
-    attr_id:~str
+    attr_class:@mut lwc_string,
+    attr_id:@mut lwc_string
 }   
 
 pub struct line_ctx {
@@ -76,11 +78,13 @@ pub struct line_ctx {
     attr_class:@mut lwc_string,
     attr_id:@mut lwc_string,
 
-    lwc_instance:@mut lwc
+    lwc_instance:@mut lwc,
+    propstrings_instance: @css_propstrings
 } 
 
 pub fn select_test(file:~str) {
     let lwc_ins = wapcaplet::lwc() ;
+    let propstring = css_propstrings::css_propstrings(lwc_ins);
     let mut lwc_attr_class : Option<@mut lwc_string>;
     let mut lwc_attr_id : Option<@mut lwc_string>;
 
@@ -110,7 +114,8 @@ pub fn select_test(file:~str) {
         attr_class:lwc_attr_class.swap_unwrap(),
         attr_id:lwc_attr_id.swap_unwrap(),
 
-        lwc_instance:lwc_ins.clone()
+        lwc_instance:lwc_ins,
+        propstrings_instance: propstring
     };
 
     let file_content_result = io::read_whole_file_str(&Path(file)) ;
@@ -119,9 +124,9 @@ pub fn select_test(file:~str) {
         Ok(x) => {
             file_content = x ;
         },
-        Err(y) => {
+        Err(_) => {
             file_content = ~"" ;
-            debug!("\n Error opening file ===============:%?",y);
+            // debug!("\n Error opening file ===============:%?",y);
             assert!(false) ;
         }
     }
@@ -129,33 +134,7 @@ pub fn select_test(file:~str) {
     let css_stylesheet_create_time = @mut 0;
     let css_stylesheet_append_data_time = @mut 0;
     let css_select_style_time = @mut 0;
-    let parseutils_inputstream_peek_time = @mut 0f;
-    let parseutils_inputstream_append_time = @mut 0f;
-    let parseutils_inputstream_advance_time = @mut 0f;
-    let css_lexer_get_token_time = @mut 0f;
     let css_stylesheet_data_done_time= @mut 0f;
-    let css_create_lwc_time = @mut 0f;
-    let css_create_inputstream_time = @mut 0f;
-    let css_create_lexer_time = @mut 0f;
-    let css_create_stylesheet_time = @mut 0f;
-    let css_create_language_time = @mut 0f;
-    let css_create_parser_time = @mut 0f;
-    let css_create_inputstream_alias_time = @mut 0f;
-    let css_lang_create_propstring_time = @mut 0f;
-    let css_lang_create_properties_time = @mut 0f;
-    let parse_lang_handle_event_time = @mut 0f;
-    let parse_lang_handleStartStyleSheet_time = @mut 0f;
-    let parse_lang_handleEndStyleSheet_time = @mut 0f;
-    let parse_lang_handleStartRuleSet_time = @mut 0f;
-    let parse_lang_handleEndRuleSet_time = @mut 0f;
-    let parse_lang_handleStartAtRule_time = @mut 0f;
-    let parse_lang_handleEndAtRule_time = @mut 0f;
-    let parse_lang_handleStartBlock_time = @mut 0f;
-    let parse_lang_handleEndBlock_time = @mut 0f; 
-    let parse_lang_handle_block_content_time = @mut 0f;
-    let parse_lang_handle_parse_declaration_time = @mut 0f;
-    let parse_lang_parse_property_time =@mut 0f;
-    let parse_lang_font_desc_time = @mut 0f;
 
     for file_content.any_line_iter().advance |line| { 
         let mut line_string: ~str = line.to_str(); 
@@ -164,91 +143,18 @@ pub fn select_test(file:~str) {
         handle_line(&mut line_string,ctx, css_stylesheet_create_time, 
                 css_stylesheet_append_data_time, 
                 css_select_style_time, 
-                parseutils_inputstream_peek_time, 
-                parseutils_inputstream_append_time,
-                css_lexer_get_token_time, 
-                css_stylesheet_data_done_time,  
-                parseutils_inputstream_advance_time,
-                css_create_lwc_time,  
-                css_create_inputstream_time, 
-                css_create_lexer_time, 
-                css_create_stylesheet_time, 
-                css_create_language_time,
-                css_create_parser_time ,
-                css_create_inputstream_alias_time,
-                css_lang_create_propstring_time,
-                css_lang_create_properties_time,
-                parse_lang_handle_event_time,
-                parse_lang_handleStartStyleSheet_time,
-                parse_lang_handleEndStyleSheet_time,
-                parse_lang_handleStartRuleSet_time,
-                parse_lang_handleEndRuleSet_time,
-                parse_lang_handleStartAtRule_time,
-                parse_lang_handleEndAtRule_time,
-                parse_lang_handleStartBlock_time,
-                parse_lang_handleEndBlock_time, 
-                parse_lang_handle_block_content_time,
-                parse_lang_handle_parse_declaration_time,
-                parse_lang_parse_property_time,
-                parse_lang_font_desc_time
-                );
+                css_stylesheet_data_done_time  );
 
     }   
 
     if (ctx.tree.is_some() ) {
-        run_test(ctx, css_select_style_time, parseutils_inputstream_peek_time, parseutils_inputstream_append_time, css_lexer_get_token_time, parseutils_inputstream_advance_time,
-                parse_lang_handle_event_time,
-                parse_lang_handleStartStyleSheet_time,
-                parse_lang_handleEndStyleSheet_time,
-                parse_lang_handleStartRuleSet_time,
-                parse_lang_handleEndRuleSet_time,
-                parse_lang_handleStartAtRule_time,
-                parse_lang_handleEndAtRule_time,
-                parse_lang_handleStartBlock_time,
-                parse_lang_handleEndBlock_time, 
-                parse_lang_handle_block_content_time, 
-                parse_lang_handle_parse_declaration_time,
-                parse_lang_parse_property_time,
-                parse_lang_font_desc_time);
+        run_test(ctx, css_select_style_time);
 
     }
 
     io::println(fmt!("#css_stylesheet_create_time:%?",(*css_stylesheet_create_time as float /1000f))) ;
-    io::println(fmt!("#css_create_lwc_time:%?",(*css_create_lwc_time/1000f))) ;
-    io::println(fmt!("#css_create_input_stream_time:%?",(*css_create_inputstream_time/1000f))) ;
-    io::println(fmt!("#css_create_inputstream_alias_time:%?",(*css_create_inputstream_alias_time/1000f))) ;
-
-    io::println(fmt!("#css_create_lexer_time:%?",(*css_create_lexer_time/1000f))) ;
-    io::println(fmt!("#css_create_stylesheet_time:%?",(*css_create_stylesheet_time/1000f))) ;
-    io::println(fmt!("#css_create_language_time:%?",(*css_create_language_time/1000f))) ;
-
-    io::println(fmt!("#parse_language_handle_event_time:%?",(*parse_lang_handle_event_time/1000f))) ;
-    io::println(fmt!("#parse_lang_handleStartStyleSheet_time:%?",(*parse_lang_handleStartStyleSheet_time/1000f))); 
-    io::println(fmt!("#parse_lang_handleEndStyleSheet_time:%?",(*parse_lang_handleEndStyleSheet_time/1000f)));
-        io::println(fmt!("#parse_lang_handleStartRuleSet_time:%?",(*parse_lang_handleStartRuleSet_time/1000f)));
-    io::println(fmt!("#parse_lang_handleEndRuleSet_time:%?",(*parse_lang_handleEndRuleSet_time/1000f)));
-    io::println(fmt!("#parse_lang_handleStartAtRule_time:%?",(*parse_lang_handleStartAtRule_time/1000f)));
-    io::println(fmt!("#parse_lang_handleEndAtRule_time :%?",(*parse_lang_handleEndAtRule_time/1000f)));
-    io::println(fmt!("#parse_lang_handleStartBlock_time:%?",(*parse_lang_handleStartBlock_time/1000f)));
-    io::println(fmt!("#parse_lang_handleEndBlock_time :%?",(*parse_lang_handleEndBlock_time/1000f)));
-    io::println(fmt!("#parse_lang_handle_block_content_time:%?",(*parse_lang_handle_block_content_time/1000f)));
-    io::println(fmt!("#parse_lang_handle_parse_declaration_time:%?",(*parse_lang_handle_parse_declaration_time/1000f)));
-
-    io::println(fmt!("#parse_lang_parse_property_time:%?",(*parse_lang_parse_property_time/1000f)));
-    io::println(fmt!("#parse_lang_font_desc_time:%?",(*parse_lang_font_desc_time/1000f)));
-                
-    io::println(fmt!("#css_lang_create_propstring_time:%?",(*css_lang_create_propstring_time/1000f))) ;
-    io::println(fmt!("#css_lang_create_properties_time:%?",(*css_lang_create_properties_time/1000f))) ;
-
-    io::println(fmt!("#css_create_parser_time:%?",(*css_create_parser_time/1000f))) ;
-
-
     io::println(fmt!("#css_stylesheet_append_data_time:%?",(*css_stylesheet_append_data_time as float/1000f))) ;
     io::println(fmt!("#css_stylesheet_data_done_time:%?",(*css_stylesheet_data_done_time/1000f))) ;
-    io::println(fmt!("#css_lexer_get_token_time:%?",(*css_lexer_get_token_time/1000f))) ;
-    io::println(fmt!("#parseutils_inputstream_peek_time:%?",(*parseutils_inputstream_peek_time/1000f))) ;
-    io::println(fmt!("#parseutils_inputstream_append_time:%?",(*parseutils_inputstream_append_time/1000f))) ;
-    io::println(fmt!("#parseutils_inputstream_advance_time:%?",(*parseutils_inputstream_advance_time/1000f))) ;
     io::println(fmt!("#css_select_style_time:%?",(*css_select_style_time as float /1000f))) ;
 }
 
@@ -257,7 +163,7 @@ pub fn resolve_url(_:@str, rel:@mut lwc_string) -> (css_error,Option<@mut lwc_st
     (CSS_OK, Some(rel.clone()))
 }
 
-pub fn css_create_params() -> css_params {
+pub fn css_create_params(lwc_instance: @mut lwc , propstrings_instance: @css_propstrings) -> css_params {
     let css_param = css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
@@ -269,7 +175,9 @@ pub fn css_create_params() -> css_params {
         resolve : @resolve_url,
         import : None,
         color : None,
-        font : None
+        font : None,
+        lwc_instance: Some(lwc_instance),
+        propstrings_instance: Some(propstrings_instance)
     };
      return css_param;
 }
@@ -277,41 +185,15 @@ pub fn css_create_params() -> css_params {
 pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_time:@mut u64, 
     css_stylesheet_append_data_time:@mut u64, 
     css_select_style_time:@mut u64, 
-    parseutils_inputstream_peek_time:@mut float, 
-    parseutils_inputstream_append_time:@mut float, 
-    css_lexer_get_token_time:@mut float, 
-    css_stylesheet_data_done_time:@mut float, 
-    parseutils_inputstream_advance_time:@mut float,
-    css_create_lwc_time:@mut float,
-    css_create_inputstream_time:@mut float,
-    css_create_lexer_time:@mut float,
-    css_create_stylesheet_time:@mut float,
-    css_create_language_time:@mut float,
-    css_create_parser_time:@mut float ,
-    css_create_inputstream_alias_time:@mut float,
-    css_lang_create_propstring_time:@mut float,
-    css_lang_create_properties_time:@mut float,
-    parse_lang_handle_event_time:@mut float,
-    parse_lang_handleStartStyleSheet_time:@mut float,
-    parse_lang_handleEndStyleSheet_time:@mut float,
-    parse_lang_handleStartRuleSet_time:@mut float,
-    parse_lang_handleEndRuleSet_time:@mut float,
-    parse_lang_handleStartAtRule_time:@mut float,
-    parse_lang_handleEndAtRule_time:@mut float,
-    parse_lang_handleStartBlock_time:@mut float,
-    parse_lang_handleEndBlock_time:@mut float, 
-    parse_lang_handle_block_content_time:@mut float,
-    parse_lang_handle_parse_declaration_time:@mut float,
-    parse_lang_parse_property_time:@mut float,
-    parse_lang_font_desc_time:@mut float
+    css_stylesheet_data_done_time:@mut float
     ) -> bool 
 {
     let mut error : css_error ;
     let mut len : uint ; 
     if ( data[0] == ('#' as u8) ) {
-        debug!("# encountered ");
+        // debug!("# encountered ");
         if( ctx.intree ) {
-            debug!("ctx intree");
+            // debug!("ctx intree");
             if( data.len() >= 7 && is_string_caseless_equal(data.slice(1,7), "errors") ){
                 ctx.intree = false;
                 ctx.insheet = false;
@@ -320,17 +202,8 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
             }
             else {
                 /* Assume start of stylesheet */
-                css__parse_sheet(ctx, data,1, css_stylesheet_create_time, 
-                css_create_lwc_time,  
-                css_create_inputstream_time, 
-                css_create_lexer_time, 
-                css_create_stylesheet_time, 
-                css_create_language_time,
-                css_create_parser_time,
-                css_create_inputstream_alias_time ,
-                css_lang_create_propstring_time,
-                css_lang_create_properties_time);
-                debug!("Sheet parsed 1");
+                css__parse_sheet(ctx, data,1, css_stylesheet_create_time );
+                // debug!("Sheet parsed 1");
                 ctx.intree = false;
                 ctx.insheet = true;
                 ctx.inerrors = false;
@@ -338,7 +211,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
             }
         }
         else if (ctx.insheet) {
-            debug!("ctx insheet");
+            // debug!("ctx insheet");
             if(data.len() >= 7 && is_string_caseless_equal(data.slice(1,7), "errors")){
                 len = ctx.sheets.len() -1;
                 let start_time = time::precise_time_ns();
@@ -369,17 +242,8 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
                 let end_time = time::precise_time_ns();
             let css_style_diff_time = (end_time as float - start_time as float);
             *css_stylesheet_data_done_time += css_style_diff_time;
-                css__parse_sheet(ctx, data,1, css_stylesheet_create_time, 
-                css_create_lwc_time,  
-                css_create_inputstream_time, 
-                css_create_lexer_time, 
-                css_create_stylesheet_time, 
-                css_create_language_time,
-                css_create_parser_time,
-                css_create_inputstream_alias_time,
-                css_lang_create_propstring_time,
-                css_lang_create_properties_time);
-                debug!("Sheet parsed 2");
+                css__parse_sheet(ctx, data,1, css_stylesheet_create_time);
+                // debug!("Sheet parsed 2");
             }
             else {
                 len = ctx.sheets.len() -1;
@@ -396,29 +260,16 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
             }
         }
         else if (ctx.inerrors) {
-            debug!("in ctx errors");
+            // debug!("in ctx errors");
             ctx.intree = false;
             ctx.insheet = false;
             ctx.inerrors = false;
             ctx.inexp = true;
         }
         else if (ctx.inexp) {
-            debug!("in ctx inexp");
+            // debug!("in ctx inexp");
             /* This marks end of testcase, so run it */
-            run_test(ctx, css_select_style_time, parseutils_inputstream_peek_time, parseutils_inputstream_append_time,css_lexer_get_token_time , parseutils_inputstream_advance_time,
-                parse_lang_handle_event_time,
-                parse_lang_handleStartStyleSheet_time,
-                parse_lang_handleEndStyleSheet_time,
-                parse_lang_handleStartRuleSet_time,
-                parse_lang_handleEndRuleSet_time,
-                parse_lang_handleStartAtRule_time,
-                parse_lang_handleEndAtRule_time,
-                parse_lang_handleStartBlock_time,
-                parse_lang_handleEndBlock_time, 
-                parse_lang_handle_block_content_time,
-                parse_lang_handle_parse_declaration_time,
-                parse_lang_parse_property_time,
-                parse_lang_font_desc_time);
+            run_test(ctx, css_select_style_time);
             //ctx.expused = 0;
 
             ctx.intree = false;
@@ -428,9 +279,9 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
         }
         else {
             /* Start state */
-            debug!("in ctx tree ==== ");
+            // debug!("in ctx tree ==== ");
             if(data.len()>=5 && is_string_caseless_equal(data.slice(1,5), "tree")) {
-                debug!("entering for parse tree");
+                // debug!("entering for parse tree");
                 css__parse_tree(ctx, data, 5 );
                 ctx.intree = true;
                 ctx.insheet = false;
@@ -481,7 +332,7 @@ pub fn isspace (ch:u8)-> bool {
 
 pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
 
-    debug!("\n Entering css__parse_tree ") ;
+    // debug!("\n Entering css__parse_tree ") ;
     let mut p = index;
     let end = data.len() ;
     //size_t left;
@@ -515,7 +366,7 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
 
 pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
     
-    debug!("\n Entering css__parse_tree_data ") ;
+    // debug!("\n Entering css__parse_tree_data ") ;
     let mut p = 0;
     let end = data.len();
 
@@ -545,7 +396,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
         p += 1;
     }
 
-    let name = data.slice(name_begin,name_begin+namelen);
+    let name = ctx.lwc_instance.lwc_intern_string(data.slice(name_begin,name_begin+namelen));
 
     //debug!("\n Before while  2") ;
     /* Skip whitespace */
@@ -573,7 +424,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 
     //debug!("\n Before 3  ") ;
     if valuelen > 0 {
-        value = Some(data.slice(value_begin, value_begin+valuelen));
+        value = Some(ctx.lwc_instance.lwc_intern_string(data.slice(value_begin, value_begin+valuelen)));
     }
 
     //debug!("\n Before 4  ") ;
@@ -586,10 +437,11 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
             next:None,
             prev:None,
             children:None,
-            last_child:None
+            last_child:None,
+            lwc_instance: ctx.lwc_instance
         };
             
-        n.name = Some(name.to_owned());
+        n.name = Some(name);
             
 
         /* Insert it into tree */
@@ -637,10 +489,10 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
     } 
     else {
         /* New attribute */
-        debug!("\n Before else  ");
+        // debug!("\n Before else  ");
         let attr: attribute = attribute{
-            name:name.to_owned(),
-            value:value.get_ref().to_owned()
+            name:name,
+            value:value.unwrap()
         };
 
         ctx.current.unwrap().attrs.push(attr);
@@ -649,18 +501,9 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 
 }
 
-pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_stylesheet_create_time:@mut u64,
-            css_create_lwc_time:@mut float,
-            css_create_inputstream_time:@mut float,
-            css_create_lexer_time:@mut float,
-            css_create_stylesheet_time:@mut float,
-            css_create_language_time:@mut float,
-            css_create_parser_time:@mut float,
-            css_create_inputstream_alias_time:@mut float ,
-            css_lang_create_propstring_time:@mut float,
-            css_lang_create_properties_time:@mut float){
+pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_stylesheet_create_time:@mut u64){
     
-    debug!("\n Entering css__parse_sheet ") ;
+    // debug!("\n Entering css__parse_sheet ") ;
     let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
     let mut media = CSS_MEDIA_ALL as u64; 
     let mut p : uint = index;
@@ -680,7 +523,7 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_styles
         origin = CSS_ORIGIN_UA;
     }
     else {
-        debug!("Unknown stylesheet origin");
+        // debug!("Unknown stylesheet origin");
         assert!(false);
     }
     
@@ -692,39 +535,30 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_styles
     if p < end {
        css__parse_media_list(data,p,&mut media);
     }
-    let params = css_create_params();
-    let lwc_ins = ctx.lwc_instance.clone();
+    let params = css_create_params(ctx.lwc_instance , ctx.propstrings_instance);
+    // let lwc_ins = ctx.lwc_instance;
 
     let start_time = time::precise_time_ns();
-    let sheet:@mut css = css::css_create(&params, Some(lwc_ins.clone()) );
+    let sheet:@mut css = css::css_create(&params);
     let end_time = time::precise_time_ns();
     *css_stylesheet_create_time += (end_time - start_time);
 
-    *css_create_lwc_time += sheet.css_create_lwc_time;
-    *css_create_inputstream_time += sheet.css_create_inputstream_time;
-    *css_create_lexer_time += sheet.css_create_lexer_time;
-    *css_create_stylesheet_time += sheet.css_create_stylesheet_time;
-    *css_create_language_time   += sheet.css_create_language_time;
-    *css_create_parser_time    += sheet.css_create_parser_time;
-    *css_create_inputstream_alias_time += sheet.parser.lexer.input.inputstream_alias_create_time;
-    *css_lang_create_propstring_time += sheet.parser.language.css_lang_create_propstring_time;
-    *css_lang_create_properties_time += sheet.parser.language.css_lang_create_properties_time;
  
 
-    debug!("Sheet created in select-auto ");
+    // debug!("Sheet created in select-auto ");
     let sheet_ctx_ins = @mut sheet_ctx {
         sheet: sheet,
         origin: origin,
         media: media
     };
-    debug!("Before pushing Sheet ");
+    // debug!("Before pushing Sheet ");
     ctx.sheets.push(sheet_ctx_ins) ;
-    debug!("Sheet pushed in select-auto ");
+    // debug!("Sheet pushed in select-auto ");
 }
 
 
 pub fn css__parse_media_list(data:&mut ~str ,index:uint, media : &mut u64) -> uint {
-    debug!("\n Entering css__parse_media_list =%?=%?=",data,index) ;
+    // debug!("\n Entering css__parse_media_list =%?=%?=",data,index) ;
     // ' '  (0x20)  space (SPC)
     // '\t' (0x09)  horizontal tab (TAB)
     // '\n' (0x0a)  newline (LF)
@@ -748,7 +582,7 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, media : &mut u64) -> ui
             }
         }
 
-        debug!("\n slice left is =%?=%?=%?=%?=",copy data.slice(start,data.len()),len,start,data.len() ) ;
+        // debug!("\n slice left is =%?=%?=%?=%?=",copy data.slice(start,data.len()),len,start,data.len() ) ;
 
         if ( (len-start)==10 && is_string_caseless_equal(data.slice(start,start+10), "projection") ) {
             result = result | (CSS_MEDIA_PROJECTION as u64) ;
@@ -785,7 +619,7 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, media : &mut u64) -> ui
         }
         else {
             // unknown media type
-            debug!("\n Unknown Media type encountered");
+            // debug!("\n Unknown Media type encountered");
             assert!(false);
         }
 
@@ -817,7 +651,7 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, media : &mut u64) -> ui
 
 pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> uint {
     
-    debug!("\n Entering css__parse_pseudo_list ") ;
+    // debug!("\n Entering css__parse_pseudo_list ") ;
     let string = data.slice(index, data.len()).to_owned();
     *data = data.slice(0,index).to_owned();
 
@@ -887,27 +721,7 @@ fn to_lower(string:&str) -> ~str {
     str::from_bytes(lower)
 }
 
-pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_inputstream_peek_time:@mut float, 
-    parseutils_inputstream_append_time:@mut float, 
-    css_lexer_get_token_time:@mut float,
-    parseutils_inputstream_advance_time:@mut float,
-    parse_lang_handle_event_time:@mut float,
-    parse_lang_handleStartStyleSheet_time:@mut float,
-    parse_lang_handleEndStyleSheet_time:@mut float,
-    parse_lang_handleStartRuleSet_time:@mut float,
-    parse_lang_handleEndRuleSet_time:@mut float,
-    parse_lang_handleStartAtRule_time:@mut float,
-    parse_lang_handleEndAtRule_time:@mut float,
-    parse_lang_handleStartBlock_time:@mut float,
-    parse_lang_handleEndBlock_time:@mut float, 
-    parse_lang_handle_block_content_time:@mut float,
-    parse_lang_handle_parse_declaration_time :@mut float,
-    parse_lang_parse_property_time:@mut float,
-    parse_lang_font_desc_time:@mut float
-
-
-
-) {
+pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64) {
     //debug!("\n Entering run test =%?=",ctx) ;
     let mut select: ~css_select_ctx;
     let mut results: @mut css_select_results;
@@ -915,14 +729,14 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_i
     let mut i:u32=0;
     let mut buf:~str= ~"";
  
-    select = css_select_ctx::css_select_ctx_create();
+    select = css_select_ctx::css_select_ctx_create(ctx.lwc_instance);
 
     while i < (ctx.sheets.len() as u32) {
-        let ds_sheet = dump_sheet(ctx.sheets[i].sheet.stylesheet);
-        debug!("\n=================================================");
-        debug!("Dumpping Stylesheet before appending to selector");
-        debug!("%?",ds_sheet);
-        debug!("=================================================\n");
+        // let ds_sheet = dump_sheet(ctx.sheets[i].sheet.stylesheet);
+        // debug!("\n=================================================");
+        // debug!("Dumpping Stylesheet before appending to selector");
+        // debug!("%?",ds_sheet);
+        // debug!("=================================================\n");
 
         match select.css_select_ctx_append_sheet(ctx.sheets[i].sheet.stylesheet,ctx.sheets[i].origin,ctx.sheets[i].media) {
             CSS_OK => {},
@@ -1004,8 +818,8 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_i
     };
         
     unsafe {
-        let pw = @mut ctx_pw{attr_class:lwc_string_data(ctx.attr_class.clone()), attr_id:lwc_string_data(ctx.attr_id.clone())};
-        debug!(fmt!("pw=%?",pw));
+        let pw = @mut ctx_pw{attr_class:ctx.attr_class, attr_id:ctx.attr_id};
+        // debug!(fmt!("pw=%?",pw));
         let target = cast::transmute(ctx.target.unwrap());
         let pw_ptr = ::cast::transmute(pw);
 
@@ -1024,39 +838,17 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64, parseutils_i
     assert!(results.styles[ctx.pseudo_element].is_some());
     dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
 
-    let mut i = 0;
-    while i < (ctx.sheets.len() as u32) {
-        *parseutils_inputstream_peek_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_peek_time;
-        *parseutils_inputstream_append_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_append_time;
-        *parseutils_inputstream_advance_time += ctx.sheets[i].sheet.parser.lexer.parseutils_inputstream_advance_time;
-        *css_lexer_get_token_time += ctx.sheets[i].sheet.parser.css_lexer_get_token_time;
-        *parse_lang_handle_event_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_event_time;
-        *parse_lang_handleStartStyleSheet_time +=ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartStyleSheet_time;
-        *parse_lang_handleEndStyleSheet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndStyleSheet_time;
-        *parse_lang_handleStartRuleSet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lange_handleStartRuleSet_time;
-        *parse_lang_handleEndRuleSet_time  += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndRuleSet_time;
-        *parse_lang_handleStartAtRule_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartAtRule_time;
-        *parse_lang_handleEndAtRule_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndAtRule_time;
-        *parse_lang_handleStartBlock_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleStartBlock_time;
-        *parse_lang_handleEndBlock_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handleEndBlock_time;
-        *parse_lang_handle_block_content_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_block_content_time;
-        *parse_lang_handle_parse_declaration_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_handle_parse_declaration_time;
-        *parse_lang_parse_property_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_parse_property_time;
-        *parse_lang_font_desc_time += ctx.sheets[i].sheet.parser.language.lang_func_time.parse_lang_font_desc_time;
 
-        i += 1;
-    }
-
-    debug!(fmt!(" CSS Selection result is =%?",results));
+    // debug!(fmt!(" CSS Selection result is =%?",results));
     let string:~str = copy ctx.exp;
-    debug!(fmt!("Expected : %s ",string));
-    debug!(fmt!("Result: %s",buf));
+    // debug!(fmt!("Expected : %s ",string));
+    // debug!(fmt!("Result: %s",buf));
 
     if !str::eq(&to_lower(buf), &to_lower(string)) {
         fail!(~"Select result mismatched with expected");
     }
     else {
-        debug!("Result: Test case passed"); 
+        // debug!("Result: Test case passed"); 
     }
     ctx.exp = ~"";
     ctx.tree = None;
@@ -1073,17 +865,16 @@ fn node_name(n:*libc::c_void, qname : &mut css_qname) -> css_error {
     unsafe {
         node = ::cast::transmute(n);
         cast::forget(node);
-        qname.name = node.name.get_ref().to_owned();
+        qname.name = node.name.get();
     }
 
     CSS_OK
 }
 
-fn node_classes(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[~str] ) -> css_error{
-    debug!("node_classes");
+fn node_classes(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[@mut lwc_string] ) -> css_error{
+    // debug!("node_classes");
     let mut node : @mut node;
     let mut lc : @mut ctx_pw;
-    let lwc = wapcaplet::lwc() ;
     unsafe {
         node = ::cast::transmute(n);
         cast::forget(node);
@@ -1094,9 +885,7 @@ fn node_classes(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[~str] ) -> cs
         let n_attrs = node.attrs.len();
         while i < n_attrs {
             let mut matched;
-            let lwc_attr_class = lwc.lwc_intern_string(copy lc.attr_class);
-            let lwc_node_attrs_name = lwc.lwc_intern_string(copy node.attrs[i].name);
-            matched = lwc.lwc_string_caseless_isequal(lwc_node_attrs_name,lwc_attr_class); 
+            matched = node.lwc_instance.lwc_string_caseless_isequal(node.attrs[i].name,lc.attr_class); 
             
             if matched {break;}
             i += 1;
@@ -1115,11 +904,10 @@ fn node_classes(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[~str] ) -> cs
 }
 
 
-fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut ~str ) -> css_error{
-    debug!("node_id");
+fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut @mut lwc_string ) -> css_error{
+    // debug!("node_id");
     let mut node : @mut node;
     let mut lc : @mut ctx_pw;
-    let lwc = wapcaplet::lwc() ;
     unsafe {
         node = ::cast::transmute(n);
         cast::forget(node);
@@ -1130,19 +918,17 @@ fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut ~str ) -> css_error{
         let n_attrs = node.attrs.len();
         while i < n_attrs {
             let mut matched;
-            let lwc_attr_id = lwc.lwc_intern_string(copy lc.attr_id);
-            let lwc_attrs_name = lwc.lwc_intern_string(copy node.attrs[i].name);
-            matched = lwc.lwc_string_caseless_isequal(lwc_attrs_name,lwc_attr_id); 
+            matched = node.lwc_instance.lwc_string_caseless_isequal(node.attrs[i].name,lc.attr_id); 
 
             if matched {break;}
             i += 1;
         }
         
         if i != n_attrs {
-            *id = copy node.attrs[i].value;
+            *id = node.attrs[i].value;
         }
         else {
-            *id = ~"";
+            *id = node.lwc_instance.lwc_intern_string_managed(@"");
         }
     }
 
@@ -1150,7 +936,7 @@ fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut ~str ) -> css_error{
 }
 
 fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *libc::c_void) -> css_error {
-    debug!("named_ancestor_node");
+    // debug!("named_ancestor_node");
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
@@ -1166,7 +952,7 @@ fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *lib
     while node1.parent.is_some() {
         node1 = node1.parent.unwrap();
         let matched:bool;
-        matched = is_string_caseless_equal(node1.name.get_ref().to_owned(),qname.name);
+        matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.name.get(),qname.name);
         if matched {
             break;
         }
@@ -1179,7 +965,7 @@ fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *lib
 }
    
 fn named_parent_node(n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_void) -> css_error {
-    debug!("named_parent_node");
+    // debug!("named_parent_node");
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
@@ -1190,7 +976,7 @@ fn named_parent_node(n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_
         let matched: bool ;
         let parent_node : @mut node;
         parent_node = node1.parent.unwrap();
-        matched = is_string_caseless_equal(qname.name,parent_node.name.get_ref().to_owned());
+        matched = node1.lwc_instance.lwc_string_caseless_isequal(qname.name,parent_node.name.get());
         if matched {
             unsafe {
                 *parent = ::cast::transmute(parent_node);
@@ -1202,7 +988,7 @@ fn named_parent_node(n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_
 }
     
 fn named_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc::c_void) -> css_error {
-    debug!("named_sibling_node");
+    // debug!("named_sibling_node");
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
@@ -1212,8 +998,8 @@ fn named_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc:
     if node1.prev.is_some() {
         let matched: bool ;
         let prev_node: @mut node;
-        prev_node = node1.prev.unwrap();
-        matched = is_string_caseless_equal(qname.name,prev_node.name.get_ref().to_owned());
+        prev_node = node1.prev.get();
+        matched = node1.lwc_instance.lwc_string_caseless_isequal(qname.name,prev_node.name.get());
         if matched {
             unsafe {
                 *sibling = ::cast::transmute(prev_node);
@@ -1225,7 +1011,7 @@ fn named_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc:
 }
 
 fn named_generic_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error {
-    debug!("named_generic_sibling_node");
+    // debug!("named_generic_sibling_node");
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
@@ -1241,7 +1027,7 @@ fn named_generic_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mu
     while node1.prev.is_some() {
         node1 = node1.prev.unwrap();
         let matched:bool;
-        matched = is_string_caseless_equal(node1.name.get_ref().to_owned(),qname.name);
+        matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.name.get(),qname.name);
         if matched {
             break;
         }
@@ -1287,24 +1073,24 @@ fn sibling_node(n:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
     CSS_OK
 }
 
-fn node_has_name(_:*libc::c_void, n:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error {
-    debug!("node_has_name");
+fn node_has_name(_:*libc::c_void, n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> css_error {
+    // debug!("node_has_name");
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
         cast::forget(node1);
     }
-    if qname.name.len() == 1 && qname.name[0] == '*' as u8 {
+    if lwc_string_length(qname.name) == 1 && lwc_string_data(qname.name)[0] == '*' as u8 {
         *matched = true;
     }
     else {
-        *matched = is_string_caseless_equal(node1.name.get_ref().to_owned(),qname.name);
+        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.name.get(),qname.name);
     }
     CSS_OK
 }
 
 fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:@mut lwc_string, matched:@mut bool) -> css_error {
-    debug!("node_has_class");
+    // debug!("node_has_class");
     let mut node1:@mut node;
     let mut ctx: @mut  ctx_pw;
     let mut i:uint = 0 ;
@@ -1315,13 +1101,13 @@ fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:@mut lwc_string, match
         ctx = ::cast::transmute(pw);
         cast::forget(ctx);
     
-        debug!(fmt!("node1.attrs.len=%?",node1.attrs.len()));
-        debug!(fmt!("node1.attrs[i].name=%?",copy node1.attrs[i].name));
+        // debug!(fmt!("node1.attrs.len=%?",node1.attrs.len()));
+        // debug!(fmt!("node1.attrs[i].name=%?",copy node1.attrs[i].name));
         len = node1.attrs.len();
         
         while i < len {
             let mut amatched: bool;
-            amatched = is_string_caseless_equal(ctx.attr_class,node1.attrs[i].name); 
+            amatched = node1.lwc_instance.lwc_string_caseless_isequal(ctx.attr_class,node1.attrs[i].name); 
             
             if amatched {
                 break;
@@ -1335,7 +1121,7 @@ fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:@mut lwc_string, match
     if (i != len) {
         //io::println(fmt!("name=%?",lwc_string_data(name.clone())));
         //io::println(fmt!("node1.attrs[i].name=%?",copy node1.attrs[i].value));
-        condition_match = is_string_caseless_equal(lwc_string_data(name.clone()), copy node1.attrs[i].value);
+        condition_match = node1.lwc_instance.lwc_string_caseless_isequal(name, node1.attrs[i].value);
     }
     
     if condition_match {
@@ -1351,12 +1137,11 @@ fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:@mut lwc_string, match
 }
 
 fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:@mut lwc_string, matched:@mut bool) -> css_error {
-    debug!("node_has_id");
+    // debug!("node_has_id");
     let mut node1:@mut node;
     let mut ctx: @mut  ctx_pw;
     let mut i:uint = 0 ;
     let len:uint;
-    let lwc = wapcaplet::lwc() ;
     
     unsafe {
         node1 = ::cast::transmute(n);
@@ -1367,9 +1152,7 @@ fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:@mut lwc_string, matched:
         
         while i  < len {
             let mut amatched: bool;
-            let lwc_attr_id = lwc.lwc_intern_string(copy ctx.attr_id);
-            let lwc_attrs_name = lwc.lwc_intern_string(copy node1.attrs[i].name);
-            amatched = lwc.lwc_string_caseless_isequal(lwc_attrs_name,lwc_attr_id); 
+            amatched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,ctx.attr_id); 
             if amatched {
                 break;
             }
@@ -1382,7 +1165,7 @@ fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:@mut lwc_string, matched:
     if (i != len) {
         //io::println(fmt!("name=%?",lwc_string_data(name.clone())));
         //io::println(fmt!("node1.attrs[i].name=%?",copy node1.attrs[i].value));
-        condition_match = is_string_caseless_equal(lwc_string_data(name.clone()), copy node1.attrs[i].value);
+        condition_match = node1.lwc_instance.lwc_string_caseless_isequal(name, node1.attrs[i].value);
     }
     
     if condition_match {
@@ -1398,8 +1181,8 @@ fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:@mut lwc_string, matched:
 }
 
 
-fn node_has_attribute(n:*libc::c_void, qname:css_qname, matched:@mut bool) -> css_error {
-    debug!("node_has_attribute");
+fn node_has_attribute(n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> css_error {
+    // debug!("node_has_attribute");
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
@@ -1409,7 +1192,7 @@ fn node_has_attribute(n:*libc::c_void, qname:css_qname, matched:@mut bool) -> cs
     //let mut vlen = value.len();
     *matched = false;
     while (i as uint) < node1.attrs.len() {
-        *matched = is_string_caseless_equal(copy node1.attrs[i].name,qname.name);
+        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
         }
@@ -1419,8 +1202,8 @@ fn node_has_attribute(n:*libc::c_void, qname:css_qname, matched:@mut bool) -> cs
 }
     
 
-fn  node_has_attribute_equal(n:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error {
-    debug!("node_has_attribute_equal");
+fn  node_has_attribute_equal(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+    // debug!("node_has_attribute_equal");
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
@@ -1430,7 +1213,7 @@ fn  node_has_attribute_equal(n:*libc::c_void, qname:css_qname,value:~str, matche
     
     *matched = false;
     while (i as uint) < node1.attrs.len() {
-        *matched = is_string_caseless_equal(copy node1.attrs[i].name,qname.name);
+        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
         }
@@ -1438,15 +1221,15 @@ fn  node_has_attribute_equal(n:*libc::c_void, qname:css_qname,value:~str, matche
     }
 
     if *matched {
-        *matched = is_string_caseless_equal(copy node1.attrs[i].name,value);
+        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,value);
     }
     CSS_OK
 }
 
 
 
-fn node_has_attribute_includes(n:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error {
-    debug!("node_has_attribute_includes");
+fn node_has_attribute_includes(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+    // debug!("node_has_attribute_includes");
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
@@ -1454,12 +1237,12 @@ fn node_has_attribute_includes(n:*libc::c_void, qname:css_qname,value:~str, matc
     }
     
     let mut i:u32 = 0 ;
-    let vlen = value.len();
+    let vlen = lwc_string_length(value);
     
     *matched = false;
     
     while (i as uint) < node1.attrs.len() {
-        *matched = is_string_caseless_equal(copy node1.attrs[i].name,qname.name);
+        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
         }
@@ -1467,7 +1250,7 @@ fn node_has_attribute_includes(n:*libc::c_void, qname:css_qname,value:~str, matc
     }
 
     if *matched {
-        let start = copy node1.attrs[i].value;
+        let start = lwc_string_data(node1.attrs[i].value);
         let mut start_len :uint = 0;
         let mut p:uint = 0;
         let end:uint = start.len();
@@ -1476,7 +1259,7 @@ fn node_has_attribute_includes(n:*libc::c_void, qname:css_qname,value:~str, matc
         while p < end {
             if start[p] == ' ' as u8 {
                 if (p - start_len == vlen) && 
-                is_string_caseless_equal(start.slice(start_len,start_len + vlen).to_owned(),value) {
+                is_string_caseless_equal(start.slice(start_len,start_len + vlen),lwc_string_data(value)) {
                     *matched = true;
                     break;
                 }
@@ -1489,18 +1272,18 @@ fn node_has_attribute_includes(n:*libc::c_void, qname:css_qname,value:~str, matc
 }
 
 
-fn node_has_attribute_dashmatch(n:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error {
-    debug!("node_has_attribute_dashmatch");
+fn node_has_attribute_dashmatch(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+    // debug!("node_has_attribute_dashmatch");
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
         cast::forget(node1);
     }
     let mut i:u32 = 0 ;
-    let vlen = value.len();
+    let vlen = lwc_string_length(value);
     *matched = false;
     while (i as uint) < node1.attrs.len() {
-        *matched = is_string_caseless_equal(copy node1.attrs[i].name,qname.name);
+        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
         }
@@ -1508,7 +1291,7 @@ fn node_has_attribute_dashmatch(n:*libc::c_void, qname:css_qname,value:~str, mat
     }
 
     if *matched {
-        let start = copy node1.attrs[i].value;
+        let start = lwc_string_data(node1.attrs[i].value);
         let mut start_len :uint = 0;
         let mut p:uint = 0;
         let end:uint = start.len();
@@ -1517,7 +1300,7 @@ fn node_has_attribute_dashmatch(n:*libc::c_void, qname:css_qname,value:~str, mat
         while p < end {
             if start[p] == '-' as u8 {
                 if (p - start_len == vlen) && 
-                is_string_caseless_equal(start.slice(start_len,start_len + vlen).to_owned(),value) {
+                is_string_caseless_equal(start.slice(start_len,start_len + vlen),lwc_string_data(value)) {
                     *matched = true;
                     break;
                 }
@@ -1530,8 +1313,8 @@ fn node_has_attribute_dashmatch(n:*libc::c_void, qname:css_qname,value:~str, mat
 }
 
 
-fn node_has_attribute_prefix(n:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error {
-    debug!("node_has_attribute_prefix");
+fn node_has_attribute_prefix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+    // debug!("node_has_attribute_prefix");
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
@@ -1540,7 +1323,7 @@ fn node_has_attribute_prefix(n:*libc::c_void, qname:css_qname,value:~str, matche
     let mut i:u32 = 0 ;
     *matched = false;
     while (i as uint) < node1.attrs.len() {
-        *matched = is_string_caseless_equal(copy node1.attrs[i].name,qname.name);
+        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
         }
@@ -1548,21 +1331,21 @@ fn node_has_attribute_prefix(n:*libc::c_void, qname:css_qname,value:~str, matche
     }
 
     if *matched {
-        let len = node1.attrs[i].value.len();
-        let data = copy node1.attrs[i].value;
-        let vlen = value.len();
+        let len = lwc_string_length(node1.attrs[i].value);
+        let data = lwc_string_data(node1.attrs[i].value);
+        let vlen = lwc_string_length(value);
         if len < vlen {
             *matched = false;
         }
         else {
-            *matched = is_string_caseless_equal(data.slice(0, vlen).to_owned(),value);
+            *matched = is_string_caseless_equal(data.slice(0, vlen),lwc_string_data(value));
         }
     }
     CSS_OK
 }
 
-fn node_has_attribute_suffix(n:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error {
-    debug!("node_has_attribute_suffix");
+fn node_has_attribute_suffix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+    // debug!("node_has_attribute_suffix");
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
@@ -1571,7 +1354,7 @@ fn node_has_attribute_suffix(n:*libc::c_void, qname:css_qname,value:~str, matche
     let mut i:u32 = 0 ;
     *matched = false;
     while (i as uint) < node1.attrs.len() {
-        *matched = is_string_caseless_equal(copy node1.attrs[i].name,qname.name);
+        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
         }
@@ -1579,15 +1362,15 @@ fn node_has_attribute_suffix(n:*libc::c_void, qname:css_qname,value:~str, matche
     }
 
     if *matched {
-        let len = node1.attrs[i].value.len();
-        let data = copy node1.attrs[i].value;
-        let vlen = value.len();
+        let len = lwc_string_length(node1.attrs[i].value);
+        let data = lwc_string_data(node1.attrs[i].value);
+        let vlen = lwc_string_length(value);
         let suffix_start = len - vlen;
         if len < vlen {
             *matched = false;
         }
         else {
-            *matched = is_string_caseless_equal(data.slice(suffix_start,suffix_start + vlen).to_owned(),value);
+            *matched = is_string_caseless_equal(data.slice(suffix_start,suffix_start + vlen),lwc_string_data(value));
             
         }
     }
@@ -1596,8 +1379,8 @@ fn node_has_attribute_suffix(n:*libc::c_void, qname:css_qname,value:~str, matche
     CSS_OK
 }
 
-fn node_has_attribute_substring(n:*libc::c_void, qname:css_qname,value:~str, matched:@mut bool) -> css_error {
-    debug!("node_has_attribute_substring");
+fn node_has_attribute_substring(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+    // debug!("node_has_attribute_substring");
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
@@ -1606,16 +1389,16 @@ fn node_has_attribute_substring(n:*libc::c_void, qname:css_qname,value:~str, mat
     let mut i:u32 = 0 ;
     *matched = false;
     while (i as uint) < node1.attrs.len() {
-        *matched = is_string_caseless_equal(copy node1.attrs[i].name,qname.name);
+        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
         }
         i += 1;
     }
     if *matched {
-        let len = node1.attrs[i].value.len();
-        let data = copy node1.attrs[i].value;
-        let vlen = value.len();
+        let len = lwc_string_length(node1.attrs[i].value);
+        let data = lwc_string_data(node1.attrs[i].value);
+        let vlen = lwc_string_length(value);
         let last_start_len = len -vlen;
         if len < vlen {
             *matched = false;
@@ -1623,7 +1406,7 @@ fn node_has_attribute_substring(n:*libc::c_void, qname:css_qname,value:~str, mat
         else {
             let mut iter:uint = 0;
             while iter < last_start_len {
-                if is_string_caseless_equal(data.slice(iter,iter + vlen).to_owned(),value) {
+                if is_string_caseless_equal(data.slice(iter,iter + vlen).to_owned(),lwc_string_data(node1.attrs[i].value)) {
                     *matched =true;
                     break;
                 }
@@ -1649,25 +1432,25 @@ fn node_is_root(n:*libc::c_void, matched:@mut bool) -> css_error {
 }
    
 fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i32) -> css_error {
-    debug!("node_count_siblings");
+    // debug!("node_count_siblings");
     let mut cnt : i32 = 0;
     let mut matched;
     let mut node1:@mut node;
-    let mut name: ~str ;
+    let mut name: @mut lwc_string ;
     unsafe {
         node1 = ::cast::transmute(n);
         cast::forget(node1);
-        name = (node1.name).get_ref().to_owned();
+        name = node1.name.get();
     }
     
     if after {
         while node1.next.is_some() {
             if same_name {
-                let mut next_name: ~str ;
+                let mut next_name: @mut lwc_string ;
                 let temp_node = (copy node1.next).unwrap();
-                next_name = temp_node.name.get_ref().to_owned();
+                next_name = temp_node.name.get();
                 
-                matched = is_string_caseless_equal(name, next_name); 
+                matched = node1.lwc_instance.lwc_string_caseless_isequal(name, next_name); 
                 
                 if matched {
                     cnt += 1;
@@ -1682,11 +1465,11 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
     else {
         while node1.prev.is_some() {
             if same_name {
-                let mut prev_name: ~str;
+                let mut prev_name: @mut lwc_string;
                 let temp_node = (copy node1.prev).unwrap();
-                prev_name = temp_node.name.get_ref().to_owned();
+                prev_name = temp_node.name.get();
                 
-                matched = is_string_caseless_equal(name,prev_name); 
+                matched = node1.lwc_instance.lwc_string_caseless_isequal(name,prev_name); 
                 
                 if matched {
                     cnt += 1;
@@ -1763,7 +1546,7 @@ fn node_is_target(_:*libc::c_void, matched:@mut bool) -> css_error {
     CSS_OK
 }
 
-fn node_is_lang(_:*libc::c_void, _:~str, matched:@mut bool) -> css_error {
+fn node_is_lang(_:*libc::c_void, _:@mut lwc_string, matched:@mut bool) -> css_error {
     *matched = false;
     CSS_OK
 }
@@ -1800,7 +1583,7 @@ fn ua_default_for_property(property:u32, hint:@mut css_hint ) -> css_error {
 
 
 fn compute_font_size(parent: Option<@mut css_hint>, size: Option<@mut css_hint>) -> css_error {
-    debug!("\n Entering compute ") ;
+    // debug!("\n Entering compute ") ;
     let mut parent_value:@mut css_hint;
     let mut size_val : @mut css_hint;
     let sizes:~[@mut css_hint_length] =
@@ -1837,7 +1620,7 @@ fn compute_font_size(parent: Option<@mut css_hint>, size: Option<@mut css_hint>)
             size_val = size.unwrap();
         }
 
-        debug!(fmt!("size_val.status == %? , CSS_FONT_SIZE_INHERIT as u8 == %u" , size_val.status , CSS_FONT_SIZE_INHERIT as uint));
+        // debug!(fmt!("size_val.status == %? , CSS_FONT_SIZE_INHERIT as u8 == %u" , size_val.status , CSS_FONT_SIZE_INHERIT as uint));
         assert!(size_val.status != CSS_FONT_SIZE_INHERIT as u8);
 
         if size_val.status < CSS_FONT_SIZE_LARGER as u8 {

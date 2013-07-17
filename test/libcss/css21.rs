@@ -8,14 +8,15 @@ use std::io::*;
 use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
-use wapcaplet::*;
 use dump::*;
+use wapcaplet::*;
+use css::parse::propstrings::*;
 
 pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
-fn css_create_params() -> css_params {
+fn css_create_params(lwc_instance: @mut lwc , propstrings_instance: @css_propstrings) -> css_params {
     let css_param = css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
@@ -27,14 +28,17 @@ fn css_create_params() -> css_params {
         resolve : @resolve_url,
         import : None,
         color : None,
-        font : None
+        font : None,
+        lwc_instance: Some(lwc_instance),
+        propstrings_instance: Some(propstrings_instance)
     };
     return css_param;
 }
 
 fn create_css() -> @mut css{
-    let lwc = wapcaplet::lwc();
-    let css = css::css_create( &css_create_params() , Some(lwc));
+    let lwc_instance = lwc();
+    let propstrings_instance = css_propstrings::css_propstrings(lwc_instance);
+    let css = css::css_create( &css_create_params(lwc_instance , propstrings_instance));
     css
 }
 
@@ -82,7 +86,9 @@ fn css(file_name: ~str) {
                 let (error1 , option_url , _) = css.css_stylesheet_next_pending_import();
                 match error1 {
                     CSS_OK => {
-                        let mut params: css_params = css_create_params();
+                        let lwc_instance = lwc();
+                        let propstrings_instance = css_propstrings::css_propstrings(lwc_instance);
+                        let mut params: css_params = css_create_params(lwc_instance , propstrings_instance);
                         params.url = option_url.unwrap();
                         let css_import = create_css();
                         let err = css_import.css_stylesheet_data_done();
