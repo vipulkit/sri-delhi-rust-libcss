@@ -44,7 +44,7 @@ fn main() {
 
 fn parse(file_name: ~str) {
     let css = css_create_fn();
-    let r:@Reader = file_reader(&Path(file_name)).get();
+    let r:@Reader = file_reader(&Path(file_name)).unwrap();
     let mut dataFlag = false;
     // let mut expectedFlag: bool;
 

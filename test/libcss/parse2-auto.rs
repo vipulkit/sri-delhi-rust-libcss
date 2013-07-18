@@ -79,9 +79,9 @@ fn create_css() -> @mut css{
     css
 }
 
-pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
+pub fn handle_line(args: &[u8],  ctx:@mut line_ctx)->bool {
     debug!("Entering: handle_line");
-    let data : ~[u8] = args ;
+    let data : &[u8] = args ;
     // unsafe{debug!(fmt!("ctx.indata == %?, ctx.inexp == %?", ctx.indata, ctx.inexp));}
     if  (data.len() == 0) {
         debug!("error");
@@ -93,7 +93,7 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
             /* This marks end of testcase, so run it */
             debug!("Entering: handle_line :: if (ctx.inexp)");
 
-            run_test(copy ctx.buf , copy ctx.exp);
+            run_test(ctx.buf.clone() , ctx.exp.clone());
             ctx.exp= ~[];
             ctx.buf=~[];
         }
@@ -118,7 +118,7 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
         }
         else if (ctx.indata) {
             debug!("Entering: handle_line :: if (ctx.indata) (1)");
-            ctx.buf = ctx.buf + copy data;
+            ctx.buf = ctx.buf + data.clone();
             ctx.buf.push('\n' as u8);
         } 
         else {
@@ -133,12 +133,12 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx)->bool {
 
         if ctx.indata {
             debug!("Entering: handle_line :: if (ctx.indata) (2)");
-            ctx.buf = ctx.buf + copy data;
+            ctx.buf = ctx.buf + data.clone();
             ctx.buf.push('\n' as u8);
         }
         if (ctx.inexp) {
             debug!("Entering: handle_line :: if (ctx.inexp)");
-            ctx.exp.push(data);
+            ctx.exp.push(data.to_owned());
         }
     }
 
@@ -170,14 +170,14 @@ fn testMain(fileName: ~str) {
             assert!(false) ;
         }
     }        
-    let vec_lines = vec::split(file_content, check_newline) ;
+    let mut vec_lines = file_content.split_iter(check_newline) ;
 
-    for vec_lines.iter().advance |&each_line| {
+    for vec_lines.advance |each_line| {
         handle_line(each_line,ctx);
     }
     
-    if copy ctx.buf.len() > 0 {
-        run_test(copy ctx.buf,copy ctx.exp);
+    if ctx.buf.len() > 0 {
+        run_test(ctx.buf.clone(),ctx.exp.clone());
     }
 }
 

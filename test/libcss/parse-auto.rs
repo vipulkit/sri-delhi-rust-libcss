@@ -34,6 +34,7 @@ enum expected_value {
     string(@str)
 }
 
+
 pub struct exp_entry{
     ftype:int,
     name: ~str,
@@ -284,7 +285,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
             for data.iter().advance |ch| {
                 ctx.buf.push(ch as u8);
             }
-            debug!(fmt!("Buffer is 1= %?",copy ctx.buf));
+            debug!(fmt!("Buffer is 1= %?",ctx.buf.clone()));
         } 
         else {
             ctx.indata = ( data.len()>=5 && is_string_caseless_equal( data.slice(1,5), "data") );
@@ -298,7 +299,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
             for data.iter().advance |ch| {
                 ctx.buf.push(ch as u8);
             }
-            debug!(fmt!("Buffer is 2= %?",copy ctx.buf));
+            debug!(fmt!("Buffer is 2= %?",ctx.buf.clone()));
         }
         if (ctx.inexp) {
             len = data.len() ;
@@ -307,7 +308,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
             }
 
             css__parse_expected(ctx, data);
-            debug!(fmt!("ctx == %?",copy ctx.exp));
+            debug!(fmt!("ctx == %?",ctx.exp.clone()));
         }
     }
 
@@ -337,7 +338,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
                 len += 1;
             }
 
-            let num = strtol (copy data,&mut len);
+            let num = strtol (data.clone(),&mut len);
 
             while ( (data[len]==0x20) || (data[len]==0x09) || (data[len]==0x0a) || 
                  (data[len]==0x0b) || (data[len]==0x0c) || (data[len]==0x0d) ) && (data.len()>len) {
@@ -356,7 +357,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
             };
             len += min ;
 
-            debug!(fmt!("Entry created is =%?=%?=",copy entry.name,entry.ftype)); 
+            debug!(fmt!("Entry created is =%?=%?=",entry.name.clone(),entry.ftype)); 
             ctx.exp.push(entry);
             ctx.inrule = true;
         }
@@ -421,7 +422,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
                     }
                     /* Assume hexnum */
                     debug!( fmt!("Entering: else 1= %?=%?=",data,len));
-                    let val = strtoul(copy data,&mut len) ;
+                    let val = strtoul(data.clone(),&mut len) ;
                     debug!( fmt!("Entering: else 2= %?=%?=%?=",data,len,val));
                     /* Append to bytecode */
                     rule.expected.push(bytecode(val.get_or_default(0) as u32)) ;
@@ -435,7 +436,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
 
     debug!(fmt!("Data == %? ", str::from_bytes(data)));
-    debug!(fmt!("Expected entry type == %d, name == %s", e.ftype, copy e.name) );
+    debug!(fmt!("Expected entry type == %d, name == %s", e.ftype, e.name.clone()) );
     io::print(fmt!("Expected bytecode == ") );
     for e.expected.mut_iter().advance |&expected| {
         io::print(fmt!("%? ", expected ));
@@ -486,7 +487,7 @@ pub fn run_test(ctx:@mut line_ctx) {
     let css_instance = css::css_create( &params) ;
 
 
-    error = css_instance.css_stylesheet_append_data(copy (ctx.buf));
+    error = css_instance.css_stylesheet_append_data(ctx.buf.clone());
     match error {
         CSS_OK=>{},
         CSS_NEEDDATA=>{},
@@ -525,7 +526,7 @@ pub fn run_test(ctx:@mut line_ctx) {
 
         match error {
             CSS_OK=> {
-                params.url = copy url;
+                params.url = url.clone();
 
                 let import = css::css_create(&params) ;
                 
@@ -545,7 +546,7 @@ pub fn run_test(ctx:@mut line_ctx) {
     if (css_instance.stylesheet.rule_count != ctx.exp.len() ) {
         debug!(fmt!("Got %u rules. Expected %u\n",
                 css_instance.stylesheet.rule_count , ctx.exp.len()) );
-        report_fail(copy ctx.buf,copy ctx.exp[e]);
+        report_fail(ctx.buf.clone(), ctx.exp[e].clone());
         fail!(~"Unexpected number of rules ") ;
     }
 
@@ -566,7 +567,7 @@ pub fn run_test(ctx:@mut line_ctx) {
                             fail!(~"Expected type differs") ;
                         }
                         if validate_rule_selector(rule,ctx.exp[e]) {
-                            report_fail(copy ctx.buf,copy ctx.exp[e]);
+                            report_fail(ctx.buf.clone(), ctx.exp[e].clone());
                             fail!(~"Validation of rule selector failed");
                         }
                         ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
@@ -639,7 +640,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 
     // Build selector string
      debug!("Entering: validate_rule_selector: unsafe");
-     debug!(fmt!("Parsed Rule List:%?",copy s.selectors.len()));
+     debug!(fmt!("Parsed Rule List:%?",s.selectors.len().clone()));
 	 let mut i : uint = 0;
 	 let length = s.selectors.len();
      while i < length {
@@ -659,7 +660,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
     /* Compare with expected selector */
     if name != e.name {
         debug!(fmt!("FAIL Mismatched names\n
-                        Got name '%s'. Expected '%s'\n",name,copy e.name) );
+                        Got name '%s'. Expected '%s'\n",name, e.name.clone()) );
         return true ;
     }
 
@@ -686,13 +687,13 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
             debug!(fmt!("Entering: while i < unsafe {e.bytecode.len()} i == %?  , e.bytecode.len() == %?" , i , e.expected.len()));
             
 
-            match copy e.expected[i] {
+            match e.expected[i] {
                 bytecode(b) => {
                     if style.bytecode[i] != b {
                         debug!(fmt!("FAIL Bytecode differs 
                                         Bytecode differs at %?", i) );
                         while (i < e.expected.len() ) {
-                            debug!(fmt!("%? ", copy style.bytecode[i]));
+                            debug!(fmt!("%? ", style.bytecode[i].clone()));
                             i += 1;
                         }
                         return true;
@@ -735,7 +736,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 
 pub fn validate_rule_charset(s:@mut css_rule_charset, e:@mut exp_entry) -> bool {
 
-    debug!(fmt!("Parsed Rule List:%?",copy s.encoding));
+    debug!(fmt!("Parsed Rule List:%?", s.encoding.clone()));
     if( e.name.len() != s.encoding.len() ) {
         return false ;
     }
@@ -752,7 +753,7 @@ pub fn validate_rule_charset(s:@mut css_rule_charset, e:@mut exp_entry) -> bool 
 
 pub fn validate_rule_import(s:@mut css_rule_import, e:@mut exp_entry) -> bool {
 
-    debug!(fmt!("Parsed Rule List:%?",copy s.url));
+    debug!(fmt!("Parsed Rule List:%?", s.url.clone()));
     if( e.name.len() < s.url.len() ) {
         return false ;
     }
@@ -801,7 +802,7 @@ fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
 }
 
 fn dump_selector(selector:@mut css_selector, ptr:&mut ~str){
-    let d:~[@mut css_selector_detail] = copy selector.data;
+    let d:~[@mut css_selector_detail] = selector.data.clone();
     debug!(fmt!("Selector Data:%?",d));
   	let mut iter:uint = 0;
     while iter < d.len() {
@@ -856,7 +857,7 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
                 } ,
                 _=>{
                     ptr.push_char('(' );
-                    str::push_str(ptr,fmt!("%?n+%?",copy detail.a,copy detail.b));
+                    str::push_str(ptr,fmt!("%?n+%?", detail.a.clone(), detail.b.clone()));
                     ptr.push_char(')' );
                 }
             }

@@ -34,7 +34,7 @@ pub enum LINE_CTX_DATA_TYPE {
 
 pub fn css__parse_filesize( fileName:~str)->uint {
     // debug!(~"css__parse_filesize : "+ fileName);
-    let r:@Reader = file_reader(&Path(fileName)).get(); 
+    let r:@Reader = file_reader(&Path(fileName)).unwrap(); 
     r.seek(0,SeekEnd);
     r.tell()
 }
@@ -53,7 +53,7 @@ pub fn css__parse_strnchr(string:&~str, chr:char)-> (~str,uint) {
 }
 pub fn css__parse_testfile(filename:~str,  callback:line_func, pw:LINE_CTX_DATA_TYPE)->bool {
     // debug!(~"css__parse_testfile : "+ filename);
-    let r:@Reader = file_reader(&Path(filename)).get();
+    let r:@Reader = file_reader(&Path(filename)).unwrap();
     let mut data:~str;
     let mut string: ~str;
 
@@ -68,14 +68,14 @@ pub fn css__parse_testfile(filename:~str,  callback:line_func, pw:LINE_CTX_DATA_
                 loop;
             }
 
-            if !(*callback)(copy string, pw) {
+            if !(*callback)(string.clone(), pw) {
                 return false;
             }
             iter += 1;
         }
         string = data.slice(iter * 300, data.len()).to_owned();
         if string.len() > 0 {
-            if !(*callback)( copy string, pw) {
+            if !(*callback)( string.clone(), pw) {
                 return false;
             }   
         }

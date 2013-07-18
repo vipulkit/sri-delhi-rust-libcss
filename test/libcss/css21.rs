@@ -51,7 +51,7 @@ fn css(file_name: ~str) {
     let css = create_css();
     let CHUNK_SIZE = 4096;
     let mut buf: ~[u8];
-    let r:@Reader = file_reader(&Path(file_name)).get(); 
+    let r:@Reader = file_reader(&Path(file_name)).unwrap(); 
     r.seek(0 , SeekEnd);
     let mut len = r.tell();
     let origlen = len; 

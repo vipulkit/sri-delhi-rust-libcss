@@ -394,7 +394,7 @@ impl css_parser {
 
         /* Use pushback, if it exists */
         if self.pushback.is_some() {
-            token_option = Some(self.pushback.swap_unwrap());
+            token_option = Some(self.pushback.take_unwrap());
         }
         else {
             /* Otherwise, ask the lexer */
@@ -421,7 +421,7 @@ impl css_parser {
                 let idata = Some(self.intern_string(from_bytes(t.data.data)));
 
                 let t1_data = css_token_data {
-                    data: copy t.data.data,
+                    data: t.data.data.clone(),
                     len: t.data.len
                 };
 
@@ -437,7 +437,7 @@ impl css_parser {
             }
             else {
                 let t1_data = css_token_data {
-                    data: copy t.data.data,
+                    data: t.data.data.clone(),
                     len: t.data.len
                 };
 

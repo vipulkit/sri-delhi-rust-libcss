@@ -81,7 +81,7 @@ impl css {
 
         // create inputstream
         let (inputstream_option, _) =  
-            match copy params.charset {
+            match params.charset.clone() {
                 None => inputstream(None, None ,Some(@css__charset_extract)),
                 Some(charset) => inputstream(Some(charset), Some(CSS_CHARSET_DICTATED as int), Some(@css__charset_extract))
             };

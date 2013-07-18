@@ -1,4 +1,3 @@
-use std::vec::*;
 use extra::time;
 
 use charset::aliases::*;
@@ -53,7 +52,7 @@ pub fn inputstream(encoding: Option<~str>, charset_src: Option<int>, csdetect_in
     let end_time = time::precise_time_ns();
     let alias_create_time = (end_time as float - start_time as float);
 
-    match parserutils_filter(alias_instance , copy stream_encoding) {
+    match parserutils_filter(alias_instance , stream_encoding.clone()) {
         (x,PARSERUTILS_OK) =>{
             let filter_instance = x.unwrap(); 
             stream = ~inputstream {
@@ -63,7 +62,7 @@ pub fn inputstream(encoding: Option<~str>, charset_src: Option<int>, csdetect_in
                 raw: ~[],
                 raw_cursor: 0,
                 done_first_chunk: false,
-                mibenum: filter_instance.alias.parserutils_charset_mibenum_from_name(copy stream_encoding),
+                mibenum: filter_instance.alias.parserutils_charset_mibenum_from_name(stream_encoding.clone()),
                 encsrc: stream_charset_src,
                 input: filter_instance,
                 csdetect: csdetect_instance,

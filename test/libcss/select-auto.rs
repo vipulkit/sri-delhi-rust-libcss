@@ -111,8 +111,8 @@ pub fn select_test(file:~str) {
         pseudo_element:0,
         target:None,
         
-        attr_class:lwc_attr_class.swap_unwrap(),
-        attr_id:lwc_attr_id.swap_unwrap(),
+        attr_class:lwc_attr_class.take_unwrap(),
+        attr_id:lwc_attr_id.take_unwrap(),
 
         lwc_instance:lwc_ins,
         propstrings_instance: propstring
@@ -841,7 +841,7 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64) {
 
 
     // debug!(fmt!(" CSS Selection result is =%?",results));
-    let string:~str = copy ctx.exp;
+    let string:~str = ctx.exp.clone();
     // debug!(fmt!("Expected : %s ",string));
     // debug!(fmt!("Result: %s",buf));
 
@@ -1460,7 +1460,7 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
         while node1.next.is_some() {
             if same_name {
                 let mut next_name: @mut lwc_string ;
-                let temp_node = (copy node1.next).unwrap();
+                let temp_node = (node1.next).unwrap();
                 next_name = temp_node.name.get();
                 
                 matched = node1.lwc_instance.lwc_string_caseless_isequal(name, next_name); 
@@ -1479,7 +1479,7 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
         while node1.prev.is_some() {
             if same_name {
                 let mut prev_name: @mut lwc_string;
-                let temp_node = (copy node1.prev).unwrap();
+                let temp_node = (node1.prev).unwrap();
                 prev_name = temp_node.name.get();
                 
                 matched = node1.lwc_instance.lwc_string_caseless_isequal(name,prev_name); 

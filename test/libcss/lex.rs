@@ -20,7 +20,7 @@ fn main() {
 
 fn lex(fileName: ~str) {
 
-    let r: @Reader = io::file_reader(&Path(fileName)).get();
+    let r: @Reader = io::file_reader(&Path(fileName)).unwrap();
     let mut dataFlag = false;
     let mut expectedFlag = false;
     let mut resetFlag = false;
@@ -93,7 +93,7 @@ fn lex(fileName: ~str) {
                         // debug!(fmt!("token == %?", token));
 
                         let token_type_string = token_to_string(token.token_type);
-                        let token_data = str::from_bytes(copy token.data.data);
+                        let token_data = str::from_bytes(token.data.data.clone());
 
                         let found = fmt!("%s%s" , token_type_string , token_data);
                         debug!(fmt!("found == %?", found));
@@ -112,7 +112,7 @@ fn lex(fileName: ~str) {
                             // debug!(fmt!("token == %?", token));
 
                             let token_type_string = token_to_string(token.token_type);
-                            let token_data = str::from_bytes(copy token.data.data);
+                            let token_data = str::from_bytes(token.data.data.clone());
 
                             let found = fmt!("%s%s" , token_type_string , token_data);
 

@@ -36,7 +36,7 @@ impl alias_gen {
                 let mibenum = u16::from_str(alias_entry_columns[1]).unwrap();
                 
                 // add the canonical name to the list of canonical names
-                self.canonical_name_list.push(copy canonical_name);
+                self.canonical_name_list.push(canonical_name.clone());
                 // insert <mibenum, index of canonical name> into mibenum_map
                 self.mibenum_map.insert(mibenum,line_number-1);
                 // insert <canonical_name, mibenum> into alias_map
@@ -51,7 +51,7 @@ impl alias_gen {
                         }
                     } 
                     // insert <alias, mibenum> into alias_map
-                    for aliases.iter().advance |&alias| {
+                    for aliases.iter().advance |alias| {
                         //io::println(alias);
                         self.alias_map.insert(alias.to_ascii().to_lower().to_str_ascii(), mibenum);
                     }
@@ -61,7 +61,7 @@ impl alias_gen {
         };
 
         let output_path = Path("aliases.rs");
-        let fp = io::file_writer(&output_path,[io::Create]).get();
+        let fp = io::file_writer(&output_path,[io::Create]).unwrap();
 
         self.write_header(fp);
         self.write_memcmp(fp);
@@ -249,7 +249,7 @@ impl alias_gen {
         fp.write_line("                    Some(canonical_name_list_index) => {");
         fp.write_line("                        debug!(\"parserutils__charset_alias_canonicalise:: canonical_name_list_index == %?\", canonical_name_list_index);");
         fp.write_line("                        if (canonical_name_list_index < self.canonical_name_list.len()) {");
-        fp.write_line("                            let temp_name = copy (self.canonical_name_list[canonical_name_list_index]);");
+        fp.write_line("                            let temp_name = (self.canonical_name_list[canonical_name_list_index].clone());");
         fp.write_line("                            let temp_name_len = temp_name.len() as u16;");
         fp.write_line("                            Some( parserutils_charset_aliases_canon {");
         fp.write_line("                                    mib_enum: temp_mib_enum,");
@@ -277,7 +277,7 @@ impl alias_gen {
         fp.write_line("            None => None,");
         fp.write_line("            Some (canonical_name_list_index) => {");
         fp.write_line("                if canonical_name_list_index < self.canonical_name_list.len() {");
-        fp.write_line("                    Some(copy self.canonical_name_list[canonical_name_list_index])");
+        fp.write_line("                    Some(self.canonical_name_list[canonical_name_list_index].clone())");
         fp.write_line("                }");
         fp.write_line("                else {");
         fp.write_line("                    None");

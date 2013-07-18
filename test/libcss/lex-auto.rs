@@ -5,7 +5,7 @@ extern mod wapcaplet;
 extern mod extra;
 
 
-use std::{io,str,vec};
+use std::{io,str};
 
 use css::utils::errors::*;
 use css::lex::lexer::*;
@@ -132,7 +132,7 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx_lex)->bool
         if (ctx.inexp) {
             /* This marks end of testcase, so run it */
 
-            run_test(copy ctx.buf , copy ctx.exp);
+            run_test(ctx.buf.clone() , ctx.exp.clone());
             ctx.exp= ~[];
             ctx.buf=~[];
         }
@@ -143,13 +143,13 @@ pub fn handle_line(args: ~[u8],  ctx:@mut line_ctx_lex)->bool
             ctx.indata = match_vec_u8(data,&"#data");
             ctx.inexp  = match_vec_u8(data,&"#expected");
         } else {
-            ctx.buf = ctx.buf + copy data;
+            ctx.buf = ctx.buf + data.clone();
             ctx.buf.push('\n' as u8);
         }
     }
     else {
         if ctx.indata {
-            ctx.buf = ctx.buf + copy data;
+            ctx.buf = ctx.buf + data.clone();
             ctx.buf.push('\n' as u8);
             
         }
@@ -210,17 +210,14 @@ fn testMain(fileName: ~str) {
             assert!(false) ;
         }
     }        
-    let vec_lines = vec::split(file_content, check_newline) ;
+    let mut vec_lines = file_content.split_iter(check_newline) ;
 
-    let mut z = 0 ;
-    let z_len = vec_lines.len();
-    while z<z_len {
-        handle_line(copy vec_lines[z],ctx);
-        z += 1;
+    for vec_lines.advance |each_line| {
+        handle_line(each_line.to_owned(),ctx);
     }
     
-    if copy ctx.buf.len() > 0 {
-        run_test(copy ctx.buf,copy ctx.exp);
+    if ctx.buf.len() > 0 {
+        run_test(ctx.buf.clone(),ctx.exp.clone());
     }
 }
 
@@ -266,7 +263,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
 
                 let token_type_string = token_to_string(token.token_type);
                 // unsafe{debug!(fmt!("token bytes == %?", token.data.data));}
-                let token_data = str::from_bytes(copy token.data.data);
+                let token_data = str::from_bytes(token.data.data.clone());
                 let mut found = token_type_string;
                 
                 if ((token.token_type as int) < (CSS_TOKEN_LAST_INTERN as int)) {
@@ -290,7 +287,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
                         // debug!(fmt!("token == %?", token));
 
                         let token_type_string = token_to_string(token.token_type);
-                        let token_data = str::from_bytes(copy token.data.data);
+                        let token_data = str::from_bytes(token.data.data.clone());
 
                         let found = fmt!("%s%s" , token_type_string , token_data);
 

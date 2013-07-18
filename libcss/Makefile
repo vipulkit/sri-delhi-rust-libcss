@@ -1,11 +1,9 @@
 all:
-	rm -f *.so
-	cd parse/properties; make; cd -
+	cd parse/properties; make; make run; cd -
 	rustc -O -L ../libwapcaplet -L ../libparserutils css.rc
 
 debug:
-	rm -f *.so
-	cd parse/properties; make; make run; make clean; cd -
+	cd parse/properties; make; make run; cd -
 	rustc -Z verbose -Z debug-info -L ../libwapcaplet -L ../libparserutils css.rc
 
 clean:
