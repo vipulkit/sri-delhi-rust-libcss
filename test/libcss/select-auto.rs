@@ -956,7 +956,6 @@ fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *lib
     }
     unsafe {
         *ancestor =  ::cast::transmute(node1);
-        cast::forget(*ancestor);
     }
     CSS_OK
 }
@@ -978,7 +977,6 @@ fn named_parent_node(n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_
         if matched {
             unsafe {
                 *parent = ::cast::transmute(parent_node);
-                cast::forget(*parent);
             }
         }       
     }   
@@ -1002,7 +1000,6 @@ fn named_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc:
         if matched {
             unsafe {
                 *sibling = ::cast::transmute(prev_node);
-                cast::forget(*sibling);
             }
         }       
     }   
@@ -1034,7 +1031,6 @@ fn named_generic_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mu
     }
     unsafe {
         *sibling =  ::cast::transmute(node1);
-        cast::forget(*sibling);
     }
     CSS_OK
 }
@@ -1048,7 +1044,6 @@ fn parent_node(n:*libc::c_void, parent:*mut*libc::c_void) -> css_error {
         
         if node1.parent.is_some() {
             *parent = ::cast::transmute(node1.parent.unwrap());
-            cast::forget(*parent);  
         }
         else {
             *parent = ptr::null();
@@ -1066,7 +1061,6 @@ fn sibling_node(n:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
         
         if node1.prev.is_some() {
             *sibling = ::cast::transmute(node1.prev.unwrap());
-            cast::forget(*sibling); 
         }
         else {
             *sibling = ptr::null();
@@ -1187,7 +1181,6 @@ fn node_has_attribute(n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> c
         cast::forget(node1);
     }
     let mut i:uint = 0 ;
-    //let mut vlen = value.len();
     *matched = false;
     let attr_len = node1.attrs.len();
     while i < attr_len {
