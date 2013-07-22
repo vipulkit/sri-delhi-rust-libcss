@@ -204,8 +204,8 @@ impl alias_gen {
         fp.write_line("");
         fp.write_line("    fn alias_map_find(&self, alias:&str) -> Option<u16> {");
         fp.write_line("        match(alias) {");
-        do self.alias_map.consume |K, V| {
-            fp.write_line(fmt!("            \"%s\" => Some(%?),", K, V));
+        for self.alias_map.iter().advance |(K, V)| {
+            fp.write_line(fmt!("            \"%s\" => Some(%?),", *K, *V));
         };
         fp.write_line("            _ => None");
         fp.write_line("        }");
@@ -217,8 +217,8 @@ impl alias_gen {
         fp.write_line("");
         fp.write_line("    fn mibenum_map_find(&self, mibenum:u16) -> Option<uint> {");
         fp.write_line("        match(mibenum) {");
-        do self.mibenum_map.consume |K, V| {
-            fp.write_line(fmt!("            %? => Some(%?),", K, V));
+        for self.mibenum_map.iter().advance |(K, V)| {
+            fp.write_line(fmt!("            %? => Some(%?),", *K, *V));
         };
         fp.write_line("            _ => None");
         fp.write_line("        }");
