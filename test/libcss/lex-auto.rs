@@ -234,27 +234,15 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
             }
         };
 
-    let mut start_time = extra::time::precise_time_ns();
     let mut lexer = css_lexer::css__lexer_create(inputstream);
-    let mut end_time = extra::time::precise_time_ns();
 
-    let creation_time = (end_time as float - start_time as float);
-
-    start_time = extra::time::precise_time_ns();
     lexer.css__lexer_append_data(data);
     lexer.css__lexer_append_data([]);
-    end_time = extra::time::precise_time_ns();
 
-    let append_time = (end_time as float - start_time as float);
-    let mut get_token_time = 0 as float;
     // debug!(~"after append data="+ from_bytes(*data));
     let mut index = 0;
     loop {
-        start_time = extra::time::precise_time_ns();
         let (error,token_option)= lexer.css__lexer_get_token();
-        end_time = extra::time::precise_time_ns();
-
-        get_token_time += (end_time as float - start_time as float);
        
         match(error)    {
             CSS_OK => {
@@ -310,13 +298,6 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     }
 
     assert!(index == exp.len());
-    // io::println     ("-----------------------");
-    // io::println(fmt!("creation  : %.3f usec", creation_time / 1000f));
-    // io::println(fmt!("appending : %.3f usec", append_time / 1000f));
-    // io::println(fmt!("lexing    : %.3f usec", get_token_time / 1000f));
-    // io::println     ("-----------------------");
-
-    io::println(fmt!("%.3f, %.3f, %.3f", creation_time, append_time, get_token_time));
 }
 
 
