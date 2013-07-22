@@ -76,7 +76,7 @@ fn canonicalise_nats_sefi_add() {
         Some(c) => {
             io::println(fmt!("%s %?\n", c.name, c.mib_enum));
             assert!(true);
-            assert!(c.mib_enum == parser.parserutils_charset_mibenum_from_name(copy c.name));
+            assert!(c.mib_enum == parser.parserutils_charset_mibenum_from_name(c.name));
 
             let name = parser.parserutils_charset_mibenum_to_name(c.mib_enum);
             match(name) {
