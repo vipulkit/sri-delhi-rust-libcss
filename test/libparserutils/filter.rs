@@ -1,7 +1,7 @@
 extern mod std;
 extern mod parserutils;
 
-use std::{vec,io};
+use std::{io};
 use parserutils::charset::aliases::*;
 use parserutils::utils::errors::*;
 use parserutils::input::parserutils_filter::*;
@@ -39,9 +39,7 @@ fn main(){
                 }
 
                 let tempbuf = ~[104 , 101 , 108 , 108 , 194 , 160 , 111 , 33];
-                if !vec::eq(outbuf,tempbuf) {
-                    assert!(false)
-                }
+                assert_eq!(outbuf,tempbuf);
 
                 Filter.parserutils__filter_reset();
 
@@ -59,9 +57,7 @@ fn main(){
                     }
                 }
 
-                if !vec::eq(outbuf,inbuf){                  
-                    assert!(false);
-                }
+                assert_eq!(outbuf,inbuf);
 
                 Filter.parserutils__filter_reset();
 
@@ -83,9 +79,7 @@ fn main(){
                 }
                 // io::println(fmt!("outbuf=%?",outbuf));
                 let mut tempbuf = ~[ 104, 101, 108 , 108 , 239, 191 , 189 , 111 , 33];
-                if !vec::eq(outbuf,tempbuf){         
-                    assert!(false);
-                }
+                assert_eq!(outbuf,tempbuf);
 
                 Filter.parserutils__filter_reset();
 
@@ -115,9 +109,7 @@ fn main(){
                 }
 
                 tempbuf = ~[104 , 101 , 108 , 108 , 194 , 160 , 111 , 33];
-                if !vec::eq(outbuf,tempbuf) {                  
-                    assert!(false);  
-                }
+                assert_eq!(outbuf,tempbuf);
 
                 match(Filter.parserutils__filter_reset()){
                     PARSERUTILS_OK => {},                                                                    
@@ -151,9 +143,7 @@ fn main(){
                     }
                 }  //hell\xef\xbf\xbd\xef\xbf\xbdo!"
                 let tempbuf = ~[ 104, 101, 108 , 108 , 239, 191 , 189 , 239 , 191 , 189 , 111 , 33];
-                if !vec::eq(outbuf,tempbuf){                  
-                    assert!(false)  
-                }
+                assert_eq!(outbuf,tempbuf);
 
                 match(Filter.parserutils__filter_reset()){
                     PARSERUTILS_OK => {},                                                                    
@@ -202,9 +192,7 @@ fn main(){
                 }
 
                 let tempbuf = ~[104 , 101 , 108 , 108 , 194 , 160 , 194 , 161 , 111 , 33];
-                if !vec::eq(outbuf,tempbuf){
-                    assert!(false);
-                }
+                assert_eq!(outbuf,tempbuf);
 
                 match(Filter.parserutils__filter_reset()) {
                     PARSERUTILS_OK => {},                                                              
@@ -249,9 +237,7 @@ fn main(){
                     }
                 }
                 let tempbuf = ~[104 , 101 , 108 , 108 , 226 , 128 , 162 , 111 , 33];
-                if !vec::eq(outbuf,tempbuf) {
-                    assert!(false);
-                }
+                assert_eq!(outbuf,tempbuf);
 
                 match(Filter.parserutils__filter_reset()){
                     PARSERUTILS_OK =>   {},                                                               
