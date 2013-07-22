@@ -12,5 +12,5 @@ run: $(EXEC)
 	./$(EXEC)
 
 clean:
-	rm -f $(EXEC)
+	rm -f filter
 	rm -f *.so

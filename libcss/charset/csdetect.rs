@@ -339,20 +339,20 @@ pub fn css_charset_read_bom_or_charset(data : &[u8], alias_instance: @alias) -> 
     
     
     let default_option:Option<u16> = Some(0);
-    let (option_return , err): (Option<u16>, parserutils_error) = try_utf32_charset(data, alias_instance.clone());
+    let (option_return , err): (Option<u16>, parserutils_error) = try_utf32_charset(data, alias_instance);
     match(err) {
         PARSERUTILS_OK => if option_return.unwrap()!=0 {return (option_return , err) },
         _ => {} 
     }   
 
     
-    let (option_return , err): (Option<u16>, parserutils_error) = try_utf16_charset(data, alias_instance.clone());
+    let (option_return , err): (Option<u16>, parserutils_error) = try_utf16_charset(data, alias_instance);
     match(err) {
         PARSERUTILS_OK => if option_return.unwrap()!=0 {return (option_return , err)} ,
         _ => {} 
     }
     
-    let (option_return , err): (Option<u16>, parserutils_error) = try_ascii_compatible_charset(data, alias_instance.clone());
+    let (option_return , err): (Option<u16>, parserutils_error) = try_ascii_compatible_charset(data, alias_instance);
     match(err){
         PARSERUTILS_OK => if option_return.unwrap()!=0 {return (option_return , err)},
         _ => {} 
@@ -406,7 +406,7 @@ pub fn css__charset_extract(data : &[u8] , mibenum : u16 , input_source : int /*
 
     // Look for a BOM and/or @charset 
     let (option_return , err): (Option<u16>, parserutils_error) = 
-        css_charset_read_bom_or_charset(data, alias_instance.clone());
+        css_charset_read_bom_or_charset(data, alias_instance);
     
     match(err) {
         PARSERUTILS_OK => {         

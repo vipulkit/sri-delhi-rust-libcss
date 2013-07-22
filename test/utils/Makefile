@@ -10,6 +10,8 @@ clean:
 	rm -f test_data
 	rm -f select-auto
 	rm -f test_data_avg
+	rm -f c_output.txt
+	rm -f r_output.txt
 	
 run:
 	./perform_test_avg
