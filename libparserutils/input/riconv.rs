@@ -17,7 +17,7 @@ mod iconv_wrapper {
         fn AllocateBuffer(bytes:c_int) -> *u8 ;
         fn DeallocateBuffer(buffer:*u8)  ;
         fn rust_iconv_open( tocode: * u8 , fromcode : * u8) -> u64;
-        fn rust_iconv(s: u64, inbuf : **u8 , insize : * size_t , outbuf : ** u8 , outsize : * size_t , error : * int ) -> size_t ;
+        fn rust_iconv(s: u64, inbuf : **u8 , insize : * size_t , outbuf : ** u8 , outsize : * size_t , error : *c_int ) -> size_t ;
         fn rust_iconv_close(s: u64) -> c_int ;
     }
 }
@@ -44,7 +44,7 @@ pub fn safe_riconv_open( tocode: ~str , fromcode : ~str ) -> u64 {
 
 pub fn safe_riconv (hnd : u64, inbuf : &[u8] ) -> (~[u8], u64, int) {
     unsafe {
-        let err : int = 0 ;
+        let err : c_int = 0 ;
         if inbuf.len()==0 {
             (~[], 0, 0)
         }
@@ -64,7 +64,7 @@ pub fn safe_riconv (hnd : u64, inbuf : &[u8] ) -> (~[u8], u64, int) {
             let len_processed=c_insize-c_inargs ;
            
             iconv_wrapper::DeallocateBuffer(c_oubuf);
-            (outbuf, len_processed, err)
+            (outbuf, len_processed, err as int)
         }
     }
 }
