@@ -842,7 +842,7 @@ impl css_language {
                 let mut prefix_match = false;
                 let mut idx = 0;
 
-                for self.namespaces.iter().advance |&ns| {
+                for self.namespaces.iter().advance |ns| {
                     
                     if self.lwc_instance.lwc_string_isequal(ns.prefix.unwrap(), prefix){
                         prefix_match = true;
@@ -2014,7 +2014,7 @@ impl css_language {
 		let bytecode_len : uint = bytecode.len();
         while offset < bytecode_len {
             
-            let opv = copy bytecode[offset];
+            let opv = bytecode[offset].clone();
 
             /* Extract opv components, setting important flag */
             let op: css_properties_e = getOpcode(opv);

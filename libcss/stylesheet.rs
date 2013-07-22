@@ -487,7 +487,7 @@ impl css_stylesheet {
             } 
         }
         else {
-            sheet.cached_style.swap_unwrap()
+            sheet.cached_style.take_unwrap()
         }
     }
 

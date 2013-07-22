@@ -12,7 +12,7 @@ use testutils::*;
 use std::io;
 
 fn testMain(fileName: ~str) {
-    let len = css__parse_filesize(copy fileName);
+    let len = css__parse_filesize(fileName.clone());
     if len ==0 {
         return;
     }
@@ -26,7 +26,7 @@ fn testMain(fileName: ~str) {
         };
     ctx.buf.push(0);//why?
 
-    assert!(css__parse_testfile(copy fileName, ~handle_line, CSDETECT(ctx)));
+    assert!(css__parse_testfile(fileName, ~handle_line, CSDETECT(ctx)));
 
 }
 
@@ -46,7 +46,7 @@ pub fn handle_line(data:~str, pw:LINE_CTX_DATA_TYPE)-> bool {
             if (ctx.buf.last() == &('\n' as u8)) {
                 ctx.buf.pop();
             }
-            result = run_test(copy ctx.buf, copy  ctx.enc); 
+            result = run_test(ctx.buf.clone(), ctx.enc.clone());
             ctx.buf = ~[];
             ctx.enc=~"";
         }
@@ -74,7 +74,7 @@ pub fn run_test(data:~[u8],  expected_encoding:~str) -> bool {
     let alias_instance = alias();
     
     let expected_mibenum = 
-        alias_instance.parserutils_charset_mibenum_from_name(copy expected_encoding);
+        alias_instance.parserutils_charset_mibenum_from_name(expected_encoding);
     
     let mut mibenum:u16 = 0;
     let alias_instance = alias();

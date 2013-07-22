@@ -304,7 +304,7 @@ impl css_lexer {
     pub fn emit_token(&mut self , input_token_type: Option<css_token_type>) -> (css_error, Option<@mut css_token>) {
 
         //debug!("entering emit_token");
-        let t = self.token.swap_unwrap();
+        let t = self.token.take_unwrap();
         let _data = css_token_data {
             data: ~[],
             len: 0
@@ -330,7 +330,7 @@ impl css_lexer {
 
         if (self.escape_seen) {
             //debug!("Entering:if self.escape_seen");
-            t.data.data = self.unescaped_token_data.swap_unwrap();
+            t.data.data = self.unescaped_token_data.take_unwrap();
             t.data.len = t.data.data.len();
         }
         else {

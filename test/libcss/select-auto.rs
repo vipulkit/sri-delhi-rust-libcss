@@ -111,8 +111,8 @@ pub fn select_test(file:~str) {
         pseudo_element:0,
         target:None,
         
-        attr_class:lwc_attr_class.swap_unwrap(),
-        attr_id:lwc_attr_id.swap_unwrap(),
+        attr_class:lwc_attr_class.take_unwrap(),
+        attr_id:lwc_attr_id.take_unwrap(),
 
         lwc_instance:lwc_ins,
         propstrings_instance: propstring
@@ -841,7 +841,7 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64) {
 
 
     // debug!(fmt!(" CSS Selection result is =%?",results));
-    let string:~str = copy ctx.exp;
+    let string:~str = ctx.exp.clone();
     // debug!(fmt!("Expected : %s ",string));
     // debug!(fmt!("Result: %s",buf));
 
@@ -956,7 +956,6 @@ fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *lib
     }
     unsafe {
         *ancestor =  ::cast::transmute(node1);
-        cast::forget(*ancestor);
     }
     CSS_OK
 }
@@ -978,7 +977,6 @@ fn named_parent_node(n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_
         if matched {
             unsafe {
                 *parent = ::cast::transmute(parent_node);
-                cast::forget(*parent);
             }
         }       
     }   
@@ -1002,7 +1000,6 @@ fn named_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc:
         if matched {
             unsafe {
                 *sibling = ::cast::transmute(prev_node);
-                cast::forget(*sibling);
             }
         }       
     }   
@@ -1034,7 +1031,6 @@ fn named_generic_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mu
     }
     unsafe {
         *sibling =  ::cast::transmute(node1);
-        cast::forget(*sibling);
     }
     CSS_OK
 }
@@ -1048,7 +1044,6 @@ fn parent_node(n:*libc::c_void, parent:*mut*libc::c_void) -> css_error {
         
         if node1.parent.is_some() {
             *parent = ::cast::transmute(node1.parent.unwrap());
-            cast::forget(*parent);  
         }
         else {
             *parent = ptr::null();
@@ -1066,7 +1061,6 @@ fn sibling_node(n:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
         
         if node1.prev.is_some() {
             *sibling = ::cast::transmute(node1.prev.unwrap());
-            cast::forget(*sibling); 
         }
         else {
             *sibling = ptr::null();
@@ -1187,7 +1181,6 @@ fn node_has_attribute(n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> c
         cast::forget(node1);
     }
     let mut i:uint = 0 ;
-    //let mut vlen = value.len();
     *matched = false;
     let attr_len = node1.attrs.len();
     while i < attr_len {
@@ -1460,7 +1453,7 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
         while node1.next.is_some() {
             if same_name {
                 let mut next_name: @mut lwc_string ;
-                let temp_node = (copy node1.next).unwrap();
+                let temp_node = (node1.next).unwrap();
                 next_name = temp_node.name.get();
                 
                 matched = node1.lwc_instance.lwc_string_caseless_isequal(name, next_name); 
@@ -1479,7 +1472,7 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
         while node1.prev.is_some() {
             if same_name {
                 let mut prev_name: @mut lwc_string;
-                let temp_node = (copy node1.prev).unwrap();
+                let temp_node = (node1.prev).unwrap();
                 prev_name = temp_node.name.get();
                 
                 matched = node1.lwc_instance.lwc_string_caseless_isequal(name,prev_name); 

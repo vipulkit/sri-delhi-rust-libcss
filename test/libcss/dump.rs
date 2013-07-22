@@ -236,7 +236,7 @@ fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
 fn dump_rule_charset(s:@mut css_rule_charset, ptr:&mut ~str) {
     debug!("Entering: dump_rule_charset");
     ptr.push_str(&"| @charset(");
-    ptr.push_str( copy s.encoding);
+    ptr.push_str( s.encoding.clone());
     ptr.push_char(')');
     ptr.push_char('\n');
 
@@ -246,7 +246,7 @@ fn dump_rule_charset(s:@mut css_rule_charset, ptr:&mut ~str) {
 fn dump_rule_import(s:@mut css_rule_import, ptr:&mut ~str){
     debug!("Entering: dump_rule_import");
     ptr.push_str( &"| @import url(");
-    ptr.push_str( copy s.url);
+    ptr.push_str( s.url.clone());
     ptr.push_char('\n');
 
     debug!(fmt!("ptr == %?" , ptr));
@@ -343,7 +343,7 @@ fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
 
 fn dump_selector(selector:@mut css_selector, ptr:&mut ~str){
     debug!("Entering: dump_selector");
-    let d:~[@mut css_selector_detail] = copy selector.data;
+    let d:~[@mut css_selector_detail] = selector.data.clone();
     let mut iter:uint = 0;
     while iter < d.len() {
         dump_selector_detail(d[iter], ptr, (iter != (d.len() - 1)));
@@ -400,7 +400,7 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
                     }
                 } ,
                 _=>{
-                    ptr.push_str(fmt!("%?n+%?",copy detail.a,copy detail.b));
+                    ptr.push_str(fmt!("%?n+%?",detail.a.clone(), detail.b.clone()));
                 }
             }
         },
@@ -480,7 +480,7 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
     
     debug!("Entering: dump_bytecode");
-    let bytecode = copy style.bytecode;
+    let bytecode = style.bytecode.clone();
     let mut op: css_properties_e;
     let mut value: u32;
     let opcode_names = opcode_names();
@@ -1134,7 +1134,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         iterator += 1;
 
                         if option_string.is_some() {
-                            debug!("dump_bytecode :: CONTENT_COUNTER :: option_string == %?" , copy option_string.get_ref());
+                            debug!("dump_bytecode :: CONTENT_COUNTER :: option_string == %?" , option_string.get_ref());
                             dump_counter( lwc_string_data(option_string.unwrap()), value , ptr);
                         }
                     }
@@ -1146,7 +1146,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         iterator += 1;
 
                         if option_string.is_some() {
-                            debug!("dump_bytecode :: CONTENT_COUNTERS :: option_string == %?" , copy option_string.get_ref());
+                            debug!("dump_bytecode :: CONTENT_COUNTERS :: option_string == %?" , option_string.get_ref());
                             dump_counters( lwc_string_data(option_string.unwrap()) , fmt!("%?" , sep) , value , ptr);
                         }
                     }
@@ -1167,7 +1167,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         iterator += 1;
 
                         if option_string.is_some() {
-                            debug!("dump_bytecode :: CONTENT_URI_ATTR_STRING :: option_string == %?" , copy option_string.get_ref());
+                            debug!("dump_bytecode :: CONTENT_URI_ATTR_STRING :: option_string == %?" , option_string.get_ref());
                             ptr.push_str( &"'");
                             ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned());
                             ptr.push_str( &"'");

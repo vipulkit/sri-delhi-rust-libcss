@@ -163,7 +163,7 @@ pub fn css_computed_counter_increment(
             bits = bits & (CSS_COUNTER_INCREMENT_MASK as u8);
             bits = bits >> CSS_COUNTER_INCREMENT_SHIFT;
 
-            counter = copy uncommon_struct.counter_increment;
+            counter = uncommon_struct.counter_increment.clone();
 
             (bits,counter)
         }
@@ -184,7 +184,7 @@ pub fn css_computed_counter_reset(
             bits = bits & (CSS_COUNTER_RESET_MASK as u8);
             bits = bits >> CSS_COUNTER_RESET_SHIFT;
 
-            counter = copy uncommon_struct.counter_reset;
+            counter = uncommon_struct.counter_reset.clone();
 
             (bits,counter)
         }
@@ -205,7 +205,7 @@ pub fn css_computed_cursor(
             bits = bits & (CSS_CURSOR_MASK as u8);
             bits = bits >> CSS_CURSOR_SHIFT;
 
-            urls = Some(copy uncommon_struct.cursor);
+            urls = Some(uncommon_struct.cursor.clone());
 
             (bits,urls)
         }
@@ -302,7 +302,7 @@ pub fn css_computed_content(
             bits = bits & (CSS_CONTENT_MASK as u8);
             bits = bits >> CSS_CONTENT_SHIFT;
 
-            (bits,copy uncommon_struct.content)
+            (bits,uncommon_struct.content.clone())
         }
     }  
 }
@@ -470,7 +470,7 @@ pub fn css_computed_quotes(
     bits = bits >> CSS_QUOTES_SHIFT;
 
     //result = style.quotes;
-    (bits,copy style.quotes)
+    (bits,style.quotes.clone())
 }
 
 pub fn css_computed_top(
@@ -1240,7 +1240,7 @@ pub fn css_computed_font_family(style:@mut css_computed_style)
     bits = bits & (CSS_FONT_FAMILY_MASK as u8);
     bits = bits >> CSS_FONT_FAMILY_SHIFT;   
 
-    (bits,copy style.font_family)
+    (bits,style.font_family.clone())
 }
 
 pub fn css_computed_border_top_style(style:@mut css_computed_style)

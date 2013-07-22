@@ -5,6 +5,7 @@ use utils::errors::*;
 //use extra::arc;
 use wapcaplet::*;
 use std::libc::*;
+use std::clone::Clone;
 
 pub enum css_computed_content_item_type {
     CSS_COMPUTED_CONTENT_NONE       = 0,
@@ -668,12 +669,35 @@ pub struct reject_item {
     sel_type:css_selector_type 
 } 
 
+impl Clone for reject_item {
+    #[inline]
+    fn clone(&self) -> reject_item {
+        reject_item {
+            value:self.value,
+            sel_type:self.sel_type
+        }
+    }
+}
+
 pub struct prop_state {
     specificity:uint,       /* Specificity of property in result */
     set       : bool,         /* Whether property is set in result */
     origin    : u8,         /* Origin of property in result */
     important : bool,         /* Importance of property in result */
     inherit   : bool         /* Property is set to inherit */
+}
+
+impl Clone for prop_state {
+    #[inline]
+    fn clone(&self) -> prop_state {
+        prop_state {
+            specificity: self.specificity,       /* Specificity of property in result */
+            set        : self.set,         /* Whether property is set in result */
+            origin     : self.origin,         /* Origin of property in result */
+            important  : self.important,         /* Importance of property in result */
+            inherit    : self.inherit
+        }
+    }
 }
 
 pub enum css_select_handler_version {

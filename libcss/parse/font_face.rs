@@ -427,7 +427,7 @@ pub fn font_face_src_parse_format(strings:@css_propstrings, vector:&~[@css_token
 
 pub fn css_font_face_get_font_family(font_face: @mut css_font_face) -> Option<@mut lwc_string> {
     if (font_face.font_family.is_some()) {
-        let ff = font_face.font_family.swap_unwrap();
+        let ff = font_face.font_family.take_unwrap();
 
         font_face.font_family = Some(ff);
         Some(ff)
@@ -469,7 +469,7 @@ pub fn css_font_face_get_src(font_face: @mut css_font_face, index: uint) -> Opti
             }
         },
 
-        bits: copy src.bits
+        bits: src.bits.clone()
     };
 
     Some(new_src)

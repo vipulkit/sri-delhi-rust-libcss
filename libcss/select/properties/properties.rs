@@ -3065,7 +3065,7 @@ pub fn css__set_font_family_from_hint(hint:@mut  css_hint,
 	
 	if hint.strings.is_some() {
 		
-			set_font_family(style, hint.status, hint.strings.swap_unwrap());
+			set_font_family(style, hint.status, hint.strings.take_unwrap());
 	}
 	else {
 		set_font_family(style, hint.status, ~[]);
@@ -5624,7 +5624,7 @@ pub fn css__set_quotes_from_hint(hint:@mut  css_hint,
 								) -> css_error {
 
 	if (hint.strings.is_some()) {
-		set_quotes(style, hint.status, hint.strings.swap_unwrap());
+		set_quotes(style, hint.status, hint.strings.take_unwrap());
 	}
 	else {
 		set_quotes(style, hint.status, ~[] );
@@ -7266,7 +7266,7 @@ pub fn css__set_counter_increment_from_hint(hint:@mut  css_hint,
 
 	match hint.hint_type {
 		COUNTER=>{
-			match copy hint.counters {
+			match hint.counters.clone() {
 				Some(x)=>{
 					set_counter_increment(style, hint.status, x);
 					if hint.status == (CSS_COUNTER_INCREMENT_NAMED as u8) {
@@ -7336,7 +7336,7 @@ pub fn css__set_counter_reset_from_hint(hint:@mut  css_hint,
 
 	match hint.hint_type {
 		COUNTER=>{
-			match copy hint.counters {
+			match hint.counters.clone() {
 				Some(x)=>{
 					set_counter_reset(style, hint.status, x);
 					if hint.status == (CSS_COUNTER_INCREMENT_NAMED as u8) {
@@ -7490,7 +7490,7 @@ pub fn css__set_cursor_from_hint(hint:@mut  css_hint,
 
 	match hint.hint_type {
 		STRINGS_VECTOR=>{
-			match copy hint.strings {
+			match hint.strings.clone() {
 				Some(x)=>{
 					set_cursor(style, hint.status, x);
 					hint.counters = None ;

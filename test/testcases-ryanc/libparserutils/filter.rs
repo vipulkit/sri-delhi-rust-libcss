@@ -23,7 +23,7 @@ pub fn parserutils__filter_process_chunk(&mut self, inbuf : ~[u8] ) -> (~riconv:
 extern mod std;
 extern mod parserutils;
 
-use std::{vec,str,io};
+use std::{str,io};
 use parserutils::charset::aliases::*;
 use parserutils::utils::errors::*;
 use parserutils::input::parserutils_filter::*;
@@ -70,7 +70,7 @@ fn filter() {
         (_, _, _) => {assert!(false);}
     }
 
-    assert_eq!(copy out, copy in /*~"hell\xc2\xa0o!"*/);
+    assert_eq!(out.clone(), in.clone() /*~"hell\xc2\xa0o!"*/);
 
     match(input.parserutils__filter_reset()) {
         PARSERUTILS_OK => {},
@@ -108,7 +108,7 @@ fn filter() {
 
     // FIXME: fails
     //assert_eq!(str::from_bytes(out), ~"hell\xef\xbf\xbdo!");
-    assert!(vec::eq(out, [104,101,108,108,239,191,189,111,33]));
+    assert!(out.clone() == ~[104,101,108,108,239,191,189,111,33] );
 
     /* Input ends mid-sequence */
     //let mut in: ~[u8] = "hell\xc2\xa0o!".to_bytes();
@@ -137,7 +137,7 @@ fn filter() {
         _ => {assert!(false);}
     }
 
-    assert_eq!(copy out, copy in);
+    assert_eq!(out.clone(), in.clone());
 
     /* Input ends mid-sequence, but second attempt has too small a
      * buffer, but large enough to write out the incomplete character.
@@ -183,7 +183,7 @@ fn filter() {
     }
 
     //assert_eq!(str::from_bytes(out), ~"hell\xef\xbf\xbd\xef\xbf\xbdo!");
-    assert!(vec::eq(out, [104,101,108,108, 239,191,189,239,191,189,111,33]));
+    assert!( out.clone() == ~[104,101,108,108, 239,191,189,239,191,189,111,33] );
 
     /* Input ends mid-sequence, but second attempt contains another
      * incomplete character */
@@ -224,7 +224,7 @@ fn filter() {
         _ => {assert!(false);}
     }
 
-    assert_eq!(copy out, copy in);
+    assert_eq!( out.clone(), in.clone());
 
 
     /* Input ends mid-sequence, but second attempt contains insufficient
