@@ -118,11 +118,6 @@ pub struct css_style {
     sheet:Option<@mut css_stylesheet>
 }
 
-//pub struct hash_entry {
-//    selector:@mut css_selector,
-//    next:Option<@mut hash_entry>
-//}
-
 /**< Hashtable of selectors */
 pub struct css_selector_hash {
     default_slots:u32,
@@ -1271,6 +1266,13 @@ pub enum css_hash_type {
     Universal = 4
 }
 
+pub struct hash_entry {
+    hash_type:css_hash_type,
+    slot:int,
+    index:int,
+    sel:@mut css_selector
+}
+
 impl css_selector_hash {
 
     /**
@@ -1673,13 +1675,15 @@ impl css_selector_hash {
     * #Description:
     *  Find the first selector that matches name.
 
-    * #Arguments:
+    * #Arguments:pub struct hash_entry {
+
+}
     *  'name'  - name to find. 
 
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find(&mut self, name : @mut lwc_string) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find(&mut self, name : @mut lwc_string) -> Result<@mut hash_entry,css_error> {
         //debug!("Entering: css__selector_hash_find");
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(name) & mask ; 
@@ -1725,7 +1729,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_class(&mut self, name : @mut lwc_string) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_by_class(&mut self, name : @mut lwc_string) -> Result<@mut hash_entry,css_error> {
 
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(name) & mask ; 
@@ -1769,7 +1773,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_id(&mut self, name : @mut lwc_string) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_by_id(&mut self, name : @mut lwc_string) -> Result<@mut hash_entry,css_error> {
 
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(name) & mask ; 
@@ -1804,13 +1808,13 @@ impl css_selector_hash {
 
 
     /**
-    * #Description:
+    * #Description:Result<@mut hash_entry,css_error>
     *  Find the first universal selector.
 
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_universal(&mut self) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_universal(&mut self) -> Result<@mut hash_entry,css_error> {
 
         let head = self.universal[0] ;
         match head {
@@ -1833,7 +1837,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_elements(&mut self , current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_elements(&mut self , current : @mut hash_entry) -> Result<@mut hash_entry,css_error> {
 
         let mut head = current;
 
@@ -1870,7 +1874,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_classes(&mut self ,current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_classes(&mut self ,current : @mut hash_entry) -> Result<@mut hash_entry,css_error> {
 
         let mut head = current;
 
@@ -1906,7 +1910,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_ids(&mut self ,current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_ids(&mut self ,current : @mut hash_entry) -> Result<@mut hash_entry,css_error> {
 
         let mut head = current;
 
@@ -1942,7 +1946,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_universal(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_universal(current : @mut hash_entry) -> Result<@mut hash_entry,css_error> {
 
         if current.next.is_some() {
             return (current.next,CSS_OK);
@@ -1950,6 +1954,7 @@ impl css_selector_hash {
         (None,CSS_OK)
     }
 
+    /*
     pub fn debug_print_vector_of_hash_entry_list(hash_vec : &[Option<@mut hash_entry>]) {
 
         for hash_vec.iter().advance |&entry| {
@@ -1975,6 +1980,7 @@ impl css_selector_hash {
             }
         }
     }
+    */
 }
 
 
