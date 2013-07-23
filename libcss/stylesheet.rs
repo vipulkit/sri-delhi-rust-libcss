@@ -117,18 +117,19 @@ pub struct css_style {
     used:uint,                
     sheet:Option<@mut css_stylesheet>
 }
-pub struct hash_entry {
-    selector:@mut css_selector,
-    next:Option<@mut hash_entry>
-}
+
+//pub struct hash_entry {
+//    selector:@mut css_selector,
+//    next:Option<@mut hash_entry>
+//}
 
 /**< Hashtable of selectors */
 pub struct css_selector_hash {
     default_slots:u32,
-    elements:~[Option<@mut hash_entry>],
-    classes:~[Option<@mut hash_entry>],
-    ids:~[Option<@mut hash_entry>],
-    universal:~[Option<@mut hash_entry>],
+    elements:~[~[@mut css_selector]],
+    classes:~[~[@mut css_selector]],
+    ids:~[~[@mut css_selector]],
+    universal:~[~[@mut css_selector]],
     lwc_instance:@mut lwc
 }
 
@@ -1298,10 +1299,10 @@ impl css_selector_hash {
 		let mut i = 0;
 		while i < size {
             unsafe{
-				hash.elements.push_fast(None);
-				hash.classes.push_fast(None);
-				hash.ids.push_fast(None);
-				hash.universal.push_fast(None);
+				hash.elements.push_fast(~[]);
+				hash.classes.push_fast(~[]);
+				hash.ids.push_fast(~[]);
+				hash.universal.push_fast(~[]);
 			}	
 			i = i + 1;
         }
@@ -1466,7 +1467,7 @@ impl css_selector_hash {
                             hash_type : css_hash_type,
                             index:u32,
                             selector : @mut css_selector) 
-                            -> css_error {
+                            -> css_error {/*
         //debug!("Entering: _insert_into_chain");
         //debug!("_insert_into_chain:: hash_type == %?, index == %?", hash_type, index);
         let mut hash_entry_list : &mut ~[Option<@mut hash_entry>];
@@ -1549,7 +1550,7 @@ impl css_selector_hash {
             }
         }
         //debug!("_insert_into_chain : after insertion list is hash_type=%?= index=%?=",hash_type,index) ;
-        //css_selector_hash:://debug_print_hash_entry_list((*hash_entry_list)[index]) ;
+        //css_selector_hash:://debug_print_hash_entry_list((*hash_entry_list)[index]) ;*/
         CSS_OK
     }
 
