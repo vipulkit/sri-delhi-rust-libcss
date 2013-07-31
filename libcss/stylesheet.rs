@@ -750,6 +750,8 @@ impl css_stylesheet {
 
             CSS_RULE_IMPORT=>   {   
                 let ret_rule = @mut css_rule_import{
+
+
                     base:base_rule,
                     url:@"",
                     media:0,
@@ -1469,10 +1471,10 @@ impl css_selector_hash {
                             hash_type : css_hash_type,
                             index:u32,
                             selector : @mut css_selector) 
-                            -> css_error {/*
+                            -> css_error {
         //debug!("Entering: _insert_into_chain");
         //debug!("_insert_into_chain:: hash_type == %?, index == %?", hash_type, index);
-        let mut hash_entry_list : &mut ~[Option<@mut hash_entry>];
+        let mut hash_entry_list : &mut ~[~[@mut css_selector]];
 
         match hash_type {
             Element => {hash_entry_list = &mut self.elements} ,
@@ -1481,78 +1483,42 @@ impl css_selector_hash {
             Universal => {hash_entry_list = &mut self.universal} ,
         };
 
-        let entry = @mut hash_entry {
-                selector:selector,
-                next:None
-        };
-        //&~[Option<@mut hash_entry>] 
+        let mut i = 0 ;
+        let mut j = hash_entry_list[index].len() ; 
+        while (i<j) {
 
-        match hash_entry_list[index] {
-            None=> {
-                //debug!("Entering: match (*hash_entry_list)[index] => None");
-                hash_entry_list[index] = Some(entry);
-                //debug!("(*hash_entry_list)[index] == %?", (*hash_entry_list)[index]);
-            },
-            Some(index_element)=> {
-                //debug!("Entering: match (*hash_entry_list)[index] => Some(index_element)");
-                let mut search = index_element;
-                let mut prev = index_element ;
-                let mut first_pos : bool = true ;
-                loop {
+            let search = hash_entry_list[index][i] ;            
 
-                    if (mut_ptr_eq(selector,search.selector) == true ) {
-                        // duplicate insert of same pointer css_selector should never occur,
-                        // added , due to logical incompatibilty with "_remove_into_chain"
-                        // in origical code , _remove_into_chain removes by comparing pointer values,
-                        // and freeing the final result , by doing reallocation of 0 bytes ( line num : 650-671 , hash.c)
-                        //debug!("_insert_into_chain : error: double insertion of same selector ") ;
-                        return CSS_BADPARM;
-                    }
-
-                    if search.selector.specificity> selector.specificity {
-                        break ;
-                    }
-
-                    if search.selector.specificity == selector.specificity {
-                        if(search.selector.rule.is_none() || selector.rule.is_none() ){
-                            //debug!("_insert_into_chain : error : rule is none  ") ;
-                            return CSS_BADPARM ;
-                        }
-
-                        let base_search_rule = css_stylesheet::css__stylesheet_get_base_rule(search.selector.rule.get());
-                        let base_selector_rule = css_stylesheet::css__stylesheet_get_base_rule(selector.rule.get());
-
-                        if base_search_rule.index > base_selector_rule.index {
-                            break ;
-                        }
-                    }
-
-                    prev = search ;
-                    first_pos = false ;
-                    search = 
-                        match search.next {
-                            None=>{
-                                break ;
-                            },
-                            Some(next_ptr)=>{
-                                next_ptr
-                            }
-                    };
+            if (mut_ptr_eq(selector,search) == true ) {
+                // duplicate insert of same pointer css_selector should never occur,
+                // added , due to logical incompatibilty with "_remove_into_chain"
+                // in origical code , _remove_into_chain removes by comparing pointer values,
+                // and freeing the final result , by doing reallocation of 0 bytes ( line num : 650-671 , hash.c)
+                //debug!("_insert_into_chain : error: double insertion of same selector ") ;
+                return CSS_BADPARM;
+            }
+            if search.specificity> selector.specificity {
+                hash_entry_list[index].insert(i,selector);
+                return CSS_OK ;
+            }
+            if search.specificity == selector.specificity {
+                if(search.rule.is_none() || selector.rule.is_none() ){
+                    //debug!("_insert_into_chain : error : rule is none  ") ;
+                    return CSS_BADPARM ;
                 }
-                if(first_pos){
-                    //debug!("Entering: _insert_into_chain:: if(first_pos)");
-                    entry.next = Some(index_element);
-                    hash_entry_list[index] = Some(entry);
-                }
-                else {
-                    //debug!("Entering: _insert_into_chain:: if(first_pos)--else");
-                    entry.next=prev.next;
-                    prev.next= Some(entry);
+                let base_search_rule = css_stylesheet::css__stylesheet_get_base_rule(search.rule.get());
+                let base_selector_rule = css_stylesheet::css__stylesheet_get_base_rule(selector.rule.get());
+
+                if base_search_rule.index > base_selector_rule.index {
+                    hash_entry_list[index].insert(i,selector);
+                    return CSS_OK ;
                 }
             }
+            i += 1;
         }
+        hash_entry_list[index].push(selector);
         //debug!("_insert_into_chain : after insertion list is hash_type=%?= index=%?=",hash_type,index) ;
-        //css_selector_hash:://debug_print_hash_entry_list((*hash_entry_list)[index]) ;*/
+        //css_selector_hash:://debug_print_hash_entry_list((*hash_entry_list)[index]) ;
         CSS_OK
     }
 
@@ -1622,7 +1588,7 @@ impl css_selector_hash {
                             selector : @mut css_selector) 
                             -> css_error {
 
-        let mut hash_entry_list : &mut ~[Option<@mut hash_entry>];
+        let mut hash_entry_list : &mut ~[~[@mut css_selector]];
 
         match hash_type {
             Element => {hash_entry_list = &mut self.elements} ,
@@ -1631,43 +1597,19 @@ impl css_selector_hash {
             Universal => {hash_entry_list = &mut self.universal} ,
         };
         //&~[Option<@mut hash_entry>] 
+        let mut i = 0 ;
+        let mut j = hash_entry_list[index].len() ; 
+        while (i<j) {
 
-        match hash_entry_list[index] {
-            None=>{
-                return CSS_INVALID ;
-            },
-            Some(index_element)=>{
-
-                let mut search = index_element;
-                let mut prev = index_element ;
-                let mut first_pos : bool = true ;
-
-                loop {
-
-                    if (mut_ptr_eq(selector,search.selector) == true ) {
-                        break;
-                    }
-
-                    first_pos = false ;
-                    search = 
-                        match search.next {
-                            None=>{
-                                return CSS_INVALID ;
-                            },
-                            Some(next_ptr)=>{
-                                prev = search ;
-                                next_ptr
-                            }
-                    };
-                }
-                if(first_pos){
-                    hash_entry_list[index] = search.next;
-                }
-                else {
-                    prev.next= search.next;
-                }
+            let search = hash_entry_list[index][i] ;            
+            if (mut_ptr_eq(selector,search) == true ) {
+                hash_entry_list[index].remove(i);
+                return CSS_OK ;
             }
+
+            i += 1;
         }
+
         CSS_OK
     }
 
