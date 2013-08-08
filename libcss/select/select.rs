@@ -1183,24 +1183,20 @@ impl css_select_ctx {
         let mut node_selectors_option : Option<@mut css_selector> = None ;
         let mut id_selectors_hash_entry : Option<@mut hash_entry> = None ;
         let mut id_selectors_option : Option<@mut css_selector> = None ;
-        let mut class_selectors_hash_entry : ~[Option<@mut hash_entry>] = ~[];
+        let mut class_selectors_hash_entry : ~[@mut css_selector] = ~[];
         let mut class_selectors_option_list : ~[Option<@mut css_selector>] = ~[] ;
         let mut univ_selectors_hash_entry : Option<@mut hash_entry> = None ;
         let mut univ_selectors_option : Option<@mut css_selector> = None ;
         //let mut error : css_error ;
 
         /* Find hash chain that applies to current node */
-        let (sel,error) = sheet.selectors.css__selector_hash_find(state.element.name);
-        match error {
-            CSS_OK => {},
-            err => {
-                return err;
-            }
+        let (slot, index) = sheet.selectors.css__selector_hash_find(state.element.name);
+        if index == -1 {
+            return CSS_OK;
         }
-        if sel.is_some() {
-            node_selectors_hash_entry = sel;
-            node_selectors_option = Some(sel.get().selector) ;
-        }
+
+//        node_selectors_hash_entry = sel;
+        node_selectors_option = self.elements[slot][index] ;
 
         if ( state.classes.len() != 0 ) {
              /* Find hash chains for node classes */
@@ -1209,18 +1205,14 @@ impl css_select_ctx {
             let mut z = 0 ;
             let z_len = state.classes.len();
             while z<z_len {
-                let (sel_class,error) = sheet.selectors.css__selector_hash_find_by_class(state.classes[z]);
-                match error {
-                    CSS_OK => {},
-                    err => {
-                        return err;
-                    }
+                let (slot_class,index_class) = sheet.selectors.css__selector_hash_find_by_class(state.classes[z]);
+                if index_class == -1 {
+                    return CSS_OK;
                 }
+
 				
-                if sel_class.is_some() {
-                    class_selectors_hash_entry.push(sel_class) ;
-                    class_selectors_option_list.push(Some(sel_class.get().selector)) ;
-                }
+                class_selectors_hash_entry.push(head[i]) ;
+                class_selectors_option_list.push(Some(sel_class.get().selector)) ;
                 z += 1;
             }
         }
@@ -1243,17 +1235,20 @@ impl css_select_ctx {
         }
 
         /* Find hash chain for universal selector */
-        let (sel_univ,error) = sheet.selectors.css__selector_hash_find_universal();
+/*        let (sel_univ,error) = sheet.selectors.css__selector_hash_find_universal();
         match error {
             CSS_OK => {},
             err => {
                 return err;
             }
         }
-        if sel_univ.is_some() {
-            univ_selectors_hash_entry = sel_univ ;
-            univ_selectors_option = Some(sel_univ.get().selector) ;
+*/
+        if sheet.selectors.universal.len() < 1 || sheet.selectors.universal[0].len() < 1 {
+            return CSS_OK;
         }
+
+        univ_selectors_hash_entry = sheet.selectors.universal[0][0] ;
+        univ_selectors_option = Some(sel_univ.get().selector) ;
 
         // /* Process matching selectors, if any */
         while ( css_select_ctx::_selectors_pending(node_selectors_option, 

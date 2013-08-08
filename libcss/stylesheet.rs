@@ -1624,15 +1624,13 @@ impl css_selector_hash {
     * #Description:
     *  Find the first selector that matches name.
 
-    * #Arguments:pub struct hash_entry {
-
-}
+    * #Arguments:pub struct hash_entry
     *  'name'  - name to find. 
 
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find(&mut self, name : @mut lwc_string) ->  Option<@mut hash_find_result> {
+    pub fn css__selector_hash_find(&mut self, name : @mut lwc_string) ->  (uint, uint) {
         //debug!("Entering: css__selector_hash_find");
         let mask  = self.default_slots-1 ;
         let sindex = css_selector_hash::_hash_name(name) & mask ; 
@@ -1645,16 +1643,73 @@ impl css_selector_hash {
             if self.lwc_instance.lwc_string_caseless_isequal(
                                 head[i].data[0].qname.name,name) {
                                 //debug!("Exiting: css__selector_hash_find (1)");
-                let result =    @mut hash_find_result{
-                                hash_type:Element,
-                                slot:sindex as uint,
-                                index:i as uint
-                            };
-                return Some(result);
+                return (sindex, i);
             }
+
             i += 1;
         }
-        None
+
+        return (sindex, -1);
+    }
+
+    /**
+    * #Description:
+    *  Find the first selector that has a class that matches name.
+
+    * #Arguments:
+    *  'name'  - name to find. 
+
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
+    */
+    pub fn css__selector_hash_find_by_class(&mut self, name : @mut lwc_string) -> Result<@mut hash_entry,css_error> {
+
+        let mask  = self.default_slots-1 ;
+        let sindex = css_selector_hash::_hash_name(name) & mask ; 
+        let mut head = self.classes[sindex];
+
+
+        let mut i : uint = 0;
+        let length = head.len();
+        while i < length {
+            let n = self._class_name(head[i].selector);
+
+            if self.lwc_instance.lwc_string_caseless_isequal(n, name) {
+                return (sindex, i);
+            }
+
+            i += 1;
+        }
+
+        return (sindex, -1);
+    }
+
+    /**
+    * #Description:
+    *  Find the first selector that has an ID that matches name.
+
+    * #Arguments:
+    *  'name'  - name to find. 
+
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
+    */
+    pub fn css__selector_hash_find_by_id(&mut self, name : @mut lwc_string) -> (uint, uint) {
+
+        let mask  = self.default_slots-1 ;
+        let sindex = css_selector_hash::_hash_name(name) & mask ; 
+        let mut head = self.ids[sindex];
+        let mut i : uint = 0;
+        let length = head.len();
+        while i < length{
+            let n = self._id_name(head[sindex][i]);
+
+            if self.lwc_instance.lwc_string_caseless_isequal(n, name) {
+                return (sindex, i);
+            }
+        }
+
+        return (sindex, -1);
     }
 
     /**
@@ -1667,18 +1722,12 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_elements(&mut self , current : @mut hash_find_result) -> Option<@mut hash_find_result> {
+    pub fn _iterate_elements(&mut self , slot : uint, index : uint) -> uint {
 
-        match current.hash_type {
-            Element=>{},
-            _=>{
-                return None;
-            }
-        }
 
-        let head = &self.elements[current.slot];
+        let head = &self.elements[slot];
 
-        let mut i = current.index+1 ;
+        let mut i = index+1 ;
         let j = head.len() ; 
         while (i<j) {
 
@@ -1691,18 +1740,14 @@ impl css_selector_hash {
                         head[i-1].data[0].qname.name,
                         head[i].data[0].qname.name) {
                 //debug!("Exiting: css__selector_hash_find (1)");
-                let result =    @mut hash_find_result{
-                                hash_type:Element,
-                                slot:current.slot,
-                                index:i as uint
-                            };
-                return Some(result);
+                return i;
             }
             i += 1;
         }
 
-        None
+        return -1;
     }
+
 }
 
     /**
