@@ -8,13 +8,13 @@ use std::str;
 
 pub struct lwc_string {
     id: uint,
-    string: @str,
+    string: ~str,
     insensitive: Option<uint>
 }
 
 pub struct lwc {
-    priv map: HashMap<@str, uint>,
-    priv vect:~[@mut lwc_string]
+    priv map: HashMap<~str, uint>,
+    priv vect:~[lwc_string]
 }
 
 impl lwc {
@@ -28,7 +28,7 @@ impl lwc {
     }
 
     #[inline]
-    fn to_lower(string:@str) -> ~str{
+    fn to_lower(string:&str) -> ~str{
         let mut lower : ~[u8] = ~[];
         let len = string.len();
 		lower.reserve(len);
@@ -36,7 +36,7 @@ impl lwc {
 		let mut ch : u8;
 		while c < len {
 			ch = string[c] as u8;
-			unsafe{
+			unsafe {
 				if (ch > 64 && ch < 91) {
 					lower.push_fast(ch + 32);
 				} else {
@@ -49,62 +49,38 @@ impl lwc {
     }
 
     #[inline]
-    pub fn lwc_intern_string(&mut self, val: &str) -> @mut lwc_string {
+    pub fn lwc_intern_string(&mut self, val: &str) -> lwc_string {
 
         match self.map.find_equiv(&val) {
             Some(&idx) => {
-                return self.vect[idx];
+                return self.vect[idx].clone();
             },
             None => (),
         }
         
         let new_idx = self.vect.len();
-        let val = val.to_managed();
+        let val = val.to_owned();
         
-        self.map.insert(val, new_idx);
+        self.map.insert(val.clone(), new_idx);
 
-        let new_lwc_string = @mut lwc_string {
+        let new_lwc_string = lwc_string {
             id:new_idx,
             string: val,
             insensitive: None
         };
 
-        self.vect.push(new_lwc_string);
+        self.vect.push(new_lwc_string.clone());
         new_lwc_string
     }
 
 
     #[inline]
-    pub fn lwc_intern_string_managed(&mut self, val: @str) -> @mut lwc_string {
-        let new_idx = self.vect.len();
-        
-        let find_idx = self.map.find_or_insert(val, new_idx); 
-        
-
-        if (*find_idx != new_idx) {
-            self.vect[*find_idx]
-        }
-        else{
-            let new_lwc_string = @mut lwc_string {
-                id:new_idx,
-                string: val,
-                insensitive: None
-            };
-
-            self.vect.push(new_lwc_string);
-            new_lwc_string
-        }
-    }
-
-    
-
-    #[inline]
-    pub fn lwc_string_isequal(&mut self, str1: @mut lwc_string , str2: @mut lwc_string) -> bool {
+    pub fn lwc_string_isequal(&mut self, str1: &mut lwc_string , str2: &mut lwc_string) -> bool {
         str1.id == str2.id
     }
 
     #[inline]
-    pub fn lwc_string_caseless_isequal(&mut self, str1: @mut lwc_string , str2: @mut lwc_string) ->bool {
+    pub fn lwc_string_caseless_isequal(&mut self, str1: &mut lwc_string , str2: &mut lwc_string) ->bool {
         				
         if (str1.insensitive.is_none()) {
 			self.lwc_intern_caseless_string(str1);
@@ -118,7 +94,7 @@ impl lwc {
     }
 
 	#[inline]
-    pub fn lwc_intern_caseless_string(&mut self , string: @mut lwc_string) {
+    pub fn lwc_intern_caseless_string(&mut self , string: &mut lwc_string) {
         if (string.insensitive.is_some()) {
             return;
         }
@@ -134,10 +110,10 @@ impl lwc {
         }
         
         let new_idx = self.vect.len();
-		let val = val.to_managed();
-		self.map.insert(val, new_idx);	
+		let val = val.to_owned();
+		self.map.insert(val.clone(), new_idx);	
 
-		let new_insensitive = @mut lwc_string {
+		let new_insensitive = lwc_string {
 			id:new_idx,
 			string: val,
 			insensitive: Some(new_idx)
@@ -149,7 +125,7 @@ impl lwc {
 
     
     #[inline]
-    pub fn lwc_intern_substring(&mut self , substring_to_intern: @mut lwc_string , ssoffset: u32, sslen: u32) -> Option<@mut lwc_string> {
+    pub fn lwc_intern_substring(&mut self , substring_to_intern: &mut lwc_string , ssoffset: u32, sslen: u32) -> Option<lwc_string> {
         
         if (substring_to_intern.string.len() <= ssoffset as uint) || (substring_to_intern.string.len() <= (ssoffset+sslen) as uint) {
             None
@@ -162,18 +138,29 @@ impl lwc {
 } // impl wapcaplet
     
 #[inline]
-pub fn lwc_string_length(string: @mut lwc_string) -> uint {
+pub fn lwc_string_length(string: &mut lwc_string) -> uint {
     string.string.len()
 }
     
 #[inline]
-pub fn lwc_string_data(string: @mut lwc_string) -> @str {
-    string.string
+pub fn lwc_string_data(string: &mut lwc_string) -> ~str {
+    string.string.clone()
 }
 
-pub fn lwc()->@mut lwc {
-    @mut lwc {
+pub fn lwc()->lwc {
+     lwc {
         map: HashMap::new(),
         vect: ~[]
+    }
+}
+
+// implementing clone for
+impl<'self> lwc_string {
+    pub fn clone(&self) -> lwc_string {
+        lwc_string{
+            id:self.id,
+            string:self.string.clone(),
+            insensitive:self.insensitive
+        }
     }
 }
