@@ -1748,6 +1748,74 @@ impl css_selector_hash {
         return -1;
     }
 
+    // #Description:
+    //  Find the next selector that matches.
+
+    // #Arguments:
+    //  'current'  - Current item. 
+
+    // #Return Value:
+    //  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
+    //
+    pub fn _iterate_classes(&mut self , slot : uint, index : uint) -> (uint, uint) {
+
+        let current_name = self._class_name(self.selectors.classes[slot][index]);
+        let mut i : uint = index;
+        let length = self.selectors.classes.len();
+        while i < length {
+            let name = self._class_name(self.selectors.classes[slot][i]);
+            if( lwc_string_length(name) != 0 &&
+                 self.lwc_instance.lwc_string_caseless_isequal(name,current_name)) {
+                return (slot, i);
+            }
+        }
+
+        return (slot, -1);
+    }
+
+    // #Description:
+    // Find the next selector that matches.
+
+    // #Arguments:
+    //  'current'  - Current item. 
+
+    // #Return Value:
+    //  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
+    //
+    pub fn _iterate_ids(&mut self , slot : uint, index : uint) -> (uint, uint) {
+
+        let current_name = self._id_name(self.selectors.ids[slot][index]);
+        let mut i : uint = index;
+        let length = self.selectors.ids.len();
+        while i < length {
+            let name = self._class_name(self.selectors.ids[slot][i]);
+            if( lwc_string_length(name) != 0 && 
+                self.lwc_instance.lwc_string_caseless_isequal(name,current_name)) {
+                return (slot, i);
+            }
+        }
+
+        return (slot, -1);
+    }
+
+    // #Description:
+    //  Find the next selector that matches.
+
+    // #Arguments:
+    //  'current'  - Current item. 
+
+    // #Return Value:
+    //  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
+    // 
+    pub fn _iterate_universal(&mut self , slot : uint, index : uint) -> (uint, uint) {
+
+        if (slot + 1) < self.selectors.universal.len() && (index + 1) < self.selectors.universal[slot].len()
+            return (slot, index + 1);
+        }
+        
+        (slot, -1)
+    }
+
 }
 
     // #Description:
