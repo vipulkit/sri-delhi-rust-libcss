@@ -117,18 +117,14 @@ pub struct css_style {
     used:uint,                
     sheet:Option<@mut css_stylesheet>
 }
-pub struct hash_entry {
-    selector:@mut css_selector,
-    next:Option<@mut hash_entry>
-}
 
 /**< Hashtable of selectors */
 pub struct css_selector_hash {
     default_slots:u32,
-    elements:~[Option<@mut hash_entry>],
-    classes:~[Option<@mut hash_entry>],
-    ids:~[Option<@mut hash_entry>],
-    universal:~[Option<@mut hash_entry>],
+    elements:~[~[@mut css_selector]],
+    classes:~[~[@mut css_selector]],
+    ids:~[~[@mut css_selector]],
+    universal:~[~[@mut css_selector]],
     lwc_instance:@mut lwc
 }
 
@@ -754,6 +750,9 @@ impl css_stylesheet {
 
             CSS_RULE_IMPORT=>   {   
                 let ret_rule = @mut css_rule_import{
+
+
+
                     base:base_rule,
                     url:@"",
                     media:0,
@@ -1270,6 +1269,19 @@ pub enum css_hash_type {
     Universal = 4
 }
 
+pub struct hash_entry {
+    hash_type:css_hash_type,
+    slot:int,
+    index:int,
+    sel:@mut css_selector
+}
+
+pub struct hash_find_result {
+    hash_type:css_hash_type,
+    slot:uint,
+    index:uint
+}
+
 impl css_selector_hash {
 
     /**
@@ -1298,10 +1310,10 @@ impl css_selector_hash {
 		let mut i = 0;
 		while i < size {
             unsafe{
-				hash.elements.push_fast(None);
-				hash.classes.push_fast(None);
-				hash.ids.push_fast(None);
-				hash.universal.push_fast(None);
+				hash.elements.push_fast(~[]);
+				hash.classes.push_fast(~[]);
+				hash.ids.push_fast(~[]);
+				hash.universal.push_fast(~[]);
 			}	
 			i = i + 1;
         }
@@ -1469,7 +1481,7 @@ impl css_selector_hash {
                             -> css_error {
         //debug!("Entering: _insert_into_chain");
         //debug!("_insert_into_chain:: hash_type == %?, index == %?", hash_type, index);
-        let mut hash_entry_list : &mut ~[Option<@mut hash_entry>];
+        let mut hash_entry_list : &mut ~[~[@mut css_selector]];
 
         match hash_type {
             Element => {hash_entry_list = &mut self.elements} ,
@@ -1478,76 +1490,40 @@ impl css_selector_hash {
             Universal => {hash_entry_list = &mut self.universal} ,
         };
 
-        let entry = @mut hash_entry {
-                selector:selector,
-                next:None
-        };
-        //&~[Option<@mut hash_entry>] 
+        let mut i = 0 ;
+        let j = hash_entry_list[index].len() ; 
+        while (i<j) {
 
-        match hash_entry_list[index] {
-            None=> {
-                //debug!("Entering: match (*hash_entry_list)[index] => None");
-                hash_entry_list[index] = Some(entry);
-                //debug!("(*hash_entry_list)[index] == %?", (*hash_entry_list)[index]);
-            },
-            Some(index_element)=> {
-                //debug!("Entering: match (*hash_entry_list)[index] => Some(index_element)");
-                let mut search = index_element;
-                let mut prev = index_element ;
-                let mut first_pos : bool = true ;
-                loop {
+            let search = hash_entry_list[index][i] ;            
 
-                    if (mut_ptr_eq(selector,search.selector) == true ) {
-                        // duplicate insert of same pointer css_selector should never occur,
-                        // added , due to logical incompatibilty with "_remove_into_chain"
-                        // in origical code , _remove_into_chain removes by comparing pointer values,
-                        // and freeing the final result , by doing reallocation of 0 bytes ( line num : 650-671 , hash.c)
-                        //debug!("_insert_into_chain : error: double insertion of same selector ") ;
-                        return CSS_BADPARM;
-                    }
-
-                    if search.selector.specificity> selector.specificity {
-                        break ;
-                    }
-
-                    if search.selector.specificity == selector.specificity {
-                        if(search.selector.rule.is_none() || selector.rule.is_none() ){
-                            //debug!("_insert_into_chain : error : rule is none  ") ;
-                            return CSS_BADPARM ;
-                        }
-
-                        let base_search_rule = css_stylesheet::css__stylesheet_get_base_rule(search.selector.rule.get());
-                        let base_selector_rule = css_stylesheet::css__stylesheet_get_base_rule(selector.rule.get());
-
-                        if base_search_rule.index > base_selector_rule.index {
-                            break ;
-                        }
-                    }
-
-                    prev = search ;
-                    first_pos = false ;
-                    search = 
-                        match search.next {
-                            None=>{
-                                break ;
-                            },
-                            Some(next_ptr)=>{
-                                next_ptr
-                            }
-                    };
+            if (mut_ptr_eq(selector,search) == true ) {
+                // duplicate insert of same pointer css_selector should never occur,
+                // added , due to logical incompatibilty with "_remove_into_chain"
+                // in origical code , _remove_into_chain removes by comparing pointer values,
+                // and freeing the final result , by doing reallocation of 0 bytes ( line num : 650-671 , hash.c)
+                //debug!("_insert_into_chain : error: double insertion of same selector ") ;
+                return CSS_BADPARM;
+            }
+            if search.specificity> selector.specificity {
+                hash_entry_list[index].insert(i,selector);
+                return CSS_OK ;
+            }
+            if search.specificity == selector.specificity {
+                if(search.rule.is_none() || selector.rule.is_none() ){
+                    //debug!("_insert_into_chain : error : rule is none  ") ;
+                    return CSS_BADPARM ;
                 }
-                if(first_pos){
-                    //debug!("Entering: _insert_into_chain:: if(first_pos)");
-                    entry.next = Some(index_element);
-                    hash_entry_list[index] = Some(entry);
-                }
-                else {
-                    //debug!("Entering: _insert_into_chain:: if(first_pos)--else");
-                    entry.next=prev.next;
-                    prev.next= Some(entry);
+                let base_search_rule = css_stylesheet::css__stylesheet_get_base_rule(search.rule.get());
+                let base_selector_rule = css_stylesheet::css__stylesheet_get_base_rule(selector.rule.get());
+
+                if base_search_rule.index > base_selector_rule.index {
+                    hash_entry_list[index].insert(i,selector);
+                    return CSS_OK ;
                 }
             }
+            i += 1;
         }
+        hash_entry_list[index].push(selector);
         //debug!("_insert_into_chain : after insertion list is hash_type=%?= index=%?=",hash_type,index) ;
         //css_selector_hash:://debug_print_hash_entry_list((*hash_entry_list)[index]) ;
         CSS_OK
@@ -1619,7 +1595,7 @@ impl css_selector_hash {
                             selector : @mut css_selector) 
                             -> css_error {
 
-        let mut hash_entry_list : &mut ~[Option<@mut hash_entry>];
+        let mut hash_entry_list : &mut ~[~[@mut css_selector]];
 
         match hash_type {
             Element => {hash_entry_list = &mut self.elements} ,
@@ -1628,43 +1604,19 @@ impl css_selector_hash {
             Universal => {hash_entry_list = &mut self.universal} ,
         };
         //&~[Option<@mut hash_entry>] 
+        let mut i = 0 ;
+        let j = hash_entry_list[index].len() ; 
+        while (i<j) {
 
-        match hash_entry_list[index] {
-            None=>{
-                return CSS_INVALID ;
-            },
-            Some(index_element)=>{
-
-                let mut search = index_element;
-                let mut prev = index_element ;
-                let mut first_pos : bool = true ;
-
-                loop {
-
-                    if (mut_ptr_eq(selector,search.selector) == true ) {
-                        break;
-                    }
-
-                    first_pos = false ;
-                    search = 
-                        match search.next {
-                            None=>{
-                                return CSS_INVALID ;
-                            },
-                            Some(next_ptr)=>{
-                                prev = search ;
-                                next_ptr
-                            }
-                    };
-                }
-                if(first_pos){
-                    hash_entry_list[index] = search.next;
-                }
-                else {
-                    prev.next= search.next;
-                }
+            let search = hash_entry_list[index][i] ;            
+            if (mut_ptr_eq(selector,search) == true ) {
+                hash_entry_list[index].remove(i);
+                return CSS_OK ;
             }
+
+            i += 1;
         }
+
         CSS_OK
     }
 
@@ -1672,47 +1624,33 @@ impl css_selector_hash {
     * #Description:
     *  Find the first selector that matches name.
 
-    * #Arguments:
+    * #Arguments:pub struct hash_entry
     *  'name'  - name to find. 
 
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find(&mut self, name : @mut lwc_string) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find(&mut self, name : @mut lwc_string) ->  (uint, uint) {
         //debug!("Entering: css__selector_hash_find");
         let mask  = self.default_slots-1 ;
-        let index = css_selector_hash::_hash_name(name) & mask ; 
-        let mut head = self.elements[index];
+        let sindex = css_selector_hash::_hash_name(name) & mask ; 
+        let head = &self.elements[sindex];
 
         //debug!(fmt!("css__selector_hash_find:: name=%?  mask=%?, index=%? ", name, mask, index ));
-        loop {
-            match head {
-                None=>{
-                    return (None,CSS_OK);
-                },
-                Some(node_element)=>{
-
-                    if self.lwc_instance.lwc_string_caseless_isequal(
-                                node_element.selector.data[0].qname.name,name) {
+        let mut i = 0 ;
+        let j = head.len() ; 
+        while (i<j) {
+            if self.lwc_instance.lwc_string_caseless_isequal(
+                                head[i].data[0].qname.name,name) {
                                 //debug!("Exiting: css__selector_hash_find (1)");
-                                return (head,CSS_OK);
-                    }
-
-                    match node_element.next {
-                        None=> {
-                            //debug!("Exiting: css__selector_hash_find (2)");
-                            return (None,CSS_OK);
-                        },
-                        Some(_)=>{
-                            head = node_element.next ;
-                            loop ;
-                        }
-                    }
-                }
+                return (sindex, i);
             }
+
+            i += 1;
         }
+
+        return (sindex, -1);
     }
-    
 
     /**
     * #Description:
@@ -1724,38 +1662,26 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_class(&mut self, name : @mut lwc_string) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_by_class(&mut self, name : @mut lwc_string) -> Result<@mut hash_entry,css_error> {
 
         let mask  = self.default_slots-1 ;
-        let index = css_selector_hash::_hash_name(name) & mask ; 
-        let mut head = self.classes[index];
+        let sindex = css_selector_hash::_hash_name(name) & mask ; 
+        let mut head = self.classes[sindex];
 
-        //debug!(fmt!("name=%?  mask=%?, index=%? ", name, mask, index ));
-        loop {
-            match head {
-                None=>{
-                    return (None,CSS_OK);
-                },
-                Some(node_element)=>{
 
-                    let n = self._class_name(node_element.selector);
+        let mut i : uint = 0;
+        let length = head.len();
+        while i < length {
+            let n = self._class_name(head[i].selector);
 
-                    if self.lwc_instance.lwc_string_caseless_isequal(n, name) {
-                        return (head,CSS_OK);
-                    }
-
-                    match node_element.next {
-                        None=> {
-                            return (None,CSS_OK);
-                        },
-                        Some(_)=>{
-                            head = node_element.next ;
-                            loop ;
-                        }
-                    }
-                }
+            if self.lwc_instance.lwc_string_caseless_isequal(n, name) {
+                return (sindex, i);
             }
+
+            i += 1;
         }
+
+        return (sindex, -1);
     }
 
     /**
@@ -1768,96 +1694,169 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_id(&mut self, name : @mut lwc_string) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_by_id(&mut self, name : @mut lwc_string) -> (uint, uint) {
 
         let mask  = self.default_slots-1 ;
-        let index = css_selector_hash::_hash_name(name) & mask ; 
-        let mut head = self.ids[index];
+        let sindex = css_selector_hash::_hash_name(name) & mask ; 
+        let mut head = self.ids[sindex];
+        let mut i : uint = 0;
+        let length = head.len();
+        while i < length{
+            let n = self._id_name(head[sindex][i]);
 
-        loop {
-            match head {
-                None=>{
-                    return (None,CSS_OK);
-                },
-                Some(node_element)=>{
-
-                    let n = self._id_name(node_element.selector);
-
-                    if self.lwc_instance.lwc_string_caseless_isequal(n, name) {
-                        return (head,CSS_OK);
-                    }
-
-                    match node_element.next {
-                        None=> {
-                            return (None,CSS_OK);
-                        },
-                        Some(_)=>{
-                            head = node_element.next ;
-                            loop ;
-                        }
-                    }
-                }
+            if self.lwc_instance.lwc_string_caseless_isequal(n, name) {
+                return (sindex, i);
             }
         }
-    }
 
+        return (sindex, -1);
+    }
 
     /**
     * #Description:
+    *  Find the next selector that matches.
+
+    * #Arguments:
+    *  'current'  - Current item. 
+
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
+    */
+    pub fn _iterate_elements(&mut self , slot : uint, index : uint) -> uint {
+
+
+        let head = &self.elements[slot];
+
+        let mut i = index+1 ;
+        let j = head.len() ; 
+        while (i<j) {
+
+            if head[i-1].data.len()==0 || 
+                    head[i].data.len()==0 {
+                    return None;
+            }
+
+            if self.lwc_instance.lwc_string_caseless_isequal(
+                        head[i-1].data[0].qname.name,
+                        head[i].data[0].qname.name) {
+                //debug!("Exiting: css__selector_hash_find (1)");
+                return i;
+            }
+            i += 1;
+        }
+
+        return -1;
+    }
+
+}
+
+    /**
+    * #Description:
+    *  Find the first selector that has a class that matches name.
+
+    * #Arguments:
+    *  'name'  - name to find. 
+
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
+    */
+    // pub fn css__selector_hash_find_by_class(&mut self, name : @mut lwc_string) -> Result<@mut hash_entry,css_error> {
+
+    //     let mask  = self.default_slots-1 ;
+    //     let index = css_selector_hash::_hash_name(name) & mask ; 
+    //     let mut head = self.classes[index];
+
+    //     //debug!(fmt!("name=%?  mask=%?, index=%? ", name, mask, index ));
+    //     loop {
+    //         match head {
+    //             None=>{
+    //                 return (None,CSS_OK);
+    //             },
+    //             Some(node_element)=>{
+
+    //                 let n = self._class_name(node_element.selector);
+
+    //                 if self.lwc_instance.lwc_string_caseless_isequal(n, name) {
+    //                     return (head,CSS_OK);
+    //                 }
+
+    //                 match node_element.next {
+    //                     None=> {
+    //                         return (None,CSS_OK);
+    //                     },
+    //                     Some(_)=>{
+    //                         head = node_element.next ;
+    //                         loop ;
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+    /**
+    * #Description:
+    *  Find the first selector that has an ID that matches name.
+
+    * #Arguments:
+    *  'name'  - name to find. 
+
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
+    */
+    // pub fn css__selector_hash_find_by_id(&mut self, name : @mut lwc_string) -> Result<@mut hash_entry,css_error> {
+
+    //     let mask  = self.default_slots-1 ;
+    //     let index = css_selector_hash::_hash_name(name) & mask ; 
+    //     let mut head = self.ids[index];
+
+    //     loop {
+    //         match head {
+    //             None=>{
+    //                 return (None,CSS_OK);
+    //             },
+    //             Some(node_element)=>{
+
+    //                 let n = self._id_name(node_element.selector);
+
+    //                 if self.lwc_instance.lwc_string_caseless_isequal(n, name) {
+    //                     return (head,CSS_OK);
+    //                 }
+
+    //                 match node_element.next {
+    //                     None=> {
+    //                         return (None,CSS_OK);
+    //                     },
+    //                     Some(_)=>{
+    //                         head = node_element.next ;
+    //                         loop ;
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+
+    /**
+    * #Description:Result<@mut hash_entry,css_error>
     *  Find the first universal selector.
 
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_universal(&mut self) -> (Option<@mut hash_entry>,css_error) {
+    // pub fn css__selector_hash_find_universal(&mut self) -> Result<@mut hash_entry,css_error> {
 
-        let head = self.universal[0] ;
-        match head {
-            None=>{
-                return (None,CSS_OK);
-            },
-            Some(_)=>{
-                return (self.universal[0],CSS_OK);
-            }
-        }
-    }
-
-    /**
-    * #Description:
-    *  Find the next selector that matches.
-
-    * #Arguments:
-    *  'current'  - Current item. 
-
-    * #Return Value:
-    *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
-    */
-    pub fn _iterate_elements(&mut self , current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
-
-        let mut head = current;
-
-        loop {
-            match head.next {
-                None=>{
-                    return (None,CSS_OK);
-                },
-                Some(next_entry)=>{
-                    if head.selector.data.len()==0 || 
-                        next_entry.selector.data.len()==0 {
-                        return (None,CSS_INVALID);
-                    }
-                    if self.lwc_instance.lwc_string_caseless_isequal(
-                        current.selector.data[0].qname.name,
-                        next_entry.selector.data[0].qname.name) == true {
-
-                        return (head.next,CSS_OK);
-                    }
-                    head = next_entry ;
-                    loop ;
-                }
-            }
-        }
-    }
+    //     let head = self.universal[0] ;
+    //     match head {
+    //         None=>{
+    //             return (None,CSS_OK);
+    //         },
+    //         Some(_)=>{
+    //             return (self.universal[0],CSS_OK);
+    //         }
+    //     }
+    // }
 
     /**
     * #Description:
@@ -1869,67 +1868,32 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_classes(&mut self ,current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    // pub fn _iterate_elements(&mut self , current : @mut hash_entry) -> Result<@mut hash_entry,css_error> {
 
-        let mut head = current;
+    //     let mut head = current;
 
-        let current_refer = self._class_name(current.selector);
+    //     loop {
+    //         match head.next {
+    //             None=>{
+    //                 return (None,CSS_OK);
+    //             },
+    //             Some(next_entry)=>{
+    //                 if head.selector.data.len()==0 || 
+    //                     next_entry.selector.data.len()==0 {
+    //                     return (None,CSS_INVALID);
+    //                 }
+    //                 if self.lwc_instance.lwc_string_caseless_isequal(
+    //                     current.selector.data[0].qname.name,
+    //                     next_entry.selector.data[0].qname.name) == true {
 
-        loop {
-            match head.next {
-                None=>{
-                    return (None,CSS_OK);
-                },
-                Some(next_entry)=>{
-                    let name = self._class_name(next_entry.selector);
-                    if( lwc_string_length(name)==0){
-                        loop;
-                    }
-                    if self.lwc_instance.lwc_string_caseless_isequal(name,current_refer) == true {
-                        return (current.next,CSS_OK);
-                    }
-                    head = next_entry ;
-                    loop ;
-                }
-            }
-        }
-    }
-
-    /**
-    * #Description:
-    *  Find the next selector that matches.
-
-    * #Arguments:
-    *  'current'  - Current item. 
-
-    * #Return Value:
-    *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
-    */
-    pub fn _iterate_ids(&mut self ,current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
-
-        let mut head = current;
-
-        let current_refer = self._id_name(current.selector);
-
-        loop {
-            match head.next {
-                None=>{
-                    return (None,CSS_OK);
-                },
-                Some(next_entry)=>{
-                    let name = self._id_name(next_entry.selector);
-                    if( lwc_string_length(name)==0){
-                        loop;
-                    }
-                    if self.lwc_instance.lwc_string_caseless_isequal(name,current_refer) == true {
-                        return (current.next,CSS_OK);
-                    }
-                    head = next_entry ;
-                    loop ;
-                }
-            }
-        }
-    }
+    //                     return (head.next,CSS_OK);
+    //                 }
+    //                 head = next_entry ;
+    //                 loop ;
+    //             }
+    //         }
+    //     }
+    // }
 
     /**
     * #Description:
@@ -1941,14 +1905,87 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_universal(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    // pub fn _iterate_classes(&mut self ,current : @mut hash_entry) -> Result<@mut hash_entry,css_error> {
 
-        if current.next.is_some() {
-            return (current.next,CSS_OK);
-        }
-        (None,CSS_OK)
-    }
+    //     let mut head = current;
 
+    //     let current_refer = self._class_name(current.selector);
+
+    //     loop {
+    //         match head.next {
+    //             None=>{
+    //                 return (None,CSS_OK);
+    //             },
+    //             Some(next_entry)=>{
+    //                 let name = self._class_name(next_entry.selector);
+    //                 if( lwc_string_length(name)==0){
+    //                     loop;
+    //                 }
+    //                 if self.lwc_instance.lwc_string_caseless_isequal(name,current_refer) == true {
+    //                     return (current.next,CSS_OK);
+    //                 }
+    //                 head = next_entry ;
+    //                 loop ;
+    //             }
+    //         }
+    //     }
+    // }
+
+    /**
+    * #Description:
+    *  Find the next selector that matches.
+
+    * #Arguments:
+    *  'current'  - Current item. 
+
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
+    */
+    // pub fn _iterate_ids(&mut self ,current : @mut hash_entry) -> Result<@mut hash_entry,css_error> {
+
+    //     let mut head = current;
+
+    //     let current_refer = self._id_name(current.selector);
+
+    //     loop {
+    //         match head.next {
+    //             None=>{
+    //                 return (None,CSS_OK);
+    //             },
+    //             Some(next_entry)=>{
+    //                 let name = self._id_name(next_entry.selector);
+    //                 if( lwc_string_length(name)==0){
+    //                     loop;
+    //                 }
+    //                 if self.lwc_instance.lwc_string_caseless_isequal(name,current_refer) == true {
+    //                     return (current.next,CSS_OK);
+    //                 }
+    //                 head = next_entry ;
+    //                 loop ;
+    //             }
+    //         }
+    //     }
+    // }
+
+    /**
+    * #Description:
+    *  Find the next selector that matches.
+
+    * #Arguments:
+    *  'current'  - Current item. 
+
+    * #Return Value:
+    *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
+    */
+    // pub fn _iterate_universal(current : @mut hash_entry) -> Result<@mut hash_entry,css_error> {
+
+    //     if current.next.is_some() {
+    //         return (current.next,CSS_OK);
+    //     }
+    //     (None,CSS_OK)
+    // }
+
+    /*
     pub fn debug_print_vector_of_hash_entry_list(hash_vec : &[Option<@mut hash_entry>]) {
 
         for hash_vec.iter().advance |&entry| {
@@ -1974,7 +2011,8 @@ impl css_selector_hash {
             }
         }
     }
-}
+    */
+//}
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
