@@ -1210,8 +1210,13 @@ impl css_select_ctx {
                     return CSS_OK;
                 }
 
+<<<<<<< HEAD
                 class_selectors_hash_entry.push(head[i]) ;
                 class_selectors_option_list.push(Some(sel_class.get().selector)) ;
+=======
+				
+                class_selectors_option_list.push(Some(sheet.selectors.elements[slot_class][index_class].selector)) ;
+>>>>>>> 5c27fd989bb0074733b293305869b7ac209b1549
                 z += 1;
             }
         }
