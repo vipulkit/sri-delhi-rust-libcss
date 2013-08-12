@@ -1211,8 +1211,7 @@ impl css_select_ctx {
                 }
 
 				
-                class_selectors_hash_entry.push(head[i]) ;
-                class_selectors_option_list.push(Some(sel_class.get().selector)) ;
+                class_selectors_option_list.push(Some(sheet.selectors.elements[slot_class][index_class].selector)) ;
                 z += 1;
             }
         }
