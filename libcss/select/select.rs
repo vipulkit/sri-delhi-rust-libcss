@@ -1196,7 +1196,7 @@ impl css_select_ctx {
         }
 
 //        node_selectors_hash_entry = sel;
-        node_selectors_option = self.elements[slot][index] ;
+        node_selectors_option = Some((sheet.selectors.elements[sel_element_slot][sel_element_index]).                        selector);
 
         if ( state.classes.len() != 0 ) {
              /* Find hash chains for node classes */
@@ -1289,19 +1289,16 @@ impl css_select_ctx {
              * the processed selector from. */
             if ( node_selectors_option.is_some() &&
                 mut_ptr_eq( selector, node_selectors_option.get() ) ) {
-                let (node_next_hash,error) = 
-                        sheet.selectors._iterate_elements(node_selectors_hash_entry.get());
+                let (next_element_index) = 
+                        sheet.selectors._iterate_elements(slot, index);
 
-                match error {
-                    CSS_OK => {},
-                    err => {
-                        return err;
+                if next_element_index == -1 {
+                    return CSS_OK;
                     }
-                }
 
-                if node_next_hash.is_some() {
-                    node_selectors_hash_entry = node_next_hash;
-                    node_selectors_option = Some(node_next_hash.get().selector) ;
+                if next_element_index != -1 {
+                    index = next_element_index;
+                    node_selectors_option = Some((sheet.selectors.elements[sel_element_slot][sel_element_index]).                        selector);
                 }
                 else {
                     node_selectors_option = None ;
