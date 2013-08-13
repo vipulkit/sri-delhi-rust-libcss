@@ -1282,13 +1282,13 @@ impl css_select_ctx {
              *
              * Pick the least specific/earliest occurring selector.
              */
-            println("before call to _selector_next");
+        //    println("before call to _selector_next");
             let o_selector = css_select_ctx::_selector_next(
                                     node_selectors_option, 
                                     id_selectors_option,
                                     &sheet.selectors.classes, &class_selectors_index_list,
                                     univ_selectors_option );
-            println("after call to _selector_next");
+       //     println("after call to _selector_next");
             if o_selector.is_none() {
                 fail!(~"Error getting selector next ") ;
             }

@@ -1762,18 +1762,23 @@ impl css_selector_hash {
     pub fn _iterate_classes(&mut self , slot : uint, index : uint) -> (uint, uint) {
 
         let current_name = self._class_name(self.classes[slot][index]);
-        let mut i : uint = index;
-        let length = self.classes.len();
+        let mut i : uint = index + 1;
+        let length = self.classes[slot].len();
+//         println("inside _iterate_classes");
+//         println(fmt!("slot:%?, index: %?", slot, index));
+// //        println(fmt!("class[%u]: %?", slot, self.classes[slot]));
         while i < length {
             let name = self._class_name(self.classes[slot][i]);
+ //           println(fmt!("current_name=%?   name=%?",current_name, name));
             if( lwc_string_length(name) != 0 &&
                  self.lwc_instance.lwc_string_caseless_isequal(name,current_name)) {
-                return (slot, i);
+                return (slot, index + 1);
             }
 
             i += 1;
         }
 
+ //       println("exiting _iterate_classes");
         return (slot, -1);
     }
 
@@ -1789,13 +1794,13 @@ impl css_selector_hash {
     pub fn _iterate_ids(&mut self , slot : uint, index : uint) -> (uint, uint) {
 
         let current_name = self._id_name(self.ids[slot][index]);
-        let mut i : uint = index;
-        let length = self.ids.len();
+        let mut i : uint = index + 1;
+        let length = self.ids[slot].len();
         while i < length {
             let name = self._class_name(self.ids[slot][i]);
             if( lwc_string_length(name) != 0 && 
                 self.lwc_instance.lwc_string_caseless_isequal(name,current_name)) {
-                return (slot, i);
+                return (slot, index + 1);
             }
 
             i +=1;
