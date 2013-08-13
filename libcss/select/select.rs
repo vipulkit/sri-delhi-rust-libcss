@@ -1193,12 +1193,11 @@ impl css_select_ctx {
 	element_slot = slot;
 	element_index = index;
 
-        if index == -1 {
-            return CSS_OK;
+        if index != -1 {
+            node_selectors_option = Some((sheet.selectors.elements[slot][index]));
         }
 
 //        node_selectors_hash_entry = sel;
-        node_selectors_option = Some((sheet.selectors.elements[slot][index]));
 
         if ( state.classes.len() != 0 ) {
              /* Find hash chains for node classes */
@@ -1208,10 +1207,9 @@ impl css_select_ctx {
             let z_len = state.classes.len();
             while z<z_len {
                 let (slot_class,index_class) = sheet.selectors.css__selector_hash_find_by_class(state.classes[z]);
-                if index_class == -1 {
-                    return CSS_OK;
-                }
+                if index_class != -1 {
                 class_selectors_index_list.push(point {x:slot_class, y:index_class}) ;
+                }
                 z += 1;
             }
         }
@@ -1248,8 +1246,8 @@ impl css_select_ctx {
         if sheet.selectors.universal.len() < 1 || sheet.selectors.universal[0].len() < 1 {
             return CSS_OK;
         }
-
         univ_selectors_option = Some(sheet.selectors.universal[0][0]);
+
         let mut slot_univ = 0;
         let mut index_univ =0;
         // /* Process matching selectors, if any */
@@ -1301,7 +1299,7 @@ impl css_select_ctx {
 
                 if next_element_index != -1 {
                     element_index = next_element_index;
-                    node_selectors_option = Some((sheet.selectors.elements[slot][element_index]));
+                    node_selectors_option = Some((sheet.selectors.elements[element_slot][element_index]));
                 }
                 else {
                     node_selectors_option = None ;
@@ -1310,13 +1308,19 @@ impl css_select_ctx {
             else if (id_selectors_option.is_some() &&
                         mut_ptr_eq(selector, id_selectors_option.get())){
                 let (id_slot_next, id_next_index) = sheet.selectors._iterate_ids(id_slot, id_index);
+                id_slot = id_slot_next;
+                id_index = id_next_index;
 
-                if (id_slot_next == -1 || id_next_index == -1)
+                if (id_slot_next != -1 && id_next_index != -1)
                 {
-                    return CSS_OK;
+                    id_selectors_option = Some((sheet.selectors.elements[id_slot_next][id_next_index]));
                 }
+	        else
+                {
+                    id_selectors_option = None;
+                }
+	
 
-                id_selectors_option = Some((sheet.selectors.elements[id_slot_next][id_index]));
             } 
             else if (slot_univ != -1 && index_univ != -1 && mut_ptr_eq(selector, univ_selectors_option.get())){
                 let (univ_next_slot, univ_next_index) = 
@@ -1324,6 +1328,15 @@ impl css_select_ctx {
 
                 slot_univ = univ_next_slot;
                 index_univ = univ_next_index;
+
+                if slot_univ != -1 && index_univ != -1 {
+                   univ_selectors_option = Some(sheet.selectors.universal[slot_univ][index_univ]);    
+                }
+                else
+                {
+                    univ_selectors_option = None;   
+                }
+
             } 
             else {
                 let mut i = 0 ;
