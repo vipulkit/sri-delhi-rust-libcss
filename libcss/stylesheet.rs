@@ -1797,6 +1797,8 @@ impl css_selector_hash {
                 self.lwc_instance.lwc_string_caseless_isequal(name,current_name)) {
                 return (slot, i);
             }
+
+            i +=1;
         }
 
         return (slot, -1);
