@@ -1046,23 +1046,22 @@ impl css_select_ctx {
     pub fn _selectors_pending(node: Option<@mut css_selector>, id: Option<@mut css_selector>,
                               class_list : &~[point],
                               univ: Option<@mut css_selector>) -> bool {
-          let mut pending : bool = false;
         match node {
             None => {}
             Some(_) => {
-                pending = true;
+                return true;
             }
         }
         match id {
             None => {}
             Some(_) => {
-                pending = true;
+                return true;
             }
         }
         match univ {
             None => {}
             Some(_) => {
-                pending = true;
+                return true;
             }
         }
 
@@ -1071,13 +1070,13 @@ impl css_select_ctx {
         let length = class_list.len();
 	    while z < length {        
             if class_list[z].x != -1 && class_list[z].y != -1 {
-                    pending = true;
+                return true;
             }
 
             z += 1;
         }
 
-        pending
+        false
     }
 
     #[inline]
@@ -1087,6 +1086,14 @@ impl css_select_ctx {
 
         //debug!(fmt!("Entering _selector_less_specific")) ;
         let mut result : bool;
+
+        if (cand.is_none()) {
+            return false;
+        }
+
+        if (refer.is_none()) {
+            return true;
+        }
 
         /* Sort by specificity */
         if (cand.get().specificity < refer.get().specificity) {
@@ -1121,25 +1128,36 @@ impl css_select_ctx {
                             univ: Option<@mut css_selector>) 
                             -> Option<@mut css_selector> {
 
-        //debug!(fmt!("Entering _selector_next")) ;
+//        println(fmt!("Entering _selector_next")) ;
         let mut ret : Option<@mut css_selector> = None;
 
         if (css_select_ctx::_selector_less_specific(ret, node)) {
+     //       println("1");
             ret = Some(node.get());
         }
 
+   //         println("2");
         if (css_select_ctx::_selector_less_specific(ret, id)) {
+    //        println("3");
             ret = Some(id.get());
         }
 
+     //       println("4");
         if (css_select_ctx::_selector_less_specific(ret, univ)) {
+     //       println("5");
             ret = Some(univ.get());
         }
+     //       println("6");
 
         let mut i : uint = 0;
-		let classes_len : uint = class_list.len();
-        while i < classes_len {
-            if (css_select_ctx::_selector_less_specific(ret,Some(classes[class_list[i].x][class_list[i].y]))){
+		let classes_list_len : uint = class_list.len();
+        let classes_len = classes.len();
+        while i < classes_list_len {
+            let x = class_list[i].x;
+            let y = class_list[i].y;
+            if (x < classes_len && y < classes[x].len() 
+                && css_select_ctx::_selector_less_specific(ret,Some(classes[x][y])))
+            {
                 ret = Some(classes[class_list[i].x][class_list[i].y]);
             }
 
@@ -1243,13 +1261,14 @@ impl css_select_ctx {
             }
         }
 */
-        if sheet.selectors.universal.len() < 1 || sheet.selectors.universal[0].len() < 1 {
-            return CSS_OK;
+        let mut slot_univ = -1;
+        let mut index_univ =-1;
+        if sheet.selectors.universal.len() >= 1 && sheet.selectors.universal[0].len() >= 1 {
+            univ_selectors_option = Some(sheet.selectors.universal[0][0]);
+            slot_univ = 0;
+            index_univ =0;
         }
-        univ_selectors_option = Some(sheet.selectors.universal[0][0]);
 
-        let mut slot_univ = 0;
-        let mut index_univ =0;
         // /* Process matching selectors, if any */
         while ( css_select_ctx::_selectors_pending(node_selectors_option,
                                                    id_selectors_option,
@@ -1263,12 +1282,13 @@ impl css_select_ctx {
              *
              * Pick the least specific/earliest occurring selector.
              */
+            println("before call to _selector_next");
             let o_selector = css_select_ctx::_selector_next(
                                     node_selectors_option, 
                                     id_selectors_option,
                                     &sheet.selectors.classes, &class_selectors_index_list,
                                     univ_selectors_option );
-
+            println("after call to _selector_next");
             if o_selector.is_none() {
                 fail!(~"Error getting selector next ") ;
             }
@@ -1344,7 +1364,7 @@ impl css_select_ctx {
                 while i < n_classes  {
                     let x = class_selectors_index_list[i].x;
                     let y = class_selectors_index_list[i].y;
-                    if ( x != -1 && y != -1 && mut_ptr_eq(selector, sheet.selectors.elements[x][y])) 
+                    if ( x != -1 && y != -1 && mut_ptr_eq(selector, sheet.selectors.classes[x][y])) 
                     {
                         let (slot_class, index_class) = sheet.selectors._iterate_classes(x, y);
 
