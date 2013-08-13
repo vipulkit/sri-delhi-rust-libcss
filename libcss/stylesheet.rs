@@ -1666,13 +1666,12 @@ impl css_selector_hash {
 
         let mask  = self.default_slots-1 ;
         let sindex = (css_selector_hash::_hash_name(name) & mask) as uint; 
-        let head = self.classes[sindex].clone();
 
 
         let mut i : uint = 0;
-        let length = head.len();
+        let length = self.classes[sindex].len();
         while i < length {
-            let n = self._class_name(head[i]);
+            let n = self._class_name(self.classes[sindex][i]);
 
             if self.lwc_instance.lwc_string_caseless_isequal(n, name) {
                 return (sindex, i);
@@ -1698,11 +1697,10 @@ impl css_selector_hash {
 
         let mask  = self.default_slots-1 ;
         let sindex = (css_selector_hash::_hash_name(name) & mask) as uint; 
-        let head = self.ids[sindex].clone();
         let mut i : uint = 0;
-        let length = head.len();
+        let length = self.ids[sindex].len();
         while i < length{
-            let n = self._id_name(head[i]);
+            let n = self._id_name(self.ids[sindex][i]);
 
             if self.lwc_instance.lwc_string_caseless_isequal(n, name) {
                 return (sindex, i);
