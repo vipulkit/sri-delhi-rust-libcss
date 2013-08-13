@@ -7,9 +7,6 @@ extern mod dumpcomputed;
 
 use css::css::*;
 use wapcaplet::*;
-use std::cast;
-use std::libc;
-use std::ptr;
 use std::str;
 
 use css::include::types::*;
@@ -27,22 +24,6 @@ use css::include::fpmath::*;
 use extra::time;
 use std::io;
 
-pub struct attribute {
-    name:@mut lwc_string,
-    value:@mut lwc_string
-}
-
-pub struct node {
-    name:Option<@mut lwc_string>,
-    attrs:~[attribute],
-
-    parent:Option<@mut node>,
-    next:Option<@mut node>,
-    prev:Option<@mut node>,
-    children:Option<@mut node>,
-    last_child:Option<@mut node>,
-    lwc_instance: @mut lwc
-}
 
 pub struct sheet_ctx {
     sheet:@mut css,
@@ -50,10 +31,6 @@ pub struct sheet_ctx {
     media:u64
 }
 
-pub struct ctx_pw {
-    attr_class:@mut lwc_string,
-    attr_id:@mut lwc_string
-}   
 
 pub struct line_ctx {
     //explen:uint,
@@ -818,23 +795,20 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64) {
         handler_version:1
     };
         
-    unsafe {
-        let pw = @mut ctx_pw{attr_class:ctx.attr_class, attr_id:ctx.attr_id};
-        // debug!(fmt!("pw=%?",pw));
-        let target = cast::transmute(ctx.target.unwrap());
-        let pw_ptr = ::cast::transmute(pw);
+    let pw = @mut ctx_pw{attr_class:ctx.attr_class, attr_id:ctx.attr_id};
+    // debug!(fmt!("pw=%?",pw));
+         
+    let start_time = time::precise_time_ns();
+    let result = select.css_select_style(ctx.target,ctx.media as u64,None, select_handler,pw);
+    let end_time = time::precise_time_ns();
 
-        let start_time = time::precise_time_ns();
-        let result = select.css_select_style(target,ctx.media as u64,None, select_handler,pw_ptr);
-        let end_time = time::precise_time_ns();
+    *css_select_style_time += (end_time - start_time);
 
-        *css_select_style_time += (end_time - start_time);
-
-        match result {
-            (CSS_OK,Some(x)) => results = x,
-               _=> fail!(~"During css_select_style in select-auto")
-        }
+    match result {
+        (CSS_OK,Some(x)) => results = x,
+        _=> fail!(~"During css_select_style in select-auto")
     }
+
 
     assert!(results.styles[ctx.pseudo_element].is_some());
     dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
@@ -860,92 +834,67 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64) {
  }
 
  #[inline] 
-fn node_name(n:*libc::c_void, qname : &mut css_qname) -> css_error {
+fn node_name(n:Option<@mut node>, qname : &mut css_qname) -> css_error {
 
-    let node : @mut node;
-    unsafe {
-        node = ::cast::transmute(n);
-        cast::forget(node);
-        qname.name = node.name.get();
-    }
-
+    qname.name = n.unwrap().name.get();
     CSS_OK
 }
 
 #[inline] 
-fn node_classes(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[@mut lwc_string] ) -> css_error{
+fn node_classes(lc:@mut ctx_pw, n:Option<@mut node>, classes: &mut ~[@mut lwc_string] ) -> css_error{
     // debug!("node_classes");
-    let mut node : @mut node;
-    let mut lc : @mut ctx_pw;
-    //println("I am in node_classes");
-	unsafe {
-        node = ::cast::transmute(n);
-        cast::forget(node);
-        lc = ::cast::transmute(pw);
-        cast::forget(lc);
-		classes.clear();
-        
-		let mut i = 0;
-        let n_attrs = node.attrs.len();
-        while i < n_attrs {
-			let mut matched;
-            matched = node.lwc_instance.lwc_string_caseless_isequal(node.attrs[i].name,lc.attr_class); 
-           
-            if matched {
-				classes.push(node.attrs[i].value);
-				break;
-			}
-			i += 1;
-        }
+	classes.clear();
+    let node = n.unwrap();
+	let mut i = 0;
+    let n_attrs = node.attrs.len();
+    while i < n_attrs {
+		let mut matched;
+        matched = node.lwc_instance.lwc_string_caseless_isequal(node.attrs[i].name,lc.attr_class); 
+       
+        if matched {
+			classes.push(node.attrs[i].value);
+			break;
+		}
+		i += 1;
     }
+
     CSS_OK
 }
 
 #[inline] 
-fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut @mut lwc_string ) -> css_error{
+fn node_id(lc:@mut ctx_pw, n:Option<@mut node>, id:&mut @mut lwc_string ) -> css_error{
     // debug!("node_id");
-    let mut node : @mut node;
-    let mut lc : @mut ctx_pw;
+    let node = n.unwrap();
     //println("I am in node_id");
-	unsafe {
-        node = ::cast::transmute(n);
-        cast::forget(node);
-        lc = ::cast::transmute(pw);
-        cast::forget(lc);
-        *id = node.lwc_instance.lwc_intern_string("");
-		
-        let mut i = 0;
-        let n_attrs = node.attrs.len();
-        while i < n_attrs {
-			let mut matched;
-            matched = node.lwc_instance.lwc_string_caseless_isequal(node.attrs[i].name,lc.attr_id); 
 
-            if matched {
-				*id = node.attrs[i].value;
-				break;
-			}
-			i += 1;
-        }
+    *id = node.lwc_instance.lwc_intern_string("");
+	
+    let mut i = 0;
+    let n_attrs = node.attrs.len();
+    while i < n_attrs {
+		let mut matched;
+        matched = node.lwc_instance.lwc_string_caseless_isequal(node.attrs[i].name,lc.attr_id); 
+
+        if matched {
+			*id = node.attrs[i].value;
+			break;
+		}
+		i += 1;
     }
 
     CSS_OK
 }
 
 #[inline] 
-fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *libc::c_void) -> css_error {
+fn named_ancestor_node(n:Option<@mut node>, qname:&mut css_qname, ancestor:&mut Option<@mut node>) -> css_error {
     // debug!("named_ancestor_node");
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-    }
-    
+    let mut node1 = n.unwrap();
+        
     if node1.parent.is_none() {
-        unsafe {
-            *ancestor = ptr::null();
-        }
+        *ancestor = None;
         return CSS_OK;
     }
+    
     while node1.parent.is_some() {
         node1 = node1.parent.unwrap();
         let matched:bool;
@@ -954,70 +903,54 @@ fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *lib
             break;
         }
     }
-    unsafe {
-        *ancestor =  ::cast::transmute(node1);
-    }
+    
+    *ancestor =  Some(node1);
     CSS_OK
 }
 
 #[inline]   
-fn named_parent_node(n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_void) -> css_error {
+fn named_parent_node(n:Option<@mut node>, qname:&mut css_qname, parent:&mut Option<@mut node>) -> css_error {
     // debug!("named_parent_node");
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-        *parent = ptr::null();
-    }   
+    let node1 = n.unwrap();
+    *parent = None;
+    
     if node1.parent.is_some() {
         let matched: bool ;
         let parent_node : @mut node;
         parent_node = node1.parent.unwrap();
         matched = node1.lwc_instance.lwc_string_caseless_isequal(qname.name,parent_node.name.get());
         if matched {
-            unsafe {
-                *parent = ::cast::transmute(parent_node);
-            }
+            *parent = Some(parent_node);
         }       
     }   
     CSS_OK
 }
 
 #[inline]    
-fn named_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc::c_void) -> css_error {
+fn named_sibling_node(n:Option<@mut node>, qname:&mut css_qname, sibling:&mut Option<@mut node>) -> css_error {
     // debug!("named_sibling_node");
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-        *sibling = ptr::null();
-    }   
+    let node1 = n.unwrap();
+    *sibling = None;
+    
     if node1.prev.is_some() {
         let matched: bool ;
         let prev_node: @mut node;
         prev_node = node1.prev.get();
         matched = node1.lwc_instance.lwc_string_caseless_isequal(qname.name,prev_node.name.get());
         if matched {
-            unsafe {
-                *sibling = ::cast::transmute(prev_node);
-            }
+            *sibling = Some(prev_node);
         }       
     }   
     CSS_OK
 }
 
 #[inline] 
-fn named_generic_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error {
+fn named_generic_sibling_node(n:Option<@mut node>, qname:&mut css_qname, sibling:&mut Option<@mut node>) -> css_error {
     // debug!("named_generic_sibling_node");
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-    }
+    let mut node1 = n.unwrap();
+    
     if node1.prev.is_none() {
-        unsafe {
-            *sibling = ptr::null();
-        }
+        *sibling = None;
         return CSS_OK;
     }
     
@@ -1029,54 +962,43 @@ fn named_generic_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mu
             break;
         }
     }
-    unsafe {
-        *sibling =  ::cast::transmute(node1);
-    }
+    
+    *sibling =  Some(node1);
     CSS_OK
 }
 
 #[inline]    
-fn parent_node(n:*libc::c_void, parent:*mut*libc::c_void) -> css_error {
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n); 
-        cast::forget(node1);
-        
-        if node1.parent.is_some() {
-            *parent = ::cast::transmute(node1.parent.unwrap());
-        }
-        else {
-            *parent = ptr::null();
-        }
+fn parent_node(n:Option<@mut node>, parent:&mut Option<@mut node>) -> css_error {
+    let node1 = n.unwrap();
+    if node1.parent.is_some() {
+        *parent = node1.parent;
     }
+    else {
+        *parent = None;
+    }
+
     CSS_OK
 }
 
 #[inline] 
-fn sibling_node(n:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
+fn sibling_node(n:Option<@mut node>, sibling:&mut Option<@mut node>) -> css_error {
+    let node1 = n.unwrap();
         
-        if node1.prev.is_some() {
-            *sibling = ::cast::transmute(node1.prev.unwrap());
-        }
-        else {
-            *sibling = ptr::null();
-        }
+    if node1.prev.is_some() {
+        *sibling = node1.prev;
     }
+    else {
+        *sibling = None;
+    }
+
     CSS_OK
 }
 
 #[inline] 
-fn node_has_name(_:*libc::c_void, n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> css_error {
+fn node_has_name(_:@mut ctx_pw, n:Option<@mut node>, qname:&css_qname, matched:@mut bool) -> css_error {
     // debug!("node_has_name");
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-    }
+    let node1 = n.unwrap();
+    
     if lwc_string_length(qname.name) == 1 && lwc_string_data(qname.name)[0] == '*' as u8 {
         *matched = true;
     }
@@ -1087,21 +1009,14 @@ fn node_has_name(_:*libc::c_void, n:*libc::c_void, qname:&css_qname, matched:@mu
 }
 
 #[inline] 
-fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_has_class(ctx:@mut ctx_pw ,n:Option<@mut node>, name:@mut lwc_string, matched:@mut bool) -> css_error {
     // debug!("node_has_class");
-    let mut node1:@mut node;
-    let mut ctx: @mut  ctx_pw;
+    let node1 = n.unwrap();
+    
     let mut i:uint = 0 ;
     let len:uint;
 	let mut condition_match : bool = false;
-	
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-        ctx = ::cast::transmute(pw);
-        cast::forget(ctx);
-	}	
-		
+			
 	// debug!(fmt!("node1.attrs.len=%?",node1.attrs.len()));
 	// debug!(fmt!("node1.attrs[i].name=%?",copy node1.attrs[i].name));
 	len = node1.attrs.len();
@@ -1128,29 +1043,24 @@ fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:@mut lwc_string, match
     CSS_OK
 }
 #[inline] 
-fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_has_id(ctx:@mut ctx_pw, n:Option<@mut node>, name:@mut lwc_string, matched:@mut bool) -> css_error {
     // debug!("node_has_id");
-    let mut node1:@mut node;
-    let mut ctx: @mut  ctx_pw;
+    let node1 = n.unwrap();
+    
     let mut i:uint = 0 ;
     let len:uint;
     
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-        ctx = ::cast::transmute(pw);
-        cast::forget(ctx);
-        len = node1.attrs.len();
-        
-        while i  < len {
-            let mut amatched: bool;
-            amatched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,ctx.attr_id); 
-            if amatched {
-                break;
-            }
-            i += 1;
+    len = node1.attrs.len();
+    
+    while i  < len {
+        let mut amatched: bool;
+        amatched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,ctx.attr_id); 
+        if amatched {
+            break;
         }
+        i += 1;
     }
+    
     
     /* IDs are case-sensitive in HTML */
     let mut condition_match : bool = false;
@@ -1173,13 +1083,10 @@ fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:@mut lwc_string, matched:
 }
 
 #[inline] 
-fn node_has_attribute(n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> css_error {
+fn node_has_attribute(n:Option<@mut node>, qname:&css_qname, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute");
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-    }
+    let node1 = n.unwrap();
+    
     let mut i:uint = 0 ;
     *matched = false;
     let attr_len = node1.attrs.len();
@@ -1194,13 +1101,9 @@ fn node_has_attribute(n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> c
 }
     
 #[inline] 
-fn  node_has_attribute_equal(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+fn  node_has_attribute_equal(n:Option<@mut node>, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_equal");
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-    }
+    let node1 = n.unwrap();
     let mut i:uint = 0 ;
     
     *matched = false;
@@ -1221,14 +1124,10 @@ fn  node_has_attribute_equal(n:*libc::c_void, qname:&css_qname,value:@mut lwc_st
 
 
 #[inline] 
-fn node_has_attribute_includes(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_includes(n:Option<@mut node>, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_includes");
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-    }
-    
+    let node1 = n.unwrap();
+        
     let mut i:uint = 0 ;
     let vlen = lwc_string_length(value);
     
@@ -1267,13 +1166,10 @@ fn node_has_attribute_includes(n:*libc::c_void, qname:&css_qname,value:@mut lwc_
 }
 
 #[inline] 
-fn node_has_attribute_dashmatch(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_dashmatch(n:Option<@mut node>, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_dashmatch");
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-    }
+    let node1 = n.unwrap();
+    
     let mut i:uint = 0 ;
     let vlen = lwc_string_length(value);
     *matched = false;
@@ -1310,13 +1206,10 @@ fn node_has_attribute_dashmatch(n:*libc::c_void, qname:&css_qname,value:@mut lwc
 }
 
 #[inline] 
-fn node_has_attribute_prefix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_prefix(n:Option<@mut node>, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_prefix");
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-    }
+    let node1 = n.unwrap();
+    
     let mut i:uint = 0 ;
     *matched = false;
     let attr_len = node1.attrs.len();
@@ -1343,13 +1236,10 @@ fn node_has_attribute_prefix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_st
 }
 
 #[inline] 
-fn node_has_attribute_suffix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_suffix(n:Option<@mut node>, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_suffix");
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-    }
+    let node1 = n.unwrap();
+
     let mut i:uint = 0 ;
     *matched = false;
     let attr_len = node1.attrs.len();
@@ -1380,13 +1270,10 @@ fn node_has_attribute_suffix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_st
 }
 
 #[inline] 
-fn node_has_attribute_substring(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_substring(n:Option<@mut node>, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_substring");
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-    }
+    let node1 = n.unwrap();
+
     let mut i:uint = 0 ;
     *matched = false;
     let attr_len = node1.attrs.len();
@@ -1425,29 +1312,20 @@ fn node_has_attribute_substring(n:*libc::c_void, qname:&css_qname,value:@mut lwc
 }
 
 #[inline] 
-fn node_is_root(n:*libc::c_void, matched:@mut bool) -> css_error {
-    debug!("node_is_root");
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-    }
-    *matched = node1.parent.is_none();
+fn node_is_root(n:Option<@mut node>, matched:@mut bool) -> css_error {
+    //debug!("node_is_root");
+    
+    *matched = n.unwrap().parent.is_none();
     CSS_OK
 }
 
 #[inline]    
-fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i32) -> css_error {
+fn node_count_siblings(n:Option<@mut node>, same_name:bool, after:bool, count:@mut i32) -> css_error {
     // debug!("node_count_siblings");
     let mut cnt : i32 = 0;
     let mut matched;
-    let mut node1:@mut node;
-    let mut name: @mut lwc_string ;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-        name = node1.name.get();
-    }
+    let mut node1 = n.unwrap();
+    let name = node1.name.get();
     
     if after {
         while node1.next.is_some() {
@@ -1492,84 +1370,80 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
 }
 
 #[inline]    
-fn node_is_empty(n:*libc::c_void, matched:@mut bool) -> css_error {
-    let mut node1:@mut node;
-    unsafe {
-        node1 = ::cast::transmute(n);
-        cast::forget(node1);
-    }
-    *matched = node1.children.is_none();
+fn node_is_empty(n:Option<@mut node>, matched:@mut bool) -> css_error {
+   
+    *matched = n.unwrap().children.is_none();
     CSS_OK
 }
 
 #[inline]     
-fn node_is_link(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_link(_:Option<@mut node>, matched:@mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_visited(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_visited(_:Option<@mut node>, matched:@mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_hover(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_hover(_:Option<@mut node>, matched:@mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_active(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_active(_:Option<@mut node>, matched:@mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_focus(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_focus(_:Option<@mut node>, matched:@mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_enabled(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_enabled(_:Option<@mut node>, matched:@mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_disabled(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_disabled(_:Option<@mut node>, matched:@mut bool) -> css_error {
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_checked(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_checked(_:Option<@mut node>, matched:@mut bool) -> css_error {
     *matched = false;
     CSS_OK
 }
 
 #[inline]  
-fn node_is_target(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_target(_:Option<@mut node>, matched:@mut bool) -> css_error {
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_lang(_:*libc::c_void, _:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_is_lang(_:Option<@mut node>, _:@mut lwc_string, matched:@mut bool) -> css_error {
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_presentational_hint(_:*libc::c_void, _:u32) -> (css_error,Option<@mut css_hint>) {
+fn node_presentational_hint(_:Option<@mut node>, _:u32) -> (css_error,Option<@mut css_hint>) {
     (CSS_PROPERTY_NOT_SET,None)
 }
 

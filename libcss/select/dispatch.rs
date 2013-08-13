@@ -10,7 +10,6 @@ use select::computed::*;
 use select::propset::*;
 use select::properties::properties::*;
 use include::types::*;
-use std::ptr::*;
 use std::vec::from_elem;
 use wapcaplet::*;
 
@@ -1225,7 +1224,7 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
                                     fn_handler:@mut css_select_handler, lwc_ins:@mut lwc) -> css_error {
 
     let state: @mut css_select_state = @mut css_select_state {
-        node:null(),
+        node:None,
         media:(CSS_MEDIA_ALL as u64),       
         results:@mut css_select_results{ 
             styles:~[] 
@@ -1233,7 +1232,7 @@ pub fn css_computed_style_initialise(style: @mut css_computed_style ,
         current_pseudo:CSS_PSEUDO_ELEMENT_NONE,  
         computed:style,   
         handler:Some(fn_handler),    
-        pw:null(),
+        pw:None,
         sheet:None,   
         current_origin:CSS_ORIGIN_UA,  
         current_specificity:0,   
