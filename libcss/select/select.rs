@@ -1158,7 +1158,7 @@ impl css_select_ctx {
         let mut id_selectors_hash_entry : Option<@mut hash_entry> = None ;
         let mut id_selectors_option : Option<@mut css_selector> = None ;
         let mut class_selectors_hash_entry : ~[@mut css_selector] = ~[];
-        let mut class_selectors_index_list : ~[Option<@mut css_selector>] = ~[] ;
+        let mut class_selectors_index_list : ~[point] = ~[] ;
         let mut univ_selectors_hash_entry : Option<@mut hash_entry> = None ;
         let mut univ_selectors_option : Option<@mut css_selector> = None ;
         let mut id_slot = -1;
@@ -1185,7 +1185,7 @@ impl css_select_ctx {
                 if index_class == -1 {
                     return CSS_OK;
                 }
-                class_selectors_index_list.push(Some(sheet.selectors.elements[slot_class][index_class])) ;
+                class_selectors_index_list.push(point {x:slot_class, y:index_class}) ;
                 z += 1;
             }
         }
@@ -1220,7 +1220,8 @@ impl css_select_ctx {
         }
 
         univ_selectors_option = Some(sheet.selectors.universal[0][0]);
-
+        let mut slot_univ = 0;
+        let mut index_univ =0;
         // /* Process matching selectors, if any */
         while ( css_select_ctx::_selectors_pending(&class_selectors_index_list)) {
 
@@ -1234,7 +1235,7 @@ impl css_select_ctx {
             let o_selector = css_select_ctx::_selector_next(
                                     node_selectors_option, 
                                     id_selectors_option,
-                                    &class_selectors_index_list, sheet.selectors.classes,
+                                    &sheet.selectors.classes, &class_selectors_index_list,
                                     univ_selectors_option );
 
             if o_selector.is_none() {
@@ -1284,24 +1285,12 @@ impl css_select_ctx {
 
                 id_selectors_option = Some((sheet.selectors.elements[id_slot_next][id_index]));
             } 
-            else if (univ_selectors_option.is_some() && mut_ptr_eq(selector, univ_selectors_option.get())){
-                let (univ_next_hash,error) = 
-                            sheet.selectors._iterate_universal(univ_selectors_option.get());
+            else if (slot_univ != -1 && index_univ != -1 && mut_ptr_eq(selector, univ_selectors_option.get())){
+                let (univ_next_slot, univ_next_index) = 
+                            sheet.selectors._iterate_universal(slot_univ, index_univ);
 
-                match error {
-                    CSS_OK => {},
-                    err => {
-                        return err;
-                    }
-                }
-
-                if univ_next_hash.is_some() {
-                    univ_selectors_hash_entry = univ_next_hash;
-                    univ_selectors_option = Some(univ_next_hash.get());
-                }
-                else {
-                    univ_selectors_option = None ;
-                }
+                slot_univ = univ_next_slot;
+                index_univ = univ_next_index;
             } 
             else {
                 let mut i = 0 ;
@@ -1313,8 +1302,8 @@ impl css_select_ctx {
                     {
                         let (slot_class, index_class) = sheet.selectors._iterate_classes(x, y);
 
-                        class_selectors_hash_entry[i].x = slot_class;
-                        class_selectors_hash_entry[i].y = index_class;
+                        class_selectors_index_list[i].x = slot_class;
+                        class_selectors_index_list[i].y = index_class;
                         break;
                     }
 
