@@ -1666,7 +1666,7 @@ impl css_selector_hash {
 
         let mask  = self.default_slots-1 ;
         let sindex = (css_selector_hash::_hash_name(name) & mask) as uint; 
-        let mut head = self.classes[sindex];
+        let mut head = self.classes[sindex].clone();
 
 
         let mut i : uint = 0;
@@ -1698,7 +1698,7 @@ impl css_selector_hash {
 
         let mask  = self.default_slots-1 ;
         let sindex = (css_selector_hash::_hash_name(name) & mask) as uint; 
-        let mut head = self.ids[sindex];
+        let mut head = self.ids[sindex].clone();
         let mut i : uint = 0;
         let length = head.len();
         while i < length{

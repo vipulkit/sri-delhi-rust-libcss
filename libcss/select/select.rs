@@ -1163,10 +1163,15 @@ impl css_select_ctx {
         let mut univ_selectors_option : Option<@mut css_selector> = None ;
         let mut id_slot = -1;
         let mut id_index = -1;
+	let mut element_index = -1;
+	let mut element_slot = -1;
         //let mut error : css_error ;
 
         /* Find hash chain that applies to current node */
         let (slot, index) = sheet.selectors.css__selector_hash_find(state.element.name);
+	element_slot = slot;
+	element_index = index;
+
         if index == -1 {
             return CSS_OK;
         }
@@ -1260,15 +1265,15 @@ impl css_select_ctx {
             if ( node_selectors_option.is_some() &&
                 mut_ptr_eq( selector, node_selectors_option.get())) {
                 let next_element_index = 
-                        sheet.selectors._iterate_elements(slot, index);
+                        sheet.selectors._iterate_elements(element_slot, element_index);
 
                 if next_element_index == -1 {
                     return CSS_OK;
                 }
 
                 if next_element_index != -1 {
-                    index = next_element_index;
-                    node_selectors_option = Some((sheet.selectors.elements[slot][index]));
+                    element_index = next_element_index;
+                    node_selectors_option = Some((sheet.selectors.elements[slot][element_index]));
                 }
                 else {
                     node_selectors_option = None ;
