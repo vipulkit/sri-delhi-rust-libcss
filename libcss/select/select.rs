@@ -1043,20 +1043,41 @@ impl css_select_ctx {
     }
 
     #[inline]
-    pub fn _selectors_pending(class_list : &~[point]) -> bool {
+    pub fn _selectors_pending(node: Option<@mut css_selector>, id: Option<@mut css_selector>,
+                              class_list : &~[point],
+                              univ: Option<@mut css_selector>) -> bool {
+          let mut pending : bool = false;
+        match node {
+            None => {}
+            Some(_) => {
+                pending = true;
+            }
+        }
+        match id {
+            None => {}
+            Some(_) => {
+                pending = true;
+            }
+        }
+        match univ {
+            None => {}
+            Some(_) => {
+                pending = true;
+            }
+        }
 
         //debug!(fmt!("Entering _selectors_pending")) ;
         let mut z = 0 ;
         let length = class_list.len();
 	    while z < length {        
             if class_list[z].x != -1 && class_list[z].y != -1 {
-                    return true;
+                    pending = true;
             }
 
             z += 1;
         }
 
-        false
+        pending
     }
 
     #[inline]
@@ -1202,12 +1223,16 @@ impl css_select_ctx {
             let (temp_id_slot, temp_id_index) = sheet.selectors.css__selector_hash_find_by_id(state.id);
             id_slot = temp_id_slot;
             id_index = temp_id_index;
-            if id_index == -1
+            if id_index != -1
             {
-                return CSS_OK;
+                             
+                id_selectors_option = Some((sheet.selectors.elements[id_slot][id_index]));            
             }
-                
-            id_selectors_option = Some((sheet.selectors.elements[id_slot][id_index]));            
+            else
+            {
+                id_selectors_option = None;
+
+            }
 
         }
 
@@ -1228,7 +1253,10 @@ impl css_select_ctx {
         let mut slot_univ = 0;
         let mut index_univ =0;
         // /* Process matching selectors, if any */
-        while ( css_select_ctx::_selectors_pending(&class_selectors_index_list)) {
+        while ( css_select_ctx::_selectors_pending(node_selectors_option,
+                                                   id_selectors_option,
+                                                   &class_selectors_index_list,
+                                                   univ_selectors_option)) {
 
             let mut selector : @mut css_selector ;
 
@@ -1267,9 +1295,9 @@ impl css_select_ctx {
                 let next_element_index = 
                         sheet.selectors._iterate_elements(element_slot, element_index);
 
-                if next_element_index == -1 {
-                    return CSS_OK;
-                }
+                // if next_element_index == -1 {
+                //     return CSS_OK;
+                // }
 
                 if next_element_index != -1 {
                     element_index = next_element_index;
