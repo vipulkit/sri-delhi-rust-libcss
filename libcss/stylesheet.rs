@@ -1633,7 +1633,7 @@ impl css_selector_hash {
     pub fn css__selector_hash_find(&mut self, name : @mut lwc_string) ->  (uint, uint) {
         //debug!("Entering: css__selector_hash_find");
         let mask  = self.default_slots-1 ;
-        let sindex = css_selector_hash::_hash_name(name) & mask ; 
+        let sindex = (css_selector_hash::_hash_name(name) & mask) as uint ; 
         let head = &self.elements[sindex];
 
         //debug!(fmt!("css__selector_hash_find:: name=%?  mask=%?, index=%? ", name, mask, index ));
@@ -1662,17 +1662,17 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_class(&mut self, name : @mut lwc_string) -> Result<@mut hash_entry,css_error> {
+    pub fn css__selector_hash_find_by_class(&mut self, name : @mut lwc_string) -> (uint, uint) {
 
         let mask  = self.default_slots-1 ;
-        let sindex = css_selector_hash::_hash_name(name) & mask ; 
+        let sindex = (css_selector_hash::_hash_name(name) & mask) as uint; 
         let mut head = self.classes[sindex];
 
 
         let mut i : uint = 0;
         let length = head.len();
         while i < length {
-            let n = self._class_name(head[i].selector);
+            let n = self._class_name(head[i]);
 
             if self.lwc_instance.lwc_string_caseless_isequal(n, name) {
                 return (sindex, i);
@@ -1697,12 +1697,12 @@ impl css_selector_hash {
     pub fn css__selector_hash_find_by_id(&mut self, name : @mut lwc_string) -> (uint, uint) {
 
         let mask  = self.default_slots-1 ;
-        let sindex = css_selector_hash::_hash_name(name) & mask ; 
+        let sindex = (css_selector_hash::_hash_name(name) & mask) as uint; 
         let mut head = self.ids[sindex];
         let mut i : uint = 0;
         let length = head.len();
         while i < length{
-            let n = self._id_name(head[sindex][i]);
+            let n = self._id_name(head[i]);
 
             if self.lwc_instance.lwc_string_caseless_isequal(n, name) {
                 return (sindex, i);
@@ -1733,7 +1733,7 @@ impl css_selector_hash {
 
             if head[i-1].data.len()==0 || 
                     head[i].data.len()==0 {
-                    return None;
+                    return -1;
             }
 
             if self.lwc_instance.lwc_string_caseless_isequal(
@@ -1759,11 +1759,11 @@ impl css_selector_hash {
     //
     pub fn _iterate_classes(&mut self , slot : uint, index : uint) -> (uint, uint) {
 
-        let current_name = self._class_name(self.selectors.classes[slot][index]);
+        let current_name = self._class_name(self.classes[slot][index]);
         let mut i : uint = index;
-        let length = self.selectors.classes.len();
+        let length = self.classes.len();
         while i < length {
-            let name = self._class_name(self.selectors.classes[slot][i]);
+            let name = self._class_name(self.classes[slot][i]);
             if( lwc_string_length(name) != 0 &&
                  self.lwc_instance.lwc_string_caseless_isequal(name,current_name)) {
                 return (slot, i);
@@ -1784,11 +1784,11 @@ impl css_selector_hash {
     //
     pub fn _iterate_ids(&mut self , slot : uint, index : uint) -> (uint, uint) {
 
-        let current_name = self._id_name(self.selectors.ids[slot][index]);
+        let current_name = self._id_name(self.ids[slot][index]);
         let mut i : uint = index;
-        let length = self.selectors.ids.len();
+        let length = self.ids.len();
         while i < length {
-            let name = self._class_name(self.selectors.ids[slot][i]);
+            let name = self._class_name(self.ids[slot][i]);
             if( lwc_string_length(name) != 0 && 
                 self.lwc_instance.lwc_string_caseless_isequal(name,current_name)) {
                 return (slot, i);
@@ -1809,11 +1809,11 @@ impl css_selector_hash {
     // 
     pub fn _iterate_universal(&mut self , slot : uint, index : uint) -> (uint, uint) {
 
-        if (slot + 1) < self.selectors.universal.len() && (index + 1) < self.selectors.universal[slot].len()
+        if (slot + 1) < self.universal.len() && (index + 1) < self.universal[slot].len(){
             return (slot, index + 1);
         }
-        
-        (slot, -1)
+
+        return (slot, -1);
     }
 
 }
