@@ -1133,19 +1133,19 @@ impl css_select_ctx {
 
         if (css_select_ctx::_selector_less_specific(ret, node)) {
      //       println("1");
-            ret = Some(node.get());
+            ret = node;
         }
 
    //         println("2");
         if (css_select_ctx::_selector_less_specific(ret, id)) {
     //        println("3");
-            ret = Some(id.get());
+            ret = id;
         }
 
      //       println("4");
         if (css_select_ctx::_selector_less_specific(ret, univ)) {
      //       println("5");
-            ret = Some(univ.get());
+            ret = univ;
         }
      //       println("6");
 
@@ -1192,30 +1192,22 @@ impl css_select_ctx {
                                     state : @mut css_select_state) -> css_error {
     
         //debug!(fmt!("Entering match_selectors_in_sheet")) ;
-        let mut node_selectors_hash_entry : Option<@mut hash_entry> = None ;
         let mut node_selectors_option : Option<@mut css_selector> = None ;
-        let mut id_selectors_hash_entry : Option<@mut hash_entry> = None ;
         let mut id_selectors_option : Option<@mut css_selector> = None ;
-        let mut class_selectors_hash_entry : ~[@mut css_selector] = ~[];
         let mut class_selectors_index_list : ~[point] = ~[] ;
-        let mut univ_selectors_hash_entry : Option<@mut hash_entry> = None ;
         let mut univ_selectors_option : Option<@mut css_selector> = None ;
         let mut id_slot = -1;
         let mut id_index = -1;
-	let mut element_index = -1;
-	let mut element_slot = -1;
-        //let mut error : css_error ;
 
         /* Find hash chain that applies to current node */
         let (slot, index) = sheet.selectors.css__selector_hash_find(state.element.name);
-	element_slot = slot;
-	element_index = index;
+	    let element_slot = slot;
+	    let mut element_index = index;
 
         if index != -1 {
             node_selectors_option = Some((sheet.selectors.elements[slot][index]));
         }
 
-//        node_selectors_hash_entry = sel;
 
         if ( state.classes.len() != 0 ) {
              /* Find hash chains for node classes */
