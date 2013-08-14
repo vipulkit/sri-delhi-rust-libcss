@@ -35,8 +35,8 @@ pub struct context_entry {
 } 
 
 pub struct css_namespace {
-    prefix:Option<@mut lwc_string> ,        /**< Namespace prefix */
-    uri:Option<@mut lwc_string>     //< Namespace URI */
+    prefix:Option<lwc_string> ,        /**< Namespace prefix */
+    uri:Option<lwc_string>     //< Namespace URI */
 }
 
 	
@@ -48,7 +48,7 @@ pub struct css_language {
     state:language_state,   
     strings: @css_propstrings,  
     properties: ~css_properties,
-    default_namespace:Option<@mut lwc_string>, 
+    default_namespace:Option<lwc_string>, 
     namespaces:~[~css_namespace]
 }
 
@@ -84,7 +84,7 @@ impl css_language {
 	* #Return Value:
 	*   'css_error' - CSS_OK on success, CSS_INVALID to indicate parse error.
 	*/
-    pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:&~[@css_token])
+    pub fn language_handle_event(&mut self, event_type:css_parser_event, tokens:&~[css_token])
         -> css_error {
 	let mut css_er:css_error;
         //debug!("Entering: language_handle_event");
@@ -162,7 +162,7 @@ impl css_language {
         CSS_OK
     }
 
-    pub fn handleStartRuleset(&mut self, tokens:&~[@css_token]) ->css_error    {
+    pub fn handleStartRuleset(&mut self, tokens:&~[css_token]) ->css_error    {
         //debug!("Entering: handleStartRuleset");
 
         let mut cur:context_entry ;
@@ -230,13 +230,13 @@ impl css_language {
         }
     }
 
-    pub fn handleStartAtRule(&mut self, vector:&~[@css_token])->css_error {
+    pub fn handleStartAtRule(&mut self, vector:&~[css_token])->css_error {
         //debug!("Entering: handleStartAtRule");
        // context_entry entry = { CSS_PARSER_START_ATRULE, NULL };
             
         let ctx: @mut uint =@mut 0;
         let mut curRule:Option<CSS_RULE_DATA_TYPE> = None;
-        let mut token: &@css_token; 
+        let mut token: css_token; 
 
         /* vector contains: ATKEYWORD ws any0 */
 
@@ -244,7 +244,7 @@ impl css_language {
             return CSS_INVALID
         }
         
-        let atkeyword = &vector[*ctx];
+        let atkeyword = vector[*ctx];
         *ctx += 1; //Iterate
 
         consumeWhitespace(vector, ctx);
@@ -253,7 +253,7 @@ impl css_language {
          * there is one */
         match atkeyword.token_type { CSS_TOKEN_ATKEYWORD => {}, _ => return CSS_INVALID };
 
-        if self.strings.lwc_string_caseless_isequal(atkeyword.idata.unwrap(), CHARSET as uint) {
+        if self.strings.lwc_string_caseless_isequal(&mut atkeyword.idata.unwrap(), CHARSET as uint) {
             match self.state {
                 CHARSET_PERMITTED => {
                     /* any0 = STRING */
@@ -265,7 +265,7 @@ impl css_language {
                         return CSS_INVALID
                     }
 
-                    let charset = &vector[*ctx];
+                    let charset = vector[*ctx];
                     *ctx += 1; //Iterate
                     
                     if match charset.token_type {CSS_TOKEN_STRING => false, _ => true} {
@@ -276,7 +276,7 @@ impl css_language {
                         return CSS_INVALID
                     }
 
-                    //token = &vector[*ctx]; Not used
+                    //token = vector[*ctx]; Not used
                     *ctx += 1; //Iterate
                     
                     let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_CHARSET);
@@ -301,7 +301,7 @@ impl css_language {
                 _ => return CSS_INVALID
             }
         } 
-        else if self.strings.lwc_string_caseless_isequal(atkeyword.idata.unwrap(), LIBCSS_IMPORT as uint) {
+        else if self.strings.lwc_string_caseless_isequal(&mut atkeyword.idata.unwrap(), LIBCSS_IMPORT as uint) {
             if self.state as uint <= IMPORT_PERMITTED as uint {
                 let mut url:@str;
                 let media:@mut u64 =@mut  0;
@@ -314,7 +314,7 @@ impl css_language {
                     return CSS_INVALID
                 }
 
-                let uri = &vector[*ctx];
+                let uri = vector[*ctx];
                 *ctx += 1; //Iterate
                     
                 if match uri.token_type { CSS_TOKEN_STRING | CSS_TOKEN_URI => false, _ => true} {
@@ -334,7 +334,7 @@ impl css_language {
                 let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_IMPORT);
 
                 /* Resolve import URI */
-                match (*self.sheet.resolve)(self.sheet.url, uri.idata.unwrap())
+                match (*self.sheet.resolve)(self.sheet.url, &mut uri.idata.unwrap())
                 { 
                     (CSS_OK,Some(ret_url)) => url = lwc_string_data(ret_url).to_managed(),
                     (error,_) => return error
@@ -376,9 +376,9 @@ impl css_language {
                 return CSS_INVALID
             }
         } 
-        else if self.strings.lwc_string_caseless_isequal(atkeyword.idata.unwrap(), NAMESPACE as uint) {
+        else if self.strings.lwc_string_caseless_isequal(&mut atkeyword.idata.unwrap(), NAMESPACE as uint) {
             if self.state as uint <= NAMESPACE_PERMITTED as uint {
-                let mut prefix:Option<@mut lwc_string> = None;
+                let mut prefix:Option<lwc_string> = None;
 
                 /* any0 = (IDENT ws)? (STRING | URI) ws */
 
@@ -386,7 +386,7 @@ impl css_language {
                     return CSS_INVALID
                 }	           
 
-                token = &vector[*ctx];
+                token = vector[*ctx];
                 *ctx += 1; //Iterate
                 
                 if match token.token_type { CSS_TOKEN_IDENT => true, _ => false} {
@@ -398,7 +398,7 @@ impl css_language {
                         return CSS_INVALID
                     }
 
-                    token = &vector[*ctx];
+                    token = vector[*ctx];
                     *ctx += 1; //Iterate
                 }
 
@@ -420,7 +420,7 @@ impl css_language {
                 return CSS_INVALID;
             }
         } 
-        else if self.strings.lwc_string_caseless_isequal(atkeyword.idata.unwrap(), MEDIA as uint) {
+        else if self.strings.lwc_string_caseless_isequal(&mut atkeyword.idata.unwrap(), MEDIA as uint) {
             let media :@mut u64 =@mut 0;
 
             /* any0 = IDENT ws (',' ws IDENT ws)* */
@@ -452,7 +452,7 @@ impl css_language {
 
             self.state = HAD_RULE;
         }
-        else if self.strings.lwc_string_caseless_isequal(atkeyword.idata.unwrap(), FONT_FACE as uint) {
+        else if self.strings.lwc_string_caseless_isequal(&mut atkeyword.idata.unwrap(), FONT_FACE as uint) {
             let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_FONT_FACE);
             
             consumeWhitespace(vector, ctx);
@@ -470,7 +470,7 @@ impl css_language {
 
             self.state = HAD_RULE;
         }
-        else if self.strings.lwc_string_caseless_isequal(atkeyword.idata.unwrap(), PAGE as uint) {
+        else if self.strings.lwc_string_caseless_isequal(&mut atkeyword.idata.unwrap(), PAGE as uint) {
             
             /* any0 = (':' IDENT)? ws */
             let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_PAGE);
@@ -478,7 +478,7 @@ impl css_language {
             consumeWhitespace(vector, ctx);
 
             if *ctx < vector.len() {
-                //token = &vector[*ctx]; Value not used later on 
+                //token = vector[*ctx]; Value not used later on 
                 
                 match self.parseSelector(vector, ctx) {
                     (CSS_OK, Some(selector)) => {
@@ -601,7 +601,7 @@ impl css_language {
     }
 
 
-    pub fn handleBlockContent(&mut self, tokens:&~[@css_token])-> css_error {
+    pub fn handleBlockContent(&mut self, tokens:&~[css_token])-> css_error {
         //debug!("Entering: handleBlockContent");
         // * Block content comprises either declarations (if the current block is
         // * associated with @page, @font-face or a selector), or rulesets (if the
@@ -634,7 +634,7 @@ impl css_language {
         
     }
 
-    pub fn handleDeclaration(&mut self, tokens:&~[@css_token])->css_error {
+    pub fn handleDeclaration(&mut self, tokens:&~[css_token])->css_error {
         //debug!("Entering: handleDeclaration");
         let ctx: @mut uint = @mut 0u;   
          // Locations where declarations are permitted:
@@ -662,12 +662,12 @@ impl css_language {
                              
                             
                             if tokens.len() > *ctx {   
-                                let ident =&tokens[*ctx];
+                                let ident =tokens[*ctx];
                                 *ctx = *ctx + 1;
                                 match ident.token_type { 
                                     CSS_TOKEN_IDENT => {
                                         consumeWhitespace(tokens, ctx);
-                                        if tokens.len() <= *ctx || !tokenIsChar(&tokens[*ctx],':') {
+                                        if tokens.len() <= *ctx || !tokenIsChar(tokens[*ctx],':') {
                                             return CSS_INVALID
                                         }
                                         else {
@@ -704,7 +704,7 @@ impl css_language {
         }       
     }
 
-    pub fn parseSelectorList(&mut self, tokens:&~[@css_token], curRule: CSS_RULE_DATA_TYPE) -> css_error {
+    pub fn parseSelectorList(&mut self, tokens:&~[css_token], curRule: CSS_RULE_DATA_TYPE) -> css_error {
         //debug!("Entering: parseSelectorList");
         let ctx: @mut uint = @mut 0u;
         //debug!(fmt!("parseSelectorList:: tokens == %?", tokens));
@@ -719,7 +719,7 @@ impl css_language {
                         CSS_OK => {
                             if *ctx < tokens.len() {
                                 //Iterate over vector to check for invalid character
-                                if !tokenIsChar(&tokens[*ctx],',') {
+                                if !tokenIsChar(tokens[*ctx],',') {
                                     *ctx = *ctx+1;   //For iteration to the next position
                                     return CSS_INVALID
                                 }
@@ -742,14 +742,14 @@ impl css_language {
      * At-rule parsing functions                              *
      ******************************************************************************/
 
-    pub fn parseMediaList(&mut self, vector:&~[@css_token], ctx:@mut uint, media:@mut u64) -> css_error
+    pub fn parseMediaList(&mut self, vector:&~[css_token], ctx:@mut uint, media:@mut u64) -> css_error
     {
         //debug!("Entering: parseMediaList");
         let mut ret:u64 = 0;
 
         if *ctx < vector.len() {
                 
-			let mut token = &vector[*ctx];
+			let mut token = vector[*ctx];
 			*ctx += 1; //Iterate
 					
 			loop {
@@ -757,37 +757,37 @@ impl css_language {
 					return CSS_INVALID
 				}
 
-				if self.strings.lwc_string_caseless_isequal(token.idata.unwrap(), AURAL as uint) {
+				if self.strings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), AURAL as uint) {
 					ret |= CSS_MEDIA_AURAL as u64;
 				} 
-				else if self.strings.lwc_string_caseless_isequal(token.idata.unwrap(), BRAILLE as uint) {
+				else if self.strings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), BRAILLE as uint) {
 					ret |= CSS_MEDIA_BRAILLE as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.unwrap(), EMBOSSED as uint) {
+				else if self.strings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), EMBOSSED as uint) {
 					ret |= CSS_MEDIA_EMBOSSED as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.unwrap(), HANDHELD as uint) {
+				else if self.strings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), HANDHELD as uint) {
 					ret |= CSS_MEDIA_HANDHELD as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.unwrap(), PRINT as uint) {
+				else if self.strings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), PRINT as uint) {
 					ret |= CSS_MEDIA_PRINT as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.unwrap(), PROJECTION as uint) {
+				else if self.strings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), PROJECTION as uint) {
 					ret |= CSS_MEDIA_PROJECTION as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.unwrap(), SCREEN as uint) {
+				else if self.strings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), SCREEN as uint) {
 				   ret |= CSS_MEDIA_SCREEN as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.unwrap(), SPEECH as uint) {
+				else if self.strings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), SPEECH as uint) {
 					ret |= CSS_MEDIA_SPEECH as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.unwrap(), TTY as uint) {
+				else if self.strings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), TTY as uint) {
 					ret |= CSS_MEDIA_TTY as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.unwrap(), TV as uint) {
+				else if self.strings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), TV as uint) {
 					ret |= CSS_MEDIA_TV as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.unwrap(), ALL as uint) {
+				else if self.strings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), ALL as uint) {
 					ret |= CSS_MEDIA_ALL as u64;
 				}
 				else {
@@ -800,7 +800,7 @@ impl css_language {
 				   break;
 				}
 
-				token = &vector[*ctx];
+				token = vector[*ctx];
 				*ctx += 1; //Iterate
 				
 
@@ -834,7 +834,7 @@ impl css_language {
     * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
     */
-    pub fn addNamespace(&mut self, _prefix:Option<@mut lwc_string>, uri:@mut lwc_string) -> css_error {
+    pub fn addNamespace(&mut self, _prefix:Option<lwc_string>, uri:lwc_string) -> css_error {
         //debug!("Entering: addNamespace");
         match _prefix {
             Some(prefix) => {
@@ -844,7 +844,7 @@ impl css_language {
 
                 for self.namespaces.iter().advance |ns| {
                     
-                    if self.lwc_instance.lwc_string_isequal(ns.prefix.unwrap(), prefix){
+                    if self.lwc_instance.lwc_string_isequal(&mut ns.prefix.unwrap(), &mut prefix){
                         prefix_match = true;
                     }
                     if prefix_match {
@@ -888,13 +888,13 @@ impl css_language {
      * Property parsing functions                             *
      ******************************************************************************/
 
-    pub fn parseProperty(&mut self , property: &@css_token , vector: &~[@css_token], ctx:@mut uint, curRule: CSS_RULE_DATA_TYPE) -> css_error {
+    pub fn parseProperty(&mut self , property: css_token , vector: &~[css_token], ctx:@mut uint, curRule: CSS_RULE_DATA_TYPE) -> css_error {
         //debug!("Entering: parseProperty");
         let mut style: @mut css_style;
         let mut index = AZIMUTH as uint;
 
         while (index <= Z_INDEX as uint) {
-            if self.strings.lwc_string_caseless_isequal(property.idata.unwrap() , index) {
+            if self.strings.lwc_string_caseless_isequal(&mut property.idata.unwrap() , index) {
                 break
             }
             index +=1;
@@ -945,7 +945,7 @@ impl css_language {
         }
     }
 
-    pub fn parseSelector(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_error, Option<@mut css_selector>) {
+    pub fn parseSelector(&mut self, vector:&~[css_token], ctx:@mut uint) -> (css_error, Option<@mut css_selector>) {
         //debug!("Entering: parseSelector");
         /* selector -> simple_selector [ combinator simple_selector ]* ws
          * 
@@ -961,7 +961,7 @@ impl css_language {
                 let mut result = selector_;
                 let mut _selector = selector_;
                 loop {
-                    if *ctx >= vector.len() || tokenIsChar(&vector[*ctx],',') {
+                    if *ctx >= vector.len() || tokenIsChar(vector[*ctx],',') {
                         return (CSS_OK, Some(result))
                     }
                     else {
@@ -975,7 +975,7 @@ impl css_language {
                                  * are no further tokens, or if the next token is a comma,
                                  * we ignore the supposed combinator and continue. */
                                 if (*comb as uint == CSS_COMBINATOR_ANCESTOR as uint &&
-										(*ctx >= vector.len() || tokenIsChar(&vector[*ctx],',') )) {
+										(*ctx >= vector.len() || tokenIsChar(vector[*ctx],',') )) {
                                     loop;
                                 }
                                 
@@ -999,7 +999,7 @@ impl css_language {
         } // End of outer match parseSimpleSelector
     }
 
-    pub fn parseSimpleSelector(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_error, Option<@mut css_selector>) {
+    pub fn parseSimpleSelector(&mut self, vector:&~[css_token], ctx:@mut uint) -> (css_error, Option<@mut css_selector>) {
         //debug!("Entering: parseSimpleSelector");
         let orig_ctx = *ctx;
         /* simple_selector  -> type_selector specifics
@@ -1009,10 +1009,10 @@ impl css_language {
             return (CSS_INVALID, None)
         }        
         
-        let token = &vector[*ctx];
+        let token = vector[*ctx];
 
         let mut selector : @mut css_selector;
-        let qname: @mut css_qname = @mut css_qname{ name:self.lwc_instance.lwc_intern_string_managed(@""), ns:self.lwc_instance.lwc_intern_string_managed(@"") };
+        let qname: @mut css_qname = @mut css_qname{ name:self.lwc_instance.lwc_intern_string(&""), ns:self.lwc_instance.lwc_intern_string(&"") };
 
         //match ( vector[*ctx].token_type as uint ==    CSS_TOKEN_IDENT as uint )
         if token.token_type as int == CSS_TOKEN_IDENT as int ||  tokenIsChar(token, '*') || tokenIsChar(token, '|') {
@@ -1055,9 +1055,9 @@ impl css_language {
         
     }
 
-    pub fn parseCombinator(&mut self, vector:&~[@css_token], ctx:@mut uint, comb:@mut css_combinator) -> css_error {
+    pub fn parseCombinator(&mut self, vector:&~[css_token], ctx:@mut uint, comb:@mut css_combinator) -> css_error {
         //debug!("Entering: parseCombinator");
-        let mut token:&@css_token;
+        let mut token: css_token;
         /* combinator      -> ws '+' ws | ws '>' ws | ws '~' ws | ws1 */
         *comb = CSS_COMBINATOR_NONE;
 
@@ -1066,7 +1066,7 @@ impl css_language {
                 break
             } 
 
-            token = &vector[*ctx];
+            token = vector[*ctx];
             //debug!(fmt!("parseCombinator :: token == %?", token));
 			if tokenIsChar(token, '+') {
                 *comb = CSS_COMBINATOR_SIBLING
@@ -1104,10 +1104,10 @@ impl css_language {
         } 
     }   
 
-    pub fn parseTypeSelector(&mut self, vector:&~[@css_token], ctx:@mut uint, qname:@mut css_qname) -> css_error {
+    pub fn parseTypeSelector(&mut self, vector:&~[css_token], ctx:@mut uint, qname:@mut css_qname) -> css_error {
         //debug!("Entering: parseTypeSelector");
-        let mut token:&@css_token;
-        let mut prefix:Option<@mut lwc_string> =None;
+        let mut token: css_token;
+        let mut prefix:Option<lwc_string> =None;
 
         /* type_selector    -> namespace_prefix? element_name
          * namespace_prefix -> [ IDENT | '*' ]? '|'
@@ -1117,7 +1117,7 @@ impl css_language {
             return CSS_INVALID
         } 
         
-        token = &vector[*ctx];
+        token = vector[*ctx];
         let mut token_null = false;
 		
         if !tokenIsChar(token, '|') {
@@ -1126,7 +1126,7 @@ impl css_language {
 			*ctx += 1; //Iterate
             
 			if (*ctx < vector.len()){
-				token = &vector[*ctx]; // peek
+				token = vector[*ctx]; // peek
 			}
 			else {
 				token_null = true;
@@ -1139,11 +1139,11 @@ impl css_language {
             *ctx += 1; //Iterate
 
             /* Expect element_name */
-            if *ctx >= vector.len() || ( match vector[*ctx].token_type { CSS_TOKEN_IDENT => false, _ => true} && !tokenIsChar(&vector[*ctx], '*') ) {
+            if *ctx >= vector.len() || ( match vector[*ctx].token_type { CSS_TOKEN_IDENT => false, _ => true} && !tokenIsChar(vector[*ctx], '*') ) {
                 return CSS_INVALID
             }
 
-            token = &vector[*ctx]; 
+            token = vector[*ctx]; 
             *ctx += 1; //Iterate
 
             match self.lookupNamespace(prefix, qname) {
@@ -1163,7 +1163,7 @@ impl css_language {
 			//debug!(fmt!("prefix=%?",prefix));
             qname.name = match prefix {
                 Some(x) => x,
-                None => self.lwc_instance.lwc_intern_string_managed(@"")
+                None => self.lwc_instance.lwc_intern_string(&"")
             };
 			//debug!(fmt!("qname=%?",qname));
         }
@@ -1171,9 +1171,9 @@ impl css_language {
         return CSS_OK
     }   
 
-    pub fn parseSelectorSpecifics(&mut self, vector:&~[@css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_error {
+    pub fn parseSelectorSpecifics(&mut self, vector:&~[css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_error {
         //debug!("Entering: parseSelectorSpecifics");
-        let mut token:&@css_token;
+        let mut token: css_token;
 
         /* specifics -> specific* */
         loop {
@@ -1181,7 +1181,7 @@ impl css_language {
                 break;
             }   
             else {
-                token = &vector[*ctx];
+                token = vector[*ctx];
                 if (match token.token_type { CSS_TOKEN_S => false, _ => true }) && 
                     !tokenIsChar(token, '+')  &&
                     !tokenIsChar(token, '>')  &&
@@ -1201,7 +1201,7 @@ impl css_language {
     }  
 
 
-    pub fn parseAppendSpecific(&mut self, vector:&~[@css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_error{
+    pub fn parseAppendSpecific(&mut self, vector:&~[css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_error{
         //debug!("Entering: parseAppendSpecific");
         match self.parseSpecific(vector, ctx, false) {
             (CSS_OK,Some(specific)) => return css_stylesheet::css__stylesheet_selector_append_specific(parent,specific),
@@ -1210,21 +1210,21 @@ impl css_language {
     }   
 
 
-    pub fn parseSpecific(&mut self, vector:&~[@css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn parseSpecific(&mut self, vector:&~[css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<@mut css_selector_detail>) {
         //debug!("Entering: parseSpecific");
         /* specific  -> [ HASH | class | attrib | pseudo ] */
 
-        let mut token:&@css_token;
+        let mut token: css_token;
         
         if *ctx >= vector.len() {
             return (CSS_INVALID, None)
         }   
         
-        token = &vector[*ctx];
+        token = vector[*ctx];
 
         match token.token_type {
             CSS_TOKEN_HASH   => {
-                let qname=@mut css_qname{ns:self.lwc_instance.lwc_intern_string_managed(@""), name:token.idata.unwrap()};
+                let qname=@mut css_qname{ns:self.lwc_instance.lwc_intern_string(&""), name:token.idata.unwrap()};
                 match css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_ID, qname, 
                                             CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false) {
                     (CSS_OK, res) => {
@@ -1262,14 +1262,14 @@ impl css_language {
     * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
     */
-    pub fn lookupNamespace(&mut self, prefix:Option<@mut lwc_string>, qname:@mut css_qname) -> css_error {
+    pub fn lookupNamespace(&mut self, prefix:Option<lwc_string>, qname:@mut css_qname) -> css_error {
         //debug!("Entering: lookupNamespace");
         let mut idx:uint=0;
         
         match prefix {
             None => {
                 //debug!("Entering: lookupNamespace (1)");
-                qname.ns = self.lwc_instance.lwc_intern_string_managed(@"")
+                qname.ns = self.lwc_instance.lwc_intern_string(&"")
             },
             Some(value) => {
                 //debug!("Entering: lookupNamespace (2)");
@@ -1278,7 +1278,7 @@ impl css_language {
                         Some(_) => {
                             //debug!("Entering: lookupNamespace (3)");
                             let ns_prefix = ns.prefix.get();
-                            if (self.lwc_instance.lwc_string_isequal(ns_prefix , value)) {
+                            if (self.lwc_instance.lwc_string_isequal(&mut ns_prefix , &mut value)) {
                                 break;
                             }
                         },  
@@ -1298,7 +1298,7 @@ impl css_language {
                     },
                     None => {
                         //debug!("Entering: lookupNamespace (5)");
-                        qname.ns = self.lwc_instance.lwc_intern_string_managed(@"")
+                        qname.ns = self.lwc_instance.lwc_intern_string(&"")
                     }
                 }
             }
@@ -1309,28 +1309,28 @@ impl css_language {
     /******************************************************************************
     * Selector list parsing functions                         *
     ******************************************************************************/
-    pub fn  parseClass(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn  parseClass(&mut self, vector:&~[css_token], ctx:@mut uint) -> (css_error,Option<@mut css_selector_detail>) {
         //debug!("Entering: parseClass");
-        let mut token:&@css_token;
+        let mut token: css_token;
         
         /* class     -> '.' IDENT */
         if *ctx >= vector.len() {
             return (CSS_INVALID, None)
         }   
         
-        token = &vector[*ctx];
+        token = vector[*ctx];
         *ctx +=1; //Iterate             
         
         if !tokenIsChar(token, '.') {
             return (CSS_INVALID,None)
         }   
 
-        token = &vector[*ctx];
+        token = vector[*ctx];
         *ctx +=1; //Iterate 
 
         match token.token_type {
             CSS_TOKEN_IDENT => {
-                let qname=@mut css_qname{ns:self.lwc_instance.lwc_intern_string_managed(@""), name:token.idata.unwrap()};
+                let qname=@mut css_qname{ns:self.lwc_instance.lwc_intern_string(&""), name:token.idata.unwrap()};
                 return css_stylesheet::css__stylesheet_selector_detail_init (CSS_SELECTOR_CLASS, qname, 
                                                     CSS_SELECTOR_DETAIL_VALUE_STRING,None, None, false)
             }
@@ -1338,9 +1338,9 @@ impl css_language {
         }
     }
 
-    pub fn  parseAttrib(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn  parseAttrib(&mut self, vector:&~[css_token], ctx:@mut uint) -> (css_error,Option<@mut css_selector_detail>) {
         //debug!("Entering: parseAttrib");
-        let mut token:&@css_token;
+        let mut token: css_token;
         
         /* attrib    -> '[' ws namespace_prefix? IDENT ws [
          *             [ '=' | 
@@ -1358,7 +1358,7 @@ impl css_language {
             return (CSS_INVALID, None)
         }   
         
-        token = &vector[*ctx];
+        token = vector[*ctx];
         *ctx +=1; //Iterate             
         
         if !tokenIsChar(token, '[') {
@@ -1371,7 +1371,7 @@ impl css_language {
             return (CSS_INVALID, None)
         }
 
-        token = &vector[*ctx];
+        token = vector[*ctx];
         *ctx +=1; //Iterate             
 
         if (match token.token_type { CSS_TOKEN_IDENT => false, _ => true}) && !tokenIsChar(token, '*') &&
@@ -1379,24 +1379,24 @@ impl css_language {
             return (CSS_INVALID, None)
         }   
         
-        let mut prefix: Option<@mut lwc_string> = None;
+        let mut prefix:Option<lwc_string> = None;
 
         if tokenIsChar(token, '|') {
             if *ctx >= vector.len() {
                 return (CSS_INVALID, None)
             }
 
-            token = &vector[*ctx];
+            token = vector[*ctx];
             *ctx +=1; //Iterate
         } 
-        else if (*ctx < vector.len() && tokenIsChar(&vector[*ctx], '|')) {
+        else if (*ctx < vector.len() && tokenIsChar(vector[*ctx], '|')) {
             prefix = Some(token.idata.unwrap());
             *ctx += 1;
             if *ctx >= vector.len() {
                 return (CSS_INVALID, None)
             }
 
-            token = &vector[*ctx];
+            token = vector[*ctx];
             *ctx +=1; //Iterate
         }
 
@@ -1404,7 +1404,7 @@ impl css_language {
             return (CSS_INVALID, None)
         }   
 
-        let qname:@mut css_qname=@mut css_qname{ns:self.lwc_instance.lwc_intern_string_managed(@""), name:self.lwc_instance.lwc_intern_string_managed(@"")};
+        let qname:@mut css_qname=@mut css_qname{ns:self.lwc_instance.lwc_intern_string(&""), name:self.lwc_instance.lwc_intern_string(&"")};
         match self.lookupNamespace(prefix, qname) { CSS_OK  => {}, error   => return (error,None)}   
 
         qname.name = token.idata.unwrap();
@@ -1416,11 +1416,11 @@ impl css_language {
             return (CSS_INVALID, None)
         }
 
-        token = &vector[*ctx];
+        token = vector[*ctx];
         *ctx +=1; //Iterate
 
         let mut tkn_type = CSS_SELECTOR_ATTRIBUTE;
-        let mut value:Option<&@css_token> = None;
+        let mut value:Option<css_token> = None;
 
         if !tokenIsChar(token, ']') {
             if tokenIsChar(token, '=') {
@@ -1442,7 +1442,7 @@ impl css_language {
                 return (CSS_INVALID, None)
             }
 
-            token = &vector[*ctx];
+            token = vector[*ctx];
             *ctx +=1; //Iterate
             
             match token.token_type{ CSS_TOKEN_IDENT => {}, CSS_TOKEN_STRING => {}, _ => return (CSS_INVALID,None) }
@@ -1455,7 +1455,7 @@ impl css_language {
                 return (CSS_INVALID, None)
             }
 
-            token = &vector[*ctx];
+            token = vector[*ctx];
             *ctx +=1; //Iterate
             
             if !tokenIsChar(token, ']') {
@@ -1469,9 +1469,9 @@ impl css_language {
     }
 
 
-    pub fn parsePseudo(&mut self, vector:&~[@css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn parsePseudo(&mut self, vector:&~[css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<@mut css_selector_detail>) {
         //debug!("Entering: parsePseudo");
-        let mut token:&@css_token;
+        let mut token: css_token;
         //let mut tkn_type = CSS_SELECTOR_PSEUDO_CLASS;
         let mut value_type = CSS_SELECTOR_DETAIL_VALUE_STRING;
         let mut require_element:bool = false;
@@ -1481,13 +1481,13 @@ impl css_language {
         let qname:@mut css_qname=@mut css_qname{ns:self.lwc_instance.lwc_intern_string(&""), name:self.lwc_instance.lwc_intern_string(&"")};
         /* pseudo    -> ':' ':'? [ IDENT | FUNCTION ws any1 ws ')' ] */
 
-        let mut detail_value_string:Option<@mut lwc_string> = None;
+        let mut detail_value_string:Option<lwc_string> = None;
 
         if *ctx >= vector.len() {
                 return (CSS_INVALID, None)
             }
 
-        token = &vector[*ctx];
+        token = vector[*ctx];
         *ctx +=1; //Iterate
         
         if  !tokenIsChar(token, ':') {
@@ -1499,7 +1499,7 @@ impl css_language {
             return (CSS_INVALID, None)
         }
 
-        token = &vector[*ctx];
+        token = vector[*ctx];
         *ctx +=1; //Iterate
 
         if tokenIsChar(token, ':') {
@@ -1511,7 +1511,7 @@ impl css_language {
                 return (CSS_INVALID, None)
             }
 
-            token = &vector[*ctx];
+            token = vector[*ctx];
             *ctx +=1; //Iterate
         }
 
@@ -1525,7 +1525,7 @@ impl css_language {
         qname.name=token.idata.unwrap();
         
         /* Search lut for selector type */
-        match self.strings.is_selector_pseudo(qname.name) {
+        match self.strings.is_selector_pseudo(&mut qname.name) {
             Some((sel_type,idx)) => {
                 lut_idx = idx as uint;
                 selector_type = sel_type
@@ -1561,7 +1561,7 @@ impl css_language {
                         return (CSS_INVALID, None)
                     }
 
-                    token = &vector[*ctx];
+                    token = vector[*ctx];
                     *ctx +=1; //Iterate
                     
                     match token.token_type {
@@ -1586,7 +1586,7 @@ impl css_language {
                                 return (CSS_INVALID, None)
                             }
                                         
-                            token = &vector[*ctx];
+                            token = vector[*ctx];
                             *ctx += 1 ; 
                             //debug!(fmt!("parsePseudo (Nth) :: token == %?", token));
                             if !tokenIsChar(token, ')') {
@@ -1611,7 +1611,7 @@ impl css_language {
                         return (CSS_INVALID, None)
                     }
                         
-                    token = &vector[*ctx];
+                    token = vector[*ctx];
                         
                     if (match token.token_type {    CSS_TOKEN_IDENT => true, _  => false }) || 
                             tokenIsChar(token, '*') || tokenIsChar(token, '|') {
@@ -1637,7 +1637,7 @@ impl css_language {
                                     return (CSS_INVALID, None)
                                 }
                                             
-                                token = &vector[*ctx];
+                                token = vector[*ctx];
                                 *ctx += 1 ;
                                 
                                 if !tokenIsChar(token, ')') {
@@ -1660,7 +1660,7 @@ impl css_language {
                 return (CSS_INVALID, None)
             }
                         
-            token = &vector[*ctx];
+            token = vector[*ctx];
             *ctx += 1 ;
             
             if !tokenIsChar(token, ')') {
@@ -1672,9 +1672,9 @@ impl css_language {
         return css_stylesheet::css__stylesheet_selector_detail_init(selector_type,qname, value_type, detail_value_string, None, negate);
     }
 
-    pub fn parseNth(&mut self, vector:&~[@css_token], ctx:@mut uint, qname:@mut css_qname) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn parseNth(&mut self, vector:&~[css_token], ctx:@mut uint, qname:@mut css_qname) -> (css_error,Option<@mut css_selector_detail>) {
         //debug!("Entering: parseNth");
-        let mut token:&@css_token;
+        let mut token: css_token;
 
         let value: @mut css_selector_detail = @mut css_selector_detail{
             qname:qname,
@@ -1701,19 +1701,19 @@ impl css_language {
             return (CSS_INVALID, None)
         }
             
-        token = &vector[*ctx];
+        token = vector[*ctx];
         *ctx += 1;
                         
         match token.token_type { 
             CSS_TOKEN_IDENT | CSS_TOKEN_DIMENSION => {
                 if (match token.token_type { CSS_TOKEN_IDENT => true, _ => false}) &&
-                        self.strings.lwc_string_caseless_isequal(token.idata.unwrap(), ODD as uint) {
+                        self.strings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), ODD as uint) {
                     /* Odd */
                     value.a = 2;
                     value.b = 1;
                 }
                 else if (match token.token_type { CSS_TOKEN_IDENT => true, _ => false}) &&
-                            self.strings.lwc_string_caseless_isequal(token.idata.unwrap(), EVEN as uint)
+                            self.strings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), EVEN as uint)
                 {
                     /* Even */
                     value.a = 2;
@@ -1859,7 +1859,7 @@ impl css_language {
 
                         /* Look for optional b : [ [ CHAR ws ]? NUMBER ws ]? */
                         if *ctx < vector.len() {
-                            token = &vector[*ctx];  
+                            token = vector[*ctx];  
                         }
                         
                         if (had_sign == false &&  *ctx < vector.len() &&
@@ -1876,7 +1876,7 @@ impl css_language {
                             consumeWhitespace(vector, ctx);
 
                             if *ctx < vector.len() {
-                                token = &vector[*ctx];
+                                token = vector[*ctx];
                             }
                             
                         }
@@ -1962,7 +1962,7 @@ impl css_language {
     *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
-    pub fn css__parse_important(&mut self, vector:&~[@css_token], ctx:@mut uint) -> (css_error,u8){
+    pub fn css__parse_important(&mut self, vector:&~[css_token], ctx:@mut uint) -> (css_error,u8){
         //debug!("Entering: css__parse_important");
         let orig_ctx = *ctx;
         let mut flags :u8 =0;
@@ -1974,7 +1974,7 @@ impl css_language {
             return (CSS_OK,flags)
         }
         
-        let mut token = &vector[*ctx];
+        let mut token = vector[*ctx];
         //debug!(fmt!("css__parse_important:: token == %?", token));
         *ctx += 1; //Iterate
         
@@ -1988,10 +1988,10 @@ impl css_language {
                 return (CSS_INVALID,flags)
             }
                         
-            token = &vector[*ctx];
+            token = vector[*ctx];
             *ctx += 1; //Iterate        
 
-            if self.strings.lwc_string_caseless_isequal(token.idata.unwrap(), IMPORTANT as uint) {
+            if self.strings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), IMPORTANT as uint) {
                 flags |= FLAG_IMPORTANT as u8;
             } else {
                 *ctx = orig_ctx;

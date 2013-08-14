@@ -70,15 +70,15 @@ pub struct css_system_font {
     weight: css_font_weight_e,
     size: size,
     line_height: line_height,
-    family: @mut lwc_string
+    family: lwc_string
 }
 
 pub type css_fixed = i32;
 
-pub type css_url_resolution_fn = @extern fn (base:@str, rel:@mut lwc_string) -> (css_error,Option<@mut lwc_string>);
-pub type css_font_resolution_fn = @extern fn (name: @mut lwc_string) -> (css_error , Option<css_system_font>);
-pub type css_import_notification_fn =  @extern fn(url:@str, media:@mut u64) -> css_error;
-pub type css_color_resolution_fn = @extern fn (name: @mut lwc_string) -> (Option<u32> , css_error);
+pub type css_url_resolution_fn = @extern fn (base:~str, rel:&mut lwc_string) -> (css_error,Option<lwc_string>);
+pub type css_font_resolution_fn = @extern fn (name: &mut lwc_string) -> (css_error , Option<css_system_font>);
+pub type css_import_notification_fn =  @extern fn(url:&str, media:@mut u64) -> css_error;
+pub type css_color_resolution_fn = @extern fn (name: &mut lwc_string) -> (Option<u32> , css_error);
 
 
 static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
@@ -86,8 +86,8 @@ static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
 
 // /**< Qualified name of selector */
 pub struct css_qname {  
-    name:@mut lwc_string,
-    ns:@mut lwc_string
+    name:lwc_string,
+    ns:lwc_string
 }
 
 pub struct css_selector_detail {
@@ -98,7 +98,7 @@ pub struct css_selector_detail {
     negate:bool,                        /**< Detail match is inverted */
 
     //css_selector_detail_value - union merged
-    string:Option<@mut lwc_string>,
+    string:Option<lwc_string>,
     a:i32,
     b:i32
 }
@@ -129,7 +129,7 @@ pub struct css_selector_hash {
     classes:~[Option<@mut hash_entry>],
     ids:~[Option<@mut hash_entry>],
     universal:~[Option<@mut hash_entry>],
-    lwc_instance:@mut lwc
+    lwc_instance:lwc
 }
 
 pub struct css_stylesheet {
@@ -138,19 +138,19 @@ pub struct css_stylesheet {
     rule_list:Option<CSS_RULE_DATA_TYPE>,   /**< List of rules in sheet */
     last_rule:Option<CSS_RULE_DATA_TYPE>,   /**< Last rule in list */
     disabled:bool,                          /**< Whether this sheet is  disabled */
-    url:@str,                               /**< URL of this sheet */
-    title:@str,                             /**< Title of this sheet */
+    url:~str,                               /**< URL of this sheet */
+    title:~str,                             /**< Title of this sheet */
     level:css_language_level,               /**< Language level of sheet */
     quirks_allowed:bool,                    /**< Quirks permitted */
     quirks_used:bool,                       /**< Quirks actually used */
     inline_style:bool,                      /**< Is an inline style */
     cached_style:Option<@mut css_style>,    /**< Cache for style parsing */
-    string_vector:~[@mut lwc_string],
+    string_vector:~[lwc_string],
     resolve : css_url_resolution_fn, // URL resolution function */
     import : Option<css_import_notification_fn>, // Import notification function */
     font : Option<css_font_resolution_fn>,   //Import font_resolution function
     color: Option<css_color_resolution_fn>,
-    lwc_instance:@mut lwc
+    lwc_instance:lwc
 }
 
 pub struct css_rule {
@@ -188,13 +188,13 @@ pub struct css_rule_page {
 
 pub struct css_rule_import {
     base:@mut css_rule,
-    url:@str,
+    url:~str,
     media:u64,
     sheet:Option<@mut css_stylesheet>
 } 
 pub struct css_rule_charset {
     base:@mut css_rule,
-    encoding:@str   
+    encoding:~str   
 } 
 
 
@@ -409,7 +409,7 @@ impl css_stylesheet {
     * #Return Value:
     *   'uint' - index next to the index of insertion is returned.
     */
-    pub fn css__stylesheet_string_add(&mut self, string: @mut lwc_string) -> uint {
+    pub fn css__stylesheet_string_add(&mut self, string: lwc_string) -> uint {
         //debug!("Entering: css__stylesheet_string_add");
         let mut i : uint = self.string_vector.len() ;
         while(i!=0) {
@@ -430,11 +430,11 @@ impl css_stylesheet {
     *  'num' - The index of string to retrive.
     
     * #Return Value:
-    *   '(css_error,Option<@mut lwc_string>)' - (CSS_BADPARM,None) if num param is not correct, 
+    *   '(css_error,Option<lwc_string>)' - (CSS_BADPARM,None) if num param is not correct, 
     *                               else ( CSS_OK, option of the string. )
     */
     pub fn css__stylesheet_string_get(&mut self, num:uint) 
-                                    -> (css_error,Option<@mut lwc_string>) {
+                                    -> (css_error,Option<lwc_string>) {
         //debug!("Entering: css__stylesheet_string_get");
 
         if( (self.string_vector.len() < num) || (num == 0) ) {
@@ -591,7 +591,7 @@ impl css_stylesheet {
         sel_type: css_selector_type,
         qname : @mut css_qname, 
         value_type : css_selector_detail_value_type,
-        string_value : Option<@mut lwc_string> , 
+        string_value : Option<lwc_string> , 
         ab_value : Option<(i32,i32)>,
         negate:bool
     )  -> (css_error, Option<@mut css_selector_detail>) 
@@ -747,7 +747,7 @@ impl css_stylesheet {
             CSS_RULE_CHARSET=>  {   
                 let ret_rule = @mut css_rule_charset{
                     base:base_rule,
-                    encoding:@""
+                    encoding:~""
                 };  
                 RULE_CHARSET(ret_rule) 
             },
@@ -755,7 +755,7 @@ impl css_stylesheet {
             CSS_RULE_IMPORT=>   {   
                 let ret_rule = @mut css_rule_import{
                     base:base_rule,
-                    url:@"",
+                    url:~"",
                     media:0,
                     sheet:None
                 };  
@@ -866,7 +866,7 @@ impl css_stylesheet {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css__stylesheet_rule_set_charset(css_rule : CSS_RULE_DATA_TYPE, charset: @str) -> css_error {
+    pub fn css__stylesheet_rule_set_charset(css_rule : CSS_RULE_DATA_TYPE, charset: ~str) -> css_error {
         //debug!("Entering: css__stylesheet_rule_set_charset");
         
         if charset.len() <= 0 {
@@ -897,7 +897,7 @@ impl css_stylesheet {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css__stylesheet_rule_set_nascent_import(
-        css_rule : CSS_RULE_DATA_TYPE, url_str:@str, media:u64) -> css_error {
+        css_rule : CSS_RULE_DATA_TYPE, url_str:~str, media:u64) -> css_error {
         //debug!("Entering: css__stylesheet_rule_set_nascent_import");
         match css_rule {
             RULE_IMPORT(x) => {
@@ -1279,7 +1279,7 @@ impl css_selector_hash {
     * #Return Value:
     *  'css_selector_hash' - Hash table of selectors.
     */
-    pub fn css__selector_hash_create(lwc_inst:@mut lwc) -> @mut css_selector_hash {
+    pub fn css__selector_hash_create(lwc_inst:lwc) -> @mut css_selector_hash {
         //debug!("Entering: css__selector_hash_create");
         let hash = @mut css_selector_hash{ 
                         default_slots:(1<<6),
@@ -1334,7 +1334,7 @@ impl css_selector_hash {
             }
         }
 
-        self.lwc_instance.lwc_intern_string_managed(@"")
+        self.lwc_instance.lwc_intern_string_managed(~"")
     }
 
     /**
@@ -1363,7 +1363,7 @@ impl css_selector_hash {
             }
         }
 
-        self.lwc_instance.lwc_intern_string_managed(@"")
+        self.lwc_instance.lwc_intern_string_managed(~"")
     }
 
 

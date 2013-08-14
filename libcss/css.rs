@@ -30,9 +30,9 @@ pub struct css_params {
     /** The charset of the stylesheet data, or NULL to detect */
     charset : Option<~str>,
     /** URL of stylesheet */
-    url : @str,
+    url : ~str,
     /** Title of stylesheet */
-    title : @str,
+    title : ~str,
 
     /** Permit quirky parsing of stylesheet */
     allow_quirks : bool,

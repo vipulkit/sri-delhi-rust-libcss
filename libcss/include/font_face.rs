@@ -25,7 +25,7 @@ pub enum css_font_face_location_type{
 }
 
 pub struct css_font_face_src {
-    location:Option<@mut lwc_string>,
+    location:Option<lwc_string>,
     /*
     * Bit allocations:
     *
@@ -36,7 +36,7 @@ pub struct css_font_face_src {
 }
 
 pub struct css_font_face {
-    font_family:Option< @mut lwc_string >,
+    font_family:Option<lwc_string >,
     srcs:~[~css_font_face_src],
     /*
     * Bit allocations:
