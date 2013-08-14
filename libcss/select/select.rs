@@ -1128,26 +1128,18 @@ impl css_select_ctx {
                             univ: Option<@mut css_selector>) 
                             -> Option<@mut css_selector> {
 
-//        println(fmt!("Entering _selector_next")) ;
         let mut ret : Option<@mut css_selector> = None;
-
         if (css_select_ctx::_selector_less_specific(ret, node)) {
-     //       println("1");
             ret = node;
         }
 
-   //         println("2");
         if (css_select_ctx::_selector_less_specific(ret, id)) {
-    //        println("3");
             ret = id;
         }
 
-     //       println("4");
         if (css_select_ctx::_selector_less_specific(ret, univ)) {
-     //       println("5");
             ret = univ;
         }
-     //       println("6");
 
         let mut i : uint = 0;
 		let classes_list_len : uint = class_list.len();
@@ -1245,14 +1237,6 @@ impl css_select_ctx {
         }
 
         /* Find hash chain for universal selector */
-/*        let (sel_univ,error) = sheet.selectors.css__selector_hash_find_universal();
-        match error {
-            CSS_OK => {},
-            err => {
-                return err;
-            }
-        }
-*/
         let mut slot_univ = -1;
         let mut index_univ =-1;
         if sheet.selectors.universal.len() >= 1 && sheet.selectors.universal[0].len() >= 1 {
@@ -1274,13 +1258,11 @@ impl css_select_ctx {
              *
              * Pick the least specific/earliest occurring selector.
              */
-        //    println("before call to _selector_next");
             let o_selector = css_select_ctx::_selector_next(
                                     node_selectors_option, 
                                     id_selectors_option,
                                     &sheet.selectors.classes, &class_selectors_index_list,
                                     univ_selectors_option );
-       //     println("after call to _selector_next");
             if o_selector.is_none() {
                 fail!(~"Error getting selector next ") ;
             }
@@ -1304,10 +1286,6 @@ impl css_select_ctx {
                 mut_ptr_eq( selector, node_selectors_option.get())) {
                 let next_element_index = 
                         sheet.selectors._iterate_elements(element_slot, element_index);
-
-                // if next_element_index == -1 {
-                //     return CSS_OK;
-                // }
 
                 if next_element_index != -1 {
                     element_index = next_element_index;
