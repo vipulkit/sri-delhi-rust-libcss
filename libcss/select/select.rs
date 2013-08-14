@@ -1226,7 +1226,7 @@ impl css_select_ctx {
             if id_index != -1
             {
                              
-                id_selectors_option = Some((sheet.selectors.elements[id_slot][id_index]));            
+                id_selectors_option = Some((sheet.selectors.ids[id_slot][id_index]));            
             }
             else
             {
@@ -1303,7 +1303,7 @@ impl css_select_ctx {
 
                 if (id_slot_next != -1 && id_next_index != -1)
                 {
-                    id_selectors_option = Some((sheet.selectors.elements[id_slot_next][id_next_index]));
+                    id_selectors_option = Some((sheet.selectors.ids[id_slot_next][id_next_index]));
                 }
 	        else
                 {
