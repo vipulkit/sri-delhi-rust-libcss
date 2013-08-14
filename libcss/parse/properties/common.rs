@@ -263,7 +263,7 @@ pub fn css__parse_unit_keyword(ptr:&str)-> (Option<u32>,css_error) {
     (Some(unit) , CSS_OK)
 }
 
-pub fn css__number_from_string(data: @str, data_index:@mut uint, int_only: bool) -> (i32 , uint){
+pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool) -> (i32 , uint){
 
     //debug!("Entering: css__number_from_string");
     let mut length = data.len() - *data_index;

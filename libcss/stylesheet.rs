@@ -75,7 +75,7 @@ pub struct css_system_font {
 
 pub type css_fixed = i32;
 
-pub type css_url_resolution_fn = @extern fn (base:@str, rel:@mut lwc_string) -> (css_error,Option<@mut lwc_string>);
+pub type css_url_resolution_fn = @extern fn (base:@str, rel:@mut lwc_string) -> (css_error,Option<lwc_string>);
 pub type css_font_resolution_fn = @extern fn (name: @mut lwc_string) -> (css_error , Option<css_system_font>);
 pub type css_import_notification_fn =  @extern fn(url:@str, media:@mut u64) -> css_error;
 pub type css_color_resolution_fn = @extern fn (name: @mut lwc_string) -> (Option<u32> , css_error);
@@ -86,8 +86,8 @@ static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
 
 // /**< Qualified name of selector */
 pub struct css_qname {  
-    name:@mut lwc_string,
-    ns:@mut lwc_string
+    name:lwc_string,
+    ns:lwc_string
 }
 
 pub struct css_selector_detail {
@@ -235,7 +235,7 @@ pub fn get_css_rule_next(rule: CSS_RULE_DATA_TYPE) -> Option<CSS_RULE_DATA_TYPE>
     }
 }
 
-pub fn get_stylesheet_parent(rule: CSS_RULE_DATA_TYPE) -> Option<@mut css_stylesheet> {
+pub fn get_stylesheet_parent(rule: CSS_RULE_DATA_TYPE) -> Option<&mut css_stylesheet> {
     
     match rule {
         RULE_UNKNOWN(x) => x.parent_stylesheet,
@@ -409,7 +409,7 @@ impl css_stylesheet {
     * #Return Value:
     *   'uint' - index next to the index of insertion is returned.
     */
-    pub fn css__stylesheet_string_add(&mut self, string: @mut lwc_string) -> uint {
+    pub fn css__stylesheet_string_add(&mut self, string: lwc_string) -> uint {
         //debug!("Entering: css__stylesheet_string_add");
         let mut i : uint = self.string_vector.len() ;
         while(i!=0) {

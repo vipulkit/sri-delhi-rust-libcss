@@ -4819,7 +4819,7 @@ pub fn voice_family_value(strings: @css_propstrings, token:&@css_token, first:bo
         If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings: @css_propstrings, vector:&~[@css_token], ctx:@mut uint, reserved:Option<reserved_fn>)
-    -> (css_error, Option<@str>) {
+    -> (css_error, Option<~str>) {
     
     //debug!("Entering: css__ident_list_or_string_to_string");
     if *ctx >= vector.len() {
@@ -4859,7 +4859,7 @@ pub fn css__ident_list_or_string_to_string(sheet: @mut css_stylesheet , strings:
         If the input is invalid, then \a ctx remains unchanged.
 */
 pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: @css_propstrings, vector:&~[@css_token],
-    ctx: @mut uint , reserved:Option<reserved_fn>) -> (css_error , Option<@str>) {
+    ctx: @mut uint , reserved:Option<reserved_fn>) -> (css_error , Option<~str>) {
 
     //debug!("Entering: css__ident_list_to_string");
     let orig_ctx = *ctx;
@@ -4917,7 +4917,7 @@ pub fn css__ident_list_to_string(_: @mut css_stylesheet , strings: @css_propstri
 	
     /* Strip trailing whitespace */
 
-    return (CSS_OK , Some(token_buffer_string.trim_right().to_managed()));
+    return (CSS_OK , Some(token_buffer_string.trim_right().to_owned()));
 }
 
 

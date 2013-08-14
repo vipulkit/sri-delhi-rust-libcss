@@ -138,12 +138,12 @@ impl lwc {
 } // impl wapcaplet
     
 #[inline]
-pub fn lwc_string_length(string: &mut lwc_string) -> uint {
+pub fn lwc_string_length(string: lwc_string) -> uint {
     string.string.len()
 }
     
 #[inline]
-pub fn lwc_string_data(string: &mut lwc_string) -> ~str {
+pub fn lwc_string_data(string: lwc_string) -> ~str {
     string.string.clone()
 }
 
