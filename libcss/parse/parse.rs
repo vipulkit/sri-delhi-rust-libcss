@@ -44,16 +44,15 @@ type state =  ~extern fn(parser: &mut css_parser) ->css_error;
 pub struct css_parser {
     language: ~css_language,
     lexer: ~css_lexer,
-    priv lwc: @mut lwc,
-
+    
     priv last_was_ws : bool,
     priv match_char : char,
     priv open_items_stack : ~[char],
     priv parse_error : bool,
-    priv pushback: Option<@css_token>,
+    priv pushback: Option<css_token>,
     priv state_stack: ~[(uint,uint)], /*Parser state stack*/
     priv states: ~[state],
-    priv tokens: ~[@css_token],
+    priv tokens: ~[css_token],
 }
 
 impl css_parser {
@@ -75,7 +74,7 @@ impl css_parser {
     * #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
     */
-    fn css__parser_create_internal(language: ~css_language, lexer: ~css_lexer, lwc: @mut lwc, initial:(uint, uint) ) 
+    fn css__parser_create_internal(language: ~css_language, lexer: ~css_lexer, initial:(uint, uint) ) 
         -> Option<~css_parser> {
 
         //debug!("Entering: css__parser_create_internal");
@@ -112,8 +111,7 @@ impl css_parser {
         let mut parser = ~css_parser {
             language: language,
             lexer: lexer,
-            lwc: lwc,
-
+            
             last_was_ws: false,
             match_char: 0 as char,
             open_items_stack : ~[],
@@ -146,12 +144,12 @@ impl css_parser {
     *   'Option<~css_parser>' - location to receive parser instance.
     */
     #[inline]
-    pub fn css__parser_create(language: ~css_language, lexer: ~css_lexer, lwc: @mut lwc) 
+    pub fn css__parser_create(language: ~css_language, lexer: ~css_lexer) 
         -> Option<~css_parser> {
         //debug!("Entering: css__parser_create");
         let initial = ( sStart as uint, 0u );
 
-        css_parser::css__parser_create_internal(language, lexer, lwc, initial)
+        css_parser::css__parser_create_internal(language, lexer, initial)
     }
 
     /**
@@ -171,12 +169,12 @@ impl css_parser {
     *   'Option<~css_parser>' - location to receive parser instance.
     */
     #[inline]
-    pub fn css__parser_create_for_inline_style(language: ~css_language, lexer: ~css_lexer, lwc: @mut lwc) 
+    pub fn css__parser_create_for_inline_style(language: ~css_language, lexer: ~css_lexer) 
         -> Option<~css_parser> {
         //debug!("Entering: css__parser_create_for_inline_style");
         let initial = (sInlineStyle as uint, 0);
 
-        css_parser::css__parser_create_internal(language, lexer, lwc, initial)
+        css_parser::css__parser_create_internal(language, lexer, initial)
     }
 
 
@@ -359,7 +357,7 @@ impl css_parser {
     *  'token' -  The token to push back. 
     */
     #[inline]
-    fn push_back(&mut self, token: @css_token) {
+    fn push_back(&mut self, token: css_token) {
         //debug!("Entering: push_back");
         //debug!("Entering: push_back");
         /*debug!(fmt!("token == %?", token));
@@ -373,9 +371,9 @@ impl css_parser {
     }
 
     #[inline]
-    fn intern_string (&mut self, string: &str) -> @mut lwc_string {
+    fn intern_string (&mut self, string: &str) -> lwc_string {
         //debug!("Entering: intern_string");
-        let interned_string = self.lwc.lwc_intern_string(string);
+        let interned_string = unsafe{ lwc_ref.get_mut_ref().lwc_intern_string(string)};
 
         interned_string
     }
@@ -387,10 +385,10 @@ impl css_parser {
     * #Return Value:
     *   '(css_error, Option<@css_token>)' - (CSS_OK, location to receive token) on success, (appropriate error, None) otherwise.
     */
-    fn get_token(&mut self) -> (css_error, Option<@css_token>) {
+    fn get_token(&mut self) -> (css_error, Option<css_token>) {
 
         //debug!("Entering: get_token");
-        let mut token_option: Option<@css_token>;
+        let mut token_option: Option<css_token>;
 
         /* Use pushback, if it exists */
         if self.pushback.is_some() {
@@ -425,7 +423,7 @@ impl css_parser {
                     len: t.data.len
                 };
 
-                let t1 = @css_token{
+                let t1 = css_token{
                     data:t1_data,
                     token_type:t.token_type,
                     idata:idata,
@@ -441,7 +439,7 @@ impl css_parser {
                     len: t.data.len
                 };
 
-                let t1 = @css_token{
+                let t1 = css_token{
                     data:t1_data,
                     token_type:t.token_type,
                     idata:None,

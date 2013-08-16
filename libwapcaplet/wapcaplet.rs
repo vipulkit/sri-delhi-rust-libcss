@@ -5,6 +5,7 @@ extern mod extra;
 
 use std::hashmap::HashMap;
 use std::str;
+use std::clone::Clone;
 
 pub struct lwc_string {
     id: uint,
@@ -12,9 +13,32 @@ pub struct lwc_string {
     insensitive: Option<uint>
 }
 
+// implementing clone for lwc_string
+impl Clone for lwc_string {
+    [#inline]
+    pub fn clone(&self) -> lwc_string {
+        lwc_string{
+            id:self.id,
+            string:self.string.clone(),
+            insensitive:self.insensitive
+        }
+    }
+}
+
 pub struct lwc {
     priv map: HashMap<~str, uint>,
     priv vect:~[lwc_string]
+}
+
+// implementing clone for lwc
+impl Clone for lwc {
+    [#inline]
+    pub fn clone(&self) -> lwc {
+        lwc{
+            map: self.map.clone(),
+            vect: self.vect.clone()
+        }
+    }
 }
 
 impl lwc {
@@ -138,12 +162,12 @@ impl lwc {
 } // impl wapcaplet
     
 #[inline]
-pub fn lwc_string_length(string: lwc_string) -> uint {
+pub fn lwc_string_length(string:& lwc_string) -> uint {
     string.string.len()
 }
     
 #[inline]
-pub fn lwc_string_data(string: lwc_string) -> ~str {
+pub fn lwc_string_data(string:& lwc_string) -> ~str {
     string.string.clone()
 }
 
@@ -154,13 +178,6 @@ pub fn lwc()->lwc {
     }
 }
 
-// implementing clone for
-impl<'self> lwc_string {
-    pub fn clone(&self) -> lwc_string {
-        lwc_string{
-            id:self.id,
-            string:self.string.clone(),
-            insensitive:self.insensitive
-        }
-    }
-}
+
+pub static mut lwc_ref : Option<lwc>  = None;
+

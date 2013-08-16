@@ -11,7 +11,6 @@ use utils::errors::*;
 use parse::propstrings::*;
 
 pub struct css {
-    lwc:@mut lwc,
     stylesheet:@mut css_stylesheet,
     parser:~css_parser,
 }
@@ -30,9 +29,9 @@ pub struct css_params {
     /** The charset of the stylesheet data, or NULL to detect */
     charset : Option<~str>,
     /** URL of stylesheet */
-    url : @str,
+    url : ~str,
     /** Title of stylesheet */
-    title : @str,
+    title : ~str,
 
     /** Permit quirky parsing of stylesheet */
     allow_quirks : bool,
@@ -52,7 +51,7 @@ pub struct css_params {
     font : Option<css_font_resolution_fn>,
 
     /** libwapcaplet library Instance */
-    lwc_instance : Option<@mut lwc>,
+    lwc_instance : Option<lwc>,
 
     /** Propstrings Instance */
     propstrings_instance : Option<@css_propstrings>
@@ -65,15 +64,17 @@ impl css {
         assert!(!(params.propstrings_instance.is_some() && params.lwc_instance.is_none()));
 
         // create lwc
-        let lwc =   if params.lwc_instance.is_none() { 
-                        lwc()
-                    }  
-                    else {
-                        params.lwc_instance.unwrap()
-                    } ;
-
+        unsafe{
+            lwc_ref =  if params.lwc_instance.is_none() { 
+                            Some(lwc())
+                        }  
+                        else {
+                            params.lwc_instance
+                        } ;
+        }
+                        
         let propstrings = if params.propstrings_instance.is_none() { 
-                        css_propstrings::css_propstrings(lwc)
+                        css_propstrings::css_propstrings()
                     }  
                     else {
                         params.propstrings_instance.unwrap()
@@ -94,13 +95,13 @@ impl css {
 
         // create stylesheet
         let stylesheet = @mut css_stylesheet {
-            selectors:css_selector_hash::css__selector_hash_create(lwc),       
+            selectors:css_selector_hash::css__selector_hash_create(),       
             rule_count:0,                        
             rule_list:None,   
             last_rule:None,   
             disabled:false,                          
-            url:params.url,                               
-            title:params.title,                             
+            url:params.url.clone(),                               
+            title:params.title.clone(),                             
             level:params.level,               
             quirks_allowed:params.allow_quirks,                    
             quirks_used:false,                       
@@ -110,21 +111,19 @@ impl css {
             resolve : params.resolve, 
             import : params.import, 
             font : params.font,   
-            color: params.color,
-            lwc_instance:lwc
+            color: params.color            
         };
 
         // create language
-        let language = css_language(stylesheet, lwc , propstrings);
+        let mut language = css_language(stylesheet, propstrings);
 
         // create parser
         let parser = match params.inline_style {
-            false => css_parser::css__parser_create(language, lexer, lwc),
-            true => css_parser::css__parser_create_for_inline_style(language, lexer, lwc)
+            false => css_parser::css__parser_create(language, lexer),
+            true => css_parser::css__parser_create_for_inline_style(language, lexer)
         }; 
 
         @mut css {
-            lwc:lwc,
             parser:parser.unwrap(),
             stylesheet:stylesheet,
         }
@@ -259,9 +258,9 @@ impl css {
     * #Return Value:
     *   '(css_error,~str)' - (CSS_OK , title).
     */
-    pub fn css_stylesheet_get_title(&mut self) -> (css_error,@str) {
+    pub fn css_stylesheet_get_title(&mut self) -> (css_error,~str) {
 
-        (CSS_OK,self.stylesheet.title)
+        (CSS_OK,self.stylesheet.title.clone())
     }
 
     /**
@@ -271,9 +270,9 @@ impl css {
     * #Return Value:
     *   '(css_error,~str)' - (CSS_OK , url).
     */
-    pub fn css_stylesheet_get_url(&mut self) -> (css_error,@str) {
+    pub fn css_stylesheet_get_url(&mut self) -> (css_error,~str) {
 
-        (CSS_OK,self.stylesheet.url)
+        (CSS_OK,self.stylesheet.url.clone())
     }
 
     /**
@@ -311,7 +310,7 @@ impl css {
                                                 (appropriate error, None, None) otherwise.
     */
     pub fn css_stylesheet_next_pending_import(&mut self) -> 
-                                (css_error,Option<@str>,Option<u64>) {
+                                (css_error,Option<~str>,Option<u64>) {
 
         let mut ptr = self.stylesheet.rule_list ;
         loop {
@@ -323,7 +322,7 @@ impl css {
                     match current_rule {
                         RULE_IMPORT(irule)=>{
                             if irule.sheet.is_none() {
-                                return (CSS_OK,Some(irule.url),Some(irule.media));
+                                return (CSS_OK,Some(irule.url.clone()),Some(irule.media));
                             }
                             else {
                                 ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
