@@ -84,11 +84,11 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[css_toke
         }
     }
 
-    let (num , consumed_index) = css__number_from_lwc_string(token.idata.get_ref() , false);
+    let (num , consumed_index) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
     //debug!("css__parse_unit_specifier :: num == %?" , num);
     match token.token_type {
         CSS_TOKEN_DIMENSION => {
-            let data = lwc_string_data(token.idata.get_ref());
+            let data = unsafe{lwc_ref.get_ref().lwc_string_data(token.idata.get_ref().clone())};
 
             let (unit , result) = css__parse_unit_keyword(data.slice(consumed_index, data.len()));
             match result {
@@ -125,7 +125,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[css_toke
 
                 match token.token_type {
                     CSS_TOKEN_IDENT => {
-                        let (unit , result) = css__parse_unit_keyword(lwc_string_data(token.idata.get_ref()));
+                        let (unit , result) = css__parse_unit_keyword(unsafe{lwc_ref.get_ref().lwc_string_data(token.idata.get_ref().clone())});
 
                         match  result {
                             CSS_OK => {
@@ -142,7 +142,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[css_toke
         },
         //CSS_TOKEN_PERCENTAGE
         _ => {
-            if lwc_string_length(token.idata.get_ref()) != consumed_index {
+            if unsafe{lwc_ref.get_ref().lwc_string_length(token.idata.get_ref().clone())} != consumed_index {
                 //debug!("Exiting: css__parse_unit_specifier (6)");
                 return (None , None , CSS_INVALID);
             }
@@ -154,14 +154,14 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[css_toke
     return(Some(num) , Some(unit_retVal) , CSS_OK);
 }
 
-pub fn css__number_from_lwc_string(string: &lwc_string, int_only: bool) -> (i32 , uint) {
+pub fn css__number_from_lwc_string(string: uint, int_only: bool) -> (i32 , uint) {
     
     //debug!("Entering: css__number_from_lwc_string");
 
-    if lwc_string_length(string) == 0 {
+    if unsafe{lwc_ref.get_ref().lwc_string_length(string)} == 0 {
         return (0 , 0);
     }
-    css__number_from_string(lwc_string_data(string), @mut 0, int_only)
+    css__number_from_string(unsafe{lwc_ref.get_ref().lwc_string_data(string)}, @mut 0, int_only)
 }
 
 #[inline(always)]
@@ -384,7 +384,7 @@ pub fn is_css_inherit(strings: @css_propstrings , token: &css_token) ->bool {
     //debug!("Entering: is_css_inherit");
     match token.token_type {
         CSS_TOKEN_IDENT => {
-             return strings.lwc_string_caseless_isequal(token.idata.get_mut_ref() , INHERIT as uint);
+             return strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , INHERIT as uint);
         }
         _ => false
     }
@@ -452,25 +452,25 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
 	//debug!(fmt!("sheet.quirks_allowed = %?", sheet.quirks_allowed));
 	
     if token.token_type as int == CSS_TOKEN_IDENT as int  {
-        if strings.lwc_string_caseless_isequal(token.idata.get_mut_ref() , TRANSPARENT as uint) {
+        if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , TRANSPARENT as uint) {
             ret_value = COLOR_TRANSPARENT ;
             ret_result = 0;
             return (Some(ret_value) , Some(ret_result) , CSS_OK);
         }
-        else if strings.lwc_string_caseless_isequal(token.idata.get_mut_ref() , CURRENTCOLOR as uint) {
+        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone() , CURRENTCOLOR as uint) {
             ret_value = COLOR_CURRENT_COLOR ;
             ret_result = 0;
             return (Some(ret_value) , Some(ret_result) , CSS_OK);
         }
 
-        let (_ret_result , error) = css__parse_named_color(sheet , strings , token.idata.get_mut_ref());
+        let (_ret_result , error) = css__parse_named_color(sheet , strings , token.idata.get_ref().clone());
         
         if _ret_result.is_some() {
             ret_result = _ret_result.unwrap();
         }
 
         if error as int != CSS_OK as int && sheet.quirks_allowed {
-            let(_ret_result , error) = css__parse_hash_colour(token.idata.get_mut_ref());
+            let(_ret_result , error) = css__parse_hash_colour(token.idata.get_ref().clone());
             if _ret_result.is_some() {
                 ret_result = _ret_result.unwrap();
             }
@@ -489,7 +489,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
     else if (token.token_type as int ==  CSS_TOKEN_HASH as int || (sheet.quirks_allowed && token.token_type as int ==  CSS_TOKEN_NUMBER as int) ||
         (sheet.quirks_allowed && token.token_type as int ==  CSS_TOKEN_DIMENSION as int))
     {
-        let(_ret_result , error_from_hash) = css__parse_hash_colour(token.idata.get_mut_ref());
+        let(_ret_result , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone());
 
         match error_from_hash {
             CSS_OK => {
@@ -512,16 +512,16 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
         let b:@mut u8 = @mut 0;
         let a:@mut u8 = @mut 0xff;
         let mut colour_channels: int = 0;
-        if strings.lwc_string_caseless_isequal(token.idata.get_mut_ref(), RGB as uint) {
+        if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RGB as uint) {
             colour_channels = 3;
         }
-        else if strings.lwc_string_caseless_isequal(token.idata.get_mut_ref(), RGBA as uint) {
+        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), RGBA as uint) {
             colour_channels = 4;
         }
-        else if strings.lwc_string_caseless_isequal(token.idata.get_mut_ref(), HSL as uint) {
+        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HSL as uint) {
             colour_channels = 5;
         }
-        else if strings.lwc_string_caseless_isequal(token.idata.get_mut_ref(), HSLA as uint) {
+        else if strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HSLA as uint) {
             colour_channels = 6;
         }
 
@@ -571,9 +571,9 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
                 else {
                     int_only = false;
                 }
-                let (num , consumed_index) = css__number_from_lwc_string(token.idata.get_ref() , int_only);
+                let (num , consumed_index) = css__number_from_lwc_string(token.idata.get_ref().clone() , int_only);
 
-                if consumed_index != lwc_string_length(token.idata.get_ref()) {
+                if consumed_index != unsafe{lwc_ref.get_ref().lwc_string_length(token.idata.get_ref().clone())} {
                     *ctx = orig_ctx;
                     return (None , None , CSS_INVALID);
                 }
@@ -658,10 +658,10 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
                 }
             }
 			
-            let (hue_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref() , false);
+            let (hue_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
             hue = hue_res as i32;
             
-			if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref()) {
+			if consumed_length_from_lwc_string != unsafe{lwc_ref.get_ref().lwc_string_length(token.idata.get_ref().clone())} {
                 /* failed to consume the whole string as a number */
 				*ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
@@ -708,9 +708,9 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
                 }
             }
             
-			let (sat_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref() , false);
+			let (sat_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
             sat = sat_res as i32;
-            if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref()) {
+            if consumed_length_from_lwc_string != unsafe{lwc_ref.get_ref().lwc_string_length(token.idata.get_ref().clone())} {
 				/* failed to consume the whole string as a number */
 				*ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
@@ -757,9 +757,9 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
                     return (None , None , CSS_INVALID);
                 }
             }
-            let (lit_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref() , false);
+            let (lit_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
             lit = lit_res as i32;
-            if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref()) {
+            if consumed_length_from_lwc_string != unsafe{lwc_ref.get_ref().lwc_string_length(token.idata.get_ref().clone())} {
                 /* failed to consume the whole string as a number */
 				*ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
@@ -807,9 +807,9 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
                     }
                 }
                 
-				let (alpha_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref() , false);
+				let (alpha_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
                 alpha = alpha_res as i32;
-                if consumed_length_from_lwc_string != lwc_string_length(token.idata.get_ref()) {
+                if consumed_length_from_lwc_string != unsafe{lwc_ref.get_ref().lwc_string_length(token.idata.get_ref().clone())} {
                     /* failed to consume the whole string as a number */
 					*ctx = orig_ctx;
                     return (None , None , CSS_INVALID);
@@ -890,7 +890,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
 *   ctx is updated with the next token to process.
 *   If the input is invalid, then ctx remains unchanged.
 */
-pub fn css__parse_hash_colour(data: &mut lwc_string) -> (Option<u32> , css_error){
+pub fn css__parse_hash_colour(data: uint) -> (Option<u32> , css_error){
 
     //debug!("Entering: css__parse_hash_colour");
     let mut result_val: u32;
@@ -898,8 +898,8 @@ pub fn css__parse_hash_colour(data: &mut lwc_string) -> (Option<u32> , css_error
     let mut g: u8;
     let mut b: u8;
     let a: u8 = 0xff;
-    let input_length = lwc_string_length(data);
-    let input_string = lwc_string_data(data);
+    let input_length = unsafe{lwc_ref.get_ref().lwc_string_length(data)};
+    let input_string = unsafe{lwc_ref.get_ref().lwc_string_data(data)};
 
     if (input_length == 3 && isHex(input_string[0]) && isHex(input_string[1]) && isHex(input_string[2])) {
         r = charToHex(input_string[0]) as u8;
@@ -947,8 +947,8 @@ pub fn tokenIsChar(token:&css_token, c:char) -> bool {
 
     match token.token_type {
         CSS_TOKEN_CHAR => {   
-                if lwc_string_length(token.idata.get_ref()) == 1 {
-                    let mut token_char = lwc_string_data(token.idata.get_ref()).char_at(0);
+                if unsafe{lwc_ref.get_ref().lwc_string_length(token.idata.get_ref().clone())} == 1 {
+                    let mut token_char = unsafe{lwc_ref.get_ref().lwc_string_data(token.idata.get_ref().clone()).char_at(0)};
 
                     // Ensure lowercomparison 
                     if 'A' <= token_char && token_char <= 'Z' {
@@ -1136,7 +1136,7 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 * 'css_error' - CSS_OK on success,  
                 CSS_INVALID if the input is not valid.
 */
-fn css__parse_named_color(sheet: @mut css_stylesheet , strings: @css_propstrings , data: &mut lwc_string) -> (Option<u32> , css_error){
+fn css__parse_named_color(sheet: @mut css_stylesheet , strings: @css_propstrings , data: uint) -> (Option<u32> , css_error){
     
     //debug!("Entering: css__parse_named_color");
     let mut result_val: u32;

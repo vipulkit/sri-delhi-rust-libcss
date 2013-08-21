@@ -69,7 +69,7 @@ impl css {
                             Some(lwc())
                         }  
                         else {
-                            params.lwc_instance
+                            params.lwc_instance.clone()
                         } ;
         }
                         

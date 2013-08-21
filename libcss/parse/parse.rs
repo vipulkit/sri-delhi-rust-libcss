@@ -371,11 +371,9 @@ impl css_parser {
     }
 
     #[inline]
-    fn intern_string (&mut self, string: &str) -> lwc_string {
+    fn intern_string (&mut self, string: &str) -> uint {
         //debug!("Entering: intern_string");
-        let interned_string = unsafe{ lwc_ref.get_mut_ref().lwc_intern_string(string)};
-
-        interned_string
+        unsafe{lwc_ref.get_mut_ref()}.lwc_intern_string(string)
     }
 
     /**
@@ -452,11 +450,12 @@ impl css_parser {
            
         }
 
-        self.tokens.push(token_option.get());
-        self.last_was_ws = (token_option.get().token_type as int == CSS_TOKEN_S as int);
-
+        let token = token_option.get();
+        self.tokens.push(token.clone());
+        self.last_was_ws = (token.token_type as int == CSS_TOKEN_S as int);
+        
         //debug!(fmt!("token_option == %?",token_option)) ;
-        (CSS_OK, token_option)
+        (CSS_OK, Some(token))
     }
 
     #[inline]
@@ -816,7 +815,7 @@ impl css_parser {
                         return parser_error;
                     }
                     let token = token_option.unwrap();
-                    parser.push_back(token);
+                    parser.push_back(token.clone());
 
                     match (token.token_type) {
                         CSS_TOKEN_EOF => {
@@ -1806,7 +1805,7 @@ impl css_parser {
 
                 let to = ( sValue as uint, Initial as uint );
                 let subsequent = ( sValue1 as uint, AfterValue as uint );
-                parser.push_back(token);
+                parser.push_back(token.clone());
 
                 match (token.token_type) {
                     CSS_TOKEN_CHAR => {
@@ -2598,7 +2597,7 @@ impl css_parser {
                         return parser_error;
                     }
                     let token = token_option.unwrap();
-                    parser.push_back(token);
+                    parser.push_back(token.clone());
 
                     match token.token_type {
                         CSS_TOKEN_EOF => {
@@ -2658,7 +2657,7 @@ impl css_parser {
                         return parser_error;
                     }
                     let token = token_option.unwrap();
-                    parser.push_back(token);
+                    parser.push_back(token.clone());
 
                     match token.token_type {
                         CSS_TOKEN_CHAR => {
@@ -2704,7 +2703,7 @@ impl css_parser {
 
                     match token.token_type {
                         CSS_TOKEN_EOF => {
-                            parser.push_back(token);
+                            parser.push_back(token.clone());
                             parser.done();
                             return CSS_OK;
                         }/* CSS_TOKEN_EOF */

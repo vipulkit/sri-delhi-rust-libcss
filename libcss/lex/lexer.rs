@@ -46,16 +46,40 @@ pub struct css_token_data {
     len: uint
 }
 
+impl Clone for css_token_data {
+    #[inline]
+    fn clone(&self) -> css_token_data {
+        css_token_data{
+            data: self.data.clone(),
+            len: self.len
+        }    
+    } 
+} 
+
 pub struct css_token {
     
     data: css_token_data,
 
     token_type: css_token_type,
-    idata: Option<lwc_string>,
+    idata: Option<uint>,
 
     col: uint,
     line: uint
 }
+
+impl Clone for css_token {
+    #[inline]
+    fn clone(&self) -> css_token {
+        css_token{
+            data: self.data.clone(),
+            token_type: self.token_type,
+            idata: self.idata,
+
+            col: self.col,
+            line: self.line
+        }    
+    } 
+} 
 
 pub enum states {
     sSTART      =  0,

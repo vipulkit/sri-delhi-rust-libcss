@@ -290,13 +290,13 @@ pub static CSS_PAGE_BREAK_INSIDE_MASK : int =  0xc0;
 
 
 pub struct css_computed_counter {
-    name:lwc_string ,
+    name:uint ,
     value:i32
 }
 
 pub struct css_computed_content_item_counter {
-    name:lwc_string,
-    sep:Option<lwc_string>,
+    name:uint,
+    sep:Option<uint>,
     style:u8
 }
 
@@ -304,7 +304,7 @@ pub struct css_computed_content_item {
   
     item_type:css_computed_content_item_type,
 
-    data:Option<lwc_string>,
+    data:Option<uint>,
     counters_data:Option<css_computed_content_item_counter>
 }
 
@@ -375,7 +375,7 @@ pub struct css_computed_uncommon {
     counter_increment:~[@mut css_computed_counter],
     counter_reset:~[@mut css_computed_counter],
 
-    cursor:~[lwc_string],
+    cursor:~[uint],
 
     content:~[@mut css_computed_content_item],
 }
@@ -530,7 +530,7 @@ pub struct css_computed_style {
 
     background_color:u32,
 
-    background_image:Option<lwc_string>,
+    background_image:Option<uint>,
 
     background_position:~[i32],
 
@@ -550,7 +550,7 @@ pub struct css_computed_style {
 
     line_height:i32,
 
-    list_style_image:Option<lwc_string>,
+    list_style_image:Option<uint>,
 
     margin:~[i32],
 
@@ -572,10 +572,10 @@ pub struct css_computed_style {
 
     z_index:i32,
 
-    font_family:~[lwc_string],
+    font_family:~[uint],
 
     //quotes chaned from wapcaplet-strings to strings
-    quotes:~[lwc_string],
+    quotes:~[uint],
 
     uncommon:Option<@mut css_computed_uncommon>, /**< Uncommon properties */
     aural:Option<@mut css_aural>,         /*< Aural properties */
@@ -625,8 +625,8 @@ pub struct css_hint {
     color:Option<u32>,
     fixed:Option<i32>,
     integer:Option<i32>,
-    string:Option<lwc_string>,
-    strings:Option<~[lwc_string]>
+    string:Option<uint>,
+    strings:Option<~[uint]>
 }
 
 pub struct rect_result {
@@ -665,7 +665,7 @@ pub struct css_select_results {
 }
 
 pub struct reject_item {
-    value:lwc_string,
+    value:uint,
     sel_type:css_selector_type 
 } 
 
@@ -708,9 +708,9 @@ pub struct css_select_handler {
 
     node_name: @fn( node:*c_void, qname: &mut css_qname ) -> css_error,
 
-    node_classes: @fn(pw:*c_void, n:*c_void, classes: &mut ~[lwc_string] ) -> css_error,
+    node_classes: @fn(pw:*c_void, n:*c_void, classes: &mut ~[uint] ) -> css_error,
 
-    node_id: @fn(pw:*c_void, node:*c_void, id:&mut lwc_string ) -> css_error,
+    node_id: @fn(pw:*c_void, node:*c_void, id:uint ) -> css_error,
 
     named_ancestor_node: @fn(node:*c_void, qname:&mut css_qname, ancestor:*mut*c_void) -> css_error,
    
@@ -726,23 +726,23 @@ pub struct css_select_handler {
 
     node_has_name: @fn(pw:*c_void,node:*c_void, qname:&css_qname, matched:@mut bool) -> css_error,
 
-    node_has_class: @fn(pw:*c_void, node:*c_void, name:&mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_class: @fn(pw:*c_void, node:*c_void, name:uint, matched:@mut bool) -> css_error,
 
-    node_has_id: @fn(pw:*c_void, node:*c_void, name:&mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_id: @fn(pw:*c_void, node:*c_void, name:uint, matched:@mut bool) -> css_error,
 
     node_has_attribute: @fn(node:*c_void, name:&css_qname, matched:@mut bool) -> css_error,
     
-    node_has_attribute_equal: @fn(node:*c_void, qname:&css_qname,value:&mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_equal: @fn(node:*c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error,
    
-    node_has_attribute_dashmatch: @fn(node:*c_void, qname:&css_qname,value:&mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_dashmatch: @fn(node:*c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error,
 
-    node_has_attribute_includes: @fn(node:*c_void, qname:&css_qname,value:&mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_includes: @fn(node:*c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error,
 
-    node_has_attribute_prefix: @fn(node:*c_void, qname:&css_qname,value:&mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_prefix: @fn(node:*c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error,
 
-    node_has_attribute_suffix: @fn(node:*c_void, qname:&css_qname,value:&mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_suffix: @fn(node:*c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error,
 
-    node_has_attribute_substring: @fn(node:*c_void, qname:&css_qname,value:&mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_substring: @fn(node:*c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error,
 
     node_is_root: @fn(node:*c_void, matched:@mut bool) -> css_error,
    
@@ -768,7 +768,7 @@ pub struct css_select_handler {
  
     node_is_target: @fn(node:*c_void, matched:@mut bool) -> css_error,
 
-    node_is_lang: @fn(node:*c_void, lang:&mut lwc_string, matched:@mut bool) -> css_error,
+    node_is_lang: @fn(node:*c_void, lang:uint, matched:@mut bool) -> css_error,
 
     node_presentational_hint: @fn(node:*c_void, property:u32) -> 
         (css_error,Option<@mut css_hint>),
@@ -795,9 +795,9 @@ pub struct css_select_state {
 
     element:css_qname,       
      //changed id from wapcaplet-string to string
-    id:lwc_string,
+    id:uint,
      //changes classes from wapcaplet  to string
-    classes:~[lwc_string],
+    classes:~[uint],
     n_classes:u32,           
 
     reject_cache: ~[Option<reject_item>],     /* Reject cache (filled from end) */  

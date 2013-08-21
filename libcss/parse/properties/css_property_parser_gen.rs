@@ -104,7 +104,7 @@ pub fn function_header(fp:@Writer, descriptor:~str, parser_id:&keyval, is_generi
     fp.write_line("*     If the input is invalid, then ctx remains unchanged.");
     fp.write_line("*/");
     fp.write_line(fmt!("pub fn css__parse_%s(_sheet:@mut css_stylesheet, strings:@css_propstrings,",parser_id.key));
-    fp.write_str("      vector:&mut ~[css_token], ctx:@mut uint,");
+    fp.write_str("      vector:&~[css_token], ctx:@mut uint,");
     fp.write_line(fmt!(" result:@mut css_style%s) -> css_error", if is_generic {", op:css_properties_e" } else {""}    ));
     fp.write_line("{");
     fp.write_line(fmt!("//debug!(\"Entering: css__parse_%s\");", parser_id.key));
@@ -114,12 +114,12 @@ pub fn function_header(fp:@Writer, descriptor:~str, parser_id:&keyval, is_generi
 pub fn output_token_type_check(fp:@Writer, do_token_check:bool, IDENT:~[keyval], URI:~[keyval], NUMBER:~[keyval]) {
     let mut output : ~str = ~"\tlet orig_ctx = *ctx;\n";
     output.push_str( "\tlet mut error:css_error=CSS_OK;\n");
-    output.push_str( "\tlet mut token:css_token;\n\n");
+    output.push_str( "\tlet mut token:&css_token;\n\n");
     
     output.push_str( "\tif *ctx >= vector.len() {\n");
     output.push_str( "\t\treturn CSS_INVALID\n");
     output.push_str( "\t}\n");
-    output.push_str( "\ttoken = vector[*ctx];\n");
+    output.push_str( "\ttoken = &vector[*ctx];\n");
     output.push_str( "\t*ctx += 1;\n\n");
     
     
@@ -168,7 +168,7 @@ pub fn output_ident(fp:@Writer, only_ident:bool, parseid:&keyval, IDENT:~[keyval
         if !only_ident {
             output.push_str("(match token.token_type { CSS_TOKEN_IDENT => true, _ => false}) && \n");
         }
-        output.push_str( fmt!("\tstrings.lwc_string_caseless_isequal(&mut token.idata.unwrap(), %s as uint) {\n",i.clone().key));
+        output.push_str( fmt!("\tstrings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), %s as uint) {\n",i.clone().key));
         if i.key.clone() == ~"INHERIT" {
             output.push_str( fmt!("\t\tcss_stylesheet::css_stylesheet_style_inherit(result, %s)\n", parseid.val));
 
@@ -186,7 +186,7 @@ pub fn output_uri(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
         let mut output : ~str = ~" if match token.token_type { CSS_TOKEN_URI => true, _ => false} {\n";
         
         output.push_str("\n");
-        output.push_str("\t\tmatch (*_sheet.resolve)(_sheet.url, &mut token.idata.unwrap()) {\n");
+        output.push_str("\t\tmatch (*_sheet.resolve)(_sheet.url, token.idata.get_ref().clone()) {\n");
         output.push_str("\t\t\t(CSS_OK, Some(uri)) => {\n");
         output.push_str("\t\t\t\tlet uri_snumber = _sheet.css__stylesheet_string_add(uri);\n");
         output.push_str(fmt!("\t\t\t\tcss_stylesheet::css__stylesheet_style_appendOPV(result, %s, 0, %s );\n",parseid.val,kvlist[0].val));
@@ -207,9 +207,9 @@ pub fn output_number(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     
     let mut output : ~str = ~"\tif match token.token_type { CSS_TOKEN_NUMBER => true, _ => false} {\n";
   
-    output.push_str(fmt!("\t\tlet (num,consumed): (i32,uint)=  css__number_from_lwc_string(token.idata.get_ref(), %s);\n",kvlist[0].key));
+    output.push_str(fmt!("\t\tlet (num,consumed): (i32,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), %s);\n",kvlist[0].key));
     output.push_str("\t\t/* Invalid if there are trailing characters */\n");
-    output.push_str("\t\tif consumed != lwc_string_length(token.idata.get_ref()) {\n");
+    output.push_str("\t\tif consumed != unsafe{lwc_ref.get_ref()}.lwc_string_length(token.idata.get_ref().clone()) {\n");
     output.push_str("\t\t\t*ctx = orig_ctx;\n");
     output.push_str("\t\t\treturn CSS_INVALID\n");
     output.push_str("\t\t}\n");
@@ -329,13 +329,13 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             output.push_str("\t\t\t\ttoken_null = true\n");
             output.push_str("\t\t\t}\n");
             output.push_str("\t\t\telse { \n");
-            output.push_str("\t\t\t\ttoken = vector[*ctx];\n");
+            output.push_str("\t\t\t\ttoken = &vector[*ctx];\n");
             output.push_str("\t\t\t\t*ctx += 1; //Iterate\n");
             output.push_str("\t\t\t}\n");
             output.push_str("\t\t\tif !token_null && (match token.token_type { CSS_TOKEN_NUMBER => true, _ => false}) {\n");
-            output.push_str("\t\t\t\tlet (_num, consumed) = css__number_from_lwc_string(token.idata.get_ref(), true);\n");
+            output.push_str("\t\t\t\tlet (_num, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);\n");
             output.push_str("\t\t\t\tnum = _num;\n");
-            output.push_str("\t\t\t\tif consumed != lwc_string_length(token.idata.get_ref()) {\n");
+            output.push_str("\t\t\t\tif consumed != unsafe{lwc_ref.get_ref()}.lwc_string_length(token.idata.get_ref().clone()) {\n");
             output.push_str("\t\t\t\t\t*ctx = orig_ctx;\n");
             output.push_str("\t\t\t\t\treturn CSS_INVALID\n");
             output.push_str("\t\t\t\t}\n");
@@ -345,7 +345,7 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             output.push_str("\t\t\t\t\ttoken_null = true\n");
             output.push_str("\t\t\t\t}\n");
             output.push_str("\t\t\t\telse { \n");
-            output.push_str("\t\t\t\t\ttoken = vector[*ctx];\n");
+            output.push_str("\t\t\t\t\ttoken = &vector[*ctx];\n");
             output.push_str("\t\t\t\t\t*ctx += 1; //Iterate\n");
             output.push_str("\t\t\t\t}\n");
             output.push_str("\t\t\t}\n");

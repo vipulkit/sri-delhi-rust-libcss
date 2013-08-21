@@ -174,7 +174,7 @@ pub fn set_counter_reset(style: &mut css_computed_style,
 #[inline]
 pub fn set_cursor(style:&mut css_computed_style,
                     ftype:u8, 
-                    urls:~[lwc_string])  {
+                    urls:~[uint])  {
 
     ENSURE_UNCOMMON(style);
 
@@ -330,7 +330,7 @@ pub fn set_border_left_width(style:&mut css_computed_style,
 #[inline]
 pub fn set_background_image(style:&mut css_computed_style,
                             ftype:u8,
-                            url:Option<lwc_string>) {
+                            url:Option<uint>) {
 
     {let bits = &mut style.bits[CSS_BACKGROUND_IMAGE_INDEX];
         let mask_complement = (CSS_BACKGROUND_IMAGE_MASK as u8) ^ 0xff ;
@@ -356,7 +356,7 @@ pub fn set_color(style:&mut css_computed_style,
 #[inline]
 pub fn set_list_style_image(style:&mut css_computed_style,
                             ftype:u8,
-                            url:Option<lwc_string>) {
+                            url:Option<uint>) {
 
     {let bits = &mut style.bits[CSS_LIST_STYLE_IMAGE_INDEX];
         let mask_complement = (CSS_LIST_STYLE_IMAGE_MASK as u8) ^ 0xff ;
@@ -369,7 +369,7 @@ pub fn set_list_style_image(style:&mut css_computed_style,
 #[inline]
 pub fn set_quotes(style:&mut css_computed_style,
                 ftype:u8,
-                quotes:~[lwc_string]) {
+                quotes:~[uint]) {
 
     {let bits = &mut style.bits[CSS_QUOTES_INDEX];
         let mask_complement = (CSS_QUOTES_MASK as u8) ^ 0xff ;
@@ -945,7 +945,7 @@ pub fn set_text_decoration(style:&mut css_computed_style,
 #[inline]
 pub fn set_font_family(style:&mut css_computed_style,
                     ftype:u8,
-                    names:~[lwc_string]) {
+                    names:~[uint]) {
 
     {let bits = &mut style.bits[CSS_FONT_FAMILY_INDEX];
         let mask_complement = (CSS_FONT_FAMILY_MASK as u8) ^ 0xff ;
