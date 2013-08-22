@@ -60,21 +60,23 @@ pub struct css_params {
 impl css {
 
     pub fn css_create(params: &css_params) -> @mut css {
-    
+        println("I am inside css::create_css");
         assert!(!(params.propstrings_instance.is_some() && params.lwc_instance.is_none()));
-
+        println("I am after assert css::create_css");
         // create lwc
         unsafe{
             lwc_ref =  if params.lwc_instance.is_none() { 
+                            println("I am inside none");
                             Some(lwc())
                         }  
                         else {
+                            println("I am outside none");
                             params.lwc_instance.clone()
                         } ;
         }
                         
         let propstrings = if params.propstrings_instance.is_none() { 
-                        css_propstrings::css_propstrings()
+                        css_propstrings::css_propstrings(unsafe{lwc_ref.get_mut_ref()})
                     }  
                     else {
                         params.propstrings_instance.unwrap()

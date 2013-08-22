@@ -560,7 +560,7 @@ pub struct css_propstrings {
 
 impl css_propstrings {
 
-    pub fn css_propstrings() -> @css_propstrings {
+    pub fn css_propstrings(lwc_ref:&mut lwc) -> @css_propstrings {
 
         let propstrings_list = &[&"*", &"charset",&"import",&"media", &"namespace", &"font-face", &"page", &"aural",&"braille", &"embossed",&"handheld", &"print",
             &"projection", &"screen", &"speech", &"tty", &"tv", &"all",&"first-child", &"link", &"visited", &"hover", &"active", &"focus",
@@ -618,7 +618,7 @@ impl css_propstrings {
         let mut _propstrings = ~[];
         _propstrings.reserve_at_least(length);
         for propstrings_list.iter().advance |&ele| {
-            _propstrings.push(unsafe{lwc_ref.get_mut_ref().lwc_intern_string(ele)});
+            _propstrings.push(lwc_ref.lwc_intern_string(ele));
         }
 
         let css_propstrings_instance = @css_propstrings {
@@ -665,7 +665,7 @@ impl css_propstrings {
 
     #[inline]
 
-    pub fn lwc_string_caseless_isequal(&self , lwc_string_instance: uint , string_index: uint) -> bool {
+    pub fn lwc_string_caseless_isequal(&self, lwc_string_instance: uint , string_index: uint) -> bool {
         unsafe{lwc_ref.get_mut_ref().lwc_string_caseless_isequal(lwc_string_instance, self.propstrings[string_index])}
    
     }
