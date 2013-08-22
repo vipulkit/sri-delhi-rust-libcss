@@ -364,38 +364,38 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
     match detail.selector_type {
         CSS_SELECTOR_ELEMENT=>{
             debug!("Entering: CSS_SELECTOR_ELEMENT");
-            if lwc_string_length(detail.qname.name) == 1 && lwc_string_data(detail.qname.name)[0] == '*' as u8 && !detail_next {
+            if unsafe{lwc_ref.get_ref()}.lwc_string_length(detail.qname.name) == 1 && unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name)[0] == '*' as u8 && !detail_next {
             
-                ptr.push_str(lwc_string_data(detail.qname.name));
+                ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
             }
-            else if lwc_string_length(detail.qname.name) != 1 ||
+            else if unsafe{lwc_ref.get_ref()}.lwc_string_length(detail.qname.name) != 1 ||
             
-               lwc_string_data(detail.qname.name)[0] != '*' as u8 { 
-               ptr.push_str(lwc_string_data(detail.qname.name))
+               unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name)[0] != '*' as u8 { 
+               ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name))
             }
         },
 
         CSS_SELECTOR_CLASS=> {
 
             ptr.push_char('.');
-            ptr.push_str(lwc_string_data(detail.qname.name));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
         },
 
         CSS_SELECTOR_ID =>{
             
             ptr.push_char('#');
-            ptr.push_str(lwc_string_data(detail.qname.name));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
         },
 
         CSS_SELECTOR_PSEUDO_CLASS | CSS_SELECTOR_PSEUDO_ELEMENT =>{
             ptr.push_char(':' );
-            ptr.push_str(lwc_string_data(detail.qname.name));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
             match detail.value_type {
                 CSS_SELECTOR_DETAIL_VALUE_STRING=> {
                     if detail.string.is_some() {
                         ptr.push_char('(' );
                         //let String = copy detail.string;
-                        ptr.push_str( lwc_string_data(detail.string.unwrap()));
+                        ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.string.unwrap()));
                         ptr.push_char(')' );
                     }
                 } ,
@@ -407,65 +407,65 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 
         CSS_SELECTOR_ATTRIBUTE=>{
             ptr.push_char('[');
-            ptr.push_str(lwc_string_data(detail.qname.name));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_EQUAL =>{
             ptr.push_char('[');
-            ptr.push_str(lwc_string_data(detail.qname.name));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
             ptr.push_char('=');
             ptr.push_char('"');
-            ptr.push_str(lwc_string_data(detail.string.unwrap()));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_DASHMATCH=>{
             ptr.push_char('[');
-            ptr.push_str(lwc_string_data(detail.qname.name));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
             ptr.push_char('|');
             ptr.push_char('=');
             ptr.push_char('"');
-            ptr.push_str(lwc_string_data(detail.string.unwrap()));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_INCLUDES=>{
             ptr.push_char('[');
-            ptr.push_str(lwc_string_data(detail.qname.name));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
             ptr.push_char('~');
             ptr.push_char('=');
             ptr.push_char('"');
-            ptr.push_str(lwc_string_data(detail.string.unwrap()));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_PREFIX=>{
             ptr.push_char('[' );
-            ptr.push_str(lwc_string_data(detail.qname.name));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
             ptr.push_char('^' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            ptr.push_str(lwc_string_data(detail.string.unwrap()));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"' );
             ptr.push_char(']' );
         },
         CSS_SELECTOR_ATTRIBUTE_SUFFIX=>{
             ptr.push_char('[' );
-            ptr.push_str(lwc_string_data(detail.qname.name));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
             ptr.push_char('$' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            ptr.push_str(lwc_string_data(detail.string.unwrap()));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"' );
             ptr.push_char(']' );
         },
         CSS_SELECTOR_ATTRIBUTE_SUBSTRING=>{
             ptr.push_char('[' );
-            ptr.push_str(lwc_string_data(detail.qname.name));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
             ptr.push_char('*' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            ptr.push_str(lwc_string_data(detail.string.unwrap()));
+            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"' );
             ptr.push_char(']' );
         }
@@ -627,7 +627,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                     if option_string.is_some() {
                         ptr.push_str( &"url('");
-                        ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned() );
+                        ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned() );
                         ptr.push_str( &"')");    
                     }
 
@@ -1135,7 +1135,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             debug!("dump_bytecode :: CONTENT_COUNTER :: option_string == %?" , option_string.get_ref());
-                            dump_counter( lwc_string_data(option_string.unwrap()), value , ptr);
+                            dump_counter( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()), value , ptr);
                         }
                     }
                     else if (value as int & 0xff) == CONTENT_COUNTERS as int {
@@ -1147,7 +1147,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             debug!("dump_bytecode :: CONTENT_COUNTERS :: option_string == %?" , option_string.get_ref());
-                            dump_counters( lwc_string_data(option_string.unwrap()) , fmt!("%?" , sep) , value , ptr);
+                            dump_counters( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()) , fmt!("%?" , sep) , value , ptr);
                         }
                     }
                     else if (value as int & 0xff) == CONTENT_URI as int || (value as int & 0xff) == CONTENT_ATTR as int || (value as int & 0xff) == CONTENT_STRING as int {
@@ -1169,7 +1169,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         if option_string.is_some() {
                             debug!("dump_bytecode :: CONTENT_URI_ATTR_STRING :: option_string == %?" , option_string.get_ref());
                             ptr.push_str( &"'");
-                            ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned());
+                            ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned());
                             ptr.push_str( &"'");
                         }
                     }
@@ -1210,7 +1210,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         iterator += 1;
                         
                         if option_string.is_some() {
-                            ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned());
+                            ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned());
                         }
                         ptr.push_char(' ');
                         let val = bytecode[iterator] as i32;
@@ -1240,7 +1240,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                     if option_string.is_some() {
                         ptr.push_str( &"url('");
-                        ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned());
+                        ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned());
                         ptr.push_str( &"'), ");
                     }
 
@@ -1425,7 +1425,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         
                         if option_string.is_some() {
                             ptr.push_char('\'');
-                            ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned() );
+                            ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned() );
                             ptr.push_char('\'');
                         }
                     }
@@ -1839,7 +1839,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                     if option_string.is_some() {
                         ptr.push_char('\'');
-                        ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned() );
+                        ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned() );
                         ptr.push_char('\'');
                     }
                 }
@@ -1888,7 +1888,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             ptr.push_str( &" '");
-                            ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned() );
+                            ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned() );
                             ptr.push_str( &"' ");
                         }
 
@@ -1896,7 +1896,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             ptr.push_str( &" '");
-                            ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned() );
+                            ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned() );
                             ptr.push_str( &"' ");
                         }
                         iterator += 1;
@@ -2127,7 +2127,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             ptr.push_char('\'');
-                            ptr.push_str( lwc_string_data(option_string.unwrap()).to_owned() );
+                            ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned() );
                             ptr.push_char('\'');
                         }
                     }
@@ -2367,7 +2367,7 @@ fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
     if font_face.font_family.is_some() {
         ptr.push_char('\n');
         ptr.push_str( &"| font_family: ");
-        ptr.push_str( lwc_string_data(font_face.font_family.get()));
+        ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(font_face.font_family.get()));
     }
     ptr.push_str( &"\n| font-style: ");
 
@@ -2474,7 +2474,7 @@ fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
                     ptr.push_str( &"UNKNOWN");
                 }
 
-                ptr.push_str( lwc_string_data(i.location.get()));
+                ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(i.location.get()));
             }
 
         }
@@ -2483,7 +2483,7 @@ fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
 
 }
 
-fn dump_counter(name: @str , value: u32 , ptr: &mut ~str) {
+fn dump_counter(name: ~str , value: u32 , ptr: &mut ~str) {
     debug!("Entering: dump_counter");
     ptr.push_str( &"counter(");
     ptr.push_str( name);
@@ -2539,7 +2539,7 @@ fn dump_counter(name: @str , value: u32 , ptr: &mut ~str) {
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_counters(name: @str , separator: ~str , value: u32 , ptr: &mut ~str) {
+fn dump_counters(name: ~str , separator: ~str , value: u32 , ptr: &mut ~str) {
 
     debug!("Entering: dump_counters");
     ptr.push_str( &"counter(");
