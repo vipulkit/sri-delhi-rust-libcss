@@ -1362,7 +1362,7 @@ impl css_selector_hash {
             }
         }
 
-       unsafe{unsafe{lwc_ref.get_mut_ref()}.lwc_intern_string("")}
+       unsafe{lwc_ref.get_mut_ref()}.lwc_intern_string("")
     }
 
 
@@ -1691,8 +1691,8 @@ impl css_selector_hash {
                 },
                 Some(node_element)=>{
 
-                    if unsafe{ unsafe{lwc_ref.get_mut_ref()}.lwc_string_caseless_isequal(
-                                node_element.selector.data[0].qname.name,name) } {
+                    if unsafe{lwc_ref.get_mut_ref()}.lwc_string_caseless_isequal(
+                                node_element.selector.data[0].qname.name,name)  {
                                 //debug!("Exiting: css__selector_hash_find (1)");
                                 return (head,CSS_OK);
                     }
@@ -1739,7 +1739,7 @@ impl css_selector_hash {
 
                     let n = self._class_name(node_element.selector);
 
-                    if unsafe{ unsafe{lwc_ref.get_mut_ref()}.lwc_string_caseless_isequal(n, name)} {
+                    if unsafe{lwc_ref.get_mut_ref()}.lwc_string_caseless_isequal(n, name) {
                         return (head,CSS_OK);
                     }
 
@@ -1782,7 +1782,7 @@ impl css_selector_hash {
 
                     let n = self._id_name(node_element.selector);
 
-                    if unsafe{ unsafe{lwc_ref.get_mut_ref()}.lwc_string_caseless_isequal(n, name) } {
+                    if unsafe{lwc_ref.get_mut_ref()}.lwc_string_caseless_isequal(n, name) {
                         return (head,CSS_OK);
                     }
 
@@ -1845,9 +1845,9 @@ impl css_selector_hash {
                         next_entry.selector.data.len()==0 {
                         return (None,CSS_INVALID);
                     }
-                    if unsafe{ unsafe{lwc_ref.get_mut_ref()}.lwc_string_caseless_isequal(
+                    if unsafe{lwc_ref.get_mut_ref()}.lwc_string_caseless_isequal(
                         current.selector.data[0].qname.name,
-                        next_entry.selector.data[0].qname.name)} {
+                        next_entry.selector.data[0].qname.name) {
 
                         return (head.next,CSS_OK);
                     }
@@ -1920,7 +1920,7 @@ impl css_selector_hash {
                     if( unsafe{lwc_ref.get_ref()}.lwc_string_length(name)==0){
                         loop;
                     }
-                    if unsafe{ unsafe{lwc_ref.get_mut_ref()}.lwc_string_caseless_isequal(name,current_refer) } {
+                    if unsafe{lwc_ref.get_mut_ref()}.lwc_string_caseless_isequal(name,current_refer)  {
                         return (current.next,CSS_OK);
                     }
                     head = next_entry ;

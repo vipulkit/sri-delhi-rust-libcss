@@ -3,7 +3,7 @@ use include::font_face::*;
 use stylesheet::*;
 use utils::errors::*;
 //use extra::arc;
-use wapcaplet::*;
+
 use std::libc::*;
 use std::clone::Clone;
 
@@ -784,7 +784,7 @@ pub struct css_select_state {
     media:u64,         
     results:css_select_results,
     current_pseudo:css_pseudo_element,  
-    computed:css_computed_style,  
+    computed:uint,  
 
     handler:Option<css_select_handler>,    
     pw:*c_void,

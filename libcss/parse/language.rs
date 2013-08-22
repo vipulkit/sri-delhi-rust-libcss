@@ -660,7 +660,7 @@ impl css_language {
                              
                             
                             if tokens.len() > *ctx {   
-                                let mut ident =&tokens[*ctx];
+                                let ident =&tokens[*ctx];
                                 *ctx = *ctx + 1;
                                 match ident.token_type { 
                                     CSS_TOKEN_IDENT => {

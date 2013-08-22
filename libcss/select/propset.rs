@@ -3,7 +3,7 @@ use include::types::*;
 
 use select::common::*;
 // use css_fpmath::*;
-use wapcaplet::*;
+
 
 #[inline]
 pub fn ENSURE_UNCOMMON ( style:&mut css_computed_style){

@@ -20,7 +20,7 @@ use std::managed::*;
 use std::libc::*;
 use std::cast::*;
 use std::vec::from_elem;
-use extra::arc;
+//use extra::arc;
 
 
 static IMPORT_STACK_SIZE : int = 256 ;
@@ -311,10 +311,10 @@ impl css_select_ctx {
             node:node,
             media:media,       
             results:css_select_results{ 
-                styles:~[None, None, None, None, None] 
+                styles:~[None, None, None, None, None,None] 
             },    
             current_pseudo:CSS_PSEUDO_ELEMENT_NONE,  
-            computed:css_computed_style_create(),   
+            computed:CSS_PSEUDO_ELEMENT_COUNT as uint +1,   
             handler:Some(handler), 
             pw:pw,   
             sheet:None,   
@@ -392,7 +392,7 @@ impl css_select_ctx {
 				match error {
 					CSS_OK=>{},
 					x =>  {
-						//return (x,None) ;
+						return (x,None) ;
 					}
 				}
 						
@@ -424,8 +424,7 @@ impl css_select_ctx {
                             if(r_sel.style.is_some()){
                                 /* Inline style applies to base element only */
                                 state.current_pseudo = CSS_PSEUDO_ELEMENT_NONE;
-                                state.computed = state.results.styles[
-                                        CSS_PSEUDO_ELEMENT_NONE as uint].get();
+                                state.computed = CSS_PSEUDO_ELEMENT_NONE as uint;
 
                                 error = css_select_ctx::cascade_style(r_sel.style.get(), 
                                                         &mut state);
@@ -450,7 +449,7 @@ impl css_select_ctx {
 
         /* Base element */
         state.current_pseudo = CSS_PSEUDO_ELEMENT_NONE;
-        state.computed = state.results.styles[CSS_PSEUDO_ELEMENT_NONE as uint].get();
+        state.computed = CSS_PSEUDO_ELEMENT_NONE as uint;
         i = 0 ;
         while (i<(CSS_N_PROPERTIES as int)) {
             //debug!(fmt!("css_select_style : setting initial hint of property =%?=",i)) ;
@@ -497,18 +496,15 @@ impl css_select_ctx {
                 state.current_pseudo = transmute(j);
             }
 
-			let computed_opt = state.results.styles[j];
+						
+            if state.results.styles[j].is_some() {
+                state.computed = j as uint;
+            }
+            else {
+                    j += 1; 
+                    loop;
+            }
 			
-			match computed_opt {
-				Some(T) => {
-					state.computed = T;
-				}
-				None => {
-					j += 1; 
-					loop;
-				}
-			}
-
             /* Skip non-existent pseudo elements */
             // if (state.computed == NULL)
             //     continue;
@@ -540,7 +536,7 @@ impl css_select_ctx {
         if (parent == null()) {
             /* Only compute absolute values for the base element */
             error = css__compute_absolute_values(None,
-                    &mut state.results.styles[CSS_PSEUDO_ELEMENT_NONE as uint].get(),
+                    state.results.styles[CSS_PSEUDO_ELEMENT_NONE as uint].get_mut_ref(),
                     handler.compute_font_size);
             match error {
                 CSS_OK=>{},
@@ -689,7 +685,7 @@ impl css_select_ctx {
 
         /* Hint defined -- set it in the result */
         let hint = hint_option.unwrap();
-        let error =  (prop_dispatch[prop as uint].set_from_hint)(hint, &mut state.computed);
+        let error =  (prop_dispatch[prop as uint].set_from_hint)(hint, state.results.styles[state.computed].get_mut_ref());
 
         match error {
             CSS_OK => {},
@@ -748,7 +744,7 @@ impl css_select_ctx {
                 }
 
                 GROUP_UNCOMMON => {
-                    match state.computed.uncommon {
+                    match state.results.styles[state.computed].get_ref().uncommon {
                         None => {},
                         Some(_) => {
                             error = (prop_dispatch[prop].initial)(state);
@@ -763,7 +759,7 @@ impl css_select_ctx {
                 }
                 
                 GROUP_PAGE => {
-                    match state.computed.page {
+                    match state.results.styles[state.computed].get_ref().page {
                         None => {},
                         Some(_) => {
                             error = (prop_dispatch[prop].initial)(state);
@@ -778,7 +774,7 @@ impl css_select_ctx {
                 }
                 
                 GROUP_AURAL => {
-                    match state.computed.aural {
+                    match state.results.styles[state.computed].get_ref().aural {
                         None => {},
                         Some(_) => {
                             error = (prop_dispatch[prop].initial)(state);
@@ -1689,7 +1685,7 @@ impl css_select_ctx {
 		}
       
         state.current_pseudo = *pseudo;
-        state.computed = state.results.styles[*pseudo as uint].get();
+        state.computed = *pseudo as uint;
 
         css_select_ctx::cascade_style( rule.style.get() , state)
     }

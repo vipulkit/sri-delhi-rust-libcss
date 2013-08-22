@@ -13,7 +13,7 @@ use include::types::*;
 use std::ptr::*;
 use std::vec::from_elem;
 use wapcaplet::*;
-use extra::arc;
+//use extra::arc;
 
 
 pub enum prop_group {
@@ -1228,10 +1228,10 @@ pub fn css_computed_style_initialise(style: css_computed_style ,
         node:null(),
         media:(CSS_MEDIA_ALL as u64),       
         results:css_select_results{ 
-            styles:~[] 
+            styles:~[None,None,None,None,None,Some(style)] 
         },    
         current_pseudo:CSS_PSEUDO_ELEMENT_NONE,  
-        computed:style,   
+        computed:CSS_PSEUDO_ELEMENT_COUNT as uint +1,   
         handler:Some(fn_handler),    
         pw:null(),
         sheet:None,   

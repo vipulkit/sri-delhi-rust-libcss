@@ -2,7 +2,6 @@ use std::char::*;
 use std::u32::*;
 use std::str::*;
 
-use wapcaplet::*;
 use parserutils::input::inputstream::*;
 use parserutils::charset::encodings::utf8impl::*;
 use parserutils::utils::errors::*;

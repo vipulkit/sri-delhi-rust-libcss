@@ -115,7 +115,7 @@ impl css {
         };
 
         // create language
-        let mut language = css_language(stylesheet, propstrings);
+        let language = css_language(stylesheet, propstrings);
 
         // create parser
         let parser = match params.inline_style {

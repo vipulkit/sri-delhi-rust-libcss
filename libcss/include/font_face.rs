@@ -1,4 +1,3 @@
-use wapcaplet::*;
 
 /* Font face */
 pub enum css_font_face_format {

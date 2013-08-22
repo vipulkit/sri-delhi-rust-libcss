@@ -5,7 +5,6 @@ use std::cast::*;
 use include::fpmath::*;
 use include::types::*;
 use include::properties::*;
-use wapcaplet::*;
 
 pub fn css_computed_letter_spacing(
         style : &mut css_computed_style) 
@@ -205,7 +204,7 @@ pub fn css_computed_cursor(
             bits = bits & (CSS_CURSOR_MASK as u8);
             bits = bits >> CSS_CURSOR_SHIFT;
 
-            urls = Some(uncommon_struct.cursor);
+            urls = Some(uncommon_struct.cursor.clone());
 
             (bits,urls)
         }
@@ -470,7 +469,7 @@ pub fn css_computed_quotes(
     bits = bits >> CSS_QUOTES_SHIFT;
 
     //result = style.quotes;
-    (bits,style.quotes)
+    (bits,style.quotes.clone())
 }
 
 pub fn css_computed_top(
@@ -1240,7 +1239,7 @@ pub fn css_computed_font_family(style:&mut css_computed_style)
     bits = bits & (CSS_FONT_FAMILY_MASK as u8);
     bits = bits >> CSS_FONT_FAMILY_SHIFT;   
 
-    (bits,style.font_family)
+    (bits,style.font_family.clone())
 }
 
 pub fn css_computed_border_top_style(style:&mut css_computed_style)

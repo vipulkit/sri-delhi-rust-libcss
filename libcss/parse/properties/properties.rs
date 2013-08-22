@@ -2854,200 +2854,199 @@ impl css_properties {
         let mut svw: int;
         let mut error: css_error;
 
-        unsafe{
 
-            if *ctx >= vector.len() {
-                return CSS_INVALID;
-            }
-            token=&vector[*ctx];
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        token=&vector[*ctx];
 
-            if is_css_inherit(strings , token) {
-                css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_STYLE);
-                css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_VARIANT);
-                css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_WEIGHT);
-                css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_SIZE);
-                css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_LINE_HEIGHT);
-                css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_FAMILY);
+        if is_css_inherit(strings , token) {
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_STYLE);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_VARIANT);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_WEIGHT);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_SIZE);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_LINE_HEIGHT);
+            css_stylesheet::css_stylesheet_style_inherit(style , CSS_PROP_FONT_FAMILY);
 
-                *ctx = *ctx + 1;
-                return CSS_OK;
-            }
+            *ctx = *ctx + 1;
+            return CSS_OK;
+        }
 
-            match sheet.font {
-                None => {},
-                Some(font_resolution) => {
-                    let (sheet_font_error , some_sys_font) = (*font_resolution)(token.idata.get_ref().clone());
-                    match token.token_type {
-                        CSS_TOKEN_IDENT  => {
-                            let value_from_font = match some_sys_font {
-                                None => false,
-                                _ => match sheet_font_error {
-                                     CSS_OK => true,
-                                     _ => false   
-                                }
-                            };
-                            if value_from_font {
-                                error  = parse_system_font(sheet , strings , style , some_sys_font.unwrap());
-                                match error {
-                                    CSS_OK => {
-                                        *ctx = *ctx + 1;
-                                        return error;
-                                    },
-                                    _=> {
-                                        return error;
-                                    }
+        match sheet.font {
+            None => {},
+            Some(font_resolution) => {
+                let (sheet_font_error , some_sys_font) = (*font_resolution)(token.idata.get_ref().clone());
+                match token.token_type {
+                    CSS_TOKEN_IDENT  => {
+                        let value_from_font = match some_sys_font {
+                            None => false,
+                            _ => match sheet_font_error {
+                                 CSS_OK => true,
+                                 _ => false   
+                            }
+                        };
+                        if value_from_font {
+                            error  = parse_system_font(sheet , strings , style , some_sys_font.unwrap());
+                            match error {
+                                CSS_OK => {
+                                    *ctx = *ctx + 1;
+                                    return error;
+                                },
+                                _=> {
+                                    return error;
                                 }
                             }
-                        },
-                        _ => {}
-                    }
+                        }
+                    },
+                    _ => {}
                 }
             }
-
-            let style_style = css_stylesheet::css__stylesheet_style_create(sheet);
-            let variant_style = css_stylesheet::css__stylesheet_style_create(sheet);
-            let weight_style = css_stylesheet::css__stylesheet_style_create(sheet);
-            let size_style = css_stylesheet::css__stylesheet_style_create(sheet);
-            let line_height_style = css_stylesheet::css__stylesheet_style_create(sheet);
-            let family_style = css_stylesheet::css__stylesheet_style_create(sheet);
-
-            svw = 0;
-            while svw < 3 {
-                prev_ctx = *ctx;
-
-                if *ctx >= vector.len() {
-                   return CSS_INVALID;
-                }
-                token = &vector[*ctx];
-
-                if is_css_inherit(strings , token) {
-                    return CSS_INVALID;
-                }
-
-                let bool_error_style: bool = match css__parse_font_style(sheet , strings , vector , ctx , style_style) {
-                    CSS_OK => true,
-                    _ => false
-                };
-                let bool_error_variant = match css__parse_font_variant(sheet , strings , vector , ctx , variant_style) {
-                    CSS_OK => true,
-                    _ => false
-                };
-                let bool_error_weight = match css_properties::css__parse_font_weight(sheet , strings , vector , ctx , weight_style) {
-                    CSS_OK => true,
-                    _ => false
-                };
-
-                if bool_style && bool_error_style {
-                    bool_style = false;
-                }
-                else if variant && bool_error_variant {
-                    variant = false;
-                }
-                else if weight && bool_error_weight {
-                    weight = false;
-                }
-
-                if bool_error_style||bool_error_variant||bool_error_weight {
-                    consumeWhitespace(vector , ctx);
-                }
-                else {
-                    break;
-                }
-                if *ctx == prev_ctx {
-                    break;
-                }
-                svw += 1;
-            }
-
-            consumeWhitespace(vector , ctx);
-
-            if *ctx >= vector.len() {
-               return CSS_INVALID;
-            }
-            token = &vector[*ctx];
-
-            if is_css_inherit(strings , token) {
-                return CSS_INVALID;
-            }
-
-            error = css__parse_font_size(sheet , strings , vector , ctx , size_style);
-            match error {
-                CSS_OK => {},
-                _ => {
-                    return error;
-                }
-            }
-
-            consumeWhitespace(vector , ctx);
-
-            if *ctx >= vector.len() {
-               return CSS_INVALID;
-            }
-            token = &vector[*ctx];
-
-            if tokenIsChar(token , '/') {
-                *ctx += 1;
-
-                consumeWhitespace(vector , ctx);
-                if *ctx >= vector.len() {
-                    return CSS_INVALID;
-                }
-
-                token = &vector[*ctx];
-                if is_css_inherit(strings , token) {
-                    return CSS_INVALID;
-                }
-
-                error = css__parse_line_height(sheet , strings , vector , ctx , line_height_style);
-                match error {
-                    CSS_OK => {},
-                    _ => {
-                        return error;
-                    }
-                }
-                line_height = false;
-            }
-
-            consumeWhitespace(vector , ctx);
-
-            if *ctx >= vector.len() {
-                return CSS_INVALID;
-            }
-            token = &vector[*ctx];
-
-            if is_css_inherit(strings , token) {
-                return CSS_INVALID;
-            }
-
-            error = css_properties::css__parse_font_family(sheet , strings , vector , ctx , family_style);
-            match error {
-                CSS_OK => {},
-                _ => {
-                    return error;
-                }
-            }
-
-            if bool_style {
-                css_stylesheet::css__stylesheet_style_appendOPV(style_style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_NORMAL );
-            }
-            if variant {
-                css_stylesheet::css__stylesheet_style_appendOPV(variant_style , CSS_PROP_FONT_VARIANT , 0 , FONT_VARIANT_NORMAL );   
-            }
-            if weight {
-                css_stylesheet::css__stylesheet_style_appendOPV(weight_style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_NORMAL );
-            }
-            if line_height {
-                css_stylesheet::css__stylesheet_style_appendOPV(line_height_style , CSS_PROP_LINE_HEIGHT , 0 , LINE_HEIGHT_NORMAL );
-            }
-        
-            
-            css_stylesheet::css__stylesheet_merge_style(style , style_style);
-            css_stylesheet::css__stylesheet_merge_style(style , variant_style);
-            css_stylesheet::css__stylesheet_merge_style(style , weight_style);
-            css_stylesheet::css__stylesheet_merge_style(style , size_style);
-            css_stylesheet::css__stylesheet_merge_style(style , line_height_style);
-            css_stylesheet::css__stylesheet_merge_style(style , family_style);
         }
+
+        let style_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let variant_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let weight_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let size_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let line_height_style = css_stylesheet::css__stylesheet_style_create(sheet);
+        let family_style = css_stylesheet::css__stylesheet_style_create(sheet);
+
+        svw = 0;
+        while svw < 3 {
+            prev_ctx = *ctx;
+
+            if *ctx >= vector.len() {
+               return CSS_INVALID;
+            }
+            token = &vector[*ctx];
+
+            if is_css_inherit(strings , token) {
+                return CSS_INVALID;
+            }
+
+            let bool_error_style: bool = match css__parse_font_style(sheet , strings , vector , ctx , style_style) {
+                CSS_OK => true,
+                _ => false
+            };
+            let bool_error_variant = match css__parse_font_variant(sheet , strings , vector , ctx , variant_style) {
+                CSS_OK => true,
+                _ => false
+            };
+            let bool_error_weight = match css_properties::css__parse_font_weight(sheet , strings , vector , ctx , weight_style) {
+                CSS_OK => true,
+                _ => false
+            };
+
+            if bool_style && bool_error_style {
+                bool_style = false;
+            }
+            else if variant && bool_error_variant {
+                variant = false;
+            }
+            else if weight && bool_error_weight {
+                weight = false;
+            }
+
+            if bool_error_style||bool_error_variant||bool_error_weight {
+                consumeWhitespace(vector , ctx);
+            }
+            else {
+                break;
+            }
+            if *ctx == prev_ctx {
+                break;
+            }
+            svw += 1;
+        }
+
+        consumeWhitespace(vector , ctx);
+
+        if *ctx >= vector.len() {
+           return CSS_INVALID;
+        }
+        token = &vector[*ctx];
+
+        if is_css_inherit(strings , token) {
+            return CSS_INVALID;
+        }
+
+        error = css__parse_font_size(sheet , strings , vector , ctx , size_style);
+        match error {
+            CSS_OK => {},
+            _ => {
+                return error;
+            }
+        }
+
+        consumeWhitespace(vector , ctx);
+
+        if *ctx >= vector.len() {
+           return CSS_INVALID;
+        }
+        token = &vector[*ctx];
+
+        if tokenIsChar(token , '/') {
+            *ctx += 1;
+
+            consumeWhitespace(vector , ctx);
+            if *ctx >= vector.len() {
+                return CSS_INVALID;
+            }
+
+            token = &vector[*ctx];
+            if is_css_inherit(strings , token) {
+                return CSS_INVALID;
+            }
+
+            error = css__parse_line_height(sheet , strings , vector , ctx , line_height_style);
+            match error {
+                CSS_OK => {},
+                _ => {
+                    return error;
+                }
+            }
+            line_height = false;
+        }
+
+        consumeWhitespace(vector , ctx);
+
+        if *ctx >= vector.len() {
+            return CSS_INVALID;
+        }
+        token = &vector[*ctx];
+
+        if is_css_inherit(strings , token) {
+            return CSS_INVALID;
+        }
+
+        error = css_properties::css__parse_font_family(sheet , strings , vector , ctx , family_style);
+        match error {
+            CSS_OK => {},
+            _ => {
+                return error;
+            }
+        }
+
+        if bool_style {
+            css_stylesheet::css__stylesheet_style_appendOPV(style_style , CSS_PROP_FONT_STYLE , 0 , FONT_STYLE_NORMAL );
+        }
+        if variant {
+            css_stylesheet::css__stylesheet_style_appendOPV(variant_style , CSS_PROP_FONT_VARIANT , 0 , FONT_VARIANT_NORMAL );   
+        }
+        if weight {
+            css_stylesheet::css__stylesheet_style_appendOPV(weight_style , CSS_PROP_FONT_WEIGHT , 0 , FONT_WEIGHT_NORMAL );
+        }
+        if line_height {
+            css_stylesheet::css__stylesheet_style_appendOPV(line_height_style , CSS_PROP_LINE_HEIGHT , 0 , LINE_HEIGHT_NORMAL );
+        }
+    
+        
+        css_stylesheet::css__stylesheet_merge_style(style , style_style);
+        css_stylesheet::css__stylesheet_merge_style(style , variant_style);
+        css_stylesheet::css__stylesheet_merge_style(style , weight_style);
+        css_stylesheet::css__stylesheet_merge_style(style , size_style);
+        css_stylesheet::css__stylesheet_merge_style(style , line_height_style);
+        css_stylesheet::css__stylesheet_merge_style(style , family_style);
+        
             
         CSS_OK
     }
@@ -4012,17 +4011,16 @@ impl css_properties {
         if *ctx >= vector.len() {
             return CSS_INVALID;
         }
-        unsafe{
-            first_token = &vector[*ctx];
-        }
-
+        
+        first_token = &vector[*ctx];
+        
         let mut error = css__parse_pause_before(sheet,strings, vector, ctx, style);
         
         match error {
             CSS_OK=> {
-                unsafe {
-                    consumeWhitespace(vector, ctx);
-                }
+                
+                consumeWhitespace(vector, ctx);
+                
                 if (*ctx >= vector.len() )  {
                     //debug!("Entering: css__parse_pause  :: no second token, re-parse the first");
                     /* no second token, re-parse the first */
