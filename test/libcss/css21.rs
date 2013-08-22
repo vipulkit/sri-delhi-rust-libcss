@@ -36,8 +36,16 @@ fn css_create_params(lwc_instance: Option<lwc> , propstrings_instance: @css_prop
 }
 
 fn create_css() -> @mut css{
-    let propstrings_instance = css_propstrings::css_propstrings();
-    let css = css::css_create( &css_create_params(Some(lwc()), propstrings_instance));
+    println("I am inside create_css");
+    unsafe{ 
+        if lwc_ref.is_none() {
+            lwc_ref=Some(lwc())
+        }
+    } 
+
+    let propstrings_instance = css_propstrings::css_propstrings(unsafe{lwc_ref.get_mut_ref()});
+    println("I am inside create_css");
+    let css = css::css_create( &css_create_params(unsafe{lwc_ref}, propstrings_instance));
     css
 }
 
@@ -86,9 +94,9 @@ fn css(file_name: ~str) {
                 match error1 {
                     CSS_OK => {
                         
-                        let propstrings_instance = css_propstrings::css_propstrings();
+                        let propstrings_instance = css_propstrings::css_propstrings(unsafe{lwc_ref.get_mut_ref()});
                         
-                        let mut params: css_params = css_create_params(unsafe{ if lwc_ref.is_none() { Some(lwc()) } else { lwc_ref } } , propstrings_instance);
+                        let mut params: css_params = css_create_params(unsafe{lwc_ref} , propstrings_instance);
                         params.url = option_url.unwrap();
                         let css_import = create_css();
                         let err = css_import.css_stylesheet_data_done();
