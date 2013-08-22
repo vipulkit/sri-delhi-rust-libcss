@@ -149,13 +149,14 @@ impl lwc {
 
     
     #[inline]
-    pub fn lwc_intern_substring(&mut self , substring_to_intern: &mut lwc_string , ssoffset: u32, sslen: u32) -> Option<uint> {
+    pub fn lwc_intern_substring(&mut self , substring_to_intern: uint , ssoffset: u32, sslen: u32) -> Option<uint> {
         
-        if (substring_to_intern.string.len() <= ssoffset as uint) || (substring_to_intern.string.len() <= (ssoffset+sslen) as uint) {
+        if (self.vect[substring_to_intern].string.len() <= ssoffset as uint) || (self.vect[substring_to_intern].string.len() <= (ssoffset+sslen) as uint) {
             None
         }
         else{
-            Some(self.lwc_intern_string((substring_to_intern.string.slice(ssoffset as uint , (ssoffset+sslen) as uint))))
+            let slice_string = self.vect[substring_to_intern].string.slice(ssoffset as uint , (ssoffset+sslen) as uint).to_owned();
+            Some(self.lwc_intern_string(slice_string))
         }
     }
 
