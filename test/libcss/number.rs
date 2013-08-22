@@ -19,11 +19,7 @@ fn number(file_name: ~str) {
     let mut resetFlag = false;
     let mut data_string: ~str = ~"";
     let mut expected_str: ~str = ~"";
-    unsafe{
-        if lwc_ref.is_none() { 
-            lwc_ref=Some(lwc())
-        }
-    }
+    create_lwc_instance()
     
     while !r.eof() {
         let buf = r.read_line();
