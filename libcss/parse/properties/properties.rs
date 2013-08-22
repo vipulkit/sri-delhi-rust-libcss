@@ -3168,7 +3168,7 @@ impl css_properties {
             flags |= FLAG_INHERIT as u8;
         }
         else if (token.token_type as int == CSS_TOKEN_NUMBER as int) {
-            let (num,consumed) =  css__number_from_lwc_string(token.idata.get_ref().clone(), true);
+            let (num,consumed) =  css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},token.idata.get_ref().clone(), true);
 
             if (consumed !=  unsafe{lwc_ref.get_ref()}.lwc_string_length(token.idata.get_ref().clone())){
                 *ctx = orig_ctx;
@@ -3680,7 +3680,7 @@ impl css_properties {
             },
             CSS_TOKEN_NUMBER=>{
                     					
-					let (num_,consumed) =  css__number_from_lwc_string(token.idata.get_ref().clone(), false);
+					let (num_,consumed) =  css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},token.idata.get_ref().clone(), false);
                     let mut num = num_;
                     /* Invalid if there are trailing characters */
                     if (consumed !=  unsafe{lwc_ref.get_ref()}.lwc_string_length(token.idata.get_ref().clone())){

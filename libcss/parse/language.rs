@@ -1807,7 +1807,7 @@ impl css_language {
                     else {
                         /* 2n */
                         
-                        let (ret_a, consumed_) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
+                        let (ret_a, consumed_) = css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},token.idata.get_ref().clone(), true);
                         let mut consumed = consumed_;
                         a = ret_a;
                         if consumed == 0 || ((data[data_index + consumed] != 'n' as u8) && (data[data_index + consumed] != 'N' as u8)) {
@@ -1900,7 +1900,7 @@ impl css_language {
                                 }                                   
                             }
 
-                            let (ret_b,consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
+                            let (ret_b,consumed) = css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},token.idata.get_ref().clone(), true);
                             b = ret_b;
                             //debug!(fmt!("parseNth:: b == %?", b));
                             if consumed != unsafe{lwc_ref.get_ref()}.lwc_string_length(token.idata.get_ref().clone())
@@ -1919,7 +1919,7 @@ impl css_language {
             },
             CSS_TOKEN_NUMBER  => {
                 //debug!("Entering: parseNth:: CSS_TOKEN_NUMBER");
-                let (ret_val,consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
+                let (ret_val,consumed) = css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},token.idata.get_ref().clone(), true);
                 if consumed != unsafe{lwc_ref.get_ref()}.lwc_string_length(token.idata.get_ref().clone())
                 {
                     //debug!("Exiting: parseNth (13)");

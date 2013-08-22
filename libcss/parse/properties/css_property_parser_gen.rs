@@ -207,7 +207,7 @@ pub fn output_number(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     
     let mut output : ~str = ~"\tif match token.token_type { CSS_TOKEN_NUMBER => true, _ => false} {\n";
   
-    output.push_str(fmt!("\t\tlet (num,consumed): (i32,uint)=  css__number_from_lwc_string(token.idata.get_ref().clone(), %s);\n",kvlist[0].key));
+    output.push_str(fmt!("\t\tlet (num,consumed): (i32,uint)=  css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},token.idata.get_ref().clone(), %s);\n",kvlist[0].key));
     output.push_str("\t\t/* Invalid if there are trailing characters */\n");
     output.push_str("\t\tif consumed != unsafe{lwc_ref.get_ref()}.lwc_string_length(token.idata.get_ref().clone()) {\n");
     output.push_str("\t\t\t*ctx = orig_ctx;\n");
@@ -333,7 +333,7 @@ pub fn output_ident_list(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
             output.push_str("\t\t\t\t*ctx += 1; //Iterate\n");
             output.push_str("\t\t\t}\n");
             output.push_str("\t\t\tif !token_null && (match token.token_type { CSS_TOKEN_NUMBER => true, _ => false}) {\n");
-            output.push_str("\t\t\t\tlet (_num, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);\n");
+            output.push_str("\t\t\t\tlet (_num, consumed) = css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},token.idata.get_ref().clone(), true);\n");
             output.push_str("\t\t\t\tnum = _num;\n");
             output.push_str("\t\t\t\tif consumed != unsafe{lwc_ref.get_ref()}.lwc_string_length(token.idata.get_ref().clone()) {\n");
             output.push_str("\t\t\t\t\t*ctx = orig_ctx;\n");

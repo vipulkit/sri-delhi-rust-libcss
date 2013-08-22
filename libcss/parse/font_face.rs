@@ -205,7 +205,7 @@ pub fn font_face_parse_font_weight(strings:@css_propstrings, vector:&~[css_token
 
 
     if match token.token_type { CSS_TOKEN_NUMBER => true, _ => false }  {
-        let (num, consumed) = css__number_from_lwc_string(token.idata.get_ref().clone(), true);
+        let (num, consumed) = css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},token.idata.get_ref().clone(), true);
         /* Invalid if there are trailing characters */
         if consumed != unsafe{lwc_ref.get_ref()}.lwc_string_length(token.idata.get_ref().clone()) {
             *ctx = orig_ctx;

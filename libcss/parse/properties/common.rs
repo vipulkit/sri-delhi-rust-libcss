@@ -84,7 +84,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[css_toke
         }
     }
 
-    let (num , consumed_index) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
+    let (num , consumed_index) = css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},token.idata.get_ref().clone() , false);
     //debug!("css__parse_unit_specifier :: num == %?" , num);
     match token.token_type {
         CSS_TOKEN_DIMENSION => {
@@ -154,14 +154,14 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, vector: &~[css_toke
     return(Some(num) , Some(unit_retVal) , CSS_OK);
 }
 
-pub fn css__number_from_lwc_string(string: uint, int_only: bool) -> (i32 , uint) {
+pub fn css__number_from_lwc_string(lwc_ref:&lwc, string: uint, int_only: bool) -> (i32 , uint) {
     
     //debug!("Entering: css__number_from_lwc_string");
 
-    if unsafe{lwc_ref.get_ref().lwc_string_length(string)} == 0 {
+    if lwc_ref.lwc_string_length(string) == 0 {
         return (0 , 0);
     }
-    css__number_from_string(unsafe{lwc_ref.get_ref().lwc_string_data(string)}, @mut 0, int_only)
+    css__number_from_string(lwc_ref.lwc_string_data(string), @mut 0, int_only)
 }
 
 #[inline(always)]
@@ -571,7 +571,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
                 else {
                     int_only = false;
                 }
-                let (num , consumed_index) = css__number_from_lwc_string(token.idata.get_ref().clone() , int_only);
+                let (num , consumed_index) = css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},token.idata.get_ref().clone() , int_only);
 
                 if consumed_index != unsafe{lwc_ref.get_ref().lwc_string_length(token.idata.get_ref().clone())} {
                     *ctx = orig_ctx;
@@ -658,7 +658,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
                 }
             }
 			
-            let (hue_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
+            let (hue_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},token.idata.get_ref().clone() , false);
             hue = hue_res as i32;
             
 			if consumed_length_from_lwc_string != unsafe{lwc_ref.get_ref().lwc_string_length(token.idata.get_ref().clone())} {
@@ -708,7 +708,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
                 }
             }
             
-			let (sat_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
+			let (sat_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},token.idata.get_ref().clone() , false);
             sat = sat_res as i32;
             if consumed_length_from_lwc_string != unsafe{lwc_ref.get_ref().lwc_string_length(token.idata.get_ref().clone())} {
 				/* failed to consume the whole string as a number */
@@ -757,7 +757,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
                     return (None , None , CSS_INVALID);
                 }
             }
-            let (lit_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
+            let (lit_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},token.idata.get_ref().clone() , false);
             lit = lit_res as i32;
             if consumed_length_from_lwc_string != unsafe{lwc_ref.get_ref().lwc_string_length(token.idata.get_ref().clone())} {
                 /* failed to consume the whole string as a number */
@@ -807,7 +807,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , strings: @css_pro
                     }
                 }
                 
-				let (alpha_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(token.idata.get_ref().clone() , false);
+				let (alpha_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},token.idata.get_ref().clone() , false);
                 alpha = alpha_res as i32;
                 if consumed_length_from_lwc_string != unsafe{lwc_ref.get_ref().lwc_string_length(token.idata.get_ref().clone())} {
                     /* failed to consume the whole string as a number */

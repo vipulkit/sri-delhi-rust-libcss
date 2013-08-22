@@ -176,12 +176,11 @@ impl lwc {
 
 
 
-pub fn get_lwc_instance() -> Option<lwc>{
+pub fn create_lwc_instance() {
     unsafe{
         if lwc_ref.is_none() { 
             lwc_ref=Some(lwc())
         }
-        lwc_ref
     }
 }
 
@@ -192,5 +191,5 @@ priv fn lwc()->lwc {
     }
 }
 
-priv static mut lwc_ref : Option<lwc>  = None;
+pub static mut lwc_ref : Option<lwc>  = None;
 
