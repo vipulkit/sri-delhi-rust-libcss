@@ -710,7 +710,7 @@ pub struct css_select_handler {
 
     node_classes: @fn(pw:*c_void, n:*c_void, classes: &mut ~[uint] ) -> css_error,
 
-    node_id: @fn(pw:*c_void, node:*c_void, id:uint ) -> css_error,
+    node_id: @fn(pw:*c_void, node:*c_void, id:&mut uint ) -> css_error,
 
     named_ancestor_node: @fn(node:*c_void, qname:&mut css_qname, ancestor:*mut*c_void) -> css_error,
    
