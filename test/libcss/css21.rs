@@ -12,33 +12,32 @@ use dump::*;
 use wapcaplet::*;
 use css::parse::propstrings::*;
 
-pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
+pub fn resolve_url(_:&str, rel:uint) -> (css_error,Option<uint>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
-fn css_create_params(lwc_instance: @mut lwc , propstrings_instance: @css_propstrings) -> css_params {
+fn css_create_params(lwc_instance: Option<lwc> , propstrings_instance: @css_propstrings) -> css_params {
     let css_param = css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
         charset : Some(~"UTF-8"),
-        url : @"foo",
-        title : @"",
+        url : ~"foo",
+        title : ~"",
         allow_quirks : false,
         inline_style : false,
         resolve : @resolve_url,
         import : None,
         color : None,
         font : None,
-        lwc_instance: Some(lwc_instance),
+        lwc_instance: lwc_instance,
         propstrings_instance: Some(propstrings_instance)
     };
     return css_param;
 }
 
 fn create_css() -> @mut css{
-    let lwc_instance = lwc();
-    let propstrings_instance = css_propstrings::css_propstrings(lwc_instance);
-    let css = css::css_create( &css_create_params(lwc_instance , propstrings_instance));
+    let propstrings_instance = css_propstrings::css_propstrings();
+    let css = css::css_create( &css_create_params(Some(lwc()), propstrings_instance));
     css
 }
 
@@ -86,9 +85,10 @@ fn css(file_name: ~str) {
                 let (error1 , option_url , _) = css.css_stylesheet_next_pending_import();
                 match error1 {
                     CSS_OK => {
-                        let lwc_instance = lwc();
-                        let propstrings_instance = css_propstrings::css_propstrings(lwc_instance);
-                        let mut params: css_params = css_create_params(lwc_instance , propstrings_instance);
+                        
+                        let propstrings_instance = css_propstrings::css_propstrings();
+                        
+                        let mut params: css_params = css_create_params(unsafe{ if lwc_ref.is_none() { Some(lwc()) } else { lwc_ref } } , propstrings_instance);
                         params.url = option_url.unwrap();
                         let css_import = create_css();
                         let err = css_import.css_stylesheet_data_done();

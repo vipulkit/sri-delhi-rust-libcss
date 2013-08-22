@@ -25,7 +25,7 @@ pub fn find_char_between(s: &str, c: char, start: uint, end: uint) -> Option<uin
 	return None;
 }
 
-pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
+pub fn resolve_url(_:&str, rel:uint) -> (css_error,Option<uint>) {
     return (CSS_OK,Some(rel));
 }
 
@@ -51,7 +51,7 @@ pub struct line_ctx {
     inexp:bool,
 
     inrule:bool,
-    lwc_instance:@mut lwc
+    lwc_instance:Option<lwc>
 }
 
 
@@ -458,9 +458,9 @@ pub fn run_test(ctx:@mut line_ctx) {
         /* The charset of the stylesheet data, or NULL to detect */
         charset : Some(~"UTF-8"),
         /* URL of stylesheet */
-        url : @"foo",
+        url : ~"foo",
         /* Title of stylesheet */
-        title : @"",
+        title : ~"",
 
         /* Permit quirky parsing of stylesheet */
         allow_quirks : false,
@@ -478,7 +478,7 @@ pub fn run_test(ctx:@mut line_ctx) {
 
         /* Font resolution function */
         font : None,
-        lwc_instance: Some(ctx.lwc_instance),
+        lwc_instance: ctx.lwc_instance,
         propstrings_instance: None
     };
 
@@ -522,7 +522,7 @@ pub fn run_test(ctx:@mut line_ctx) {
             _=>{false}
         } );
 
-        let url = o_str.get_or_default(@"") ;
+        let url = o_str.get_or_default(~"") ;
 
         match error {
             CSS_OK=> {
@@ -714,9 +714,9 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 
                     assert!(res as int == CSS_OK as int);
 
-                    let p : @str = match (op) {
-                        Some(val) => lwc_string_data(val),
-                        None => @""
+                    let p : ~str = match (op) {
+                        Some(val) => unsafe{lwc_ref.get_ref()}.lwc_string_data(val),
+                        None => ~""
                     };
 
                     if p != s {
@@ -819,39 +819,39 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
     }
     match detail.selector_type {
         CSS_SELECTOR_ELEMENT=>{
-            if lwc_string_length(detail.qname.name) == 1 && 
-                    lwc_string_data(detail.qname.name)[0] == ('*' as u8) && 
+            if unsafe{lwc_ref.get_ref()}.lwc_string_length(detail.qname.name) == 1 && 
+                    unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name)[0] == ('*' as u8) && 
                     !detail_next {
               
-                str::push_str(ptr,lwc_string_data(detail.qname.name));
+                str::push_str(ptr,unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
             }
-            else if lwc_string_length(detail.qname.name) != 1 ||
-                lwc_string_data(detail.qname.name)[0] != ('*' as u8) { 
-                str::push_str(ptr,lwc_string_data(detail.qname.name));
+            else if unsafe{lwc_ref.get_ref()}.lwc_string_length(detail.qname.name) != 1 ||
+                unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name)[0] != ('*' as u8) { 
+                str::push_str(ptr,unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
             }
         },
 
         CSS_SELECTOR_CLASS=> {
 
             ptr.push_char('.');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.qname.name));
         },
 
         CSS_SELECTOR_ID =>{
             
             ptr.push_char('#');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.qname.name));
         },
 
         CSS_SELECTOR_PSEUDO_CLASS | CSS_SELECTOR_PSEUDO_ELEMENT =>{
             ptr.push_char(':' );
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.qname.name));
             match detail.value_type {
                 CSS_SELECTOR_DETAIL_VALUE_STRING=> {
                     if detail.string.is_some() {
                         ptr.push_char('(' );
                         //let String = copy detail.string;
-                        str::push_str(ptr, (lwc_string_data( detail.string.unwrap() )));
+                        str::push_str(ptr, (unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.string.unwrap() )));
                         ptr.push_char(')' );
                     }
                 } ,
@@ -865,65 +865,65 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 
         CSS_SELECTOR_ATTRIBUTE=>{
             ptr.push_char('[');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.qname.name));
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_EQUAL =>{
             ptr.push_char('[');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.qname.name));
             ptr.push_char('=');
             ptr.push_char('"');
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_DASHMATCH=>{
             ptr.push_char('[');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.qname.name));
             ptr.push_char('|');
             ptr.push_char('=');
             ptr.push_char('"');
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_INCLUDES=>{
             ptr.push_char('[');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.qname.name));
             ptr.push_char('~');
             ptr.push_char('=');
             ptr.push_char('"');
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_PREFIX=>{
             ptr.push_char('[' );
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.qname.name));
             ptr.push_char('^' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"' );
             ptr.push_char(']' );
         },
         CSS_SELECTOR_ATTRIBUTE_SUFFIX=>{
             ptr.push_char('[' );
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.qname.name));
             ptr.push_char('$' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"' );
             ptr.push_char(']' );
         },
         CSS_SELECTOR_ATTRIBUTE_SUBSTRING=>{
             ptr.push_char('[' );
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.qname.name));
             ptr.push_char('*' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(unsafe{lwc_ref.get_ref()}.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"' );
             ptr.push_char(']' );
         }
