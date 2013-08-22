@@ -353,7 +353,7 @@ impl css_select_ctx {
         }
 
         /* Get node's ID, if any */
-        error = ((handler.node_id))(pw, node, state.id);
+        error = ((handler.node_id))(pw, node, &mut state.id);
         match error {
             CSS_OK=>{},
             x =>  {
