@@ -14,7 +14,14 @@ fn main() {
 
 fn number(file_name: ~str) {
     let r:@Reader = io::file_reader(&Path(file_name)).unwrap();
-    let lwc = wapcaplet::lwc();
+    let mut lwc = unsafe{
+                if lwc_ref.is_none() { 
+                            Some(lwc())
+                }  
+                else {
+                            lwc_ref
+                }
+            };
     let mut dataFlag = false;
     let mut expectedFlag = false;
     let mut resetFlag = false;
@@ -55,7 +62,7 @@ fn number(file_name: ~str) {
         if (resetFlag && !dataFlag && !expectedFlag) {
              debug!(fmt!("data = %?" , data_string));
             // debug!(fmt!("expected_str = %?" , expected_str));
-            let lwc_string= Some(lwc.lwc_intern_string(data_string));
+            let lwc_string= Some(lwc.get_mut_ref().lwc_intern_string(data_string));
             //debug!(fmt!("lwc string = %?" , lwc_string.get_ref().clone()));
             let (a , _) = css__number_from_lwc_string(lwc_string.unwrap() , false);
             // debug!(fmt!("a = %?" , a));

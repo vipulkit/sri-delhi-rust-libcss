@@ -168,16 +168,28 @@ impl lwc {
     pub fn lwc_string_data(&self, string:uint) -> ~str {
         self.vect[string].string.clone()
     }
+
+    
 } // impl wapcaplet
 
 
-pub fn lwc()->lwc {
+
+
+pub fn get_lwc_instance() -> Option<lwc>{
+    unsafe{
+        if lwc_ref.is_none() { 
+            lwc_ref=Some(lwc())
+        }
+        lwc_ref
+    }
+}
+
+priv fn lwc()->lwc {
     return lwc {
         map: HashMap::new(),
         vect: ~[]
     }
 }
 
-
-pub static mut lwc_ref : Option<lwc>  = None;
+priv static mut lwc_ref : Option<lwc>  = None;
 

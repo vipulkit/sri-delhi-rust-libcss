@@ -224,7 +224,7 @@ fn parse_auto(file: ~str) {
         inerrors:false,
         inexp:false,
         inrule:false,
-        lwc_instance:lwc()
+        lwc_instance:Some(lwc())
     };
 
     for file_content.any_line_iter().advance |line| {
@@ -478,7 +478,7 @@ pub fn run_test(ctx:@mut line_ctx) {
 
         /* Font resolution function */
         font : None,
-        lwc_instance: ctx.lwc_instance,
+        lwc_instance: ctx.lwc_instance.clone(),
         propstrings_instance: None
     };
 
@@ -714,9 +714,9 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 
                     assert!(res as int == CSS_OK as int);
 
-                    let p : ~str = match (op) {
-                        Some(val) => unsafe{lwc_ref.get_ref()}.lwc_string_data(val),
-                        None => ~""
+                    let p : @str = match (op) {
+                        Some(val) => unsafe{lwc_ref.get_ref()}.lwc_string_data(val).to_managed(),
+                        None => @""
                     };
 
                     if p != s {
