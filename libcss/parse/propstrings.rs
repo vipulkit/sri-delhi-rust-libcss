@@ -558,9 +558,11 @@ pub struct css_propstrings {
     pseudo_element_list:~[index_property]
 }
 
+pub static mut propstrings_ref : Option<~css_propstrings>  = None;
+
 impl css_propstrings {
 
-    pub fn css_propstrings(lwc_ref:&mut lwc) -> @css_propstrings {
+    pub fn css_propstrings(lwc_ref:&mut ~lwc) -> ~css_propstrings {
 
         let propstrings_list = &[&"*", &"charset",&"import",&"media", &"namespace", &"font-face", &"page", &"aural",&"braille", &"embossed",&"handheld", &"print",
             &"projection", &"screen", &"speech", &"tty", &"tv", &"all",&"first-child", &"link", &"visited", &"hover", &"active", &"focus",
@@ -614,14 +616,14 @@ impl css_propstrings {
             &"slategray", &"slategrey",&"snow",&"springgreen",&"steelblue", &"tan", &"teal",&"thistle",&"tomato",&"turquoise",&"violet",&"violetred",
             &"wheat",&"white", &"whitesmoke",&"yellow",&"yellowgreen"];
 
-        let length = propstrings_list.len();
+        //let length = propstrings_list.len();
         let mut _propstrings = ~[];
-        _propstrings.reserve_at_least(length);
+        //_propstrings.reserve_at_least(length);
         for propstrings_list.iter().advance |&ele| {
             _propstrings.push(lwc_ref.lwc_intern_string(ele));
         }
 
-        let css_propstrings_instance = @css_propstrings {
+        let css_propstrings_instance = ~css_propstrings {
             propstrings: _propstrings,
             pseudo_class_list : ~[ 
                                     FIRST_CHILD,

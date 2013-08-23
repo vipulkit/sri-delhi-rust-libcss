@@ -19,7 +19,7 @@ use utils::errors::*;
 
 use std::cast::*;
 
-pub fn font_rule_font_family_reserved(strings:@css_propstrings, ident:&css_token) -> bool {
+pub fn font_rule_font_family_reserved(strings:&~css_propstrings, ident:&css_token) -> bool {
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone().clone(), SERIF as uint) ||
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone().clone(),SANS_SERIF as uint) ||
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone().clone(), CURSIVE as uint) ||
@@ -30,7 +30,7 @@ pub fn font_rule_font_family_reserved(strings:@css_propstrings, ident:&css_token
     strings.lwc_string_caseless_isequal(ident.idata.get_ref().clone().clone(), DEFAULT as uint)
 }
 
-pub fn font_face_parse_font_family(sheet:@mut css_stylesheet, strings:@css_propstrings, vector:&~[css_token], ctx:@mut uint, 
+pub fn font_face_parse_font_family(sheet:@mut css_stylesheet, strings:&~css_propstrings, vector:&~[css_token], ctx:@mut uint, 
     font_face:@mut css_font_face) -> css_error {
     
     match css__ident_list_or_string_to_string(sheet , strings , vector, ctx, Some(@font_rule_font_family_reserved)) {
@@ -60,7 +60,7 @@ pub fn font_face_parse_font_family(sheet:@mut css_stylesheet, strings:@css_props
           CSS_INVALID on invalid syntax,
           appropriate error otherwise..
 */
-pub fn css__parse_font_descriptor(sheet:@mut css_stylesheet, descriptor: &css_token, strings:@css_propstrings, vector:&~[css_token], ctx:@mut uint, 
+pub fn css__parse_font_descriptor(sheet:@mut css_stylesheet, descriptor: &css_token, strings:&~css_propstrings, vector:&~[css_token], ctx:@mut uint, 
     curRule:@mut css_rule_font_face) -> css_error {
     
     let mut font_face:Option<@mut css_font_face> = curRule.font_face;
@@ -93,7 +93,7 @@ pub fn css__parse_font_descriptor(sheet:@mut css_stylesheet, descriptor: &css_to
 
 
 
-pub fn font_face_parse_src(sheet:@mut css_stylesheet, strings:@css_propstrings, vector:&~[css_token], ctx:@mut uint,
+pub fn font_face_parse_src(sheet:@mut css_stylesheet, strings:&~css_propstrings, vector:&~[css_token], ctx:@mut uint,
     font_face:@mut css_font_face) -> css_error {
 
     let orig_ctx = *ctx;
@@ -151,7 +151,7 @@ pub fn font_face_parse_src(sheet:@mut css_stylesheet, strings:@css_propstrings, 
     
 }
 
-pub fn font_face_parse_font_style(strings:@css_propstrings, vector:&~[css_token], ctx:@mut uint,
+pub fn font_face_parse_font_style(strings:&~css_propstrings, vector:&~[css_token], ctx:@mut uint,
     font_face:@mut css_font_face) -> css_error {
 
     let orig_ctx = *ctx;
@@ -186,7 +186,7 @@ pub fn font_face_parse_font_style(strings:@css_propstrings, vector:&~[css_token]
     return CSS_OK;
 }
 
-pub fn font_face_parse_font_weight(strings:@css_propstrings, vector:&~[css_token], ctx:@mut uint,
+pub fn font_face_parse_font_weight(strings:&~css_propstrings, vector:&~[css_token], ctx:@mut uint,
     font_face:@mut css_font_face) -> css_error {
 
     let orig_ctx = *ctx;
@@ -243,7 +243,7 @@ pub fn font_face_parse_font_weight(strings:@css_propstrings, vector:&~[css_token
     return CSS_OK;
 }
 
-pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:@css_propstrings, vector:&~[css_token], ctx:@mut uint, 
+pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, strings:&~css_propstrings, vector:&~[css_token], ctx:@mut uint, 
     location_type:@mut css_font_face_location_type, format:@mut css_font_face_format) -> (css_error, Option<uint>) {
 
 
@@ -359,7 +359,7 @@ pub fn css__font_face_set_font_family(font_face: @mut css_font_face, font_family
 
 
 
-pub fn font_face_src_parse_format(strings:@css_propstrings, vector:&~[css_token], ctx:@mut uint, format:@mut  css_font_face_format) -> css_error {
+pub fn font_face_src_parse_format(strings:&~css_propstrings, vector:&~[css_token], ctx:@mut uint, format:@mut  css_font_face_format) -> css_error {
     
     let mut token:&css_token;
 

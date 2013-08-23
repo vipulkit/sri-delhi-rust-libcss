@@ -102,7 +102,7 @@ impl css_select_ctx {
     * #Return Value:
 	* 'css_select_ctx' - Pointer to created context.
     */
-    pub fn css_select_ctx_create(lwc_ins : Option<lwc>) -> ~css_select_ctx {
+    pub fn css_select_ctx_create(lwc_ins : Option<~lwc>) -> ~css_select_ctx {
         unsafe{ lwc_ref = lwc_ins};
         let mut result = ~css_select_ctx {
             sheets:~[],

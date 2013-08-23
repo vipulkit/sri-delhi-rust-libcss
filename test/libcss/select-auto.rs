@@ -77,7 +77,6 @@ pub struct line_ctx {
     attr_class:uint,
     attr_id:uint,
 
-    propstrings_instance: @css_propstrings
 } 
 
 pub fn select_test(file:~str) {
@@ -86,7 +85,6 @@ pub fn select_test(file:~str) {
             lwc_ref = Some(lwc());
         } 
     }
-    let propstring = css_propstrings::css_propstrings(unsafe{lwc_ref.get_mut_ref()});
     let mut lwc_attr_class : Option<uint>;
     let mut lwc_attr_id : Option<uint>;
 
@@ -114,9 +112,8 @@ pub fn select_test(file:~str) {
         target:None,
         
         attr_class:lwc_attr_class.take_unwrap(),
-        attr_id:lwc_attr_id.take_unwrap(),
+        attr_id:lwc_attr_id.take_unwrap()        
         
-        propstrings_instance: propstring
     };
 
     let file_content_result = io::read_whole_file_str(&Path(file)) ;
@@ -164,7 +161,7 @@ pub fn resolve_url(_:&str, rel:uint) -> (css_error,Option<uint>){
     (CSS_OK, Some(rel.clone()))
 }
 
-pub fn css_create_params(lwc_instance: Option<lwc> , propstrings_instance: @css_propstrings) -> css_params {
+pub fn css_create_params() -> css_params {
     let css_param = css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
@@ -177,8 +174,6 @@ pub fn css_create_params(lwc_instance: Option<lwc> , propstrings_instance: @css_
         import : None,
         color : None,
         font : None,
-        lwc_instance: lwc_instance,
-        propstrings_instance: Some(propstrings_instance)
     };
      return css_param;
 }
@@ -535,11 +530,11 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_styles
     if p < end {
        css__parse_media_list(data,p,&mut media);
     }
-    let params = css_create_params(unsafe{lwc_ref}, ctx.propstrings_instance);
+    let params = css_create_params();
     // let lwc_ins = ctx.lwc_instance;
-
+    let propstring = css_propstrings::css_propstrings(unsafe{lwc_ref.get_mut_ref()});
     let start_time = time::precise_time_ns();
-    let sheet:@mut css = css::css_create(&params);
+    let sheet:@mut css = css::css_create(&params,unsafe{lwc_ref}, Some(propstring));
     let end_time = time::precise_time_ns();
     *css_stylesheet_create_time += (end_time - start_time);
 

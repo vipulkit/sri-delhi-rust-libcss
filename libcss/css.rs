@@ -49,39 +49,38 @@ pub struct css_params {
 
     /** Font resolution function */
     font : Option<css_font_resolution_fn>,
-
-    /** libwapcaplet library Instance */
-    lwc_instance : Option<lwc>,
-
-    /** Propstrings Instance */
-    propstrings_instance : Option<@css_propstrings>
 }
 
 impl css {
 
-    pub fn css_create(params: &css_params) -> @mut css {
-        println("I am inside css::create_css");
-        assert!(!(params.propstrings_instance.is_some() && params.lwc_instance.is_none()));
-        println("I am after assert css::create_css");
+    pub fn css_create(params: &css_params, lwc_instance : Option<~lwc>, propstrings_instance : Option<~css_propstrings>) -> @mut css {
+       
+        assert!(!(propstrings_instance.is_some() && lwc_instance.is_none()));
+       
         // create lwc
         unsafe{
-            lwc_ref =  if params.lwc_instance.is_none() { 
-                            println("I am inside none");
-                            Some(lwc())
-                        }  
-                        else {
-                            println("I am outside none");
-                            params.lwc_instance.clone()
-                        } ;
+            if lwc_ref.is_none() {
+                lwc_ref =  if  lwc_instance.is_none() { 
+                                Some(lwc())
+                            }  
+                            else {
+                                Some(lwc_instance.unwrap())
+                            } ;
+            }            
         }
-                        
-        let propstrings = if params.propstrings_instance.is_none() { 
-                        css_propstrings::css_propstrings(unsafe{lwc_ref.get_mut_ref()})
-                    }  
-                    else {
-                        params.propstrings_instance.unwrap()
-                    } ;
-
+                  
+        
+        unsafe{
+            if propstrings_ref.is_none() {
+                propstrings_ref =  if  propstrings_instance.is_none() { 
+                    Some(css_propstrings::css_propstrings(lwc_ref.get_mut_ref()))
+                }  
+                else {
+                    Some(propstrings_instance.unwrap())
+                } ;
+            }            
+        }
+                    
         // create inputstream
         let (inputstream_option, _) =  
             match params.charset.clone() {
@@ -117,7 +116,7 @@ impl css {
         };
 
         // create language
-        let language = css_language(stylesheet, propstrings);
+        let language = css_language(stylesheet);
 
         // create parser
         let parser = match params.inline_style {

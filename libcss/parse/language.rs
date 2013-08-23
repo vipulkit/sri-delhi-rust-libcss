@@ -45,27 +45,25 @@ pub struct css_language {
     sheet:@mut css_stylesheet,
     context:~[context_entry], 
     state:language_state,   
-    strings: @css_propstrings,  
     properties: ~css_properties,
     default_namespace:Option<uint>, 
     namespaces:~[~css_namespace]
 }
 
-pub fn css_language(sheet:@mut css_stylesheet, propstring: @css_propstrings) -> ~css_language {
+pub fn css_language(sheet:@mut css_stylesheet) -> ~css_language {
     //debug!("Entering: css_language");
    
     let cr_properties = css_properties::css_properties(sheet);
 
     ~css_language {
         sheet:sheet,
-        strings:propstring,
         properties: cr_properties,
         context:~[], 
         state:CHARSET_PERMITTED,
         default_namespace:None,   
         namespaces:~[]
 	}
-    }
+}
 
 
 impl css_language {
@@ -251,7 +249,7 @@ impl css_language {
          * there is one */
         match atkeyword.token_type { CSS_TOKEN_ATKEYWORD => {}, _ => return CSS_INVALID };
 
-        if self.strings.lwc_string_caseless_isequal(atkeyword.idata.get_ref().clone(), CHARSET as uint) {
+        if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(atkeyword.idata.get_ref().clone(), CHARSET as uint) {
             match self.state {
                 CHARSET_PERMITTED => {
                     /* any0 = STRING */
@@ -299,7 +297,7 @@ impl css_language {
                 _ => return CSS_INVALID
             }
         } 
-        else if self.strings.lwc_string_caseless_isequal(atkeyword.idata.get_ref().clone(), LIBCSS_IMPORT as uint) {
+        else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(atkeyword.idata.get_ref().clone(), LIBCSS_IMPORT as uint) {
             if self.state as uint <= IMPORT_PERMITTED as uint {
                 let mut url:~str;
                 let media:@mut u64 =@mut  0;
@@ -374,7 +372,7 @@ impl css_language {
                 return CSS_INVALID
             }
         } 
-        else if self.strings.lwc_string_caseless_isequal(atkeyword.idata.get_ref().clone(), NAMESPACE as uint) {
+        else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(atkeyword.idata.get_ref().clone(), NAMESPACE as uint) {
             if self.state as uint <= NAMESPACE_PERMITTED as uint {
                 let mut prefix:Option<uint> = None;
 
@@ -418,7 +416,7 @@ impl css_language {
                 return CSS_INVALID;
             }
         } 
-        else if self.strings.lwc_string_caseless_isequal(atkeyword.idata.get_ref().clone(), MEDIA as uint) {
+        else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(atkeyword.idata.get_ref().clone(), MEDIA as uint) {
             let media :@mut u64 =@mut 0;
 
             /* any0 = IDENT ws (',' ws IDENT ws)* */
@@ -450,7 +448,7 @@ impl css_language {
 
             self.state = HAD_RULE;
         }
-        else if self.strings.lwc_string_caseless_isequal(atkeyword.idata.get_ref().clone(), FONT_FACE as uint) {
+        else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(atkeyword.idata.get_ref().clone(), FONT_FACE as uint) {
             let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_FONT_FACE);
             
             consumeWhitespace(vector, ctx);
@@ -468,7 +466,7 @@ impl css_language {
 
             self.state = HAD_RULE;
         }
-        else if self.strings.lwc_string_caseless_isequal(atkeyword.idata.get_ref().clone(), PAGE as uint) {
+        else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(atkeyword.idata.get_ref().clone(), PAGE as uint) {
             
             /* any0 = (':' IDENT)? ws */
             let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_PAGE);
@@ -674,7 +672,7 @@ impl css_language {
                                             match curRule {
                                                 RULE_FONT_FACE(font_face_rule) =>  
 							{
-								let css_er:css_error = css__parse_font_descriptor(self.sheet, ident, self.strings, tokens, ctx, font_face_rule);
+								let css_er:css_error = css__parse_font_descriptor(self.sheet, ident, unsafe{propstrings_ref.get_ref()}, tokens, ctx, font_face_rule);
 		        	                                return css_er;
 								 
 							},
@@ -755,37 +753,37 @@ impl css_language {
 					return CSS_INVALID
 				}
 
-				if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), AURAL as uint) {
+				if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(token.idata.get_ref().clone(), AURAL as uint) {
 					ret |= CSS_MEDIA_AURAL as u64;
 				} 
-				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BRAILLE as uint) {
+				else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(token.idata.get_ref().clone(), BRAILLE as uint) {
 					ret |= CSS_MEDIA_BRAILLE as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), EMBOSSED as uint) {
+				else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(token.idata.get_ref().clone(), EMBOSSED as uint) {
 					ret |= CSS_MEDIA_EMBOSSED as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HANDHELD as uint) {
+				else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(token.idata.get_ref().clone(), HANDHELD as uint) {
 					ret |= CSS_MEDIA_HANDHELD as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), PRINT as uint) {
+				else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(token.idata.get_ref().clone(), PRINT as uint) {
 					ret |= CSS_MEDIA_PRINT as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), PROJECTION as uint) {
+				else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(token.idata.get_ref().clone(), PROJECTION as uint) {
 					ret |= CSS_MEDIA_PROJECTION as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SCREEN as uint) {
+				else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SCREEN as uint) {
 				   ret |= CSS_MEDIA_SCREEN as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SPEECH as uint) {
+				else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(token.idata.get_ref().clone(), SPEECH as uint) {
 					ret |= CSS_MEDIA_SPEECH as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), TTY as uint) {
+				else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(token.idata.get_ref().clone(), TTY as uint) {
 					ret |= CSS_MEDIA_TTY as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), TV as uint) {
+				else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(token.idata.get_ref().clone(), TV as uint) {
 					ret |= CSS_MEDIA_TV as u64;
 				}
-				else if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ALL as uint) {
+				else if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ALL as uint) {
 					ret |= CSS_MEDIA_ALL as u64;
 				}
 				else {
@@ -892,7 +890,7 @@ impl css_language {
         let mut index = AZIMUTH as uint;
 
         while (index <= Z_INDEX as uint) {
-            if self.strings.lwc_string_caseless_isequal(property.idata.get_ref().clone() , index) {
+            if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(property.idata.get_ref().clone() , index) {
                 break
             }
             index +=1;
@@ -904,7 +902,7 @@ impl css_language {
 
         style = css_stylesheet::css__stylesheet_style_create(self.sheet) ;
         //debug!(fmt!("parseProperty:: style.bytecode (1) == %?" , style.bytecode));
-        let error = (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , self.strings , vector , ctx , style);
+        let error = (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , unsafe{propstrings_ref.get_ref()} , vector , ctx , style);
 
         //debug!(fmt!("parseProperty:: style.bytecode (2)== %?" , style.bytecode));
 
@@ -1032,10 +1030,10 @@ impl css_language {
                 qname.ns = self.default_namespace.get();
             }
             else {
-                qname.ns = self.strings.get_lwc_string(UNIVERSAL as uint)
+                qname.ns = unsafe{propstrings_ref.get_ref()}.get_lwc_string(UNIVERSAL as uint)
             }
             
-            qname.name = self.strings.get_lwc_string(UNIVERSAL as uint);
+            qname.name = unsafe{propstrings_ref.get_ref()}.get_lwc_string(UNIVERSAL as uint);
 
             selector =  self.sheet.css__stylesheet_selector_create(qname);
             /* Ensure we have at least one specific selector */
@@ -1155,7 +1153,7 @@ impl css_language {
                 qname.ns = self.default_namespace.get();
             }
             else {
-                qname.ns = self.strings.get_lwc_string(UNIVERSAL as uint)
+                qname.ns = unsafe{propstrings_ref.get_ref()}.get_lwc_string(UNIVERSAL as uint)
             }
 
 			//debug!(fmt!("prefix=%?",prefix));
@@ -1523,7 +1521,7 @@ impl css_language {
         qname.name=token.idata.get_ref().clone();
         
         /* Search lut for selector type */
-        match self.strings.is_selector_pseudo(qname.name) {
+        match unsafe{propstrings_ref.get_ref()}.is_selector_pseudo(qname.name) {
             Some((sel_type,idx)) => {
                 lut_idx = idx as uint;
                 selector_type = sel_type
@@ -1705,13 +1703,13 @@ impl css_language {
         match token.token_type { 
             CSS_TOKEN_IDENT | CSS_TOKEN_DIMENSION => {
                 if (match token.token_type { CSS_TOKEN_IDENT => true, _ => false}) &&
-                        self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ODD as uint) {
+                        unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(token.idata.get_ref().clone(), ODD as uint) {
                     /* Odd */
                     value.a = 2;
                     value.b = 1;
                 }
                 else if (match token.token_type { CSS_TOKEN_IDENT => true, _ => false}) &&
-                            self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), EVEN as uint)
+                            unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(token.idata.get_ref().clone(), EVEN as uint)
                 {
                     /* Even */
                     value.a = 2;
@@ -1989,7 +1987,7 @@ impl css_language {
             token = &vector[*ctx];
             *ctx += 1; //Iterate        
 
-            if self.strings.lwc_string_caseless_isequal(token.idata.get_ref().clone(), IMPORTANT as uint) {
+            if unsafe{propstrings_ref.get_ref()}.lwc_string_caseless_isequal(token.idata.get_ref().clone(), IMPORTANT as uint) {
                 flags |= FLAG_IMPORTANT as u8;
             } else {
                 *ctx = orig_ctx;

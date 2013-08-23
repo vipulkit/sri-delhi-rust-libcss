@@ -16,7 +16,7 @@ pub fn resolve_url(_:&str, rel:uint) -> (css_error,Option<uint>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
-fn css_create_params(lwc_instance: Option<lwc> , propstrings_instance: @css_propstrings) -> css_params {
+fn css_create_params() -> css_params {
     let css_param = css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
@@ -28,24 +28,16 @@ fn css_create_params(lwc_instance: Option<lwc> , propstrings_instance: @css_prop
         resolve : @resolve_url,
         import : None,
         color : None,
-        font : None,
-        lwc_instance: lwc_instance,
-        propstrings_instance: Some(propstrings_instance)
+        font : None
     };
     return css_param;
 }
 
 fn create_css() -> @mut css{
-    println("I am inside create_css");
-    unsafe{ 
-        if lwc_ref.is_none() {
-            lwc_ref=Some(lwc())
-        }
-    } 
-
-    let propstrings_instance = css_propstrings::css_propstrings(unsafe{lwc_ref.get_mut_ref()});
-    println("I am inside create_css");
-    let css = css::css_create( &css_create_params(unsafe{lwc_ref}, propstrings_instance));
+    
+    let mut lwc_ref = Some(lwc());
+    let propstrings_ref = Some(css_propstrings::css_propstrings(lwc_ref.get_mut_ref()));
+    let css = css::css_create( &css_create_params(), lwc_ref, propstrings_ref);
     css
 }
 
@@ -93,10 +85,8 @@ fn css(file_name: ~str) {
                 let (error1 , option_url , _) = css.css_stylesheet_next_pending_import();
                 match error1 {
                     CSS_OK => {
-                        
-                        let propstrings_instance = css_propstrings::css_propstrings(unsafe{lwc_ref.get_mut_ref()});
-                        
-                        let mut params: css_params = css_create_params(unsafe{lwc_ref} , propstrings_instance);
+                                                                      
+                        let mut params: css_params = css_create_params();
                         params.url = option_url.unwrap();
                         let css_import = create_css();
                         let err = css_import.css_stylesheet_data_done();

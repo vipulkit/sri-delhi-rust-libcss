@@ -63,8 +63,6 @@ pub fn css_create_params() -> css_params {
         import : None,
         color : None,
         font : None,
-        lwc_instance: None,
-        propstrings_instance: None
     };
     return css_param;
 }
@@ -75,7 +73,7 @@ fn main() {
 
 fn create_css() -> @mut css{
     debug!("Entering: create_css");
-    let css = css::css_create( &(css_create_params()));
+    let css = css::css_create( &css_create_params(), None, None);
     css
 }
 

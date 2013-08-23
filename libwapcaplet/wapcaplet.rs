@@ -184,12 +184,12 @@ pub fn create_lwc_instance() {
     }
 }
 
-priv fn lwc()->lwc {
-    return lwc {
+priv fn lwc()->~lwc {
+    return ~lwc {
         map: HashMap::new(),
         vect: ~[]
     }
 }
 
-pub static mut lwc_ref : Option<lwc>  = None;
+pub static mut lwc_ref : Option<~lwc>  = None;
 

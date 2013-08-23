@@ -24,16 +24,13 @@ fn fill_params() -> css_params {
         resolve : @resolve_url,
         import : None,
         color : None,
-        font : None,
-        lwc_instance: None,
-        propstrings_instance: None
-
+        font : None
     };
     return css_param;
 }
 
 fn css_create_fn() -> @mut css{
-    let css = css::css_create( &fill_params());
+    let css = css::css_create( &fill_params(), None, None);
     css
 }
 

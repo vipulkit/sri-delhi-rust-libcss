@@ -51,7 +51,7 @@ pub struct line_ctx {
     inexp:bool,
 
     inrule:bool,
-    lwc_instance:Option<lwc>
+    lwc_instance:Option<~lwc>
 }
 
 
@@ -478,13 +478,12 @@ pub fn run_test(ctx:@mut line_ctx) {
 
         /* Font resolution function */
         font : None,
-        lwc_instance: ctx.lwc_instance.clone(),
-        propstrings_instance: None
+        
     };
 
     //let lwc_instance = lwc() ;
 
-    let css_instance = css::css_create( &params) ;
+    let css_instance = css::css_create( &params, Some(ctx.lwc_instance.get_ref().clone()), None) ;
 
 
     error = css_instance.css_stylesheet_append_data(ctx.buf.clone());
@@ -528,7 +527,7 @@ pub fn run_test(ctx:@mut line_ctx) {
             CSS_OK=> {
                 params.url = url.clone();
 
-                let import = css::css_create(&params) ;
+                let import = css::css_create(&params, Some(ctx.lwc_instance.get_ref().clone()), None) ;
                 
                 assert!(    match css_instance.css_stylesheet_register_import(
                                                         Some(import.stylesheet)) {
