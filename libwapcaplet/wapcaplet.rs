@@ -205,7 +205,7 @@ pub enum to_lwc {
     C_GET_DATA(uint),
     C_INTERN_SUBSTRING(uint,uint,uint),
     C_INTERN_CASELESS(uint),
-    C_IS_CASELESS_EQUAL(uint),
+    C_IS_CASELESS_EQUAL(uint,uint),
     C_TERMINATE
 }
 
@@ -222,7 +222,7 @@ pub enum from_lwc {
 pub static mut lwc_ref : Option<~lwc_wrapper>  = None;
 
 pub struct lwc_wrapper {
-    thread_handle : Chan< (to_lwc,Port<from_lwc>) > 
+    thread_handle : SharedChan< (to_lwc,SharedChan<from_lwc>) > 
 }
 
 pub fn create_lwc_thread() {
@@ -268,12 +268,14 @@ impl lwc_wrapper {
     #[inline]
     pub fn lwc_intern_string(&mut self, val: ~str) -> int {
 
-        let thread = SharedChan::new(self.thread_handle);        
-        let mut to_msg : to_lwc = C_INTERN(val) ;
+        let thread = self.thread_handle.clone();        
+        let to_msg : to_lwc = C_INTERN(val) ;
         let (port, chan): (Port<from_lwc>, Chan<from_lwc>) = stream();
-        thread.send((to_msg,port));
+        let chan = SharedChan::new(chan);
 
-        let mut result : from_lwc = port.recv() ;
+        thread.send((to_msg,chan.clone()));
+
+        let result : from_lwc = port.recv() ;
 
         match result{
             R_INTERN(x)=>{ x as int },
@@ -289,25 +291,93 @@ impl lwc_wrapper {
 
     #[inline]
     pub fn lwc_string_caseless_isequal(&mut self, str1: uint , str2: uint) ->bool {
-                        
+        
+        let thread = self.thread_handle.clone();         
+        let to_msg : to_lwc = C_IS_CASELESS_EQUAL(str1,str2) ;
+        let (port, chan): (Port<from_lwc>, Chan<from_lwc>) = stream();
+        let chan = SharedChan::new(chan);
+
+        thread.send((to_msg,chan.clone()));
+
+        let result : from_lwc = port.recv() ;
+
+        match result{
+            R_IS_CASELESS_EQUAL(x)=>{ x },
+            _=>{ false }
+        }              
     }
 
     #[inline]
-    pub fn lwc_intern_caseless_string(&mut self , string: uint) {
+    pub fn lwc_intern_caseless_string(&mut self , string: uint) -> int {
 
+        let thread = self.thread_handle.clone();        
+        let to_msg : to_lwc = C_INTERN_CASELESS(string) ;
+        let (port, chan): (Port<from_lwc>, Chan<from_lwc>) = stream();
+        let chan = SharedChan::new(chan);
+
+        thread.send((to_msg,chan.clone()));
+
+        let result : from_lwc = port.recv() ;
+
+        match result{
+            R_INTERN_CASELESS(x)=>{ x as int },
+            _=>{ -1 }
+        }
     }   
 
     
     #[inline]
-    pub fn lwc_intern_substring(&mut self , substring_to_intern: uint , ssoffset: u32, sslen: u32) -> Option<uint> {
+    pub fn lwc_intern_substring(&mut self , substring_to_intern: uint , ssoffset: u32, sslen: u32) -> int {
+        
+        let thread = self.thread_handle.clone();         
+        let to_msg : to_lwc = C_INTERN_SUBSTRING(substring_to_intern,ssoffset as uint,sslen as uint) ;
+        let (port, chan): (Port<from_lwc>, Chan<from_lwc>) = stream();
+        let chan = SharedChan::new(chan);
+
+        thread.send((to_msg,chan.clone()));
+
+        let result : from_lwc = port.recv() ;
+
+        match result{
+            R_INTERN_SUBSTRING(x)=>{ x as int },
+            _=>{ -1 }
+        }
     }
 
     #[inline]
-    pub fn lwc_string_length(&self, string:uint) -> uint {
+    pub fn lwc_string_length(&mut self, string:uint) -> int {
+
+        let thread = self.thread_handle.clone();          
+        let to_msg : to_lwc = C_GET_LENGTH(string) ;
+        let (port, chan): (Port<from_lwc>, Chan<from_lwc>) = stream();
+        let chan = SharedChan::new(chan);
+
+        thread.send((to_msg,chan.clone()));
+
+        let result : from_lwc = port.recv() ;
+
+        match result{
+            R_GET_LENGTH(x)=>{ x as int },
+            _=>{ -1 }
+        }
     }
         
     #[inline]
     pub fn lwc_string_data(&self, string:uint) -> ~str {
+
+        let thread = self.thread_handle.clone();          
+        let to_msg : to_lwc = C_GET_DATA(string) ;
+        let (port, chan): (Port<from_lwc>, Chan<from_lwc>) = stream();
+        let chan = SharedChan::new(chan);
+
+        thread.send((to_msg,chan.clone()));
+
+        let result : from_lwc = port.recv() ;
+
+        match result{
+            R_GET_DATA(x)=>{ x },
+            _=>{ ~"" }
+        }
     }
 
     
