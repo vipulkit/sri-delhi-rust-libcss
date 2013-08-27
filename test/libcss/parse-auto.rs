@@ -224,7 +224,7 @@ fn parse_auto(file: ~str) {
         inerrors:false,
         inexp:false,
         inrule:false,
-        lwc_instance:Some(lwc())
+        // lwc_instance:Some(lwc())
     };
 
     for file_content.any_line_iter().advance |line| {

@@ -7,6 +7,7 @@ use std::io::*;
 use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
+use wapcaplet::*;
 
 pub fn resolve_url(_:&str, rel:uint) -> (css_error,Option<uint>) {
     return (CSS_OK,Some(rel.clone()));
@@ -29,8 +30,9 @@ fn fill_params() -> css_params {
     return css_param;
 }
 
-fn css_create_fn() -> ~css{
-    let css = css::css_create( &fill_params(), None, None);
+fn css_create_fn(lwc: &mut ~lwc) -> ~css{
+    
+    let css = css::css_create( &fill_params(),lwc, None);
     css
 }
 
@@ -47,7 +49,8 @@ fn main() {
 }
 
 fn parse(file_name: ~str) {
-    let mut css = css_create_fn();
+    let mut lwc = lwc();
+    let mut css = css_create_fn(&mut lwc);
     let r:@Reader = file_reader(&Path(file_name)).unwrap();
     let mut dataFlag = false;
     // let mut expectedFlag: bool;
@@ -77,13 +80,13 @@ fn parse(file_name: ~str) {
                 final_buf.push(i as u8);
             }
             final_buf.reverse();
-            let error = css.css_stylesheet_append_data(final_buf);
+            let error = css.css_stylesheet_append_data(&mut lwc , final_buf);
             match error {
                 CSS_OK => {},
                 CSS_NEEDDATA => {},
                 _ => {assert!(false);}
             }
-            let error = css.css_stylesheet_data_done();
+            let error = css.css_stylesheet_data_done( &mut lwc);
 
             match error {
                 CSS_OK => {},

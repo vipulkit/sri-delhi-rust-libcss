@@ -33,11 +33,11 @@ fn css_create_params() -> css_params {
     return css_param;
 }
 
-fn create_css() -> ~css{
+fn create_css(lwc_ref: &mut ~lwc) -> ~css{
     
-    let mut lwc_ref = Some(lwc());
-    let propstrings_ref = css_propstrings::css_propstrings(lwc_ref.get_mut_ref());
-    let css = css::css_create( &css_create_params(), Some(lwc_ref.unwrap()), Some(propstrings_ref));
+    
+    let propstrings_ref = css_propstrings::css_propstrings(lwc_ref);
+    let css = css::css_create( &css_create_params(), lwc_ref, Some(propstrings_ref));
     css
 }
 
@@ -47,7 +47,8 @@ fn main() {
 }
 
 fn css(file_name: ~str) {
-    let mut css = create_css();
+    let mut lwc_ref = lwc();
+    let mut css = create_css(&mut lwc_ref);
     let CHUNK_SIZE = 4096;
     let mut buf: ~[u8];
     let r:@Reader = file_reader(&Path(file_name)).unwrap(); 
@@ -58,20 +59,20 @@ fn css(file_name: ~str) {
     while len>CHUNK_SIZE {
         buf = r.read_bytes(CHUNK_SIZE as uint);
         len -= CHUNK_SIZE;
-        let error = css.css_stylesheet_append_data(buf);
+        let error = css.css_stylesheet_append_data(&mut lwc_ref , buf);
         match error {
             CSS_OK | CSS_NEEDDATA => {},
             _ => {assert!(false);}
         }
     }
     buf = r.read_bytes(len as uint);
-    let error = css.css_stylesheet_append_data(buf);
+    let error = css.css_stylesheet_append_data(&mut lwc_ref ,buf);
     match error {
         CSS_OK | CSS_NEEDDATA => {},
         _ => {assert!(false);}
     }
 
-    let mut error = css.css_stylesheet_data_done();
+    let mut error = css.css_stylesheet_data_done(&mut lwc_ref );
 
 
     match error {
@@ -88,8 +89,8 @@ fn css(file_name: ~str) {
                                                                       
                         let mut params: css_params = css_create_params();
                         params.url = option_url.unwrap();
-                        let mut css_import = create_css();
-                        let err = css_import.css_stylesheet_data_done();
+                        let mut css_import = create_css(&mut lwc_ref );
+                        let err = css_import.css_stylesheet_data_done(&mut lwc_ref );
                         match err {
                             CSS_OK => {},
                             _ => {assert!(false);}
@@ -120,7 +121,7 @@ fn css(file_name: ~str) {
 
     let mut buf: ~str;
 
-    buf = dump_sheet(css.stylesheet, css.lwc_ref.get_mut_ref());
+    buf = dump_sheet(css.stylesheet, &mut lwc_ref );
     let outlen = buf.len();
     let written = outsize - outlen;
     // debug!(fmt!("written == %? , outsize - outlen == %?" , written , outsize-outlen));

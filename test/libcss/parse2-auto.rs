@@ -10,6 +10,7 @@ use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use dump::*;
+use wapcaplet::*;
 
 pub struct line_ctx {
     buf:~[u8],
@@ -71,9 +72,9 @@ fn main() {
     debug!("parse");
 }
 
-fn create_css() -> ~css{
+fn create_css(lwc_ref: &mut ~lwc) -> ~css{
     debug!("Entering: create_css");
-    let css = css::css_create( &css_create_params(), None, None);
+    let css = css::css_create( &css_create_params(), lwc_ref, None);
     css
 }
 
@@ -182,23 +183,23 @@ fn testMain(fileName: ~str) {
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     debug!("Entering :: run_test");
     // debug!("\n == data == %?" , str::from_bytes(data));
-    
-    let mut css = create_css();
+    let mut lwc_ref = lwc();
+    let mut css = create_css(&mut lwc_ref);
     let mut buf: ~str;
-    let mut error = css.css_stylesheet_append_data(data);
+    let mut error = css.css_stylesheet_append_data(&mut lwc_ref , data);
     match error {
         CSS_OK | CSS_NEEDDATA => {},
         _ => {assert!(false);}
     }
 
-    error = css.css_stylesheet_data_done();
+    error = css.css_stylesheet_data_done(&mut lwc_ref);
     //debug!(fmt!("error from css_stylesheet_data_done: %?" , error));
     match error {
         CSS_OK => {},
         _ => {assert!(false);}
     }
 
-    buf = dump_sheet(css.stylesheet, css.lwc_ref.get_mut_ref());
+    buf = dump_sheet(css.stylesheet, &mut lwc_ref);
     //debug!(fmt!("\n == sheet ==%?=" , buf));
     let mut dvec : ~[~[u8]] = ~[];
     for buf.any_line_iter().advance |s| {

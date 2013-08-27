@@ -81,12 +81,12 @@ pub struct line_ctx {
 
 pub fn select_test(file:~str) {
     
-    let mut lwc_ref = Some(lwc());
+    let mut lwc_ref = lwc();
     let mut lwc_attr_class : Option<uint>;
     let mut lwc_attr_id : Option<uint>;
 
-    lwc_attr_class = Some(lwc_ref.get_mut_ref().lwc_intern_string(&"class"));
-    lwc_attr_id = Some(lwc_ref.get_mut_ref().lwc_intern_string(&"id"));
+    lwc_attr_class = Some(lwc_ref.lwc_intern_string(&"class"));
+    lwc_attr_id = Some(lwc_ref.lwc_intern_string(&"id"));
 
     let ctx : @mut line_ctx = @mut line_ctx{
         //explen:0,
@@ -135,7 +135,7 @@ pub fn select_test(file:~str) {
         let mut line_string: ~str = line.to_str(); 
         line_string.push_char('\n');
         // debug!("Handling line =%?=",copy line_string);
-        handle_line(&mut line_string, lwc_ref.get_mut_ref().clone(), ctx, css_stylesheet_create_time, 
+        handle_line(&mut line_string, &mut lwc_ref, ctx, css_stylesheet_create_time, 
                 css_stylesheet_append_data_time, 
                 css_select_style_time, 
                 css_stylesheet_data_done_time  );
@@ -143,7 +143,7 @@ pub fn select_test(file:~str) {
     }   
 
     if (ctx.tree.is_some() ) {
-        run_test(ctx, lwc_ref.get_mut_ref(), css_select_style_time);
+        run_test(ctx, &mut lwc_ref, css_select_style_time);
 
     }
 
@@ -175,7 +175,7 @@ pub fn css_create_params() -> css_params {
      return css_param;
 }
 
-pub fn handle_line(data:&mut ~str, mut lwc_ref:~lwc, ctx:@mut line_ctx, css_stylesheet_create_time:@mut u64, 
+pub fn handle_line(data:&mut ~str, lwc_ref:&mut ~lwc, ctx:@mut line_ctx, css_stylesheet_create_time:@mut u64, 
     css_stylesheet_append_data_time:@mut u64, 
     css_select_style_time:@mut u64, 
     css_stylesheet_data_done_time:@mut float
@@ -209,7 +209,7 @@ pub fn handle_line(data:&mut ~str, mut lwc_ref:~lwc, ctx:@mut line_ctx, css_styl
                 len = ctx.sheets.len() -1;
                 let start_time = time::precise_time_ns();
                 assert!( 
-                        match ctx.sheets[len].sheet.css_stylesheet_data_done() {
+                        match ctx.sheets[len].sheet.css_stylesheet_data_done(lwc_ref) {
                                 CSS_OK=>{true},
                                 _=>{false}
                         });
@@ -228,7 +228,7 @@ pub fn handle_line(data:&mut ~str, mut lwc_ref:~lwc, ctx:@mut line_ctx, css_styl
                 len = ctx.sheets.len() -1;
                 let start_time = time::precise_time_ns();
                 assert!( 
-                        match ctx.sheets[len].sheet.css_stylesheet_data_done() {
+                        match ctx.sheets[len].sheet.css_stylesheet_data_done(lwc_ref) {
                             CSS_OK=>{true},
                             _=>{false}
                         });
@@ -241,7 +241,7 @@ pub fn handle_line(data:&mut ~str, mut lwc_ref:~lwc, ctx:@mut line_ctx, css_styl
             else {
                 len = ctx.sheets.len() -1;
                 let start_time = time::precise_time_ns();
-                let error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.as_bytes().to_owned());
+                let error = ctx.sheets[len].sheet.css_stylesheet_append_data(lwc_ref , data.as_bytes().to_owned());
                 let end_time = time::precise_time_ns();
                 *css_stylesheet_append_data_time += (end_time - start_time);
 
@@ -262,7 +262,7 @@ pub fn handle_line(data:&mut ~str, mut lwc_ref:~lwc, ctx:@mut line_ctx, css_styl
         else if (ctx.inexp) {
             // debug!("in ctx inexp");
             /* This marks end of testcase, so run it */
-            run_test(ctx, &mut lwc_ref, css_select_style_time);
+            run_test(ctx, lwc_ref, css_select_style_time);
             //ctx.expused = 0;
 
             ctx.intree = false;
@@ -286,12 +286,12 @@ pub fn handle_line(data:&mut ~str, mut lwc_ref:~lwc, ctx:@mut line_ctx, css_styl
     else {
         if ( ctx.intree ){
             /* Not interested in the '|' */
-            css__parse_tree_data(ctx, &mut lwc_ref, data.slice(1,data.len()-1) );
+            css__parse_tree_data(ctx, lwc_ref, data.slice(1,data.len()-1) );
         }
         else if ( ctx.insheet ) {
             len = ctx.sheets.len() -1;
             let start_time = time::precise_time_ns();
-            error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.as_bytes().to_owned());
+            error = ctx.sheets[len].sheet.css_stylesheet_append_data(lwc_ref , data.as_bytes().to_owned());
             let end_time = time::precise_time_ns();
             *css_stylesheet_append_data_time += (end_time - start_time);
             assert!( match error {
@@ -493,7 +493,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, lwc_ref:&mut ~lwc, data:&str) {
 
 }
 
-pub fn css__parse_sheet(ctx:@mut line_ctx, mut lwc_ref:~lwc, data:&mut ~str,index:uint, css_stylesheet_create_time:@mut u64){
+pub fn css__parse_sheet(ctx:@mut line_ctx, lwc_ref:&mut ~lwc, data:&mut ~str,index:uint, css_stylesheet_create_time:@mut u64){
     
     // debug!("\n Entering css__parse_sheet ") ;
     let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
@@ -529,9 +529,9 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, mut lwc_ref:~lwc, data:&mut ~str,inde
     }
     let params = css_create_params();
     // let lwc_ins = ctx.lwc_instance;
-    let propstring = css_propstrings::css_propstrings(&mut lwc_ref);
+    let propstring = css_propstrings::css_propstrings(lwc_ref);
     let start_time = time::precise_time_ns();
-    let sheet: ~css = css::css_create(&params, Some(lwc_ref), Some(propstring));
+    let sheet: ~css = css::css_create(&params, lwc_ref, Some(propstring));
     let end_time = time::precise_time_ns();
     *css_stylesheet_create_time += (end_time - start_time);
 
@@ -817,7 +817,7 @@ pub fn run_test( ctx:@mut line_ctx,  lwc_ref:&mut ~lwc, css_select_style_time:@m
         let pw_ptr = ::cast::transmute(pw);
 
         let start_time = time::precise_time_ns();
-        let result = select.css_select_style(lwc_ref, target,ctx.media as u64,None, select_handler,pw_ptr);
+        let result = select.css_select_style(target,ctx.media as u64,None, select_handler,pw_ptr);
         let end_time = time::precise_time_ns();
 
         *css_select_style_time += (end_time - start_time);
