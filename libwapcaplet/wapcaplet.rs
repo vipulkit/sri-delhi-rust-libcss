@@ -185,14 +185,14 @@ impl lwc {
 //     }
 // }
 
-priv fn lwc()->~lwc {
-    return ~lwc {
-        map: HashMap::new(),
-        vect: ~[]
-    }
-}
+// priv fn lwc()->~lwc {
+//     return ~lwc {
+//         map: HashMap::new(),
+//         vect: ~[]
+//     }
+// }
 
-//pub static mut lwc_ref : Option<~lwc>  = None;
+// pub static mut lwc_data_ref : Option<~lwc>  = None;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -251,32 +251,92 @@ pub fn create_lwc_thread() {
 
 pub fn lwc_thread() {
     // do work here
+    let mut lwc_container = ~lwc {
+        map: HashMap::new(),
+        vect: ~[]
+    };
+
     let mut lwc_wrapper = unsafe { ::lwc_ref.get() } ;
-    let (message,send_port) = lwc_wrapper.thread_port.recv() ;
     loop {
+        let (message, send_port) = lwc_wrapper.thread_port.recv() ;
         match message {
-            // C_INTERN(x)=>{ 
-            //     loop ; 
-            // },
-            // C_GET_LENGTH(x)=>{ 
-            //     loop ; 
-            // },
-            // C_GET_DATA(x)=>{ 
-            //     loop ; 
-            // },
-            // C_INTERN_SUBSTRING(x,y,z)=>{ 
-            //     loop ; 
-            // },
-            // C_INTERN_CASELESS(x)=>{ 
-            //     loop ; 
-            // },
-            // C_IS_CASELESS_EQUAL(x,y)=>{ 
-            //     loop ; 
-            // },
+            C_INTERN(x)=>{ 
+                match lwc_container.map.find_equiv(&x) {
+                    Some(&idx) => {
+                        send_port.send(R_INTERN(idx));
+                    },
+                    None => {},
+                }
+                
+                let new_idx = lwc_container.vect.len();
+                let x = x.to_owned();
+                
+                lwc_container.map.insert(x.clone(), new_idx);
+
+                let new_lwc_string = lwc_string {
+                    id:new_idx,
+                    string: x,
+                    insensitive: None
+                };
+
+                lwc_container.vect.push(new_lwc_string);
+                send_port.send(R_INTERN(new_idx));
+                loop ; 
+            },
+            C_GET_LENGTH(x)=>{ 
+                send_port.send(R_GET_LENGTH(lwc_container.vect[x].string.len()));
+                loop ; 
+            },
+            C_GET_DATA(x)=>{ 
+                send_port.send(R_GET_DATA(lwc_container.vect[x].string.clone()));
+                loop ; 
+            },
+            C_INTERN_SUBSTRING(x,y,z)=>{ 
+                if (lwc_container.vect[x].string.len() <= y as uint) || (lwc_container.vect[x].string.len() <= (y+z) as uint) {
+                    send_port.send(R_INTERN_SUBSTRING(-1));
+                }
+                else{
+                    let slice_string = lwc_container.vect[x].string.slice(y as uint , (y+z) as uint).to_owned();
+                    send_port.send(R_INTERN_SUBSTRING(lwc_container.lwc_intern_string(slice_string)));
+                }
+                loop ; 
+            },
+            C_INTERN_CASELESS(x)=>{ 
+                if (lwc_container.vect[x].insensitive.is_some()) {
+                    send_port.send(R_INTERN_CASELESS(lwc_container.vect[x].insensitive.get()));
+                }
+
+                let val = lwc_wrapper::to_lower(lwc_container.vect[x].string);
+                
+                match lwc_container.map.find_equiv(&val) {
+                    Some(&idx) => {
+                        lwc_container.vect[x].insensitive = Some(idx);
+                        send_port.send(R_INTERN_CASELESS(idx));
+                    },
+                    None => {}  
+                }
+                
+                let new_idx = lwc_container.vect.len();
+                let val = val.to_owned();
+                lwc_container.map.insert(val.clone(), new_idx);  
+
+                let new_insensitive = lwc_string {
+                    id:new_idx,
+                    string: val,
+                    insensitive: Some(new_idx)
+                };
+                
+                lwc_container.vect.push(new_insensitive);
+                lwc_container.vect[x].insensitive = Some(new_idx);  
+                send_port.send(R_INTERN_CASELESS(new_idx));
+                loop ; 
+            },
+            C_IS_CASELESS_EQUAL(x,y)=>{ 
+                loop ; 
+            },
             C_TERMINATE=> {
                 break ;
             }
-            _=>{}
         }
     }
     // Set global handle to none , and leave from the threads
