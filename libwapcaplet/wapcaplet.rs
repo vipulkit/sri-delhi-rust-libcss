@@ -119,9 +119,9 @@ impl lwc {
     }
 
 	#[inline]
-    pub fn lwc_intern_caseless_string(&mut self , string: uint) {
+    pub fn lwc_intern_caseless_string(&mut self , string: uint) -> uint {
         if (self.vect[string].insensitive.is_some()) {
-            return;
+            return self.vect[string].insensitive.get();
         }
 
         let val = lwc::to_lower(self.vect[string].string);
@@ -129,7 +129,7 @@ impl lwc {
 		match self.map.find_equiv(&val) {
             Some(&idx) => {
                 self.vect[string].insensitive = Some(idx);
-				return;
+				return idx;
             },
             None => {}	
         }
@@ -145,19 +145,20 @@ impl lwc {
 		};
 		
 		self.vect.push(new_insensitive);
-		self.vect[string].insensitive = Some(new_idx);	
+		self.vect[string].insensitive = Some(new_idx);
+        return new_idx;	
     }	
 
     
     #[inline]
-    pub fn lwc_intern_substring(&mut self , substring_to_intern: uint , ssoffset: u32, sslen: u32) -> Option<uint> {
+    pub fn lwc_intern_substring(&mut self , substring_to_intern: uint , ssoffset: uint, sslen: uint) -> uint {
         
-        if (self.vect[substring_to_intern].string.len() <= ssoffset as uint) || (self.vect[substring_to_intern].string.len() <= (ssoffset+sslen) as uint) {
-            None
+        if (self.vect[substring_to_intern].string.len() <= ssoffset) || (self.vect[substring_to_intern].string.len() <= (ssoffset+sslen)) {
+            -1
         }
         else{
-            let slice_string = self.vect[substring_to_intern].string.slice(ssoffset as uint , (ssoffset+sslen) as uint).to_owned();
-            Some(self.lwc_intern_string(slice_string))
+            let slice_string = self.vect[substring_to_intern].string.slice(ssoffset, (ssoffset+sslen)).to_owned();
+            self.lwc_intern_string(slice_string)
         }
     }
 
@@ -261,77 +262,27 @@ pub fn lwc_thread() {
         let (message, send_port) = lwc_wrapper.thread_port.recv() ;
         match message {
             C_INTERN(x)=>{ 
-                match lwc_container.map.find_equiv(&x) {
-                    Some(&idx) => {
-                        send_port.send(R_INTERN(idx));
-                    },
-                    None => {},
-                }
-                
-                let new_idx = lwc_container.vect.len();
-                let x = x.to_owned();
-                
-                lwc_container.map.insert(x.clone(), new_idx);
-
-                let new_lwc_string = lwc_string {
-                    id:new_idx,
-                    string: x,
-                    insensitive: None
-                };
-
-                lwc_container.vect.push(new_lwc_string);
-                send_port.send(R_INTERN(new_idx));
+                send_port.send(R_INTERN(lwc_container.lwc_intern_string(x)));
                 loop ; 
             },
             C_GET_LENGTH(x)=>{ 
-                send_port.send(R_GET_LENGTH(lwc_container.vect[x].string.len()));
+                send_port.send(R_GET_LENGTH(lwc_container.lwc_string_length(x)));
                 loop ; 
             },
             C_GET_DATA(x)=>{ 
-                send_port.send(R_GET_DATA(lwc_container.vect[x].string.clone()));
+                send_port.send(R_GET_DATA(lwc_container.lwc_string_data(x)));
                 loop ; 
             },
             C_INTERN_SUBSTRING(x,y,z)=>{ 
-                if (lwc_container.vect[x].string.len() <= y as uint) || (lwc_container.vect[x].string.len() <= (y+z) as uint) {
-                    send_port.send(R_INTERN_SUBSTRING(-1));
-                }
-                else{
-                    let slice_string = lwc_container.vect[x].string.slice(y as uint , (y+z) as uint).to_owned();
-                    send_port.send(R_INTERN_SUBSTRING(lwc_container.lwc_intern_string(slice_string)));
-                }
+                send_port.send(R_INTERN_SUBSTRING(lwc_container.lwc_intern_substring(x, y, z)));
                 loop ; 
             },
             C_INTERN_CASELESS(x)=>{ 
-                if (lwc_container.vect[x].insensitive.is_some()) {
-                    send_port.send(R_INTERN_CASELESS(lwc_container.vect[x].insensitive.get()));
-                }
-
-                let val = lwc_wrapper::to_lower(lwc_container.vect[x].string);
-                
-                match lwc_container.map.find_equiv(&val) {
-                    Some(&idx) => {
-                        lwc_container.vect[x].insensitive = Some(idx);
-                        send_port.send(R_INTERN_CASELESS(idx));
-                    },
-                    None => {}  
-                }
-                
-                let new_idx = lwc_container.vect.len();
-                let val = val.to_owned();
-                lwc_container.map.insert(val.clone(), new_idx);  
-
-                let new_insensitive = lwc_string {
-                    id:new_idx,
-                    string: val,
-                    insensitive: Some(new_idx)
-                };
-                
-                lwc_container.vect.push(new_insensitive);
-                lwc_container.vect[x].insensitive = Some(new_idx);  
-                send_port.send(R_INTERN_CASELESS(new_idx));
+                send_port.send(R_INTERN_CASELESS(lwc_container.lwc_intern_caseless_string(x)));
                 loop ; 
             },
             C_IS_CASELESS_EQUAL(x,y)=>{ 
+                send_port.send(R_IS_CASELESS_EQUAL(lwc_container.lwc_string_caseless_isequal(x, y)));
                 loop ; 
             },
             C_TERMINATE=> {
