@@ -6,6 +6,7 @@ extern mod extra;
 use std::hashmap::HashMap;
 use std::str;
 use std::clone::Clone;
+use std::comm::* ;
 
 priv struct lwc_string {
     id: uint,
@@ -176,13 +177,13 @@ impl lwc {
 
 
 
-pub fn create_lwc_instance() {
-    unsafe{
-        if lwc_ref.is_none() { 
-            lwc_ref=Some(lwc())
-        }
-    }
-}
+// pub fn create_lwc_instance() {
+//     unsafe{
+//         if lwc_ref.is_none() { 
+//             lwc_ref=Some(lwc())
+//         }
+//     }
+// }
 
 priv fn lwc()->~lwc {
     return ~lwc {
@@ -191,7 +192,7 @@ priv fn lwc()->~lwc {
     }
 }
 
-pub static mut lwc_ref : Option<~lwc>  = None;
+//pub static mut lwc_ref : Option<~lwc>  = None;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -204,23 +205,24 @@ pub enum to_lwc {
     C_GET_DATA(uint),
     C_INTERN_SUBSTRING(uint,uint,uint),
     C_INTERN_CASELESS(uint),
-    C_IS_CASELESS_EQUAL(uint)
+    C_IS_CASELESS_EQUAL(uint),
     C_TERMINATE
 }
 
-pub struct from_lwc {
+pub enum from_lwc {
     R_INTERN(uint),
     R_GET_LENGTH(uint),
     R_GET_DATA(~str),
     R_INTERN_SUBSTRING(uint),
     R_INTERN_CASELESS(uint),
+    R_IS_CASELESS_EQUAL(bool),
     R_TERMINATE  // Not Required
 }
 
 pub static mut lwc_ref : Option<~lwc_wrapper>  = None;
 
 pub struct lwc_wrapper {
-    thread_handle : Option<Chan< (to_lwc,Port<from_lwc>) >)>
+    thread_handle : Chan< (to_lwc,Port<from_lwc>) > 
 }
 
 pub fn create_lwc_thread() {
@@ -232,7 +234,7 @@ pub fn create_lwc_thread() {
 }
 
 
-impl lwc {
+impl lwc_wrapper {
 
     #[inline]
     pub fn dolower(c: u8 ) -> u8 {
@@ -264,8 +266,19 @@ impl lwc {
     }
 
     #[inline]
-    pub fn lwc_intern_string(&mut self, val: &str) -> uint {
+    pub fn lwc_intern_string(&mut self, val: ~str) -> int {
 
+        let thread = SharedChan::new(self.thread_handle);        
+        let mut to_msg : to_lwc = C_INTERN(val) ;
+        let (port, chan): (Port<from_lwc>, Chan<from_lwc>) = stream();
+        thread.send((to_msg,port));
+
+        let mut result : from_lwc = port.recv() ;
+
+        match result{
+            R_INTERN(x)=>{ x as int },
+            _=>{ -1 }
+        }
     }
 
 
