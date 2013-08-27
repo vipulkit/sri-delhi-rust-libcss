@@ -219,18 +219,68 @@ pub enum from_lwc {
     R_TERMINATE  // Not Required
 }
 
-pub static mut lwc_ref : Option<~lwc_wrapper>  = None;
+pub static mut lwc_ref : Option<@mut lwc_wrapper>  = None;
 
 pub struct lwc_wrapper {
-    thread_handle : SharedChan< (to_lwc,SharedChan<from_lwc>) > 
+    thread_handle : SharedChan< (to_lwc,SharedChan<from_lwc>) > ,
+    thread_port : Port<(to_lwc,SharedChan<from_lwc>)>
 }
 
 pub fn create_lwc_thread() {
     unsafe{
         if lwc_ref.is_none() { 
             // create task  and assign handle to it 
+
+            // initialize lwc_wrapper here and assign it to global variable
+            let (port, chan): (Port<(to_lwc,SharedChan<from_lwc>)>, Chan<(to_lwc,SharedChan<from_lwc>)>) = stream();
+            let schan = SharedChan::new(chan);
+            let mut lwc_wrapper : @mut lwc_wrapper = @mut lwc_wrapper {
+                thread_handle:schan.clone(),
+                thread_port:port
+            };
+
+            ::lwc_ref = Some(lwc_wrapper);
+            
+            // when call enters the lwc_thread , lwc_thread will use it
+            do spawn {
+                lwc_thread() ;
+            }
         }
     }
+}
+
+pub fn lwc_thread() {
+    // do work here
+    let mut lwc_wrapper = unsafe { ::lwc_ref.get() } ;
+    let (message,send_port) = lwc_wrapper.thread_port.recv() ;
+    loop {
+        match message {
+            // C_INTERN(x)=>{ 
+            //     loop ; 
+            // },
+            // C_GET_LENGTH(x)=>{ 
+            //     loop ; 
+            // },
+            // C_GET_DATA(x)=>{ 
+            //     loop ; 
+            // },
+            // C_INTERN_SUBSTRING(x,y,z)=>{ 
+            //     loop ; 
+            // },
+            // C_INTERN_CASELESS(x)=>{ 
+            //     loop ; 
+            // },
+            // C_IS_CASELESS_EQUAL(x,y)=>{ 
+            //     loop ; 
+            // },
+            C_TERMINATE=> {
+                break ;
+            }
+            _=>{}
+        }
+    }
+    // Set global handle to none , and leave from the threads
+    unsafe { ::lwc_ref = None; }
 }
 
 
