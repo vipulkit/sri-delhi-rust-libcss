@@ -29,18 +29,25 @@ fn fill_params() -> css_params {
     return css_param;
 }
 
-fn css_create_fn() -> @mut css{
+fn css_create_fn() -> ~css{
     let css = css::css_create( &fill_params(), None, None);
     css
 }
 
 fn main() {
     println("parse");
-    // parse(~"../data/parse/atrules.dat");
+    // parse(~"data/parse/tests1.dat");
+    // parse(~"data/parse/atrules.dat");
+    // parse(~"data/parse/colours.dat");
+    // parse(~"data/parse/colours-hsl.dat");
+    // parse(~"data/parse/nth.dat");
+    // parse(~"data/parse/properties.dat");
+    // parse(~"data/parse/selectors.dat");
+
 }
 
 fn parse(file_name: ~str) {
-    let css = css_create_fn();
+    let mut css = css_create_fn();
     let r:@Reader = file_reader(&Path(file_name)).unwrap();
     let mut dataFlag = false;
     // let mut expectedFlag: bool;

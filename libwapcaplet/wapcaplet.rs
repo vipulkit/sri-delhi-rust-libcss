@@ -161,12 +161,12 @@ impl lwc {
     }
 
     #[inline]
-    pub fn lwc_string_length(&self, string:uint) -> uint {
+    pub fn lwc_string_length(&mut self, string:uint) -> uint {
         self.vect[string].string.len()
     }
         
     #[inline]
-    pub fn lwc_string_data(&self, string:uint) -> ~str {
+    pub fn lwc_string_data(&mut self, string:uint) -> ~str {
         self.vect[string].string.clone()
     }
 
@@ -174,22 +174,10 @@ impl lwc {
 } // impl wapcaplet
 
 
-
-
-pub fn create_lwc_instance() {
-    unsafe{
-        if lwc_ref.is_none() { 
-            lwc_ref=Some(lwc())
-        }
-    }
-}
-
 priv fn lwc()->~lwc {
     return ~lwc {
         map: HashMap::new(),
         vect: ~[]
     }
 }
-
-pub static mut lwc_ref : Option<~lwc>  = None;
 

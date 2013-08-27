@@ -71,7 +71,7 @@ fn main() {
     debug!("parse");
 }
 
-fn create_css() -> @mut css{
+fn create_css() -> ~css{
     debug!("Entering: create_css");
     let css = css::css_create( &css_create_params(), None, None);
     css
@@ -183,7 +183,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     debug!("Entering :: run_test");
     // debug!("\n == data == %?" , str::from_bytes(data));
     
-    let css = create_css();
+    let mut css = create_css();
     let mut buf: ~str;
     let mut error = css.css_stylesheet_append_data(data);
     match error {
@@ -198,7 +198,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
         _ => {assert!(false);}
     }
 
-    buf = dump_sheet(css.stylesheet);
+    buf = dump_sheet(css.stylesheet, css.lwc_ref.get_mut_ref());
     //debug!(fmt!("\n == sheet ==%?=" , buf));
     let mut dvec : ~[~[u8]] = ~[];
     for buf.any_line_iter().advance |s| {

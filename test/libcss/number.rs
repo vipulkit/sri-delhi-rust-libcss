@@ -19,12 +19,8 @@ fn number(file_name: ~str) {
     let mut resetFlag = false;
     let mut data_string: ~str = ~"";
     let mut expected_str: ~str = ~"";
-    unsafe{
-        if lwc_ref.is_none() { 
-            lwc_ref=Some(lwc())
-        }
-    }
-    
+    let mut lwc_ref=Some(lwc());
+          
     while !r.eof() {
         let buf = r.read_line();
         // debug!(buf);
@@ -59,9 +55,9 @@ fn number(file_name: ~str) {
         if (resetFlag && !dataFlag && !expectedFlag) {
              debug!(fmt!("data = %?" , data_string));
             // debug!(fmt!("expected_str = %?" , expected_str));
-            let lwc_string= Some(unsafe{lwc_ref.get_mut_ref()}.lwc_intern_string(data_string));
+            let lwc_string= Some(lwc_ref.get_mut_ref().lwc_intern_string(data_string));
             //debug!(fmt!("lwc string = %?" , lwc_string.get_ref().clone()));
-            let (a , _) = css__number_from_lwc_string(unsafe{lwc_ref.get_ref()},lwc_string.get() , false);
+            let (a , _) = css__number_from_lwc_string(lwc_ref.get_mut_ref(),lwc_string.get() , false);
             // debug!(fmt!("a = %?" , a));
                 
             let b = print_css_fixed(256, a);

@@ -134,7 +134,7 @@ pub fn opcode_names() -> ~[~str] {
 }
 
 
-pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
+pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc) -> ~str {
     
     debug!("Entering: dump_sheet");
 
@@ -167,7 +167,7 @@ pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
         match rule.get() {
 
             RULE_SELECTOR(css_rule_selector_x)=>{
-                dump_rule_selector(css_rule_selector_x, &mut ptr, 1);
+                dump_rule_selector(css_rule_selector_x, lwc_ref, &mut ptr, 1);
                 rule = css_rule_selector_x.base.next;
             },
             RULE_CHARSET(css_rule_charset_x)=>{
@@ -179,15 +179,15 @@ pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
                 rule = css_rule_import_x.base.next;
             },
             RULE_MEDIA(css_rule_media_x)=>{
-                dump_rule_media(css_rule_media_x, &mut ptr);
+                dump_rule_media(css_rule_media_x, lwc_ref, &mut ptr);
                 rule = css_rule_media_x.base.next;
             },
             RULE_FONT_FACE(css_rule_font_face_x)=>{
-                dump_rule_font_face(css_rule_font_face_x, &mut ptr);
+                dump_rule_font_face(css_rule_font_face_x, lwc_ref, &mut ptr);
                 rule = css_rule_font_face_x.base.next;
             },
             RULE_PAGE(css_rule_page_x)=>{
-                dump_rule_page(css_rule_page_x, &mut ptr);
+                dump_rule_page(css_rule_page_x, lwc_ref, &mut ptr);
                 rule = css_rule_page_x.base.next; 
             },
             RULE_UNKNOWN(css_rule_x)=>{
@@ -204,7 +204,7 @@ pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
     ptr
 }
 
-fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
+fn dump_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32){
     debug!("Entering: dump_rule_selector");
     let mut i = 0;
 
@@ -216,7 +216,7 @@ fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
     
     i = 0;
     while i < s.selectors.len() {
-        dump_selector_list(s.selectors[i] , ptr);
+        dump_selector_list(s.selectors[i] , lwc_ref, ptr);
         if !(i == s.selectors.len() - 1) {
             ptr.push_char(',');
             ptr.push_char(' ');
@@ -227,7 +227,7 @@ fn dump_rule_selector(s:@mut css_rule_selector, ptr:&mut ~str, depth:u32){
     ptr.push_char('\n');
     if s.style.is_some() {
         debug!("Entering: dump_rule_selector :: if s.style.is_some()");
-        dump_bytecode(s.style.unwrap() , ptr, depth +1);
+        dump_bytecode(s.style.unwrap() , lwc_ref, ptr,  depth +1);
     }
 
     debug!(fmt!("ptr == %?" , ptr));
@@ -253,7 +253,7 @@ fn dump_rule_import(s:@mut css_rule_import, ptr:&mut ~str){
 }
 
 // TODO
-fn dump_rule_media(s:@mut css_rule_media, ptr: &mut ~str) {
+fn dump_rule_media(s:@mut css_rule_media, lwc_ref:&mut ~lwc, ptr: &mut ~str) {
     debug!("Entering: dump_rule_media");
     ptr.push_str( &"| @media ");
     ptr.push_char('\n');
@@ -264,7 +264,7 @@ fn dump_rule_media(s:@mut css_rule_media, ptr: &mut ~str) {
         let rule_type = rule.unwrap();
         match rule_type {
             RULE_SELECTOR(x) => {
-                 dump_rule_selector(x, ptr, 2);
+                 dump_rule_selector(x, lwc_ref, ptr, 2);
                  rule = x.base.next;
             },
             _ =>{
@@ -276,38 +276,38 @@ fn dump_rule_media(s:@mut css_rule_media, ptr: &mut ~str) {
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_rule_page(s:@ mut css_rule_page, ptr:&mut ~str){
+fn dump_rule_page(s:@ mut css_rule_page, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_rule_page");
     ptr.push_str( &"| @page ");
 
     if s.selector.is_some() {
-        dump_selector_list(s.selector.unwrap(), ptr);
+        dump_selector_list(s.selector.unwrap(), lwc_ref, ptr);
     }
 
     ptr.push_char('\n');
 
     if s.style.is_some() {
-        dump_bytecode(s.style.unwrap() , ptr, 2);
+        dump_bytecode(s.style.unwrap() , lwc_ref, ptr, 2);
     }   
 
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_rule_font_face(s:@mut css_rule_font_face, ptr:&mut ~str){
+fn dump_rule_font_face(s:@mut css_rule_font_face, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_rule_font_face");
     ptr.push_str( &"| @font-face ");
     if s.font_face.is_some() {
-        dump_font_face(s.font_face.unwrap(), ptr);
+        dump_font_face(s.font_face.unwrap(), lwc_ref, ptr);
     }
     ptr.push_char('\n');
 
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
+fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_selector_list");
     if list.combinator.is_some() {
-        dump_selector_list(list.combinator.unwrap(),ptr);
+        dump_selector_list(list.combinator.unwrap(), lwc_ref, ptr);
     }
     match list.data[0].combinator_type {
         CSS_COMBINATOR_NONE=> {
@@ -336,24 +336,24 @@ fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
         }
 
     }
-    dump_selector(list, ptr);
+    dump_selector(list, lwc_ref, ptr);
 
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_selector(selector:@mut css_selector, ptr:&mut ~str){
+fn dump_selector(selector:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_selector");
     let d:~[@mut css_selector_detail] = selector.data.clone();
     let mut iter:uint = 0;
     while iter < d.len() {
-        dump_selector_detail(d[iter], ptr, (iter != (d.len() - 1)));
+        dump_selector_detail(d[iter], lwc_ref, ptr, (iter != (d.len() - 1)));
         iter += 1;
     }   
 
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_next:bool ) {
+fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut ~lwc, ptr: &mut ~str, detail_next:bool ) {
     debug!("Entering: dump_selector_detail");
     if detail.negate {
         ptr.push_str(&":not(");
@@ -364,38 +364,38 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
     match detail.selector_type {
         CSS_SELECTOR_ELEMENT=>{
             debug!("Entering: CSS_SELECTOR_ELEMENT");
-            if unsafe{lwc_ref.get_ref()}.lwc_string_length(detail.qname.name) == 1 && unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name)[0] == '*' as u8 && !detail_next {
+            if lwc_ref.lwc_string_length(detail.qname.name) == 1 && lwc_ref.lwc_string_data(detail.qname.name)[0] == '*' as u8 && !detail_next {
             
-                ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
+                ptr.push_str(lwc_ref.lwc_string_data(detail.qname.name));
             }
-            else if unsafe{lwc_ref.get_ref()}.lwc_string_length(detail.qname.name) != 1 ||
+            else if lwc_ref.lwc_string_length(detail.qname.name) != 1 ||
             
-               unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name)[0] != '*' as u8 { 
-               ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name))
+               lwc_ref.lwc_string_data(detail.qname.name)[0] != '*' as u8 { 
+               ptr.push_str(lwc_ref.lwc_string_data(detail.qname.name))
             }
         },
 
         CSS_SELECTOR_CLASS=> {
 
             ptr.push_char('.');
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.qname.name));
         },
 
         CSS_SELECTOR_ID =>{
             
             ptr.push_char('#');
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.qname.name));
         },
 
         CSS_SELECTOR_PSEUDO_CLASS | CSS_SELECTOR_PSEUDO_ELEMENT =>{
             ptr.push_char(':' );
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.qname.name));
             match detail.value_type {
                 CSS_SELECTOR_DETAIL_VALUE_STRING=> {
                     if detail.string.is_some() {
                         ptr.push_char('(' );
                         //let String = copy detail.string;
-                        ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.string.unwrap()));
+                        ptr.push_str( lwc_ref.lwc_string_data(detail.string.unwrap()));
                         ptr.push_char(')' );
                     }
                 } ,
@@ -407,65 +407,65 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 
         CSS_SELECTOR_ATTRIBUTE=>{
             ptr.push_char('[');
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.qname.name));
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_EQUAL =>{
             ptr.push_char('[');
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.qname.name));
             ptr.push_char('=');
             ptr.push_char('"');
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.string.unwrap()));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_DASHMATCH=>{
             ptr.push_char('[');
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.qname.name));
             ptr.push_char('|');
             ptr.push_char('=');
             ptr.push_char('"');
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.string.unwrap()));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_INCLUDES=>{
             ptr.push_char('[');
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.qname.name));
             ptr.push_char('~');
             ptr.push_char('=');
             ptr.push_char('"');
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.string.unwrap()));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_PREFIX=>{
             ptr.push_char('[' );
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.qname.name));
             ptr.push_char('^' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.string.unwrap()));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"' );
             ptr.push_char(']' );
         },
         CSS_SELECTOR_ATTRIBUTE_SUFFIX=>{
             ptr.push_char('[' );
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.qname.name));
             ptr.push_char('$' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.string.unwrap()));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"' );
             ptr.push_char(']' );
         },
         CSS_SELECTOR_ATTRIBUTE_SUBSTRING=>{
             ptr.push_char('[' );
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.qname.name));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.qname.name));
             ptr.push_char('*' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            ptr.push_str(unsafe{lwc_ref.get_ref()}.lwc_string_data(detail.string.unwrap()));
+            ptr.push_str(lwc_ref.lwc_string_data(detail.string.unwrap()));
             ptr.push_char('"' );
             ptr.push_char(']' );
         }
@@ -477,7 +477,7 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
+fn dump_bytecode(style:@mut css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32 ){
     
     debug!("Entering: dump_bytecode");
     let bytecode = style.bytecode.clone();
@@ -627,7 +627,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                     if option_string.is_some() {
                         ptr.push_str( &"url('");
-                        ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned() );
+                        ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
                         ptr.push_str( &"')");    
                     }
 
@@ -1135,7 +1135,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             debug!("dump_bytecode :: CONTENT_COUNTER :: option_string == %?" , option_string.get_ref());
-                            dump_counter( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()), value , ptr);
+                            dump_counter( lwc_ref.lwc_string_data(option_string.unwrap()), value , ptr);
                         }
                     }
                     else if (value as int & 0xff) == CONTENT_COUNTERS as int {
@@ -1147,7 +1147,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             debug!("dump_bytecode :: CONTENT_COUNTERS :: option_string == %?" , option_string.get_ref());
-                            dump_counters( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()) , fmt!("%?" , sep) , value , ptr);
+                            dump_counters( lwc_ref.lwc_string_data(option_string.unwrap()) , fmt!("%?" , sep) , value , ptr);
                         }
                     }
                     else if (value as int & 0xff) == CONTENT_URI as int || (value as int & 0xff) == CONTENT_ATTR as int || (value as int & 0xff) == CONTENT_STRING as int {
@@ -1169,7 +1169,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         if option_string.is_some() {
                             debug!("dump_bytecode :: CONTENT_URI_ATTR_STRING :: option_string == %?" , option_string.get_ref());
                             ptr.push_str( &"'");
-                            ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned());
+                            ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned());
                             ptr.push_str( &"'");
                         }
                     }
@@ -1210,7 +1210,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         iterator += 1;
                         
                         if option_string.is_some() {
-                            ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned());
+                            ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned());
                         }
                         ptr.push_char(' ');
                         let val = bytecode[iterator] as i32;
@@ -1240,7 +1240,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                     if option_string.is_some() {
                         ptr.push_str( &"url('");
-                        ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned());
+                        ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned());
                         ptr.push_str( &"'), ");
                     }
 
@@ -1425,7 +1425,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
                         
                         if option_string.is_some() {
                             ptr.push_char('\'');
-                            ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned() );
+                            ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
                             ptr.push_char('\'');
                         }
                     }
@@ -1839,7 +1839,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                     if option_string.is_some() {
                         ptr.push_char('\'');
-                        ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned() );
+                        ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
                         ptr.push_char('\'');
                     }
                 }
@@ -1888,7 +1888,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             ptr.push_str( &" '");
-                            ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned() );
+                            ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
                             ptr.push_str( &"' ");
                         }
 
@@ -1896,7 +1896,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             ptr.push_str( &" '");
-                            ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned() );
+                            ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
                             ptr.push_str( &"' ");
                         }
                         iterator += 1;
@@ -2127,7 +2127,7 @@ fn dump_bytecode(style:@mut css_style, ptr:&mut ~str, depth:u32 ){
 
                         if option_string.is_some() {
                             ptr.push_char('\'');
-                            ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(option_string.unwrap()).to_owned() );
+                            ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
                             ptr.push_char('\'');
                         }
                     }
@@ -2359,7 +2359,7 @@ fn dump_unit(val: i32 , unit: u32 , ptr: &mut ~str) {
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
+fn dump_font_face(font_face: @mut css_font_face, lwc_ref:&mut ~lwc, ptr: &mut ~str){
     debug!("Entering: dump_font_face");
     let mut style: u8;
     let mut weight: u8;
@@ -2367,7 +2367,7 @@ fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
     if font_face.font_family.is_some() {
         ptr.push_char('\n');
         ptr.push_str( &"| font_family: ");
-        ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(font_face.font_family.get()));
+        ptr.push_str( lwc_ref.lwc_string_data(font_face.font_family.get()));
     }
     ptr.push_str( &"\n| font-style: ");
 
@@ -2474,7 +2474,7 @@ fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
                     ptr.push_str( &"UNKNOWN");
                 }
 
-                ptr.push_str( unsafe{lwc_ref.get_ref()}.lwc_string_data(i.location.get()));
+                ptr.push_str( lwc_ref.lwc_string_data(i.location.get()));
             }
 
         }

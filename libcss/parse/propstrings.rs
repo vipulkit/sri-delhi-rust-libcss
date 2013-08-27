@@ -558,8 +558,6 @@ pub struct css_propstrings {
     pseudo_element_list:~[index_property]
 }
 
-pub static mut propstrings_ref : Option<~css_propstrings>  = None;
-
 impl css_propstrings {
 
     pub fn css_propstrings(lwc_ref:&mut ~lwc) -> ~css_propstrings {
@@ -616,11 +614,14 @@ impl css_propstrings {
             &"slategray", &"slategrey",&"snow",&"springgreen",&"steelblue", &"tan", &"teal",&"thistle",&"tomato",&"turquoise",&"violet",&"violetred",
             &"wheat",&"white", &"whitesmoke",&"yellow",&"yellowgreen"];
 
-        //let length = propstrings_list.len();
+        let length = propstrings_list.len();
+        let mut ele = 0;
         let mut _propstrings = ~[];
         //_propstrings.reserve_at_least(length);
-        for propstrings_list.iter().advance |&ele| {
-            _propstrings.push(lwc_ref.lwc_intern_string(ele));
+
+        while ele < length {
+            _propstrings.push(lwc_ref.lwc_intern_string(propstrings_list[ele]));
+            ele +=1;
         }
 
         let css_propstrings_instance = ~css_propstrings {
@@ -667,19 +668,19 @@ impl css_propstrings {
 
     #[inline]
 
-    pub fn lwc_string_caseless_isequal(&self, lwc_string_instance: uint , string_index: uint) -> bool {
-        unsafe{lwc_ref.get_mut_ref().lwc_string_caseless_isequal(lwc_string_instance, self.propstrings[string_index])}
+    pub fn lwc_string_caseless_isequal(&self, lwc_ref:&mut ~lwc, lwc_string_instance: uint , string_index: uint) -> bool {
+       lwc_ref.lwc_string_caseless_isequal(lwc_string_instance, self.propstrings[string_index])
    
     }
 
     #[inline]
-    pub fn lwc_string_isequal(&self , lwc_string_instance: uint , string_index: uint) -> bool {
-        unsafe{lwc_ref.get_mut_ref().lwc_string_isequal(lwc_string_instance , self.propstrings[string_index])}    
+    pub fn lwc_string_isequal(&self, lwc_ref:&mut ~lwc, lwc_string_instance: uint , string_index: uint) -> bool {
+        lwc_ref.lwc_string_isequal(lwc_string_instance , self.propstrings[string_index])    
     }
 
     #[inline]
-    pub fn lwc_string_data(&self, string_index:uint) -> ~str {
-        unsafe{lwc_ref.get_ref().lwc_string_data(self.propstrings[string_index])}
+    pub fn lwc_string_data(&self, lwc_ref:&mut ~lwc,string_index:uint) -> ~str {
+        lwc_ref.lwc_string_data(self.propstrings[string_index])
     }
 
     #[inline]
@@ -689,16 +690,16 @@ impl css_propstrings {
 
     
 
-    pub fn is_selector_pseudo(&self, name: uint) -> Option<(css_selector_type, index_property)> {
+    pub fn is_selector_pseudo(&self, lwc_ref:&mut ~lwc, name: uint) -> Option<(css_selector_type, index_property)> {
         
         let mut return_value : Option<(css_selector_type, index_property)> = None;
 
 		for self.pseudo_class_list.iter().advance |&string_index| {
 			if  (
-					unsafe{ lwc_ref.get_mut_ref().lwc_string_caseless_isequal(
+					lwc_ref.lwc_string_caseless_isequal(
 						name,
 						self.propstrings[string_index as uint]
-					)} 
+					) 
 				) {
 				return_value = Some((CSS_SELECTOR_PSEUDO_CLASS, string_index));
 			}
@@ -706,10 +707,10 @@ impl css_propstrings {
 
 		for self.pseudo_element_list.iter().advance|&string_index| {
 			if (
-				unsafe{ lwc_ref.get_mut_ref().lwc_string_caseless_isequal(
+				lwc_ref.lwc_string_caseless_isequal(
 					name, 
 					self.propstrings[string_index as uint]
-				)}
+				)
 			) {
 				return_value = Some((CSS_SELECTOR_PSEUDO_ELEMENT , string_index));
 			}

@@ -13,6 +13,8 @@ use parse::propstrings::*;
 pub struct css {
     stylesheet:@mut css_stylesheet,
     parser:~css_parser,
+    lwc_ref:Option<~lwc>,
+    propstrings_ref:Option<~css_propstrings>
 }
 
 enum css_params_version {
@@ -49,38 +51,16 @@ pub struct css_params {
 
     /** Font resolution function */
     font : Option<css_font_resolution_fn>,
+
 }
 
 impl css {
 
-    pub fn css_create(params: &css_params, lwc_instance : Option<~lwc>, propstrings_instance : Option<~css_propstrings>) -> @mut css {
+    pub fn css_create(params: &css_params, lwc_instance : Option<~lwc>, propstrings_instance : Option<~css_propstrings>) -> ~css {
        
         assert!(!(propstrings_instance.is_some() && lwc_instance.is_none()));
-       
-        // create lwc
-        unsafe{
-            if lwc_ref.is_none() {
-                lwc_ref =  if  lwc_instance.is_none() { 
-                                Some(lwc())
-                            }  
-                            else {
-                                Some(lwc_instance.unwrap())
-                            } ;
-            }            
-        }
-                  
-        
-        unsafe{
-            if propstrings_ref.is_none() {
-                propstrings_ref =  if  propstrings_instance.is_none() { 
-                    Some(css_propstrings::css_propstrings(lwc_ref.get_mut_ref()))
-                }  
-                else {
-                    Some(propstrings_instance.unwrap())
-                } ;
-            }            
-        }
-                    
+        //assert!((propstrings_instance.is_none() || lwc_instance.is_none()));
+                                                     
         // create inputstream
         let (inputstream_option, _) =  
             match params.charset.clone() {
@@ -124,10 +104,28 @@ impl css {
             true => css_parser::css__parser_create_for_inline_style(language, lexer)
         }; 
 
-        @mut css {
+        let mut lwc_ref = if lwc_instance.is_none() {
+            lwc()
+        }
+        else {
+            lwc_instance.unwrap()
+        };
+        
+        let propstrings_ref = if propstrings_instance.is_none() {
+            css_propstrings::css_propstrings(&mut lwc_ref)
+        }
+        else {
+            propstrings_instance.unwrap()
+        };           
+
+        let css_instance = ~css {
             parser:parser.unwrap(),
             stylesheet:stylesheet,
-        }
+            lwc_ref: Some(lwc_ref),
+            propstrings_ref : Some(propstrings_ref)   
+        };
+       
+        css_instance    
     }
 
     /**
@@ -141,7 +139,7 @@ impl css {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     pub fn css_stylesheet_append_data(&mut self, data:~[u8]) -> css_error {
-        self.parser.css__parser_parse_chunk(data)
+        self.parser.css__parser_parse_chunk(self.lwc_ref.get_mut_ref(), self.propstrings_ref.get_ref(), data)
     }
 
     /**
@@ -154,7 +152,7 @@ impl css {
                       appropriate error otherwise.
     */
     pub fn css_stylesheet_data_done(&mut self) -> css_error {
-        let error = self.parser.css__parser_completed();
+        let error = self.parser.css__parser_completed(self.lwc_ref.get_mut_ref(), self.propstrings_ref.get_ref());
         match error {
             CSS_OK=>{},
             err => {
