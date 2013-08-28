@@ -186,12 +186,10 @@ impl lwc {
 //     }
 // }
 
-// priv fn lwc()->~lwc {
-//     return ~lwc {
-//         map: HashMap::new(),
-//         vect: ~[]
-//     }
-// }
+pub fn lwc()-> @mut lwc_wrapper {
+    create_lwc_thread();
+    unsafe { lwc_ref.get() }
+}
 
 // pub static mut lwc_data_ref : Option<~lwc>  = None;
 
@@ -235,7 +233,7 @@ pub fn create_lwc_thread() {
             // initialize lwc_wrapper here and assign it to global variable
             let (port, chan): (Port<(to_lwc,SharedChan<from_lwc>)>, Chan<(to_lwc,SharedChan<from_lwc>)>) = stream();
             let schan = SharedChan::new(chan);
-            let mut lwc_wrapper : @mut lwc_wrapper = @mut lwc_wrapper {
+            let lwc_wrapper : @mut lwc_wrapper = @mut lwc_wrapper {
                 thread_handle:schan.clone(),
                 thread_port:port
             };
@@ -257,7 +255,7 @@ pub fn lwc_thread() {
         vect: ~[]
     };
 
-    let mut lwc_wrapper = unsafe { ::lwc_ref.get() } ;
+    let lwc_wrapper = unsafe { ::lwc_ref.get() } ;
     loop {
         let (message, send_port) = lwc_wrapper.thread_port.recv() ;
         match message {
@@ -297,34 +295,34 @@ pub fn lwc_thread() {
 
 impl lwc_wrapper {
 
-    #[inline]
-    pub fn dolower(c: u8 ) -> u8 {
-        if (c > 64 && c < 91) {
-              return (c  + 32) ;
-        }
-        c
-    }
+    // #[inline]
+    // pub fn dolower(c: u8 ) -> u8 {
+    //     if (c > 64 && c < 91) {
+    //           return (c  + 32) ;
+    //     }
+    //     c
+    // }
 
-    #[inline]
-    fn to_lower(string:&str) -> ~str{
-        let mut lower : ~[u8] = ~[];
-        let len = string.len();
-        lower.reserve(len);
-        let mut c = 0;
-        let mut ch : u8;
-        while c < len {
-            ch = string[c] as u8;
-            unsafe {
-                if (ch > 64 && ch < 91) {
-                    lower.push_fast(ch + 32);
-                } else {
-                    lower.push_fast(ch);
-                }
-            }   
-            c += 1;
-        }
-        str::from_bytes_owned(lower)
-    }
+    // #[inline]
+    // fn to_lower(string:&str) -> ~str{
+    //     let mut lower : ~[u8] = ~[];
+    //     let len = string.len();
+    //     lower.reserve(len);
+    //     let mut c = 0;
+    //     let mut ch : u8;
+    //     while c < len {
+    //         ch = string[c] as u8;
+    //         unsafe {
+    //             if (ch > 64 && ch < 91) {
+    //                 lower.push_fast(ch + 32);
+    //             } else {
+    //                 lower.push_fast(ch);
+    //             }
+    //         }   
+    //         c += 1;
+    //     }
+    //     str::from_bytes_owned(lower)
+    // }
 
     #[inline]
     pub fn lwc_intern_string(&mut self, val: ~str) -> int {
