@@ -26,23 +26,13 @@ impl Clone for lwc_string {
 }  
 
 
-pub struct lwc {
+pub struct lwc_internal {
     priv map: HashMap<~str, uint>,
     priv vect:~[lwc_string]
 }
+ 
 
-// implementing clone for lwc  
-impl Clone for lwc {  
-    #[inline]  
-    pub fn clone(&self) -> lwc {  
-        lwc{  
-            map: self.map.clone(),  
-            vect: self.vect.clone()  
-        }  
-    }  
-}  
-
-impl lwc {
+impl lwc_internal {
 
     #[inline]
     pub fn dolower(c: u8 ) -> u8 {
@@ -124,7 +114,7 @@ impl lwc {
             return self.vect[string].insensitive.get();
         }
 
-        let val = lwc::to_lower(self.vect[string].string);
+        let val = lwc_internal::to_lower(self.vect[string].string);
 		
 		match self.map.find_equiv(&val) {
             Some(&idx) => {
@@ -221,8 +211,8 @@ pub enum from_lwc {
 pub static mut lwc_ref : Option<@mut lwc_wrapper>  = None;
 
 pub struct lwc_wrapper {
-    thread_handle : SharedChan< (to_lwc,SharedChan<from_lwc>) > ,
-    thread_port : Port<(to_lwc,SharedChan<from_lwc>)>
+    thread_handle : SharedChan< (to_lwc,SharedChan<from_lwc>) > 
+    //thread_port : Port<(to_lwc,SharedChan<from_lwc>)>
 }
 
 pub fn create_lwc_thread() {
@@ -234,63 +224,61 @@ pub fn create_lwc_thread() {
             let (port, chan): (Port<(to_lwc,SharedChan<from_lwc>)>, Chan<(to_lwc,SharedChan<from_lwc>)>) = stream();
             let schan = SharedChan::new(chan);
             let lwc_wrapper : @mut lwc_wrapper = @mut lwc_wrapper {
-                thread_handle:schan.clone(),
-                thread_port:port
+                thread_handle:schan.clone()
+                //thread_port:port
             };
-
             ::lwc_ref = Some(lwc_wrapper);
             
             // when call enters the lwc_thread , lwc_thread will use it
             do spawn {
-                lwc_thread() ;
+                // do work here
+                let mut lwc_container = ~lwc_internal {
+                    map: HashMap::new(),
+                    vect: ~[]
+                };
+
+                let lwc_wrapper = unsafe { ::lwc_ref.get() } ;
+
+                loop {
+                    let (message, send_port) = port.recv() ;
+                    match message {
+                        C_INTERN(x)=>{ 
+                            send_port.send(R_INTERN(lwc_container.lwc_intern_string(x)));
+                            loop ; 
+                        },
+                        C_GET_LENGTH(x)=>{ 
+                            send_port.send(R_GET_LENGTH(lwc_container.lwc_string_length(x)));
+                            loop ; 
+                        },
+                        C_GET_DATA(x)=>{ 
+                            send_port.send(R_GET_DATA(lwc_container.lwc_string_data(x)));
+                            loop ; 
+                        },
+                        C_INTERN_SUBSTRING(x,y,z)=>{ 
+                            send_port.send(R_INTERN_SUBSTRING(lwc_container.lwc_intern_substring(x, y, z)));
+                            loop ; 
+                        },
+                        C_INTERN_CASELESS(x)=>{ 
+                            send_port.send(R_INTERN_CASELESS(lwc_container.lwc_intern_caseless_string(x)));
+                            loop ; 
+                        },
+                        C_IS_CASELESS_EQUAL(x,y)=>{ 
+                            send_port.send(R_IS_CASELESS_EQUAL(lwc_container.lwc_string_caseless_isequal(x, y)));
+                            loop ; 
+                        },
+                        C_TERMINATE=> {
+                            break ;
+                        }
+                    }
+                }
+                // Set global handle to none , and leave from the threads
+                unsafe { ::lwc_ref = None; }
             }
         }
     }
 }
 
-pub fn lwc_thread() {
-    // do work here
-    let mut lwc_container = ~lwc {
-        map: HashMap::new(),
-        vect: ~[]
-    };
-
-    let lwc_wrapper = unsafe { ::lwc_ref.get() } ;
-    loop {
-        let (message, send_port) = lwc_wrapper.thread_port.recv() ;
-        match message {
-            C_INTERN(x)=>{ 
-                send_port.send(R_INTERN(lwc_container.lwc_intern_string(x)));
-                loop ; 
-            },
-            C_GET_LENGTH(x)=>{ 
-                send_port.send(R_GET_LENGTH(lwc_container.lwc_string_length(x)));
-                loop ; 
-            },
-            C_GET_DATA(x)=>{ 
-                send_port.send(R_GET_DATA(lwc_container.lwc_string_data(x)));
-                loop ; 
-            },
-            C_INTERN_SUBSTRING(x,y,z)=>{ 
-                send_port.send(R_INTERN_SUBSTRING(lwc_container.lwc_intern_substring(x, y, z)));
-                loop ; 
-            },
-            C_INTERN_CASELESS(x)=>{ 
-                send_port.send(R_INTERN_CASELESS(lwc_container.lwc_intern_caseless_string(x)));
-                loop ; 
-            },
-            C_IS_CASELESS_EQUAL(x,y)=>{ 
-                send_port.send(R_IS_CASELESS_EQUAL(lwc_container.lwc_string_caseless_isequal(x, y)));
-                loop ; 
-            },
-            C_TERMINATE=> {
-                break ;
-            }
-        }
-    }
-    // Set global handle to none , and leave from the threads
-    unsafe { ::lwc_ref = None; }
-}
+//pub fn lwc_thread() 
 
 
 impl lwc_wrapper {
@@ -325,8 +313,7 @@ impl lwc_wrapper {
     // }
 
     #[inline]
-    pub fn lwc_intern_string(&mut self, val: ~str) -> int {
-
+    pub fn lwc_intern_string(&mut self, val: ~str) -> uint {
         let thread = self.thread_handle.clone();        
         let to_msg : to_lwc = C_INTERN(val) ;
         let (port, chan): (Port<from_lwc>, Chan<from_lwc>) = stream();
@@ -337,7 +324,7 @@ impl lwc_wrapper {
         let result : from_lwc = port.recv() ;
 
         match result{
-            R_INTERN(x)=>{ x as int },
+            R_INTERN(x)=>{ x},
             _=>{ -1 }
         }
     }
@@ -367,7 +354,7 @@ impl lwc_wrapper {
     }
 
     #[inline]
-    pub fn lwc_intern_caseless_string(&mut self , string: uint) -> int {
+    pub fn lwc_intern_caseless_string(&mut self , string: uint) -> uint {
 
         let thread = self.thread_handle.clone();        
         let to_msg : to_lwc = C_INTERN_CASELESS(string) ;
@@ -379,14 +366,14 @@ impl lwc_wrapper {
         let result : from_lwc = port.recv() ;
 
         match result{
-            R_INTERN_CASELESS(x)=>{ x as int },
+            R_INTERN_CASELESS(x)=>{ x},
             _=>{ -1 }
         }
     }   
 
     
     #[inline]
-    pub fn lwc_intern_substring(&mut self , substring_to_intern: uint , ssoffset: u32, sslen: u32) -> int {
+    pub fn lwc_intern_substring(&mut self , substring_to_intern: uint , ssoffset: u32, sslen: u32) -> uint {
         
         let thread = self.thread_handle.clone();         
         let to_msg : to_lwc = C_INTERN_SUBSTRING(substring_to_intern,ssoffset as uint,sslen as uint) ;
@@ -398,13 +385,13 @@ impl lwc_wrapper {
         let result : from_lwc = port.recv() ;
 
         match result{
-            R_INTERN_SUBSTRING(x)=>{ x as int },
+            R_INTERN_SUBSTRING(x)=>{ x},
             _=>{ -1 }
         }
     }
 
     #[inline]
-    pub fn lwc_string_length(&mut self, string:uint) -> int {
+    pub fn lwc_string_length(&mut self, string:uint) -> uint {
 
         let thread = self.thread_handle.clone();          
         let to_msg : to_lwc = C_GET_LENGTH(string) ;
@@ -416,7 +403,7 @@ impl lwc_wrapper {
         let result : from_lwc = port.recv() ;
 
         match result{
-            R_GET_LENGTH(x)=>{ x as int },
+            R_GET_LENGTH(x)=>{ x},
             _=>{ -1 }
         }
     }
