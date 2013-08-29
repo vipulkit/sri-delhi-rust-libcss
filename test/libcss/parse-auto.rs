@@ -10,6 +10,7 @@ use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use wapcaplet::*;
+use css::parse::propstrings::css_propstrings;
 
 pub fn find_char_between(s: &str, c: char, start: uint, end: uint) -> Option<uint>{
 	let length = s.len();
@@ -50,8 +51,7 @@ pub struct line_ctx {
     inerrors:bool,
     inexp:bool,
 
-    inrule:bool,
-    lwc_instance:Option<~lwc>
+    inrule:bool
 }
 
 
@@ -447,6 +447,8 @@ pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
 pub fn run_test(ctx:@mut line_ctx) {
     debug!("Entering: run_test");
 
+    let mut lwc_ref = lwc();
+    let propstring = css_propstrings::css_propstrings(&mut lwc_ref);
     let mut error : css_error ;
     let mut params = css_params {
         /* ABI version of this structure */
@@ -483,10 +485,10 @@ pub fn run_test(ctx:@mut line_ctx) {
 
     //let lwc_instance = lwc() ;
 
-    let mut css_instance = css::css_create( &params, Some(ctx.lwc_instance.get_ref().clone()), None) ;
+    let mut css_instance = css::css_create( &params) ;
 
 
-    error = css_instance.css_stylesheet_append_data(ctx.buf.clone());
+    error = css_instance.css_stylesheet_append_data(&mut lwc_ref , &propstring ,ctx.buf.clone());
     match error {
         CSS_OK=>{},
         CSS_NEEDDATA=>{},
@@ -495,7 +497,7 @@ pub fn run_test(ctx:@mut line_ctx) {
         }
     }
 
-    error = css_instance.css_stylesheet_data_done();
+    error = css_instance.css_stylesheet_data_done(&mut lwc_ref , &propstring);
     let mut pending_imports = false ;
     assert!( match error {
                 CSS_OK=>{
@@ -527,7 +529,7 @@ pub fn run_test(ctx:@mut line_ctx) {
             CSS_OK=> {
                 params.url = url.clone();
 
-                let import = css::css_create(&params, Some(ctx.lwc_instance.get_ref().clone()), None) ;
+                let import = css::css_create(&params) ;
                 
                 assert!(    match css_instance.css_stylesheet_register_import(
                                                         Some(import.stylesheet)) {
@@ -565,7 +567,7 @@ pub fn run_test(ctx:@mut line_ctx) {
                                 ctx.exp[e].ftype , (CSS_RULE_SELECTOR as int)  )) ;
                             fail!(~"Expected type differs") ;
                         }
-                        if validate_rule_selector(rule, css_instance.lwc_ref.get_mut_ref(), ctx.exp[e]) {
+                        if validate_rule_selector(rule, &mut lwc_ref, ctx.exp[e]) {
                             report_fail(ctx.buf.clone(), ctx.exp[e].clone());
                             fail!(~"Validation of rule selector failed");
                         }
@@ -631,7 +633,7 @@ pub fn run_test(ctx:@mut line_ctx) {
     }
 }
 
-pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mut exp_entry ) -> bool {
+pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut lwc, e:@mut exp_entry ) -> bool {
 
     debug!("Entering: validate_rule_selector");
     let mut name : ~str = ~"" ;
@@ -766,7 +768,7 @@ pub fn validate_rule_import(s:@mut css_rule_import, e:@mut exp_entry) -> bool {
     true
 } 
 
-fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut lwc, ptr:&mut ~str){
     if list.combinator.is_some() {
         dump_selector_list(list.combinator.unwrap(), lwc_ref, ptr);
     }
@@ -800,7 +802,7 @@ fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     dump_selector(list, lwc_ref, ptr);
 }
 
-fn dump_selector(selector:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+fn dump_selector(selector:@mut css_selector, lwc_ref:&mut lwc, ptr:&mut ~str){
     let d:~[@mut css_selector_detail] = selector.data.clone();
     debug!(fmt!("Selector Data:%?",d));
   	let mut iter:uint = 0;
@@ -811,7 +813,7 @@ fn dump_selector(selector:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     }   
 }
 
-fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut ~lwc, ptr: &mut ~str, detail_next:bool ) {
+fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut lwc, ptr: &mut ~str, detail_next:bool ) {
 	debug!(fmt!("Detail == %?",detail));
     if detail.negate {
         str::push_str(ptr,&":not(");

@@ -80,7 +80,7 @@ impl css_language {
 	* #Return Value:
 	*   'css_error' - CSS_OK on success, CSS_INVALID to indicate parse error.
 	*/
-    pub fn language_handle_event(&mut self,  lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, event_type:css_parser_event, tokens:&~[css_token])
+    pub fn language_handle_event(&mut self,  lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, event_type:css_parser_event, tokens:&~[css_token])
         -> css_error {
 	let mut css_er:css_error;
         //debug!("Entering: language_handle_event");
@@ -158,7 +158,7 @@ impl css_language {
         CSS_OK
     }
 
-    pub fn handleStartRuleset(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, tokens:&~[css_token]) ->css_error    {
+    pub fn handleStartRuleset(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, tokens:&~[css_token]) ->css_error    {
         //debug!("Entering: handleStartRuleset");
 
         let mut cur:context_entry ;
@@ -226,7 +226,7 @@ impl css_language {
         }
     }
 
-    pub fn handleStartAtRule(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, vector:&~[css_token])->css_error {
+    pub fn handleStartAtRule(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, vector:&~[css_token])->css_error {
         //debug!("Entering: handleStartAtRule");
        // context_entry entry = { CSS_PARSER_START_ATRULE, NULL };
             
@@ -597,7 +597,7 @@ impl css_language {
     }
 
 
-    pub fn handleBlockContent(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, tokens:&~[css_token])-> css_error {
+    pub fn handleBlockContent(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, tokens:&~[css_token])-> css_error {
         //debug!("Entering: handleBlockContent");
         // * Block content comprises either declarations (if the current block is
         // * associated with @page, @font-face or a selector), or rulesets (if the
@@ -630,7 +630,7 @@ impl css_language {
         
     }
 
-    pub fn handleDeclaration(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, tokens:&~[css_token])->css_error {
+    pub fn handleDeclaration(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, tokens:&~[css_token])->css_error {
         //debug!("Entering: handleDeclaration");
         let ctx: @mut uint = @mut 0u;   
          // Locations where declarations are permitted:
@@ -700,7 +700,7 @@ impl css_language {
         }       
     }
 
-    pub fn parseSelectorList(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, tokens:&~[css_token], curRule: CSS_RULE_DATA_TYPE) -> css_error {
+    pub fn parseSelectorList(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, tokens:&~[css_token], curRule: CSS_RULE_DATA_TYPE) -> css_error {
         //debug!("Entering: parseSelectorList");
         let ctx: @mut uint = @mut 0u;
         //debug!(fmt!("parseSelectorList:: tokens == %?", tokens));
@@ -738,7 +738,7 @@ impl css_language {
      * At-rule parsing functions                              *
      ******************************************************************************/
 
-    pub fn parseMediaList(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, vector:&~[css_token], ctx:@mut uint, media:@mut u64) -> css_error
+    pub fn parseMediaList(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, vector:&~[css_token], ctx:@mut uint, media:@mut u64) -> css_error
     {
         //debug!("Entering: parseMediaList");
         let mut ret:u64 = 0;
@@ -830,7 +830,7 @@ impl css_language {
     * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
     */
-    pub fn addNamespace(&mut self, lwc_ref:&mut ~lwc, _prefix:Option<uint>, uri:uint) -> css_error {
+    pub fn addNamespace(&mut self, lwc_ref:&mut lwc, _prefix:Option<uint>, uri:uint) -> css_error {
         //debug!("Entering: addNamespace");
         match _prefix {
             Some(prefix) => {
@@ -884,7 +884,7 @@ impl css_language {
      * Property parsing functions                             *
      ******************************************************************************/
 
-    pub fn parseProperty(&mut self , lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, property: &css_token , vector: &~[css_token], ctx:@mut uint, curRule: CSS_RULE_DATA_TYPE) -> css_error {
+    pub fn parseProperty(&mut self , lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, property: &css_token , vector: &~[css_token], ctx:@mut uint, curRule: CSS_RULE_DATA_TYPE) -> css_error {
         //debug!("Entering: parseProperty");
         let mut style: @mut css_style;
         let mut index = AZIMUTH as uint;
@@ -941,7 +941,7 @@ impl css_language {
         }
     }
 
-    pub fn parseSelector(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, vector:&~[css_token], ctx:@mut uint) -> (css_error, Option<@mut css_selector>) {
+    pub fn parseSelector(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, vector:&~[css_token], ctx:@mut uint) -> (css_error, Option<@mut css_selector>) {
         //debug!("Entering: parseSelector");
         /* selector -> simple_selector [ combinator simple_selector ]* ws
          * 
@@ -995,7 +995,7 @@ impl css_language {
         } // End of outer match parseSimpleSelector
     }
 
-    pub fn parseSimpleSelector(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, vector:&~[css_token], ctx:@mut uint) -> (css_error, Option<@mut css_selector>) {
+    pub fn parseSimpleSelector(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, vector:&~[css_token], ctx:@mut uint) -> (css_error, Option<@mut css_selector>) {
         //debug!("Entering: parseSimpleSelector");
         let orig_ctx = *ctx;
         /* simple_selector  -> type_selector specifics
@@ -1051,7 +1051,7 @@ impl css_language {
         
     }
 
-    pub fn parseCombinator(&mut self, lwc_ref:&mut ~lwc, vector:&~[css_token], ctx:@mut uint, comb:@mut css_combinator) -> css_error {
+    pub fn parseCombinator(&mut self, lwc_ref:&mut lwc, vector:&~[css_token], ctx:@mut uint, comb:@mut css_combinator) -> css_error {
         //debug!("Entering: parseCombinator");
         let mut token: &css_token;
         /* combinator      -> ws '+' ws | ws '>' ws | ws '~' ws | ws1 */
@@ -1100,7 +1100,7 @@ impl css_language {
         } 
     }   
 
-    pub fn parseTypeSelector(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, vector:&~[css_token], ctx:@mut uint, qname:@mut css_qname) -> css_error {
+    pub fn parseTypeSelector(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, vector:&~[css_token], ctx:@mut uint, qname:@mut css_qname) -> css_error {
         //debug!("Entering: parseTypeSelector");
         let mut token: &css_token;
         let mut prefix:Option<uint> =None;
@@ -1167,7 +1167,7 @@ impl css_language {
         return CSS_OK
     }   
 
-    pub fn parseSelectorSpecifics(&mut self,  lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, vector:&~[css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_error {
+    pub fn parseSelectorSpecifics(&mut self,  lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, vector:&~[css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_error {
         //debug!("Entering: parseSelectorSpecifics");
         let mut token: &css_token;
 
@@ -1197,7 +1197,7 @@ impl css_language {
     }  
 
 
-    pub fn parseAppendSpecific(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, vector:&~[css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_error{
+    pub fn parseAppendSpecific(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, vector:&~[css_token], ctx:@mut uint, parent:@mut css_selector ) -> css_error{
         //debug!("Entering: parseAppendSpecific");
         match self.parseSpecific(lwc_ref, propstrings_ref, vector, ctx, false) {
             (CSS_OK,Some(specific)) => return css_stylesheet::css__stylesheet_selector_append_specific(parent,specific),
@@ -1206,7 +1206,7 @@ impl css_language {
     }   
 
 
-    pub fn parseSpecific(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, vector:&~[css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn parseSpecific(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, vector:&~[css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<@mut css_selector_detail>) {
         //debug!("Entering: parseSpecific");
         /* specific  -> [ HASH | class | attrib | pseudo ] */
 
@@ -1258,7 +1258,7 @@ impl css_language {
     * 'css_error' - CSS_OK on success,  
                     CSS_INVALID if the input is not valid.
     */
-    pub fn lookupNamespace(&mut self, lwc_ref:&mut ~lwc, prefix:Option<uint>, qname:@mut css_qname) -> css_error {
+    pub fn lookupNamespace(&mut self, lwc_ref:&mut lwc, prefix:Option<uint>, qname:@mut css_qname) -> css_error {
         //debug!("Entering: lookupNamespace");
         let mut idx:uint=0;
         
@@ -1305,7 +1305,7 @@ impl css_language {
     /******************************************************************************
     * Selector list parsing functions                         *
     ******************************************************************************/
-    pub fn  parseClass(&mut self, lwc_ref:&mut ~lwc, vector:&~[css_token], ctx:@mut uint) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn  parseClass(&mut self, lwc_ref:&mut lwc, vector:&~[css_token], ctx:@mut uint) -> (css_error,Option<@mut css_selector_detail>) {
         //debug!("Entering: parseClass");
         let mut token: &css_token;
         
@@ -1334,7 +1334,7 @@ impl css_language {
         }
     }
 
-    pub fn  parseAttrib(&mut self, lwc_ref:&mut ~lwc, vector:&~[css_token], ctx:@mut uint) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn  parseAttrib(&mut self, lwc_ref:&mut lwc, vector:&~[css_token], ctx:@mut uint) -> (css_error,Option<@mut css_selector_detail>) {
         //debug!("Entering: parseAttrib");
         let mut token: &css_token;
         
@@ -1465,7 +1465,7 @@ impl css_language {
     }
 
 
-    pub fn parsePseudo(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, vector:&~[css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn parsePseudo(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, vector:&~[css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<@mut css_selector_detail>) {
         //debug!("Entering: parsePseudo");
         let mut token: &css_token;
         //let mut tkn_type = CSS_SELECTOR_PSEUDO_CLASS;
@@ -1668,7 +1668,7 @@ impl css_language {
         return css_stylesheet::css__stylesheet_selector_detail_init(selector_type,qname, value_type, detail_value_string, None, negate);
     }
 
-    pub fn parseNth(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, vector:&~[css_token], ctx:@mut uint, qname:@mut css_qname) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn parseNth(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, vector:&~[css_token], ctx:@mut uint, qname:@mut css_qname) -> (css_error,Option<@mut css_selector_detail>) {
         //debug!("Entering: parseNth");
         let mut token: &css_token;
 
@@ -1958,7 +1958,7 @@ impl css_language {
     *   ctx is updated with the next token to process.
     *   If the input is invalid, then ctx remains unchanged.
     */
-    pub fn css__parse_important(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& ~css_propstrings, vector:&~[css_token], ctx:@mut uint) -> (css_error,u8){
+    pub fn css__parse_important(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, vector:&~[css_token], ctx:@mut uint) -> (css_error,u8){
         //debug!("Entering: css__parse_important");
         let orig_ctx = *ctx;
         let mut flags :u8 =0;

@@ -11,6 +11,7 @@ use css::stylesheet::*;
 use css::utils::errors::*;
 use dump::*;
 use wapcaplet::*;
+use css::parse::propstrings::css_propstrings;
 
 pub struct line_ctx {
     buf:~[u8],
@@ -72,9 +73,9 @@ fn main() {
     debug!("parse");
 }
 
-fn create_css(lwc_ref: &mut ~lwc) -> ~css{
+fn create_css() -> ~css{
     debug!("Entering: create_css");
-    let css = css::css_create( &css_create_params(), lwc_ref, None);
+    let css = css::css_create( &css_create_params());
     css
 }
 
@@ -184,15 +185,16 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     debug!("Entering :: run_test");
     // debug!("\n == data == %?" , str::from_bytes(data));
     let mut lwc_ref = lwc();
-    let mut css = create_css(&mut lwc_ref);
+    let propstring = css_propstrings::css_propstrings(&mut lwc_ref);
+    let mut css = create_css();
     let mut buf: ~str;
-    let mut error = css.css_stylesheet_append_data(&mut lwc_ref , data);
+    let mut error = css.css_stylesheet_append_data(&mut lwc_ref , &propstring , data);
     match error {
         CSS_OK | CSS_NEEDDATA => {},
         _ => {assert!(false);}
     }
 
-    error = css.css_stylesheet_data_done(&mut lwc_ref);
+    error = css.css_stylesheet_data_done(&mut lwc_ref , &propstring);
     //debug!(fmt!("error from css_stylesheet_data_done: %?" , error));
     match error {
         CSS_OK => {},

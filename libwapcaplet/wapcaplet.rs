@@ -8,7 +8,7 @@ use std::str;
 use std::clone::Clone;
 
 priv struct lwc_string {
-    id: uint,
+    // id: uint,
     string: ~str,
     insensitive: Option<uint>
 }
@@ -17,7 +17,7 @@ priv struct lwc_string {
 impl Clone for lwc_string {  
     fn clone(&self) -> lwc_string {     
         lwc_string{  
-            id:self.id,  
+            // id:self.id,  
             string:self.string.clone(),  
             insensitive:self.insensitive  
         }  
@@ -88,7 +88,7 @@ impl lwc {
         self.map.insert(val.clone(), new_idx);
 
         let new_lwc_string = lwc_string {
-            id:new_idx,
+            // id:new_idx,
             string: val,
             insensitive: None
         };
@@ -138,7 +138,6 @@ impl lwc {
 		self.map.insert(val.clone(), new_idx);	
 
 		let new_insensitive = lwc_string {
-			id:new_idx,
 			string: val,
 			insensitive: Some(new_idx)
 		};
@@ -174,8 +173,8 @@ impl lwc {
 } // impl wapcaplet
 
 
-priv fn lwc()->~lwc {
-    return ~lwc {
+priv fn lwc()->lwc {
+    return lwc {
         map: HashMap::new(),
         vect: ~[]
     }

@@ -13,8 +13,7 @@ use parse::propstrings::*;
 pub struct css {
     stylesheet:@mut css_stylesheet,
     parser:~css_parser,
-    lwc_ref:Option<~lwc>,
-    propstrings_ref:Option<~css_propstrings>
+    // lwc_ref:Option<lwc>,
 }
 
 enum css_params_version {
@@ -56,9 +55,9 @@ pub struct css_params {
 
 impl css {
 
-    pub fn css_create(params: &css_params, lwc_instance : Option<~lwc>, propstrings_instance : Option<~css_propstrings>) -> ~css {
+    pub fn css_create(params: &css_params) -> ~css {
        
-        assert!(!(propstrings_instance.is_some() && lwc_instance.is_none()));
+        // assert!(!(propstrings_instance.is_some());
         //assert!((propstrings_instance.is_none() || lwc_instance.is_none()));
                                                      
         // create inputstream
@@ -104,25 +103,25 @@ impl css {
             true => css_parser::css__parser_create_for_inline_style(language, lexer)
         }; 
 
-        let mut lwc_ref = if lwc_instance.is_none() {
-            lwc()
-        }
-        else {
-            lwc_instance.unwrap()
-        };
+        // let mut lwc_ref = if lwc_instance.is_none() {
+        //     lwc()
+        // }
+        // else {
+        //     lwc_instance.unwrap()
+        // };
         
-        let propstrings_ref = if propstrings_instance.is_none() {
-            css_propstrings::css_propstrings(&mut lwc_ref)
-        }
-        else {
-            propstrings_instance.unwrap()
-        };           
+        // let propstrings_ref = if propstrings_instance.is_none() {
+        //     css_propstrings::css_propstrings(lwc_ref)
+        // }
+        // else {
+        //     propstrings_instance.unwrap()
+        // };           
 
         let css_instance = ~css {
             parser:parser.unwrap(),
             stylesheet:stylesheet,
-            lwc_ref: Some(lwc_ref),
-            propstrings_ref : Some(propstrings_ref)   
+            // lwc_ref: Some(lwc_ref),
+            // propstrings_ref : Some(propstrings_ref)   
         };
        
         css_instance    
@@ -138,8 +137,8 @@ impl css {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css_stylesheet_append_data(&mut self, data:~[u8]) -> css_error {
-        self.parser.css__parser_parse_chunk(self.lwc_ref.get_mut_ref(), self.propstrings_ref.get_ref(), data)
+    pub fn css_stylesheet_append_data(&mut self, lwc_ref : &mut lwc , propstrings_ref: &css_propstrings , data:~[u8]) -> css_error {
+        self.parser.css__parser_parse_chunk(lwc_ref, propstrings_ref, data)
     }
 
     /**
@@ -151,8 +150,8 @@ impl css {
                       CSS_IMPORTS_PENDING if there are imports pending,
                       appropriate error otherwise.
     */
-    pub fn css_stylesheet_data_done(&mut self) -> css_error {
-        let error = self.parser.css__parser_completed(self.lwc_ref.get_mut_ref(), self.propstrings_ref.get_ref());
+    pub fn css_stylesheet_data_done(&mut self , lwc_ref: &mut lwc , propstrings_ref: &css_propstrings) -> css_error {
+        let error = self.parser.css__parser_completed(lwc_ref, propstrings_ref);
         match error {
             CSS_OK=>{},
             err => {
