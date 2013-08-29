@@ -205,7 +205,7 @@ pub enum from_lwc {
     R_INTERN_SUBSTRING(uint),
     R_INTERN_CASELESS(uint),
     R_IS_CASELESS_EQUAL(bool),
-    R_TERMINATE  // Not Required
+    R_TERMINATE  
 }
 
 pub static mut lwc_ref : Option<@mut lwc_wrapper>  = None;
@@ -237,8 +237,6 @@ pub fn create_lwc_thread() {
                     vect: ~[]
                 };
 
-                let lwc_wrapper = unsafe { ::lwc_ref.get() } ;
-
                 loop {
                     let (message, send_port) = port.recv() ;
                     match message {
@@ -267,18 +265,19 @@ pub fn create_lwc_thread() {
                             loop ; 
                         },
                         C_TERMINATE=> {
+                            send_port.send(R_TERMINATE);
                             break ;
                         }
                     }
                 }
                 // Set global handle to none , and leave from the threads
-                unsafe { ::lwc_ref = None; }
+                ::lwc_ref = None; 
             }
         }
     }
 }
 
-//pub fn lwc_thread() 
+
 
 
 impl lwc_wrapper {
@@ -426,6 +425,23 @@ impl lwc_wrapper {
         }
     }
 
+    #[inline]
+    pub fn lwc_thread_terminate(&self) -> bool {
+
+        let thread = self.thread_handle.clone();          
+        let to_msg : to_lwc = C_TERMINATE;
+        let (port, chan): (Port<from_lwc>, Chan<from_lwc>) = stream();
+        let chan = SharedChan::new(chan);
+
+        thread.send((to_msg,chan.clone()));
+
+        let result : from_lwc = port.recv() ;
+
+        match result{
+            R_TERMINATE=>{ true },
+            _=>{ false }
+        }
+    }
     
 } // impl wapcaplet
 
