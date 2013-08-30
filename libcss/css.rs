@@ -13,7 +13,7 @@ use parse::propstrings::*;
 pub struct css {
     stylesheet:@mut css_stylesheet,
     parser:~css_parser,
-    // lwc_ref:Option<lwc>,
+    // lwc_ref:Option<~lwc>,
 }
 
 enum css_params_version {
@@ -104,7 +104,7 @@ impl css {
         }; 
 
         // let mut lwc_ref = if lwc_instance.is_none() {
-        //     lwc()
+        //     ~lwc()
         // }
         // else {
         //     lwc_instance.unwrap()
@@ -137,7 +137,7 @@ impl css {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css_stylesheet_append_data(&mut self, lwc_ref : &mut lwc , propstrings_ref: &css_propstrings , data:~[u8]) -> css_error {
+    pub fn css_stylesheet_append_data(&mut self, lwc_ref : &mut ~lwc , propstrings_ref: &css_propstrings , data:~[u8]) -> css_error {
         self.parser.css__parser_parse_chunk(lwc_ref, propstrings_ref, data)
     }
 
@@ -150,7 +150,7 @@ impl css {
                       CSS_IMPORTS_PENDING if there are imports pending,
                       appropriate error otherwise.
     */
-    pub fn css_stylesheet_data_done(&mut self , lwc_ref: &mut lwc , propstrings_ref: &css_propstrings) -> css_error {
+    pub fn css_stylesheet_data_done(&mut self , lwc_ref: &mut ~lwc , propstrings_ref: &css_propstrings) -> css_error {
         let error = self.parser.css__parser_completed(lwc_ref, propstrings_ref);
         match error {
             CSS_OK=>{},

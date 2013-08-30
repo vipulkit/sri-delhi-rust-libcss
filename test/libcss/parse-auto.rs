@@ -633,7 +633,7 @@ pub fn run_test(ctx:@mut line_ctx) {
     }
 }
 
-pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut lwc, e:@mut exp_entry ) -> bool {
+pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mut exp_entry ) -> bool {
 
     debug!("Entering: validate_rule_selector");
     let mut name : ~str = ~"" ;
@@ -768,7 +768,7 @@ pub fn validate_rule_import(s:@mut css_rule_import, e:@mut exp_entry) -> bool {
     true
 } 
 
-fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut lwc, ptr:&mut ~str){
+fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     if list.combinator.is_some() {
         dump_selector_list(list.combinator.unwrap(), lwc_ref, ptr);
     }
@@ -802,7 +802,7 @@ fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut lwc, ptr:&mut ~str){
     dump_selector(list, lwc_ref, ptr);
 }
 
-fn dump_selector(selector:@mut css_selector, lwc_ref:&mut lwc, ptr:&mut ~str){
+fn dump_selector(selector:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     let d:~[@mut css_selector_detail] = selector.data.clone();
     debug!(fmt!("Selector Data:%?",d));
   	let mut iter:uint = 0;
@@ -813,7 +813,7 @@ fn dump_selector(selector:@mut css_selector, lwc_ref:&mut lwc, ptr:&mut ~str){
     }   
 }
 
-fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut lwc, ptr: &mut ~str, detail_next:bool ) {
+fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut ~lwc, ptr: &mut ~str, detail_next:bool ) {
 	debug!(fmt!("Detail == %?",detail));
     if detail.negate {
         str::push_str(ptr,&":not(");

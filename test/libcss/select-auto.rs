@@ -144,7 +144,7 @@ pub fn select_test(file:~str) {
     }   
 
     if (ctx.tree.is_some() ) {
-        run_test(ctx, &mut lwc_ref, css_select_style_time);
+        run_test(ctx, lwc_ref, css_select_style_time);
 
     }
 
@@ -176,7 +176,7 @@ pub fn css_create_params() -> css_params {
      return css_param;
 }
 
-pub fn handle_line(data:&mut ~str, lwc_ref:&mut lwc, propstring_ref: &css_propstrings , ctx:@mut line_ctx, css_stylesheet_create_time:@mut u64, 
+pub fn handle_line(data:&mut ~str, lwc_ref:&mut ~lwc, propstring_ref: &css_propstrings , ctx:@mut line_ctx, css_stylesheet_create_time:@mut u64, 
     css_stylesheet_append_data_time:@mut u64, 
     css_select_style_time:@mut u64, 
     css_stylesheet_data_done_time:@mut float
@@ -263,7 +263,7 @@ pub fn handle_line(data:&mut ~str, lwc_ref:&mut lwc, propstring_ref: &css_propst
         else if (ctx.inexp) {
             // debug!("in ctx inexp");
             /* This marks end of testcase, so run it */
-            run_test(ctx, lwc_ref, css_select_style_time);
+            run_test(ctx, lwc_ref.clone(), css_select_style_time);
             //ctx.expused = 0;
 
             ctx.intree = false;
@@ -358,7 +358,7 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
     }
 }
 
-pub fn css__parse_tree_data(ctx:@mut line_ctx, lwc_ref:&mut lwc, data:&str) {
+pub fn css__parse_tree_data(ctx:@mut line_ctx, lwc_ref:&mut ~lwc, data:&str) {
     
     // debug!("\n Entering css__parse_tree_data ") ;
     let mut p = 0;
@@ -714,10 +714,10 @@ fn to_lower(string:&str) -> ~str {
     str::from_bytes(lower)
 }
 
-pub fn run_test( ctx:@mut line_ctx,  lwc_ref:&mut lwc, css_select_style_time:@mut u64) {
+pub fn run_test( ctx:@mut line_ctx, lwc_ref:~lwc, css_select_style_time:@mut u64) {
     //debug!("\n Entering run test =%?=",ctx) ;
     let mut select: ~css_select_ctx;
-    let mut results: css_select_results;
+    let mut results: @mut css_select_results;
 
     let mut i:u32=0;
     let mut buf:~str= ~"";
@@ -737,7 +737,7 @@ pub fn run_test( ctx:@mut line_ctx,  lwc_ref:&mut lwc, css_select_style_time:@mu
         }
         i += 1;
     }
-    let select_handler:  css_select_handler = css_select_handler {
+    let select_handler:  @mut css_select_handler = @mut css_select_handler {
         node_name: node_name,
 
         node_classes: node_classes,
@@ -830,7 +830,7 @@ pub fn run_test( ctx:@mut line_ctx,  lwc_ref:&mut lwc, css_select_style_time:@mu
     }
 
     assert!(results.styles[ctx.pseudo_element].is_some());
-    dump_computed_style(@mut results.styles[ctx.pseudo_element].unwrap(),  lwc_ref, &mut buf);
+    dump_computed_style(results.styles[ctx.pseudo_element].unwrap(),  &mut select.lwc_ref, &mut buf);
 
 
     // debug!(fmt!(" CSS Selection result is =%?",results));
@@ -866,7 +866,7 @@ fn node_name(n:*libc::c_void, qname : &mut css_qname) -> css_error {
 }
 
 #[inline] 
-fn node_classes(lwc_ref:&mut lwc, pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[uint] ) -> css_error{
+fn node_classes(lwc_ref:&mut ~lwc, pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[uint] ) -> css_error{
     // debug!("node_classes");
     let mut node : @mut node;
     let mut lc : @mut ctx_pw;
@@ -895,7 +895,7 @@ fn node_classes(lwc_ref:&mut lwc, pw:*libc::c_void, n:*libc::c_void, classes: &m
 }
 
 #[inline] 
-fn node_id(lwc_ref:&mut lwc, pw:*libc::c_void, n:*libc::c_void, id: &mut uint ) -> css_error{
+fn node_id(lwc_ref:&mut ~lwc, pw:*libc::c_void, n:*libc::c_void, id: &mut uint ) -> css_error{
     // debug!("node_id");
     let mut node : @mut node;
     let mut lc : @mut ctx_pw;
@@ -925,7 +925,7 @@ fn node_id(lwc_ref:&mut lwc, pw:*libc::c_void, n:*libc::c_void, id: &mut uint ) 
 }
 
 #[inline] 
-fn named_ancestor_node(lwc_ref:&mut lwc, n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *libc::c_void) -> css_error {
+fn named_ancestor_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *libc::c_void) -> css_error {
     // debug!("named_ancestor_node");
     let mut node1:@mut node;
     unsafe {
@@ -954,7 +954,7 @@ fn named_ancestor_node(lwc_ref:&mut lwc, n:*libc::c_void, qname:&mut css_qname, 
 }
 
 #[inline]   
-fn named_parent_node(lwc_ref:&mut lwc, n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_void) -> css_error {
+fn named_parent_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_void) -> css_error {
     // debug!("named_parent_node");
     let mut node1:@mut node;
     unsafe {
@@ -977,7 +977,7 @@ fn named_parent_node(lwc_ref:&mut lwc, n:*libc::c_void, qname:&mut css_qname, pa
 }
 
 #[inline]    
-fn named_sibling_node(lwc_ref:&mut lwc, n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc::c_void) -> css_error {
+fn named_sibling_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc::c_void) -> css_error {
     // debug!("named_sibling_node");
     let mut node1:@mut node;
     unsafe {
@@ -1000,7 +1000,7 @@ fn named_sibling_node(lwc_ref:&mut lwc, n:*libc::c_void, qname:&mut css_qname, s
 }
 
 #[inline] 
-fn named_generic_sibling_node(lwc_ref:&mut lwc, n:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error {
+fn named_generic_sibling_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error {
     // debug!("named_generic_sibling_node");
     let mut node1:@mut node;
     unsafe {
@@ -1063,7 +1063,7 @@ fn sibling_node(n:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
 }
 
 #[inline] 
-fn node_has_name(lwc_ref:&mut lwc, _:*libc::c_void, n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> css_error {
+fn node_has_name(lwc_ref:&mut ~lwc, _:*libc::c_void, n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> css_error {
     // debug!("node_has_name");
     let mut node1:@mut node;
     unsafe {
@@ -1080,7 +1080,7 @@ fn node_has_name(lwc_ref:&mut lwc, _:*libc::c_void, n:*libc::c_void, qname:&css_
 }
 
 #[inline] 
-fn node_has_class(lwc_ref:&mut lwc, pw:*libc::c_void ,n:*libc::c_void, name:uint, matched:@mut bool) -> css_error {
+fn node_has_class(lwc_ref:&mut ~lwc, pw:*libc::c_void ,n:*libc::c_void, name:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_class");
     let mut node1:@mut node;
     let mut ctx: @mut  ctx_pw;
@@ -1121,7 +1121,7 @@ fn node_has_class(lwc_ref:&mut lwc, pw:*libc::c_void ,n:*libc::c_void, name:uint
     CSS_OK
 }
 #[inline] 
-fn node_has_id(lwc_ref:&mut lwc, pw:*libc::c_void, n:*libc::c_void, name:uint, matched:@mut bool) -> css_error {
+fn node_has_id(lwc_ref:&mut ~lwc, pw:*libc::c_void, n:*libc::c_void, name:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_id");
     let mut node1:@mut node;
     let mut ctx: @mut  ctx_pw;
@@ -1166,7 +1166,7 @@ fn node_has_id(lwc_ref:&mut lwc, pw:*libc::c_void, n:*libc::c_void, name:uint, m
 }
 
 #[inline] 
-fn node_has_attribute(lwc_ref:&mut lwc, n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> css_error {
+fn node_has_attribute(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute");
     let mut node1:@mut node;
     unsafe {
@@ -1187,7 +1187,7 @@ fn node_has_attribute(lwc_ref:&mut lwc, n:*libc::c_void, qname:&css_qname, match
 }
     
 #[inline] 
-fn  node_has_attribute_equal(lwc_ref:&mut lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
+fn  node_has_attribute_equal(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_equal");
     let mut node1:@mut node;
     unsafe {
@@ -1214,7 +1214,7 @@ fn  node_has_attribute_equal(lwc_ref:&mut lwc, n:*libc::c_void, qname:&css_qname
 
 
 #[inline] 
-fn node_has_attribute_includes(lwc_ref:&mut lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
+fn node_has_attribute_includes(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_includes");
     let mut node1:@mut node;
     unsafe {
@@ -1260,7 +1260,7 @@ fn node_has_attribute_includes(lwc_ref:&mut lwc, n:*libc::c_void, qname:&css_qna
 }
 
 #[inline] 
-fn node_has_attribute_dashmatch(lwc_ref:&mut lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
+fn node_has_attribute_dashmatch(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_dashmatch");
     let mut node1:@mut node;
     unsafe {
@@ -1303,7 +1303,7 @@ fn node_has_attribute_dashmatch(lwc_ref:&mut lwc, n:*libc::c_void, qname:&css_qn
 }
 
 #[inline] 
-fn node_has_attribute_prefix(lwc_ref:&mut lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
+fn node_has_attribute_prefix(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_prefix");
     let mut node1:@mut node;
     unsafe {
@@ -1336,7 +1336,7 @@ fn node_has_attribute_prefix(lwc_ref:&mut lwc, n:*libc::c_void, qname:&css_qname
 }
 
 #[inline] 
-fn node_has_attribute_suffix(lwc_ref:&mut lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
+fn node_has_attribute_suffix(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_suffix");
     let mut node1:@mut node;
     unsafe {
@@ -1373,7 +1373,7 @@ fn node_has_attribute_suffix(lwc_ref:&mut lwc, n:*libc::c_void, qname:&css_qname
 }
 
 #[inline] 
-fn node_has_attribute_substring(lwc_ref:&mut lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
+fn node_has_attribute_substring(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_substring");
     let mut node1:@mut node;
     unsafe {
@@ -1430,7 +1430,7 @@ fn node_is_root(n:*libc::c_void, matched:@mut bool) -> css_error {
 }
 
 #[inline]    
-fn node_count_siblings(lwc_ref:&mut lwc, n:*libc::c_void, same_name:bool, after:bool, count:@mut i32) -> css_error {
+fn node_count_siblings(lwc_ref:&mut ~lwc, n:*libc::c_void, same_name:bool, after:bool, count:@mut i32) -> css_error {
     // debug!("node_count_siblings");
     let mut cnt : i32 = 0;
     let mut matched;

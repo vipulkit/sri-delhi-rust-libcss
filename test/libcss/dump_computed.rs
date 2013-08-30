@@ -132,7 +132,7 @@ fn dump_css_unit(val: css_fixed , unit: css_unit , ptr: &mut ~str) {
 }
 
 
-pub fn dump_computed_style(style:@mut css_computed_style, lwc_ref:&mut lwc, buf:&mut ~str) {
+pub fn dump_computed_style(style:@mut css_computed_style, lwc_ref:&mut ~lwc, buf:&mut ~str) {
       debug!(fmt!("\n Entering dump_computed_style ")) ;
     let ptr = buf;
     let mut val:u8;

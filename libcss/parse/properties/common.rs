@@ -58,7 +58,7 @@ pub fn consumeWhitespace(vector:&~[css_token], ctx:@mut uint) {
 *   ctx is updated with the next token to process.
 *   If the input is invalid, then ctx remains unchanged.
 */
-pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, lwc_ref:&mut lwc, vector: &~[css_token] , ctx: @mut uint , default_unit: u32) -> (Option<i32> , Option<u32>, css_error) {
+pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc, vector: &~[css_token] , ctx: @mut uint , default_unit: u32) -> (Option<i32> , Option<u32>, css_error) {
 
     //debug!("Entering: css__parse_unit_specifier");
     //debug!("Entering: css__parse_unit_specifier :: ctx == %?  ,  vector == %? " , ctx ,vector);
@@ -154,7 +154,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, lwc_ref:&mut lwc, v
     return(Some(num) , Some(unit_retVal) , CSS_OK);
 }
 
-pub fn css__number_from_lwc_string(lwc_ref:&mut lwc, string: uint, int_only: bool) -> (i32 , uint) {
+pub fn css__number_from_lwc_string(lwc_ref:&mut ~lwc, string: uint, int_only: bool) -> (i32 , uint) {
     
     //debug!("Entering: css__number_from_lwc_string");
 
@@ -379,7 +379,7 @@ pub fn css__number_from_string(data: ~str, data_index:@mut uint, int_only: bool)
     (ret_value , consumed_length)
 }
 
-pub fn is_css_inherit(strings: &css_propstrings, lwc_ref:&mut lwc, token: &css_token) ->bool {
+pub fn is_css_inherit(strings: &css_propstrings, lwc_ref:&mut ~lwc, token: &css_token) ->bool {
     
     //debug!("Entering: is_css_inherit");
     match token.token_type {
@@ -410,7 +410,7 @@ pub fn is_css_inherit(strings: &css_propstrings, lwc_ref:&mut lwc, token: &css_t
 *   ctx is updated with the next token to process.
 *   If the input is invalid, then ctx remains unchanged.
 */
-pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , lwc_ref:&mut lwc, strings: &css_propstrings , vector: &~[css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_error) {
+pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , lwc_ref:&mut ~lwc, strings: &css_propstrings , vector: &~[css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_error) {
     
     //debug!("Entering: css__parse_color_specifier");
     let mut token: &css_token;
@@ -890,7 +890,7 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , lwc_ref:&mut lwc,
 *   ctx is updated with the next token to process.
 *   If the input is invalid, then ctx remains unchanged.
 */
-pub fn css__parse_hash_colour(data: uint, lwc_ref:&mut lwc) -> (Option<u32> , css_error){
+pub fn css__parse_hash_colour(data: uint, lwc_ref:&mut ~lwc) -> (Option<u32> , css_error){
 
     //debug!("Entering: css__parse_hash_colour");
     let mut result_val: u32;
@@ -940,7 +940,7 @@ pub fn css__parse_hash_colour(data: uint, lwc_ref:&mut lwc) -> (Option<u32> , cs
 * #Return Value:
 * 'bool' - True if the token matches, false otherwise.
 */
-pub fn tokenIsChar(token:&css_token, lwc_ref:&mut lwc, c:char) -> bool {
+pub fn tokenIsChar(token:&css_token, lwc_ref:&mut ~lwc, c:char) -> bool {
     
     //debug!("Entering: tokenIsChar");
     let result = false;
@@ -1136,7 +1136,7 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 * 'css_error' - CSS_OK on success,  
                 CSS_INVALID if the input is not valid.
 */
-fn css__parse_named_color(sheet: @mut css_stylesheet , lwc_ref:&mut lwc, strings: &css_propstrings , data: uint) -> (Option<u32> , css_error){
+fn css__parse_named_color(sheet: @mut css_stylesheet , lwc_ref:&mut ~lwc, strings: &css_propstrings , data: uint) -> (Option<u32> , css_error){
     
     //debug!("Entering: css__parse_named_color");
     let mut result_val: u32;

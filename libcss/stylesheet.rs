@@ -433,7 +433,7 @@ impl css_stylesheet {
     *   '(css_error,Option<lwc_string>)' - (CSS_BADPARM,None) if num param is not correct, 
     *                               else ( CSS_OK, option of the string. )
     */
-    pub fn css__stylesheet_string_get(&mut self, num:uint) 
+    pub fn css__stylesheet_string_get(&self, num:uint) 
                                     -> (css_error,Option<uint>) {
         //debug!("Entering: css__stylesheet_string_get");
 
@@ -538,7 +538,7 @@ impl css_stylesheet {
     * #Return Value:
     *   'css_selector' - Pointer to box containing selector object.
     */
-    pub fn css__stylesheet_selector_create(&mut self, lwc_ref:&mut lwc, qname : @mut css_qname ) -> @mut css_selector {
+    pub fn css__stylesheet_selector_create(&mut self, lwc_ref:&mut ~lwc, qname : @mut css_qname ) -> @mut css_selector {
         //debug!("Entering: css__stylesheet_selector_create");
         //debug!(fmt!("css__stylesheet_selector_create:: qname == %?", qname));
         let sel = @mut css_selector{  
@@ -1003,7 +1003,7 @@ impl css_stylesheet {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css__stylesheet_add_rule(sheet : @mut css_stylesheet,  lwc_ref:&mut lwc, css_rule : CSS_RULE_DATA_TYPE,
+    pub fn css__stylesheet_add_rule(sheet : @mut css_stylesheet,  lwc_ref:&mut ~lwc, css_rule : CSS_RULE_DATA_TYPE,
                                     parent_rule : Option<CSS_RULE_DATA_TYPE> ) -> css_error {
         
         //debug!("Entering: css__stylesheet_add_rule");
@@ -1079,7 +1079,7 @@ impl css_stylesheet {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css__stylesheet_remove_rule(sheet : @mut css_stylesheet,  lwc_ref:&mut lwc, css_rule : CSS_RULE_DATA_TYPE) 
+    pub fn css__stylesheet_remove_rule(sheet : @mut css_stylesheet,  lwc_ref:&mut ~lwc, css_rule : CSS_RULE_DATA_TYPE) 
                                         -> css_error {
         //debug!("Entering: css__stylesheet_remove_rule");
         match sheet._remove_selectors(lwc_ref, css_rule) {
@@ -1124,7 +1124,7 @@ impl css_stylesheet {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn _add_selectors(&mut self, lwc_ref:&mut lwc, css_rule : CSS_RULE_DATA_TYPE) -> css_error {
+    pub fn _add_selectors(&mut self, lwc_ref:&mut ~lwc, css_rule : CSS_RULE_DATA_TYPE) -> css_error {
         //debug!("Entering: _add_selectors");
         match css_rule {
             RULE_SELECTOR(x) => {
@@ -1213,7 +1213,7 @@ impl css_stylesheet {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn _remove_selectors(&mut self,  lwc_ref:&mut lwc, css_rule : CSS_RULE_DATA_TYPE) -> css_error {
+    pub fn _remove_selectors(&mut self,  lwc_ref:&mut ~lwc, css_rule : CSS_RULE_DATA_TYPE) -> css_error {
         //debug!("Entering: _remove_selectors");
         match css_rule {
             RULE_SELECTOR(x) => {
@@ -1319,7 +1319,7 @@ impl css_selector_hash {
     */
 
     #[inline]
-    pub fn _class_name(&mut self , lwc_ref:&mut lwc, selector : @mut css_selector) 
+    pub fn _class_name(&mut self , lwc_ref:&mut ~lwc, selector : @mut css_selector) 
                         -> uint {
 
         for selector.data.mut_iter().advance |&element| {
@@ -1348,7 +1348,7 @@ impl css_selector_hash {
     */
 
     #[inline]
-    pub fn _id_name(&mut self, lwc_ref:&mut lwc, selector : @mut css_selector) 
+    pub fn _id_name(&mut self, lwc_ref:&mut ~lwc, selector : @mut css_selector) 
                         -> uint {
 
         for selector.data.mut_iter().advance |&element| {
@@ -1378,7 +1378,7 @@ impl css_selector_hash {
     */
 
     #[inline]
-    pub fn _hash_name(_string: uint, lwc_ref:&mut lwc ) -> u32 {
+    pub fn _hash_name(_string: uint, lwc_ref:&mut ~lwc ) -> u32 {
         //debug!("Entering _hash_name");
         let mut z: u32 = 0x811c9dc5;
         let mut i: uint = 0;
@@ -1403,7 +1403,7 @@ impl css_selector_hash {
     * #Return Value:
     *  'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css__selector_hash_insert(&mut self, lwc_ref:&mut lwc, selector : @mut css_selector) 
+    pub fn css__selector_hash_insert(&mut self, lwc_ref:&mut ~lwc, selector : @mut css_selector) 
                                     -> css_error {
         //debug!("Entering: css__selector_hash_insert");
 
@@ -1563,7 +1563,7 @@ impl css_selector_hash {
     * #Return Value:
     *  'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css__selector_hash_remove(&mut self, lwc_ref:&mut lwc, selector : @mut css_selector) 
+    pub fn css__selector_hash_remove(&mut self, lwc_ref:&mut ~lwc, selector : @mut css_selector) 
                                     -> css_error {
         let mut mask :u32 ;
         let mut index:u32=0;
@@ -1679,7 +1679,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find(&mut self, lwc_ref:&mut lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find(&mut self, lwc_ref:&mut ~lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
         //debug!("Entering: css__selector_hash_find");
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(name, lwc_ref) & mask ; 
@@ -1725,7 +1725,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_class(&mut self, lwc_ref:&mut lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_by_class(&mut self, lwc_ref:&mut ~lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
 
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(name, lwc_ref) & mask ; 
@@ -1769,7 +1769,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_id(&mut self, lwc_ref:&mut lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_by_id(&mut self, lwc_ref:&mut ~lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
 
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(name, lwc_ref) & mask ; 
@@ -1833,7 +1833,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_elements(&mut self , lwc_ref:&mut lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_elements(&mut self , lwc_ref:&mut ~lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
 
@@ -1870,7 +1870,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_classes(&mut self , lwc_ref:&mut lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_classes(&mut self , lwc_ref:&mut ~lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
 
@@ -1906,7 +1906,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_ids(&mut self , lwc_ref:&mut lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_ids(&mut self , lwc_ref:&mut ~lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
 

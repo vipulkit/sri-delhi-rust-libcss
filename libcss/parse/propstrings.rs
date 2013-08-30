@@ -571,7 +571,7 @@ pub struct css_propstrings {
 
 impl css_propstrings {
 
-    pub fn css_propstrings(lwc_ref:&mut lwc) -> css_propstrings {
+    pub fn css_propstrings(lwc_ref:&mut ~lwc) -> css_propstrings {
 
         let propstrings_list = &[&"*", &"charset",&"import",&"media", &"namespace", &"font-face", &"page", &"aural",&"braille", &"embossed",&"handheld", &"print",
             &"projection", &"screen", &"speech", &"tty", &"tv", &"all",&"first-child", &"link", &"visited", &"hover", &"active", &"focus",
@@ -679,18 +679,18 @@ impl css_propstrings {
 
     #[inline]
 
-    pub fn lwc_string_caseless_isequal(&self, lwc_ref:&mut lwc, lwc_string_instance: uint , string_index: uint) -> bool {
+    pub fn lwc_string_caseless_isequal(&self, lwc_ref:&mut ~lwc, lwc_string_instance: uint , string_index: uint) -> bool {
        lwc_ref.lwc_string_caseless_isequal(lwc_string_instance, self.propstrings[string_index])
    
     }
 
     #[inline]
-    pub fn lwc_string_isequal(&self, lwc_ref:&mut lwc, lwc_string_instance: uint , string_index: uint) -> bool {
+    pub fn lwc_string_isequal(&self, lwc_ref:&mut ~lwc, lwc_string_instance: uint , string_index: uint) -> bool {
         lwc_ref.lwc_string_isequal(lwc_string_instance , self.propstrings[string_index])    
     }
 
     #[inline]
-    pub fn lwc_string_data(&self, lwc_ref:&mut lwc,string_index:uint) -> ~str {
+    pub fn lwc_string_data(&self, lwc_ref:&mut ~lwc,string_index:uint) -> ~str {
         lwc_ref.lwc_string_data(self.propstrings[string_index])
     }
 
@@ -701,7 +701,7 @@ impl css_propstrings {
 
     
 
-    pub fn is_selector_pseudo(&self, lwc_ref:&mut lwc, name: uint) -> Option<(css_selector_type, index_property)> {
+    pub fn is_selector_pseudo(&self, lwc_ref:&mut ~lwc, name: uint) -> Option<(css_selector_type, index_property)> {
         
         let mut return_value : Option<(css_selector_type, index_property)> = None;
 

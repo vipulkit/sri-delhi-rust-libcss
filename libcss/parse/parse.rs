@@ -40,7 +40,7 @@ pub enum parse_states {
     sISBody = 25
 }
 
-type state =  ~extern fn(parser: &mut css_parser, lwc_ref:&mut lwc, propstrings_ref:&css_propstrings) ->css_error;
+type state =  ~extern fn(parser: &mut css_parser, lwc_ref:&mut ~lwc, propstrings_ref:&css_propstrings) ->css_error;
 
 pub struct css_parser {
     language: ~css_language,
@@ -68,7 +68,7 @@ impl css_parser {
 
     *  'lexer' - 
 
-    *  'lwc' - 
+    *  '~lwc' - 
 
     *  'initial' - 
 
@@ -139,7 +139,7 @@ impl css_parser {
 
     *  'lexer' - 
 
-    *  'lwc' - 
+    *  '~lwc' - 
 
     * #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
@@ -163,7 +163,7 @@ impl css_parser {
 
     *  'lexer' - 
 
-    *  'lwc' - 
+    *  '~lwc' - 
 
     * #Return Value:
 
@@ -190,7 +190,7 @@ impl css_parser {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     #[inline]
-    pub fn css__parser_parse_chunk(&mut self, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings, data: ~[u8]) -> css_error {
+    pub fn css__parser_parse_chunk(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, data: ~[u8]) -> css_error {
         //debug!("Entering: css__parser_parse_chunk");
         self.lexer.css__lexer_append_data(data);
 
@@ -228,7 +228,7 @@ impl css_parser {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     #[inline]
-    pub fn css__parser_completed(&mut self, lwc_ref:&mut lwc, propstrings_ref:&css_propstrings) -> css_error {
+    pub fn css__parser_completed(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:&css_propstrings) -> css_error {
         //debug!("Entering: css__parser_completed ");
         self.lexer.css__lexer_append_data([]);
         loop {
@@ -330,7 +330,7 @@ impl css_parser {
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
     #[inline]
-    fn eat_ws(&mut self, lwc_ref:&mut lwc) -> css_error
+    fn eat_ws(&mut self, lwc_ref:&mut ~lwc) -> css_error
     {
         //debug!("Entering: eat_ws");
         let (parser_error, token_option) = self.get_token(lwc_ref);
@@ -372,7 +372,7 @@ impl css_parser {
     }
 
     #[inline]
-    fn intern_string (&mut self, lwc_ref:&mut lwc, string: &str) -> uint {
+    fn intern_string (&mut self, lwc_ref:&mut ~lwc, string: &str) -> uint {
         //debug!("Entering: intern_string");
         lwc_ref.lwc_intern_string(string)
     }
@@ -384,7 +384,7 @@ impl css_parser {
     * #Return Value:
     *   '(css_error, Option<@css_token>)' - (CSS_OK, location to receive token) on success, (appropriate error, None) otherwise.
     */
-    fn get_token(&mut self, lwc_ref:&mut lwc) -> (css_error, Option<css_token>) {
+    fn get_token(&mut self, lwc_ref:&mut ~lwc) -> (css_error, Option<css_token>) {
 
         //debug!("Entering: get_token");
         let mut token_option: Option<css_token>;
@@ -469,7 +469,7 @@ impl css_parser {
     }
 
     /* parser states */
-    fn parse_start(parser:&mut css_parser, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings) -> css_error {
+    fn parse_start(parser:&mut css_parser, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings) -> css_error {
         //debug!("Entering: parse_start");
         enum parse_start_sub_states { 
             Initial = 0, 
@@ -542,7 +542,7 @@ impl css_parser {
     } /* parse_start */
 
 
-    fn parse_stylesheet(parser:&mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_stylesheet(parser:&mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_stylesheet");
         enum parse_stylesheet_sub_states { 
             Initial = 0, 
@@ -611,7 +611,7 @@ impl css_parser {
         CSS_OK
     } /* parse_stylesheet */
 
-    fn parse_statement(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error
+    fn parse_statement(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error
     {
         //debug!("Entering: parse_statement");
         enum parser_statement_sub_states { 
@@ -643,7 +643,7 @@ impl css_parser {
     } /* parse statement */
 
 
-    fn parse_ruleset(parser: &mut css_parser, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings) -> css_error {
+    fn parse_ruleset(parser: &mut css_parser, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings) -> css_error {
         //debug!("Entering: parse_ruleset");
         enum parse_ruleset_sub_states { 
             Initial = 0, 
@@ -794,7 +794,7 @@ impl css_parser {
     } /* parse_ruleset */
 
 
-    fn parse_ruleset_end(parser:&mut css_parser, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings) -> css_error {
+    fn parse_ruleset_end(parser:&mut css_parser, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings) -> css_error {
         //debug!("Entering: parse_ruleset_end");
         enum parse_ruleset_end_substates { 
             Initial = 0, 
@@ -917,7 +917,7 @@ impl css_parser {
         CSS_OK
     } /* parse_ruleset_end */
 
-    fn parse_at_rule(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_at_rule(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_at_rule");
         enum parse_at_rule_substates { 
             Initial = 0, 
@@ -1020,7 +1020,7 @@ impl css_parser {
         CSS_OK
     } /* parse_at_rule */
 
-    fn parse_at_rule_end(parser: &mut css_parser, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings) -> css_error {
+    fn parse_at_rule_end(parser: &mut css_parser, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings) -> css_error {
         //debug!("Entering: parse_at_rule_end");
         enum parser_at_rule_end_substates { 
             Initial = 0, 
@@ -1113,7 +1113,7 @@ impl css_parser {
         CSS_OK
     } /* parse_at_rule_end */
 
-    fn parse_block(parser: &mut css_parser, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings) -> css_error {
+    fn parse_block(parser: &mut css_parser, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings) -> css_error {
         //debug!("Entering: parse_block");
         enum parse_block_substates { 
             Initial = 0, 
@@ -1235,7 +1235,7 @@ impl css_parser {
         CSS_OK
     } /* parse_block */
 
-    fn parse_block_content(parser: &mut css_parser, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings) -> css_error {
+    fn parse_block_content(parser: &mut css_parser, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings) -> css_error {
             //debug!("Entering: parse_block_content");
             enum parse_block_content_substates { 
                 Initial = 0, 
@@ -1355,7 +1355,7 @@ impl css_parser {
         CSS_OK
     } /* parse_block_content */
 
-    fn parse_selector(parser: &mut css_parser, _:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_selector(parser: &mut css_parser, _:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_selector");
         enum parse_selector_substates { 
             Initial = 0,
@@ -1390,7 +1390,7 @@ impl css_parser {
         CSS_OK
     } /* parse_selector */
 
-    fn parse_declaration(parser: &mut css_parser, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings) -> css_error {
+    fn parse_declaration(parser: &mut css_parser, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings) -> css_error {
         //debug!("Entering: parse_declaration");
         enum parser_declaration_substates { 
             Initial = 0, 
@@ -1507,7 +1507,7 @@ impl css_parser {
         CSS_OK
     } /* parse_declaration */
 
-    fn parse_decl_list(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_decl_list(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_decl_list");
         enum parse_decl_list_substates { 
             Initial = 0, 
@@ -1586,7 +1586,7 @@ impl css_parser {
         CSS_OK
     } /* parse_decl_list */
 
-    fn parse_decl_list_end(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_decl_list_end(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_decl_list_end");
         enum parse_decl_list_end_substates { 
             Initial = 0, 
@@ -1642,7 +1642,7 @@ impl css_parser {
         CSS_OK
     } /* parse_decl_list_end */
 
-    fn parse_property(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_property(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_property");
         enum parse_property_substates { 
             Initial = 0, 
@@ -1708,7 +1708,7 @@ impl css_parser {
         CSS_OK
     } /* parse_property */
 
-    fn parse_value_0(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_value_0(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_value_0");
         enum parse_value_0_substates { 
             Initial = 0, 
@@ -1783,7 +1783,7 @@ impl css_parser {
         CSS_OK
     } /* parse_value_0 */
 
-    fn parse_value_1(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_value_1(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_value_1");
         enum parse_value_1_substates { 
             Initial = 0, 
@@ -1850,7 +1850,7 @@ impl css_parser {
         CSS_OK
     } /* parse_value_1 */
 
-    fn parse_value(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_value(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_value");
         enum parse_value_substates { 
             Initial = 0, 
@@ -1926,7 +1926,7 @@ impl css_parser {
         CSS_OK
     } /* parse_value */
 
-    fn parse_any_0(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_any_0(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_any_0");
         enum parse_any_0_substates { 
             Initial = 0, 
@@ -2008,7 +2008,7 @@ impl css_parser {
         CSS_OK
     } /* parse_any_0 */
 
-    fn parse_any_1(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_any_1(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_any_1");
         enum parse_any_1_substates { 
             Initial = 0, 
@@ -2082,7 +2082,7 @@ impl css_parser {
         CSS_OK
     } /* parse_any_1 */
 
-    fn parse_any(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_any(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_any");
         enum parse_any_substates { 
             Initial = 0, 
@@ -2234,7 +2234,7 @@ impl css_parser {
     } /* parse_any */
 
     // TODO review : piyush
-    fn parse_malformed_declaration(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_malformed_declaration(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_malformed_declaration");
         enum parse_malformed_declaration_substates{ 
             Initial = 0, 
@@ -2329,7 +2329,7 @@ impl css_parser {
         CSS_OK
     } /* parse_malformed_declaration */
 
-    fn parse_malformed_selector(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_malformed_selector(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_malformed_selector");
         enum parse_malformed_selector_substates{ 
             Initial = 0, 
@@ -2418,7 +2418,7 @@ impl css_parser {
         }
     } /* parse_malformed_selector */
 
-    fn parse_malformed_at_rule(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_malformed_at_rule(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_malformed_at_rule");
         enum parse_malformed_at_rule_substates{ 
             Initial = 0, 
@@ -2516,7 +2516,7 @@ impl css_parser {
         }
     } /* parse_malformed_at_rule */
 
-    fn parse_inline_style(parser: &mut css_parser, lwc_ref:&mut lwc, propstrings_ref:& css_propstrings) -> css_error {
+    fn parse_inline_style(parser: &mut css_parser, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings) -> css_error {
         //debug!("Entering: parse_inline_style");
         enum parse_inline_style_substates { 
             Initial = 0, 
@@ -2579,7 +2579,7 @@ impl css_parser {
         CSS_OK
     } /* parse_inline_style */
 
-    fn parse_IS_body_0(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_IS_body_0(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_IS_body_0");
         enum parse_IS_body_0_substates { 
             Initial = 0, 
@@ -2637,7 +2637,7 @@ impl css_parser {
         // CSS_OK
     } /* parse_IS_body_0 */
 
-    fn parse_IS_body(parser: &mut css_parser, lwc_ref:&mut lwc, _:& css_propstrings) -> css_error {
+    fn parse_IS_body(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_IS_body");
         enum parse_IS_body_substates { 
             Initial = 0, 

@@ -134,7 +134,7 @@ pub fn opcode_names() -> ~[~str] {
 }
 
 
-pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut lwc) -> ~str {
+pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc) -> ~str {
     
     debug!("Entering: dump_sheet");
 
@@ -204,7 +204,7 @@ pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut lwc) -> ~str {
     ptr
 }
 
-fn dump_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut lwc, ptr:&mut ~str, depth:u32){
+fn dump_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32){
     debug!("Entering: dump_rule_selector");
     let mut i = 0;
 
@@ -253,7 +253,7 @@ fn dump_rule_import(s:@mut css_rule_import, ptr:&mut ~str){
 }
 
 // TODO
-fn dump_rule_media(s:@mut css_rule_media, lwc_ref:&mut lwc, ptr: &mut ~str) {
+fn dump_rule_media(s:@mut css_rule_media, lwc_ref:&mut ~lwc, ptr: &mut ~str) {
     debug!("Entering: dump_rule_media");
     ptr.push_str( &"| @media ");
     ptr.push_char('\n');
@@ -276,7 +276,7 @@ fn dump_rule_media(s:@mut css_rule_media, lwc_ref:&mut lwc, ptr: &mut ~str) {
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_rule_page(s:@ mut css_rule_page, lwc_ref:&mut lwc, ptr:&mut ~str){
+fn dump_rule_page(s:@ mut css_rule_page, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_rule_page");
     ptr.push_str( &"| @page ");
 
@@ -293,7 +293,7 @@ fn dump_rule_page(s:@ mut css_rule_page, lwc_ref:&mut lwc, ptr:&mut ~str){
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_rule_font_face(s:@mut css_rule_font_face, lwc_ref:&mut lwc, ptr:&mut ~str){
+fn dump_rule_font_face(s:@mut css_rule_font_face, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_rule_font_face");
     ptr.push_str( &"| @font-face ");
     if s.font_face.is_some() {
@@ -304,7 +304,7 @@ fn dump_rule_font_face(s:@mut css_rule_font_face, lwc_ref:&mut lwc, ptr:&mut ~st
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut lwc, ptr:&mut ~str){
+fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_selector_list");
     if list.combinator.is_some() {
         dump_selector_list(list.combinator.unwrap(), lwc_ref, ptr);
@@ -341,7 +341,7 @@ fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut lwc, ptr:&mut ~str){
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_selector(selector:@mut css_selector, lwc_ref:&mut lwc, ptr:&mut ~str){
+fn dump_selector(selector:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_selector");
     let d:~[@mut css_selector_detail] = selector.data.clone();
     let mut iter:uint = 0;
@@ -353,7 +353,7 @@ fn dump_selector(selector:@mut css_selector, lwc_ref:&mut lwc, ptr:&mut ~str){
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut lwc, ptr: &mut ~str, detail_next:bool ) {
+fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut ~lwc, ptr: &mut ~str, detail_next:bool ) {
     debug!("Entering: dump_selector_detail");
     if detail.negate {
         ptr.push_str(&":not(");
@@ -477,7 +477,7 @@ fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut lwc, ptr: 
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_bytecode(style:@mut css_style, lwc_ref:&mut lwc, ptr:&mut ~str, depth:u32 ){
+fn dump_bytecode(style:@mut css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32 ){
     
     debug!("Entering: dump_bytecode");
     let bytecode = style.bytecode.clone();
@@ -2359,7 +2359,7 @@ fn dump_unit(val: i32 , unit: u32 , ptr: &mut ~str) {
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_font_face(font_face: @mut css_font_face, lwc_ref:&mut lwc, ptr: &mut ~str){
+fn dump_font_face(font_face: @mut css_font_face, lwc_ref:&mut ~lwc, ptr: &mut ~str){
     debug!("Entering: dump_font_face");
     let mut style: u8;
     let mut weight: u8;

@@ -13,7 +13,7 @@ priv struct lwc_string {
     insensitive: Option<uint>
 }
 
-// implementing clone for  
+//implementing clone for  
 impl Clone for lwc_string {  
     fn clone(&self) -> lwc_string {     
         lwc_string{  
@@ -173,8 +173,8 @@ impl lwc {
 } // impl wapcaplet
 
 
-priv fn lwc()->lwc {
-    return lwc {
+priv fn lwc()->~lwc {
+    return ~lwc {
         map: HashMap::new(),
         vect: ~[]
     }
