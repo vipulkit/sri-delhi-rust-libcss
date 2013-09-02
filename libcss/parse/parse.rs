@@ -50,10 +50,10 @@ pub struct css_parser {
     priv match_char : char,
     priv open_items_stack : ~[char],
     priv parse_error : bool,
-    priv pushback: Option<css_token>,
+    priv pushback: Option<~css_token>,
     priv state_stack: ~[(uint,uint)], /*Parser state stack*/
     priv states: ~[state],
-    priv tokens: ~[css_token],
+    priv tokens: ~[~css_token],
 }
 
 impl css_parser {
@@ -358,7 +358,7 @@ impl css_parser {
     *  'token' -  The token to push back. 
     */
     #[inline]
-    fn push_back(&mut self, token: css_token) {
+    fn push_back(&mut self, token: ~css_token) {
         //debug!("Entering: push_back");
         //debug!("Entering: push_back");
         /*debug!(fmt!("token == %?", token));
@@ -384,14 +384,14 @@ impl css_parser {
     * #Return Value:
     *   '(css_error, Option<@css_token>)' - (CSS_OK, location to receive token) on success, (appropriate error, None) otherwise.
     */
-    fn get_token(&mut self, lwc_ref:&mut ~lwc) -> (css_error, Option<css_token>) {
+    fn get_token(&mut self, lwc_ref:&mut ~lwc) -> (css_error, Option<~css_token>) {
 
         //debug!("Entering: get_token");
-        let mut token_option: Option<css_token>;
+        let mut token: ~css_token;
 
         /* Use pushback, if it exists */
         if self.pushback.is_some() {
-            token_option = Some(self.pushback.take_unwrap());
+            token = self.pushback.take_unwrap();
         }
         else {
             /* Otherwise, ask the lexer */
@@ -401,57 +401,29 @@ impl css_parser {
                 return (lexer_error, None);
             }
 
-            let mut t = lexer_token_option.unwrap();
+            token = lexer_token_option.unwrap();
 
             /* If the last token read was whitespace, keep reading
              * tokens until we encounter one that isn't whitespace */
-            while (self.last_was_ws && t.token_type as int == CSS_TOKEN_S as int) {
+            while (self.last_was_ws && token.token_type as int == CSS_TOKEN_S as int) {
                 let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
                 if (lexer_error as int != CSS_OK as int) {
                     return (lexer_error, None);
                 }
 
-                t = lexer_token_option.unwrap();
+                token = lexer_token_option.unwrap();
             }
 
-            if ((t.token_type as int) < (CSS_TOKEN_LAST_INTERN as int)) {
-                let idata = Some(self.intern_string(lwc_ref, from_bytes(t.data.data)));
-
-                let t1_data = css_token_data {
-                    data: t.data.data.clone(),
-                    len: t.data.len
-                };
-
-                let t1 = css_token{
-                    data:t1_data,
-                    token_type:t.token_type,
-                    idata:idata,
-                    col:t.col,
-                    line:t.line
-                };
-
-                token_option = Some(t1);
+            if ((token.token_type as int) < (CSS_TOKEN_LAST_INTERN as int)) {
+                token.idata = Some(self.intern_string(lwc_ref, from_bytes(token.data.data)));
             }
             else {
-                let t1_data = css_token_data {
-                    data: t.data.data.clone(),
-                    len: t.data.len
-                };
-
-                let t1 = css_token{
-                    data:t1_data,
-                    token_type:t.token_type,
-                    idata:None,
-                    col:t.col,
-                    line:t.line
-                };
-
-                token_option = Some(t1);
+                token.idata = None;
             }
            
         }
 
-        let token = token_option.get();
+        
         self.tokens.push(token.clone());
         self.last_was_ws = (token.token_type as int == CSS_TOKEN_S as int);
         

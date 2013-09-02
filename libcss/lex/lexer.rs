@@ -114,7 +114,7 @@ static _sub_state: uint = 4;
 pub struct css_lexer {
     input: ~inputstream,
     bytes_read_for_token: uint,
-    token: Option<@mut css_token>,
+    token: Option<~css_token>,
     escape_seen: bool,
     unescaped_token_data: Option<~[u8]>,  // used if eascapeSeen  = true
     state: states,
@@ -149,7 +149,7 @@ impl css_lexer {
             data: ~[],
             len: 0
         };
-        let _token = @mut css_token {
+        let _token = ~css_token {
             data: _data,
             token_type: CSS_TOKEN_EOF,
             idata: None,
@@ -198,9 +198,9 @@ impl css_lexer {
     * to efficiently implement a push-back buffer with interned string data.
 	
 	* #Return Value:
-    *   '(css_error , Option<@mut css_token>)' - (CSS_OK,location to receive lexer instance), (appropriate error, None) otherwise.
+    *   '(css_error , Option<~css_token>)' - (CSS_OK,location to receive lexer instance), (appropriate error, None) otherwise.
     */
-    pub fn css__lexer_get_token(&mut self) -> (css_error , Option<@mut css_token>){
+    pub fn css__lexer_get_token(&mut self) -> (css_error , Option<~css_token>){
         let mut start_again = false;
 
         let ret_val =
@@ -322,17 +322,17 @@ impl css_lexer {
     *  'input_token_type' - The type of token to emit.
 
 	* #Return Value:
-    *   '(css_error , Option<@mut css_token>)' - (CSS_OK,location to receive receive pointer to token), (appropriate error, None) otherwise.
+    *   '(css_error , Option<~css_token>)' - (CSS_OK,location to receive receive pointer to token), (appropriate error, None) otherwise.
     */
-    pub fn emit_token(&mut self , input_token_type: Option<css_token_type>) -> (css_error, Option<@mut css_token>) {
+    pub fn emit_token(&mut self , input_token_type: Option<css_token_type>) -> (css_error, Option<~css_token>) {
 
         //debug!("entering emit_token");
-        let t = self.token.take_unwrap();
+        let mut t = self.token.take_unwrap();
         let _data = css_token_data {
             data: ~[],
             len: 0
         };
-        let _token = @mut css_token {
+        let _token = ~css_token {
             data: _data,
             token_type: CSS_TOKEN_EOF,
             idata: None,
@@ -480,7 +480,7 @@ impl css_lexer {
      * State machine components                                                   *
      ******************************************************************************/
 
-    pub fn at_keyword(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn at_keyword(&mut self) -> (css_error, Option<~css_token>) {
         //debug!("entering at_keyword");
         enum at_keyword_substates {
             Initial = 0, 
@@ -551,7 +551,7 @@ impl css_lexer {
     }
 
 
-    pub fn cdc_or_ident_or_function_or_npd(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn cdc_or_ident_or_function_or_npd(&mut self) -> (css_error, Option<~css_token>) {
         //debug!("entering : cdc_or_ident_or_function_or_npd");
         enum CDC_or_Ident_or_function_or_NPD_substates { 
             Initial = 0, 
@@ -685,7 +685,7 @@ impl css_lexer {
         self.emit_token(None) // == token.token_type
     }
     
-    pub fn cdo(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn cdo(&mut self) -> (css_error, Option<~css_token>) {
         //debug!("entering : cdo");
         enum cdo_substates { Initial = 0, Dash1 = 1, Dash2 = 2 };
 
@@ -788,7 +788,7 @@ impl css_lexer {
         self.emit_token(Some(CSS_TOKEN_CDO))
     }
 
-    pub fn comment(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn comment(&mut self) -> (css_error, Option<~css_token>) {
         //debug!("entering : comment");
         enum comment_substates { Initial = 0, InComment = 1 };
 
@@ -862,7 +862,7 @@ impl css_lexer {
         self.emit_token(Some(CSS_TOKEN_COMMENT))
     }
 
-    pub fn escaped_ident_or_function(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn escaped_ident_or_function(&mut self) -> (css_error, Option<~css_token>) {
         //debug!("entering : escaped_ident_or_function");
     /* IDENT = ident = [-]? nmstart nmchar*
      * FUNCTION = ident '(' = [-]? nmstart nmchar* '('
@@ -887,7 +887,7 @@ impl css_lexer {
         self.ident_or_function()
     }
 
-    pub fn hash(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn hash(&mut self) -> (css_error, Option<~css_token>) {
         //debug!("entering : hash");
         /* HASH = '#' name  = '#' nmchar+ 
          *
@@ -907,7 +907,7 @@ impl css_lexer {
         self.emit_token(Some(CSS_TOKEN_CHAR))
     }
 
-    pub fn ident_or_function(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn ident_or_function(&mut self) -> (css_error, Option<~css_token>) {
 
         //debug!("entering : ident_or_function");
         enum ident_or_function_substates { Initial = 0, Bracket = 1 };
@@ -956,7 +956,7 @@ impl css_lexer {
         self.emit_token(None)
     }
 
-    pub fn match_prefix(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn match_prefix(&mut self) -> (css_error, Option<~css_token>) {
 
         //debug!("entering : match_prefix");
         /* INCLUDES       = "~="
@@ -1001,7 +1001,7 @@ impl css_lexer {
         self.emit_token(Some(token_type))
     }
 
-    pub fn number_or_percentage_or_dimension(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn number_or_percentage_or_dimension(&mut self) -> (css_error, Option<~css_token>) {
 
         //debug!("entering : number_or_percentage_or_dimension");
         enum number_or_percentage_or_dimension_substates { 
@@ -1171,7 +1171,7 @@ impl css_lexer {
         self.emit_token(Some(CSS_TOKEN_DIMENSION))
     }
 
-    pub fn s(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn s(&mut self) -> (css_error, Option<~css_token>) {
         //debug!("entering : s");
         /* S = wc*
          * 
@@ -1187,7 +1187,7 @@ impl css_lexer {
         self.emit_token(Some(CSS_TOKEN_S))
     }
 
-    pub fn start(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn start(&mut self) -> (css_error, Option<~css_token>) {
         //debug!("entering : start");
         //debug!(fmt!("self.input == %?", self.input));
         loop {
@@ -1337,7 +1337,7 @@ impl css_lexer {
         } // loop
     }
 
-    pub fn string(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn string(&mut self) -> (css_error, Option<~css_token>) {
         //debug!("entering : string");
         /* STRING = string
          *
@@ -1361,7 +1361,7 @@ impl css_lexer {
         }
     }
 
-    pub fn uri_or_unicode_range_or_ident_or_function(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn uri_or_unicode_range_or_ident_or_function(&mut self) -> (css_error, Option<~css_token>) {
         //debug!("entering : uri_or_unicode_range_or_ident_or_function");
         /* URI = "url(" w (string | urlchar*) w ')' 
          * UNICODE-RANGE = [Uu] '+' [0-9a-fA-F?]{1,6}(-[0-9a-fA-F]{1,6})?
@@ -1408,7 +1408,7 @@ impl css_lexer {
         self.ident_or_function()
     }
     
-    pub fn uri(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn uri(&mut self) -> (css_error, Option<~css_token>) {
         //debug!("entering : uri");
         enum uri_substates { Initial = 0, LParen = 1, W1 = 2, Quote = 3, 
         URL = 4, W2 = 5, RParen = 6, String = 7 };
@@ -1607,7 +1607,7 @@ impl css_lexer {
         self.emit_token(Some(CSS_TOKEN_URI))
     }
 
-    pub fn unicode_range(&mut self) -> (css_error, Option<@mut css_token>) {
+    pub fn unicode_range(&mut self) -> (css_error, Option<~css_token>) {
         //debug!("entering : unicode_range");
         enum unicode_range_states { Initial = 0, MoreDigits = 1 };
 
