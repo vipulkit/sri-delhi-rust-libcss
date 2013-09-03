@@ -19,11 +19,11 @@ impl alias_gen {
 
         let mut aliases_iterator = Aliases.iter();
 
-        for aliases_iterator.advance |&line| {
+        for line in aliases_iterator  {
             if (!line.starts_with("#") && line.len()>0) {
                 //io::println(fmt!("read_aliases:: line_number == %?, line == %?", line_number, line));
                 let mut alias_entry_columns : ~[~str] = ~[];
-                for line.split_iter('\t').advance |column| {
+                for column in line.split_iter('\t') {
                     if !column.is_empty() {
                         alias_entry_columns.push(column.to_owned());
                     }
@@ -45,13 +45,13 @@ impl alias_gen {
                 // optionally, the third column has other aliases
                 if (alias_entry_columns.len() > 2) {
                     let mut aliases : ~[~str] = ~[];
-                    for alias_entry_columns[2].split_iter(' ').advance |alias| {
+                    for alias in alias_entry_columns[2].split_iter(' ')  {
                         if (!alias.is_empty()) {
                             aliases.push(alias.to_ascii().to_lower().to_str_ascii());
                         }
                     } 
                     // insert <alias, mibenum> into alias_map
-                    for aliases.iter().advance |alias| {
+                    for alias in aliases.iter() {
                         //io::println(alias);
                         self.alias_map.insert(alias.to_ascii().to_lower().to_str_ascii(), mibenum);
                     }
@@ -177,14 +177,14 @@ impl alias_gen {
         fp.write_line("        let mut trim_left_index = 0u;");
         fp.write_line("        let mut trim_right_index = alias.len()-1;");
         fp.write_line(""    );
-        fp.write_line("        for alias.iter().enumerate().advance |(index,c)| {");
+        fp.write_line("        for (index,c) in alias.iter().enumerate()  {");
         fp.write_line("            if c.is_alphanumeric() {");
         fp.write_line("                trim_left_index = index;");
         fp.write_line("                break;");
         fp.write_line("            }");
         fp.write_line("        }");
         fp.write_line("");
-        fp.write_line("        for alias.rev_iter().enumerate().advance |(index,c)| {");
+        fp.write_line("        for (index,c) in alias.rev_iter().enumerate()  {");
         fp.write_line("            if c.is_alphanumeric() {");
         fp.write_line("                trim_right_index = alias.len()-index;");
         fp.write_line("                break;");
@@ -204,7 +204,7 @@ impl alias_gen {
         fp.write_line("");
         fp.write_line("    fn alias_map_find(&self, alias:&str) -> Option<u16> {");
         fp.write_line("        match(alias) {");
-        for self.alias_map.iter().advance |(K, V)| {
+        for (K, V) in self.alias_map.iter() {
             fp.write_line(fmt!("            \"%s\" => Some(%?),", *K, *V));
         };
         fp.write_line("            _ => None");
@@ -217,7 +217,7 @@ impl alias_gen {
         fp.write_line("");
         fp.write_line("    fn mibenum_map_find(&self, mibenum:u16) -> Option<uint> {");
         fp.write_line("        match(mibenum) {");
-        for self.mibenum_map.iter().advance |(K, V)| {
+        for (K, V) in self.mibenum_map.iter() {
             fp.write_line(fmt!("            %? => Some(%?),", *K, *V));
         };
         fp.write_line("            _ => None");
