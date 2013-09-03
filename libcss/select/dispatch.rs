@@ -24,14 +24,14 @@ pub enum prop_group {
 }
 
 pub struct prop_table {
-    cascade : &'static fn (opv:u32, style:@mut css_style,
-                                state:@mut css_select_state)-> css_error ,
+    cascade : &'static fn (opv:u32, style:&mut css_style,
+                                state:&mut css_select_state)-> css_error ,
     set_from_hint :  &'static fn (hint:@mut css_hint,
-                                style: @mut css_computed_style) -> css_error ,
-    initial :  &'static fn (state:@mut css_select_state) -> css_error ,
-    compose :  &'static fn (parent:@mut css_computed_style,
-                                child:@mut css_computed_style,
-                                result:@mut css_computed_style) -> css_error ,
+                                style: &mut css_computed_style) -> css_error ,
+    initial :  &'static fn (state:&mut css_select_state) -> css_error ,
+    compose :  &'static fn (parent:&mut css_computed_style,
+                                child:&mut css_computed_style,
+                                result:&mut css_computed_style) -> css_error ,
 
     inherited:uint,
     group:prop_group
