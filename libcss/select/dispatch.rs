@@ -1071,10 +1071,10 @@ pub type css_fnptr_compute_font_size =  @fn(parent:Option<@mut css_hint>,
                                                     -> css_error ;
 
 pub type  compute_absolute_length_pair_get =  
-    @fn(style:@mut css_computed_style) -> (rect_result);
+    @fn(style:&mut css_computed_style) -> (rect_result);
 
 pub type  compute_absolute_length_pair_set =
-     @fn(style:@mut css_computed_style,
+     @fn(style:&mut css_computed_style,
             ftype:u8, 
             hlength:i32, 
             hunit:css_unit,
@@ -1082,55 +1082,55 @@ pub type  compute_absolute_length_pair_set =
             vunit:css_unit) ;
 
 pub type  compute_absolute_length_normal_get =  
-    @fn(style:@mut css_computed_style) -> (u8,Option<i32>,Option<css_unit>);
+    @fn(style:&mut css_computed_style) -> (u8,Option<i32>,Option<css_unit>);
 
 pub type  compute_absolute_length_normal_set =
-    @fn(style:@mut css_computed_style,
+    @fn(style:&mut css_computed_style,
             ftype:u8, 
             length:i32, 
             unit:css_unit) ;
 
 pub type  compute_absolute_length_none_get =  
-    @fn(style:@mut css_computed_style) -> (u8,Option<i32>,Option<css_unit>);
+    @fn(style:&mut css_computed_style) -> (u8,Option<i32>,Option<css_unit>);
 
 pub type  compute_absolute_length_none_set =
-    @fn(style:@mut css_computed_style,
+    @fn(style:&mut css_computed_style,
             ftype:u8, 
             length:i32, 
             unit:css_unit) ;
 
 pub type  compute_absolute_length_auto_get =  
-    @fn(style:@mut css_computed_style) -> (u8,Option<i32>,Option<css_unit>);
+    @fn(style:&mut css_computed_style) -> (u8,Option<i32>,Option<css_unit>);
 
 pub type  compute_absolute_length_auto_set =
-    @fn(style:@mut css_computed_style,
+    @fn(style:&mut css_computed_style,
             ftype:u8, 
             length:i32, 
             unit:css_unit) ;
 
 pub type  compute_absolute_length_get =  
-    @fn(style:@mut css_computed_style) -> (u8,Option<i32>,Option<css_unit>);
+    @fn(style:&mut css_computed_style) -> (u8,Option<i32>,Option<css_unit>);
 
 pub type  compute_absolute_length_set =
-    @fn(style:@mut css_computed_style,
+    @fn(style:&mut css_computed_style,
             ftype:u8, 
             length:i32, 
             unit:css_unit) ;
 
 pub type  compute_absolute_border_side_width_get =  
-    @fn(style:@mut css_computed_style) -> (u8,Option<i32>,Option<css_unit>);
+    @fn(style:&mut css_computed_style) -> (u8,Option<i32>,Option<css_unit>);
 
 pub type  compute_absolute_border_side_width_set =
-    @fn(style:@mut css_computed_style,
+    @fn(style:&mut css_computed_style,
             ftype:u8, 
             length:i32, 
             unit:css_unit) ;
 
 pub type  compute_absolute_color_get =  
-    @fn(style:@mut css_computed_style) -> (u8,Option<u32>);
+    @fn(style:&mut css_computed_style) -> (u8,Option<u32>);
 
 pub type  compute_absolute_color_set =
-     @fn(style:@mut css_computed_style,
+     @fn(style:&mut css_computed_style,
             ftype:u8, 
             color:u32) ;
 

@@ -22,7 +22,7 @@ use select::computed::*;
 #[inline]
 pub fn css__outranks_existing(op:u16, 
 							important:bool, 
-							state: @mut css_select_state,
+							state: &mut css_select_state,
 							inherit:bool) -> bool {
 	let existing = &mut state.props[op][state.current_pseudo as uint];
 	let mut outranks : bool = false;
@@ -157,7 +157,7 @@ pub fn css__to_css_unit(u:u32) -> css_unit {
  ******************************************************************************/
  #[inline]
 pub fn css__cascade_bg_border_color(opv:u32, style:@mut css_style, state:@mut css_select_state, 
-		 fun:@fn (@mut css_computed_style, u8, css_color)) -> css_error {
+		 fun:@fn (&mut css_computed_style, u8, css_color)) -> css_error {
 	
 	let mut value = CSS_BACKGROUND_COLOR_INHERIT;
 	let mut color:css_color= 0;
@@ -188,7 +188,7 @@ pub fn css__cascade_bg_border_color(opv:u32, style:@mut css_style, state:@mut cs
 
 #[inline]
 pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_select_state, 
-	fun:Option<@extern fn (@mut css_computed_style, u8, Option<uint>)>) -> css_error {
+	fun:Option<@extern fn (&mut css_computed_style, u8, Option<uint>)>) -> css_error {
 	
 	let mut value : uint = CSS_BACKGROUND_IMAGE_INHERIT as uint;
 	let mut uri: Option<uint> = None;
@@ -230,7 +230,7 @@ pub fn css__cascade_uri_none(opv:u32, style:@mut css_style, state:@mut css_selec
 
 #[inline]
 pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_select_state, 
-	fun:@fn (@mut css_computed_style, u8) ) -> css_error {
+	fun:@fn (&mut css_computed_style, u8) ) -> css_error {
 	
 	let mut value = CSS_BORDER_STYLE_INHERIT;
 
@@ -260,7 +260,7 @@ pub fn css__cascade_border_style(opv:u32, _:@mut css_style,	state:@mut css_selec
 
 #[inline]
 pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_select_state, 
-	fun:@fn (@mut css_computed_style, u8, css_fixed, css_unit)) -> css_error {
+	fun:@fn (&mut css_computed_style, u8, css_fixed, css_unit)) -> css_error {
 	
 	let mut value = CSS_BORDER_WIDTH_INHERIT;
 	let mut length = 0;
@@ -293,7 +293,7 @@ pub fn css__cascade_border_width(opv:u32, style:@mut css_style, state:@mut css_s
 
 #[inline]
 pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
+	fun:@fn (&mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 	
 	let mut value = CSS_BOTTOM_INHERIT;
 	let mut length = 0;
@@ -325,7 +325,7 @@ pub fn css__cascade_length_auto(opv:u32, style:@mut css_style, state:@mut css_se
 
 #[inline]
 pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
+	fun:@fn (&mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 	
 	let mut value = CSS_LETTER_SPACING_INHERIT;
 	let mut length = 0;
@@ -356,7 +356,7 @@ pub fn css__cascade_length_normal(opv:u32, style:@mut css_style, state:@mut css_
 
 #[inline]
 pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
+	fun:@fn (&mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 
 	let mut value = CSS_MAX_HEIGHT_INHERIT;
 	let mut length = 0;
@@ -386,8 +386,8 @@ pub fn css__cascade_length_none(opv:u32, style:@mut css_style, state:@mut css_se
 }
 
 #[inline]
-pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@fn (@mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
+pub fn css__cascade_length(opv:u32, style:&mut css_style, state:&mut css_select_state,
+	fun:@fn (&mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 
 	let mut value = CSS_MIN_HEIGHT_INHERIT;
 	let mut length = 0;
@@ -417,8 +417,8 @@ pub fn css__cascade_length(opv:u32, style:@mut css_style, state:@mut css_select_
 
 
 #[inline]
-pub fn css__cascade_number(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:Option<@fn (@mut css_computed_style, u8, css_fixed) -> css_error>) -> css_error {
+pub fn css__cascade_number(opv:u32, style:&mut css_style, state:&mut css_select_state,
+	fun:Option<@fn (&mut css_computed_style, u8, css_fixed) -> css_error>) -> css_error {
 
 	let mut value = 0;
 	let mut length = 0;
@@ -444,8 +444,8 @@ pub fn css__cascade_number(opv:u32, style:@mut css_style, state:@mut css_select_
 }
 
 #[inline]
-pub fn css__cascade_page_break_after_before_inside(opv:u32, _:@mut css_style, state:@mut css_select_state,
-		fun:@fn (@mut css_computed_style, u8)) -> css_error {
+pub fn css__cascade_page_break_after_before_inside(opv:u32, _:&mut css_style, state:&mut css_select_state,
+		fun:@fn (&mut css_computed_style, u8)) -> css_error {
 	
 	let mut value = CSS_PAGE_BREAK_AFTER_INHERIT;
 
@@ -474,8 +474,8 @@ pub fn css__cascade_page_break_after_before_inside(opv:u32, _:@mut css_style, st
 }
 
 #[inline]
-pub fn css__cascade_counter_increment_reset(opv:u32, style:@mut css_style, state:@mut css_select_state,
-	fun:@fn (@mut css_computed_style, u8, ~[@mut css_computed_counter]) ) -> css_error {
+pub fn css__cascade_counter_increment_reset(opv:u32, style:&mut css_style, state:&mut css_select_state,
+	fun:@fn (&mut css_computed_style, u8, ~[@mut css_computed_counter]) ) -> css_error {
 
 	let mut value : uint = CSS_COUNTER_INCREMENT_INHERIT as uint;
 	let mut counters:~[@mut css_computed_counter] = ~[];
