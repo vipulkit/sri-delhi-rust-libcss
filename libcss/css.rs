@@ -86,7 +86,6 @@ impl css {
             quirks_allowed:params.allow_quirks,                    
             quirks_used:false,                       
             inline_style:params.inline_style,                      
-            cached_style:None,    
             string_vector:~[],
             resolve : params.resolve, 
             import : params.import, 
@@ -159,7 +158,6 @@ impl css {
             }
         }
 
-        self.stylesheet.cached_style = None;
 
         let mut ptr = self.stylesheet.rule_list ;
         loop {
