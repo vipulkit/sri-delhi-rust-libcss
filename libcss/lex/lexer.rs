@@ -145,25 +145,11 @@ impl css_lexer {
     *   'css_lexer' - location to receive lexer instance.
     */
     pub fn css__lexer_create(inputstream: ~inputstream) -> ~css_lexer {
-        let _data = css_token_data {
-            data: ~[],
-            len: 0
-        };
-        let _token = ~css_token {
-            data: _data,
+        let _token = ~css_token { data: css_token_data { data: ~[], len: 0},
             token_type: CSS_TOKEN_EOF,
             idata: None,
             col: 0,
             line: 0
-        };
-        let context_inst = _context {
-            first: 0,
-            orig_bytes: 0,
-            last_was_star: false,
-            last_was_cr: false,
-            bytes_for_url: 0,
-            data_len_for_url: 0,
-            hex_count: 0
         };
         ~css_lexer{ 
             input: inputstream,
@@ -174,7 +160,7 @@ impl css_lexer {
             state: sSTART,
             substate: 0,
             emit_comments: false,
-            context: context_inst,      
+            context: _context { first: 0, orig_bytes: 0, last_was_star: false, last_was_cr: false, bytes_for_url: 0, data_len_for_url: 0, hex_count: 0 },      
             current_col: 1,
             current_line: 1,
         }
