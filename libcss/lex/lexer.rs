@@ -57,7 +57,7 @@ impl Clone for css_token_data {
 
 pub struct css_token {
     
-    data: css_token_data,
+    data: ~css_token_data,
 
     token_type: css_token_type,
     idata: Option<uint>,
@@ -145,7 +145,7 @@ impl css_lexer {
     *   'css_lexer' - location to receive lexer instance.
     */
     pub fn css__lexer_create(inputstream: ~inputstream) -> ~css_lexer {
-        let _token = ~css_token { data: css_token_data { data: ~[], len: 0},
+        let _token = ~css_token { data: ~css_token_data { data: ~[], len: 0},
             token_type: CSS_TOKEN_EOF,
             idata: None,
             col: 0,
@@ -314,7 +314,7 @@ impl css_lexer {
 
         //debug!("entering emit_token");
         let mut t = self.token.take_unwrap();
-        let _data = css_token_data {
+        let _data = ~css_token_data {
             data: ~[],
             len: 0
         };
