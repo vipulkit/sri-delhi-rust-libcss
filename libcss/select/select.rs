@@ -1157,8 +1157,8 @@ impl css_select_ctx {
         ret
     }
 
-    pub fn _rule_good_for_element_name(selector:@mut css_selector, lwc_ref:&mut ~lwc,
-        src:@mut css_select_rule_source, state:css_select_state) -> bool {
+    pub fn _rule_good_for_element_name(selector:&mut css_selector, lwc_ref:&mut ~lwc,
+        src:&mut css_select_rule_source, state:&css_select_state) -> bool {
         /* If source of rule is element or universal hash, we know the
          * element name is a match.  If it comes from the class or id hash,
          * we have to test for a match */
@@ -1692,7 +1692,7 @@ impl css_select_ctx {
     }
 
     pub fn match_universal_combinator(&mut self, combinator_type:css_combinator,
-        selector:@mut css_selector, state:@mut css_select_state,
+        selector:&mut css_selector, state:&mut css_select_state,
         node:*c_void, may_optimise:bool, rejected_by_cache:@mut bool,
         next_node:*mut *c_void) -> css_error  {
         
@@ -1796,7 +1796,7 @@ impl css_select_ctx {
     }
 
     pub fn match_details(&mut self,  node:*c_void, 
-        detail :&[@mut css_selector_detail], state :@mut css_select_state, 
+        detail :&[@mut css_selector_detail], state :&mut css_select_state, 
         matched : @mut bool, pseudo_element : Option<@mut css_pseudo_element>) -> css_error {
 
         //debug!(fmt!("Entering match_details")) ;
@@ -1878,8 +1878,8 @@ impl css_select_ctx {
     }
 
     pub fn match_detail(&mut self, node:*c_void, 
-            detail:@mut css_selector_detail, state:@mut css_select_state, 
-            matched:@mut bool, pseudo_element:@mut css_pseudo_element) -> css_error {
+            detail:&mut css_selector_detail, state:&mut css_select_state, 
+            matched:@mut bool, pseudo_element:&mut css_pseudo_element) -> css_error {
 
         //debug!(fmt!("Entering match_detail")) ;
         let is_root = @mut false;
@@ -2230,7 +2230,7 @@ impl css_select_ctx {
         return error
     }
 
-    pub fn cascade_style(style:@mut css_style, state:@mut css_select_state) -> css_error {
+    pub fn cascade_style(style:&mut css_style, state:&mut css_select_state) -> css_error {
         let s = style;
 
         //debug!(fmt!("Entering cascade_style")) ;
