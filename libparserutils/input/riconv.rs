@@ -34,16 +34,14 @@ pub fn riconv_initialize() -> u64 {
     -1 as u64
 }
 
-#[fixed_stack_segment]
 pub fn safe_riconv_open( tocode: ~str , fromcode : ~str ) -> u64 {
     unsafe {
-        let tobytes = tocode.into_bytes() ;
-        let frombytes = fromcode.into_bytes();
+        let tobytes = tocode.as_bytes_with_null_consume() ;
+        let frombytes = fromcode.as_bytes_with_null_consume();
         iconv_wrapper::rust_iconv_open( to_ptr(tobytes) ,  to_ptr(frombytes) ) 
     }
 }
 
-#[fixed_stack_segment]
 pub fn safe_riconv (hnd : u64, inbuf : &[u8] ) -> (~[u8], u64, int) {
     unsafe {
         let err : c_int = 0 ;
@@ -71,7 +69,6 @@ pub fn safe_riconv (hnd : u64, inbuf : &[u8] ) -> (~[u8], u64, int) {
     }
 }
 
-#[fixed_stack_segment]
 pub fn safe_riconv_close(hnd: u64) -> int {
     unsafe {
         // io::println(fmt!("\n ICONV_CRATE::In safe_riconv_close called = %? ", hnd));

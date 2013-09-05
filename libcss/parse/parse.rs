@@ -44,8 +44,7 @@ type state =  ~extern fn(parser: &mut css_parser, lwc_ref:&mut ~lwc, propstrings
 
 pub struct css_parser {
     language: ~css_language,
-    lexer: ~css_lexer,
-    
+        
     priv last_was_ws : bool,
     priv match_char : char,
     priv open_items_stack : ~[char],
@@ -54,6 +53,8 @@ pub struct css_parser {
     priv state_stack: ~[(uint,uint)], /*Parser state stack*/
     priv states: ~[state],
     priv tokens: ~[~css_token],
+    priv parser_port:Port<(css_error, Option<~css_token>)>, 
+    priv lexer_channel:Chan<~[u8]>
 }
 
 impl css_parser {
@@ -75,7 +76,7 @@ impl css_parser {
     * #Return Value:
     *   'Option<~css_parser>' - location to receive parser instance.
     */
-    fn css__parser_create_internal(language: ~css_language, lexer: ~css_lexer, initial:(uint, uint) ) 
+    fn css__parser_create_internal(language: ~css_language, parser_port:Port<(css_error , Option<~css_token>)>, lexer_channel:Chan<~[u8]>, initial:(uint, uint) ) 
         -> Option<~css_parser> {
 
         //debug!("Entering: css__parser_create_internal");
@@ -111,8 +112,7 @@ impl css_parser {
 
         let mut parser = ~css_parser {
             language: language,
-            lexer: lexer,
-            
+                     
             last_was_ws: false,
             match_char: 0 as char,
             open_items_stack : ~[],
@@ -121,6 +121,8 @@ impl css_parser {
             state_stack: ~[],
             states: states,
             tokens: ~[],
+            parser_port: parser_port,
+            lexer_channel: lexer_channel
         };
 
         parser.state_stack.push(initial);
@@ -145,12 +147,12 @@ impl css_parser {
     *   'Option<~css_parser>' - location to receive parser instance.
     */
     #[inline]
-    pub fn css__parser_create(language: ~css_language, lexer: ~css_lexer) 
+    pub fn css__parser_create(language: ~css_language, parser_port:Port<(css_error , Option<~css_token>)>, lexer_channel:Chan<~[u8]>) 
         -> Option<~css_parser> {
         //debug!("Entering: css__parser_create");
         let initial = ( sStart as uint, 0u );
 
-        css_parser::css__parser_create_internal(language, lexer, initial)
+        css_parser::css__parser_create_internal(language, parser_port, lexer_channel, initial)
     }
 
     /**
@@ -170,12 +172,12 @@ impl css_parser {
     *   'Option<~css_parser>' - location to receive parser instance.
     */
     #[inline]
-    pub fn css__parser_create_for_inline_style(language: ~css_language, lexer: ~css_lexer) 
+    pub fn css__parser_create_for_inline_style(language: ~css_language, parser_port:Port<(css_error , Option<~css_token>)>, lexer_channel:Chan<~[u8]>) 
         -> Option<~css_parser> {
         //debug!("Entering: css__parser_create_for_inline_style");
         let initial = (sInlineStyle as uint, 0);
 
-        css_parser::css__parser_create_internal(language, lexer, initial)
+        css_parser::css__parser_create_internal(language, parser_port, lexer_channel, initial)
     }
 
 
@@ -192,7 +194,7 @@ impl css_parser {
     #[inline]
     pub fn css__parser_parse_chunk(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, data: ~[u8]) -> css_error {
         //debug!("Entering: css__parser_parse_chunk");
-        self.lexer.css__lexer_append_data(data);
+        self.lexer_channel.send(data);
 
         loop {
             if self.state_stack.is_empty() {
@@ -230,7 +232,7 @@ impl css_parser {
     #[inline]
     pub fn css__parser_completed(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:&css_propstrings) -> css_error {
         //debug!("Entering: css__parser_completed ");
-        self.lexer.css__lexer_append_data([]);
+        self.lexer_channel.send(~[]);
         loop {
             if self.state_stack.is_empty() {
                 break;
@@ -239,12 +241,15 @@ impl css_parser {
             let (current_state, _) = self.state_stack[self.state_stack.len()-1];
             //debug!(fmt!("css__parser_completed, state_stack (2) == %?", self.state_stack));
             let result = (*self.states[current_state])(self, lwc_ref, propstrings_ref);
-
+            
             match(result) {
                 CSS_OK => loop,
-                _ => return result
+                _ => {  self.lexer_channel.send(~[]);
+                        return result;
+                      }  
             }
         }
+        self.lexer_channel.send(~[]);
         CSS_OK
     }
 
@@ -395,8 +400,7 @@ impl css_parser {
         }
         else {
             /* Otherwise, ask the lexer */
-            let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
-
+            let (lexer_error, lexer_token_option) = self.parser_port.recv();
             if (lexer_error as int != CSS_OK as int) {
                 return (lexer_error, None);
             }
@@ -406,7 +410,7 @@ impl css_parser {
             /* If the last token read was whitespace, keep reading
              * tokens until we encounter one that isn't whitespace */
             while (self.last_was_ws && token.token_type as int == CSS_TOKEN_S as int) {
-                let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
+                let (lexer_error, lexer_token_option) = self.parser_port.recv();
                 if (lexer_error as int != CSS_OK as int) {
                     return (lexer_error, None);
                 }
@@ -792,7 +796,6 @@ impl css_parser {
 
                     match (token.token_type) {
                         CSS_TOKEN_EOF => {
-                            
                             parser.done();
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */

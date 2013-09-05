@@ -1,8 +1,6 @@
 use wapcaplet::*;
-use parserutils::input::inputstream::*;
 
 // libcss uses
-use charset::csdetect::*;
 use lex::lexer::*;
 use parse::language::*;
 use parse::parse::*;
@@ -60,18 +58,12 @@ impl css {
         // assert!(!(propstrings_instance.is_some());
         //assert!((propstrings_instance.is_none() || lwc_instance.is_none()));
                                                      
-        // create inputstream
-        let (inputstream_option, _) =  
-            match params.charset.clone() {
-                None => inputstream(None, None ,Some(@css__charset_extract)),
-                Some(charset) => inputstream(Some(charset), Some(CSS_CHARSET_DICTATED as int), Some(@css__charset_extract))
-            };
-        
-
+        let (parser_port, parser_chan): (Port<(css_error , Option<~css_token>)>, Chan<(css_error , Option<~css_token>)>) = stream();
+        let (lexer_port, lexer_chan): (Port<~[u8]>, Chan<~[u8]>) = stream();    
 
         // create lexer
         
-        let lexer = css_lexer::css__lexer_create(inputstream_option.unwrap());
+        css__lexer_create(params.charset.clone(), lexer_port, parser_chan);
 
         // create stylesheet
         let stylesheet = @mut css_stylesheet {
@@ -99,8 +91,8 @@ impl css {
 
         // create parser
         let parser = match params.inline_style {
-            false => css_parser::css__parser_create(language, lexer),
-            true => css_parser::css__parser_create_for_inline_style(language, lexer)
+            false => css_parser::css__parser_create(language, parser_port, lexer_chan),
+            true => css_parser::css__parser_create_for_inline_style(language, parser_port, lexer_chan)
         }; 
 
         // let mut lwc_ref = if lwc_instance.is_none() {
