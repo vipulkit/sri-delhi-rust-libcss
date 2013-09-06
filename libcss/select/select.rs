@@ -636,6 +636,7 @@ impl css_select_ctx {
     /******************************************************************************
      * Selection engine internals below here                                      *
      ******************************************************************************/
+    #[inline]
     pub fn intern_strings(&mut self) {
         
                     /* Universal selector */
@@ -673,7 +674,8 @@ impl css_select_ctx {
 
     }
 
-    pub fn set_hint(state:@mut css_select_state, prop:u32) -> css_error {
+    #[inline]
+    pub fn set_hint(state:&mut css_select_state, prop:u32) -> css_error {
         
         //debug!(fmt!("Entering set_hint")) ;
         /* Retrieve this property's hint from the client */
@@ -705,7 +707,8 @@ impl css_select_ctx {
         return CSS_OK;
     }
 
-    pub fn set_initial(state :@mut css_select_state, prop : uint, pseudo : css_pseudo_element,
+    #[inline]
+    pub fn set_initial(state :&mut css_select_state, prop : uint, pseudo : css_pseudo_element,
         parent: *c_void) -> css_error {
 
         //debug!(fmt!("Entering set_initial")) ;
