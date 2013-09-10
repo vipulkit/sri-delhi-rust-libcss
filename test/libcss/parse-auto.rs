@@ -10,6 +10,7 @@ use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use wapcaplet::*;
+use css::parse::propstrings::css_propstrings;
 
 pub fn find_char_between(s: &str, c: char, start: uint, end: uint) -> Option<uint>{
 	let length = s.len();
@@ -25,7 +26,7 @@ pub fn find_char_between(s: &str, c: char, start: uint, end: uint) -> Option<uin
 	return None;
 }
 
-pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
+pub fn resolve_url(_:&str, rel:uint) -> (css_error,Option<uint>) {
     return (CSS_OK,Some(rel));
 }
 
@@ -50,8 +51,7 @@ pub struct line_ctx {
     inerrors:bool,
     inexp:bool,
 
-    inrule:bool,
-    lwc_instance:@mut lwc
+    inrule:bool
 }
 
 
@@ -224,7 +224,7 @@ fn parse_auto(file: ~str) {
         inerrors:false,
         inexp:false,
         inrule:false,
-        lwc_instance:lwc()
+        // lwc_instance:Some(lwc())
     };
 
     for file_content.any_line_iter().advance |line| {
@@ -447,6 +447,8 @@ pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
 pub fn run_test(ctx:@mut line_ctx) {
     debug!("Entering: run_test");
 
+    let mut lwc_ref = lwc();
+    let propstring = css_propstrings::css_propstrings(&mut lwc_ref);
     let mut error : css_error ;
     let mut params = css_params {
         /* ABI version of this structure */
@@ -458,9 +460,9 @@ pub fn run_test(ctx:@mut line_ctx) {
         /* The charset of the stylesheet data, or NULL to detect */
         charset : Some(~"UTF-8"),
         /* URL of stylesheet */
-        url : @"foo",
+        url : ~"foo",
         /* Title of stylesheet */
-        title : @"",
+        title : ~"",
 
         /* Permit quirky parsing of stylesheet */
         allow_quirks : false,
@@ -478,16 +480,15 @@ pub fn run_test(ctx:@mut line_ctx) {
 
         /* Font resolution function */
         font : None,
-        lwc_instance: Some(ctx.lwc_instance),
-        propstrings_instance: None
+        
     };
 
     //let lwc_instance = lwc() ;
 
-    let css_instance = css::css_create( &params) ;
+    let mut css_instance = css::css_create( &params) ;
 
 
-    error = css_instance.css_stylesheet_append_data(ctx.buf.clone());
+    error = css_instance.css_stylesheet_append_data(&mut lwc_ref , &propstring ,ctx.buf.clone());
     match error {
         CSS_OK=>{},
         CSS_NEEDDATA=>{},
@@ -496,7 +497,7 @@ pub fn run_test(ctx:@mut line_ctx) {
         }
     }
 
-    error = css_instance.css_stylesheet_data_done();
+    error = css_instance.css_stylesheet_data_done(&mut lwc_ref , &propstring);
     let mut pending_imports = false ;
     assert!( match error {
                 CSS_OK=>{
@@ -522,7 +523,7 @@ pub fn run_test(ctx:@mut line_ctx) {
             _=>{false}
         } );
 
-        let url = o_str.get_or_default(@"") ;
+        let url = o_str.get_or_default(~"") ;
 
         match error {
             CSS_OK=> {
@@ -566,7 +567,7 @@ pub fn run_test(ctx:@mut line_ctx) {
                                 ctx.exp[e].ftype , (CSS_RULE_SELECTOR as int)  )) ;
                             fail!(~"Expected type differs") ;
                         }
-                        if validate_rule_selector(rule,ctx.exp[e]) {
+                        if validate_rule_selector(rule, &mut lwc_ref, ctx.exp[e]) {
                             report_fail(ctx.buf.clone(), ctx.exp[e].clone());
                             fail!(~"Validation of rule selector failed");
                         }
@@ -632,7 +633,7 @@ pub fn run_test(ctx:@mut line_ctx) {
     }
 }
 
-pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bool {
+pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mut exp_entry ) -> bool {
 
     debug!("Entering: validate_rule_selector");
     let mut name : ~str = ~"" ;
@@ -644,7 +645,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 	 let mut i : uint = 0;
 	 let length = s.selectors.len();
      while i < length {
-        dump_selector_list(s.selectors[i],&mut ptr) ;
+        dump_selector_list(s.selectors[i], lwc_ref, &mut ptr) ;
         if ( i != (s.selectors.len()-1) ) {
             name = name + ptr + ", ";
             debug!(fmt!("if name == %?" , name));
@@ -715,7 +716,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
                     assert!(res as int == CSS_OK as int);
 
                     let p : @str = match (op) {
-                        Some(val) => lwc_string_data(val),
+                        Some(val) => lwc_ref.lwc_string_data(val).to_managed(),
                         None => @""
                     };
 
@@ -767,9 +768,9 @@ pub fn validate_rule_import(s:@mut css_rule_import, e:@mut exp_entry) -> bool {
     true
 } 
 
-fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
+fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     if list.combinator.is_some() {
-        dump_selector_list(list.combinator.unwrap(),ptr);
+        dump_selector_list(list.combinator.unwrap(), lwc_ref, ptr);
     }
     match list.data[0].combinator_type {
         CSS_COMBINATOR_NONE=> {
@@ -798,60 +799,60 @@ fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
         }
 
     }
-    dump_selector(list, ptr);
+    dump_selector(list, lwc_ref, ptr);
 }
 
-fn dump_selector(selector:@mut css_selector, ptr:&mut ~str){
+fn dump_selector(selector:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     let d:~[@mut css_selector_detail] = selector.data.clone();
     debug!(fmt!("Selector Data:%?",d));
   	let mut iter:uint = 0;
     while iter < d.len() {
 		debug!(fmt!("Selector Data len:%?, Iter:%?",d.len(), iter));
-        dump_selector_detail(d[iter], ptr, (iter != d.len()-1) );
+        dump_selector_detail(d[iter], lwc_ref, ptr, (iter != d.len()-1) );
         iter += 1;
     }   
 }
 
-fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_next:bool ) {
+fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut ~lwc, ptr: &mut ~str, detail_next:bool ) {
 	debug!(fmt!("Detail == %?",detail));
     if detail.negate {
         str::push_str(ptr,&":not(");
     }
     match detail.selector_type {
         CSS_SELECTOR_ELEMENT=>{
-            if lwc_string_length(detail.qname.name) == 1 && 
-                    lwc_string_data(detail.qname.name)[0] == ('*' as u8) && 
+            if lwc_ref.lwc_string_length(detail.qname.name) == 1 && 
+                    lwc_ref.lwc_string_data(detail.qname.name)[0] == ('*' as u8) && 
                     !detail_next {
               
-                str::push_str(ptr,lwc_string_data(detail.qname.name));
+                str::push_str(ptr,lwc_ref.lwc_string_data(detail.qname.name));
             }
-            else if lwc_string_length(detail.qname.name) != 1 ||
-                lwc_string_data(detail.qname.name)[0] != ('*' as u8) { 
-                str::push_str(ptr,lwc_string_data(detail.qname.name));
+            else if lwc_ref.lwc_string_length(detail.qname.name) != 1 ||
+                lwc_ref.lwc_string_data(detail.qname.name)[0] != ('*' as u8) { 
+                str::push_str(ptr,lwc_ref.lwc_string_data(detail.qname.name));
             }
         },
 
         CSS_SELECTOR_CLASS=> {
 
             ptr.push_char('.');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
         },
 
         CSS_SELECTOR_ID =>{
             
             ptr.push_char('#');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
         },
 
         CSS_SELECTOR_PSEUDO_CLASS | CSS_SELECTOR_PSEUDO_ELEMENT =>{
             ptr.push_char(':' );
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             match detail.value_type {
                 CSS_SELECTOR_DETAIL_VALUE_STRING=> {
                     if detail.string.is_some() {
                         ptr.push_char('(' );
                         //let String = copy detail.string;
-                        str::push_str(ptr, (lwc_string_data( detail.string.unwrap() )));
+                        str::push_str(ptr, (lwc_ref.lwc_string_data( detail.string.unwrap() )));
                         ptr.push_char(')' );
                     }
                 } ,
@@ -865,65 +866,65 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 
         CSS_SELECTOR_ATTRIBUTE=>{
             ptr.push_char('[');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_EQUAL =>{
             ptr.push_char('[');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             ptr.push_char('=');
             ptr.push_char('"');
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(lwc_ref.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_DASHMATCH=>{
             ptr.push_char('[');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             ptr.push_char('|');
             ptr.push_char('=');
             ptr.push_char('"');
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(lwc_ref.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_INCLUDES=>{
             ptr.push_char('[');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             ptr.push_char('~');
             ptr.push_char('=');
             ptr.push_char('"');
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(lwc_ref.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_PREFIX=>{
             ptr.push_char('[' );
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             ptr.push_char('^' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(lwc_ref.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"' );
             ptr.push_char(']' );
         },
         CSS_SELECTOR_ATTRIBUTE_SUFFIX=>{
             ptr.push_char('[' );
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             ptr.push_char('$' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(lwc_ref.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"' );
             ptr.push_char(']' );
         },
         CSS_SELECTOR_ATTRIBUTE_SUBSTRING=>{
             ptr.push_char('[' );
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             ptr.push_char('*' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(lwc_ref.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"' );
             ptr.push_char(']' );
         }

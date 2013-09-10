@@ -290,13 +290,13 @@ pub static CSS_PAGE_BREAK_INSIDE_MASK : int =  0xc0;
 
 
 pub struct css_computed_counter {
-    name:@mut lwc_string ,
+    name:uint ,
     value:i32
 }
 
 pub struct css_computed_content_item_counter {
-    name:@mut lwc_string,
-    sep:Option<@mut lwc_string>,
+    name:uint,
+    sep:Option<uint>,
     style:u8
 }
 
@@ -304,7 +304,7 @@ pub struct css_computed_content_item {
   
     item_type:css_computed_content_item_type,
 
-    data:Option<@mut lwc_string>,
+    data:Option<uint>,
     counters_data:Option<css_computed_content_item_counter>
 }
 
@@ -375,7 +375,7 @@ pub struct css_computed_uncommon {
     counter_increment:~[@mut css_computed_counter],
     counter_reset:~[@mut css_computed_counter],
 
-    cursor:~[@mut lwc_string],
+    cursor:~[uint],
 
     content:~[@mut css_computed_content_item],
 }
@@ -530,7 +530,7 @@ pub struct css_computed_style {
 
     background_color:u32,
 
-    background_image:Option<@mut lwc_string>,
+    background_image:Option<uint>,
 
     background_position:~[i32],
 
@@ -550,7 +550,7 @@ pub struct css_computed_style {
 
     line_height:i32,
 
-    list_style_image:Option<@mut lwc_string>,
+    list_style_image:Option<uint>,
 
     margin:~[i32],
 
@@ -572,10 +572,10 @@ pub struct css_computed_style {
 
     z_index:i32,
 
-    font_family:~[@mut lwc_string],
+    font_family:~[uint],
 
     //quotes chaned from wapcaplet-strings to strings
-    quotes:~[@mut lwc_string],
+    quotes:~[uint],
 
     uncommon:Option<@mut css_computed_uncommon>, /**< Uncommon properties */
     aural:Option<@mut css_aural>,         /*< Aural properties */
@@ -625,8 +625,8 @@ pub struct css_hint {
     color:Option<u32>,
     fixed:Option<i32>,
     integer:Option<i32>,
-    string:Option<@mut lwc_string>,
-    strings:Option<~[@mut lwc_string]>
+    string:Option<uint>,
+    strings:Option<~[uint]>
 }
 
 pub struct rect_result {
@@ -665,7 +665,7 @@ pub struct css_select_results {
 }
 
 pub struct reject_item {
-    value:@mut lwc_string,
+    value:uint,
     sel_type:css_selector_type 
 } 
 
@@ -673,7 +673,7 @@ impl Clone for reject_item {
     #[inline]
     fn clone(&self) -> reject_item {
         reject_item {
-            value:self.value,
+            value:self.value.clone(),
             sel_type:self.sel_type
         }
     }
@@ -708,67 +708,67 @@ pub struct css_select_handler {
 
     node_name: @fn( node:*c_void, qname: &mut css_qname ) -> css_error,
 
-    node_classes: @fn(pw:*c_void, n:*c_void, classes: &mut ~[@mut lwc_string] ) -> css_error,
+    node_classes: @fn(lwc_ref:&mut ~lwc, pw:*c_void, n:*c_void, classes: &mut ~[uint] ) -> css_error,
 
-    node_id: @fn(pw:*c_void, node:*c_void, id:&mut @mut lwc_string ) -> css_error,
+    node_id: @fn(lwc_ref:&mut ~lwc, pw:*c_void, node:*c_void, id:&mut uint ) -> css_error,
 
-    named_ancestor_node: @fn(node:*c_void, qname:&mut css_qname, ancestor:*mut*c_void) -> css_error,
+    named_ancestor_node: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&mut css_qname, ancestor:*mut*c_void) -> css_error,
    
-    named_parent_node: @fn(node:*c_void, qname:&mut css_qname, parent:*mut*c_void) -> css_error,
+    named_parent_node: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&mut css_qname, parent:*mut*c_void) -> css_error,
     
-    named_sibling_node: @fn(node:*c_void, qname:&mut css_qname, sibling:*mut*c_void) -> css_error,
+    named_sibling_node: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&mut css_qname, sibling:*mut*c_void) -> css_error,
 
-    named_generic_sibling_node: @fn(node:*c_void, qname:&mut css_qname, sibling:*mut*c_void) -> css_error,
+    named_generic_sibling_node: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&mut css_qname, sibling:*mut*c_void) -> css_error,
     
     parent_node: @fn(node:*c_void, parent:*mut*c_void) -> css_error,
 
     sibling_node: @fn(node:*c_void, sibling:*mut*c_void) -> css_error,
 
-    node_has_name: @fn(pw:*c_void,node:*c_void, qname:&css_qname, matched:@mut bool) -> css_error,
+    node_has_name: @fn(lwc_ref:&mut ~lwc, pw:*c_void,node:*c_void, qname:&css_qname, matched:&mut bool) -> css_error,
 
-    node_has_class: @fn(pw:*c_void, node:*c_void, name:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_class: @fn(lwc_ref:&mut ~lwc, pw:*c_void, node:*c_void, name:uint, matched:&mut bool) -> css_error,
 
-    node_has_id: @fn(pw:*c_void, node:*c_void, name:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_id: @fn(lwc_ref:&mut ~lwc, pw:*c_void, node:*c_void, name:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute: @fn(node:*c_void, name:&css_qname, matched:@mut bool) -> css_error,
+    node_has_attribute: @fn(lwc_ref:&mut ~lwc, node:*c_void, name:&css_qname, matched:&mut bool) -> css_error,
     
-    node_has_attribute_equal: @fn(node:*c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_equal: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
    
-    node_has_attribute_dashmatch: @fn(node:*c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_dashmatch: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute_includes: @fn(node:*c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_includes: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute_prefix: @fn(node:*c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_prefix: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute_suffix: @fn(node:*c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_suffix: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute_substring: @fn(node:*c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_substring: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_is_root: @fn(node:*c_void, matched:@mut bool) -> css_error,
+    node_is_root: @fn(node:*c_void, matched:&mut bool) -> css_error,
    
-    node_count_siblings: @fn(node:*c_void, same_name:bool, after:bool, count:@mut i32) -> css_error,
+    node_count_siblings: @fn(lwc_ref:&mut ~lwc, node:*c_void, same_name:bool, after:bool, count:&mut i32) -> css_error,
     
-    node_is_empty: @fn(node:*c_void, matched:@mut bool) -> css_error,
+    node_is_empty: @fn(node:*c_void, matched:&mut bool) -> css_error,
     
-    node_is_link: @fn(node:*c_void, matched:@mut bool) -> css_error,
+    node_is_link: @fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_visited: @fn(node:*c_void, matched:@mut bool) -> css_error,
+    node_is_visited: @fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_hover: @fn(node:*c_void, matched:@mut bool) -> css_error,
+    node_is_hover: @fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_active: @fn(node:*c_void, matched:@mut bool) -> css_error,
+    node_is_active: @fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_focus: @fn(node:*c_void, matched:@mut bool) -> css_error,
+    node_is_focus: @fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_enabled: @fn(node:*c_void, matched:@mut bool) -> css_error,
+    node_is_enabled: @fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_disabled: @fn(node:*c_void, matched:@mut bool) -> css_error,
+    node_is_disabled: @fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_checked: @fn(node:*c_void, matched:@mut bool) -> css_error,
+    node_is_checked: @fn(node:*c_void, matched:&mut bool) -> css_error,
  
-    node_is_target: @fn(node:*c_void, matched:@mut bool) -> css_error,
+    node_is_target: @fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_lang: @fn(node:*c_void, lang:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_is_lang: @fn(node:*c_void, lang:uint, matched:&mut bool) -> css_error,
 
     node_presentational_hint: @fn(node:*c_void, property:u32) -> 
         (css_error,Option<@mut css_hint>),
@@ -795,9 +795,9 @@ pub struct css_select_state {
 
     element:css_qname,       
      //changed id from wapcaplet-string to string
-    id:@mut lwc_string,
+    id: uint,
      //changes classes from wapcaplet  to string
-    classes:~[@mut lwc_string],
+    classes:~[uint],
     n_classes:u32,           
 
     reject_cache: ~[Option<reject_item>],     /* Reject cache (filled from end) */  
@@ -818,27 +818,27 @@ pub struct css_select_font_faces_results {
 }
 
 #[inline]
-pub fn advance_bytecode(style: @mut css_style) {
+pub fn advance_bytecode(style: &mut css_style) {
     
-	if (style.bytecode.len() - style.used > 0) {
+	// if (style.bytecode.len() - style.used > 0) {
 		style.used += 1 
-	}
-	else {
-		fail!(~"Advancing Bytecode vector after end index")
-	}
+	// }
+	// else {
+	// 	fail!(~"Advancing Bytecode vector after end index")
+	// }
     
 }   
 
 #[inline]
-pub fn peek_bytecode(style: @mut css_style) -> u32 {
+pub fn peek_bytecode(style: &css_style) -> u32 {
     
-	if style.bytecode.len() - style.used > 0 {
+	// if style.bytecode.len() - style.used > 0 {
 		//debug!(fmt!("bytecode=%?",style.bytecode)); 
 		style.bytecode[style.used] 
-	}
-	else {
-		fail!(~"Advancing Bytecode vector after end index")
-	}
+	// }
+	// else {
+	// 	fail!(~"Advancing Bytecode vector after end index")
+	// }
     
 }
 

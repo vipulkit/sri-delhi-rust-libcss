@@ -10,6 +10,8 @@ use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use dump::*;
+use wapcaplet::*;
+use css::parse::propstrings::css_propstrings;
 
 pub struct line_ctx {
     buf:~[u8],
@@ -23,7 +25,7 @@ pub struct line_ctx {
     inrule: bool
 }
 
-pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
+pub fn resolve_url(_:&str, rel:uint) -> (css_error,Option<uint>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
@@ -55,16 +57,14 @@ pub fn css_create_params() -> css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
         charset : Some(~"UTF-8"),
-        url : @"foo",
-        title : @"",
+        url : ~"foo",
+        title : ~"",
         allow_quirks : false,
         inline_style : false,
         resolve : @resolve_url,
         import : None,
         color : None,
         font : None,
-        lwc_instance: None,
-        propstrings_instance: None
     };
     return css_param;
 }
@@ -73,9 +73,9 @@ fn main() {
     debug!("parse");
 }
 
-fn create_css() -> @mut css{
+fn create_css() -> ~css{
     debug!("Entering: create_css");
-    let css = css::css_create( &(css_create_params()));
+    let css = css::css_create( &css_create_params());
     css
 }
 
@@ -184,23 +184,24 @@ fn testMain(fileName: ~str) {
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     debug!("Entering :: run_test");
     // debug!("\n == data == %?" , str::from_bytes(data));
-    
-    let css = create_css();
+    let mut lwc_ref = lwc();
+    let propstring = css_propstrings::css_propstrings(&mut lwc_ref);
+    let mut css = create_css();
     let mut buf: ~str;
-    let mut error = css.css_stylesheet_append_data(data);
+    let mut error = css.css_stylesheet_append_data(&mut lwc_ref , &propstring , data);
     match error {
         CSS_OK | CSS_NEEDDATA => {},
         _ => {assert!(false);}
     }
 
-    error = css.css_stylesheet_data_done();
+    error = css.css_stylesheet_data_done(&mut lwc_ref , &propstring);
     //debug!(fmt!("error from css_stylesheet_data_done: %?" , error));
     match error {
         CSS_OK => {},
         _ => {assert!(false);}
     }
 
-    buf = dump_sheet(css.stylesheet);
+    buf = dump_sheet(css.stylesheet, &mut lwc_ref);
     //debug!(fmt!("\n == sheet ==%?=" , buf));
     let mut dvec : ~[~[u8]] = ~[];
     for buf.any_line_iter().advance |s| {

@@ -7,8 +7,10 @@ use std::io::*;
 use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
+use css::parse::propstrings::css_propstrings;
+use wapcaplet::*;
 
-pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
+pub fn resolve_url(_:&str, rel:uint) -> (css_error,Option<uint>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
@@ -17,33 +19,40 @@ fn fill_params() -> css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
         charset : Some(~"UTF-8"),
-        url : @"foo",
-        title : @"",
+        url : ~"foo",
+        title : ~"",
         allow_quirks : false,
         inline_style : false,
         resolve : @resolve_url,
         import : None,
         color : None,
-        font : None,
-        lwc_instance: None,
-        propstrings_instance: None
-
+        font : None
     };
     return css_param;
 }
 
-fn css_create_fn() -> @mut css{
+fn css_create_fn() -> ~css{
+    
     let css = css::css_create( &fill_params());
     css
 }
 
 fn main() {
     println("parse");
-    // parse(~"../data/parse/atrules.dat");
+    // parse(~"data/parse/tests1.dat");
+    // parse(~"data/parse/atrules.dat");
+    // parse(~"data/parse/colours.dat");
+    // parse(~"data/parse/colours-hsl.dat");
+    // parse(~"data/parse/nth.dat");
+    // parse(~"data/parse/properties.dat");
+    // parse(~"data/parse/selectors.dat");
+
 }
 
 fn parse(file_name: ~str) {
-    let css = css_create_fn();
+    let mut lwc = lwc();
+    let mut css = css_create_fn();
+    let propstring = css_propstrings::css_propstrings(&mut lwc);
     let r:@Reader = file_reader(&Path(file_name)).unwrap();
     let mut dataFlag = false;
     // let mut expectedFlag: bool;
@@ -73,13 +82,13 @@ fn parse(file_name: ~str) {
                 final_buf.push(i as u8);
             }
             final_buf.reverse();
-            let error = css.css_stylesheet_append_data(final_buf);
+            let error = css.css_stylesheet_append_data(&mut lwc , &propstring , final_buf);
             match error {
                 CSS_OK => {},
                 CSS_NEEDDATA => {},
                 _ => {assert!(false);}
             }
-            let error = css.css_stylesheet_data_done();
+            let error = css.css_stylesheet_data_done( &mut lwc , &propstring);
 
             match error {
                 CSS_OK => {},

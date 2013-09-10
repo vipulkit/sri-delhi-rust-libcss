@@ -28,31 +28,30 @@ use extra::time;
 use std::io;
 
 pub struct attribute {
-    name:@mut lwc_string,
-    value:@mut lwc_string
+    name:uint,
+    value:uint
 }
 
 pub struct node {
-    name:Option<@mut lwc_string>,
+    name:Option<uint>,
     attrs:~[attribute],
 
     parent:Option<@mut node>,
     next:Option<@mut node>,
     prev:Option<@mut node>,
     children:Option<@mut node>,
-    last_child:Option<@mut node>,
-    lwc_instance: @mut lwc
+    last_child:Option<@mut node>
 }
 
 pub struct sheet_ctx {
-    sheet:@mut css,
+    sheet:~css,
     origin:css_origin,
     media:u64
 }
 
 pub struct ctx_pw {
-    attr_class:@mut lwc_string,
-    attr_id:@mut lwc_string
+    attr_class:uint,
+    attr_id:uint
 }   
 
 pub struct line_ctx {
@@ -75,22 +74,21 @@ pub struct line_ctx {
     pseudo_element:u32,
     target:Option<@mut node>,
     
-    attr_class:@mut lwc_string,
-    attr_id:@mut lwc_string,
+    attr_class:uint,
+    attr_id:uint,
 
-    lwc_instance:@mut lwc,
-    propstrings_instance: @css_propstrings
+    // propstrings_instance: Option<~css_propstrings>
 } 
 
 pub fn select_test(file:~str) {
-    let lwc_ins = wapcaplet::lwc() ;
-    let propstring = css_propstrings::css_propstrings(lwc_ins);
-    let mut lwc_attr_class : Option<@mut lwc_string>;
-    let mut lwc_attr_id : Option<@mut lwc_string>;
+    
+    let mut lwc_ref = lwc();
+    let mut lwc_attr_class : Option<uint>;
+    let mut lwc_attr_id : Option<uint>;
 
-    lwc_attr_class = Some(lwc_ins.lwc_intern_string(&"class"));
-    lwc_attr_id = Some(lwc_ins.lwc_intern_string(&"id"));
-
+    lwc_attr_class = Some(lwc_ref.lwc_intern_string(&"class"));
+    lwc_attr_id = Some(lwc_ref.lwc_intern_string(&"id"));
+    let propstring = css_propstrings::css_propstrings(&mut lwc_ref);
     let ctx : @mut line_ctx = @mut line_ctx{
         //explen:0,
         //expused:0,
@@ -113,9 +111,7 @@ pub fn select_test(file:~str) {
         
         attr_class:lwc_attr_class.take_unwrap(),
         attr_id:lwc_attr_id.take_unwrap(),
-
-        lwc_instance:lwc_ins,
-        propstrings_instance: propstring
+        
     };
 
     let file_content_result = io::read_whole_file_str(&Path(file)) ;
@@ -140,7 +136,7 @@ pub fn select_test(file:~str) {
         let mut line_string: ~str = line.to_str(); 
         line_string.push_char('\n');
         // debug!("Handling line =%?=",copy line_string);
-        handle_line(&mut line_string,ctx, css_stylesheet_create_time, 
+        handle_line(&mut line_string, &mut lwc_ref, &propstring , ctx, css_stylesheet_create_time, 
                 css_stylesheet_append_data_time, 
                 css_select_style_time, 
                 css_stylesheet_data_done_time  );
@@ -148,7 +144,7 @@ pub fn select_test(file:~str) {
     }   
 
     if (ctx.tree.is_some() ) {
-        run_test(ctx, css_select_style_time);
+        run_test(ctx, lwc_ref, css_select_style_time);
 
     }
 
@@ -158,31 +154,29 @@ pub fn select_test(file:~str) {
     io::println(fmt!("#css_select_style_time:%?",(*css_select_style_time as float /1000f))) ;
 }
 
-pub fn resolve_url(_:@str, rel:@mut lwc_string) -> (css_error,Option<@mut lwc_string>){
+pub fn resolve_url(_:&str, rel:uint) -> (css_error,Option<uint>){
 
     (CSS_OK, Some(rel.clone()))
 }
 
-pub fn css_create_params(lwc_instance: @mut lwc , propstrings_instance: @css_propstrings) -> css_params {
+pub fn css_create_params() -> css_params {
     let css_param = css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
         charset : Some(~"UTF-8"),
-        url : @"foo",
-        title : @"foo",
+        url : ~"foo",
+        title : ~"foo",
         allow_quirks : false,
         inline_style : false,
         resolve : @resolve_url,
         import : None,
         color : None,
         font : None,
-        lwc_instance: Some(lwc_instance),
-        propstrings_instance: Some(propstrings_instance)
     };
      return css_param;
 }
 
-pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_time:@mut u64, 
+pub fn handle_line(data:&mut ~str, lwc_ref:&mut ~lwc, propstring_ref: &css_propstrings , ctx:@mut line_ctx, css_stylesheet_create_time:@mut u64, 
     css_stylesheet_append_data_time:@mut u64, 
     css_select_style_time:@mut u64, 
     css_stylesheet_data_done_time:@mut float
@@ -202,7 +196,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
             }
             else {
                 /* Assume start of stylesheet */
-                css__parse_sheet(ctx, data,1, css_stylesheet_create_time );
+                css__parse_sheet(ctx,  data,1, css_stylesheet_create_time );
                 // debug!("Sheet parsed 1");
                 ctx.intree = false;
                 ctx.insheet = true;
@@ -216,7 +210,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
                 len = ctx.sheets.len() -1;
                 let start_time = time::precise_time_ns();
                 assert!( 
-                        match ctx.sheets[len].sheet.css_stylesheet_data_done() {
+                        match ctx.sheets[len].sheet.css_stylesheet_data_done(lwc_ref , propstring_ref) {
                                 CSS_OK=>{true},
                                 _=>{false}
                         });
@@ -235,20 +229,20 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
                 len = ctx.sheets.len() -1;
                 let start_time = time::precise_time_ns();
                 assert!( 
-                        match ctx.sheets[len].sheet.css_stylesheet_data_done() {
+                        match ctx.sheets[len].sheet.css_stylesheet_data_done(lwc_ref , propstring_ref) {
                             CSS_OK=>{true},
                             _=>{false}
                         });
                 let end_time = time::precise_time_ns();
             let css_style_diff_time = (end_time as float - start_time as float);
             *css_stylesheet_data_done_time += css_style_diff_time;
-                css__parse_sheet(ctx, data,1, css_stylesheet_create_time);
+                css__parse_sheet(ctx,  data,1, css_stylesheet_create_time);
                 // debug!("Sheet parsed 2");
             }
             else {
                 len = ctx.sheets.len() -1;
                 let start_time = time::precise_time_ns();
-                let error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.as_bytes().to_owned());
+                let error = ctx.sheets[len].sheet.css_stylesheet_append_data(lwc_ref , propstring_ref , data.as_bytes().to_owned());
                 let end_time = time::precise_time_ns();
                 *css_stylesheet_append_data_time += (end_time - start_time);
 
@@ -269,7 +263,7 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
         else if (ctx.inexp) {
             // debug!("in ctx inexp");
             /* This marks end of testcase, so run it */
-            run_test(ctx, css_select_style_time);
+            run_test(ctx, lwc_ref.clone(), css_select_style_time);
             //ctx.expused = 0;
 
             ctx.intree = false;
@@ -293,12 +287,12 @@ pub fn handle_line(data:&mut ~str , ctx:@mut line_ctx, css_stylesheet_create_tim
     else {
         if ( ctx.intree ){
             /* Not interested in the '|' */
-            css__parse_tree_data(ctx, data.slice(1,data.len()-1) );
+            css__parse_tree_data(ctx, lwc_ref, data.slice(1,data.len()-1) );
         }
         else if ( ctx.insheet ) {
             len = ctx.sheets.len() -1;
             let start_time = time::precise_time_ns();
-            error = ctx.sheets[len].sheet.css_stylesheet_append_data(data.as_bytes().to_owned());
+            error = ctx.sheets[len].sheet.css_stylesheet_append_data(lwc_ref , propstring_ref , data.as_bytes().to_owned());
             let end_time = time::precise_time_ns();
             *css_stylesheet_append_data_time += (end_time - start_time);
             assert!( match error {
@@ -364,7 +358,7 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
     }
 }
 
-pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
+pub fn css__parse_tree_data(ctx:@mut line_ctx, lwc_ref:&mut ~lwc, data:&str) {
     
     // debug!("\n Entering css__parse_tree_data ") ;
     let mut p = 0;
@@ -396,7 +390,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
         p += 1;
     }
 
-    let name = ctx.lwc_instance.lwc_intern_string(data.slice(name_begin,name_begin+namelen));
+    let name = lwc_ref.lwc_intern_string(data.slice(name_begin,name_begin+namelen));
 
     //debug!("\n Before while  2") ;
     /* Skip whitespace */
@@ -424,7 +418,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 
     //debug!("\n Before 3  ") ;
     if valuelen > 0 {
-        value = Some(ctx.lwc_instance.lwc_intern_string(data.slice(value_begin, value_begin+valuelen)));
+        value = Some(lwc_ref.lwc_intern_string(data.slice(value_begin, value_begin+valuelen)));
     }
 
     //debug!("\n Before 4  ") ;
@@ -437,8 +431,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
             next:None,
             prev:None,
             children:None,
-            last_child:None,
-            lwc_instance: ctx.lwc_instance
+            last_child:None            
         };
             
         n.name = Some(name);
@@ -501,7 +494,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, data:&str) {
 
 }
 
-pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_stylesheet_create_time:@mut u64){
+pub fn css__parse_sheet(ctx:@mut line_ctx , data:&mut ~str,index:uint, css_stylesheet_create_time:@mut u64){
     
     // debug!("\n Entering css__parse_sheet ") ;
     let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
@@ -535,11 +528,11 @@ pub fn css__parse_sheet(ctx:@mut line_ctx, data:&mut ~str,index:uint, css_styles
     if p < end {
        css__parse_media_list(data,p,&mut media);
     }
-    let params = css_create_params(ctx.lwc_instance , ctx.propstrings_instance);
+    let params = css_create_params();
     // let lwc_ins = ctx.lwc_instance;
-
+    
     let start_time = time::precise_time_ns();
-    let sheet:@mut css = css::css_create(&params);
+    let sheet: ~css = css::css_create(&params);
     let end_time = time::precise_time_ns();
     *css_stylesheet_create_time += (end_time - start_time);
 
@@ -721,7 +714,7 @@ fn to_lower(string:&str) -> ~str {
     str::from_bytes(lower)
 }
 
-pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64) {
+pub fn run_test( ctx:@mut line_ctx, lwc_ref:~lwc, css_select_style_time:@mut u64) {
     //debug!("\n Entering run test =%?=",ctx) ;
     let mut select: ~css_select_ctx;
     let mut results: @mut css_select_results;
@@ -729,7 +722,7 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64) {
     let mut i:u32=0;
     let mut buf:~str= ~"";
  
-    select = css_select_ctx::css_select_ctx_create(ctx.lwc_instance);
+    select = css_select_ctx::css_select_ctx_create(lwc_ref);
 
     while i < (ctx.sheets.len() as u32) {
         // let ds_sheet = dump_sheet(ctx.sheets[i].sheet.stylesheet);
@@ -744,7 +737,7 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64) {
         }
         i += 1;
     }
-    let select_handler: @mut css_select_handler = @mut css_select_handler {
+    let select_handler:  @mut css_select_handler = @mut css_select_handler {
         node_name: node_name,
 
         node_classes: node_classes,
@@ -837,7 +830,7 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64) {
     }
 
     assert!(results.styles[ctx.pseudo_element].is_some());
-    dump_computed_style(results.styles[ctx.pseudo_element].unwrap(), &mut buf);
+    dump_computed_style(results.styles[ctx.pseudo_element].unwrap(),  &mut select.lwc_ref, &mut buf);
 
 
     // debug!(fmt!(" CSS Selection result is =%?",results));
@@ -848,9 +841,9 @@ pub fn run_test( ctx:@mut line_ctx, css_select_style_time:@mut u64) {
     if !str::eq(&to_lower(buf), &to_lower(string)) {
         fail!(~"Select result mismatched with expected");
     }
-    else {
-        // debug!("Result: Test case passed"); 
-    }
+    // else {
+    //     // debug!("Result: Test case passed"); 
+    // }
     ctx.exp = ~"";
     ctx.tree = None;
     ctx.current = None;
@@ -873,7 +866,7 @@ fn node_name(n:*libc::c_void, qname : &mut css_qname) -> css_error {
 }
 
 #[inline] 
-fn node_classes(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[@mut lwc_string] ) -> css_error{
+fn node_classes(lwc_ref:&mut ~lwc, pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[uint] ) -> css_error{
     // debug!("node_classes");
     let mut node : @mut node;
     let mut lc : @mut ctx_pw;
@@ -889,7 +882,7 @@ fn node_classes(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[@mut lwc_stri
         let n_attrs = node.attrs.len();
         while i < n_attrs {
 			let mut matched;
-            matched = node.lwc_instance.lwc_string_caseless_isequal(node.attrs[i].name,lc.attr_class); 
+            matched = lwc_ref.lwc_string_caseless_isequal(node.attrs[i].name,lc.attr_class); 
            
             if matched {
 				classes.push(node.attrs[i].value);
@@ -902,7 +895,7 @@ fn node_classes(pw:*libc::c_void, n:*libc::c_void, classes: &mut ~[@mut lwc_stri
 }
 
 #[inline] 
-fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut @mut lwc_string ) -> css_error{
+fn node_id(lwc_ref:&mut ~lwc, pw:*libc::c_void, n:*libc::c_void, id: &mut uint ) -> css_error{
     // debug!("node_id");
     let mut node : @mut node;
     let mut lc : @mut ctx_pw;
@@ -912,13 +905,13 @@ fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut @mut lwc_string ) -> css_e
         cast::forget(node);
         lc = ::cast::transmute(pw);
         cast::forget(lc);
-        *id = node.lwc_instance.lwc_intern_string("");
+        *id =lwc_ref.lwc_intern_string("");
 		
         let mut i = 0;
         let n_attrs = node.attrs.len();
         while i < n_attrs {
 			let mut matched;
-            matched = node.lwc_instance.lwc_string_caseless_isequal(node.attrs[i].name,lc.attr_id); 
+            matched = lwc_ref.lwc_string_caseless_isequal(node.attrs[i].name,lc.attr_id); 
 
             if matched {
 				*id = node.attrs[i].value;
@@ -932,7 +925,7 @@ fn node_id(pw:*libc::c_void, n:*libc::c_void, id:&mut @mut lwc_string ) -> css_e
 }
 
 #[inline] 
-fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *libc::c_void) -> css_error {
+fn named_ancestor_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *libc::c_void) -> css_error {
     // debug!("named_ancestor_node");
     let mut node1:@mut node;
     unsafe {
@@ -949,7 +942,7 @@ fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *lib
     while node1.parent.is_some() {
         node1 = node1.parent.unwrap();
         let matched:bool;
-        matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.name.get(),qname.name);
+        matched = lwc_ref.lwc_string_caseless_isequal(node1.name.get(),qname.name);
         if matched {
             break;
         }
@@ -961,7 +954,7 @@ fn named_ancestor_node(n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *lib
 }
 
 #[inline]   
-fn named_parent_node(n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_void) -> css_error {
+fn named_parent_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_void) -> css_error {
     // debug!("named_parent_node");
     let mut node1:@mut node;
     unsafe {
@@ -973,7 +966,7 @@ fn named_parent_node(n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_
         let matched: bool ;
         let parent_node : @mut node;
         parent_node = node1.parent.unwrap();
-        matched = node1.lwc_instance.lwc_string_caseless_isequal(qname.name,parent_node.name.get());
+        matched = lwc_ref.lwc_string_caseless_isequal(qname.name,parent_node.name.get());
         if matched {
             unsafe {
                 *parent = ::cast::transmute(parent_node);
@@ -984,7 +977,7 @@ fn named_parent_node(n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_
 }
 
 #[inline]    
-fn named_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc::c_void) -> css_error {
+fn named_sibling_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc::c_void) -> css_error {
     // debug!("named_sibling_node");
     let mut node1:@mut node;
     unsafe {
@@ -996,7 +989,7 @@ fn named_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc:
         let matched: bool ;
         let prev_node: @mut node;
         prev_node = node1.prev.get();
-        matched = node1.lwc_instance.lwc_string_caseless_isequal(qname.name,prev_node.name.get());
+        matched = lwc_ref.lwc_string_caseless_isequal(qname.name,prev_node.name.get());
         if matched {
             unsafe {
                 *sibling = ::cast::transmute(prev_node);
@@ -1007,7 +1000,7 @@ fn named_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc:
 }
 
 #[inline] 
-fn named_generic_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error {
+fn named_generic_sibling_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error {
     // debug!("named_generic_sibling_node");
     let mut node1:@mut node;
     unsafe {
@@ -1024,7 +1017,7 @@ fn named_generic_sibling_node(n:*libc::c_void, qname:&mut css_qname, sibling:*mu
     while node1.prev.is_some() {
         node1 = node1.prev.unwrap();
         let matched:bool;
-        matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.name.get(),qname.name);
+        matched = lwc_ref.lwc_string_caseless_isequal(node1.name.get(),qname.name);
         if matched {
             break;
         }
@@ -1070,24 +1063,24 @@ fn sibling_node(n:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
 }
 
 #[inline] 
-fn node_has_name(_:*libc::c_void, n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> css_error {
+fn node_has_name(lwc_ref:&mut ~lwc, _:*libc::c_void, n:*libc::c_void, qname:&css_qname, matched:&mut bool) -> css_error {
     // debug!("node_has_name");
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
         cast::forget(node1);
     }
-    if lwc_string_length(qname.name) == 1 && lwc_string_data(qname.name)[0] == '*' as u8 {
+    if lwc_ref.lwc_string_length(qname.name) == 1 && lwc_ref.lwc_string_data(qname.name)[0] == '*' as u8 {
         *matched = true;
     }
     else {
-        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.name.get(),qname.name);
+        *matched = lwc_ref.lwc_string_caseless_isequal(node1.name.get(),qname.name);
     }
     CSS_OK
 }
 
 #[inline] 
-fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_has_class(lwc_ref:&mut ~lwc, pw:*libc::c_void ,n:*libc::c_void, name:uint, matched:&mut bool) -> css_error {
     // debug!("node_has_class");
     let mut node1:@mut node;
     let mut ctx: @mut  ctx_pw;
@@ -1108,11 +1101,11 @@ fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:@mut lwc_string, match
 	
 	while i < len {
 		let mut amatched: bool;
-		amatched = node1.lwc_instance.lwc_string_caseless_isequal(ctx.attr_class,node1.attrs[i].name); 
+		amatched = lwc_ref.lwc_string_caseless_isequal(ctx.attr_class,node1.attrs[i].name); 
 		
 		if amatched {
 			/* Classes are case-sensitive in HTML */
-			condition_match = node1.lwc_instance.lwc_string_caseless_isequal(name, node1.attrs[i].value);
+			condition_match = lwc_ref.lwc_string_caseless_isequal(name, node1.attrs[i].value);
 			break;
 		}
 		i += 1;
@@ -1128,7 +1121,7 @@ fn node_has_class(pw:*libc::c_void ,n:*libc::c_void, name:@mut lwc_string, match
     CSS_OK
 }
 #[inline] 
-fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_has_id(lwc_ref:&mut ~lwc, pw:*libc::c_void, n:*libc::c_void, name:uint, matched:&mut bool) -> css_error {
     // debug!("node_has_id");
     let mut node1:@mut node;
     let mut ctx: @mut  ctx_pw;
@@ -1144,7 +1137,7 @@ fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:@mut lwc_string, matched:
         
         while i  < len {
             let mut amatched: bool;
-            amatched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,ctx.attr_id); 
+            amatched = lwc_ref.lwc_string_caseless_isequal(node1.attrs[i].name,ctx.attr_id); 
             if amatched {
                 break;
             }
@@ -1157,7 +1150,7 @@ fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:@mut lwc_string, matched:
     if (i != len) {
         //io::println(fmt!("name=%?",lwc_string_data(name.clone())));
         //io::println(fmt!("node1.attrs[i].name=%?",copy node1.attrs[i].value));
-        condition_match = node1.lwc_instance.lwc_string_caseless_isequal(name, node1.attrs[i].value);
+        condition_match = lwc_ref.lwc_string_caseless_isequal(name, node1.attrs[i].value);
     }
     
     if condition_match {
@@ -1173,7 +1166,7 @@ fn node_has_id(pw:*libc::c_void, n:*libc::c_void, name:@mut lwc_string, matched:
 }
 
 #[inline] 
-fn node_has_attribute(n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> css_error {
+fn node_has_attribute(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname, matched:&mut bool) -> css_error {
     // debug!("node_has_attribute");
     let mut node1:@mut node;
     unsafe {
@@ -1184,7 +1177,7 @@ fn node_has_attribute(n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> c
     *matched = false;
     let attr_len = node1.attrs.len();
     while i < attr_len {
-        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
+        *matched = lwc_ref.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
         }
@@ -1194,7 +1187,7 @@ fn node_has_attribute(n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> c
 }
     
 #[inline] 
-fn  node_has_attribute_equal(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+fn  node_has_attribute_equal(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error {
     // debug!("node_has_attribute_equal");
     let mut node1:@mut node;
     unsafe {
@@ -1206,7 +1199,7 @@ fn  node_has_attribute_equal(n:*libc::c_void, qname:&css_qname,value:@mut lwc_st
     *matched = false;
     let attr_len = node1.attrs.len();
     while i < attr_len { 
-        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
+        *matched = lwc_ref.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
         }
@@ -1214,14 +1207,14 @@ fn  node_has_attribute_equal(n:*libc::c_void, qname:&css_qname,value:@mut lwc_st
     }
 
     if *matched {
-        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,value);
+        *matched = lwc_ref.lwc_string_caseless_isequal(node1.attrs[i].name,value);
     }
     CSS_OK
 }
 
 
 #[inline] 
-fn node_has_attribute_includes(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_includes(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error {
     // debug!("node_has_attribute_includes");
     let mut node1:@mut node;
     unsafe {
@@ -1230,13 +1223,13 @@ fn node_has_attribute_includes(n:*libc::c_void, qname:&css_qname,value:@mut lwc_
     }
     
     let mut i:uint = 0 ;
-    let vlen = lwc_string_length(value);
+    let vlen = lwc_ref.lwc_string_length(value);
     
     *matched = false;
     
     let attr_len = node1.attrs.len();
     while i < attr_len { 
-        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
+        *matched = lwc_ref.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
         }
@@ -1244,12 +1237,12 @@ fn node_has_attribute_includes(n:*libc::c_void, qname:&css_qname,value:@mut lwc_
     }
 
     if *matched {
-        let start = lwc_string_data(node1.attrs[i].value);
+        let start = lwc_ref.lwc_string_data(node1.attrs[i].value);
         let mut start_len :uint = 0;
         let mut p:uint = 0;
         let end:uint = start.len();
         *matched =false;
-		let val = lwc_string_data(value);
+		let val = lwc_ref.lwc_string_data(value);
 
         while p < end {
             if start[p] == ' ' as u8 {
@@ -1267,7 +1260,7 @@ fn node_has_attribute_includes(n:*libc::c_void, qname:&css_qname,value:@mut lwc_
 }
 
 #[inline] 
-fn node_has_attribute_dashmatch(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_dashmatch(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error {
     // debug!("node_has_attribute_dashmatch");
     let mut node1:@mut node;
     unsafe {
@@ -1275,11 +1268,11 @@ fn node_has_attribute_dashmatch(n:*libc::c_void, qname:&css_qname,value:@mut lwc
         cast::forget(node1);
     }
     let mut i:uint = 0 ;
-    let vlen = lwc_string_length(value);
+    let vlen = lwc_ref.lwc_string_length(value);
     *matched = false;
     let attr_len = node1.attrs.len();
     while i < attr_len { 
-        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
+        *matched = lwc_ref.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
         }
@@ -1287,12 +1280,12 @@ fn node_has_attribute_dashmatch(n:*libc::c_void, qname:&css_qname,value:@mut lwc
     }
 
     if *matched {
-        let start = lwc_string_data(node1.attrs[i].value);
+        let start = lwc_ref.lwc_string_data(node1.attrs[i].value);
         let mut start_len :uint = 0;
         let mut p:uint = 0;
         let end:uint = start.len();
         *matched =false;
-		let val = lwc_string_data(value);
+		let val = lwc_ref.lwc_string_data(value);
 		
         while p < end {
             if start[p] == '-' as u8 {
@@ -1310,7 +1303,7 @@ fn node_has_attribute_dashmatch(n:*libc::c_void, qname:&css_qname,value:@mut lwc
 }
 
 #[inline] 
-fn node_has_attribute_prefix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_prefix(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error {
     // debug!("node_has_attribute_prefix");
     let mut node1:@mut node;
     unsafe {
@@ -1321,7 +1314,7 @@ fn node_has_attribute_prefix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_st
     *matched = false;
     let attr_len = node1.attrs.len();
     while i < attr_len { 
-        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
+        *matched = lwc_ref.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
         }
@@ -1329,21 +1322,21 @@ fn node_has_attribute_prefix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_st
     }
 
     if *matched {
-        let len = lwc_string_length(node1.attrs[i].value);
-        let data = lwc_string_data(node1.attrs[i].value);
-        let vlen = lwc_string_length(value);
+        let len = lwc_ref.lwc_string_length(node1.attrs[i].value);
+        let data = lwc_ref.lwc_string_data(node1.attrs[i].value);
+        let vlen = lwc_ref.lwc_string_length(value);
         if len < vlen {
             *matched = false;
         }
         else {
-            *matched = is_string_caseless_equal(data,0,lwc_string_data(value), vlen);
+            *matched = is_string_caseless_equal(data,0,lwc_ref.lwc_string_data(value), vlen);
         }
     }
     CSS_OK
 }
 
 #[inline] 
-fn node_has_attribute_suffix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_suffix(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error {
     // debug!("node_has_attribute_suffix");
     let mut node1:@mut node;
     unsafe {
@@ -1354,7 +1347,7 @@ fn node_has_attribute_suffix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_st
     *matched = false;
     let attr_len = node1.attrs.len();
     while i < attr_len { 
-        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
+        *matched = lwc_ref.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
         }
@@ -1362,15 +1355,15 @@ fn node_has_attribute_suffix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_st
     }
 
     if *matched {
-        let len = lwc_string_length(node1.attrs[i].value);
-        let data = lwc_string_data(node1.attrs[i].value);
-        let vlen = lwc_string_length(value);
+        let len = lwc_ref.lwc_string_length(node1.attrs[i].value);
+        let data = lwc_ref.lwc_string_data(node1.attrs[i].value);
+        let vlen = lwc_ref.lwc_string_length(value);
         let suffix_start = len - vlen;
         if len < vlen {
             *matched = false;
         }
         else {
-            *matched = is_string_caseless_equal(data,suffix_start,lwc_string_data(value), vlen);
+            *matched = is_string_caseless_equal(data,suffix_start,lwc_ref.lwc_string_data(value), vlen);
             
         }
     }
@@ -1380,7 +1373,7 @@ fn node_has_attribute_suffix(n:*libc::c_void, qname:&css_qname,value:@mut lwc_st
 }
 
 #[inline] 
-fn node_has_attribute_substring(n:*libc::c_void, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_has_attribute_substring(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error {
     // debug!("node_has_attribute_substring");
     let mut node1:@mut node;
     unsafe {
@@ -1391,23 +1384,23 @@ fn node_has_attribute_substring(n:*libc::c_void, qname:&css_qname,value:@mut lwc
     *matched = false;
     let attr_len = node1.attrs.len();
     while i < attr_len { 
-        *matched = node1.lwc_instance.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
+        *matched = lwc_ref.lwc_string_caseless_isequal(node1.attrs[i].name,qname.name);
         if *matched {
             break;
         }
         i += 1;
     }
     if *matched {
-        let len = lwc_string_length(node1.attrs[i].value);
-        let data = lwc_string_data(node1.attrs[i].value);
-        let vlen = lwc_string_length(value);
+        let len = lwc_ref.lwc_string_length(node1.attrs[i].value);
+        let data = lwc_ref.lwc_string_data(node1.attrs[i].value);
+        let vlen = lwc_ref.lwc_string_length(value);
         let last_start_len = len -vlen;
         if len < vlen {
             *matched = false;
         }
         else {
             let mut iter:uint = 0;
-			let val = lwc_string_data(node1.attrs[i].value);
+			let val = lwc_ref.lwc_string_data(node1.attrs[i].value);
 			
             while iter < last_start_len {
                 if is_string_caseless_equal(data,iter,val, vlen) {
@@ -1425,7 +1418,7 @@ fn node_has_attribute_substring(n:*libc::c_void, qname:&css_qname,value:@mut lwc
 }
 
 #[inline] 
-fn node_is_root(n:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_root(n:*libc::c_void, matched:&mut bool) -> css_error {
     debug!("node_is_root");
     let mut node1:@mut node;
     unsafe {
@@ -1437,12 +1430,12 @@ fn node_is_root(n:*libc::c_void, matched:@mut bool) -> css_error {
 }
 
 #[inline]    
-fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i32) -> css_error {
+fn node_count_siblings(lwc_ref:&mut ~lwc, n:*libc::c_void, same_name:bool, after:bool, count:&mut i32) -> css_error {
     // debug!("node_count_siblings");
     let mut cnt : i32 = 0;
     let mut matched;
     let mut node1:@mut node;
-    let mut name: @mut lwc_string ;
+    let mut name: uint ;
     unsafe {
         node1 = ::cast::transmute(n);
         cast::forget(node1);
@@ -1452,11 +1445,11 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
     if after {
         while node1.next.is_some() {
             if same_name {
-                let mut next_name: @mut lwc_string ;
+                let mut next_name: uint ;
                 let temp_node = (node1.next).unwrap();
                 next_name = temp_node.name.get();
                 
-                matched = node1.lwc_instance.lwc_string_caseless_isequal(name, next_name); 
+                matched = lwc_ref.lwc_string_caseless_isequal(name, next_name); 
                 
                 if matched {
                     cnt += 1;
@@ -1471,11 +1464,11 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
     else {
         while node1.prev.is_some() {
             if same_name {
-                let mut prev_name: @mut lwc_string;
+                let mut prev_name:  uint;
                 let temp_node = (node1.prev).unwrap();
                 prev_name = temp_node.name.get();
                 
-                matched = node1.lwc_instance.lwc_string_caseless_isequal(name,prev_name); 
+                matched = lwc_ref.lwc_string_caseless_isequal(name,prev_name); 
                 
                 if matched {
                     cnt += 1;
@@ -1492,7 +1485,7 @@ fn node_count_siblings(n:*libc::c_void, same_name:bool, after:bool, count:@mut i
 }
 
 #[inline]    
-fn node_is_empty(n:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_empty(n:*libc::c_void, matched:&mut bool) -> css_error {
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
@@ -1503,67 +1496,67 @@ fn node_is_empty(n:*libc::c_void, matched:@mut bool) -> css_error {
 }
 
 #[inline]     
-fn node_is_link(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_link(_:*libc::c_void, matched:&mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_visited(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_visited(_:*libc::c_void, matched:&mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_hover(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_hover(_:*libc::c_void, matched:&mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_active(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_active(_:*libc::c_void, matched:&mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_focus(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_focus(_:*libc::c_void, matched:&mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_enabled(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_enabled(_:*libc::c_void, matched:&mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_disabled(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_disabled(_:*libc::c_void, matched:&mut bool) -> css_error {
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_checked(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_checked(_:*libc::c_void, matched:&mut bool) -> css_error {
     *matched = false;
     CSS_OK
 }
 
 #[inline]  
-fn node_is_target(_:*libc::c_void, matched:@mut bool) -> css_error {
+fn node_is_target(_:*libc::c_void, matched:&mut bool) -> css_error {
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_lang(_:*libc::c_void, _:@mut lwc_string, matched:@mut bool) -> css_error {
+fn node_is_lang(_:*libc::c_void, _:uint, matched:&mut bool) -> css_error {
     *matched = false;
     CSS_OK
 }
