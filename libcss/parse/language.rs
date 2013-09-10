@@ -838,7 +838,7 @@ impl css_language {
                 let mut prefix_match = false;
                 let mut idx = 0;
 
-                for &ns in self.namespaces.iter() {
+                for ns in self.namespaces.iter() {
                     
                     if lwc_ref.lwc_string_isequal(ns.prefix.get_ref().clone(), prefix) {
                         prefix_match = true;
@@ -1269,7 +1269,7 @@ impl css_language {
             },
             Some(value) => {
                 //debug!("Entering: lookupNamespace (2)");
-                for &ns in self.namespaces.iter() {
+                for ns in self.namespaces.iter() {
                     match ns.prefix {
                         Some(_) => {
                             //debug!("Entering: lookupNamespace (3)");
