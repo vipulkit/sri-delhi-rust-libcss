@@ -20,6 +20,7 @@ fn number(file_name: ~str) {
     let mut data_string: ~str = ~"";
     let mut expected_str: ~str = ~"";
     let mut lwc_ref=Some(lwc());
+    let reason = "Function number";
           
     while !r.eof() {
         let buf = r.read_line();
@@ -57,7 +58,7 @@ fn number(file_name: ~str) {
             // debug!(fmt!("expected_str = %?" , expected_str));
             let lwc_string= Some(lwc_ref.get_mut_ref().lwc_intern_string(data_string));
             //debug!(fmt!("lwc string = %?" , lwc_string.get_ref().clone()));
-            let (a , _) = css__number_from_lwc_string(lwc_ref.get_mut_ref(),lwc_string.get() , false);
+            let (a , _) = css__number_from_lwc_string(lwc_ref.get_mut_ref(),lwc_string.expect(reason) , false);
             // debug!(fmt!("a = %?" , a));
                 
             let b = print_css_fixed(256, a);
