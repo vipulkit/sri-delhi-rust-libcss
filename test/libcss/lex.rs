@@ -6,11 +6,7 @@ extern mod extra;
 
 
 use std::{io,str};
-
-use parserutils::input::inputstream::*;
 use css::utils::errors::*;
-
-use css::charset::csdetect::*;
 use css::lex::lexer::*;
 
 fn main() {
@@ -28,17 +24,15 @@ fn lex(fileName: ~str) {
     let mut expectedstr: ~str = ~"";
     let mut final_buf: ~[u8] = ~[];
 
+    let (parser_port, parser_chan): (Port<(css_error , Option<~css_token>)>, Chan<(css_error , Option<~css_token>)>) = stream();
+    let (lexer_port, lexer_chan): (Port<~[u8]>, Chan<~[u8]>) = stream();    
+
+        // create lexer
+        
+    css__lexer_create(Some(~"UTF-8"), lexer_port, parser_chan);
+
     while !r.eof() {
-        let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(@css__charset_extract));
-        let inputstream =
-            match(inputStreamOption) {
-                Some(x) => x,
-                None => {
-                    debug!("InputStream is not created, hence lexer can't be initialised");
-                    fail!(~"inputstream is None");
-                }
-            };
-        let mut lexer = css_lexer::css__lexer_create(inputstream);    
+             
         let buf = r.read_line();
 
         if buf == ~"#data" {
@@ -74,19 +68,28 @@ fn lex(fileName: ~str) {
         }
 
         if resetFlag && !dataFlag && !expectedFlag {
-            let mut z = 0 ;
-            let z_len = finalstr.len() ;
-            while z<z_len {
+             let mut z = 0 ;
+             let z_len = finalstr.len() ;
+             println(fmt!("final_buf:%?", finalstr));
+             while z<z_len {
                 final_buf.push(finalstr[z]);
                 z += 1;
-            }
+             }
             finalstr = ~"";
             
-            lexer.css__lexer_append_data(final_buf);
+            println(fmt!("final_buf:%?", final_buf));
+            if(final_buf.len() != 0){
+                lexer_chan.send(final_buf);
+            }
+            else {
+                loop
+            }
+            
+
             final_buf = ~[];
             // debug!(fmt!("final_buf is %s",str::from_bytes(final_buf)));
             loop {
-                let (error, token_option) = lexer.css__lexer_get_token();
+                let (error, token_option) = parser_port.recv();
                 match error {
                     CSS_OK => {
                         let token = token_option.unwrap();
@@ -99,7 +102,10 @@ fn lex(fileName: ~str) {
                         debug!(fmt!("found == %?", found));
                         // debug!(fmt!("Expected token == %?", (exp[index])));
                         match token_type_string {
-                            ~"EOF" => break,
+                            ~"EOF" => {
+                                        //lexer_chan.send(~[]);
+                                        break
+                                    },
                             _=>{}
                         }
 
@@ -118,7 +124,10 @@ fn lex(fileName: ~str) {
 
                             debug!(fmt!("found == %?", found));
                             match token_type_string {
-                                ~"EOF" => break,
+                                ~"EOF" => {
+                                        //lexer_chan.send(~[]);
+                                        break
+                                    },
                                 _=>{}
                             }
                         }
@@ -128,6 +137,8 @@ fn lex(fileName: ~str) {
             }
         }
     }
+    lexer_chan.send(~[]);
+    lexer_chan.send(~[]);
 }
 
 fn token_to_string(token:css_token_type)-> ~str {

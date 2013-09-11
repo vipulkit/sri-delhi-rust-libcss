@@ -1,10 +1,12 @@
 use std::char::*;
 use std::u32::*;
 use std::str::*;
+use extra::arc;
 
 use parserutils::input::inputstream::*;
 use parserutils::charset::encodings::utf8impl::*;
 use parserutils::utils::errors::*;
+use charset::csdetect::*;
 
 use utils::errors::*;
 use utils::parserutilserror::*;
@@ -53,11 +55,11 @@ impl Clone for css_token_data {
             len: self.len
         }    
     } 
-} 
+}
 
 pub struct css_token {
     
-    data: ~css_token_data,
+    data: css_token_data,
 
     token_type: css_token_type,
     idata: Option<uint>,
@@ -65,6 +67,23 @@ pub struct css_token {
     col: uint,
     line: uint
 }
+
+
+pub struct css_token_tuple {
+    error_val : css_error,
+    token_option : Option<~css_token>
+}
+
+impl Clone for css_token_tuple {
+    #[inline]
+    fn clone(&self) -> css_token_tuple {
+        css_token_tuple{
+            error_val: self.error_val,
+            token_option: Some(self.token_option.clone().get())
+        }    
+    } 
+}
+
 
 impl Clone for css_token {
     #[inline]
@@ -132,7 +151,7 @@ pub struct css_lexer {
 //  "\x00", "\uFFFD")
 // }
 
-impl css_lexer {
+
 
     /**
     * #Description:
@@ -144,31 +163,89 @@ impl css_lexer {
 	* #Return Value:
     *   'css_lexer' - location to receive lexer instance.
     */
-    pub fn css__lexer_create(inputstream: ~inputstream) -> ~css_lexer {
-        let _token = ~css_token { data: ~css_token_data { data: ~[], len: 0},
-            token_type: CSS_TOKEN_EOF,
-            idata: None,
-            col: 0,
-            line: 0
-        };
-        ~css_lexer{ 
-            input: inputstream,
-            bytes_read_for_token: 0,
-            token: Some(_token),
-            escape_seen: false,
-            unescaped_token_data: Some(~[]),
-            state: sSTART,
-            substate: 0,
-            emit_comments: false,
-            context: _context { first: 0, orig_bytes: 0, last_was_star: false, last_was_cr: false, bytes_for_url: 0, data_len_for_url: 0, hex_count: 0 },      
-            current_col: 1,
-            current_line: 1,
-        }
-    }
+    pub fn css__lexer_create(charset_instance:Option<~str> , lex_port:Port<~[u8]>, token_list_node_vector:  arc::RWARC<~[css_token_tuple]>){
+     // initialize lexer here
+        do spawn {
+           
+           let _token = ~css_token {data:css_token_data {data: ~[], len: 0}, token_type: CSS_TOKEN_EOF, idata: None,
+                col: 0, line: 0 };
 
+            // create inputstream
+            let (inputstream_option, _) =  
+            match charset_instance.clone() {
+                None => inputstream(None, None ,Some(css__charset_extract)),
+                Some(charset) => inputstream(Some(charset), Some(CSS_CHARSET_DICTATED as int), Some(css__charset_extract))
+            };
+        
+            
+            let mut lexer_instance = ~css_lexer{ 
+                input: inputstream_option.unwrap(),
+                bytes_read_for_token: 0,
+                token: Some(_token),
+                escape_seen: false,
+                unescaped_token_data: Some(~[]),
+                state: sSTART,
+                substate: 0,
+                emit_comments: false,
+                context: _context {first: 0, orig_bytes: 0, last_was_star: false, last_was_cr: false, bytes_for_url: 0, data_len_for_url: 0, hex_count: 0 },      
+                current_col: 1,
+                current_line: 1,
+            };        
+                
+            let mut data = lex_port.recv() ;
+            
+            lexer_instance.css__lexer_append_data(data);
+            loop {
+                let (error_val, token_option) = lexer_instance.css__lexer_get_token();
+                let token_tuple = css_token_tuple{
+                    error_val: error_val,
+                    token_option: token_option.clone()
+                };
+
+                if (token_option.is_none()) {
+                    if error_val as uint == CSS_NEEDDATA as uint {
+                        do token_list_node_vector.write |token_node_list| {
+                            token_node_list.push(token_tuple.clone())
+                        }
+                        data = lex_port.recv() ;
+                        lexer_instance.css__lexer_append_data(data);                                      
+                    }
+                    else { 
+                        do token_list_node_vector.write |token_node_list| {
+                            token_node_list.push(token_tuple.clone())
+                        }
+                    }    
+                }
+                else {
+                    match token_option.get_ref().token_type {
+                        CSS_TOKEN_EOF => {
+                            do token_list_node_vector.write |token_node_list| {
+                                token_node_list.push(token_tuple.clone())
+                            }
+                            do token_list_node_vector.write |token_node_list| {
+                                token_node_list.push(token_tuple.clone())
+                            }
+                            break;
+                        }, 
+                        _ => {
+                            do token_list_node_vector.write |token_node_list| {
+                                token_node_list.push(token_tuple.clone())
+                            }
+                        }
+                    }
+                    
+                } 
+            }
+            
+            lex_port.recv();            
+        }
+
+     }
+
+impl css_lexer {
 
     #[inline]
-    pub fn css__lexer_append_data(&mut self, input_data: &[u8]) {
+    pub fn css__lexer_append_data(&mut self, input_data: ~[u8]) {
         self.input.parserutils_inputstream_append(input_data);
     }
 
@@ -187,6 +264,7 @@ impl css_lexer {
     *   '(css_error , Option<~css_token>)' - (CSS_OK,location to receive lexer instance), (appropriate error, None) otherwise.
     */
     pub fn css__lexer_get_token(&mut self) -> (css_error , Option<~css_token>){
+        
         let mut start_again = false;
 
         let ret_val =
@@ -314,7 +392,7 @@ impl css_lexer {
 
         //debug!("entering emit_token");
         let mut t = self.token.take_unwrap();
-        let _data = ~css_token_data {
+        let _data = css_token_data {
             data: ~[],
             len: 0
         };

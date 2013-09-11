@@ -1063,7 +1063,7 @@ fn sibling_node(n:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
 }
 
 #[inline] 
-fn node_has_name(lwc_ref:&mut ~lwc, _:*libc::c_void, n:*libc::c_void, qname:&css_qname, matched:&mut bool) -> css_error {
+fn node_has_name(lwc_ref:&mut ~lwc, _:*libc::c_void, n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> css_error {
     // debug!("node_has_name");
     let mut node1:@mut node;
     unsafe {
@@ -1080,7 +1080,7 @@ fn node_has_name(lwc_ref:&mut ~lwc, _:*libc::c_void, n:*libc::c_void, qname:&css
 }
 
 #[inline] 
-fn node_has_class(lwc_ref:&mut ~lwc, pw:*libc::c_void ,n:*libc::c_void, name:uint, matched:&mut bool) -> css_error {
+fn node_has_class(lwc_ref:&mut ~lwc, pw:*libc::c_void ,n:*libc::c_void, name:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_class");
     let mut node1:@mut node;
     let mut ctx: @mut  ctx_pw;
@@ -1121,7 +1121,7 @@ fn node_has_class(lwc_ref:&mut ~lwc, pw:*libc::c_void ,n:*libc::c_void, name:uin
     CSS_OK
 }
 #[inline] 
-fn node_has_id(lwc_ref:&mut ~lwc, pw:*libc::c_void, n:*libc::c_void, name:uint, matched:&mut bool) -> css_error {
+fn node_has_id(lwc_ref:&mut ~lwc, pw:*libc::c_void, n:*libc::c_void, name:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_id");
     let mut node1:@mut node;
     let mut ctx: @mut  ctx_pw;
@@ -1166,7 +1166,7 @@ fn node_has_id(lwc_ref:&mut ~lwc, pw:*libc::c_void, n:*libc::c_void, name:uint, 
 }
 
 #[inline] 
-fn node_has_attribute(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname, matched:&mut bool) -> css_error {
+fn node_has_attribute(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute");
     let mut node1:@mut node;
     unsafe {
@@ -1187,7 +1187,7 @@ fn node_has_attribute(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname, matc
 }
     
 #[inline] 
-fn  node_has_attribute_equal(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error {
+fn  node_has_attribute_equal(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_equal");
     let mut node1:@mut node;
     unsafe {
@@ -1214,7 +1214,7 @@ fn  node_has_attribute_equal(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qnam
 
 
 #[inline] 
-fn node_has_attribute_includes(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error {
+fn node_has_attribute_includes(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_includes");
     let mut node1:@mut node;
     unsafe {
@@ -1260,7 +1260,7 @@ fn node_has_attribute_includes(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qn
 }
 
 #[inline] 
-fn node_has_attribute_dashmatch(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error {
+fn node_has_attribute_dashmatch(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_dashmatch");
     let mut node1:@mut node;
     unsafe {
@@ -1303,7 +1303,7 @@ fn node_has_attribute_dashmatch(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_q
 }
 
 #[inline] 
-fn node_has_attribute_prefix(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error {
+fn node_has_attribute_prefix(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_prefix");
     let mut node1:@mut node;
     unsafe {
@@ -1336,7 +1336,7 @@ fn node_has_attribute_prefix(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qnam
 }
 
 #[inline] 
-fn node_has_attribute_suffix(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error {
+fn node_has_attribute_suffix(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_suffix");
     let mut node1:@mut node;
     unsafe {
@@ -1373,7 +1373,7 @@ fn node_has_attribute_suffix(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qnam
 }
 
 #[inline] 
-fn node_has_attribute_substring(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error {
+fn node_has_attribute_substring(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_qname,value:uint, matched:@mut bool) -> css_error {
     // debug!("node_has_attribute_substring");
     let mut node1:@mut node;
     unsafe {
@@ -1418,7 +1418,7 @@ fn node_has_attribute_substring(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&css_q
 }
 
 #[inline] 
-fn node_is_root(n:*libc::c_void, matched:&mut bool) -> css_error {
+fn node_is_root(n:*libc::c_void, matched:@mut bool) -> css_error {
     debug!("node_is_root");
     let mut node1:@mut node;
     unsafe {
@@ -1430,7 +1430,7 @@ fn node_is_root(n:*libc::c_void, matched:&mut bool) -> css_error {
 }
 
 #[inline]    
-fn node_count_siblings(lwc_ref:&mut ~lwc, n:*libc::c_void, same_name:bool, after:bool, count:&mut i32) -> css_error {
+fn node_count_siblings(lwc_ref:&mut ~lwc, n:*libc::c_void, same_name:bool, after:bool, count:@mut i32) -> css_error {
     // debug!("node_count_siblings");
     let mut cnt : i32 = 0;
     let mut matched;
@@ -1485,7 +1485,7 @@ fn node_count_siblings(lwc_ref:&mut ~lwc, n:*libc::c_void, same_name:bool, after
 }
 
 #[inline]    
-fn node_is_empty(n:*libc::c_void, matched:&mut bool) -> css_error {
+fn node_is_empty(n:*libc::c_void, matched:@mut bool) -> css_error {
     let mut node1:@mut node;
     unsafe {
         node1 = ::cast::transmute(n);
@@ -1496,67 +1496,67 @@ fn node_is_empty(n:*libc::c_void, matched:&mut bool) -> css_error {
 }
 
 #[inline]     
-fn node_is_link(_:*libc::c_void, matched:&mut bool) -> css_error {
+fn node_is_link(_:*libc::c_void, matched:@mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_visited(_:*libc::c_void, matched:&mut bool) -> css_error {
+fn node_is_visited(_:*libc::c_void, matched:@mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_hover(_:*libc::c_void, matched:&mut bool) -> css_error {
+fn node_is_hover(_:*libc::c_void, matched:@mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_active(_:*libc::c_void, matched:&mut bool) -> css_error {
+fn node_is_active(_:*libc::c_void, matched:@mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_focus(_:*libc::c_void, matched:&mut bool) -> css_error {
+fn node_is_focus(_:*libc::c_void, matched:@mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_enabled(_:*libc::c_void, matched:&mut bool) -> css_error {
+fn node_is_enabled(_:*libc::c_void, matched:@mut bool) -> css_error {
     
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_disabled(_:*libc::c_void, matched:&mut bool) -> css_error {
+fn node_is_disabled(_:*libc::c_void, matched:@mut bool) -> css_error {
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_checked(_:*libc::c_void, matched:&mut bool) -> css_error {
+fn node_is_checked(_:*libc::c_void, matched:@mut bool) -> css_error {
     *matched = false;
     CSS_OK
 }
 
 #[inline]  
-fn node_is_target(_:*libc::c_void, matched:&mut bool) -> css_error {
+fn node_is_target(_:*libc::c_void, matched:@mut bool) -> css_error {
     *matched = false;
     CSS_OK
 }
 
 #[inline] 
-fn node_is_lang(_:*libc::c_void, _:uint, matched:&mut bool) -> css_error {
+fn node_is_lang(_:*libc::c_void, _:uint, matched:@mut bool) -> css_error {
     *matched = false;
     CSS_OK
 }

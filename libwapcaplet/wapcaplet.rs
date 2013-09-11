@@ -7,7 +7,7 @@ use std::hashmap::HashMap;
 use std::str;
 use std::clone::Clone;
 
-priv struct lwc_string {
+struct lwc_string {
     // id: uint,
     string: ~str,
     insensitive: Option<uint>
@@ -33,7 +33,7 @@ pub struct lwc {
 // implementing clone for lwc  
 impl Clone for lwc {  
     #[inline]  
-    pub fn clone(&self) -> lwc {  
+    fn clone(&self) -> lwc {  
         lwc{  
             map: self.map.clone(),  
             vect: self.vect.clone()  
@@ -114,7 +114,7 @@ impl lwc {
             self.lwc_intern_caseless_string(str2);
         }
 
-        (self.vect[str1].insensitive.get() == self.vect[str2].insensitive.get())
+        (self.vect[str1].insensitive.unwrap() == self.vect[str2].insensitive.unwrap())
     }
 
 	#[inline]
@@ -173,7 +173,7 @@ impl lwc {
 } // impl wapcaplet
 
 
-priv fn lwc()->~lwc {
+fn lwc()->~lwc {
     return ~lwc {
         map: HashMap::new(),
         vect: ~[]

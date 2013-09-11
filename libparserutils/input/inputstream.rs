@@ -5,7 +5,7 @@ use input::parserutils_filter::*;
 use utils::errors::*;
 
 pub type  parserutils_charset_detect_func =  
-    @extern fn(data: &[u8], mibenum:u16, source:int, @alias) -> (Option<u16>, Option<int>, parserutils_error);
+    extern fn(data: &[u8], mibenum:u16, source:int, @alias) -> (Option<u16>, Option<int>, parserutils_error);
 
 pub struct inputstream {
     utf8: @mut(~[u8]),        // Buffer containing UTF-8 data 
@@ -360,7 +360,7 @@ impl inputstream {
 
             match(self.csdetect) {
                 Some(f) => {
-                    let (charsetOption,srcOption,error)= (*f)(self.raw.slice(self.raw_cursor, self.raw.len()), self.mibenum, self.encsrc, self.input.alias.clone());
+                    let (charsetOption,srcOption,error)= (f)(self.raw.slice(self.raw_cursor, self.raw.len()), self.mibenum, self.encsrc, self.input.alias.clone());
 
                     match error {
                         PARSERUTILS_OK => {

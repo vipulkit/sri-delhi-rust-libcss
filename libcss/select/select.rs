@@ -305,7 +305,7 @@ impl css_select_ctx {
         };  
         let prop_vec: ~[prop_state] = from_elem(CSS_PSEUDO_ELEMENT_COUNT as uint,pstate);
 
-        let mut state: css_select_state = css_select_state {
+        let state: @mut css_select_state = @mut css_select_state {
             node:node,
             media:media,       
             results:@mut css_select_results{ 
@@ -386,7 +386,7 @@ impl css_select_ctx {
                 s.sheet.disabled == false {
                     //debug!(fmt!("css_select_style : selecting from sheet ")) ;
                     
-				self.select_from_sheet(s.sheet, s.origin, &mut state);  
+				self.select_from_sheet(s.sheet, s.origin, state);  
 				match error {
 					CSS_OK=>{},
 					x =>  {
@@ -426,7 +426,7 @@ impl css_select_ctx {
                                         CSS_PSEUDO_ELEMENT_NONE as uint].get();
 
                                 error = css_select_ctx::cascade_style(r_sel.style.get(), 
-                                                        &mut state);
+                                                        state);
                                 match error {
                                     CSS_OK=>{},
                                     x =>  {
@@ -460,7 +460,7 @@ impl css_select_ctx {
             if (prop.set == false ||
                     (prop.origin != (CSS_ORIGIN_AUTHOR as u8) &&
                     prop.important == false)) {
-                error = css_select_ctx::set_hint(&mut state, i as u32);
+                error = css_select_ctx::set_hint(state, i as u32);
                 match error {
                     CSS_OK=>{},
                     x =>  {
@@ -475,7 +475,7 @@ impl css_select_ctx {
             if (prop.set == false || 
                     (parent == null() && 
                     prop.inherit == true)) {
-                error = css_select_ctx::set_initial(&mut state, i as uint, 
+                error = css_select_ctx::set_initial(state, i as uint, 
                         CSS_PSEUDO_ELEMENT_NONE, parent);
                 match error {
                     CSS_OK=>{},
@@ -518,7 +518,7 @@ impl css_select_ctx {
                 /* If the property is still unset then set it 
                  * to its initial value. */
                 if (prop.set == false) {
-                    error = css_select_ctx::set_initial(&mut state, i as uint, unsafe { transmute(j)}, parent);
+                    error = css_select_ctx::set_initial(state, i as uint, unsafe { transmute(j)}, parent);
                     match error {
                         CSS_OK=>{},
                         x =>  {
@@ -636,7 +636,6 @@ impl css_select_ctx {
     /******************************************************************************
      * Selection engine internals below here                                      *
      ******************************************************************************/
-    #[inline]
     pub fn intern_strings(&mut self) {
         
                     /* Universal selector */
@@ -674,8 +673,7 @@ impl css_select_ctx {
 
     }
 
-    #[inline]
-    pub fn set_hint(state:&mut css_select_state, prop:u32) -> css_error {
+    pub fn set_hint(state:@mut css_select_state, prop:u32) -> css_error {
         
         //debug!(fmt!("Entering set_hint")) ;
         /* Retrieve this property's hint from the client */
@@ -707,8 +705,7 @@ impl css_select_ctx {
         return CSS_OK;
     }
 
-    #[inline]
-    pub fn set_initial(state :&mut css_select_state, prop : uint, pseudo : css_pseudo_element,
+    pub fn set_initial(state :@mut css_select_state, prop : uint, pseudo : css_pseudo_element,
         parent: *c_void) -> css_error {
 
         //debug!(fmt!("Entering set_initial")) ;
@@ -797,7 +794,7 @@ impl css_select_ctx {
         CSS_OK
     }
 
-    pub fn select_from_sheet(&mut self,sheet : @mut css_stylesheet, origin : css_origin, state :&mut css_select_state) -> css_error{
+    pub fn select_from_sheet(&mut self,sheet : @mut css_stylesheet, origin : css_origin, state :@mut css_select_state) -> css_error{
 
         //debug!(fmt!("Entering select_from_sheet")) ;
         let mut s:Option<@mut css_stylesheet> = Some(sheet);
@@ -1160,8 +1157,8 @@ impl css_select_ctx {
         ret
     }
 
-    pub fn _rule_good_for_element_name(selector:&mut css_selector, lwc_ref:&mut ~lwc,
-        src:&mut css_select_rule_source, state:&css_select_state) -> bool {
+    pub fn _rule_good_for_element_name(selector:@mut css_selector, lwc_ref:&mut ~lwc,
+        src:@mut css_select_rule_source, state:css_select_state) -> bool {
         /* If source of rule is element or universal hash, we know the
          * element name is a match.  If it comes from the class or id hash,
          * we have to test for a match */
@@ -1182,7 +1179,7 @@ impl css_select_ctx {
     }        
 
     pub fn match_selectors_in_sheet(&mut self, sheet : @mut css_stylesheet, 
-                                    state :&mut css_select_state) -> css_error {
+                                    state :@mut css_select_state) -> css_error {
     
         //debug!(fmt!("Entering match_selectors_in_sheet")) ;
         let mut node_selectors_hash_entry : Option<@mut hash_entry> = None ;
@@ -1398,7 +1395,7 @@ impl css_select_ctx {
 
         CSS_OK
     }
-    pub fn update_reject_cache(state:&mut css_select_state, comb:css_combinator,
+    pub fn update_reject_cache(state:@mut css_select_state, comb:css_combinator,
                                 s:@mut css_selector) {
 
         //debug!(fmt!("Entering update_reject_cache")) ;
@@ -1448,7 +1445,7 @@ impl css_select_ctx {
     }
 
     pub fn match_named_combinator(&mut self, combinator_type:css_combinator,
-        selector:@mut css_selector, state:&mut css_select_state, 
+        selector:@mut css_selector, state:@mut css_select_state, 
         node:*c_void, next_node:*mut *c_void) -> css_error {
 
         //debug!(fmt!("Entering match_named_combinator")) ;
@@ -1535,7 +1532,7 @@ impl css_select_ctx {
         return CSS_OK;
     }
     pub fn match_selector_chain(&mut self, selector:Option<@mut css_selector>,
-                            state:&mut css_select_state) -> css_error {
+                            state:@mut css_select_state) -> css_error {
 
         //debug!(fmt!("Entering match_selector_chain")) ;
         let mut s = selector;
@@ -1695,7 +1692,7 @@ impl css_select_ctx {
     }
 
     pub fn match_universal_combinator(&mut self, combinator_type:css_combinator,
-        selector:&mut css_selector, state:&mut css_select_state,
+        selector:@mut css_selector, state:@mut css_select_state,
         node:*c_void, may_optimise:bool, rejected_by_cache:@mut bool,
         next_node:*mut *c_void) -> css_error  {
         
@@ -1799,7 +1796,7 @@ impl css_select_ctx {
     }
 
     pub fn match_details(&mut self,  node:*c_void, 
-        detail :&[@mut css_selector_detail], state :&mut css_select_state, 
+        detail :&[@mut css_selector_detail], state :@mut css_select_state, 
         matched : @mut bool, pseudo_element : Option<@mut css_pseudo_element>) -> css_error {
 
         //debug!(fmt!("Entering match_details")) ;
@@ -1881,8 +1878,8 @@ impl css_select_ctx {
     }
 
     pub fn match_detail(&mut self, node:*c_void, 
-            detail:&mut css_selector_detail, state:&mut css_select_state, 
-            matched:@mut bool, pseudo_element:&mut css_pseudo_element) -> css_error {
+            detail:@mut css_selector_detail, state:@mut css_select_state, 
+            matched:@mut bool, pseudo_element:@mut css_pseudo_element) -> css_error {
 
         //debug!(fmt!("Entering match_detail")) ;
         let is_root = @mut false;
@@ -2233,7 +2230,7 @@ impl css_select_ctx {
         return error
     }
 
-    pub fn cascade_style(style:&mut css_style, state:&mut css_select_state) -> css_error {
+    pub fn cascade_style(style:@mut css_style, state:@mut css_select_state) -> css_error {
         let s = style;
 
         //debug!(fmt!("Entering cascade_style")) ;

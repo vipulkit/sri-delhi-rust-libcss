@@ -1,6 +1,5 @@
 extern mod std;
 extern mod css;
-extern mod parserutils ; 
 extern mod wapcaplet;
 extern mod extra;
 
@@ -9,9 +8,7 @@ use std::{io,str};
 
 use css::utils::errors::*;
 use css::lex::lexer::*;
-use css::charset::csdetect::*;
 
-use parserutils::input::inputstream::*;
 
 pub struct line_ctx_lex {
     buf:~[u8],
@@ -224,33 +221,38 @@ fn testMain(fileName: ~str) {
 
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     // debug!("run test");
-    let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(@css__charset_extract));
+    // let (inputStreamOption, _)= inputstream(Some(~"UTF-8"),Some(CSS_CHARSET_DEFAULT as int), Some(@css__charset_extract));
 
-    let inputstream = 
-        match(inputStreamOption) {
-            Some(x)   => x,
-            None        => {
-                fail!(~"InputStream is not created, hence lexer can't be initialised");
-            }
-        };
+    // let inputstream = 
+    //     match(inputStreamOption) {
+    //         Some(x)   => x,
+    //         None        => {
+    //             fail!(~"InputStream is not created, hence lexer can't be initialised");
+    //         }
+    //     };
 
-    let mut lexer = css_lexer::css__lexer_create(inputstream);
+    let (parser_port, parser_chan): (Port<(css_error , Option<~css_token>)>, Chan<(css_error , Option<~css_token>)>) = stream();
+    let (lexer_port, lexer_chan): (Port<~[u8]>, Chan<~[u8]>) = stream();    
 
-    lexer.css__lexer_append_data(data);
-    lexer.css__lexer_append_data([]);
+            // create lexer
+            
+    css__lexer_create(Some(~"UTF-8"), lexer_port, parser_chan);
+
+    lexer_chan.send(data);
+    lexer_chan.send(~[]);
 
     // debug!(~"after append data="+ from_bytes(*data));
     let mut index = 0;
     loop {
-        let (error,token_option)= lexer.css__lexer_get_token();
-       
+        let (error, token_option) = parser_port.recv();
+        println(fmt!("lex-auto: run_test : error == %?" , error));
         match(error)    {
             CSS_OK => {
                 let token = token_option.unwrap();
-                // debug!(foundmt!("token == %?", token));
+                println(fmt!("token == %?", token));
 
                 let token_type_string = token_to_string(token.token_type);
-                // unsafe{debug!(fmt!("token bytes == %?", token.data.data));}
+                println(fmt!("token bytes == %?", token.data.data));
                 let token_data = str::from_bytes(token.data.data.clone());
                 let mut found = token_type_string;
                 
@@ -259,8 +261,8 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
                 }
 
                 if  !match_vec_u8(exp[index] , found) {
-                    debug!("Expected token == %?", (&exp[index]));
-                    debug!("Found token == %?", (found));
+                    println(fmt!("Expected token == %?", (&exp[index])));
+                    println(fmt!("Found token == %?", (found)));
                     fail!(~"Expected and Found tokens do not match.");
 
                 }
@@ -268,7 +270,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
                 index += 1;
             },
             _=>{
-                debug!("error = %?", error);
+                println(fmt!("error = %?", error));
                     if token_option.is_some() {
                         
                         let token = token_option.unwrap();

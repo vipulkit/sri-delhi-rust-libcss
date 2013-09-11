@@ -1,19 +1,14 @@
 all:
-	cd libcss; make; cd ..
-	cd libparserutils; make; cd ..
-	cd utils; make; cd ..
+	cd libwapcaplet;	make;	cd ..
+	cd libparserutils;	make;	cd ..
+	cd libcss;	make;	cd ..
 
 debug:
-	cd libcss; make debug; cd ..
-	cd libparserutils; make debug; cd ..
-	cd utils; make debug; cd ..
-
-run:
-	cd libcss; make run; cd ..
-	cd libparserutils; make debug; cd ..
-	cd utils; make debug; cd ..
+	cd libwapcaplet;	make debug;	cd ..
+	cd libparserutils;	make debug;	cd ..
+	cd libcss;	make debug;	cd ..
 
 clean:
-	cd libcss; make clean; cd ..
-	cd libparserutils; make clean; cd ..
-	cd utils; make clean; cd ..
+	cd libwapcaplet;	make clean;	cd ..
+	cd libparserutils;	make clean;	cd ..
+	cd libcss;	make clean;	cd ..

@@ -1,20 +1,21 @@
 use wapcaplet::*;
-use parserutils::input::inputstream::*;
 
 // libcss uses
-use charset::csdetect::*;
 use lex::lexer::*;
 use parse::language::*;
 use parse::parse::*;
 use stylesheet::*;
 use utils::errors::*;
 use parse::propstrings::*;
+use extra::arc;
 
 pub struct css {
     stylesheet:@mut css_stylesheet,
     parser:~css_parser,
     // lwc_ref:Option<~lwc>,
+    
 }
+
 
 enum css_params_version {
     CSS_PARAMS_VERSION_1 = 1
@@ -60,18 +61,14 @@ impl css {
         // assert!(!(propstrings_instance.is_some());
         //assert!((propstrings_instance.is_none() || lwc_instance.is_none()));
                                                      
-        // create inputstream
-        let (inputstream_option, _) =  
-            match params.charset.clone() {
-                None => inputstream(None, None ,Some(@css__charset_extract)),
-                Some(charset) => inputstream(Some(charset), Some(CSS_CHARSET_DICTATED as int), Some(@css__charset_extract))
-            };
-        
-
+        // let (parser_port, parser_chan): (Port<(css_error , Option<~css_token>)>, Chan<(css_error , Option<~css_token>)>) = stream();
+        let (lexer_port, lexer_chan): (Port<~[u8]>, Chan<~[u8]>) = stream();    
+        // 
+        let token_list: arc::RWARC<~[css_token_tuple]> = arc::RWARC(~[]);
 
         // create lexer
         
-        let lexer = css_lexer::css__lexer_create(inputstream_option.unwrap());
+        css__lexer_create(params.charset.clone(), lexer_port, token_list.clone());
 
         // create stylesheet
         let stylesheet = @mut css_stylesheet {
@@ -86,6 +83,7 @@ impl css {
             quirks_allowed:params.allow_quirks,                    
             quirks_used:false,                       
             inline_style:params.inline_style,                      
+            cached_style:None,    
             string_vector:~[],
             resolve : params.resolve, 
             import : params.import, 
@@ -98,8 +96,8 @@ impl css {
 
         // create parser
         let parser = match params.inline_style {
-            false => css_parser::css__parser_create(language, lexer),
-            true => css_parser::css__parser_create_for_inline_style(language, lexer)
+            false => css_parser::css__parser_create(language, token_list.clone(), lexer_chan ),
+            true => css_parser::css__parser_create_for_inline_style(language, token_list.clone(), lexer_chan)
         }; 
 
         // let mut lwc_ref = if lwc_instance.is_none() {
@@ -119,8 +117,6 @@ impl css {
         let css_instance = ~css {
             parser:parser.unwrap(),
             stylesheet:stylesheet,
-            // lwc_ref: Some(lwc_ref),
-            // propstrings_ref : Some(propstrings_ref)   
         };
        
         css_instance    
@@ -158,6 +154,7 @@ impl css {
             }
         }
 
+        self.stylesheet.cached_style = None;
 
         let mut ptr = self.stylesheet.rule_list ;
         loop {

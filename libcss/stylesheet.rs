@@ -144,6 +144,7 @@ pub struct css_stylesheet {
     quirks_allowed:bool,                    /**< Quirks permitted */
     quirks_used:bool,                       /**< Quirks actually used */
     inline_style:bool,                      /**< Is an inline style */
+    cached_style:Option<@mut css_style>,    /**< Cache for style parsing */
     string_vector:~[uint],
     resolve : css_url_resolution_fn, // URL resolution function */
     import : Option<css_import_notification_fn>, // Import notification function */
@@ -477,11 +478,17 @@ impl css_stylesheet {
     *  'css_style' - css_style.
     */
     pub fn css__stylesheet_style_create(sheet : @mut css_stylesheet) -> @mut css_style {
-        @mut css_style{ 
-            bytecode:~[],
-            used:0,
-            sheet:Some(sheet)
-        } 
+        //debug!("Entering: css__stylesheet_style_create");
+        if sheet.cached_style.is_none() {
+            @mut css_style{ 
+                bytecode:~[],
+                used:0,
+                sheet:Some(sheet)
+            } 
+        }
+        else {
+            sheet.cached_style.take_unwrap()
+        }
     }
 
     /**
