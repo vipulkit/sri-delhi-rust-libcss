@@ -212,7 +212,7 @@ fn testMain(fileName: ~str) {
     }        
     let mut vec_lines = file_content.split_iter(check_newline) ;
 
-    for vec_lines.advance |each_line| {
+    for each_line in vec_lines {
         handle_line(each_line.to_owned(),ctx);
     }
     
@@ -251,7 +251,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
 
                 let token_type_string = token_to_string(token.token_type);
                 // unsafe{debug!(fmt!("token bytes == %?", token.data.data));}
-                let token_data = str::from_bytes(token.data.data.clone());
+                let token_data = str::from_utf8(token.data.data.clone());
                 let mut found = token_type_string;
                 
                 if ((token.token_type as int) < (CSS_TOKEN_LAST_INTERN as int)) {
@@ -275,7 +275,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
                         // debug!(fmt!("token == %?", token));
 
                         let token_type_string = token_to_string(token.token_type);
-                        let token_data = str::from_bytes(token.data.data.clone());
+                        let token_data = str::from_utf8(token.data.data.clone());
 
                         let found = fmt!("%s%s" , token_type_string , token_data);
 

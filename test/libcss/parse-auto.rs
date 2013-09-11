@@ -440,7 +440,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
 pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
 
-    debug!(fmt!("Data == %? ", str::from_utf8(data)));
+    println(fmt!("Data == %? ", str::from_utf8(data)));
     debug!(fmt!("Expected entry type == %d, name == %s", e.ftype, e.name.clone()) );
     io::print(fmt!("Expected bytecode == ") );
     for &expected in e.expected.mut_iter() {
