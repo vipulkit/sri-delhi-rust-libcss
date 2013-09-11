@@ -828,7 +828,7 @@ impl css_stylesheet {
                     page.style = Some(style);
                 }
                 else {
-                    let page_style = page.style.get();
+                    let page_style = page.style.expect("");
                     css_stylesheet::css__stylesheet_merge_style(page_style,style);
                     page.style = Some(page_style);
                 }
@@ -838,7 +838,7 @@ impl css_stylesheet {
                     selector.style = Some(style);
                 }
                 else {
-                    let selector_style = selector.style.get();
+                    let selector_style = selector.style.expect("");
                     css_stylesheet::css__stylesheet_merge_style(selector_style,style);
                     selector.style = Some(selector_style);
                 }
@@ -1290,10 +1290,10 @@ impl css_selector_hash {
 		let mut i = 0;
 		while i < size {
             unsafe{
-				hash.elements.push_fast(None);
-				hash.classes.push_fast(None);
-				hash.ids.push_fast(None);
-				hash.universal.push_fast(None);
+				hash.elements.push(None);
+				hash.classes.push(None);
+				hash.ids.push(None);
+				hash.universal.push(None);
 			}	
 			i = i + 1;
         }
@@ -1509,8 +1509,8 @@ impl css_selector_hash {
                             return CSS_BADPARM ;
                         }
 
-                        let base_search_rule = css_stylesheet::css__stylesheet_get_base_rule(search.selector.rule.get());
-                        let base_selector_rule = css_stylesheet::css__stylesheet_get_base_rule(selector.rule.get());
+                        let base_search_rule = css_stylesheet::css__stylesheet_get_base_rule(search.selector.rule.expect(""));
+                        let base_selector_rule = css_stylesheet::css__stylesheet_get_base_rule(selector.rule.expect(""));
 
                         if base_search_rule.index > base_selector_rule.index {
                             break ;

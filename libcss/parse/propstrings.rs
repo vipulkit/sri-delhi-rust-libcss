@@ -713,6 +713,7 @@ impl css_propstrings {
 					) 
 				) {
 				return_value = Some((CSS_SELECTOR_PSEUDO_CLASS, string_index));
+                break;
 			}
 		}
 
@@ -724,6 +725,7 @@ impl css_propstrings {
 				)
 			) {
 				return_value = Some((CSS_SELECTOR_PSEUDO_ELEMENT , string_index));
+                break;
 			}
 		}
         
