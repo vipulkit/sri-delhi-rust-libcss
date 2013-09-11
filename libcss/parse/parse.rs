@@ -415,7 +415,7 @@ impl css_parser {
             }
 
             if ((token.token_type as int) < (CSS_TOKEN_LAST_INTERN as int)) {
-                token.idata = Some(self.intern_string(lwc_ref, from_bytes(token.data.data)));
+                token.idata = Some(self.intern_string(lwc_ref, from_utf8(token.data.data)));
             }
             else {
                 token.idata = None;
