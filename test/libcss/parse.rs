@@ -78,7 +78,7 @@ fn parse(file_name: ~str) {
         }
         else if dataFlag {
             let mut final_buf :~[u8] = ~[];
-            for buf.iter().advance |i| {
+            for  i in buf.iter() {
                 final_buf.push(i as u8);
             }
             final_buf.reverse();

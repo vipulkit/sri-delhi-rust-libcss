@@ -136,6 +136,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, lwc_ref:&mut ~lwc, buf
       debug!(fmt!("\n Entering dump_computed_style ")) ;
     let ptr = buf;
     let mut val:u8;
+    let reason = "Function dump_computed_style"; 
 
     /* background-attachment */
     val = css_computed_background_attachment(style);
@@ -169,7 +170,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, lwc_ref:&mut ~lwc, buf
     }
     else if (val == CSS_BACKGROUND_IMAGE_IMAGE as u8 && url.is_some()) {
         ptr.push_str(fmt!("background-image: url('%s')\n",
-                lwc_ref.lwc_string_data(url.get())));
+                lwc_ref.lwc_string_data(url.expect(reason))));
     }
     else if (val == CSS_BACKGROUND_IMAGE_NONE as u8) {
         ptr.push_str("background-image: none\n");
@@ -642,32 +643,32 @@ pub fn dump_computed_style(style:@mut css_computed_style, lwc_ref:&mut ~lwc, buf
                         if (content[content_index].data.is_some()) {
                             ptr.push_str( fmt!(
                                 "\"%s\"",
-                                lwc_ref.lwc_string_data( (content[content_index].data.get()) )));
+                                lwc_ref.lwc_string_data( (content[content_index].data.expect(reason)) )));
                         },
                     CSS_COMPUTED_CONTENT_URI =>
                         if (content[content_index].data.is_some()) {
                             ptr.push_str( fmt!(
                                 "uri(\"%s\")",
-                                lwc_ref.lwc_string_data(content[content_index].data.get())));
+                                lwc_ref.lwc_string_data(content[content_index].data.expect(reason))));
                         },
                     CSS_COMPUTED_CONTENT_COUNTER =>
                         if (content[content_index].data.is_some()) {
                             ptr.push_str( fmt!(
                                 "counter(%s)",
-                                lwc_ref.lwc_string_data( (content[content_index].counters_data.get().name) ))) ;
+                                lwc_ref.lwc_string_data( (content[content_index].counters_data.expect(reason).name) ))) ;
                         },
                     CSS_COMPUTED_CONTENT_COUNTERS =>
-                        if (content[content_index].data.is_some() && content[content_index].counters_data.get().sep.is_some() ) {
+                        if (content[content_index].data.is_some() && content[content_index].counters_data.expect(reason).sep.is_some() ) {
                             ptr.push_str( fmt!(
                                 "counters(%s, \"%s\")",
-                                lwc_ref.lwc_string_data( (content[content_index].counters_data.get().name) ),
-                                lwc_ref.lwc_string_data( (content[content_index].counters_data.get().sep.get()) ))) ;
+                                lwc_ref.lwc_string_data( (content[content_index].counters_data.expect(reason).name) ),
+                                lwc_ref.lwc_string_data( (content[content_index].counters_data.expect(reason).sep.expect(reason)) ))) ;
                         },
                     CSS_COMPUTED_CONTENT_ATTR =>
                         if (content[content_index].data.is_some()) {
                             ptr.push_str( fmt!(
                                 "attr(%s)",
-                                lwc_ref.lwc_string_data( (content[content_index].data.get()) )));
+                                lwc_ref.lwc_string_data( (content[content_index].data.expect(reason)) )));
                         },
                     CSS_COMPUTED_CONTENT_OPEN_QUOTE =>
                         ptr.push_str(
@@ -1089,8 +1090,8 @@ pub fn dump_computed_style(style:@mut css_computed_style, lwc_ref:&mut ~lwc, buf
     if (val == CSS_LIST_STYLE_IMAGE_INHERIT as u8) {
         ptr.push_str("list-style-image: inherit\n");
     }
-    else if (url.is_some() && lwc_ref.lwc_string_data(url.get()) != ~"") {
-        ptr.push_str(fmt!("list-style-image => url('%s')\n",lwc_ref.lwc_string_data(url.get())));
+    else if (url.is_some() && lwc_ref.lwc_string_data(url.expect(reason)) != ~"") {
+        ptr.push_str(fmt!("list-style-image => url('%s')\n",lwc_ref.lwc_string_data(url.expect(reason))));
     }
     else if (val == CSS_LIST_STYLE_IMAGE_URI_OR_NONE as u8) {
         ptr.push_str("list-style-image: none\n");
