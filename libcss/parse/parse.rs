@@ -333,18 +333,19 @@ impl css_parser {
     fn eat_ws(&mut self, lwc_ref:&mut ~lwc) -> css_error
     {
         //debug!("Entering: eat_ws");
-        let (parser_error, token_option) = self.get_token(lwc_ref);
-        if (token_option.is_none()) {
-            return parser_error;
+        let parser_error = self.get_token(lwc_ref);
+        if ( parser_error.is_some() ) {
+            return parser_error.unwrap();
         }
-        let token = token_option.unwrap();
-        //debug!(fmt!("Entering : eat_ws token.token_type == %?" , token.token_type));
-        match token.token_type {
+        
+        let token_type = self.tokens[self.tokens.len()-1].token_type;
+        //debug!(fmt!("Entering : eat_ws token_type == %?" , token_type));
+        match token_type {
             CSS_TOKEN_S => {
                 return CSS_OK;
             }
             _=> {
-                self.push_back(token);
+                self.push_back();
                 return CSS_OK;
             }
         }
@@ -358,7 +359,7 @@ impl css_parser {
     *  'token' -  The token to push back. 
     */
     #[inline]
-    fn push_back(&mut self, token: ~css_token) {
+    fn push_back(&mut self) {
         //debug!("Entering: push_back");
         //debug!("Entering: push_back");
         /*debug!(fmt!("token == %?", token));
@@ -366,8 +367,7 @@ impl css_parser {
 
         assert!(self.pushback.is_none());
 
-        self.pushback = Some(token);
-        self.tokens.pop();
+        self.pushback = Some(self.tokens.pop());
         //debug!("Exiting: push_back");
     }
 
@@ -384,7 +384,7 @@ impl css_parser {
     * #Return Value:
     *   '(css_error, Option<@css_token>)' - (CSS_OK, location to receive token) on success, (appropriate error, None) otherwise.
     */
-    fn get_token(&mut self, lwc_ref:&mut ~lwc) -> (css_error, Option<~css_token>) {
+    fn get_token(&mut self, lwc_ref:&mut ~lwc) -> Option<css_error> {
 
         //debug!("Entering: get_token");
         let mut token: ~css_token;
@@ -398,7 +398,7 @@ impl css_parser {
             let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
 
             if (lexer_error as int != CSS_OK as int) {
-                return (lexer_error, None);
+                return Some(lexer_error);
             }
 
             token = lexer_token_option.unwrap();
@@ -408,7 +408,7 @@ impl css_parser {
             while (self.last_was_ws && token.token_type as int == CSS_TOKEN_S as int) {
                 let (lexer_error, lexer_token_option) = self.lexer.css__lexer_get_token();
                 if (lexer_error as int != CSS_OK as int) {
-                    return (lexer_error, None);
+                    return Some(lexer_error);
                 }
 
                 token = lexer_token_option.unwrap();
@@ -423,12 +423,11 @@ impl css_parser {
            
         }
 
-        
-        self.tokens.push(token.clone());
         self.last_was_ws = (token.token_type as int == CSS_TOKEN_S as int);
+        self.tokens.push(token);        
         
         //debug!(fmt!("token_option == %?",token_option)) ;
-        (CSS_OK, Some(token))
+        None
     }
 
     #[inline]
@@ -480,19 +479,18 @@ impl css_parser {
                     return CSS_OK;
                 },
                 2 /*AfterStylesheet*/ => {
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
-
-                    match token.token_type {
+                    
+                    match parser.tokens[parser.tokens.len()-1].token_type {
                         CSS_TOKEN_EOF => {
                             /* do nothing, as expected*/
                             break;
                         }
                         _=> {
-                            parser.push_back(token);
+                            parser.push_back();
                             return CSS_INVALID;
                         }
                     }
@@ -528,15 +526,15 @@ impl css_parser {
             while (true) {
                 match (current_substate) {
                     0 /*Initial*/=> {
-                        let (parser_error, token_option) = parser.get_token(lwc_ref);
-                        if (token_option.is_none()) {
-                            return parser_error;
+                        let parser_error  = parser.get_token(lwc_ref);
+                        if (parser_error.is_some()) {
+                            return parser_error.unwrap();
                         }
-                        let token = token_option.unwrap();
+                        let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                        match token.token_type {
+                        match token_type {
                             CSS_TOKEN_EOF => {
-                                parser.push_back(token);
+                                parser.push_back();
                                 parser.tokens.clear();
                                 parser.done();
                                 return CSS_OK;
@@ -546,7 +544,7 @@ impl css_parser {
                                 /*do nothing*/
                             }
                             _ => {
-                                parser.push_back(token);
+                                parser.push_back();
 
                                 let to = (sStatement as uint, Initial as uint);
                                 let subsequent = (sStylesheet as uint, WS as uint);
@@ -595,20 +593,21 @@ impl css_parser {
 
         let mut to = (sRuleset as uint, Initial as uint);
 
-        let (parser_error, token_option) = parser.get_token(lwc_ref);
-        if (token_option.is_none()) {
-            return parser_error;
+        let parser_error  = parser.get_token(lwc_ref);
+        if (parser_error.is_some()) {
+            return parser_error.unwrap();
         }
-        let token = token_option.unwrap();
+        
+        let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-        match (token.token_type) {
+        match (token_type) {
             CSS_TOKEN_ATKEYWORD => {
                 to = (sAtRule as uint, Initial as uint);
             }
             _ => {}
         }
 
-        parser.push_back(token);
+        parser.push_back();
 
         parser.transition_no_ret(to);
         return CSS_OK;
@@ -634,16 +633,16 @@ impl css_parser {
                     //debug!("Entering: parse_ruleset:: substate-initial");   
                     parser.tokens.clear();
 
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    match (token.token_type) {
+                    match (token_type) {
                         CSS_TOKEN_CHAR => {
                             //debug!("Entering: parse_ruleset:: substate-initial::CSS_TOKEN_CHAR");   
-                            let c = token.data.data[0] as char;
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                             if (c=='{') {
                                 match (
                                     parser.language.language_handle_event(lwc_ref, propstrings_ref, CSS_PARSER_START_RULESET, &parser.tokens)
@@ -666,7 +665,7 @@ impl css_parser {
                                 let to = (sSelector as uint, Initial as uint);
                                 let subsequent = (sRuleset as uint, Brace as uint);
 
-                                parser.push_back(token);
+                                parser.push_back();
                                 
                                 parser.transition(to, subsequent);
                                 return CSS_OK;
@@ -679,12 +678,12 @@ impl css_parser {
                             let to = (sSelector as uint, Initial as uint);
                             let subsequent = (sRuleset as uint, Brace as uint);
 
-                            parser.push_back(token);
+                            parser.push_back();
                             
                             parser.transition(to, subsequent);
                             return CSS_OK;
                         }
-                    } /* match token.token_type */
+                    } /* match (token_type) */
                 } /* Initial */
             
                 1 /* Brace */ => {
@@ -711,21 +710,21 @@ impl css_parser {
                         return CSS_OK;
                     }
 
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    match (token.token_type) {
+                    match (token_type) {
                         CSS_TOKEN_EOF => {
-                            parser.push_back(token);
+                            parser.push_back();
                             parser.done();
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
                         
                         CSS_TOKEN_CHAR => {
-                            let c = token.data.data[0] as char;
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                             if (c != '{') {
                                 fail!(); // Should not happen
                             }
@@ -783,14 +782,14 @@ impl css_parser {
             //debug!(fmt!("parse_ruleset_end: current_substate == %?" , current_substate));
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
-                    parser.push_back(token.clone());
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
+                    parser.push_back();
 
-                    match (token.token_type) {
+                    match (token_type) {
                         CSS_TOKEN_EOF => {
                             
                             parser.done();
@@ -798,7 +797,7 @@ impl css_parser {
                         } /* CSS_TOKEN_EOF */
 
                         CSS_TOKEN_CHAR => {
-                            let c = token.data.data[0] as char;
+                            let c = parser.pushback.get_ref().data.data[0] as char;
                             if (c != '}' && c != ';') {
                                 /* If this can't possibly be the start of a decl-list, then
                                  * attempt to parse a declaration. This will catch any invalid
@@ -836,22 +835,21 @@ impl css_parser {
                 } /* DeclList */
 
                 2 /* Brace */ => {
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
-
-                    //debug!(fmt!("parse_ruleset_end: token.token_type == %?" , token.token_type));
-                    match token.token_type {
+                    
+                    //debug!(fmt!("parse_ruleset_end: token_type == %?" , token_type));
+                    match parser.tokens[parser.tokens.len()-1].token_type{
                         CSS_TOKEN_EOF => {
-                            parser.push_back(token);
+                            parser.push_back();
                             parser.done();
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
 
                         CSS_TOKEN_CHAR => {
-                            let c = token.data.data[0] as char;
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                             if (c != '}') {
                                 /* This should never happen, as FOLLOW(decl-list)
                                  * contains only '}' */
@@ -907,13 +905,13 @@ impl css_parser {
                 0 /* Initial */ => {
                     parser.tokens.clear();
 
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    match (token.token_type) {
+                    match (token_type) {
                         CSS_TOKEN_ATKEYWORD => {
                             current_substate = WS as uint;
                             parser.update_current_substate(WS as uint);      
@@ -952,15 +950,15 @@ impl css_parser {
                         parser.transition_no_ret(to);
                         return CSS_OK;
                     } /* if */
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    match (token.token_type) {
+                    match (token_type) {
                         CSS_TOKEN_CHAR => {
-                            let c = token.data.data[0] as char;
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                             if (c==')' || c==']') {
                                 let to = (sAny0 as uint, Initial as uint);
                                 let subsequent = (sAtRule as uint, AfterAny as uint);
@@ -969,12 +967,12 @@ impl css_parser {
                                 return CSS_OK;
                             }
                             else {
-                                parser.push_back(token);
+                                parser.push_back();
                                 break;
                             }
                         } /* CSS_TOKEN_CHAR */
                         _ => {
-                            parser.push_back(token);
+                            parser.push_back();
                             break;
                         } /* _ */
                     }
@@ -1018,23 +1016,23 @@ impl css_parser {
                         _=> {}
                     }
 
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    match (token.token_type) {
+                    match (token_type) {
                         CSS_TOKEN_EOF => {
-                            parser.push_back(token);
+                            parser.push_back();
                             parser.done();
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
 
                         CSS_TOKEN_CHAR => {
-                            let c = token.data.data[0] as char;
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                             if (c=='{') {
-                                parser.push_back(token);
+                                parser.push_back();
 
                                 let to = (sBlock as uint, Initial as uint);
                                 let subsequent = (sAtRuleEnd as uint, AfterBlock as uint);
@@ -1102,17 +1100,17 @@ impl css_parser {
         while (true) {
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
                     parser.language.language_handle_event(lwc_ref, propstrings_ref, CSS_PARSER_START_BLOCK, &parser.tokens);
 
-                    match (token.token_type) {
+                    match (token_type) {
                         CSS_TOKEN_CHAR => {
-                            let c = token.data.data[0] as char;
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                             if (c != '{') {
                                 /* This should never happen, as FIRST(block) == '{' */
                                 fail!(~"Expected {");
@@ -1151,21 +1149,21 @@ impl css_parser {
                 } /* Content */
 
                 3 /* Brace */ => {
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    match (token.token_type) {
+                    match (token_type) {
                         CSS_TOKEN_EOF => {
-                            parser.push_back(token);
+                            parser.push_back();
                             parser.done();
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
 
                         CSS_TOKEN_CHAR => {
-                            let c = token.data.data[0] as char;
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                             if (c != '}') {
                                 /* This should never happen, as 
                                  * FOLLOW(block-content) == '}' */
@@ -1221,21 +1219,21 @@ impl css_parser {
             while (true) {
                 match (current_substate) {
                     0 /* Initial */ => {
-                        let (parser_error, token_option) = parser.get_token(lwc_ref);
-                        if (token_option.is_none()) {
-                            return parser_error;
+                        let parser_error  = parser.get_token(lwc_ref);
+                        if (parser_error.is_some()) {
+                            return parser_error.unwrap();
                         }
-                        let mut token = token_option.unwrap();
+                        let token_type = parser.tokens[parser.tokens.len()-1].token_type;;
 
-                        match (token.token_type) {
+                        match (token_type) {
                             CSS_TOKEN_ATKEYWORD => {
                                 current_substate = WS as uint;
                             } /* CSS_TOKEN_ATKEYWORD */
                             
                             CSS_TOKEN_CHAR => {
-                                let c = token.data.data[0] as char;
+                                let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                                 if (c=='{') { /* Grammar ambiguity. Assume block */
-                                    parser.push_back(token);
+                                    parser.push_back();
                                     parser.language.language_handle_event(
                                         lwc_ref, propstrings_ref, CSS_PARSER_BLOCK_CONTENT, &parser.tokens);
                                     parser.tokens.clear();
@@ -1247,15 +1245,16 @@ impl css_parser {
                                     return CSS_OK;
                                 } /* if */
                                 else if (c==';') { /* Grammar ambiguity. Assume semi */
-                                    parser.push_back(token);
+                                    parser.push_back();
                                     parser.language.language_handle_event(
                                         lwc_ref, propstrings_ref, CSS_PARSER_BLOCK_CONTENT, &parser.tokens);
 
-                                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                                    if (token_option.is_none()) {
-                                        return parser_error;
+                                    let parser_error  = parser.get_token(lwc_ref);
+                                    if (parser_error.is_some()) {
+                                        return parser_error.unwrap();
                                     }
-                                    token = token_option.unwrap();
+                                    
+                                    //token = &parser.tokens[parser.tokens.len()-1];;
                                     // TODO <Abhijeet> : Doesn't get used anywhere, why?
 
                                     parser.tokens.clear();
@@ -1264,7 +1263,7 @@ impl css_parser {
                                     parser.update_current_substate(WS as uint);
                                 } /* else if */
                                 else if (c=='}') { /* Grammar ambiguity. Assume end */
-                                    parser.push_back(token);
+                                    parser.push_back();
                                     
                                     parser.language.language_handle_event(
                                         lwc_ref, propstrings_ref, CSS_PARSER_BLOCK_CONTENT, &parser.tokens);
@@ -1276,7 +1275,7 @@ impl css_parser {
                             } /* CSS_TOKEN_CHAR */
 
                             CSS_TOKEN_EOF => {
-                                parser.push_back(token);
+                                parser.push_back();
                                 
                                 parser.language.language_handle_event(
                                     lwc_ref, propstrings_ref, CSS_PARSER_BLOCK_CONTENT, &parser.tokens);
@@ -1292,7 +1291,7 @@ impl css_parser {
                         } /* match token_type */
 
                         if (current_substate == Initial as uint) {
-                            parser.push_back(token);
+                            parser.push_back();
                             
                             let to = (sAny as uint, Initial as uint);
                             let subsequent = (sBlockContent as uint, Initial as uint);
@@ -1400,23 +1399,23 @@ impl css_parser {
                         return CSS_OK;
                     }
 
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    match (token.token_type) {
+                    match (token_type) {
                         CSS_TOKEN_EOF => {
-                            parser.push_back(token);
+                            parser.push_back();
                             parser.done();
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
 
                         CSS_TOKEN_CHAR => {
-                            let c = token.data.data[0] as char;
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                             if (c != ':') { /* parse error -- expected : */
-                                parser.push_back(token);
+                                parser.push_back();
                                 
                                 let to = (sMalformedDecl as uint, Initial as uint);
                                 
@@ -1426,7 +1425,7 @@ impl css_parser {
                         } /* CSS_TOKEN_CHAR */
 
                         _ => { /* parse error -- expected : */
-                            parser.push_back(token);
+                            parser.push_back();
 
                             let to = (sMalformedDecl as uint, Initial as uint);
                             
@@ -1498,27 +1497,27 @@ impl css_parser {
             //debug!(fmt!("Entering: decl-list: current_substate == %?" , current_substate));
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    match (token.token_type) {
+                    match (token_type) {
                         CSS_TOKEN_EOF => {
-                            parser.push_back(token);
+                            parser.push_back();
                             parser.done();
                             return CSS_OK;
                         } /* CSS_TOKEN_EOF */
 
                         CSS_TOKEN_CHAR => {
-                            let c = token.data.data[0] as char;
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                             if (c != ';' && c != '}') { /* Should never happen */
                                 fail!();
                             } /* if */
 
                             if (c=='}') {
-                                parser.push_back(token);
+                                parser.push_back();
                                 parser.done();
                                 return CSS_OK;
                             } /* if */
@@ -1576,22 +1575,22 @@ impl css_parser {
         while (true) {
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
                     
-                    if (token.token_type as int != CSS_TOKEN_CHAR as int) || (token.data.data[0] != ';' as u8 && token.data.data[0] != '}' as u8) {
+                    if (token_type as int != CSS_TOKEN_CHAR as int) || (parser.tokens[parser.tokens.len()-1].data.data[0] != ';' as u8 && parser.tokens[parser.tokens.len()-1].data.data[0] != '}' as u8) {
                         
-                        parser.push_back(token);
+                        parser.push_back();
                         let to = (sDeclaration as uint, Initial as uint);
                         let subsequent = (sDeclListEnd as uint, AfterDeclaration as uint);
                         parser.transition(to, subsequent);
                         return CSS_OK;
                     }
                     else {
-                        parser.push_back(token);
+                        parser.push_back();
                     }
                     
                     current_substate = AfterDeclaration as uint; /* fall through */
@@ -1630,15 +1629,15 @@ impl css_parser {
         while (true) {
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    match (token.token_type) {
+                    match (token_type) {
                         CSS_TOKEN_EOF => {
-                            parser.push_back(token);
+                            parser.push_back();
                             
                             parser.done();
                             return CSS_OK;
@@ -1694,27 +1693,27 @@ impl css_parser {
         while(true) {
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    match (token.token_type) {
+                    match (token_type) {
                         CSS_TOKEN_EOF => {
-                            parser.push_back(token);
+                            parser.push_back();
                             parser.done();
                             return CSS_OK;  
                         }/* CSS_TOKEN_EOF */
 
                         CSS_TOKEN_CHAR => { 
-                            let c = token.data.data[0] as char;
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                             if (c==';' || c=='}') { /* Grammar ambiguity -- assume ';' or '}' mark end */
-                                parser.push_back(token);
+                                parser.push_back();
                                 parser.done();
                                 return CSS_OK;
                             }
-							parser.push_back(token);
+			    parser.push_back();
                             
                             let to = ( sValue as uint, Initial as uint );
                             let subsequent = ( sValue0 as uint, AfterValue as uint );
@@ -1724,7 +1723,7 @@ impl css_parser {
                         } /* CSS_TOKEN_CHAR */
 
                         _ => {
-                            parser.push_back(token);
+                            parser.push_back();
                             
                             let to = ( sValue as uint, Initial as uint );
                             let subsequent = ( sValue0 as uint, AfterValue as uint );
@@ -1770,20 +1769,19 @@ impl css_parser {
 
         match (current_substate) {
             0 /* Initial */ => {
-                let (parser_error, token_option) = parser.get_token(lwc_ref);
-                if (token_option.is_none()) {
-                    return parser_error;
+                let parser_error  = parser.get_token(lwc_ref);
+                if (parser_error.is_some()) {
+                    return parser_error.unwrap();
                 }
-                let token = token_option.unwrap();
+                let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
                 let to = ( sValue as uint, Initial as uint );
                 let subsequent = ( sValue1 as uint, AfterValue as uint );
-                parser.push_back(token.clone());
+                parser.push_back();
 
-                match (token.token_type) {
+                match (token_type) {
                     CSS_TOKEN_CHAR => {
-                        let c = token.data.data[0] as char;
-
+                        let c = parser.pushback.get_ref().data.data[0] as char;
                         if (c==';' || c=='}') {
                             /* Grammar ambiguity -- assume ';' or '}' mark end */
                             parser.parse_error = true;
@@ -1841,20 +1839,20 @@ impl css_parser {
         while (true) {
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    match (token.token_type) {
+                    match (token_type) {
                         CSS_TOKEN_ATKEYWORD => {
                             current_substate = WS as uint;
                             parser.update_current_substate(WS as uint);
                         }
                         CSS_TOKEN_CHAR => {
-                            let c = token.data.data[0] as char;
-                            parser.push_back(token);
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
+                            parser.push_back();
 
                             let mut to = (sAny as uint, Initial as uint);
 
@@ -1866,7 +1864,7 @@ impl css_parser {
                             return CSS_OK;
                         }
                         _ => {
-                            parser.push_back(token);
+                            parser.push_back();
 
                             let to = (sAny as uint, Initial as uint);
 
@@ -1914,24 +1912,24 @@ impl css_parser {
             match (current_substate) {
                 0 /* Initial */ => {
                     //debug!(fmt!("Entering: parse_any_0 :: case initial "));
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    match token.token_type {
+                    match (token_type) {
                         CSS_TOKEN_EOF => {
                             //debug!(fmt!("Entering: parse_any_0 :: case initial : CSS_TOKEN_EOF"));
-                            parser.push_back(token);
+                            parser.push_back();
                             parser.done();
                             return CSS_OK;
                         }/* CSS_TOKEN_EOF */
 
                         CSS_TOKEN_CHAR => { 
                             //debug!(fmt!("Entering: parse_any_0 :: case initial : CSS_TOKEN_CHAR"));
-                            let c = token.data.data[0] as char;
-                            parser.push_back(token);
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
+                            parser.push_back();
 
                             /* Grammar ambiguity: 
                              * assume '{', ';', ')', ']' mark end */
@@ -1949,7 +1947,7 @@ impl css_parser {
 
                         _ => {
                             //debug!(fmt!("Entering: parse_any_0 :: case initial : _"));
-                            parser.push_back(token);
+                            parser.push_back();
 
                             let to =  (sAny as uint, Initial as uint);
                             let subsequent =  (sAny0 as uint, AfterAny as uint);
@@ -2015,16 +2013,16 @@ impl css_parser {
                     return CSS_OK;
                 }
 
-                let (parser_error, token_option) = parser.get_token(lwc_ref);
-                if (token_option.is_none()) {
-                    return parser_error;
+                let parser_error  = parser.get_token(lwc_ref);
+                if (parser_error.is_some()) {
+                    return parser_error.unwrap();
                 }
-                let token = token_option.unwrap();
+                let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                match token.token_type {
+                match (token_type) {
                     CSS_TOKEN_CHAR => {
-                        let c = token.data.data[0] as char;
-                        parser.push_back(token);
+                        let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
+                        parser.push_back();
 
                         if (c==';' || c==')' || c==']') {
                             let to = (sAny as uint, Initial as uint);
@@ -2039,7 +2037,7 @@ impl css_parser {
                     }
 
                     _ => {
-                        parser.push_back(token);
+                        parser.push_back();
                         parser.parse_error = true;
                     }
                 }
@@ -2071,36 +2069,36 @@ impl css_parser {
             //debug!(fmt!("Entering: parse_any:: while(true):: current_substate == %?", current_substate));
             match (current_substate) {
                 0 /* Initial */ => {
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    if token.token_type as int != CSS_TOKEN_IDENT as int &&
-                       token.token_type as int != CSS_TOKEN_NUMBER as int &&
-                       token.token_type as int != CSS_TOKEN_PERCENTAGE as int &&
-                       token.token_type as int != CSS_TOKEN_DIMENSION as int &&
-                       token.token_type as int != CSS_TOKEN_STRING as int &&
-                       token.token_type as int != CSS_TOKEN_CHAR as int &&
-                       token.token_type as int != CSS_TOKEN_URI as int &&
-                       token.token_type as int != CSS_TOKEN_HASH as int &&
-                       token.token_type as int != CSS_TOKEN_UNICODE_RANGE as int &&
-                       token.token_type as int != CSS_TOKEN_INCLUDES as int &&
-                       token.token_type as int != CSS_TOKEN_DASHMATCH as int &&
-                       token.token_type as int != CSS_TOKEN_PREFIXMATCH as int &&
-                       token.token_type as int != CSS_TOKEN_SUFFIXMATCH as int &&
-                       token.token_type as int != CSS_TOKEN_SUBSTRINGMATCH as int &&
-                       token.token_type as int != CSS_TOKEN_FUNCTION as int {
+                    if token_type as int != CSS_TOKEN_IDENT as int &&
+                       token_type as int != CSS_TOKEN_NUMBER as int &&
+                       token_type as int != CSS_TOKEN_PERCENTAGE as int &&
+                       token_type as int != CSS_TOKEN_DIMENSION as int &&
+                       token_type as int != CSS_TOKEN_STRING as int &&
+                       token_type as int != CSS_TOKEN_CHAR as int &&
+                       token_type as int != CSS_TOKEN_URI as int &&
+                       token_type as int != CSS_TOKEN_HASH as int &&
+                       token_type as int != CSS_TOKEN_UNICODE_RANGE as int &&
+                       token_type as int != CSS_TOKEN_INCLUDES as int &&
+                       token_type as int != CSS_TOKEN_DASHMATCH as int &&
+                       token_type as int != CSS_TOKEN_PREFIXMATCH as int &&
+                       token_type as int != CSS_TOKEN_SUFFIXMATCH as int &&
+                       token_type as int != CSS_TOKEN_SUBSTRINGMATCH as int &&
+                       token_type as int != CSS_TOKEN_FUNCTION as int {
                             parser.parse_error = true;
                             parser.done();
                             return CSS_OK;
                        }
 
 
-                    match token.token_type {
+                    match (token_type) {
                         CSS_TOKEN_CHAR => {
-                            let c = token.data.data[0] as char;
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                             match(c) {
                                 '(' => { 
                                     parser.match_char=')';
@@ -2150,15 +2148,15 @@ impl css_parser {
 
                 2 /* AfterAny0 */ => {
                     //debug!("Entering: parse_any:: AfterAny0");
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    match token.token_type {
+                    match (token_type) {
                         CSS_TOKEN_CHAR => {
-                            let c = token.data.data[0] as char;
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                             /* Match correct close bracket (grammar ambiguity) */
                             if (c==parser.match_char) { 
                                 current_substate = WS2 as uint;
@@ -2207,7 +2205,6 @@ impl css_parser {
 
     // TODO review : piyush
     fn parse_malformed_declaration(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
-        //debug!("Entering: parse_malformed_declaration");
         enum parse_malformed_declaration_substates{ 
             Initial = 0, 
             Go = 1 
@@ -2230,21 +2227,21 @@ impl css_parser {
 
         /* Go */ /* Fall Through */
         while (true) {
-            let (parser_error, token_option) = parser.get_token(lwc_ref);
-            if (token_option.is_none()) {
-                return parser_error;
+            let parser_error  = parser.get_token(lwc_ref);
+            if (parser_error.is_some()) {
+                return parser_error.unwrap();
             }
-            let token = token_option.unwrap();
+            let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-            match token.token_type {
+            match (token_type) {
                 CSS_TOKEN_EOF => {
                     /* Push the last token (';', '}' or EOF) back */
-                    parser.push_back(token);
+                    parser.push_back();
                     break;
                 }/* CSS_TOKEN_EOF */
 
                 CSS_TOKEN_CHAR => {
-                    let c = token.data.data[0] as char;
+                    let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                     match (c) {
                         '{' | '}' | '[' | ']' | '(' | ')' | ';' => {
                             /* If the stack is empty, then we're done if we've got
@@ -2252,7 +2249,7 @@ impl css_parser {
                             if (parser.open_items_stack.is_empty()
                                 && (c==';' || c=='}')) {
                                 /* Push the last token (';', '}' or EOF) back */
-                                parser.push_back(token);
+                                parser.push_back();
                                 break;
                             }
 
@@ -2325,19 +2322,19 @@ impl css_parser {
 
         /* Go */ /* Fall Through */
         loop {
-            let (parser_error, token_option) = parser.get_token(lwc_ref);
-            if (token_option.is_none()) {
-                return parser_error;
+            let parser_error  = parser.get_token(lwc_ref);
+            if (parser_error.is_some()) {
+                return parser_error.unwrap();
             }
-            let token = token_option.unwrap();
+            let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-            match token.token_type {
+            match (token_type) {
                 CSS_TOKEN_EOF => {
                     break;
                 }/* CSS_TOKEN_EOF */
 
                 CSS_TOKEN_CHAR => {
-                    let c = token.data.data[0] as char;
+                    let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                     match (c) {
                         '{' | '}' | '[' | ']' | '(' | ')' => {
 
@@ -2414,19 +2411,19 @@ impl css_parser {
 
         /* Go */ /* Fall Through */
         loop {
-            let (parser_error, token_option) = parser.get_token(lwc_ref);
-            if (token_option.is_none()) {
-                return parser_error;
+            let parser_error  = parser.get_token(lwc_ref);
+            if (parser_error.is_some()) {
+                return parser_error.unwrap();
             }
-            let token = token_option.unwrap();
+            let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-            match token.token_type {
+            match (token_type) {
                 CSS_TOKEN_EOF => {
                     break;
                 }/* CSS_TOKEN_EOF */
 
                 CSS_TOKEN_CHAR => {
-                    let c = token.data.data[0] as char;
+                    let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                     match (c) {
                         '{' | '}' | '[' | ']' | '(' | ')' | ';' => {
 
@@ -2565,14 +2562,14 @@ impl css_parser {
         loop {
             match current_substate {
                 0 /* Initial */ => {
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
-                    parser.push_back(token.clone());
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
+                    parser.push_back();
 
-                    match token.token_type {
+                    match (token_type) {
                         CSS_TOKEN_EOF => {
                             parser.done();
                             return CSS_OK;
@@ -2625,17 +2622,16 @@ impl css_parser {
         while(true) {
             match current_substate {
                 0 /* Initial */ => {
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
-                    parser.push_back(token.clone());
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
+                    parser.push_back();
 
-                    match token.token_type {
+                    match (token_type) {
                         CSS_TOKEN_CHAR => {
-                            let c = token.data.data[0] as char;
-
+                            let c = parser.pushback.get_ref().data.data[0] as char;
                             if (c != '}' && c !=';') {
                                 let to = ( sDeclaration as uint, Initial as uint );
                                 let subsequent = ( sISBody as uint, DeclList as uint );
@@ -2668,21 +2664,21 @@ impl css_parser {
                 } /* DeclList */
 
                 2 /* Brace */ => {
-                    let (parser_error, token_option) = parser.get_token(lwc_ref);
-                    if (token_option.is_none()) {
-                        return parser_error;
+                    let parser_error  = parser.get_token(lwc_ref);
+                    if (parser_error.is_some()) {
+                        return parser_error.unwrap();
                     }
-                    let token = token_option.unwrap();
+                    let token_type = parser.tokens[parser.tokens.len()-1].token_type;
 
-                    match token.token_type {
+                    match (token_type) {
                         CSS_TOKEN_EOF => {
-                            parser.push_back(token.clone());
+                            parser.push_back();
                             parser.done();
                             return CSS_OK;
                         }/* CSS_TOKEN_EOF */
 
                         CSS_TOKEN_CHAR => {
-                            let c = token.data.data[0] as char;
+                            let c = parser.tokens[parser.tokens.len()-1].data.data[0] as char;
                             if (c != '}') {
                                 fail!(~"Expected }");
                             }
