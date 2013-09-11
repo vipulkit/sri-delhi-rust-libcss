@@ -680,7 +680,7 @@ impl css_stylesheet {
             None=> {}
         };
 
-        for a.data.mut_iter().advance |&detail| {
+        for &detail in a.data.mut_iter() {
             match detail.selector_type {
                 CSS_SELECTOR_PSEUDO_ELEMENT => return CSS_INVALID ,
                 _=> loop
@@ -1211,7 +1211,7 @@ impl css_stylesheet {
         match css_rule {
             RULE_SELECTOR(x) => {
 
-                for x.selectors.mut_iter().advance |&selector| {
+                for &selector in x.selectors.mut_iter() {
 
                     match self.selectors.css__selector_hash_remove(lwc_ref, selector) {
                         CSS_OK=>{
@@ -1315,7 +1315,7 @@ impl css_selector_hash {
     pub fn _class_name(&mut self , lwc_ref:&mut ~lwc, selector : @mut css_selector) 
                         -> uint {
 
-        for selector.data.mut_iter().advance |&element| {
+        for &element in selector.data.mut_iter() {
             match element.selector_type {
                 CSS_SELECTOR_CLASS=>{
                     if (element.negate == false) {
@@ -1344,7 +1344,7 @@ impl css_selector_hash {
     pub fn _id_name(&mut self, lwc_ref:&mut ~lwc, selector : @mut css_selector) 
                         -> uint {
 
-        for selector.data.mut_iter().advance |&element| {
+        for &element in selector.data.mut_iter() {
             match element.selector_type {
                 CSS_SELECTOR_ID=>{
                     if (element.negate == false) {
@@ -1945,7 +1945,7 @@ impl css_selector_hash {
 
     pub fn debug_print_vector_of_hash_entry_list(hash_vec : &[Option<@mut hash_entry>]) {
 
-        for hash_vec.iter().advance |&entry| {
+        for &entry in hash_vec.iter() {
             css_selector_hash::debug_print_hash_entry_list(entry) ;
         }
     }
