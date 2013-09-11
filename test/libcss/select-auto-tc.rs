@@ -694,7 +694,7 @@ pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> u
 
 fn to_lower(string:&str) -> ~str {
     let mut lower : ~[u8] = ~[];
-    for string.bytes_iter().advance |c| {
+    for c in string.byte_iter() {
         lower.push(lwc::dolower(c));
     }
     lower.push(0);

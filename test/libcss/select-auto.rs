@@ -337,8 +337,8 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
     ctx.pseudo_element = CSS_PSEUDO_ELEMENT_NONE as u32;
 
     /* Consume any leading whitespace */
-    while ( (data[p]==0x20) || (data[p]==0x09) || (data[p]==0x0a) || 
-         (data[p]==0x0b) || (data[p]==0x0c) || (data[p]==0x0d) ) && (p<end) {
+    while (p<end) && ( (data[p]==0x20) || (data[p]==0x09) || (data[p]==0x0a) || 
+         (data[p]==0x0b) || (data[p]==0x0c) || (data[p]==0x0d) ) {
         //debug!("Entering: while {...} 1");
         p += 1;
     }
@@ -708,7 +708,7 @@ pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> u
 
 fn to_lower(string:&str) -> ~str {
     let mut lower : ~[u8] = ~[];
-    for c in string.bytes_iter() {
+    for c in string.byte_iter() {
         lower.push(lwc::dolower(c));
     }
     lower.push(0);
