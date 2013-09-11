@@ -114,7 +114,7 @@ impl css_parser {
             lexer: lexer,
             
             last_was_ws: false,
-            match_char: '0',
+            match_char: '\x00',
             open_items_stack : ~[],
             parse_error: false,
             pushback: None,
@@ -2349,13 +2349,13 @@ impl css_parser {
                                     '}' => '{',
                                     ']' => '[',
                                     ')' => '(',
-                                    _ => '0'
+                                    _ => '\x00'
                                 };
 
                                 if (match_char == want_char) {
                                     parser.open_items_stack.pop();
                                 }
-                                else if (want_char == '0') {
+                                else if (want_char == '\x00') {
                                     parser.open_items_stack.push(c);
                                 }
 
@@ -2445,13 +2445,13 @@ impl css_parser {
                                     '}' => '{',
                                     ']' => '[',
                                     ')' => '(',
-                                    _ => '0' 
+                                    _ => '\x00' 
                                 };
 
                                 if (match_char == want_char) {
                                     parser.open_items_stack.pop();
                                 }
-                                else if (want_char == '0') {
+                                else if (want_char == '\x00') {
                                     parser.open_items_stack.push(c);
                                 }
 
