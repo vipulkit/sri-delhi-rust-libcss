@@ -114,7 +114,7 @@ impl css_parser {
             lexer: lexer,
             
             last_was_ws: false,
-            match_char: 0 as char,
+            match_char: '0',
             open_items_stack : ~[],
             parse_error: false,
             pushback: None,
@@ -2208,6 +2208,7 @@ impl css_parser {
     // TODO review : piyush
     fn parse_malformed_declaration(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
         //debug!("Entering: parse_malformed_declaration");
+        let reason = "Function parse_malformed_declaration";
         enum parse_malformed_declaration_substates{ 
             Initial = 0, 
             Go = 1 
@@ -2274,7 +2275,7 @@ impl css_parser {
                             if (!parser.open_items_stack.is_empty()) {
                                 let match_char = parser.open_items_stack.pop();
 
-                                if (match_char != want_char.get()) {
+                                if (match_char != want_char.expect(reason)) {
                                     parser.open_items_stack.push(match_char);
                                 }
                                 
@@ -2348,13 +2349,13 @@ impl css_parser {
                                     '}' => '{',
                                     ']' => '[',
                                     ')' => '(',
-                                    _ => 0 as char
+                                    _ => '0'
                                 };
 
                                 if (match_char == want_char) {
                                     parser.open_items_stack.pop();
                                 }
-                                else if (want_char == 0 as char) {
+                                else if (want_char == '0') {
                                     parser.open_items_stack.push(c);
                                 }
 
@@ -2444,13 +2445,13 @@ impl css_parser {
                                     '}' => '{',
                                     ']' => '[',
                                     ')' => '(',
-                                    _ => 0 as char
+                                    _ => '0' 
                                 };
 
                                 if (match_char == want_char) {
                                     parser.open_items_stack.pop();
                                 }
-                                else if (want_char == 0 as char) {
+                                else if (want_char == '0') {
                                     parser.open_items_stack.push(c);
                                 }
 

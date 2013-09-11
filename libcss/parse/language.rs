@@ -997,6 +997,7 @@ impl css_language {
 
     pub fn parseSimpleSelector(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, vector:&~[~css_token], ctx:@mut uint) -> (css_error, Option<@mut css_selector>) {
         //debug!("Entering: parseSimpleSelector");
+        let reason = "Funtion parseSimpleSelector";
         let orig_ctx = *ctx;
         /* simple_selector  -> type_selector specifics
          *          -> specific specifics
@@ -1027,7 +1028,7 @@ impl css_language {
         else {
             /* Universal selector */
             if self.default_namespace.is_some() {
-                qname.ns = self.default_namespace.get();
+                qname.ns = self.default_namespace.expect(reason);
             }
             else {
                 qname.ns = propstrings_ref.get_lwc_string(UNIVERSAL as uint)
@@ -1104,6 +1105,7 @@ impl css_language {
         //debug!("Entering: parseTypeSelector");
         let mut token: &~css_token;
         let mut prefix:Option<uint> =None;
+        let reason = "Function parseTypeSelector";
 
         /* type_selector    -> namespace_prefix? element_name
          * namespace_prefix -> [ IDENT | '*' ]? '|'
@@ -1150,7 +1152,7 @@ impl css_language {
         else {
             /* No namespace prefix */
             if self.default_namespace.is_some() {
-                qname.ns = self.default_namespace.get();
+                qname.ns = self.default_namespace.expect(reason);
             }
             else {
                 qname.ns = propstrings_ref.get_lwc_string(UNIVERSAL as uint)
@@ -1261,7 +1263,7 @@ impl css_language {
     pub fn lookupNamespace(&mut self, lwc_ref:&mut ~lwc, prefix:Option<uint>, qname:@mut css_qname) -> css_error {
         //debug!("Entering: lookupNamespace");
         let mut idx:uint=0;
-        
+        let reason = "Function lookupNamespace";
         match prefix {
             None => {
                 //debug!("Entering: lookupNamespace (1)");
@@ -1273,7 +1275,7 @@ impl css_language {
                     match ns.prefix {
                         Some(_) => {
                             //debug!("Entering: lookupNamespace (3)");
-                            let ns_prefix = ns.prefix.get();
+                            let ns_prefix = ns.prefix.expect(reason);
                             if ( lwc_ref.lwc_string_isequal(ns_prefix , value)) {
                                 break;
                             }

@@ -454,6 +454,7 @@ pub fn css_font_face_count_srcs(font_face: @mut css_font_face) -> uint {
 }
 
 pub fn css_font_face_get_src(font_face: @mut css_font_face, index: uint) -> Option<~css_font_face_src> {
+    let reason = "Function css_font_face_get_src";
     if (index > css_font_face_count_srcs(font_face)) {
         return None;
     }
@@ -464,7 +465,7 @@ pub fn css_font_face_get_src(font_face: @mut css_font_face, index: uint) -> Opti
         location: match src.location {
             None => None,
             Some(_) => {
-                let new_location = src.location.get();
+                let new_location = src.location.expect(reason);
                 Some(new_location)
             }
         },
@@ -476,10 +477,11 @@ pub fn css_font_face_get_src(font_face: @mut css_font_face, index: uint) -> Opti
 }
 
 pub fn css_font_face_src_get_location(src: & ~css_font_face_src) -> Option<uint> {
+    let reason = "Function css_font_face_src_get_location"; 
     match src.location {
         None => None,
         Some(_) => {
-            let new_location = src.location.get();
+            let new_location = src.location.expect(reason);
             Some(new_location)
         }
     }
