@@ -173,7 +173,7 @@ fn testMain(fileName: ~str) {
     let mut vec_lines = file_content.split_iter(check_newline) ;
 
     for line in vec_lines {
-        handle_line(each_line,ctx);
+        handle_line(line,ctx);
     }
     
     if ctx.buf.len() > 0 {
@@ -225,7 +225,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     }
 
 	let mut iter_both = a.iter().zip(b.iter());
-    for (s, e) in iter_both.advance {
+    for (s, e) in iter_both {
         if s != e {
             debug!("============================================================" );
             debug!(" == sheet ==%?=" , (a));
