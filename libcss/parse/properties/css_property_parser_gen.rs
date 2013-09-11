@@ -260,6 +260,7 @@ pub fn output_color(fp:@Writer, parseid:&keyval) {
 
 pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     let mut output : ~str = ~"\t{\n";
+    output.push_str("\t\tlet reason = \"Function css__parse_letter_spacing\";\n");
     output.push_str("\t\tlet length:u32;\n");
     output.push_str("\t\t*ctx = orig_ctx;\n\n");
     output.push_str("\t\tlet mut unit:u32;\n\n");
@@ -269,14 +270,14 @@ pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     output.push_str("\t\tmatch res {\n");
     output.push_str("\t\t\tCSS_OK => {\n");
     output.push_str("\t\t\t\tunit = unit_option.unwrap();\n");
-    output.push_str("\t\t\t\tlength = length_option.get() as u32;\n");
+    output.push_str("\t\t\t\tlength = length_option.expect(reason) as u32;\n");
     output.push_str("\t\t\t},\n");
     output.push_str("\t\t\t_ => {\n");
     output.push_str("\t\t\t\t*ctx = orig_ctx;\n");
     output.push_str("\t\t\t\treturn res\n");
     output.push_str("\t\t\t}\n");
     output.push_str("\t\t}\n\n");
-    output.push_str("\t\t\tlet _length_fixed = length_option.get();\n");
+    output.push_str("\t\t\tlet _length_fixed = length_option.expect(reason);\n");
         
 
     let mut i = 1;    
