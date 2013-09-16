@@ -68,7 +68,7 @@ fn dump_css_fixed(f: css_fixed , ptr: &mut ~str){
 fn dump_css_number(val: css_fixed , ptr: &mut ~str){
       debug!(fmt!("\n Entering dump_css_number ")) ;
     if css_int_to_fixed((val >> 10) as int) == val {
-        ptr.push_str( fmt!("%?" , val >> 10));
+        ptr.push_str( fmt!("%i" , (val as int >> 10 as int)));
     }
     else {
         dump_css_fixed(val , ptr);
