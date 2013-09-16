@@ -953,7 +953,7 @@ pub fn tokenIsChar(token:&~css_token, lwc_ref:&mut ~lwc, c:char) -> bool {
 
                     // Ensure lowercomparison 
                     if 'A' <= token_char && token_char <= 'Z' {
-                        token_char  =  (token_char as u8 +  32 as u8 ) as char ;
+                        token_char  =  (token_char as u8 +  'a' as u8 - 'A' as u8 ) as char ;
                     }
                         
                     if token_char == c {

@@ -6,6 +6,7 @@ extern mod std;
 
 use std::hashmap::HashMap;
 use std::clone::Clone;
+use std::str::*;
 
 struct lwc_string {
     // id: uint,
@@ -53,27 +54,22 @@ impl lwc {
 
     #[inline]
     fn to_lower(string:&str) -> ~str{
-        //let mut lower : ~[u8] = ~[];
-        let ascii_string = string.to_ascii();
-        ascii_string.to_lower().into_str()
-        /*
-        let mut lower : ~str = ~"" ;
+        let mut lower : ~[u8] = ~[];
         let len = string.len();
-		//lower.reserve(len);
-		let mut c = 0;
-		let mut ch : u8;
-		while c < len {
-			ch = string[c] as u8;
-			if (ch > 64 && ch < 91) {
-				lower = lower.append(str::from_char( (ch + 32) as char));
-			} 
-            else {
-				lower = lower.append(str::from_char(ch as char));
-			}
-			c += 1;
+        lower.reserve(len);
+        let mut c = 0;
+        let mut ch : u8;
+        while c < len {
+            ch = string[c] as u8;
+            if (ch > 64 && ch < 91) {
+                lower.push(ch + 32);
+            } else {
+                lower.push(ch);
+            }
+        c += 1;
         }
-        lower
-        */
+
+        from_utf8_owned(lower)
     }
 
     #[inline]
