@@ -666,7 +666,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mu
 
     /* Compare with expected selector */
     if name != e.name {
-        println(fmt!("FAIL Mismatched names\n
+        debug!(fmt!("FAIL Mismatched names\n
                         Got name '%s'. Expected '%s'\n",name, e.name.clone()) );
         return true ;
     }
