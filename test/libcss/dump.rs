@@ -401,7 +401,7 @@ fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut ~lwc, ptr:
                     }
                 } ,
                 _=>{
-                    ptr.push_str(fmt!("%?n+%?",detail.a.clone(), detail.b.clone()));
+                    ptr.push_str(fmt!("%in+%i",detail.a.clone() as int, detail.b.clone() as int));
                 }
             }
         },
@@ -2239,7 +2239,7 @@ fn dump_bytecode(style:@mut css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u
 fn dump_number(val: i32 , ptr: &mut ~str){
     debug!("Entering: dump_number");
     if css_int_to_fixed((val >> 10) as int) == val {
-        ptr.push_str( fmt!("%?" , val >> 10));
+        ptr.push_str( fmt!("%i" , val as int >> 10 as int));
     }
     else {
         dump_css_fixed(val , ptr);

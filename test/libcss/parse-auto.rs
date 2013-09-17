@@ -440,8 +440,8 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
 pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
 
-    println(fmt!("Data == %? ", str::from_utf8(data)));
-    println(fmt!("Expected entry type == %d, name == %s", e.ftype, e.name.clone()) );
+    debug!(fmt!("Data == %? ", str::from_utf8(data)));
+    debug!(fmt!("Expected entry type == %d, name == %s", e.ftype, e.name.clone()) );
     io::print(fmt!("Expected bytecode == ") );
     for &expected in e.expected.mut_iter() {
         io::print(fmt!("%? ", expected ));
@@ -666,7 +666,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mu
 
     /* Compare with expected selector */
     if name != e.name {
-        debug!(fmt!("FAIL Mismatched names\n
+        println(fmt!("FAIL Mismatched names\n
                         Got name '%s'. Expected '%s'\n",name, e.name.clone()) );
         return true ;
     }
@@ -864,7 +864,7 @@ fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut ~lwc, ptr:
                 } ,
                 _=>{
                     ptr.push_char('(' );
-                    str::push_str(ptr,fmt!("%?n+%?", detail.a.clone(), detail.b.clone()));
+                    str::push_str(ptr,fmt!("%in+%i", detail.a.clone()as int, detail.b.clone() as int));
                     ptr.push_char(')' );
                 }
             }
