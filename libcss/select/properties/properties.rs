@@ -659,7 +659,7 @@ pub fn css__set_background_color_from_hint(hint:&mut  css_hint,
 
 	match hint.hint_type {
 		COLOR=>{
-			set_background_color(style, hint.status, hint.color.get_or_default(0));
+			set_background_color(style, hint.status, hint.color);
 			CSS_OK
 		},
 		_=>{
@@ -969,15 +969,8 @@ pub fn css__set_border_bottom_color_from_hint(hint:&mut  css_hint,
 
 	match hint.hint_type {
 		COLOR=>{
-			match hint.color {
-				Some(x)=>{
-					set_border_bottom_color(style, hint.status, x);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
-			}
+			set_border_bottom_color(style, hint.status, hint.color);
+			CSS_OK
 		},
 		_=>{
 			CSS_INVALID 
@@ -1435,15 +1428,8 @@ pub fn css__set_border_left_color_from_hint(hint:&mut  css_hint,
 
 	match hint.hint_type {
 		COLOR=>{
-			match hint.color {
-				Some(x)=>{
-					set_border_left_color(style, hint.status, x);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
-			}
+			set_border_left_color(style, hint.status, hint.color);
+			CSS_OK
 		},
 		_=>{
 			CSS_INVALID 
@@ -1599,15 +1585,8 @@ pub fn css__set_border_right_color_from_hint(hint:&mut  css_hint,
 
 	match hint.hint_type {
 		COLOR=>{
-			match hint.color {
-				Some(x)=>{
-					set_border_right_color(style, hint.status, x);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
-			}
+				set_border_right_color(style, hint.status, hint.color);
+				CSS_OK
 		},
 		_=>{
 			CSS_INVALID 
@@ -1859,15 +1838,8 @@ pub fn css__set_border_top_color_from_hint(hint:&mut  css_hint,
 
 	match hint.hint_type {
 		COLOR=>{
-			match hint.color {
-				Some(x)=>{
-					set_border_top_color(style, hint.status, x);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
-			}
+			set_border_top_color(style, hint.status, hint.color);
+			CSS_OK
 		},
 		_=>{
 			CSS_INVALID 
@@ -2156,7 +2128,7 @@ pub fn  css__cascade_color(opv:u32, style:&mut css_style, state:&mut css_select_
 pub fn css__set_color_from_hint(hint:&mut css_hint, style:&mut css_computed_style) 
 								-> css_error {
 
-	set_color(style, hint.status, hint.color.get()) ;
+	set_color(style, hint.status, hint.color) ;
 	CSS_OK
 }
 
@@ -2170,9 +2142,9 @@ pub fn css__initial_color(state:&mut css_select_state) -> css_error {
 		        counters:None,
 		        length:None,
 		        position:None,
-		        color:None,
-		        fixed:None,
-		        integer:None,
+		        color:0,
+		        fixed:0,
+		        integer:0,
 		        string:None,
 		        strings:None
 	};
@@ -3018,9 +2990,9 @@ pub fn css__cascade_font_family(opv:u32, style:&mut css_style,
 		        counters:None,
 		        length:None,
 		        position:None,
-		        color:None,
-		        fixed:None,
-		        integer:None,
+		        color:0,
+		        fixed:0,
+		        integer:0,
 		        string:None,
 		        strings:None
 		    };
@@ -3087,9 +3059,9 @@ pub fn css__initial_font_family(state:&mut css_select_state) -> css_error {
         counters:None,
         length:None,
         position:None,
-        color:None,
-        fixed:None,
-        integer:None,
+        color:0,
+        fixed:0,
+        integer:0,
         string:None,
         strings:None
     };
@@ -4509,15 +4481,8 @@ pub fn css__set_opacity_from_hint(hint:&mut  css_hint,
 
 	match hint.hint_type {
 		FIXED=>{
-			match hint.fixed {
-				Some(x)=>{
-					set_opacity(style, hint.status, x);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
-			}
+			set_opacity(style, hint.status, hint.fixed);
+			CSS_OK
 		},
 		_=>{
 			CSS_INVALID 
@@ -4627,15 +4592,8 @@ pub fn css__set_outline_color_from_hint(hint:&mut  css_hint,
 
 	match hint.hint_type {
 		COLOR=>{
-			match hint.color {
-				Some(x)=>{
-					set_outline_color(style, hint.status, x);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
-			}
+			set_outline_color(style, hint.status, hint.color);
+			CSS_OK
 		},
 		_=>{
 			CSS_INVALID 
@@ -5645,9 +5603,9 @@ pub fn css__initial_quotes(state:&mut css_select_state) -> css_error {
         counters:None,
         length:None,
         position:None,
-        color:None,
-        fixed:None,
-        integer:None,
+        color:0,
+        fixed:0,
+        integer:0,
         string:None,
         strings:None
     };
@@ -7210,15 +7168,8 @@ pub fn css__set_z_index_from_hint(hint:&mut  css_hint,
 
 	match hint.hint_type {
 		INTEGER_TYPE=>{
-			match hint.integer {
-				Some(x)=>{
-					set_z_index(style, hint.status, x );
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
-			}
+			set_z_index(style, hint.status, hint.integer);
+			CSS_OK
 		},
 		_=>{
 			CSS_INVALID 

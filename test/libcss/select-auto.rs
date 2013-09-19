@@ -1570,7 +1570,7 @@ fn node_presentational_hint(_:*libc::c_void, _:u32) -> (css_error,Option<@mut cs
 fn ua_default_for_property(property:u32, hint:@mut css_hint ) -> css_error {
     
     if property == CSS_PROP_COLOR as u32 {
-        hint.color = Some(0xff000000);
+        hint.color = 0xff000000;
         hint.status = CSS_COLOR_COLOR as u8;
     }
     else if property == CSS_PROP_FONT_FAMILY as u32 {

@@ -1392,9 +1392,9 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
         counters:None,
         length:None,
         position:None,
-        color:None,
-        fixed:None,
-        integer:None,
+        color:0,
+        fixed:0,
+        integer:0,
         string:None,
         strings:None
     };
@@ -1406,9 +1406,9 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
         counters:None,
         length:None,
         position:None,
-        color:None,
-        fixed:None,
-        integer:None,
+        color:0,
+        fixed:0,
+        integer:0,
         string:None,
         strings:None
     };
@@ -1420,9 +1420,9 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
         counters:None,
         length:None,
         position:None,
-        color:None,
-        fixed:None,
-        integer:None,
+        color:0,
+        fixed:0,
+        integer:0,
         string:None,
         strings:None
     };
@@ -1436,7 +1436,7 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
                 value:b.get_or_default(0) , 
                 unit:c.get_or_default(CSS_UNIT_PX) 
             };
-            psize.length = Some(length);
+                psize.length = Some(length);
             error = (
 
             compute_font_size_ptr)(Some(psize),Some(size));
@@ -1448,7 +1448,7 @@ pub fn css__compute_absolute_values(parent: Option<@mut css_computed_style>,
                 value:b.get_or_default(0) , 
                 unit:c.get_or_default(CSS_UNIT_PX) 
             };
-            size.length = Some(length);
+            size.length = Some(length)  ;
             error = (compute_font_size_ptr)(None,Some(size));
         }
     }
