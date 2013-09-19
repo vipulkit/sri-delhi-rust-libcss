@@ -137,6 +137,7 @@ pub fn opcode_names() -> ~[~str] {
 pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc) -> ~str {
     
     debug!("Entering: dump_sheet");
+    let reason = "Function dump_sheet";
 
     
     // debug!("Entering: unsafe");
@@ -164,7 +165,7 @@ pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc) -> ~str {
     //debug!(fmt!("rule == %?" , rule));
     while rule.is_some() {
         //debug!(fmt!("rule == %?" , rule.unwrap()));
-        match rule.get() {
+        match rule.expect(reason) {
 
             RULE_SELECTOR(css_rule_selector_x)=>{
                 dump_rule_selector(css_rule_selector_x, lwc_ref, &mut ptr, 1);
@@ -400,7 +401,7 @@ fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut ~lwc, ptr:
                     }
                 } ,
                 _=>{
-                    ptr.push_str(fmt!("%?n+%?",detail.a.clone(), detail.b.clone()));
+                    ptr.push_str(fmt!("%in+%i",detail.a.clone() as int, detail.b.clone() as int));
                 }
             }
         },
@@ -2238,7 +2239,7 @@ fn dump_bytecode(style:@mut css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u
 fn dump_number(val: i32 , ptr: &mut ~str){
     debug!("Entering: dump_number");
     if css_int_to_fixed((val >> 10) as int) == val {
-        ptr.push_str( fmt!("%?" , val >> 10));
+        ptr.push_str( fmt!("%i" , val as int >> 10 as int));
     }
     else {
         dump_css_fixed(val , ptr);
@@ -2363,11 +2364,12 @@ fn dump_font_face(font_face: @mut css_font_face, lwc_ref:&mut ~lwc, ptr: &mut ~s
     debug!("Entering: dump_font_face");
     let mut style: u8;
     let mut weight: u8;
+    let reason = "Function dump_font_face";
 
     if font_face.font_family.is_some() {
         ptr.push_char('\n');
         ptr.push_str( &"| font_family: ");
-        ptr.push_str( lwc_ref.lwc_string_data(font_face.font_family.get()));
+        ptr.push_str( lwc_ref.lwc_string_data(font_face.font_family.expect(reason)));
     }
     ptr.push_str( &"\n| font-style: ");
 
@@ -2432,7 +2434,7 @@ fn dump_font_face(font_face: @mut css_font_face, lwc_ref:&mut ~lwc, ptr: &mut ~s
         ptr.push_char('\n');
     }
 
-        for font_face.srcs.iter().advance |i| {
+        for i in font_face.srcs.iter() {
             ptr.push_str( &"\n| src: ");
             let format = css_font_face_src_format(i);
             ptr.push_str( &"\n| format: ");
@@ -2474,7 +2476,7 @@ fn dump_font_face(font_face: @mut css_font_face, lwc_ref:&mut ~lwc, ptr: &mut ~s
                     ptr.push_str( &"UNKNOWN");
                 }
 
-                ptr.push_str( lwc_ref.lwc_string_data(i.location.get()));
+                ptr.push_str( lwc_ref.lwc_string_data(i.location.expect(reason)));
             }
 
         }

@@ -93,7 +93,7 @@ fn lex(fileName: ~str) {
                         // debug!(fmt!("token == %?", token));
 
                         let token_type_string = token_to_string(token.token_type);
-                        let token_data = str::from_bytes(token.data.data.clone());
+                        let token_data = str::from_utf8(token.data.data.clone());
 
                         let found = fmt!("%s%s" , token_type_string , token_data);
                         debug!(fmt!("found == %?", found));
@@ -112,7 +112,7 @@ fn lex(fileName: ~str) {
                             // debug!(fmt!("token == %?", token));
 
                             let token_type_string = token_to_string(token.token_type);
-                            let token_data = str::from_bytes(token.data.data.clone());
+                            let token_data = str::from_utf8(token.data.data.clone());
 
                             let found = fmt!("%s%s" , token_type_string , token_data);
 

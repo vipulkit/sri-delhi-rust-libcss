@@ -1218,7 +1218,7 @@ impl css_lexer {
             //debug!(fmt!("start: character read is %c" , c));
             self.APPEND(*cptr, counter, clen);
 
-            if ( clen > 1 || c >= 0x80 as char) {
+            if ( clen > 1 || (c >= (0x80 as u8) as char ) ) {
                 self.state = sIDENT;
                 self.substate = 0;
 
@@ -2292,14 +2292,14 @@ impl css_lexer {
 fn start_nm_char(c: char) -> bool{
     //debug!("entering : start_nm_char");
     return c == '_' || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || 
-        ('0' <= c && c <= '9') || c == '-' || c >= 0x80 as char || c == '\\';
+        ('0' <= c && c <= '9') || c == '-' || c >= (0x80 as u8) as char || c == '\\';
 }
 
 #[inline]
 fn start_nm_start(c: char) -> bool{
     //debug!("entering : start_nm_start");
     return c == '_' || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') ||
-        c >= 0x80 as char || c == '\\';
+        c >= (0x80 as u8) as char || c == '\\';
 }
 
 #[inline]
@@ -2312,7 +2312,7 @@ fn start_string_char(c: char) -> bool{
 fn start_url_char(c: char) -> bool{
     //debug!("entering : start_url_char");
     return c == '\t' || c == '!' || ('#' <= c && c <= '&') || c == '(' ||
-        ('*' <= c && c <= '~') || c >= 0x80 as char || c == '\\';
+        ('*' <= c && c <= '~') || c >= (0x80 as u8) as char || c == '\\';
 }
 
 #[inline]

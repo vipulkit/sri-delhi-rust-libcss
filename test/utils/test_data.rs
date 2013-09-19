@@ -21,7 +21,7 @@ fn main() {
     let mut rust_data_done_time = 0f;
     let mut rust_select_time = 0f;
 
-    for rust_file_content.line_iter().advance |line| {
+    for line in rust_file_content.line_iter() {
     	if (line.starts_with("#css_stylesheet_create_time")) {
     		debug!("found creation_time");
     		let val = line.slice(28, line.len());
@@ -74,7 +74,7 @@ fn main() {
     let mut c_data_done_time = 0f;
     let mut c_select_time = 0f;
 
-    for c_file_content.line_iter().advance |line| {
+    for line in c_file_content.line_iter() {
     	if (line.starts_with("#css_stylesheet_create_time")) {
     		debug!("found creation_time");
     		let val = line.slice(28, line.len());

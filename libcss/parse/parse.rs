@@ -114,7 +114,7 @@ impl css_parser {
             lexer: lexer,
             
             last_was_ws: false,
-            match_char: 0 as char,
+            match_char: '\x00',
             open_items_stack : ~[],
             parse_error: false,
             pushback: None,
@@ -415,7 +415,7 @@ impl css_parser {
             }
 
             if ((token.token_type as int) < (CSS_TOKEN_LAST_INTERN as int)) {
-                token.idata = Some(self.intern_string(lwc_ref, from_bytes(token.data.data)));
+                token.idata = Some(self.intern_string(lwc_ref, from_utf8(token.data.data)));
             }
             else {
                 token.idata = None;
@@ -2205,6 +2205,8 @@ impl css_parser {
 
     // TODO review : piyush
     fn parse_malformed_declaration(parser: &mut css_parser, lwc_ref:&mut ~lwc, _:& css_propstrings) -> css_error {
+        //debug!("Entering: parse_malformed_declaration");
+        let reason = "Function parse_malformed_declaration";
         enum parse_malformed_declaration_substates{ 
             Initial = 0, 
             Go = 1 
@@ -2271,7 +2273,7 @@ impl css_parser {
                             if (!parser.open_items_stack.is_empty()) {
                                 let match_char = parser.open_items_stack.pop();
 
-                                if (match_char != want_char.get()) {
+                                if (match_char != want_char.expect(reason)) {
                                     parser.open_items_stack.push(match_char);
                                 }
                                 
@@ -2345,13 +2347,13 @@ impl css_parser {
                                     '}' => '{',
                                     ']' => '[',
                                     ')' => '(',
-                                    _ => 0 as char
+                                    _ => '\x00'
                                 };
 
                                 if (match_char == want_char) {
                                     parser.open_items_stack.pop();
                                 }
-                                else if (want_char == 0 as char) {
+                                else if (want_char == '\x00') {
                                     parser.open_items_stack.push(c);
                                 }
 
@@ -2441,13 +2443,13 @@ impl css_parser {
                                     '}' => '{',
                                     ']' => '[',
                                     ')' => '(',
-                                    _ => 0 as char
+                                    _ => '\x00' 
                                 };
 
                                 if (match_char == want_char) {
                                     parser.open_items_stack.pop();
                                 }
-                                else if (want_char == 0 as char) {
+                                else if (want_char == '\x00') {
                                     parser.open_items_stack.push(c);
                                 }
 

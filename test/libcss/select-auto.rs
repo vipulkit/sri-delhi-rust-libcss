@@ -132,7 +132,7 @@ pub fn select_test(file:~str) {
     let css_select_style_time = @mut 0;
     let css_stylesheet_data_done_time= @mut 0f;
 
-    for file_content.any_line_iter().advance |line| { 
+    for line in file_content.any_line_iter() {
         let mut line_string: ~str = line.to_str(); 
         line_string.push_char('\n');
         // debug!("Handling line =%?=",copy line_string);
@@ -337,8 +337,8 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
     ctx.pseudo_element = CSS_PSEUDO_ELEMENT_NONE as u32;
 
     /* Consume any leading whitespace */
-    while ( (data[p]==0x20) || (data[p]==0x09) || (data[p]==0x0a) || 
-         (data[p]==0x0b) || (data[p]==0x0c) || (data[p]==0x0d) ) && (p<end) {
+    while (p<end) && ( (data[p]==0x20) || (data[p]==0x09) || (data[p]==0x0a) || 
+         (data[p]==0x0b) || (data[p]==0x0c) || (data[p]==0x0d) ) {
         //debug!("Entering: while {...} 1");
         p += 1;
     }
@@ -369,6 +369,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, lwc_ref:&mut ~lwc, data:&str) {
     let mut valuelen = 0;
     let mut depth:u32 = 0;
     let mut target = false;
+    let reason = "Function css__parse_tree_data";
 
     /* ' '{depth+1} [ <element> '*'? | <attr> ]
      * 
@@ -449,25 +450,25 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, lwc_ref:&mut ~lwc, data:&str) {
             /* Find node to insert into */
             while (depth <= ctx.depth) {
                 ctx.depth -= 1;
-                ctx.current = ctx.current.get().parent;
+                ctx.current = ctx.current.expect(reason).parent;
             }
             //let ctx_current = ctx.current.get();  
             //debug!("\n Before insert into current node  ") ;
             /* Insert into current node */
-            if (ctx.current.get().children.is_none()) {
+            if (ctx.current.expect(reason).children.is_none()) {
                 //debug!("\n Before insert into current node == if statement ") ;
-                ctx.current.get().children = Some(n);
-                ctx.current.get().last_child = Some(n);
+                ctx.current.expect(reason).children = Some(n);
+                ctx.current.expect(reason).last_child = Some(n);
             } else {
                 //debug!("\n Before insert into current node == else statement ");
-                ctx.current.get().last_child.get().next = Some(n);
+                ctx.current.expect(reason).last_child.expect(reason).next = Some(n);
                 //debug!("\n Before insert into current node == else statement 2") ;
-                n.prev = ctx.current.get().last_child;
+                n.prev = ctx.current.expect(reason).last_child;
                 //debug!("\n Before insert into current node == else statement 3") ;
-                ctx.current.get().last_child = Some(n);
+                ctx.current.expect(reason).last_child = Some(n);
             }
             //debug!("\n Before final updation  ") ;
-            ctx.current = Some(ctx.current.get());  
+            ctx.current = Some(ctx.current.expect(reason));  
             n.parent = ctx.current;
         }
 
@@ -707,11 +708,11 @@ pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> u
 
 fn to_lower(string:&str) -> ~str {
     let mut lower : ~[u8] = ~[];
-    for string.bytes_iter().advance |c| {
+    for c in string.byte_iter() {
         lower.push(lwc::dolower(c));
     }
     lower.push(0);
-    str::from_bytes(lower)
+    str::from_utf8(lower)
 }
 
 pub fn run_test( ctx:@mut line_ctx, lwc_ref:~lwc, css_select_style_time:@mut u64) {
@@ -856,10 +857,11 @@ pub fn run_test( ctx:@mut line_ctx, lwc_ref:~lwc, css_select_style_time:@mut u64
 fn node_name(n:*libc::c_void, qname : &mut css_qname) -> css_error {
 
     let node : @mut node;
+    let reason = "Function node_name";
     unsafe {
         node = ::cast::transmute(n);
         cast::forget(node);
-        qname.name = node.name.get();
+        qname.name = node.name.expect(reason);
     }
 
     CSS_OK
@@ -928,6 +930,7 @@ fn node_id(lwc_ref:&mut ~lwc, pw:*libc::c_void, n:*libc::c_void, id: &mut uint )
 fn named_ancestor_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, ancestor:*mut *libc::c_void) -> css_error {
     // debug!("named_ancestor_node");
     let mut node1:@mut node;
+    let reason = "Function named_ancestor_node";
     unsafe {
         node1 = ::cast::transmute(n);
         cast::forget(node1);
@@ -942,7 +945,7 @@ fn named_ancestor_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname,
     while node1.parent.is_some() {
         node1 = node1.parent.unwrap();
         let matched:bool;
-        matched = lwc_ref.lwc_string_caseless_isequal(node1.name.get(),qname.name);
+        matched = lwc_ref.lwc_string_caseless_isequal(node1.name.expect(reason),qname.name);
         if matched {
             break;
         }
@@ -957,6 +960,7 @@ fn named_ancestor_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname,
 fn named_parent_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, parent:*mut*libc::c_void) -> css_error {
     // debug!("named_parent_node");
     let mut node1:@mut node;
+    let reason = "Function named_parent_node";
     unsafe {
         node1 = ::cast::transmute(n);
         cast::forget(node1);
@@ -966,7 +970,7 @@ fn named_parent_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, p
         let matched: bool ;
         let parent_node : @mut node;
         parent_node = node1.parent.unwrap();
-        matched = lwc_ref.lwc_string_caseless_isequal(qname.name,parent_node.name.get());
+        matched = lwc_ref.lwc_string_caseless_isequal(qname.name,parent_node.name.expect(reason));
         if matched {
             unsafe {
                 *parent = ::cast::transmute(parent_node);
@@ -980,6 +984,7 @@ fn named_parent_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, p
 fn named_sibling_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, sibling:*mut* libc::c_void) -> css_error {
     // debug!("named_sibling_node");
     let mut node1:@mut node;
+    let reason = "Function named_sibling_node";
     unsafe {
         node1 = ::cast::transmute(n);
         cast::forget(node1);
@@ -988,8 +993,8 @@ fn named_sibling_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, 
     if node1.prev.is_some() {
         let matched: bool ;
         let prev_node: @mut node;
-        prev_node = node1.prev.get();
-        matched = lwc_ref.lwc_string_caseless_isequal(qname.name,prev_node.name.get());
+        prev_node = node1.prev.expect(reason);
+        matched = lwc_ref.lwc_string_caseless_isequal(qname.name,prev_node.name.expect(reason));
         if matched {
             unsafe {
                 *sibling = ::cast::transmute(prev_node);
@@ -1003,6 +1008,7 @@ fn named_sibling_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, 
 fn named_generic_sibling_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css_qname, sibling:*mut*libc::c_void) -> css_error {
     // debug!("named_generic_sibling_node");
     let mut node1:@mut node;
+    let reason = "Function named_generic_sibling_node";
     unsafe {
         node1 = ::cast::transmute(n);
         cast::forget(node1);
@@ -1017,7 +1023,7 @@ fn named_generic_sibling_node(lwc_ref:&mut ~lwc, n:*libc::c_void, qname:&mut css
     while node1.prev.is_some() {
         node1 = node1.prev.unwrap();
         let matched:bool;
-        matched = lwc_ref.lwc_string_caseless_isequal(node1.name.get(),qname.name);
+        matched = lwc_ref.lwc_string_caseless_isequal(node1.name.expect(reason),qname.name);
         if matched {
             break;
         }
@@ -1066,6 +1072,7 @@ fn sibling_node(n:*libc::c_void, sibling:*mut*libc::c_void) -> css_error {
 fn node_has_name(lwc_ref:&mut ~lwc, _:*libc::c_void, n:*libc::c_void, qname:&css_qname, matched:&mut bool) -> css_error {
     // debug!("node_has_name");
     let mut node1:@mut node;
+    let reason = "Function node_has_name";
     unsafe {
         node1 = ::cast::transmute(n);
         cast::forget(node1);
@@ -1074,7 +1081,7 @@ fn node_has_name(lwc_ref:&mut ~lwc, _:*libc::c_void, n:*libc::c_void, qname:&css
         *matched = true;
     }
     else {
-        *matched = lwc_ref.lwc_string_caseless_isequal(node1.name.get(),qname.name);
+        *matched = lwc_ref.lwc_string_caseless_isequal(node1.name.expect(reason),qname.name);
     }
     CSS_OK
 }
@@ -1436,10 +1443,11 @@ fn node_count_siblings(lwc_ref:&mut ~lwc, n:*libc::c_void, same_name:bool, after
     let mut matched;
     let mut node1:@mut node;
     let mut name: uint ;
+    let reason = "Function node_count_siblings";
     unsafe {
         node1 = ::cast::transmute(n);
         cast::forget(node1);
-        name = node1.name.get();
+        name = node1.name.expect(reason);
     }
     
     if after {
@@ -1447,7 +1455,7 @@ fn node_count_siblings(lwc_ref:&mut ~lwc, n:*libc::c_void, same_name:bool, after
             if same_name {
                 let mut next_name: uint ;
                 let temp_node = (node1.next).unwrap();
-                next_name = temp_node.name.get();
+                next_name = temp_node.name.expect(reason);
                 
                 matched = lwc_ref.lwc_string_caseless_isequal(name, next_name); 
                 
@@ -1466,7 +1474,7 @@ fn node_count_siblings(lwc_ref:&mut ~lwc, n:*libc::c_void, same_name:bool, after
             if same_name {
                 let mut prev_name:  uint;
                 let temp_node = (node1.prev).unwrap();
-                prev_name = temp_node.name.get();
+                prev_name = temp_node.name.expect(reason);
                 
                 matched = lwc_ref.lwc_string_caseless_isequal(name,prev_name); 
                 

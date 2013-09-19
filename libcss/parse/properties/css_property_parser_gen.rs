@@ -1,7 +1,6 @@
 /*
  * This file generates parts of LibCSS.
  */
-use std::io::WriterUtil;
 use std::io::*;
 use std::clone::Clone;
 
@@ -35,7 +34,7 @@ impl Clone for keyval {
 pub fn get_keyval(pos:~str) ->Option<~[keyval]> {
     
     let mut strKVPairs = ~[];
-    for pos.split_iter(' ').advance |subs| { 
+    for subs in pos.split_iter(' ') { 
        if !subs.is_empty() {
 		 strKVPairs.push(subs); 
 	   }
@@ -43,10 +42,10 @@ pub fn get_keyval(pos:~str) ->Option<~[keyval]> {
     
 
     let mut nkeyval:~[keyval]=~[];
-    for  strKVPairs.mut_iter().advance |&kv| {
+    for &kv in strKVPairs.mut_iter() {
         
         let mut tempKVPair=~[]; 
-        for kv.split_iter(':').advance |subs| { 
+        for subs in kv.split_iter(':') { 
             tempKVPair.push(subs); 
         }
         if tempKVPair.len() > 1 {
@@ -162,7 +161,7 @@ pub fn output_token_type_check(fp:@Writer, do_token_check:bool, IDENT:~[keyval],
 
 pub fn output_ident(fp:@Writer, only_ident:bool, parseid:&keyval, IDENT:~[keyval]) {
     let mut output : ~str = ~"";
-    for IDENT.iter().advance |i| {
+    for i in IDENT.iter() {
         
         output.push_str("\tif ");
         if !only_ident {
@@ -260,6 +259,7 @@ pub fn output_color(fp:@Writer, parseid:&keyval) {
 
 pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     let mut output : ~str = ~"\t{\n";
+    output.push_str("\t\tlet reason = \"Function css__parse_letter_spacing\";\n");
     output.push_str("\t\tlet length:u32;\n");
     output.push_str("\t\t*ctx = orig_ctx;\n\n");
     output.push_str("\t\tlet mut unit:u32;\n\n");
@@ -269,14 +269,14 @@ pub fn output_length_unit(fp:@Writer, parseid:&keyval, kvlist:~[keyval]) {
     output.push_str("\t\tmatch res {\n");
     output.push_str("\t\t\tCSS_OK => {\n");
     output.push_str("\t\t\t\tunit = unit_option.unwrap();\n");
-    output.push_str("\t\t\t\tlength = length_option.get() as u32;\n");
+    output.push_str("\t\t\t\tlength = length_option.expect(reason) as u32;\n");
     output.push_str("\t\t\t},\n");
     output.push_str("\t\t\t_ => {\n");
     output.push_str("\t\t\t\t*ctx = orig_ctx;\n");
     output.push_str("\t\t\t\treturn res\n");
     output.push_str("\t\t\t}\n");
     output.push_str("\t\t}\n\n");
-    output.push_str("\t\t\tlet _length_fixed = length_option.get();\n");
+    output.push_str("\t\t\tlet _length_fixed = length_option.expect(reason);\n");
         
 
     let mut i = 1;    
@@ -485,7 +485,7 @@ fn main() {
             }
 
             Some(rkv_list)  =>  
-                for rkv_list.iter().advance |rkv| {
+                for rkv in rkv_list.iter() {
                     if rkv.clone().key == ~"WRAP" {
                         wrap.push(rkv.clone());
                         only_ident = false;
