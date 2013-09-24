@@ -63,29 +63,33 @@ pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
     }
     
     let i :uint = a.len() ;
-    for uint::iterate(0,i) |e| {
+    let mut e = 0;
+    while (e < i)
+    { 
         if a[e] == b[e] {
-            loop;
+            e = e + 1;
         }
-
-        if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
+        else if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
             if (a[e]+32) == b[e] {
-                loop;
+               e = e + 1;
             }
             else {
                 return false ;
-            }
-        }
 
-        if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
+            }
+        }
+        else if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
             if (b[e]+32) == a[e] {
-                loop;
+            e = e + 1;
             }
             else {
                 return false ;
             }
         }
-        return false ;
+        else
+        {
+	        return false ;
+        }
     }
     return true ;
 }
@@ -227,7 +231,7 @@ fn parse_auto(file: ~str) {
         // lwc_instance:Some(lwc())
     };
 
-    for file_content.any_line_iter().advance |line| {
+    for line in file_content.any_line_iter() {
         let mut line_string : ~str = line.to_str() ;
         line_string.push_char('\n') ;
         debug!(fmt!("Entering:v data is=%?=",line_string));
@@ -282,7 +286,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
         } 
         else if (ctx.indata) {
             //ctx.buf = ~[] ;
-            for data.iter().advance |ch| {
+            for ch in data.iter() {
                 ctx.buf.push(ch as u8);
             }
             debug!(fmt!("Buffer is 1= %?",ctx.buf.clone()));
@@ -296,7 +300,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
     else {
         if ctx.indata {
             //ctx.buf = ~[] ;
-            for data.iter().advance |ch| {
+            for ch in data.iter() {
                 ctx.buf.push(ch as u8);
             }
             debug!(fmt!("Buffer is 2= %?",ctx.buf.clone()));
@@ -320,6 +324,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
     let mut len : uint = 0 ;
     let mut _goto_start_rule : bool = true  ;
+    let reason = "Function css__parse_expected";
     if data.len()==0 || data[len] != ('|' as u8){
         return;
     }
@@ -350,7 +355,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
             let min = if (data.len()-len) <= 128 { (data.len()-len) } else { 128 } ;
 
             let entry = @mut exp_entry{
-                ftype: if num.is_some() { num.get() } 
+                ftype: if num.is_some() { num.expect(reason) } 
                     else {0} ,
                 name: data.slice(len,len+min).to_str() ,
                 expected: ~[]
@@ -398,14 +403,14 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
                         assert!(false);
                     }
 					
-                    len = start.get();
+                    len = start.expect(reason);
                     let end = find_char_between( data,')' ,len+1,data.len()) ;
                     if end.is_none() {
                         assert!(false);
                     }
 
-                    len = end.get()+1;  
-                    rule.expected.push(string(data.slice( start.get()+1,end.get() ).to_managed()));
+                    len = end.expect(reason)+1;  
+                    rule.expected.push(string(data.slice( start.expect(reason)+1,end.expect(reason) ).to_managed()));
                     if len == data.len() {
                         break ;
                     }
@@ -425,7 +430,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
                     let val = strtoul(data.clone(),&mut len) ;
                     debug!( fmt!("Entering: else 2= %?=%?=%?=",data,len,val));
                     /* Append to bytecode */
-                    rule.expected.push(bytecode(val.get_or_default(0) as u32)) ;
+                    rule.expected.push(bytecode(val.unwrap_or_default(0) as u32)) ;
                 }
             }
         }
@@ -435,10 +440,10 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
 pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
 
-    debug!(fmt!("Data == %? ", str::from_bytes(data)));
+    debug!(fmt!("Data == %? ", str::from_utf8(data)));
     debug!(fmt!("Expected entry type == %d, name == %s", e.ftype, e.name.clone()) );
     io::print(fmt!("Expected bytecode == ") );
-    for e.expected.mut_iter().advance |&expected| {
+    for &expected in e.expected.mut_iter() {
         io::print(fmt!("%? ", expected ));
     }
     debug!("\n")
@@ -523,7 +528,7 @@ pub fn run_test(ctx:@mut line_ctx) {
             _=>{false}
         } );
 
-        let url = o_str.get_or_default(~"") ;
+        let url = o_str.unwrap_or_default(~"") ;
 
         match error {
             CSS_OK=> {
@@ -638,6 +643,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mu
     debug!("Entering: validate_rule_selector");
     let mut name : ~str = ~"" ;
     let mut ptr : ~str = ~"" ;
+    let reason = "Function validate_rule_selector";
 
     // Build selector string
      debug!("Entering: validate_rule_selector: unsafe");
@@ -660,7 +666,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mu
 
     /* Compare with expected selector */
     if name != e.name {
-        debug!(fmt!("FAIL Mismatched names\n
+        println(fmt!("FAIL Mismatched names\n
                         Got name '%s'. Expected '%s'\n",name, e.name.clone()) );
         return true ;
     }
@@ -675,7 +681,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mu
         return true;
     }
     else if (e.expected.len() != 0 && s.style.is_some()) {
-        
+       
         if  s.style.get_ref().bytecode.len() != e.expected.len()  {
             debug!(fmt!("FAIL: bytecode length differs "));
             return true ;
@@ -709,7 +715,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mu
                         return false ;
                     }
 
-                    let (res,op) = s.style.get_ref().sheet.get().
+                    let (res,op) = s.style.get_ref().sheet.expect(reason).
                                 css__stylesheet_string_get(s.style.get_ref().bytecode[i] as uint);
 
                     assert!(res as int == CSS_OK as int);
@@ -857,7 +863,7 @@ fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut ~lwc, ptr:
                 } ,
                 _=>{
                     ptr.push_char('(' );
-                    str::push_str(ptr,fmt!("%?n+%?", detail.a.clone(), detail.b.clone()));
+                    str::push_str(ptr,fmt!("%in+%i", detail.a.clone()as int, detail.b.clone() as int));
                     ptr.push_char(')' );
                 }
             }

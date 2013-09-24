@@ -271,7 +271,7 @@ pub fn  try_ascii_compatible_charset(data : &[u8], alias_instance: @alias) -> (O
         }
         
         // Extract charset
-        let charset = from_bytes(data.slice(charset_decl_string.len(), indexVal));
+        let charset = from_utf8(data.slice(charset_decl_string.len(), indexVal));
         // Convert to MIB enum 
         mibenum = alias_instance.parserutils_charset_mibenum_from_name(charset);
         //debug!(fmt!("try_ascii_compatible_charset:: charset == %?", charset));

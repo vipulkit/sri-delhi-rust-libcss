@@ -119,7 +119,7 @@ pub static F_400: i32 = 0x00064000; /* 400 */
 
 #[inline]
 pub fn FLTTOFIX(a:float)->i32 {
-    a * ((1 << CSS_RADIX_POINT) as float) as i32
+     return (a * ((1 << CSS_RADIX_POINT) as float)) as i32;
 }
 
 
