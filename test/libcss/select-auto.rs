@@ -717,7 +717,7 @@ fn to_lower(string:&str) -> ~str {
 pub fn run_test( ctx:@mut line_ctx, lwc_ref:~lwc, css_select_style_time:@mut u64) {
     //debug!("\n Entering run test =%?=",ctx) ;
     let mut select: ~css_select_ctx;
-    let mut results: @mut css_select_results;
+    let mut results: ~css_select_results;
 
     let mut i:u32=0;
     let mut buf:~str= ~"";

@@ -24,11 +24,11 @@ pub enum prop_group {
 }
 
 pub struct prop_table {
-    cascade : &'static fn (opv:u32, style:&mut css_style,
-                                state:&mut css_select_state)-> css_error ,
+    cascade : &'static fn (opv:u32, style:&mut ~css_style,
+                                state:&mut ~css_select_state)-> css_error ,
     set_from_hint :  &'static fn (hint:&mut css_hint,
                                 style: &mut css_computed_style) -> css_error ,
-    initial :  &'static fn (state:&mut css_select_state) -> css_error ,
+    initial :  &'static fn (state:&mut ~css_select_state) -> css_error ,
     compose :  &'static fn (parent:&mut css_computed_style,
                                 child:&mut css_computed_style,
                                 result:&mut css_computed_style) -> css_error ,
@@ -1224,10 +1224,10 @@ pub fn css_computed_style_create() -> @mut css_computed_style {
 pub fn css_computed_style_initialise(style:@mut css_computed_style ,
                                     fn_handler:@mut css_select_handler, lwc_ins:&mut ~lwc) -> css_error {
 
-    let state: @mut css_select_state = @mut css_select_state {
+    let mut state: ~css_select_state = ~css_select_state {
         node:null(),
         media:(CSS_MEDIA_ALL as u64),       
-        results:@mut css_select_results{ 
+        results:~css_select_results{ 
             styles:~[] 
         },   
         current_pseudo:CSS_PSEUDO_ELEMENT_NONE,  
@@ -1276,7 +1276,7 @@ pub fn css_computed_style_initialise(style:@mut css_computed_style ,
         match prop_dispatch[i].group {
             GROUP_NORMAL => {
                 if ( prop_dispatch[i].inherited == 0 ) {
-                    error =  (prop_dispatch[i].initial)(state);
+                    error =  (prop_dispatch[i].initial)(&mut state);
                     match error {
                         CSS_OK=>{},
                         x =>  {

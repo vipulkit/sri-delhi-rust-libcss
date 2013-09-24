@@ -105,7 +105,7 @@ pub fn function_header(fp:@Writer, descriptor:~str, parser_id:&keyval, is_generi
     fp.write_line("*/");
     fp.write_line(fmt!("pub fn css__parse_%s(_sheet:@mut css_stylesheet, lwc_ref:&mut ~lwc, strings:&css_propstrings,",parser_id.key));
     fp.write_str("      vector:&~[~css_token], ctx:@mut uint,");
-    fp.write_line(fmt!(" result:@mut css_style%s) -> css_error", if is_generic {", op:css_properties_e" } else {""}    ));
+    fp.write_line(fmt!(" result:&mut ~css_style%s) -> css_error", if is_generic {", op:css_properties_e" } else {""}    ));
     fp.write_line("{");
     fp.write_line(fmt!("//debug!(\"Entering: css__parse_%s\");", parser_id.key));
 }

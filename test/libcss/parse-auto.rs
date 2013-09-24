@@ -675,9 +675,8 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mu
         return true;
     }
     else if (e.expected.len() != 0 && s.style.is_some()) {
-        let style = s.style.get() ;
-
-        if  style.bytecode.len() != e.expected.len()  {
+        
+        if  s.style.get_ref().bytecode.len() != e.expected.len()  {
             debug!(fmt!("FAIL: bytecode length differs "));
             return true ;
         }
@@ -690,11 +689,11 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mu
 
             match e.expected[i] {
                 bytecode(b) => {
-                    if style.bytecode[i] != b {
+                    if s.style.get_ref().bytecode[i] != b {
                         debug!(fmt!("FAIL Bytecode differs 
                                         Bytecode differs at %?", i) );
                         while (i < e.expected.len() ) {
-                            debug!(fmt!("%? ", style.bytecode[i].clone()));
+                            debug!(fmt!("%? ", s.style.get_ref().bytecode[i].clone()));
                             i += 1;
                         }
                         return true;
@@ -703,15 +702,15 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mu
                     i += 1;
                 }
 
-                string(s) => {
+                string(st) => {
                     /* String */
-                    if( style.sheet.is_none() ) {
+                    if( s.style.get_ref().sheet.is_none() ) {
                         debug!("\n Parent stylesheet not found in style , need sheet ");
                         return false ;
                     }
 
-                    let (res,op) = style.sheet.get().
-                                css__stylesheet_string_get(style.bytecode[i] as uint);
+                    let (res,op) = s.style.get_ref().sheet.get().
+                                css__stylesheet_string_get(s.style.get_ref().bytecode[i] as uint);
 
                     assert!(res as int == CSS_OK as int);
 
@@ -720,9 +719,9 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mu
                         None => @""
                     };
 
-                    if p != s {
+                    if p != st {
                         debug!(fmt!("FAIL: string differs got %?, expected %? ",
-                                p , s ) );
+                                p , st ) );
                         return true;
                     }
 

@@ -227,7 +227,7 @@ fn dump_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str
     ptr.push_char('\n');
     if s.style.is_some() {
         debug!("Entering: dump_rule_selector :: if s.style.is_some()");
-        dump_bytecode(s.style.unwrap() , lwc_ref, ptr,  depth +1);
+        dump_bytecode(s.style.get_mut_ref() , lwc_ref, ptr,  depth +1);
     }
 
     debug!(fmt!("ptr == %?" , ptr));
@@ -287,7 +287,7 @@ fn dump_rule_page(s:@ mut css_rule_page, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     ptr.push_char('\n');
 
     if s.style.is_some() {
-        dump_bytecode(s.style.unwrap() , lwc_ref, ptr, 2);
+        dump_bytecode(s.style.get_ref() , lwc_ref, ptr, 2);
     }   
 
     debug!(fmt!("ptr == %?" , ptr));
@@ -477,7 +477,7 @@ fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut ~lwc, ptr:
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_bytecode(style:@mut css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32 ){
+fn dump_bytecode(style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32 ){
     
     debug!("Entering: dump_bytecode");
     let bytecode = style.bytecode.clone();

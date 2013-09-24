@@ -164,7 +164,7 @@ pub struct css_rule {
 pub struct css_rule_selector {
     base:@mut css_rule,
     selectors:~[@mut css_selector],
-    style:Option<@mut css_style>
+    style:Option<~css_style>
 } 
 
 pub struct css_rule_media {
@@ -182,7 +182,7 @@ pub struct css_rule_font_face {
 pub struct css_rule_page {
     base:@mut css_rule,
     selector:Option<@mut css_selector>,
-    style:Option<@mut css_style>
+    style:Option<~css_style>
 } 
 
 pub struct css_rule_import {
@@ -444,7 +444,7 @@ impl css_stylesheet {
 
     #[inline]
     pub fn css__stylesheet_style_appendOPV(
-                                        style: @mut css_style,
+                                        style: &mut ~css_style,
                                         opcode:css_properties_e,
                                         flags:u8,
                                         value:u16 ) {
@@ -457,7 +457,7 @@ impl css_stylesheet {
 
     #[inline]
     pub fn css_stylesheet_style_inherit(
-                                        style: @mut css_style,
+                                        style: &mut ~css_style,
                                         opcode:css_properties_e) {
         //debug!("Entering: css_stylesheet_style_inherit");
 
@@ -476,8 +476,8 @@ impl css_stylesheet {
     * #Return Value:
     *  'css_style' - css_style.
     */
-    pub fn css__stylesheet_style_create(sheet : @mut css_stylesheet) -> @mut css_style {
-        @mut css_style{ 
+    pub fn css__stylesheet_style_create(sheet : @mut css_stylesheet) -> ~css_style {
+        ~css_style{ 
             bytecode:~[],
             used:0,
             sheet:Some(sheet)
@@ -490,7 +490,7 @@ impl css_stylesheet {
     *  'target'  - The style to merge to. 
     *  'style'  - The style to merge. 
     */
-    pub fn css__stylesheet_merge_style(target : @mut css_style, style: @mut css_style) {
+    pub fn css__stylesheet_merge_style(target : &mut ~css_style, style: &mut ~css_style) {
         //debug!("Entering: css__stylesheet_merge_style");
         target.bytecode.push_all(style.bytecode);
     }
@@ -503,7 +503,7 @@ impl css_stylesheet {
     *  'target'  - The style to add to. 
     *  'style'  - The style to add. 
     */
-    pub fn css__stylesheet_style_append(target : @mut css_style, bytecode: u32) {
+    pub fn css__stylesheet_style_append(target : &mut ~css_style, bytecode: u32) {
         //debug!("Entering: css__stylesheet_style_append");
         target.bytecode.push(bytecode);
     }
@@ -516,7 +516,7 @@ impl css_stylesheet {
     *  'target'  - The style to add to. 
     *  'bytecodes'  - vector of style to add. 
     */
-    pub fn css__stylesheet_style_vappend(target : @mut css_style, bytecodes: &[u32] ) {
+    pub fn css__stylesheet_style_vappend(target : &mut ~css_style, bytecodes: &[u32] ) {
         //debug!("Entering: css__stylesheet_style_vappend");
         target.bytecode.push_all(bytecodes);
     }
@@ -820,7 +820,7 @@ impl css_stylesheet {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css__stylesheet_rule_append_style(&mut self, css_rule : CSS_RULE_DATA_TYPE , style : @mut css_style) -> css_error {
+    pub fn css__stylesheet_rule_append_style(&mut self, css_rule : CSS_RULE_DATA_TYPE , mut style :~css_style) -> css_error {
         //debug!("Entering: css__stylesheet_rule_append_style");
         match css_rule {
             RULE_PAGE(page)=> {
@@ -828,9 +828,8 @@ impl css_stylesheet {
                     page.style = Some(style);
                 }
                 else {
-                    let page_style = page.style.get();
-                    css_stylesheet::css__stylesheet_merge_style(page_style,style);
-                    page.style = Some(page_style);
+                    
+                    css_stylesheet::css__stylesheet_merge_style(page.style.get_mut_ref(), &mut style);
                 }
             },
             RULE_SELECTOR(selector)=> {
@@ -838,9 +837,8 @@ impl css_stylesheet {
                     selector.style = Some(style);
                 }
                 else {
-                    let selector_style = selector.style.get();
-                    css_stylesheet::css__stylesheet_merge_style(selector_style,style);
-                    selector.style = Some(selector_style);
+                    
+                    css_stylesheet::css__stylesheet_merge_style(selector.style.get_mut_ref(), &mut style);
                 }
             },
             _=> return CSS_BADPARM 

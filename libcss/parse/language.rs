@@ -886,7 +886,7 @@ impl css_language {
 
     pub fn parseProperty(&mut self , lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, property: &~css_token , vector: &~[~css_token], ctx:@mut uint, curRule: CSS_RULE_DATA_TYPE) -> css_error {
         //debug!("Entering: parseProperty");
-        let mut style: @mut css_style;
+        let mut style: ~css_style;
         let mut index = AZIMUTH as uint;
 
         while (index <= Z_INDEX as uint) {
@@ -902,7 +902,7 @@ impl css_language {
 
         style = css_stylesheet::css__stylesheet_style_create(self.sheet) ;
         //debug!(fmt!("parseProperty:: style.bytecode (1) == %?" , style.bytecode));
-        let error = (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , lwc_ref, propstrings_ref , vector , ctx , style);
+        let error = (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , lwc_ref, propstrings_ref , vector , ctx , &mut style);
 
         //debug!(fmt!("parseProperty:: style.bytecode (2)== %?" , style.bytecode));
 
@@ -924,7 +924,7 @@ impl css_language {
         *ctx += 1;
 
         if (flags != 0) {
-            self.css__make_style_important(style);
+            self.css__make_style_important(&mut style);
         }
 
         //debug!("Exiting: parseProperty (2)");
@@ -2003,7 +2003,7 @@ impl css_language {
         return (CSS_OK,flags);
     }
 
-    pub fn css__make_style_important(&mut self, style: @mut css_style) {
+    pub fn css__make_style_important(&mut self, style: &mut ~css_style) {
         //debug!("Entering: css__make_style_important");
         let bytecode:&mut ~[u32] = &mut style.bytecode;
         let mut offset = 0;
