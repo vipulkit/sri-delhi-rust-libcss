@@ -144,7 +144,7 @@ pub fn set_word_spacing(style:&mut css_computed_style,
 #[inline]
 pub fn set_counter_increment(style: &mut css_computed_style,
                             ftype:u8,
-                            counters:~[@mut css_computed_counter]) {
+                            counters:~[~css_computed_counter]) {
 
     ENSURE_UNCOMMON(style);
 
@@ -159,7 +159,7 @@ pub fn set_counter_increment(style: &mut css_computed_style,
 #[inline]
 pub fn set_counter_reset(style: &mut css_computed_style,
                         ftype:u8,
-                        counters:~[@mut css_computed_counter]) {
+                        counters:~[~css_computed_counter]) {
 
     ENSURE_UNCOMMON(style);
 
@@ -230,7 +230,7 @@ pub fn set_clip(style: &mut css_computed_style,
 #[inline]
 pub fn set_content(style: &mut css_computed_style,
                 ftype:u8, 
-                content:~[@mut css_computed_content_item]){
+                content:~[~css_computed_content_item]){
 
     ENSURE_UNCOMMON(style);
 

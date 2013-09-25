@@ -150,9 +150,9 @@ pub fn css_computed_word_spacing(
 
 pub fn css_computed_counter_increment(
                         style : &mut css_computed_style)
-                        -> (u8,~[@mut css_computed_counter]) {
+                        -> (u8,~[~css_computed_counter]) {
 
-    let mut counter : ~[@mut css_computed_counter] = ~[];
+    let mut counter : ~[~css_computed_counter] = ~[];
     match style.uncommon {
         None=>{
             (CSS_COUNTER_INCREMENT_NONE as u8,counter)
@@ -171,9 +171,9 @@ pub fn css_computed_counter_increment(
 
 pub fn css_computed_counter_reset(
                         style : &mut css_computed_style)
-                        -> (u8,~[@mut css_computed_counter]) {
+                        -> (u8,~[~css_computed_counter]) {
 
-    let mut counter : ~[@mut css_computed_counter] = ~[];
+    let mut counter : ~[~css_computed_counter] = ~[];
     match style.uncommon {
         None=>{
             (CSS_COUNTER_RESET_NONE as u8,counter)
@@ -290,7 +290,7 @@ pub fn css_computed_clip(
 
 pub fn css_computed_content(
                 style : &mut css_computed_style)
-                -> (u8,~[@mut css_computed_content_item]) {
+                -> (u8,~[~css_computed_content_item]) {
 
     match style.uncommon {
         None=>{

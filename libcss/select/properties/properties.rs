@@ -475,10 +475,10 @@ pub fn css__cascade_page_break_after_before_inside(opv:u32, _:& ~css_style, stat
 
 #[inline]
 pub fn css__cascade_counter_increment_reset(opv:u32, style:&mut ~css_style, state:&mut ~css_select_state,
-	fun:@fn (&mut css_computed_style, u8, ~[@mut css_computed_counter]) ) -> css_error {
+	fun:@fn (&mut css_computed_style, u8, ~[~css_computed_counter]) ) -> css_error {
 
 	let mut value : uint = CSS_COUNTER_INCREMENT_INHERIT as uint;
-	let mut counters:~[@mut css_computed_counter] = ~[];
+	let mut counters:~[~css_computed_counter] = ~[];
 	
 	if !isInherit(opv) {
 		match getValue(opv) {
@@ -494,7 +494,7 @@ pub fn css__cascade_counter_increment_reset(opv:u32, style:&mut ~css_style, stat
 							let val = peek_bytecode(style);
 							advance_bytecode(style);
 
-							let temp = @mut css_computed_counter{name:name_option.unwrap(),value:val as i32};
+							let temp = ~css_computed_counter{name:name_option.unwrap(),value:val as i32};
 							counters.push(temp);
 
 							v = peek_bytecode(style);
@@ -7498,7 +7498,7 @@ pub fn css__cascade_content(opv:u32, style:&mut ~css_style,
     state:&mut ~css_select_state ) -> css_error {
 
     let mut value = CSS_CONTENT_INHERIT;
-    let mut content:~[@mut css_computed_content_item]=~[];
+    let mut content:~[~css_computed_content_item]=~[];
     // uint32_t n_contents = 0;
 
     if !isInherit(opv) {
@@ -7511,8 +7511,8 @@ pub fn css__cascade_content(opv:u32, style:&mut ~css_style,
                 
                 while (v != CONTENT_NORMAL) {
                     
-                    let temp:@mut css_computed_content_item=
-                     @mut css_computed_content_item{item_type:CSS_COMPUTED_CONTENT_NONE,data:None, counters_data:None};
+                    let mut temp =
+                     ~css_computed_content_item{item_type:CSS_COMPUTED_CONTENT_NONE,data:None, counters_data:None};
                        
                     let (result, he_option) = style.sheet.expect("").css__stylesheet_string_get(peek_bytecode(style) as uint);
                     
@@ -7535,7 +7535,7 @@ pub fn css__cascade_content(opv:u32, style:&mut ~css_style,
                                 style:(v >> CONTENT_COUNTER_STYLE_SHIFT) as u8
                             } );
                             
-                            content.push(temp)
+                            content.push(temp.clone())
                         },                          
                         CONTENT_COUNTERS => {
 
@@ -7615,7 +7615,7 @@ pub fn css__cascade_content(opv:u32, style:&mut ~css_style,
 
     /* If we have some content, terminate the array with a blank entry */
     if !content.is_empty() {
-        let temp = @mut css_computed_content_item{item_type:CSS_COMPUTED_CONTENT_NONE,data:None, counters_data:None};
+        let temp = ~css_computed_content_item{item_type:CSS_COMPUTED_CONTENT_NONE,data:None, counters_data:None};
         content.push(temp);
     }
 
@@ -7632,7 +7632,7 @@ pub fn css__set_content_from_hint(hint:&mut css_hint,
 								style:&mut css_computed_style) 
 								-> css_error{
 
-    set_content(style, hint.status, ~[hint.content.unwrap()]);
+    set_content(style, hint.status, ~[hint.content.clone().unwrap()]);
     CSS_OK
 }
 
