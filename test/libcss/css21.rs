@@ -132,34 +132,62 @@ fn css(file_name: ~str) {
 #[test]
 fn allzengarden() {
     css(~"data/css/allzengarden.css");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }
 
 #[test]
 fn badcomment() {
     css(~"data/css/badcomment.css");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }
 
 #[test]
 fn blocks() {
     css(~"data/css/blocks.css");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }
 
 #[test]
 fn color() {
     css(~"data/css/color.css");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }
 
 #[test]
 fn fontface() {
     css(~"data/css/fontface.css");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }
 
 #[test]
 fn malformed() {
     css(~"data/css/malformed.css");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }
 
 #[test]
 fn simple() {
     css(~"data/css/simple.css");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }

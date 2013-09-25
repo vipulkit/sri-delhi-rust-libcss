@@ -557,14 +557,11 @@ pub fn run_test(ctx:@mut line_ctx) {
         report_fail(ctx.buf.clone(), ctx.exp[e].clone());
         fail!(~"Unexpected number of rules ") ;
     }
-    println(fmt!("%d",css_instance.stylesheet_index));
     let mut ptr =vec_stylesheet.get_mut_ref()[css_instance.stylesheet_index].rule_list ; 
-//    let mut rule = ptr;
     loop {
 	match ptr
 	{
             None=>{ 
-                println(fmt!("NONE"));
                 assert!( e == ctx.exp.len() );
                 return ;
             },
@@ -950,34 +947,62 @@ fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut ~lwc, ptr:
 #[test]
 fn tests1() {
     parse_auto(~"data/parse/tests1.dat");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }
 
 #[test]
 fn atrules() {
     parse_auto(~"data/parse/atrules.dat");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }
 
 #[test]
 fn colours() {
     parse_auto(~"data/parse/colours.dat");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }
 
 #[test]
 fn colours_hsl() {
     parse_auto(~"data/parse/colours-hsl.dat");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }
 
 #[test]
 fn nth() {
     parse_auto(~"data/parse/nth.dat");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }
 
 #[test]
 fn properties() {
     parse_auto(~"data/parse/properties.dat");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }
 
 #[test]
 fn selectors() {
     parse_auto(~"data/parse/selectors.dat");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }

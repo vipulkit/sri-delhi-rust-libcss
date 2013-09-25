@@ -1734,6 +1734,10 @@ pub fn is_string_caseless_equal(a : &str , a_idx:uint, b : &str, cmplen:uint ) -
 fn selection_test() {
 
     select_test(~"data/select/tests1.dat");
+    unsafe
+    {
+        vec_stylesheet = None;
+    }   
 }
 
 

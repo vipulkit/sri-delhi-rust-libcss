@@ -1305,12 +1305,10 @@ impl css_selector_hash {
 		
 		let mut i = 0;
 		while i < size {
-            unsafe{
-				hash.elements.push(None);
-				hash.classes.push(None);
-				hash.ids.push(None);
-				hash.universal.push(None);
-			}	
+			hash.elements.push(None);
+			hash.classes.push(None);
+			hash.ids.push(None);
+		        hash.universal.push(None);
 			i = i + 1;
         }
         hash

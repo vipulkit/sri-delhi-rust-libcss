@@ -101,34 +101,62 @@ fn parse(file_name: ~str) {
 #[test]
 fn parse_tests1() {
     parse(~"data/parse/tests1.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn parse_atrules() {
     parse(~"data/parse/atrules.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn parse_colours() {
     parse(~"data/parse/colours.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn parse_colours_hsl() {
     parse(~"data/parse/colours-hsl.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn parse_nth() {
     parse(~"data/parse/nth.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn parse_properties() {
     parse(~"data/parse/properties.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn parse_selectors() {
     parse(~"data/parse/selectors.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }

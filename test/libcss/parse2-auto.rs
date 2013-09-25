@@ -200,7 +200,6 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
         CSS_OK => {},
         _ => {assert!(false);}
     }
-    println(fmt!("BEFORE DUMP"));
     buf = dump_sheet(css.stylesheet_index, &mut lwc_ref);
     //debug!(fmt!("\n == sheet ==%?=" , buf));
     let mut dvec : ~[~[u8]] = ~[];
@@ -241,83 +240,151 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
 #[test]
 fn au() {
     testMain(~"data/parse2/au.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn bg() {
     testMain(~"data/parse2/bg.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn bgpos() {
     testMain(~"data/parse2/bgpos.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn border() {
     testMain(~"data/parse2/border.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn comments() {
     testMain(~"data/parse2/comments.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn eof() {
     testMain(~"data/parse2/eof.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn font() {
     testMain(~"data/parse2/font.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn illegal_values() {
     testMain(~"data/parse2/illegal-values.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn list() {
     testMain(~"data/parse2/list.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn malformed_declarations() {
     testMain(~"data/parse2/malformed-declarations.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn margin() {
     testMain(~"data/parse2/margin.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn multicol() {
     testMain(~"data/parse2/multicol.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn outline() {
     testMain(~"data/parse2/outline.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn padding() {
     testMain(~"data/parse2/padding.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn selectors() {
     testMain(~"data/parse2/selectors.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 
 #[test]
 fn tests1() {
     testMain(~"data/parse2/tests1.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
 #[test]
 fn unknown_properties() {
     testMain(~"data/parse2/unknown-properties.dat");
+    unsafe
+    {
+       vec_stylesheet = None;
+    }
 }
