@@ -620,7 +620,7 @@ pub struct css_hint {
     clip:Option<@mut css_computed_clip_rect>,
     content:Option<@mut  css_computed_content_item>,
     counters:Option<~[@mut css_computed_counter]>,
-    length:Option<@mut css_hint_length>,
+    length:Option<~css_hint_length>,
     position:Option<@mut css_hint_length_hv>,
     color:u32,
     fixed:i32,
@@ -706,76 +706,76 @@ pub enum css_select_handler_version {
 
 pub struct css_select_handler {
 
-    node_name: @fn( node:*c_void, qname: &mut css_qname ) -> css_error,
+    node_name: extern fn( node:*c_void, qname: &mut css_qname ) -> css_error,
 
-    node_classes: @fn(lwc_ref:&mut ~lwc, pw:*c_void, n:*c_void, classes: &mut ~[uint] ) -> css_error,
+    node_classes: extern fn(lwc_ref:&mut ~lwc, pw:*c_void, n:*c_void, classes: &mut ~[uint] ) -> css_error,
 
-    node_id: @fn(lwc_ref:&mut ~lwc, pw:*c_void, node:*c_void, id:&mut uint ) -> css_error,
+    node_id: extern fn(lwc_ref:&mut ~lwc, pw:*c_void, node:*c_void, id:&mut uint ) -> css_error,
 
-    named_ancestor_node: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&mut css_qname, ancestor:*mut*c_void) -> css_error,
+    named_ancestor_node: extern fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&mut css_qname, ancestor:*mut*c_void) -> css_error,
    
-    named_parent_node: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&mut css_qname, parent:*mut*c_void) -> css_error,
+    named_parent_node: extern fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&mut css_qname, parent:*mut*c_void) -> css_error,
     
-    named_sibling_node: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&mut css_qname, sibling:*mut*c_void) -> css_error,
+    named_sibling_node: extern fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&mut css_qname, sibling:*mut*c_void) -> css_error,
 
-    named_generic_sibling_node: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&mut css_qname, sibling:*mut*c_void) -> css_error,
+    named_generic_sibling_node: extern fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&mut css_qname, sibling:*mut*c_void) -> css_error,
     
-    parent_node: @fn(node:*c_void, parent:*mut*c_void) -> css_error,
+    parent_node: extern fn(node:*c_void, parent:*mut*c_void) -> css_error,
 
-    sibling_node: @fn(node:*c_void, sibling:*mut*c_void) -> css_error,
+    sibling_node: extern fn(node:*c_void, sibling:*mut*c_void) -> css_error,
 
-    node_has_name: @fn(lwc_ref:&mut ~lwc, pw:*c_void,node:*c_void, qname:&css_qname, matched:&mut bool) -> css_error,
+    node_has_name: extern fn(lwc_ref:&mut ~lwc, pw:*c_void,node:*c_void, qname:&css_qname, matched:&mut bool) -> css_error,
 
-    node_has_class: @fn(lwc_ref:&mut ~lwc, pw:*c_void, node:*c_void, name:uint, matched:&mut bool) -> css_error,
+    node_has_class: extern fn(lwc_ref:&mut ~lwc, pw:*c_void, node:*c_void, name:uint, matched:&mut bool) -> css_error,
 
-    node_has_id: @fn(lwc_ref:&mut ~lwc, pw:*c_void, node:*c_void, name:uint, matched:&mut bool) -> css_error,
+    node_has_id: extern fn(lwc_ref:&mut ~lwc, pw:*c_void, node:*c_void, name:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute: @fn(lwc_ref:&mut ~lwc, node:*c_void, name:&css_qname, matched:&mut bool) -> css_error,
+    node_has_attribute: extern fn(lwc_ref:&mut ~lwc, node:*c_void, name:&css_qname, matched:&mut bool) -> css_error,
     
-    node_has_attribute_equal: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
+    node_has_attribute_equal: extern fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
    
-    node_has_attribute_dashmatch: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
+    node_has_attribute_dashmatch: extern fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute_includes: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
+    node_has_attribute_includes: extern fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute_prefix: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
+    node_has_attribute_prefix: extern fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute_suffix: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
+    node_has_attribute_suffix: extern fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute_substring: @fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
+    node_has_attribute_substring: extern fn(lwc_ref:&mut ~lwc, node:*c_void, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_is_root: @fn(node:*c_void, matched:&mut bool) -> css_error,
+    node_is_root: extern fn(node:*c_void, matched:&mut bool) -> css_error,
    
-    node_count_siblings: @fn(lwc_ref:&mut ~lwc, node:*c_void, same_name:bool, after:bool, count:&mut i32) -> css_error,
+    node_count_siblings: extern fn(lwc_ref:&mut ~lwc, node:*c_void, same_name:bool, after:bool, count:&mut i32) -> css_error,
     
-    node_is_empty: @fn(node:*c_void, matched:&mut bool) -> css_error,
+    node_is_empty: extern fn(node:*c_void, matched:&mut bool) -> css_error,
     
-    node_is_link: @fn(node:*c_void, matched:&mut bool) -> css_error,
+    node_is_link: extern fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_visited: @fn(node:*c_void, matched:&mut bool) -> css_error,
+    node_is_visited: extern fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_hover: @fn(node:*c_void, matched:&mut bool) -> css_error,
+    node_is_hover: extern fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_active: @fn(node:*c_void, matched:&mut bool) -> css_error,
+    node_is_active: extern fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_focus: @fn(node:*c_void, matched:&mut bool) -> css_error,
+    node_is_focus: extern fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_enabled: @fn(node:*c_void, matched:&mut bool) -> css_error,
+    node_is_enabled: extern fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_disabled: @fn(node:*c_void, matched:&mut bool) -> css_error,
+    node_is_disabled: extern fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_checked: @fn(node:*c_void, matched:&mut bool) -> css_error,
+    node_is_checked: extern fn(node:*c_void, matched:&mut bool) -> css_error,
  
-    node_is_target: @fn(node:*c_void, matched:&mut bool) -> css_error,
+    node_is_target: extern fn(node:*c_void, matched:&mut bool) -> css_error,
 
-    node_is_lang: @fn(node:*c_void, lang:uint, matched:&mut bool) -> css_error,
+    node_is_lang: extern fn(node:*c_void, lang:uint, matched:&mut bool) -> css_error,
 
-    node_presentational_hint: @fn(node:*c_void, property:u32) -> 
-        (css_error,Option<@mut css_hint>),
+    node_presentational_hint: extern fn(node:*c_void, property:u32) -> 
+        (css_error,Option<~css_hint>),
 
-    compute_font_size: @fn(parent: Option<@mut css_hint>, size: Option<@mut css_hint>) -> css_error,
+    compute_font_size: extern fn(parent: Option<&mut ~css_hint>, size: Option<&mut ~css_hint>) -> css_error,
    
-    ua_default_for_property: @fn(property:u32, hint:@mut css_hint ) -> css_error,
+    ua_default_for_property: extern fn(property:u32, hint:&mut ~css_hint ) -> css_error,
     handler_version:uint
 }
 
@@ -786,7 +786,7 @@ pub struct css_select_state {
     current_pseudo:css_pseudo_element,  
     computed:@mut css_computed_style,  
 
-    handler:Option<@mut css_select_handler>,    
+    handler:Option<~css_select_handler>,    
     pw:*c_void,
     sheet:Option<@mut css_stylesheet>,   
 

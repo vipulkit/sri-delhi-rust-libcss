@@ -738,7 +738,7 @@ pub fn run_test( ctx:@mut line_ctx, lwc_ref:~lwc, css_select_style_time:@mut u64
         }
         i += 1;
     }
-    let select_handler:  @mut css_select_handler = @mut css_select_handler {
+    let select_handler:  ~css_select_handler = ~css_select_handler {
         node_name: node_name,
 
         node_classes: node_classes,
@@ -1570,12 +1570,12 @@ fn node_is_lang(_:*libc::c_void, _:uint, matched:&mut bool) -> css_error {
 }
 
 #[inline] 
-fn node_presentational_hint(_:*libc::c_void, _:u32) -> (css_error,Option<@mut css_hint>) {
+fn node_presentational_hint(_:*libc::c_void, _:u32) -> (css_error,Option<~css_hint>) {
     (CSS_PROPERTY_NOT_SET,None)
 }
 
 #[inline] 
-fn ua_default_for_property(property:u32, hint:@mut css_hint ) -> css_error {
+fn ua_default_for_property(property:u32, hint:&mut ~css_hint ) -> css_error {
     
     if property == CSS_PROP_COLOR as u32 {
         hint.color = 0xff000000;
@@ -1602,35 +1602,35 @@ fn ua_default_for_property(property:u32, hint:@mut css_hint ) -> css_error {
 }
 
 #[inline]
-fn compute_font_size(parent: Option<@mut css_hint>, size: Option<@mut css_hint>) -> css_error {
+fn compute_font_size(parent: Option<&mut ~css_hint>, size: Option<&mut ~css_hint>) -> css_error {
     // debug!("\n Entering compute ") ;
-    let mut parent_value:@mut css_hint;
-    let mut size_val : @mut css_hint;
-    let sizes:~[@mut css_hint_length] =
+    let mut parent_value:&mut ~css_hint;
+    let mut size_val : &mut ~css_hint;
+    let sizes:~[~css_hint_length] =
         ~[
-            @mut css_hint_length{value:FLTTOFIX(6.75),unit:CSS_UNIT_PT},
-            @mut css_hint_length{value:FLTTOFIX(7.50),unit:CSS_UNIT_PT},
-            @mut css_hint_length{value:FLTTOFIX(9.75),unit:CSS_UNIT_PT},
-            @mut css_hint_length{value:FLTTOFIX(12.0),unit:CSS_UNIT_PT},
-            @mut css_hint_length{value:FLTTOFIX(13.5),unit:CSS_UNIT_PT},
-            @mut css_hint_length{value:FLTTOFIX(18.0),unit:CSS_UNIT_PT},
-            @mut css_hint_length{value:FLTTOFIX(24.0),unit:CSS_UNIT_PT}
+            ~css_hint_length{value:FLTTOFIX(6.75),unit:CSS_UNIT_PT},
+            ~css_hint_length{value:FLTTOFIX(7.50),unit:CSS_UNIT_PT},
+            ~css_hint_length{value:FLTTOFIX(9.75),unit:CSS_UNIT_PT},
+            ~css_hint_length{value:FLTTOFIX(12.0),unit:CSS_UNIT_PT},
+            ~css_hint_length{value:FLTTOFIX(13.5),unit:CSS_UNIT_PT},
+            ~css_hint_length{value:FLTTOFIX(18.0),unit:CSS_UNIT_PT},
+            ~css_hint_length{value:FLTTOFIX(24.0),unit:CSS_UNIT_PT}
         ];
-        let parent_size: @mut css_hint_length;
+        let parent_size: &~css_hint_length;
         
         /* Grab parent size, defaulting to medium if none */
         if parent.is_none() {
-            parent_size = sizes[CSS_FONT_SIZE_MEDIUM as uint- 1];
+            parent_size = & sizes[CSS_FONT_SIZE_MEDIUM as uint- 1];
         }
         else {
-            parent_value = *parent.get_ref();
+            parent_value = parent.unwrap();
             assert!(parent_value.status == CSS_FONT_SIZE_DIMENSION as u8);
-            assert!( match parent_value.length.unwrap().unit {
+            assert!( match parent_value.length.get_ref().unit {
                 CSS_UNIT_EM |
                 CSS_UNIT_EX=> false,
                 _=> true
             });    
-            parent_size = parent_value.length.unwrap();
+            parent_size = parent_value.length.get_ref();
         }
 
         if size.is_none() {
@@ -1645,46 +1645,46 @@ fn compute_font_size(parent: Option<@mut css_hint>, size: Option<@mut css_hint>)
 
         if size_val.status < CSS_FONT_SIZE_LARGER as u8 {
             /* Keyword -- simple */
-            size_val.length = Some(sizes[size_val.status -1]);
+            size_val.length = Some(~css_hint_length{value:sizes[size_val.status -1].value,unit:sizes[size_val.status -1].unit});
         }
         else if size_val.status == CSS_FONT_SIZE_LARGER as u8 {
             // \todo Step within table, if appropriate 
-            size_val.length.unwrap().value = css_multiply_fixed(parent_size.value, FLTTOFIX(1.2) );
-            size_val.length.unwrap().unit = parent_size.unit;
+            size_val.length.get_mut_ref().value = css_multiply_fixed(parent_size.value, FLTTOFIX(1.2) );
+            size_val.length.get_mut_ref().unit = parent_size.unit;
         }
         else if size_val.status == CSS_FONT_SIZE_SMALLER as u8 {
             // \todo Step within table, if appropriate 
-            size_val.length.unwrap().value = css_multiply_fixed(parent_size.value, FLTTOFIX(1.2) );
-            size_val.length.unwrap().unit = parent_size.unit;
+            size_val.length.get_mut_ref().value = css_multiply_fixed(parent_size.value, FLTTOFIX(1.2) );
+            size_val.length.get_mut_ref().unit = parent_size.unit;
         }
         else if (
-                    match size_val.length.unwrap().unit {
+                    match size_val.length.get_mut_ref().unit {
                         CSS_UNIT_EM |
                         CSS_UNIT_EX => true,
                         _=> false
                     }
                 ) {
                 
-            size_val.length.unwrap().value = css_multiply_fixed(size_val.length.unwrap().value,parent_size.value);
+            size_val.length.get_mut_ref().value = css_multiply_fixed(size_val.length.get_ref().value,parent_size.value);
             if (
-                match size_val.length.unwrap().unit {
+                match size_val.length.get_mut_ref().unit {
                     CSS_UNIT_EX => true,
                     _=> false
                 }
                 ) {
-                    size_val.length.unwrap().value = css_multiply_fixed(size_val.length.unwrap().value,FLTTOFIX(0.6));
+                    size_val.length.get_mut_ref().value = css_multiply_fixed(size_val.length.get_ref().value,FLTTOFIX(0.6));
             }
-            size_val.length.unwrap().unit = parent_size.unit;
+            size_val.length.get_mut_ref().unit = parent_size.unit;
         }
         else if (
-                    match size_val.length.unwrap().unit {
+                    match size_val.length.get_mut_ref().unit {
                         CSS_UNIT_PCT => true,
                         _=> false
                     }
                 ) {
             
-            size_val.length.unwrap().value = css_divide_fixed(css_multiply_fixed(size_val.length.unwrap().value,parent_size.value),FLTTOFIX(100.0));    
-            size_val.length.unwrap().unit = parent_size.unit;
+            size_val.length.get_mut_ref().value = css_divide_fixed(css_multiply_fixed(size_val.length.get_ref().value,parent_size.value),FLTTOFIX(100.0));    
+            size_val.length.get_mut_ref().unit = parent_size.unit;
         }
     size_val.status = CSS_FONT_SIZE_DIMENSION as u8;
     CSS_OK
