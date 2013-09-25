@@ -202,10 +202,13 @@ pub fn css__cascade_uri_none(opv:u32, style:&mut css_style, state:&mut css_selec
 			BACKGROUND_IMAGE_URI => {
 				value = (CSS_BACKGROUND_IMAGE_IMAGE);
 				//debug!("css__cascade_uri_none: bytecode is =%?=",style.bytecode);
-				let (_, ret_uri) = style.sheet.expect("").css__stylesheet_string_get(peek_bytecode(style) as uint);
-				uri = ret_uri;
-				//debug!("css__cascade_uri_none: bytecode is =%?=%?=",style.bytecode,uri);
-				advance_bytecode(style)	
+				unsafe
+				{
+					let (_, ret_uri) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(peek_bytecode(style) as uint);
+					uri = ret_uri;
+					//debug!("css__cascade_uri_none: bytecode is =%?=%?=",style.bytecode,uri);
+					advance_bytecode(style)	
+				}
 			},
 			_ => {}
 		}
@@ -486,21 +489,23 @@ pub fn css__cascade_counter_increment_reset(opv:u32, style:&mut css_style, state
 				let mut v = getValue(opv) as u32;
 
 				while v != COUNTER_INCREMENT_NONE as u32{
-					
-					let (result, name_option) = style.sheet.expect("").css__stylesheet_string_get((peek_bytecode(style)) as uint);
-					advance_bytecode(style);
-					match result {
-						CSS_OK => {
-							let val = peek_bytecode(style);
-							advance_bytecode(style);
+					unsafe
+					{
+						let (result, name_option) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get((peek_bytecode(style)) as uint);
+						advance_bytecode(style);
+						match result {
+							CSS_OK => {
+								let val = peek_bytecode(style);
+								advance_bytecode(style);
 
-							let temp = @mut css_computed_counter{name:name_option.unwrap(),value:val as i32};
-							counters.push(temp);
+								let temp = @mut css_computed_counter{name:name_option.unwrap(),value:val as i32};
+								counters.push(temp);
 
-							v = peek_bytecode(style);
-							advance_bytecode(style);
-						},
-						_ => return result
+								v = peek_bytecode(style);
+								advance_bytecode(style);
+							},
+							_ => return result
+						}
 					}
 						
 				}
@@ -2910,23 +2915,26 @@ pub fn css__cascade_font_family(opv:u32, style:&mut css_style,
 			match (v as u16) {
 				FONT_FAMILY_STRING | 
 				FONT_FAMILY_IDENT_LIST => {
-					match style.sheet {
-						None =>{
+					match style.sheet_index {
+						-1 =>{
 							return CSS_BADPARM ;
 						},
-						Some(css_sheet) => {
-							let (res,ofont) = css_sheet.css__stylesheet_string_get(
-																peek_bytecode(style) as uint ) ;
-							match res {
-				        		CSS_OK=>{ 
-				        			font = ofont ;
-				        		},
-				        		x => {
-				        			return x ;
-				        		}
-		    				}
-							advance_bytecode(style);
-						}
+						_ => {
+							unsafe
+							{
+								let (res,ofont) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(
+																	peek_bytecode(style) as uint ) ;
+								match res {
+					        		CSS_OK=>{ 
+					        			font = ofont ;
+					        		},
+					        		x => {
+					        			return x ;
+				    	    		}
+		    					}
+								advance_bytecode(style);
+							}
+						}	
 					}
 				},
 				FONT_FAMILY_SERIF => {
@@ -5402,25 +5410,28 @@ pub fn css__cascade_play_during(opv:u32 ,
 	if (isInherit(opv) == false) {
 		match (getValue(opv)) {
 			PLAY_DURING_URI => {
-				let (result, _) = style.sheet.expect("").css__stylesheet_string_get(peek_bytecode(style) as uint);
-				match result {
-					CSS_OK => {
-						// uri = str_option.unwrap();
-					},
-					x => { 
-						return x ;
+				unsafe
+				{
+
+					let (result, _) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(peek_bytecode(style) as uint);
+					match result {
+						CSS_OK => {
+							// uri = str_option.unwrap();
+						},
+						x => { 
+							return x ;
+						}
 					}
+					advance_bytecode(style);
 				}
-				advance_bytecode(style);
 			},
 			PLAY_DURING_AUTO |
 			PLAY_DURING_NONE => {
-				/* \todo convert to public values */
+					/* \todo convert to public values */
 			},
 			_=>{}
 		}
-
-		/* \todo mix & repeat */
+			/* \todo mix & repeat */
 	}
 
 	if (css__outranks_existing( (getOpcode(opv) as u16), isImportant(opv), state,
@@ -5537,36 +5548,39 @@ pub fn css__cascade_quotes(opv:u32, style:&mut css_style,
 
 		while (v != (QUOTES_NONE as u32) ) {
 
-			if style.sheet.is_none() {
+			if style.sheet_index == -1{
 				return CSS_BADPARM ;
 			}
-
-			let (result1,o_open)  = style.sheet.expect("").css__stylesheet_string_get( 
+			unsafe
+			{
+				let (result1,o_open)  = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get( 
 														peek_bytecode(style) as uint );
-			advance_bytecode(style);
+				advance_bytecode(style);
 
-			let (result2,o_close) = style.sheet.expect("").css__stylesheet_string_get( 
+				let (result2,o_close) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get( 
 														peek_bytecode(style) as uint );
-			advance_bytecode(style);
-
-			match result1 {
-				CSS_OK=>{} ,
-				x => { return x ; }
-			}
-
-			match result2 {
-				CSS_OK=>{} ,
-				x => { return x ; }
-			}
-
-			if o_open.is_none()  { return CSS_BADPARM ;}
-			if o_close.is_none() { return CSS_BADPARM ;}
-
-			quotes.push( o_open.unwrap()  );
-			quotes.push( o_close.unwrap() );
+				advance_bytecode(style);
 			
-			v = peek_bytecode(style);
-			advance_bytecode(style);
+
+				match result1 {
+					CSS_OK=>{} ,
+						x => { return x ; }
+					}
+
+				match result2 {
+					CSS_OK=>{} ,
+					x => { return x ; }
+				}
+
+				if o_open.is_none()  { return CSS_BADPARM ;}
+				if o_close.is_none() { return CSS_BADPARM ;}
+
+				quotes.push( o_open.unwrap()  );
+				quotes.push( o_close.unwrap() );
+			
+				v = peek_bytecode(style);
+				advance_bytecode(style);
+			}
 		}
 	}
 
@@ -6700,19 +6714,23 @@ pub fn css__cascade_voice_family(opv:u32 ,
 				VOICE_FAMILY_STRING 	|
 				VOICE_FAMILY_IDENT_LIST => {
 
-					if style.sheet.is_none() {
+					if style.sheet_index == -1 {
 						return CSS_BADPARM ;
 					}
-					let (result,o_voice)  = style.sheet.expect("").css__stylesheet_string_get( 
+					unsafe
+					{
+						let (result,o_voice)  = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get( 
 																peek_bytecode(style) as uint );
-					match result {
-						CSS_OK=>{} ,
-						x => { return x ; }
-					}
-					if o_voice.is_none()  { return CSS_BADPARM ;}
+					
+						match result {
+							CSS_OK=>{} ,
+							x => { return x ; }
+						}
+						if o_voice.is_none()  { return CSS_BADPARM ;}
 
-					voices.push( o_voice.unwrap() );
-					advance_bytecode(style);
+						voices.push( o_voice.unwrap() );
+						advance_bytecode(style);
+					}
 				},
 				VOICE_FAMILY_MALE => {
 					if (value == 0) {
@@ -7355,21 +7373,26 @@ pub fn css__cascade_cursor(opv:u32, style:&mut css_style,
 
 		while (v == (CURSOR_URI as u32) ) {
 
-			if style.sheet.is_none() {
+			if style.sheet_index == -1 {
 				return CSS_BADPARM ;
 			}
-			let (result,o_url)  = style.sheet.expect("").css__stylesheet_string_get( 
-														peek_bytecode(style) as uint );
-			advance_bytecode(style);
-			match result {
-				CSS_OK=>{} ,
-				x => { return x ; }
-			}
-			if o_url.is_none()  { return CSS_BADPARM ;}
-			uris.push( o_url.unwrap()  );
+			unsafe
+			{
+				let (result,o_url)  = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get( 
+															peek_bytecode(style) as uint );
 
-			v = peek_bytecode(style);
-			advance_bytecode(style);
+				advance_bytecode(style);
+				match result {
+					CSS_OK=>{} ,
+					x => { return x ; }
+				}
+			
+				if o_url.is_none()  { return CSS_BADPARM ;}
+				uris.push( o_url.unwrap()  );
+
+				v = peek_bytecode(style);
+				advance_bytecode(style);
+			}		
 		}
 
 		match (v as u16) {
@@ -7512,97 +7535,102 @@ pub fn css__cascade_content(opv:u32, style:&mut css_style,
                 while (v != CONTENT_NORMAL) {
                     
                     let temp:@mut css_computed_content_item=
-                     @mut css_computed_content_item{item_type:CSS_COMPUTED_CONTENT_NONE,data:None, counters_data:None};
-                       
-                    let (result, he_option) = style.sheet.expect("").css__stylesheet_string_get(peek_bytecode(style) as uint);
+                    @mut css_computed_content_item{item_type:CSS_COMPUTED_CONTENT_NONE,data:None, counters_data:None};
+
+                    unsafe
+                    {
+                    	let (result, he_option) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(peek_bytecode(style) as uint);
+                                       
+                    	match result {
+                        	CSS_OK => {},
+                        	error => return error
+                    	}
                     
-                    match result {
-                        CSS_OK => {},
-                        error => return error
-                    }
 
-                    match (v & 0xff) {
+                    	match (v & 0xff) {
 
-                        CONTENT_COUNTER => {
+                        	CONTENT_COUNTER => {
 
-                            advance_bytecode(style);
+                            	advance_bytecode(style);
 
-                            temp.item_type =  CSS_COMPUTED_CONTENT_COUNTER;
-                            temp.data = None;
-                            temp.counters_data = Some(css_computed_content_item_counter {
-                                name:he_option.unwrap(), 
-                                sep:None,
-                                style:(v >> CONTENT_COUNTER_STYLE_SHIFT) as u8
-                            } );
+	                            temp.item_type =  CSS_COMPUTED_CONTENT_COUNTER;
+    	                        temp.data = None;
+        	                    temp.counters_data = Some(css_computed_content_item_counter {
+            	                    name:he_option.unwrap(), 
+                	                sep:None,
+                    	            style:(v >> CONTENT_COUNTER_STYLE_SHIFT) as u8
+                        	    } );
                             
-                            content.push(temp)
-                        },                          
-                        CONTENT_COUNTERS => {
+                            	content.push(temp)
 
-                            advance_bytecode(style);
+                    	    },                          
+                        	CONTENT_COUNTERS => {
 
-                            let (result, sep_option) = style.sheet.expect("").css__stylesheet_string_get(peek_bytecode(style) as uint);
+                            	advance_bytecode(style);
+                            	
+                            	let (result, sep_option) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(peek_bytecode(style) as uint);
                             
-                            match result {
-                                CSS_OK => {},
-                                error => return error
-                            } 
-                            
-                            advance_bytecode(style);
+	                            match result {
+    	                           	CSS_OK => {},
+        	                       	error => return error
+            	                } 
 
-                            temp.item_type =  CSS_COMPUTED_CONTENT_COUNTERS;
-                            temp.data = None;
-                            temp.counters_data = Some(css_computed_content_item_counter {
+                            	advance_bytecode(style);
+
+                            	temp.item_type =  CSS_COMPUTED_CONTENT_COUNTERS;
+                            	temp.data = None;
+                            	temp.counters_data = Some(css_computed_content_item_counter {
                                 name:he_option.unwrap(), 
                                 sep:sep_option,
                                 style:(v >> CONTENT_COUNTERS_STYLE_SHIFT) as u8
-                            } );
-                        },                      
-                        CONTENT_URI => {
+                            	} );
+                        	},                      
+                        	CONTENT_URI => {
 
-                            advance_bytecode(style);
+                            	advance_bytecode(style);
 
-                            temp.item_type = CSS_COMPUTED_CONTENT_URI;
-                            temp.data = he_option;
-                            temp.counters_data = None
-                        },  
-                        CONTENT_ATTR => {
-                            
-                            advance_bytecode(style);
+                            	temp.item_type = CSS_COMPUTED_CONTENT_URI;
+                            	temp.data = he_option;
+                            	temp.counters_data = None
+                        	},  
+                        	CONTENT_ATTR => {
+                            	
+                            	advance_bytecode(style);
 
-                            temp.item_type = CSS_COMPUTED_CONTENT_ATTR;
-                            temp.data = he_option;
-                            temp.counters_data = None
-                        },
-                        CONTENT_STRING => {
+                            	temp.item_type = CSS_COMPUTED_CONTENT_ATTR;
+                            	temp.data = he_option;
+                            	temp.counters_data = None
+                        	},
+                        	CONTENT_STRING => {
 
-                            advance_bytecode(style);
+                            	advance_bytecode(style);
 
-                            temp.item_type =  CSS_COMPUTED_CONTENT_STRING;
-                            temp.data = he_option;
-                            temp.counters_data = None
-                        },
-                        CONTENT_OPEN_QUOTE => {
-                            temp.item_type =  CSS_COMPUTED_CONTENT_OPEN_QUOTE;
-                            temp.data = None;
-                            temp.counters_data = None
-                        },
-                        CONTENT_CLOSE_QUOTE => {
-                            temp.item_type =  CSS_COMPUTED_CONTENT_CLOSE_QUOTE;
-                            temp.data = None;
-                            temp.counters_data = None
-                        },
-                        CONTENT_NO_OPEN_QUOTE => {
-                            temp.item_type =  CSS_COMPUTED_CONTENT_NO_OPEN_QUOTE;
-                            temp.data = None;
-                            temp.counters_data = None
-                        },                  
-                        CONTENT_NO_CLOSE_QUOTE => {
-                            temp.item_type =  CSS_COMPUTED_CONTENT_NO_CLOSE_QUOTE;
-                            temp.data = None;
-                            temp.counters_data = None
-                        }
-                        _ => {}
+                            	temp.item_type =  CSS_COMPUTED_CONTENT_STRING;
+                            	temp.data = he_option;
+                            	temp.counters_data = None
+                        	},
+                        	CONTENT_OPEN_QUOTE => {
+                            	temp.item_type =  CSS_COMPUTED_CONTENT_OPEN_QUOTE;
+                            	temp.data = None;
+                            	temp.counters_data = None
+                        	},
+                        	CONTENT_CLOSE_QUOTE => {
+                            	temp.item_type =  CSS_COMPUTED_CONTENT_CLOSE_QUOTE;
+                            	temp.data = None;
+                            	temp.counters_data = None
+                        	},
+                        	CONTENT_NO_OPEN_QUOTE => {
+                            	temp.item_type =  CSS_COMPUTED_CONTENT_NO_OPEN_QUOTE;
+                            	temp.data = None;
+                            	temp.counters_data = None
+                        	},                  
+                        	CONTENT_NO_CLOSE_QUOTE => {
+                            	temp.item_type =  CSS_COMPUTED_CONTENT_NO_CLOSE_QUOTE;
+                            	temp.data = None;
+                            	temp.counters_data = None
+                        	}
+                        	_ => {}
+                    	}
                     }
                         
                     content.push(temp);                 

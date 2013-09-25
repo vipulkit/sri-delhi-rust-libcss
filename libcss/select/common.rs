@@ -788,7 +788,7 @@ pub struct css_select_state {
 
     handler:Option<@mut css_select_handler>,    
     pw:*c_void,
-    sheet:Option<@mut css_stylesheet>,   
+    sheet_index:int,
 
     current_origin:css_origin, 
     current_specificity:uint,  

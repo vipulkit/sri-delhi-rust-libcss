@@ -85,6 +85,7 @@ pub type css_color_resolution_fn = @extern fn (name: uint) -> (Option<u32> , css
 static CSS_STYLE_DEFAULT_SIZE : uint = 16 ;
 
 
+
 // /**< Qualified name of selector */
 pub struct css_qname {  
     name:uint,
@@ -116,7 +117,8 @@ pub struct css_selector {
 pub struct css_style {
     bytecode:~[u32],
     used:uint,                
-    sheet:Option<@mut css_stylesheet>
+    sheet_index:int
+//    sheet:Option<@mut css_stylesheet>
 }
 pub struct hash_entry {
     selector:@mut css_selector,
@@ -151,10 +153,13 @@ pub struct css_stylesheet {
     color: Option<css_color_resolution_fn>,
     
 }
+pub static mut vec_stylesheet:Option<~[~css_stylesheet]> = None ;
+
 
 pub struct css_rule {
     parent_rule:Option<CSS_RULE_DATA_TYPE> ,         /**< containing parent rule */ 
-    parent_stylesheet:Option<@mut css_stylesheet>,   /**< parent stylesheet */              
+    parent_stylesheet_index:int,
+//Option<@mut css_stylesheet>,   /**< parent stylesheet */              
     prev:Option<CSS_RULE_DATA_TYPE>,                 /**< prev in list */
     next:Option<CSS_RULE_DATA_TYPE>,                /**< next in list */
     //rule_type:css_rule_type,
@@ -189,7 +194,9 @@ pub struct css_rule_import {
     base:@mut css_rule,
     url:~str,
     media:u64,
-    sheet:Option<@mut css_stylesheet>
+    sheet_index:int
+//Option<@mut css_stylesheet>
+
 } 
 pub struct css_rule_charset {
     base:@mut css_rule,
@@ -234,16 +241,16 @@ pub fn get_css_rule_next(rule: CSS_RULE_DATA_TYPE) -> Option<CSS_RULE_DATA_TYPE>
     }
 }
 
-pub fn get_stylesheet_parent(rule: CSS_RULE_DATA_TYPE) -> Option<@mut css_stylesheet> {
+pub fn get_stylesheet_parent(rule: CSS_RULE_DATA_TYPE) -> int {
     
     match rule {
-        RULE_UNKNOWN(x) => x.parent_stylesheet,
-        RULE_SELECTOR(x) => x.base.parent_stylesheet,
-        RULE_CHARSET(x) => x.base.parent_stylesheet,
-        RULE_IMPORT(x) => x.base.parent_stylesheet,
-        RULE_MEDIA(x) => x.base.parent_stylesheet,
-        RULE_FONT_FACE(x) => x.base.parent_stylesheet,
-        RULE_PAGE(x) => x.base.parent_stylesheet,
+        RULE_UNKNOWN(x) => x.parent_stylesheet_index,
+        RULE_SELECTOR(x) => x.base.parent_stylesheet_index,
+        RULE_CHARSET(x) => x.base.parent_stylesheet_index,
+        RULE_IMPORT(x) => x.base.parent_stylesheet_index ,
+        RULE_MEDIA(x) => x.base.parent_stylesheet_index,
+        RULE_FONT_FACE(x) => x.base.parent_stylesheet_index,
+        RULE_PAGE(x) => x.base.parent_stylesheet_index,
     }
 }
 
@@ -476,11 +483,11 @@ impl css_stylesheet {
     * #Return Value:
     *  'css_style' - css_style.
     */
-    pub fn css__stylesheet_style_create(sheet : @mut css_stylesheet) -> @mut css_style {
+    pub fn css__stylesheet_style_create(sheet_ind : int ) -> @mut css_style {
         @mut css_style{ 
             bytecode:~[],
             used:0,
-            sheet:Some(sheet)
+            sheet_index:(sheet_ind)
         } 
     }
 
@@ -709,7 +716,7 @@ impl css_stylesheet {
         
         let base_rule = @mut css_rule{ 
             parent_rule:None,
-            parent_stylesheet:None,
+            parent_stylesheet_index:-1,
             next:None,
             prev:None,
             index:0
@@ -719,7 +726,7 @@ impl css_stylesheet {
             CSS_RULE_UNKNOWN=>  {   
                 let ret_rule = @mut css_rule{ 
                     parent_rule:None,
-                    parent_stylesheet:None,
+                    parent_stylesheet_index:-1,
                     next:None,
                     prev:None,
                     index:0
@@ -750,7 +757,7 @@ impl css_stylesheet {
                     base:base_rule,
                     url:~"",
                     media:0,
-                    sheet:None
+                    sheet_index:-1
                 };  
                 RULE_IMPORT(ret_rule) 
             },
@@ -828,7 +835,7 @@ impl css_stylesheet {
                     page.style = Some(style);
                 }
                 else {
-                    let page_style = page.style.expect("");
+                    let page_style = page.style.unwrap();
                     css_stylesheet::css__stylesheet_merge_style(page_style,style);
                     page.style = Some(page_style);
                 }
@@ -838,7 +845,7 @@ impl css_stylesheet {
                     selector.style = Some(style);
                 }
                 else {
-                    let selector_style = selector.style.expect("");
+                    let selector_style = selector.style.unwrap();
                     css_stylesheet::css__stylesheet_merge_style(selector_style,style);
                     selector.style = Some(selector_style);
                 }
@@ -947,11 +954,11 @@ impl css_stylesheet {
         
         let base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
 
-        if (base_rule.parent_rule.is_some() && base_rule.parent_stylesheet.is_none()) {
+        if (base_rule.parent_rule.is_some() && base_rule.parent_stylesheet_index == -1) {
             return CSS_RULE_PARENT_RULE;
         }
 
-        if (base_rule.parent_rule.is_none() && base_rule.parent_stylesheet.is_some()) {
+        if (base_rule.parent_rule.is_none() && base_rule.parent_stylesheet_index != -1) {
             return CSS_RULE_PARENT_STYLESHEET;
         }
 
@@ -996,17 +1003,19 @@ impl css_stylesheet {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css__stylesheet_add_rule(sheet : @mut css_stylesheet,  lwc_ref:&mut ~lwc, css_rule : CSS_RULE_DATA_TYPE,
+    pub fn css__stylesheet_add_rule(sheet_index : int,  lwc_ref:&mut ~lwc, css_rule : CSS_RULE_DATA_TYPE,
                                     parent_rule : Option<CSS_RULE_DATA_TYPE> ) -> css_error {
         
         //debug!("Entering: css__stylesheet_add_rule");
         let base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
-
-        base_rule.index = sheet.rule_count;
-
-        match sheet._add_selectors(lwc_ref, css_rule) {
-            CSS_OK => {},
-            x => return x
+        unsafe
+        {
+            base_rule.index = vec_stylesheet.get_mut_ref()[sheet_index].rule_count;
+ 
+            match vec_stylesheet.get_mut_ref()[sheet_index]._add_selectors(lwc_ref, css_rule) {
+                CSS_OK => {},
+                x => return x
+            }
         }
 
         match parent_rule {
@@ -1014,7 +1023,11 @@ impl css_stylesheet {
                 match prule {
                     RULE_MEDIA(media_rule)=>{
                         base_rule.parent_rule = parent_rule;
-                        sheet.rule_count += 1;
+                        
+                        unsafe
+                        {
+                            vec_stylesheet.get_mut_ref()[sheet_index].rule_count += 1;
+                        }
                         //let mut base_media_prule = css_stylesheet::css__stylesheet_get_base_rule(prule);
 
 
@@ -1038,22 +1051,25 @@ impl css_stylesheet {
                 }
             },
             None=>{
-                base_rule.parent_stylesheet = Some(sheet);
-                sheet.rule_count += 1 ;
+                unsafe
+                {
+                    base_rule.parent_stylesheet_index = sheet_index;
+                    vec_stylesheet.get_mut_ref()[sheet_index].rule_count += 1 ;
 
-                match sheet.last_rule {
-                    None=>{
-                        base_rule.prev = None;
-                        base_rule.next = None;
-                        sheet.rule_list = Some(css_rule);
-                        sheet.last_rule = Some(css_rule);
-                    },
-                    Some(last_rule)=>{
-                        let last_rule_base_rule = css_stylesheet::css__stylesheet_get_base_rule(last_rule);
-                        last_rule_base_rule.next = Some(css_rule);
-                        base_rule.prev = sheet.last_rule;
-                        base_rule.next = None;
-                        sheet.last_rule = Some(css_rule);
+                    match vec_stylesheet.get_mut_ref()[sheet_index].last_rule {
+                        None=>{
+                            base_rule.prev = None;
+                            base_rule.next = None;
+                            vec_stylesheet.get_mut_ref()[sheet_index].rule_list = Some(css_rule);
+                            vec_stylesheet.get_mut_ref()[sheet_index].last_rule = Some(css_rule);
+                        },
+                        Some(last_rule)=>{
+                            let last_rule_base_rule = css_stylesheet::css__stylesheet_get_base_rule(last_rule);
+                            last_rule_base_rule.next = Some(css_rule);
+                            base_rule.prev = vec_stylesheet.get_mut_ref()[sheet_index].last_rule;
+                            base_rule.next = None;
+                            vec_stylesheet.get_mut_ref()[sheet_index].last_rule = Some(css_rule);
+                        }
                     }
                 }
             }
@@ -1101,7 +1117,7 @@ impl css_stylesheet {
             }
         }
         base_rule.parent_rule = None ;
-        base_rule.parent_stylesheet = None ;
+        base_rule.parent_stylesheet_index = -1;
         base_rule.next = None;
         base_rule.prev = None ;
         CSS_OK
@@ -1122,7 +1138,7 @@ impl css_stylesheet {
         match css_rule {
             RULE_SELECTOR(x) => {
                 if x.base.parent_rule.is_some() || 
-                        x.base.parent_stylesheet.is_some() {
+                        x.base.parent_stylesheet_index != -1 {
                     return CSS_INVALID;
                 }
 
@@ -1152,7 +1168,7 @@ impl css_stylesheet {
             },
             RULE_MEDIA(x) => {
                 if x.base.parent_rule.is_some() || 
-                        x.base.parent_stylesheet.is_some() {
+                        x.base.parent_stylesheet_index != -1 {
                     return CSS_INVALID;
                 }
 
@@ -1289,11 +1305,13 @@ impl css_selector_hash {
 		
 		let mut i = 0;
 		while i < size {
+            unsafe{
 				hash.elements.push(None);
 				hash.classes.push(None);
 				hash.ids.push(None);
 				hash.universal.push(None);
-			        i = i + 1;
+			}	
+			i = i + 1;
         }
         hash
     }
@@ -1507,8 +1525,8 @@ impl css_selector_hash {
                             return CSS_BADPARM ;
                         }
 
-                        let base_search_rule = css_stylesheet::css__stylesheet_get_base_rule(search.selector.rule.expect(""));
-                        let base_selector_rule = css_stylesheet::css__stylesheet_get_base_rule(selector.rule.expect(""));
+                        let base_search_rule = css_stylesheet::css__stylesheet_get_base_rule(search.selector.rule.unwrap());
+                        let base_selector_rule = css_stylesheet::css__stylesheet_get_base_rule(selector.rule.unwrap());
 
                         if base_search_rule.index > base_selector_rule.index {
                             break ;

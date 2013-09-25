@@ -705,7 +705,7 @@ impl css_propstrings {
         
         let mut return_value : Option<(css_selector_type, index_property)> = None;
 
-		for &string_index in self.pseudo_class_list.iter() {
+		for &string_index in self.pseudo_class_list.iter()  {
 			if  (
 					lwc_ref.lwc_string_caseless_isequal(
 						name,
@@ -713,7 +713,7 @@ impl css_propstrings {
 					) 
 				) {
 				return_value = Some((CSS_SELECTOR_PSEUDO_CLASS, string_index));
-                break;
+                                break;
 			}
 		}
 
@@ -725,7 +725,7 @@ impl css_propstrings {
 				)
 			) {
 				return_value = Some((CSS_SELECTOR_PSEUDO_ELEMENT , string_index));
-                break;
+                                break;
 			}
 		}
         

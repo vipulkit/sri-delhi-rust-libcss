@@ -42,7 +42,7 @@ pub struct css_namespace {
 	
 
 pub struct css_language {
-    sheet:@mut css_stylesheet,
+    sheet_index:int,
     context:~[context_entry], 
     state:language_state,   
     properties: ~css_properties,
@@ -50,13 +50,13 @@ pub struct css_language {
     namespaces:~[~css_namespace]
 }
 
-pub fn css_language(sheet:@mut css_stylesheet) -> ~css_language {
+pub fn css_language(sheet_index:int) -> ~css_language {
     //debug!("Entering: css_language");
    
-    let cr_properties = css_properties::css_properties(sheet);
+    let cr_properties = css_properties::css_properties(sheet_index);
 
     ~css_language {
-        sheet:sheet,
+        sheet_index:sheet_index,
         properties: cr_properties,
         context:~[], 
         state:CHARSET_PERMITTED,
@@ -190,7 +190,7 @@ impl css_language {
         self.context.push(entry);
 
     
-        match css_stylesheet::css__stylesheet_add_rule(self.sheet, lwc_ref, curRule, parent_rule) {
+        match css_stylesheet::css__stylesheet_add_rule(self.sheet_index, lwc_ref, curRule, parent_rule) {
             CSS_OK =>   {},
             x      =>   {
                 self.context.pop();
@@ -282,7 +282,7 @@ impl css_language {
                         error => return error
                     }
                     
-                    match css_stylesheet::css__stylesheet_add_rule(self.sheet, lwc_ref, temp_rule, None){
+                    match css_stylesheet::css__stylesheet_add_rule(self.sheet_index, lwc_ref, temp_rule, None){
                         CSS_OK => {},
                         error => return error
 
@@ -330,12 +330,14 @@ impl css_language {
                 let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_IMPORT);
 
                 /* Resolve import URI */
-                match (*self.sheet.resolve)(self.sheet.url, uri.idata.get_ref().clone())
-                { 
-                    (CSS_OK,Some(ret_url)) => url = lwc_ref.lwc_string_data(ret_url).to_owned(),
-                    (error,_) => return error
-                }   
-
+                unsafe
+                {
+                    match (*vec_stylesheet.get_mut_ref()[self.sheet_index].resolve)(vec_stylesheet.get_mut_ref()[self.sheet_index].url, uri.idata.get_ref().clone())
+                    { 
+                        (CSS_OK,Some(ret_url)) => url = lwc_ref.lwc_string_data(ret_url).to_owned(),
+                        (error,_) => return error
+                    }   
+                }
                
                 /* Inform rule of it */
                 match css_stylesheet::css__stylesheet_rule_set_nascent_import(temp_rule, url, *media){
@@ -343,19 +345,21 @@ impl css_language {
                     error => return error 
                 }
                 
-
                 /* Inform client of need for import */
-                match self.sheet.import {
-                    Some(import_fn) => 
-                        match (*import_fn)(url, media){
-                            CSS_OK => {},
-                            error => return error
-                    },
-                    None => {}
+                unsafe
+                {
+                    match vec_stylesheet.get_mut_ref()[self.sheet_index].import {
+                        Some(import_fn) => 
+                            match (*import_fn)(url, media){
+                                CSS_OK => {},
+                                error => return error
+                        },
+                        None => {}
+                    }
                 }
 
                 /* Add rule to sheet */
-                match css_stylesheet::css__stylesheet_add_rule(self.sheet, lwc_ref, temp_rule, None){
+                match css_stylesheet::css__stylesheet_add_rule(self.sheet_index, lwc_ref, temp_rule, None){
                         CSS_OK => {},
                         error => return error
 				 
@@ -435,7 +439,7 @@ impl css_language {
             }
 
             
-            match css_stylesheet::css__stylesheet_add_rule(self.sheet, lwc_ref, temp_rule, None){
+            match css_stylesheet::css__stylesheet_add_rule(self.sheet_index, lwc_ref, temp_rule, None){
                 CSS_OK => {},
                 error => return error   
 			 
@@ -453,7 +457,7 @@ impl css_language {
             
             consumeWhitespace(vector, ctx);
 
-            match css_stylesheet::css__stylesheet_add_rule(self.sheet, lwc_ref, temp_rule, None){
+            match css_stylesheet::css__stylesheet_add_rule(self.sheet_index, lwc_ref, temp_rule, None){
                 CSS_OK => {},
                 error => return error   
 			 
@@ -488,7 +492,7 @@ impl css_language {
                
             }
 
-            match css_stylesheet::css__stylesheet_add_rule(self.sheet, lwc_ref, temp_rule, None){
+            match css_stylesheet::css__stylesheet_add_rule(self.sheet_index, lwc_ref, temp_rule, None){
                 CSS_OK => {},
                 error => return error   
 			 
@@ -672,7 +676,7 @@ impl css_language {
                                             match curRule {
                                                 RULE_FONT_FACE(font_face_rule) =>  
 							{
-								let css_er:css_error = css__parse_font_descriptor(self.sheet, lwc_ref,  ident, propstrings_ref, tokens, ctx, font_face_rule);
+								let css_er:css_error = css__parse_font_descriptor(self.sheet_index, lwc_ref,  ident, propstrings_ref, tokens, ctx, font_face_rule);
 		        	                                return css_er;
 								 
 							},
@@ -900,9 +904,9 @@ impl css_language {
             return CSS_INVALID;
         }
 
-        style = css_stylesheet::css__stylesheet_style_create(self.sheet) ;
+        style = css_stylesheet::css__stylesheet_style_create(self.sheet_index) ;
         //debug!(fmt!("parseProperty:: style.bytecode (1) == %?" , style.bytecode));
-        let error = (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet , lwc_ref, propstrings_ref , vector , ctx , style);
+        let error = (*self.properties.property_handlers[index - AZIMUTH as uint])(self.sheet_index , lwc_ref, propstrings_ref , vector , ctx , style);
 
         //debug!(fmt!("parseProperty:: style.bytecode (2)== %?" , style.bytecode));
 
@@ -929,14 +933,17 @@ impl css_language {
 
         //debug!("Exiting: parseProperty (2)");
         /* Append style to rule */
-        match self.sheet.css__stylesheet_rule_append_style(curRule, style) {
-            CSS_OK => {
-                //debug!("Exiting: parseProperty (3)");
-                CSS_OK
-            },
-            x => {
-                //debug!("Exiting: parseProperty (4)");
-                x
+        unsafe
+        {
+            match vec_stylesheet.get_mut_ref()[self.sheet_index].css__stylesheet_rule_append_style(curRule, style) {
+                CSS_OK => {
+                    //debug!("Exiting: parseProperty (3)");
+                    CSS_OK
+                },
+                x =>  {
+                    //debug!("Exiting: parseProperty (4)");
+                    x
+                }
             }
         }
     }
@@ -997,7 +1004,6 @@ impl css_language {
 
     pub fn parseSimpleSelector(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, vector:&~[~css_token], ctx:@mut uint) -> (css_error, Option<@mut css_selector>) {
         //debug!("Entering: parseSimpleSelector");
-        let reason = "Funtion parseSimpleSelector";
         let orig_ctx = *ctx;
         /* simple_selector  -> type_selector specifics
          *          -> specific specifics
@@ -1017,7 +1023,10 @@ impl css_language {
             /* Have type selector */
             match self.parseTypeSelector(lwc_ref, propstrings_ref, vector, ctx, qname) {
                 CSS_OK => {
-                    selector = self.sheet.css__stylesheet_selector_create(lwc_ref, qname);
+                    unsafe
+                    {
+                        selector = vec_stylesheet.get_mut_ref()[self.sheet_index].css__stylesheet_selector_create(lwc_ref, qname);
+                    }
                 },
                 x => {
                     *ctx = orig_ctx;
@@ -1028,15 +1037,17 @@ impl css_language {
         else {
             /* Universal selector */
             if self.default_namespace.is_some() {
-                qname.ns = self.default_namespace.expect(reason);
+                qname.ns = self.default_namespace.unwrap();
             }
             else {
                 qname.ns = propstrings_ref.get_lwc_string(UNIVERSAL as uint)
             }
             
             qname.name = propstrings_ref.get_lwc_string(UNIVERSAL as uint);
-
-            selector =  self.sheet.css__stylesheet_selector_create(lwc_ref, qname);
+            unsafe
+            {
+                selector =  vec_stylesheet.get_mut_ref()[self.sheet_index].css__stylesheet_selector_create(lwc_ref, qname);
+            }
             /* Ensure we have at least one specific selector */
             match self.parseAppendSpecific(lwc_ref, propstrings_ref, vector, ctx, selector) {
                 CSS_OK => {},
@@ -1105,7 +1116,6 @@ impl css_language {
         //debug!("Entering: parseTypeSelector");
         let mut token: &~css_token;
         let mut prefix:Option<uint> =None;
-        let reason = "Function parseTypeSelector";
 
         /* type_selector    -> namespace_prefix? element_name
          * namespace_prefix -> [ IDENT | '*' ]? '|'
@@ -1152,7 +1162,7 @@ impl css_language {
         else {
             /* No namespace prefix */
             if self.default_namespace.is_some() {
-                qname.ns = self.default_namespace.expect(reason);
+                qname.ns = self.default_namespace.unwrap();
             }
             else {
                 qname.ns = propstrings_ref.get_lwc_string(UNIVERSAL as uint)
@@ -1263,7 +1273,7 @@ impl css_language {
     pub fn lookupNamespace(&mut self, lwc_ref:&mut ~lwc, prefix:Option<uint>, qname:@mut css_qname) -> css_error {
         //debug!("Entering: lookupNamespace");
         let mut idx:uint=0;
-        let reason = "Function lookupNamespace";
+        
         match prefix {
             None => {
                 //debug!("Entering: lookupNamespace (1)");
@@ -1275,7 +1285,7 @@ impl css_language {
                     match ns.prefix {
                         Some(_) => {
                             //debug!("Entering: lookupNamespace (3)");
-                            let ns_prefix = ns.prefix.expect(reason);
+                            let ns_prefix = ns.prefix.unwrap();
                             if ( lwc_ref.lwc_string_isequal(ns_prefix , value)) {
                                 break;
                             }

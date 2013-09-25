@@ -30,10 +30,10 @@ pub fn font_rule_font_family_reserved(strings:&css_propstrings, lwc_ref:&mut ~lw
     strings.lwc_string_caseless_isequal(lwc_ref, ident.idata.get_ref().clone(), DEFAULT as uint)
 }
 
-pub fn font_face_parse_font_family(sheet:@mut css_stylesheet, lwc_ref:&mut ~lwc, strings:&css_propstrings, vector:&~[~css_token], ctx:@mut uint, 
+pub fn font_face_parse_font_family(sheet_index:int, lwc_ref:&mut ~lwc, strings:&css_propstrings, vector:&~[~css_token], ctx:@mut uint, 
     font_face:@mut css_font_face) -> css_error {
     
-    match css__ident_list_or_string_to_string(sheet , lwc_ref, strings , vector, ctx, Some(@font_rule_font_family_reserved)) {
+    match css__ident_list_or_string_to_string(sheet_index , lwc_ref, strings , vector, ctx, Some(@font_rule_font_family_reserved)) {
         (CSS_OK,Some(string)) => { 
             css__font_face_set_font_family(font_face, lwc_ref, string);
             return CSS_OK
@@ -60,7 +60,7 @@ pub fn font_face_parse_font_family(sheet:@mut css_stylesheet, lwc_ref:&mut ~lwc,
           CSS_INVALID on invalid syntax,
           appropriate error otherwise..
 */
-pub fn css__parse_font_descriptor(sheet:@mut css_stylesheet, lwc_ref:&mut ~lwc, descriptor: &~css_token, strings:&css_propstrings, vector:&~[~css_token], ctx:@mut uint, 
+pub fn css__parse_font_descriptor(sheet_index:int, lwc_ref:&mut ~lwc, descriptor: &~css_token, strings:&css_propstrings, vector:&~[~css_token], ctx:@mut uint, 
     curRule:@mut css_rule_font_face) -> css_error {
     
     let mut font_face:Option<@mut css_font_face> = curRule.font_face;
@@ -76,10 +76,10 @@ pub fn css__parse_font_descriptor(sheet:@mut css_stylesheet, lwc_ref:&mut ~lwc, 
     font_face = curRule.font_face;
 
     if strings.lwc_string_caseless_isequal(lwc_ref, descriptor.idata.get_ref().clone(), FONT_FAMILY as uint) {
-        return font_face_parse_font_family(sheet, lwc_ref, strings, vector, ctx, *font_face.get_ref())
+        return font_face_parse_font_family(sheet_index, lwc_ref, strings, vector, ctx, *font_face.get_ref())
     }
     else if strings.lwc_string_caseless_isequal(lwc_ref, descriptor.idata.get_ref().clone(),SRC as uint) {
-        return font_face_parse_src(sheet, lwc_ref, strings, vector, ctx, *font_face.get_ref())
+        return font_face_parse_src(sheet_index, lwc_ref, strings, vector, ctx, *font_face.get_ref())
     }
     else if strings.lwc_string_caseless_isequal(lwc_ref, descriptor.idata.get_ref().clone(),FONT_STYLE as uint) {
         return font_face_parse_font_style(strings, lwc_ref, vector, ctx, *font_face.get_ref())
@@ -93,7 +93,7 @@ pub fn css__parse_font_descriptor(sheet:@mut css_stylesheet, lwc_ref:&mut ~lwc, 
 
 
 
-pub fn font_face_parse_src(sheet:@mut css_stylesheet, lwc_ref:&mut ~lwc, strings:&css_propstrings, vector:&~[~css_token], ctx:@mut uint,
+pub fn font_face_parse_src(sheet_index:int, lwc_ref:&mut ~lwc, strings:&css_propstrings, vector:&~[~css_token], ctx:@mut uint,
     font_face:@mut css_font_face) -> css_error {
 
     let orig_ctx = *ctx;
@@ -115,7 +115,7 @@ pub fn font_face_parse_src(sheet:@mut css_stylesheet, lwc_ref:&mut ~lwc, strings
         let format:@mut css_font_face_format =@mut CSS_FONT_FACE_FORMAT_UNSPECIFIED;
         let mut new_src:~css_font_face_src =~css_font_face_src{location:None, bits:~[]};            
 
-        match font_face_src_parse_spec_or_name(sheet, lwc_ref, strings, vector, ctx, location_type, format) {
+        match font_face_src_parse_spec_or_name(sheet_index, lwc_ref, strings, vector, ctx, location_type, format) {
             (CSS_OK,location) => {
                 new_src.location = location;
                 new_src.bits.push(*format as u8 << 2 | *location_type as u8 );
@@ -243,7 +243,7 @@ pub fn font_face_parse_font_weight(strings:&css_propstrings, lwc_ref:&mut ~lwc, 
     return CSS_OK;
 }
 
-pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, lwc_ref:&mut ~lwc, strings:&css_propstrings, vector:&~[~css_token], ctx:@mut uint, 
+pub fn font_face_src_parse_spec_or_name(sheet_index:int, lwc_ref:&mut ~lwc, strings:&css_propstrings, vector:&~[~css_token], ctx:@mut uint, 
     location_type:@mut css_font_face_location_type, format:@mut css_font_face_format) -> (css_error, Option<uint>) {
 
 
@@ -265,11 +265,14 @@ pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, lwc_ref:&mut 
 
     match token.token_type {
         CSS_TOKEN_URI => {
-            match (*sheet.resolve)(sheet.url, token.idata.get_ref().clone())
-            { 
-                (CSS_OK,loc) => location =loc,
-                (error,_) => return (error,None)
-            }   
+            unsafe
+            {
+                match (*vec_stylesheet.get_mut_ref()[sheet_index].resolve)(vec_stylesheet.get_mut_ref()[sheet_index].url, token.idata.get_ref().clone())
+                { 
+                    (CSS_OK,loc) => location =loc,
+                    (error,_) => return (error,None)
+                }   
+            }
 
             *location_type = CSS_FONT_FACE_LOCATION_TYPE_URI;
 
@@ -296,7 +299,7 @@ pub fn font_face_src_parse_spec_or_name(sheet:@mut css_stylesheet, lwc_ref:&mut 
             if strings.lwc_string_caseless_isequal(lwc_ref, token.idata.get_ref().clone(), LOCAL as uint) {
                 consumeWhitespace(vector, ctx);
 
-                match css__ident_list_or_string_to_string(sheet , lwc_ref, strings , vector, ctx, None) {
+                match css__ident_list_or_string_to_string(sheet_index , lwc_ref, strings , vector, ctx, None) {
                     (CSS_OK,Some(loc)) => {
                         location = Some(lwc_ref.lwc_intern_string(loc));
                     },
@@ -454,7 +457,6 @@ pub fn css_font_face_count_srcs(font_face: @mut css_font_face) -> uint {
 }
 
 pub fn css_font_face_get_src(font_face: @mut css_font_face, index: uint) -> Option<~css_font_face_src> {
-    let reason = "Function css_font_face_get_src";
     if (index > css_font_face_count_srcs(font_face)) {
         return None;
     }
@@ -465,7 +467,7 @@ pub fn css_font_face_get_src(font_face: @mut css_font_face, index: uint) -> Opti
         location: match src.location {
             None => None,
             Some(_) => {
-                let new_location = src.location.expect(reason);
+                let new_location = src.location.unwrap();
                 Some(new_location)
             }
         },
@@ -477,11 +479,10 @@ pub fn css_font_face_get_src(font_face: @mut css_font_face, index: uint) -> Opti
 }
 
 pub fn css_font_face_src_get_location(src: & ~css_font_face_src) -> Option<uint> {
-    let reason = "Function css_font_face_src_get_location"; 
     match src.location {
         None => None,
         Some(_) => {
-            let new_location = src.location.expect(reason);
+            let new_location = src.location.unwrap();
             Some(new_location)
         }
     }

@@ -11,7 +11,6 @@ use include::fpmath::*;
 use parse::propstrings::*;
 
 use utils::errors::*;
-use std::str::*;
 
 
 /**
@@ -59,7 +58,7 @@ pub fn consumeWhitespace(vector:&~[~css_token], ctx:@mut uint) {
 *   ctx is updated with the next token to process.
 *   If the input is invalid, then ctx remains unchanged.
 */
-pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc, vector: &~[~css_token] , ctx: @mut uint , default_unit: u32) -> (Option<i32> , Option<u32>, css_error) {
+pub fn css__parse_unit_specifier(sheet_index: int, lwc_ref:&mut ~lwc, vector: &~[~css_token] , ctx: @mut uint , default_unit: u32) -> (Option<i32> , Option<u32>, css_error) {
 
     //debug!("Entering: css__parse_unit_specifier");
     //debug!("Entering: css__parse_unit_specifier :: ctx == %?  ,  vector == %? " , ctx ,vector);
@@ -104,20 +103,24 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc, 
         },
         CSS_TOKEN_NUMBER => {
             if num !=0 {
-                if sheet.quirks_allowed {
-                    sheet.quirks_used = true;
-                }
-                else {
-                    *ctx = orig_ctx;
-                    //debug!("Exiting: css__parse_unit_specifier (4)");
-                    return (None , None , CSS_INVALID);
+                unsafe{
+                    if vec_stylesheet.get_mut_ref()[sheet_index].quirks_allowed {
+                        vec_stylesheet.get_mut_ref()[sheet_index].quirks_used = true;
+                    }
+                    else {
+                        *ctx = orig_ctx;
+                        //debug!("Exiting: css__parse_unit_specifier (4)");
+                        return (None , None , CSS_INVALID);
+                    }
                 }
             }
             unit_retVal = default_unit;
-            if sheet.quirks_allowed {
-                let tmp_ctx = ctx;
-                consumeWhitespace(vector , tmp_ctx);
-                if *ctx >= vector.len() {
+            unsafe
+            {
+                if vec_stylesheet.get_mut_ref()[sheet_index].quirks_allowed {
+                    let tmp_ctx = ctx;
+                    consumeWhitespace(vector , tmp_ctx);
+                    if *ctx >= vector.len() {
                     //debug!("Exiting: css__parse_unit_specifier (5)");
                     return (None , None , CSS_INVALID)
                 }
@@ -130,7 +133,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc, 
 
                         match  result {
                             CSS_OK => {
-                                sheet.quirks_used = true;
+                                vec_stylesheet.get_mut_ref()[sheet_index].quirks_used = true;
                                 *ctx = *tmp_ctx;
                                 unit_retVal = unit.unwrap() as u32;
                             },
@@ -140,6 +143,7 @@ pub fn css__parse_unit_specifier(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc, 
                     _ => {}
                 };
             }
+          }
         },
         //CSS_TOKEN_PERCENTAGE
         _ => {
@@ -411,7 +415,7 @@ pub fn is_css_inherit(strings: &css_propstrings, lwc_ref:&mut ~lwc, token: &~css
 *   ctx is updated with the next token to process.
 *   If the input is invalid, then ctx remains unchanged.
 */
-pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , lwc_ref:&mut ~lwc, strings: &css_propstrings , vector: &~[~css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_error) {
+pub fn css__parse_color_specifier(sheet_index: int, lwc_ref:&mut ~lwc, strings: &css_propstrings , vector: &~[~css_token] , ctx: @mut uint) -> (Option<u16> , Option<u32> , css_error) {
     
     //debug!("Entering: css__parse_color_specifier");
     let mut token: &~css_token;
@@ -440,126 +444,132 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , lwc_ref:&mut ~lwc
 
     if token.token_type as int != CSS_TOKEN_IDENT as int && token.token_type as int != CSS_TOKEN_HASH as int 
         && token.token_type as int != CSS_TOKEN_FUNCTION as int {
-
-        if (sheet.quirks_allowed== false || (token.token_type as int != CSS_TOKEN_NUMBER as int 
-            && token.token_type as int != CSS_TOKEN_DIMENSION as int ))
+        unsafe
         {
-            *ctx = orig_ctx;
-            return (None , None , CSS_INVALID);
-        } 
+
+            if (vec_stylesheet.get_mut_ref()[sheet_index].quirks_allowed== false || (token.token_type as int != CSS_TOKEN_NUMBER as int 
+                && token.token_type as int != CSS_TOKEN_DIMENSION as int ))
+            {
+                *ctx = orig_ctx;
+                return (None , None , CSS_INVALID);
+            } 
+        }
     }
 	
 	//debug!(fmt!("Token = %?", token));
 	//debug!(fmt!("sheet.quirks_allowed = %?", sheet.quirks_allowed));
-	
-    if token.token_type as int == CSS_TOKEN_IDENT as int  {
-        if strings.lwc_string_caseless_isequal(lwc_ref, token.idata.get_ref().clone(), TRANSPARENT as uint) {
-            ret_value = COLOR_TRANSPARENT ;
-            ret_result = 0;
-            return (Some(ret_value) , Some(ret_result) , CSS_OK);
-        }
-        else if strings.lwc_string_caseless_isequal(lwc_ref, token.idata.get_ref().clone(), CURRENTCOLOR as uint) {
-            ret_value = COLOR_CURRENT_COLOR ;
-            ret_result = 0;
-            return (Some(ret_value) , Some(ret_result) , CSS_OK);
-        }
+	unsafe
+    {
+        if token.token_type as int == CSS_TOKEN_IDENT as int  {
+            if strings.lwc_string_caseless_isequal(lwc_ref, token.idata.get_ref().clone(), TRANSPARENT as uint) {
+                ret_value = COLOR_TRANSPARENT ;
+                ret_result = 0;
+                return (Some(ret_value) , Some(ret_result) , CSS_OK);
+            }
+            else if strings.lwc_string_caseless_isequal(lwc_ref, token.idata.get_ref().clone(), CURRENTCOLOR as uint) {
+                ret_value = COLOR_CURRENT_COLOR ;
+                ret_result = 0;
+                return (Some(ret_value) , Some(ret_result) , CSS_OK);
+            }
 
-        let (_ret_result , error) = css__parse_named_color(sheet , lwc_ref, strings , token.idata.get_ref().clone());
+            let (_ret_result , error) = css__parse_named_color(sheet_index , lwc_ref, strings , token.idata.get_ref().clone());
         
-        if _ret_result.is_some() {
-            ret_result = _ret_result.unwrap();
-        }
-
-        if error as int != CSS_OK as int && sheet.quirks_allowed {
-            let(_ret_result , error) = css__parse_hash_colour(token.idata.get_ref().clone(), lwc_ref);
             if _ret_result.is_some() {
                 ret_result = _ret_result.unwrap();
             }
-            
-            if error as int == CSS_OK as int {
-                sheet.quirks_used = true;
-            }
-        }
-
-        if error as int != CSS_OK as int {
-            *ctx = orig_ctx;
-            return (None , None , CSS_INVALID);
-        }
-    }
-
-    else if (token.token_type as int ==  CSS_TOKEN_HASH as int || (sheet.quirks_allowed && token.token_type as int ==  CSS_TOKEN_NUMBER as int) ||
-        (sheet.quirks_allowed && token.token_type as int ==  CSS_TOKEN_DIMENSION as int))
-    {
-        let(_ret_result , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone(), lwc_ref);
-
-        match error_from_hash {
-            CSS_OK => {
-                if token.token_type as int != CSS_TOKEN_HASH as int {
-                    sheet.quirks_used = true;
+     
+        
+            if error as int != CSS_OK as int && vec_stylesheet.get_mut_ref()[sheet_index].quirks_allowed {
+                let(_ret_result , error) = css__parse_hash_colour(token.idata.get_ref().clone(), lwc_ref);
+                if _ret_result.is_some() {
+                    ret_result = _ret_result.unwrap();
                 }
-            },
-            _ => {
+            
+                if error as int == CSS_OK as int {
+                    vec_stylesheet.get_mut_ref()[sheet_index].quirks_used = true;
+                }
+            }
+     
+            if error as int != CSS_OK as int {
                 *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
         }
-        if _ret_result.is_some() {
-            ret_result = _ret_result.unwrap();
-        }
-    }
-    else if (token.token_type as int ==  CSS_TOKEN_FUNCTION as int) {
-        let r:@mut u8 = @mut 0;
-        let g:@mut u8 = @mut 0;
-        let b:@mut u8 = @mut 0;
-        let a:@mut u8 = @mut 0xff;
-        let mut colour_channels: int = 0;
-        if strings.lwc_string_caseless_isequal(lwc_ref, token.idata.get_ref().clone(), RGB as uint) {
-            colour_channels = 3;
-        }
-        else if strings.lwc_string_caseless_isequal(lwc_ref, token.idata.get_ref().clone(), RGBA as uint) {
-            colour_channels = 4;
-        }
-        else if strings.lwc_string_caseless_isequal(lwc_ref, token.idata.get_ref().clone(), HSL as uint) {
-            colour_channels = 5;
-        }
-        else if strings.lwc_string_caseless_isequal(lwc_ref, token.idata.get_ref().clone(), HSLA as uint) {
-            colour_channels = 6;
-        }
+        else if (token.token_type as int ==  CSS_TOKEN_HASH as int || (vec_stylesheet.get_mut_ref()[sheet_index].quirks_allowed && token.token_type as int ==  CSS_TOKEN_NUMBER as int) ||
 
-        if colour_channels ==3 || colour_channels == 4 {
-            let mut i: int =0;
-            let mut valid = CSS_TOKEN_NUMBER;
-            let components: ~[@mut u8] = ~[r, g, b, a];
-            let mut component: @mut u8;
-            while i < colour_channels {
-                
-                let mut intval: i32;
-                let mut int_only: bool;
+                (vec_stylesheet.get_mut_ref()[sheet_index].quirks_allowed && token.token_type as int ==  CSS_TOKEN_DIMENSION as int))
+        {
+            let(_ret_result , error_from_hash) = css__parse_hash_colour(token.idata.get_ref().clone(), lwc_ref);
 
-                component = components[i];
-                consumeWhitespace(vector , ctx);
-				
-				if *ctx >= vector.len() {
-					*ctx = orig_ctx;
-					return (None , None , CSS_INVALID);
-				}
-				token = &vector[*ctx];
-                
-				match token.token_type {
-                    CSS_TOKEN_NUMBER => {},
-                    CSS_TOKEN_PERCENTAGE => {},
+            match error_from_hash {
+                CSS_OK => {
+                        if token.token_type as int != CSS_TOKEN_HASH as int {
+                            vec_stylesheet.get_mut_ref()[sheet_index].quirks_used = true;
+                        }
+                    },
                     _ => {
                         *ctx = orig_ctx;
                         return (None , None , CSS_INVALID);
                     }
-                }
-                if i==0 {
-                    valid = token.token_type;
-                }
-                else if ( i<3 ) && (token.token_type as uint != valid as uint) {
-                    *ctx = orig_ctx;
-                    return (None , None , CSS_INVALID);
-                }
+            }
+            if _ret_result.is_some() {
+                ret_result = _ret_result.unwrap();
+            }
+        
+        }
+        else if (token.token_type as int ==  CSS_TOKEN_FUNCTION as int) {
+            let r:@mut u8 = @mut 0;
+            let g:@mut u8 = @mut 0;
+            let b:@mut u8 = @mut 0;
+            let a:@mut u8 = @mut 0xff;
+            let mut colour_channels: int = 0;
+            if strings.lwc_string_caseless_isequal(lwc_ref, token.idata.get_ref().clone(), RGB as uint) {
+                colour_channels = 3;
+            }
+            else if strings.lwc_string_caseless_isequal(lwc_ref, token.idata.get_ref().clone(), RGBA as uint) {
+                colour_channels = 4;
+            }
+            else if strings.lwc_string_caseless_isequal(lwc_ref, token.idata.get_ref().clone(), HSL as uint) {
+                colour_channels = 5;
+            }
+            else if strings.lwc_string_caseless_isequal(lwc_ref, token.idata.get_ref().clone(), HSLA as uint) {
+                colour_channels = 6;
+            }
+
+            if colour_channels ==3 || colour_channels == 4 {
+                let mut i: int =0;
+                let mut valid = CSS_TOKEN_NUMBER;
+                let components: ~[@mut u8] = ~[r, g, b, a];
+                let mut component: @mut u8;
+                while i < colour_channels {
+                    
+                    let mut intval: i32;
+                    let mut int_only: bool;
+
+                    component = components[i];
+                    consumeWhitespace(vector , ctx);
+				
+				    if *ctx >= vector.len() {
+					   *ctx = orig_ctx;
+					   return (None , None , CSS_INVALID);
+				    }
+				    token = &vector[*ctx];
+                
+				    match token.token_type {
+                        CSS_TOKEN_NUMBER => {},
+                        CSS_TOKEN_PERCENTAGE => {},
+                        _ => {
+                            *ctx = orig_ctx;
+                            return (None , None , CSS_INVALID);
+                        }
+                    }
+                    if i==0 {
+                        valid = token.token_type;
+                    }
+                    else if ( i<3 ) && (token.token_type as uint != valid as uint) {
+                        *ctx = orig_ctx;
+                        return (None , None , CSS_INVALID);
+                    }
 
                
 				/* The alpha channel may be a float */
@@ -800,75 +810,75 @@ pub fn css__parse_color_specifier(sheet: @mut css_stylesheet , lwc_ref:&mut ~lwc
 				token = &vector[*ctx];
                 *ctx = *ctx + 1;
 
-                match token.token_type {
-                    CSS_TOKEN_NUMBER => {},
-                    _ => {
-                        *ctx = orig_ctx;
+                    match token.token_type {
+                        CSS_TOKEN_NUMBER => {},
+                        _ => {
+                            *ctx = orig_ctx;
+                            return (None , None , CSS_INVALID);
+                        }
+                    }
+                
+				    let (alpha_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(lwc_ref ,token.idata.get_ref().clone() , false);
+                    alpha = alpha_res as i32;
+                    if consumed_length_from_lwc_string != lwc_ref.lwc_string_length(token.idata.get_ref().clone()) {
+                        /* failed to consume the whole string as a number */
+					   *ctx = orig_ctx;
                         return (None , None , CSS_INVALID);
                     }
-                }
-                
-				let (alpha_res , consumed_length_from_lwc_string) = css__number_from_lwc_string(lwc_ref ,token.idata.get_ref().clone() , false);
-                alpha = alpha_res as i32;
-                if consumed_length_from_lwc_string != lwc_ref.lwc_string_length(token.idata.get_ref().clone()) {
-                    /* failed to consume the whole string as a number */
-					*ctx = orig_ctx;
-                    return (None , None , CSS_INVALID);
-                }
 
-                alpha = ((css_multiply_fixed(alpha as i32 , F_255 as i32) as int) >> CSS_RADIX_POINT) as i32;
+                    alpha = ((css_multiply_fixed(alpha as i32 , F_255 as i32) as int) >> CSS_RADIX_POINT) as i32;
                 
-				consumeWhitespace(vector , ctx);
+				    consumeWhitespace(vector , ctx);
 
-                if *ctx >= vector.len() {
+                    if *ctx >= vector.len() {
 					*ctx = orig_ctx;
 					return (None , None , CSS_INVALID);
-				}
-				token = &vector[*ctx];
-                *ctx = *ctx + 1;
-            }
+				    }
+				    token = &vector[*ctx];
+                    *ctx = *ctx + 1;
+                }
 			
-            if !tokenIsChar(token, lwc_ref,  ')') {
+                if !tokenIsChar(token, lwc_ref,  ')') {
+                    *ctx = orig_ctx;
+                    return (None , None , CSS_INVALID);
+                }
+			
+			     //debug!(fmt!("hue= %?, sat= %?, lit= %?", hue as i32, sat as i32, lit as i32)); ////debug
+            
+			     /* have a valid HSV entry, convert to RGB */
+			    let (ra , ga , ba) = HSL_to_RGB(hue as i32, sat as i32, lit as i32);
+                *r = ra;
+                *g = ga;
+                *b = ba;
+			
+			     //debug!(fmt!("ra= %?, ga= %?, ba= %?", ra, ga, ba)); ////debug
+            
+			     if alpha > 255 {
+                    *a = 255;
+                }
+                else if alpha < 0 {
+                    *a = 0;
+                }
+                else {
+                    *a = alpha as u8;
+                }
+            }
+            else {
                 *ctx = orig_ctx;
                 return (None , None , CSS_INVALID);
             }
-			
-			//debug!(fmt!("hue= %?, sat= %?, lit= %?", hue as i32, sat as i32, lit as i32)); ////debug
-            
-			/* have a valid HSV entry, convert to RGB */
-			let (ra , ga , ba) = HSL_to_RGB(hue as i32, sat as i32, lit as i32);
-            *r = ra;
-            *g = ga;
-            *b = ba;
-			
-			//debug!(fmt!("ra= %?, ga= %?, ba= %?", ra, ga, ba)); ////debug
-            
-			if alpha > 255 {
-                *a = 255;
-            }
-            else if alpha < 0 {
-                *a = 0;
-            }
-            else {
-                *a = alpha as u8;
-            }
+		  //debug!(fmt!("a= %?, r= %?, g= %?, b= %?", *a, *r, *g, *b)); ////debug
+		  //debug!(fmt!("a= %?, r= %?, g= %?, b= %?", *a as u32 << 24, *r as u32 << 16, *g as u32 << 8, *b as u32)); ////debug
+		
+            ret_result = (*a as u32 << 24 | *r as u32 << 16 | *g as u32 << 8 | *b as u32);
+        
         }
+
         else {
             *ctx = orig_ctx;
             return (None , None , CSS_INVALID);
         }
-		//debug!(fmt!("a= %?, r= %?, g= %?, b= %?", *a, *r, *g, *b)); ////debug
-		//debug!(fmt!("a= %?, r= %?, g= %?, b= %?", *a as u32 << 24, *r as u32 << 16, *g as u32 << 8, *b as u32)); ////debug
-		
-        ret_result = (*a as u32 << 24 | *r as u32 << 16 | *g as u32 << 8 | *b as u32);
-        
-    }
-
-    else {
-        *ctx = orig_ctx;
-        return (None , None , CSS_INVALID);
-    }
-	
+	}
 	ret_value = COLOR_SET ;
 	
 	//debug!(fmt!("css__parse_color_specifier :: Return value= %?, result= %?", ret_value, ret_result)); ////debug
@@ -953,7 +963,7 @@ pub fn tokenIsChar(token:&~css_token, lwc_ref:&mut ~lwc, c:char) -> bool {
 
                     // Ensure lowercomparison 
                     if 'A' <= token_char && token_char <= 'Z' {
-                        token_char  =  (token_char as u8 +  'a' as u8 - 'A' as u8 ) as char ;
+                        token_char = (token_char as u8 + 'a' as u8 - 'A' as u8) as char;
                     }
                         
                     if token_char == c {
@@ -1137,7 +1147,7 @@ pub fn HSL_to_RGB(hue: i32 , sat: i32 , lit: i32 ) -> (u8 , u8 , u8) {
 * 'css_error' - CSS_OK on success,  
                 CSS_INVALID if the input is not valid.
 */
-fn css__parse_named_color(sheet: @mut css_stylesheet , lwc_ref:&mut ~lwc, strings: &css_propstrings , data: uint) -> (Option<u32> , css_error){
+fn css__parse_named_color(sheet_index: int , lwc_ref:&mut ~lwc, strings: &css_propstrings , data: uint) -> (Option<u32> , css_error){
     
     //debug!("Entering: css__parse_named_color");
     let mut result_val: u32;
@@ -1308,11 +1318,14 @@ fn css__parse_named_color(sheet: @mut css_stylesheet , lwc_ref:&mut ~lwc, string
         return (Some(result_val) , CSS_OK);
     }
 
-    /* We don't know this colour name; ask the client */
-    match sheet.color {
-        None => {},
-        Some(x) => {
-            return (*x)(data);
+    unsafe
+    {
+        /* We don't know this colour name; ask the client */
+        match vec_stylesheet.get_mut_ref()[sheet_index].color {
+            None => {},
+            Some(x) => {
+                return (*x)(data);
+            }
         }
     }
     return(None , CSS_INVALID);

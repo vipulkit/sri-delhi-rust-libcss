@@ -1234,7 +1234,7 @@ pub fn css_computed_style_initialise(style:@mut css_computed_style ,
         computed:style,   
         handler:Some(fn_handler),    
         pw:null(),
-        sheet:None,   
+        sheet_index:-1,
         current_origin:CSS_ORIGIN_UA,  
         current_specificity:0,   
         element:css_qname{ 
