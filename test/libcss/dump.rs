@@ -134,7 +134,7 @@ pub fn opcode_names() -> ~[~str] {
 }
 
 
-pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc) -> ~str {
+pub fn dump_sheet(sheet_index: int, lwc_ref:&mut ~lwc) -> ~str {
     
     debug!("Entering: dump_sheet");
     let reason = "Function dump_sheet";
@@ -159,8 +159,9 @@ pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc) -> ~str {
     // debug!(fmt!("sheet.color == %?" , sheet.color));
     
     // debug!(fmt!("sheet.rule_list == %?" , sheet.rule_list));
-
-    let mut rule: Option<CSS_RULE_DATA_TYPE> = sheet.rule_list ;
+    unsafe
+    {
+    let mut rule: Option<CSS_RULE_DATA_TYPE> = vec_stylesheet.get_mut_ref()[sheet_index].rule_list ;
     let mut ptr: ~str = ~"";
     //debug!(fmt!("rule == %?" , rule));
     while rule.is_some() {
@@ -200,9 +201,11 @@ pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc) -> ~str {
         }
     }
     
-    debug!(fmt!("ptr == %?" , ptr));
+    //debug!(fmt!("ptr == %?" , ptr));
+
 
     ptr
+    }
 }
 
 fn dump_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32){
@@ -622,15 +625,17 @@ fn dump_bytecode(style:@mut css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u
                 else if value as int == BACKGROUND_IMAGE_URI as int {
                     
                     let snum = bytecode[iterator];
+		    unsafe
+		    {
+	                    let (_ , option_string) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(snum as uint);
+        	            iterator += 1;
 
-                    let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
-                    iterator += 1;
-
-                    if option_string.is_some() {
-                        ptr.push_str( &"url('");
-                        ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
-                        ptr.push_str( &"')");    
-                    }
+                	    if option_string.is_some() {
+                        	ptr.push_str( &"url('");
+	                        ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
+        	                ptr.push_str( &"')");    
+                	    }
+		    }
 
                 }
             }
@@ -1131,47 +1136,56 @@ fn dump_bytecode(style:@mut css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u
 
                     if (value as int & 0xff) == CONTENT_COUNTER as int {
 
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
-                        iterator += 1;
+                        unsafe
+                        {
+                            let (_ , option_string) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(snum as uint);
+                            iterator += 1;
 
-                        if option_string.is_some() {
-                            debug!("dump_bytecode :: CONTENT_COUNTER :: option_string == %?" , option_string.get_ref());
-                            dump_counter( lwc_ref.lwc_string_data(option_string.unwrap()), value , ptr);
+
+                            if option_string.is_some() {
+                                debug!("dump_bytecode :: CONTENT_COUNTER :: option_string == %?" , option_string.get_ref());
+                                dump_counter( lwc_ref.lwc_string_data(option_string.unwrap()), value , ptr);
+                            }
                         }
                     }
                     else if (value as int & 0xff) == CONTENT_COUNTERS as int {
+                        unsafe
+                        {
+                            let (_ , option_string) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(snum as uint);
+                            iterator += 1;
+                            let sep = bytecode[iterator];
+                            iterator += 1;
 
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
-                        iterator += 1;
-                        let sep = bytecode[iterator];
-                        iterator += 1;
-
-                        if option_string.is_some() {
-                            debug!("dump_bytecode :: CONTENT_COUNTERS :: option_string == %?" , option_string.get_ref());
-                            dump_counters( lwc_ref.lwc_string_data(option_string.unwrap()) , fmt!("%?" , sep) , value , ptr);
+                            if option_string.is_some() {
+                                debug!("dump_bytecode :: CONTENT_COUNTERS :: option_string == %?" , option_string.get_ref());
+                                dump_counters( lwc_ref.lwc_string_data(option_string.unwrap()) , fmt!("%?" , sep) , value , ptr);
+                            }
                         }
                     }
                     else if (value as int & 0xff) == CONTENT_URI as int || (value as int & 0xff) == CONTENT_ATTR as int || (value as int & 0xff) == CONTENT_STRING as int {
 
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        unsafe
+                        {
+                            let (_ , option_string) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(snum as uint);
 
-                        if value as int == CONTENT_URI as int {
-                            ptr.push_str( &"url(");
-                        }
-                        if value as int == CONTENT_ATTR as int {
-                            ptr.push_str( &"attr(");
-                        }
-                        if value as int != CONTENT_STRING as int {
-                            ptr.push_str( &")");
-                        }
+                            if value as int == CONTENT_URI as int {
+                                ptr.push_str( &"url(");
+                            }
+                            if value as int == CONTENT_ATTR as int {
+                                ptr.push_str( &"attr(");
+                            }
+                            if value as int != CONTENT_STRING as int {
+                                ptr.push_str( &")");
+                            }
 
-                        iterator += 1;
+                            iterator += 1;
 
-                        if option_string.is_some() {
-                            debug!("dump_bytecode :: CONTENT_URI_ATTR_STRING :: option_string == %?" , option_string.get_ref());
-                            ptr.push_str( &"'");
-                            ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned());
-                            ptr.push_str( &"'");
+                            if option_string.is_some() {
+                                debug!("dump_bytecode :: CONTENT_URI_ATTR_STRING :: option_string == %?" , option_string.get_ref());
+                                ptr.push_str( &"'");
+                                ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned());
+                                ptr.push_str( &"'");
+                            }
                         }
                     }
                     else if (value as int & 0xff) == CONTENT_OPEN_QUOTE as int {
@@ -1205,15 +1219,17 @@ fn dump_bytecode(style:@mut css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u
 
                     while value as int != COUNTER_INCREMENT_NONE as int {
                         let snum = bytecode[iterator];
-                        
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        unsafe
+                        {
+                            let (_ , option_string) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(snum as uint);
 
-                        iterator += 1;
-                        
-                        if option_string.is_some() {
-                            ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned());
+                            iterator += 1;
+                            
+                            if option_string.is_some() {
+                                ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned());
+                            }
+                            ptr.push_char(' ');
                         }
-                        ptr.push_char(' ');
                         let val = bytecode[iterator] as i32;
                         iterator += 1;
                         dump_number(val , ptr);
@@ -1237,16 +1253,19 @@ fn dump_bytecode(style:@mut css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u
                 while value as int == CURSOR_URI as int {
                     let snum = bytecode[iterator];
                     iterator += 1;
-                    let(_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                    unsafe
+                    {
+                        let(_ , option_string) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(snum as uint);
 
-                    if option_string.is_some() {
-                        ptr.push_str( &"url('");
-                        ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned());
-                        ptr.push_str( &"'), ");
+                        if option_string.is_some() {
+                            ptr.push_str( &"url('");
+                            ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned());
+                            ptr.push_str( &"'), ");
+                        }
+
+                        value = bytecode[iterator];
+                        iterator += 1;
                     }
-
-                    value = bytecode[iterator];
-                    iterator += 1;
                 }
 
                 if value as int == CURSOR_AUTO as int {
@@ -1418,16 +1437,19 @@ fn dump_bytecode(style:@mut css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u
             else if op as int == CSS_PROP_FONT_FAMILY as int {
                 
                 while value as int != FONT_FAMILY_END as int {
-
                     if value as int == FONT_FAMILY_STRING as int || value as int == FONT_FAMILY_IDENT_LIST as int {
-                        let snum = bytecode[iterator];
-                        iterator += 1;
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        unsafe
+                        {
+
+                            let snum = bytecode[iterator];
+                            iterator += 1;
+                            let (_ , option_string) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(snum as uint);
                         
-                        if option_string.is_some() {
-                            ptr.push_char('\'');
-                            ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
-                            ptr.push_char('\'');
+                            if option_string.is_some() {
+                                ptr.push_char('\'');
+                                ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
+                                ptr.push_char('\'');
+                            }
                         }
                     }
                     else if value as int == FONT_FAMILY_SERIF as int {
@@ -1833,15 +1855,17 @@ fn dump_bytecode(style:@mut css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u
             else if op as int == CSS_PROP_PLAY_DURING as int{
 
                 if value as int == PLAY_DURING_URI as int {
-                    
-                    let snum = bytecode[iterator];
-                    iterator += 1;
-                    let(_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                    unsafe
+                    {
+                        let snum = bytecode[iterator];
+                        iterator += 1;
+                        let(_ , option_string) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(snum as uint);
 
-                    if option_string.is_some() {
-                        ptr.push_char('\'');
-                        ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
-                        ptr.push_char('\'');
+                        if option_string.is_some() {
+                            ptr.push_char('\'');
+                            ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
+                            ptr.push_char('\'');
+                        }
                     }
                 }
                 else if value as int == PLAY_DURING_AUTO as int {
@@ -1885,24 +1909,28 @@ fn dump_bytecode(style:@mut css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u
                         
                         let snum = bytecode[iterator];
                         iterator += 1;
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        unsafe
+                        {
+                            let (_ , option_string) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(snum as uint);
 
-                        if option_string.is_some() {
-                            ptr.push_str( &" '");
-                            ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
-                            ptr.push_str( &"' ");
+                            if option_string.is_some() {
+                                ptr.push_str( &" '");
+                                ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
+                                ptr.push_str( &"' ");
+                            }
+
+                            let (_ , option_string) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(snum as uint);
+
+                            if option_string.is_some() {
+                                ptr.push_str( &" '");
+                                ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
+                                ptr.push_str( &"' ");
+                            }
+
+                            iterator += 1;
+                            value = bytecode[iterator];
+                            iterator += 1;
                         }
-
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
-
-                        if option_string.is_some() {
-                            ptr.push_str( &" '");
-                            ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
-                            ptr.push_str( &"' ");
-                        }
-                        iterator += 1;
-                        value = bytecode[iterator];
-                        iterator += 1;
                     }
                 }
                 else if value as int == QUOTES_NONE as int {
@@ -2123,13 +2151,15 @@ fn dump_bytecode(style:@mut css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u
                     if value as int == VOICE_FAMILY_STRING as int || value as int == VOICE_FAMILY_IDENT_LIST as int {
                         let snum = bytecode[iterator];
                         iterator += 1;
+                        unsafe
+                        {
+                            let (_ , option_string) = vec_stylesheet.get_mut_ref()[style.sheet_index].css__stylesheet_string_get(snum as uint);
 
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
-
-                        if option_string.is_some() {
-                            ptr.push_char('\'');
-                            ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
-                            ptr.push_char('\'');
+                            if option_string.is_some() {
+                                ptr.push_char('\'');
+                                ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
+                                ptr.push_char('\'');
+                            }
                         }
                     }
                     else if value as int == VOICE_FAMILY_MALE as int {

@@ -537,7 +537,7 @@ pub fn run_test(ctx:@mut line_ctx) {
                 let import = css::css_create(&params) ;
                 
                 assert!(    match css_instance.css_stylesheet_register_import(
-                                                        Some(import.stylesheet)) {
+                                                        (import.stylesheet_index)) {
                                 CSS_OK=>{true},
                                 _=>{false}
                             });
@@ -548,19 +548,23 @@ pub fn run_test(ctx:@mut line_ctx) {
         }
     }
     let mut e : uint = 0;
-
-    if (css_instance.stylesheet.rule_count != ctx.exp.len() ) {
+    unsafe
+    {
+    //let mut ptr = vec_stylesheet.get_mut_ref()[css_instance.stylesheet_index].rule_list ;
+    if (vec_stylesheet.get_mut_ref()[css_instance.stylesheet_index].rule_count != ctx.exp.len() ) {
         debug!(fmt!("Got %u rules. Expected %u\n",
-                css_instance.stylesheet.rule_count , ctx.exp.len()) );
+               vec_stylesheet.get_mut_ref()[css_instance.stylesheet_index].rule_count , ctx.exp.len()) );
         report_fail(ctx.buf.clone(), ctx.exp[e].clone());
         fail!(~"Unexpected number of rules ") ;
     }
-
-    let mut ptr = css_instance.stylesheet.rule_list ;
-        
+    println(fmt!("%d",css_instance.stylesheet_index));
+    let mut ptr =vec_stylesheet.get_mut_ref()[css_instance.stylesheet_index].rule_list ; 
+//    let mut rule = ptr;
     loop {
-        match ptr {
+	match ptr
+	{
             None=>{ 
+                println(fmt!("NONE"));
                 assert!( e == ctx.exp.len() );
                 return ;
             },
@@ -635,6 +639,7 @@ pub fn run_test(ctx:@mut line_ctx) {
                 }
             }   
         }
+    }
     }
 }
 
@@ -711,12 +716,13 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mu
 
                 string(s) => {
                     /* String */
-                    if( style.sheet.is_none() ) {
+                    if( style.sheet_index == -1 ) {
                         debug!("\n Parent stylesheet not found in style , need sheet ");
                         return false ;
                     }
-
-                    let (res,op) = style.sheet.expect(reason).
+                    unsafe
+                    {
+                    let (res,op) = vec_stylesheet.get_mut_ref()[style.sheet_index].
                                 css__stylesheet_string_get(style.bytecode[i] as uint);
 
                     assert!(res as int == CSS_OK as int);
@@ -734,6 +740,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mu
 
                     i += 1;                 
                 }
+               }
                 
             }
         }

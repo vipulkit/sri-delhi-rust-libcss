@@ -94,7 +94,7 @@ fn css(file_name: ~str) {
                             CSS_OK => {},
                             _ => {assert!(false);}
                         }
-                        let err_register = css.css_stylesheet_register_import(Some(css_import.stylesheet));
+                        let err_register = css.css_stylesheet_register_import((css_import.stylesheet_index));
                         match err_register {
                             CSS_OK => {},
                             _ => {assert!(false);}
@@ -120,7 +120,7 @@ fn css(file_name: ~str) {
 
     let mut buf: ~str;
 
-    buf = dump_sheet(css.stylesheet, &mut lwc_ref );
+    buf = dump_sheet(css.stylesheet_index, &mut lwc_ref );
     let outlen = buf.len();
     let written = outsize - outlen;
     // debug!(fmt!("written == %? , outsize - outlen == %?" , written , outsize-outlen));

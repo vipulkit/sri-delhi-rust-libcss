@@ -200,13 +200,13 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
         CSS_OK => {},
         _ => {assert!(false);}
     }
-
-    buf = dump_sheet(css.stylesheet, &mut lwc_ref);
+    println(fmt!("BEFORE DUMP"));
+    buf = dump_sheet(css.stylesheet_index, &mut lwc_ref);
     //debug!(fmt!("\n == sheet ==%?=" , buf));
     let mut dvec : ~[~[u8]] = ~[];
     for s in buf.any_line_iter() {
         dvec.push(s.as_bytes().to_owned());
-    }
+   }
     let a = vec::concat(dvec) ;
     let b = vec::concat(exp) ;
     // debug!("============================================================" );

@@ -732,7 +732,7 @@ pub fn run_test( ctx:@mut line_ctx, lwc_ref:~lwc, css_select_style_time:@mut u64
         // debug!("%?",ds_sheet);
         // debug!("=================================================\n");
 
-        match select.css_select_ctx_append_sheet(ctx.sheets[i].sheet.stylesheet,ctx.sheets[i].origin,ctx.sheets[i].media) {
+        match select.css_select_ctx_append_sheet(ctx.sheets[i].sheet.stylesheet_index,ctx.sheets[i].origin,ctx.sheets[i].media) {
             CSS_OK => {},
             _ => fail!()
         }
@@ -836,8 +836,8 @@ pub fn run_test( ctx:@mut line_ctx, lwc_ref:~lwc, css_select_style_time:@mut u64
 
     // debug!(fmt!(" CSS Selection result is =%?",results));
     let string:~str = ctx.exp.clone();
-    // debug!(fmt!("Expected : %s ",string));
-    // debug!(fmt!("Result: %s",buf));
+    //println(fmt!("Expected : %s ",string));
+//    println(fmt!("Result: %s",buf));
 
     if !str::eq(&to_lower(buf), &to_lower(string)) {
         fail!(~"Select result mismatched with expected");
