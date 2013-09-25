@@ -562,7 +562,7 @@ pub fn css__cascade_azimuth(opv:u32 ,
 	CSS_OK
 }
 
-pub fn css__set_azimuth_from_hint(_: &mut css_hint, 
+pub fn css__set_azimuth_from_hint(_: &mut ~css_hint, 
 		_:&mut css_computed_style) -> css_error {
 
 	CSS_OK
@@ -612,7 +612,7 @@ pub fn css__cascade_background_attachment(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_background_attachment_from_hint(hint:&mut css_hint, 
+pub fn css__set_background_attachment_from_hint(hint:&mut ~css_hint, 
 												style:&mut css_computed_style
 												) -> css_error {
 
@@ -653,7 +653,7 @@ pub fn css__cascade_background_color(opv:u32, style:&mut ~css_style,
 	return css__cascade_bg_border_color(opv, style, state, set_background_color);
 }
 
-pub fn css__set_background_color_from_hint(hint:&mut  css_hint, 
+pub fn css__set_background_color_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -705,7 +705,7 @@ pub fn css__cascade_background_image(opv:u32, style:&mut ~css_style,
 	return css__cascade_uri_none(opv, style, state, Some(@set_background_image) );
 }
 
-pub fn css__set_background_image_from_hint(hint:&mut  css_hint, 
+pub fn css__set_background_image_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
     //debug!("Entering: css__set_background_image_from_hint");
@@ -832,7 +832,7 @@ pub fn css__cascade_background_position(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_background_position_from_hint(hint:&mut  css_hint, 
+pub fn css__set_background_position_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
     //debug!("Entering: css__set_background_position_from_hint");
@@ -919,7 +919,7 @@ pub fn css__cascade_background_repeat(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_background_repeat_from_hint(hint:&mut  css_hint, 
+pub fn css__set_background_repeat_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -963,7 +963,7 @@ pub fn css__cascade_border_bottom_color(opv:u32, style:&mut ~css_style,
 			set_border_bottom_color);
 }
 
-pub fn css__set_border_bottom_color_from_hint(hint:&mut  css_hint, 
+pub fn css__set_border_bottom_color_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -1026,7 +1026,7 @@ pub fn css__cascade_caption_side(opv:u32, _:&mut ~css_style, state:&mut ~css_sel
 	CSS_OK
 }
 
-pub fn css__set_caption_side_from_hint(hint:&mut css_hint, 
+pub fn css__set_caption_side_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style) 
 										-> css_error {
 	set_caption_side(style, hint.status);
@@ -1077,7 +1077,7 @@ pub fn css__cascade_clear(opv:u32, _:&mut ~css_style, state:&mut ~css_select_sta
 	CSS_OK
 }
 
-pub fn css__set_clear_from_hint(hint:&mut css_hint, style:&mut css_computed_style) 
+pub fn css__set_clear_from_hint(hint:&mut ~css_hint, style:&mut css_computed_style) 
 								-> css_error {
 	set_clear(style, hint.status);
 	CSS_OK
@@ -1187,7 +1187,7 @@ pub fn css__cascade_clip(opv:u32, style:&mut ~css_style, state:&mut ~css_select_
 	CSS_OK
 }	
 			
-pub fn css__set_clip_from_hint(hint:&mut css_hint, style:&mut css_computed_style) 
+pub fn css__set_clip_from_hint(hint:&mut ~css_hint, style:&mut css_computed_style) 
 								-> css_error {
 	set_clip(style, hint.status, hint.clip.unwrap()) ;
 	CSS_OK
@@ -1251,7 +1251,7 @@ pub fn css__cascade_border_bottom_style(opv:u32, style:&mut ~css_style,
 	return css__cascade_border_style(opv, style, state, set_border_bottom_style);
 }
 
-pub fn css__set_border_bottom_style_from_hint(hint:&mut  css_hint, 
+pub fn css__set_border_bottom_style_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -1292,20 +1292,18 @@ pub fn css__cascade_border_bottom_width(opv:u32, style:&mut ~css_style,
 	return css__cascade_border_width(opv, style, state, set_border_bottom_width);
 }
 
-pub fn css__set_border_bottom_width_from_hint(hint:&mut  css_hint, 
+pub fn css__set_border_bottom_width_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_border_bottom_width(style, hint.status, x.value , x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_border_bottom_width(style, hint.status, hint.length.get_ref().value , hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -1378,7 +1376,7 @@ pub fn css__cascade_border_collapse(opv:u32, _:&mut ~css_style,
 	}
 }
 
-pub fn css__set_border_collapse_from_hint(hint:&mut  css_hint, 
+pub fn css__set_border_collapse_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -1422,7 +1420,7 @@ pub fn css__cascade_border_left_color(opv:u32, style:&mut ~css_style,
 			set_border_left_color);
 }
 
-pub fn css__set_border_left_color_from_hint(hint:&mut  css_hint, 
+pub fn css__set_border_left_color_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -1474,7 +1472,7 @@ pub fn css__cascade_border_left_style(opv:u32, style:&mut ~css_style,
 	return css__cascade_border_style(opv, style, state, set_border_left_style);
 }
 
-pub fn css__set_border_left_style_from_hint(hint:&mut  css_hint, 
+pub fn css__set_border_left_style_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -1514,20 +1512,18 @@ pub fn css__cascade_border_left_width(opv:u32, style:&mut ~css_style,
 	return css__cascade_border_width(opv, style, state, set_border_left_width);
 }
 
-pub fn css__set_border_left_width_from_hint(hint:&mut  css_hint, 
+pub fn css__set_border_left_width_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_border_left_width(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_border_left_width(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else{
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -1579,7 +1575,7 @@ pub fn css__cascade_border_right_color(opv:u32, style:&mut ~css_style,
 			set_border_right_color);
 }
 
-pub fn css__set_border_right_color_from_hint(hint:&mut  css_hint, 
+pub fn css__set_border_right_color_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -1630,7 +1626,7 @@ pub fn css__cascade_border_right_style(opv:u32, style:&mut ~css_style,
 	return css__cascade_border_style(opv, style, state, set_border_right_style);
 }
 
-pub fn css__set_border_right_style_from_hint(hint:&mut  css_hint, 
+pub fn css__set_border_right_style_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -1669,20 +1665,18 @@ pub fn css__cascade_border_right_width(opv:u32, style:&mut ~css_style,
 	return css__cascade_border_width(opv, style, state, set_border_right_width);
 }
 
-pub fn css__set_border_right_width_from_hint(hint:&mut  css_hint, 
+pub fn css__set_border_right_width_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_border_right_width(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_border_right_width(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else{
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -1768,7 +1762,7 @@ pub fn css__cascade_border_spacing(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_border_spacing_from_hint(hint:&mut  css_hint, 
+pub fn css__set_border_spacing_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -1832,7 +1826,7 @@ pub fn css__cascade_border_top_color(opv:u32, style:&mut ~css_style,
 	return css__cascade_bg_border_color(opv, style, state, set_border_top_color);
 }
 
-pub fn css__set_border_top_color_from_hint(hint:&mut  css_hint, 
+pub fn css__set_border_top_color_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -1883,7 +1877,7 @@ pub fn css__cascade_border_top_style(opv:u32, style:&mut ~css_style,
 	return css__cascade_border_style(opv, style, state, set_border_top_style);
 }
 
-pub fn css__set_border_top_style_from_hint(hint:&mut  css_hint, 
+pub fn css__set_border_top_style_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -1922,20 +1916,18 @@ pub fn css__cascade_border_top_width(opv:u32, style:&mut ~css_style,
 	return css__cascade_border_width(opv, style, state, set_border_top_width);
 }
 
-pub fn css__set_border_top_width_from_hint(hint:&mut  css_hint, 
+pub fn css__set_border_top_width_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_border_top_width(style, hint.status,x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_border_top_width(style, hint.status,hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -1986,20 +1978,18 @@ pub fn css__cascade_bottom(opv:u32, style:&mut ~css_style,
 	return css__cascade_length_auto(opv, style, state, set_bottom);
 }
 
-pub fn css__set_bottom_from_hint(hint:&mut  css_hint, 
+pub fn css__set_bottom_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_bottom(style, hint.status,x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_bottom(style, hint.status,hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -2070,7 +2060,7 @@ pub fn css__cascade_break_after(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_break_after_from_hint(_:&mut  css_hint, 
+pub fn css__set_break_after_from_hint(_:&mut ~css_hint, 
 										_:&mut css_computed_style
 										) -> css_error {
 
@@ -2125,7 +2115,7 @@ pub fn  css__cascade_color(opv:u32, style:&mut ~css_style, state:&mut ~css_selec
 
 }
 
-pub fn css__set_color_from_hint(hint:&mut css_hint, style:&mut css_computed_style) 
+pub fn css__set_color_from_hint(hint:&mut ~css_hint, style:&mut css_computed_style) 
 								-> css_error {
 
 	set_color(style, hint.status, hint.color) ;
@@ -2134,7 +2124,7 @@ pub fn css__set_color_from_hint(hint:&mut css_hint, style:&mut css_computed_styl
 
 pub fn css__initial_color(state:&mut ~css_select_state) -> css_error {
 		
-	let hint = @mut css_hint{
+	let mut hint = ~css_hint{
 		        hint_type:HINT_LENGTH,
 		        status:0,
 		        clip:None,
@@ -2151,7 +2141,7 @@ pub fn css__initial_color(state:&mut ~css_select_state) -> css_error {
 
 	let mut error : css_error ;
 			
-	error = ((state.handler.expect("").ua_default_for_property))(CSS_PROP_COLOR as u32,hint);
+	error = ((state.handler.get_ref().ua_default_for_property))(CSS_PROP_COLOR as u32, &mut hint);
 	match  error {
 		CSS_OK=>{},
 		x => { 
@@ -2159,7 +2149,7 @@ pub fn css__initial_color(state:&mut ~css_select_state) -> css_error {
 		}
 	}
 
-	css__set_color_from_hint(hint,state.computed)	
+	css__set_color_from_hint(&mut hint,state.computed)	
 }
 
 pub fn css__compose_color(parent:&mut css_computed_style, 
@@ -2207,7 +2197,7 @@ pub fn css__cascade_column_count(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_column_count_from_hint(_:&mut css_hint, 
+pub fn css__set_column_count_from_hint(_:&mut ~css_hint, 
 									_:&mut css_computed_style) 
 									-> css_error {
 	// DO NOTHING
@@ -2248,7 +2238,7 @@ pub fn css__cascade_column_fill(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_column_fill_from_hint(_:&mut css_hint, _:&mut css_computed_style) 
+pub fn css__set_column_fill_from_hint(_:&mut ~css_hint, _:&mut css_computed_style) 
 									-> css_error {
 	// DO NOTHING
 	CSS_OK
@@ -2297,7 +2287,7 @@ pub fn css__cascade_column_gap(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_column_gap_from_hint(_:&mut css_hint, _:&mut css_computed_style)
+pub fn css__set_column_gap_from_hint(_:&mut ~css_hint, _:&mut css_computed_style)
 									-> css_error {
 	// DO NOTHING
 	CSS_OK
@@ -2343,7 +2333,7 @@ pub fn css__cascade_column_rule_color(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_column_rule_color_from_hint(_:&mut css_hint, 
+pub fn css__set_column_rule_color_from_hint(_:&mut ~css_hint, 
 									_:&mut css_computed_style) -> css_error {
 	// DO NOTHING
 	CSS_OK
@@ -2387,7 +2377,7 @@ pub fn css__cascade_column_rule_style(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_column_rule_style_from_hint(_:&mut css_hint, 
+pub fn css__set_column_rule_style_from_hint(_:&mut ~css_hint, 
 										_:&mut css_computed_style) 
 										-> css_error {
 	// DO NOTHING
@@ -2440,7 +2430,7 @@ pub fn css__cascade_column_rule_width(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_column_rule_width_from_hint(_:&mut css_hint, 
+pub fn css__set_column_rule_width_from_hint(_:&mut ~css_hint, 
 											_:&mut css_computed_style) 
 											-> css_error {
 	// DO NOTHING
@@ -2491,7 +2481,7 @@ pub fn css__cascade_break_before(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_break_before_from_hint(_:&mut  css_hint, 
+pub fn css__set_break_before_from_hint(_:&mut ~css_hint, 
 										_:&mut css_computed_style
 										) -> css_error {
 
@@ -2535,7 +2525,7 @@ pub fn css__cascade_break_inside(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_break_inside_from_hint(_:&mut  css_hint, 
+pub fn css__set_break_inside_from_hint(_:&mut ~css_hint, 
 										_:&mut css_computed_style
 										) -> css_error {
 
@@ -2582,7 +2572,7 @@ pub fn css__cascade_direction(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_direction_from_hint(hint:&mut  css_hint, 
+pub fn css__set_direction_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -2682,7 +2672,7 @@ pub fn css__cascade_display(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_display_from_hint(hint:&mut  css_hint, 
+pub fn css__set_display_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -2750,7 +2740,7 @@ pub fn css__cascade_elevation(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_elevation_from_hint(_:&mut  css_hint, 
+pub fn css__set_elevation_from_hint(_:&mut ~css_hint, 
 										_:&mut css_computed_style
 										) -> css_error {
 
@@ -2799,7 +2789,7 @@ pub fn css__cascade_empty_cells(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_empty_cells_from_hint(hint:&mut  css_hint, 
+pub fn css__set_empty_cells_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -2861,7 +2851,7 @@ pub fn css__cascade_float(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_float_from_hint(hint:&mut  css_hint, 
+pub fn css__set_float_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -2982,7 +2972,7 @@ pub fn css__cascade_font_family(opv:u32, style:&mut ~css_style,
 			 * We don't want to inherit, because that will 
 			 * incorrectly overwrite the named fonts list too.
 			 */
-			let hint = @mut css_hint{
+			let mut hint = ~css_hint{
 		        hint_type:HINT_LENGTH,
 		        status:0,
 		        clip:None,
@@ -2998,24 +2988,21 @@ pub fn css__cascade_font_family(opv:u32, style:&mut ~css_style,
 		    };
 			let mut error : css_error;
 
-			match state.handler {
-				None=> {
-					return CSS_BADPARM ;
-				},
-				Some(fnhandler) => {
-					error = ((fnhandler.ua_default_for_property))(
-						(CSS_PROP_FONT_FAMILY as u32), hint);
-				    match error {
-				        CSS_OK=>{
-				        	value = hint.status as u16 ;
-				        },
-				        x => { 
-				        	return x ;
-				        }
-				    }
-				}
+			if state.handler.is_none() {
+				return CSS_BADPARM ;
 			}
 
+			error = (state.handler.get_ref().ua_default_for_property)(
+				(CSS_PROP_FONT_FAMILY as u32), &mut hint);
+		    match error {
+		        CSS_OK=>{
+		        	value = hint.status as u16 ;
+		        },
+		        x => { 
+		        	return x ;
+		        }
+		    }
+	
 			if (value == (CSS_FONT_FAMILY_INHERIT as u16) ) {
 				/* No sane UA default: assume sans-serif */
 				value = (CSS_FONT_FAMILY_SANS_SERIF as u16);
@@ -3032,7 +3019,7 @@ pub fn css__cascade_font_family(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_font_family_from_hint(hint:&mut  css_hint, 
+pub fn css__set_font_family_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -3051,7 +3038,7 @@ pub fn css__set_font_family_from_hint(hint:&mut  css_hint,
 pub fn css__initial_font_family(state:&mut ~css_select_state) -> css_error {
 
 
-	let hint = @mut css_hint{
+	let mut hint = ~css_hint{
         hint_type:HINT_LENGTH,
         status:0,
         clip:None,
@@ -3067,21 +3054,18 @@ pub fn css__initial_font_family(state:&mut ~css_select_state) -> css_error {
     };
 	let mut error : css_error;
 
-	match state.handler {
-		None=> {
-			return CSS_BADPARM ;
-		},
-		Some(fnhandler) => {
-			error = ((fnhandler.ua_default_for_property))(
-				(CSS_PROP_FONT_FAMILY as u32), hint);
-		    match error {
-		        CSS_OK=>{},
-		        _=> return error
-		    }
-		}
+	if state.handler.is_none() {
+		return CSS_BADPARM ;
 	}
+	
+	error = (state.handler.get_ref().ua_default_for_property)(
+		(CSS_PROP_FONT_FAMILY as u32), &mut hint);
+    match error {
+        CSS_OK=>{},
+        _=> return error
+    }
 
-	css__set_font_family_from_hint(hint, state.computed);
+	css__set_font_family_from_hint(&mut hint, state.computed);
 	CSS_OK
 }
 
@@ -3168,20 +3152,18 @@ pub fn css__cascade_font_size(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_font_size_from_hint(hint:&mut  css_hint, 
+pub fn css__set_font_size_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_font_size(style, hint.status, x.value, x.unit);
+			if hint.length.is_some() {
+					set_font_size(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
 					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
 				}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -3253,7 +3235,7 @@ pub fn css__cascade_font_style(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_font_style_from_hint(hint:&mut  css_hint, 
+pub fn css__set_font_style_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -3313,7 +3295,7 @@ pub fn css__cascade_font_variant(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_font_variant_from_hint(hint:&mut  css_hint, 
+pub fn css__set_font_variant_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -3406,7 +3388,7 @@ pub fn css__cascade_font_weight(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_font_weight_from_hint(hint:&mut  css_hint, 
+pub fn css__set_font_weight_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -3446,20 +3428,18 @@ pub fn css__cascade_height(opv:u32, style:&mut ~css_style,
 	return css__cascade_length_auto(opv, style, state, set_height);
 }
 
-pub fn css__set_height_from_hint(hint:&mut  css_hint, 
+pub fn css__set_height_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_height(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_height(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -3509,20 +3489,18 @@ pub fn css__cascade_left(opv:u32, style:&mut ~css_style,
 	return css__cascade_length_auto(opv, style, state, set_left);
 }
 
-pub fn css__set_left_from_hint(hint:&mut  css_hint, 
+pub fn css__set_left_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_left(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_left(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -3571,20 +3549,18 @@ pub fn css__cascade_letter_spacing(opv:u32, style:&mut ~css_style,
 	return css__cascade_length_normal(opv, style, state, set_letter_spacing);
 }
 
-pub fn css__set_letter_spacing_from_hint(hint:&mut  css_hint, 
+pub fn css__set_letter_spacing_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_letter_spacing(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_letter_spacing(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -3671,20 +3647,18 @@ pub fn css__cascade_line_height(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_line_height_from_hint(hint:&mut  css_hint, 
+pub fn css__set_line_height_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_line_height(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_line_height(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -3735,7 +3709,7 @@ pub fn css__cascade_list_style_image(opv:u32, style:&mut ~css_style,
 	return  css__cascade_uri_none(opv, style, state, Some(@set_list_style_image) );
 }
 
-pub fn css__set_list_style_image_from_hint(hint:&mut  css_hint, 
+pub fn css__set_list_style_image_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -3813,7 +3787,7 @@ pub fn css__cascade_list_style_position(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_list_style_position_from_hint(hint:&mut  css_hint, 
+pub fn css__set_list_style_position_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -3917,7 +3891,7 @@ pub fn css__cascade_list_style_type(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_list_style_type_from_hint(hint:&mut  css_hint, 
+pub fn css__set_list_style_type_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -3961,20 +3935,18 @@ pub fn css__cascade_margin_bottom(opv:u32, style:&mut ~css_style,
 	return css__cascade_length_auto(opv, style, state, set_margin_bottom);
 }
 
-pub fn css__set_margin_bottom_from_hint(hint:&mut  css_hint, 
+pub fn css__set_margin_bottom_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_margin_bottom(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_margin_bottom(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -4024,20 +3996,18 @@ pub fn css__cascade_margin_left(opv:u32, style:&mut ~css_style,
 	return css__cascade_length_auto(opv, style, state, set_margin_left);
 }
 
-pub fn css__set_margin_left_from_hint(hint:&mut  css_hint, 
+pub fn css__set_margin_left_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_margin_left(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_margin_left(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -4087,20 +4057,18 @@ pub fn css__cascade_margin_right(opv:u32, style:&mut ~css_style,
 	return css__cascade_length_auto(opv, style, state, set_margin_right);
 }
 
-pub fn css__set_margin_right_from_hint(hint:&mut  css_hint, 
+pub fn css__set_margin_right_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_margin_right(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_margin_right(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -4149,20 +4117,18 @@ pub fn css__cascade_margin_top(opv:u32, style:&mut ~css_style,
 	return css__cascade_length_auto(opv, style, state, set_margin_top);
 }
 
-pub fn css__set_margin_top_from_hint(hint:&mut  css_hint, 
+pub fn css__set_margin_top_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_margin_top(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_margin_top(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			} 
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -4211,20 +4177,18 @@ pub fn css__cascade_max_height(opv:u32, style:&mut ~css_style,
 	return css__cascade_length_none(opv, style, state, set_max_height);
 }
 
-pub fn css__set_max_height_from_hint(hint:&mut  css_hint, 
+pub fn css__set_max_height_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_max_height(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_max_height(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -4274,20 +4238,18 @@ pub fn css__cascade_max_width(opv:u32, style:&mut ~css_style,
 	return css__cascade_length_none(opv, style, state, set_max_width);
 }
 
-pub fn css__set_max_width_from_hint(hint:&mut  css_hint, 
+pub fn css__set_max_width_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_max_width(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_max_width(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -4336,20 +4298,18 @@ pub fn css__cascade_min_height(opv:u32, style:&mut ~css_style,
 	return css__cascade_length(opv, style, state, set_min_height );
 }
 
-pub fn css__set_min_height_from_hint(hint:&mut  css_hint, 
+pub fn css__set_min_height_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_min_height(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_min_height(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -4399,20 +4359,18 @@ pub fn css__cascade_min_width(opv:u32, style:&mut ~css_style,
 	return css__cascade_length(opv, style, state, set_min_width );
 }
 
-pub fn css__set_min_width_from_hint(hint:&mut  css_hint, 
+pub fn css__set_min_width_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_min_width(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_min_width(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -4475,7 +4433,7 @@ pub fn css__cascade_opacity(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_opacity_from_hint(hint:&mut  css_hint, 
+pub fn css__set_opacity_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -4530,7 +4488,7 @@ pub fn css__cascade_orphans(opv:u32 ,
 	return css__cascade_number(opv, style, state, None );
 }
 
-pub fn css__set_orphans_from_hint(_: &mut css_hint, 
+pub fn css__set_orphans_from_hint(_: &mut ~css_hint, 
 		_:&mut css_computed_style) -> css_error {
 
 	CSS_OK
@@ -4586,7 +4544,7 @@ pub fn css__cascade_outline_color(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_outline_color_from_hint(hint:&mut  css_hint, 
+pub fn css__set_outline_color_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -4644,7 +4602,7 @@ pub fn css__cascade_outline_style(opv:u32, style:&mut ~css_style,
 	return css__cascade_border_style(opv, style, state, set_outline_style);
 }
 
-pub fn css__set_outline_style_from_hint(hint:&mut  css_hint, 
+pub fn css__set_outline_style_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -4687,20 +4645,18 @@ pub fn css__cascade_outline_width(opv:u32, style:&mut ~css_style,
 	return css__cascade_border_width(opv, style, state, set_outline_width);
 }
 
-pub fn css__set_outline_width_from_hint(hint:&mut  css_hint, 
+pub fn css__set_outline_width_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_outline_width(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_outline_width(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -4782,7 +4738,7 @@ pub fn css__cascade_overflow(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_overflow_from_hint(hint:&mut  css_hint, 
+pub fn css__set_overflow_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -4825,20 +4781,18 @@ pub fn css__cascade_padding_bottom(opv:u32, style:&mut ~css_style,
 	return css__cascade_length(opv, style, state, set_padding_bottom );
 }
 
-pub fn css__set_padding_bottom_from_hint(hint:&mut  css_hint, 
+pub fn css__set_padding_bottom_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_padding_bottom(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_padding_bottom(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -4888,20 +4842,18 @@ pub fn css__cascade_padding_left(opv:u32, style:&mut ~css_style,
 	return css__cascade_length(opv, style, state, set_padding_left );
 }
 
-pub fn css__set_padding_left_from_hint(hint:&mut  css_hint, 
+pub fn css__set_padding_left_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_padding_left(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_padding_left(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -4951,20 +4903,18 @@ pub fn css__cascade_padding_right(opv:u32, style:&mut ~css_style,
 	return css__cascade_length(opv, style, state, set_padding_right );
 }
 
-pub fn css__set_padding_right_from_hint(hint:&mut  css_hint, 
+pub fn css__set_padding_right_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_padding_right(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_padding_right(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -5014,22 +4964,20 @@ pub fn css__cascade_padding_top(opv:u32, style:&mut ~css_style,
 	return css__cascade_length(opv, style, state, set_padding_top );
 }
 
-pub fn css__set_padding_top_from_hint(hint:&mut  css_hint, 
+pub fn css__set_padding_top_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_padding_top(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+		if hint.length.is_some() {
+				set_padding_top(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
 			}
-		},
+			else {
+				CSS_BADPARM
+			}
+		},	
 		_=>{
 			CSS_INVALID 
 		}
@@ -5079,7 +5027,7 @@ pub fn css__cascade_page_break_after(opv:u32, style:&mut ~css_style,
 			set_page_break_after);
 }
 
-pub fn css__set_page_break_after_from_hint(hint:&mut  css_hint, 
+pub fn css__set_page_break_after_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -5123,7 +5071,7 @@ pub fn css__cascade_page_break_before(opv:u32, style:&mut ~css_style,
 			set_page_break_before);
 }
 
-pub fn css__set_page_break_before_from_hint(hint:&mut  css_hint, 
+pub fn css__set_page_break_before_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -5168,7 +5116,7 @@ pub fn css__cascade_page_break_inside(opv:u32, style:&mut ~css_style,
 			set_page_break_inside );
 }
 
-pub fn css__set_page_break_inside_from_hint(hint:&mut  css_hint, 
+pub fn css__set_page_break_inside_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -5234,7 +5182,7 @@ pub fn css__cascade_pause_after(opv:u32 ,
 	CSS_OK
 }
 
-pub fn css__set_pause_after_from_hint(_: &mut css_hint, 
+pub fn css__set_pause_after_from_hint(_: &mut ~css_hint, 
 									_:&mut css_computed_style) 
 									-> css_error {
 
@@ -5279,7 +5227,7 @@ pub fn css__cascade_pause_before(opv:u32 ,
 	CSS_OK
 }
 
-pub fn css__set_pause_before_from_hint(_: &mut css_hint, 
+pub fn css__set_pause_before_from_hint(_: &mut ~css_hint, 
 									_:&mut css_computed_style) 
 									-> css_error {
 
@@ -5339,7 +5287,7 @@ pub fn css__cascade_pitch(opv:u32 ,
 	CSS_OK
 }
 
-pub fn css__set_pitch_from_hint(_: &mut css_hint, 
+pub fn css__set_pitch_from_hint(_: &mut ~css_hint, 
 								_:&mut css_computed_style) -> css_error {
 
 	CSS_OK
@@ -5369,7 +5317,7 @@ pub fn css__cascade_pitch_range(opv:u32 ,
 	css__cascade_number(opv, style, state, None)
 }
 
-pub fn css__set_pitch_range_from_hint(_: &mut css_hint, 
+pub fn css__set_pitch_range_from_hint(_: &mut ~css_hint, 
 									_:&mut css_computed_style) 
 									-> css_error {
 
@@ -5431,7 +5379,7 @@ pub fn css__cascade_play_during(opv:u32 ,
 	CSS_OK
 }
 
-pub fn css__set_play_during_from_hint(_: &mut css_hint, 
+pub fn css__set_play_during_from_hint(_: &mut ~css_hint, 
 									_:&mut css_computed_style) 
 									-> css_error {
 
@@ -5486,7 +5434,7 @@ pub fn css__cascade_position(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_position_from_hint(hint:&mut  css_hint, 
+pub fn css__set_position_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -5579,7 +5527,7 @@ pub fn css__cascade_quotes(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_quotes_from_hint(hint:&mut  css_hint, 
+pub fn css__set_quotes_from_hint(hint:&mut ~css_hint, 
 								style:&mut css_computed_style
 								) -> css_error {
 
@@ -5595,7 +5543,7 @@ pub fn css__set_quotes_from_hint(hint:&mut  css_hint,
 
 pub fn css__initial_quotes(state:&mut ~css_select_state) -> css_error {
 
-	let hint = @mut css_hint{
+	let mut hint = ~css_hint{
         hint_type:HINT_LENGTH,
         status:0,
         clip:None,
@@ -5611,21 +5559,19 @@ pub fn css__initial_quotes(state:&mut ~css_select_state) -> css_error {
     };
 	let mut error : css_error;
 
-	match state.handler {
-		None=> {
-			return CSS_BADPARM ;
-		},
-		Some(fnhandler) => {
-			error = ((fnhandler.ua_default_for_property))(
-				(CSS_PROP_QUOTES as u32), hint);
-		    match error {
-		        CSS_OK=>{},
-		        _=> return error
-		    }
-		}
+	if state.handler.is_none() {
+		return CSS_BADPARM ;
 	}
+	
+	error = (state.handler.get_ref().ua_default_for_property)(
+		(CSS_PROP_QUOTES as u32), &mut hint);
+    match error {
+        CSS_OK=>{},
+        _=> return error
+    }
+		
 
-	css__set_quotes_from_hint(hint, state.computed);
+	css__set_quotes_from_hint(&mut hint, state.computed);
 	CSS_OK
 }
 
@@ -5665,7 +5611,7 @@ pub fn css__cascade_richness(opv:u32 ,
 	return css__cascade_number(opv, style, state, None);
 }
 
-pub fn css__set_richness_from_hint(_: &mut css_hint, 
+pub fn css__set_richness_from_hint(_: &mut ~css_hint, 
 									_:&mut css_computed_style) 
 									-> css_error {
 
@@ -5695,20 +5641,18 @@ pub fn css__cascade_right(opv:u32, style:&mut ~css_style,
 	return css__cascade_length_auto(opv, style, state, set_right);
 }
 
-pub fn css__set_right_from_hint(hint:&mut  css_hint, 
+pub fn css__set_right_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_right(style, hint.status, x.value , x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_right(style, hint.status, hint.length.get_ref().value , hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -5775,7 +5719,7 @@ pub fn css__cascade_speak(opv:u32 ,
 	CSS_OK
 }
 
-pub fn css__set_speak_from_hint(_: &mut css_hint, 
+pub fn css__set_speak_from_hint(_: &mut ~css_hint, 
 								_:&mut css_computed_style) 
 								-> css_error {
 
@@ -5821,7 +5765,7 @@ pub fn css__cascade_speak_header(opv:u32 ,
 	CSS_OK
 }
 
-pub fn css__set_speak_header_from_hint(_: &mut css_hint, 
+pub fn css__set_speak_header_from_hint(_: &mut ~css_hint, 
 									_:&mut css_computed_style) 
 									-> css_error {
 
@@ -5867,7 +5811,7 @@ pub fn css__cascade_speak_numeral(opv:u32 ,
 	CSS_OK
 }
 
-pub fn css__set_speak_numeral_from_hint(_: &mut css_hint, 
+pub fn css__set_speak_numeral_from_hint(_: &mut ~css_hint, 
 									_:&mut css_computed_style) 
 									-> css_error {
 
@@ -5913,7 +5857,7 @@ pub fn css__cascade_speak_punctuation(opv:u32 ,
 	CSS_OK
 }
 
-pub fn css__set_speak_punctuation_from_hint(_: &mut css_hint, 
+pub fn css__set_speak_punctuation_from_hint(_: &mut ~css_hint, 
 											_:&mut css_computed_style) 
 											-> css_error {
 
@@ -5970,7 +5914,7 @@ pub fn css__cascade_speech_rate(opv:u32 ,
 	CSS_OK
 }
 
-pub fn css__set_speech_rate_from_hint(_: &mut css_hint, 
+pub fn css__set_speech_rate_from_hint(_: &mut ~css_hint, 
 									_:&mut css_computed_style) 
 									-> css_error {
 
@@ -6001,7 +5945,7 @@ pub fn css__cascade_stress(opv:u32 ,
 	return css__cascade_number(opv, style, state, None);
 }
 
-pub fn css__set_stress_from_hint(_: &mut css_hint, 
+pub fn css__set_stress_from_hint(_: &mut ~css_hint, 
 								_:&mut css_computed_style) 
 								-> css_error {
 
@@ -6050,7 +5994,7 @@ pub fn css__cascade_table_layout(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_table_layout_from_hint(hint:&mut  css_hint, 
+pub fn css__set_table_layout_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -6128,7 +6072,7 @@ pub fn css__cascade_text_align(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_text_align_from_hint(hint:&mut  css_hint, 
+pub fn css__set_text_align_from_hint(hint:&mut ~css_hint, 
 									style:&mut css_computed_style
 									) -> css_error {
 
@@ -6211,7 +6155,7 @@ pub fn css__cascade_text_decoration(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_text_decoration_from_hint(hint:&mut  css_hint, 
+pub fn css__set_text_decoration_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -6255,20 +6199,18 @@ pub fn css__cascade_text_indent(opv:u32, style:&mut ~css_style,
 	return css__cascade_length(opv, style, state,set_text_indent );
 }
 
-pub fn css__set_text_indent_from_hint(hint:&mut  css_hint, 
+pub fn css__set_text_indent_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_text_indent(style, hint.status, x.value , x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_text_indent(style, hint.status, hint.length.get_ref().value , hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -6344,7 +6286,7 @@ pub fn css__cascade_text_transform(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_text_transform_from_hint(hint:&mut  css_hint, 
+pub fn css__set_text_transform_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -6387,20 +6329,18 @@ pub fn css__cascade_top(opv:u32, style:&mut ~css_style,
 	return css__cascade_length_auto(opv, style, state, set_top) ;
 }
 
-pub fn css__set_top_from_hint(hint:&mut  css_hint, 
+pub fn css__set_top_from_hint(hint:&mut ~css_hint, 
 							style:&mut css_computed_style
 							) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_top(style, hint.status, x.value , x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_top(style, hint.status, hint.length.get_ref().value , hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -6471,7 +6411,7 @@ pub fn css__cascade_unicode_bidi(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_unicode_bidi_from_hint(hint:&mut  css_hint, 
+pub fn css__set_unicode_bidi_from_hint(hint:&mut ~css_hint, 
 									style:&mut css_computed_style
 									) -> css_error {
 
@@ -6561,20 +6501,18 @@ pub fn css__cascade_vertical_align(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_vertical_align_from_hint(hint:&mut  css_hint, 
+pub fn css__set_vertical_align_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_vertical_align(style, hint.status, x.value , x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_vertical_align(style, hint.status, hint.length.get_ref().value , hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -6646,7 +6584,7 @@ pub fn css__cascade_visibility(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_visibility_from_hint(hint:&mut  css_hint, 
+pub fn css__set_visibility_from_hint(hint:&mut ~css_hint, 
 									style:&mut css_computed_style
 									) -> css_error {
 
@@ -6751,7 +6689,7 @@ pub fn css__cascade_voice_family(opv:u32 ,
 	CSS_OK
 }
 
-pub fn css__set_voice_family_from_hint(_: &mut css_hint, 
+pub fn css__set_voice_family_from_hint(_: &mut ~css_hint, 
 								_:&mut css_computed_style) 
 								-> css_error {
 
@@ -6815,7 +6753,7 @@ pub fn css__cascade_volume(opv:u32 ,
 	CSS_OK
 }
 
-pub fn css__set_volume_from_hint(_: &mut css_hint, 
+pub fn css__set_volume_from_hint(_: &mut ~css_hint, 
 								_:&mut css_computed_style) 
 								-> css_error {
 
@@ -6872,7 +6810,7 @@ pub fn css__cascade_white_space(opv:u32, _:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_white_space_from_hint(hint:&mut  css_hint, 
+pub fn css__set_white_space_from_hint(hint:&mut ~css_hint, 
 									style:&mut css_computed_style
 									) -> css_error {
 
@@ -6915,20 +6853,18 @@ pub fn css__cascade_width(opv:u32, style:&mut ~css_style,
 	return css__cascade_length_auto(opv, style, state, set_width);	
 }
 
-pub fn css__set_width_from_hint(hint:&mut  css_hint, 
+pub fn css__set_width_from_hint(hint:&mut ~css_hint, 
 								style:&mut css_computed_style
 								) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_width(style, hint.status, x.value , x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_width(style, hint.status, hint.length.get_ref().value , hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -6978,7 +6914,7 @@ pub fn css__cascade_windows(opv:u32 ,
 	return css__cascade_number(opv, style, state, None);
 }
 
-pub fn css__set_windows_from_hint(_: &mut css_hint, 
+pub fn css__set_windows_from_hint(_: &mut ~css_hint, 
 								_:&mut css_computed_style) 
 								-> css_error {
 
@@ -7007,20 +6943,18 @@ pub fn css__cascade_word_spacing(opv:u32, style:&mut ~css_style,
 	return css__cascade_length_normal(opv, style, state, set_word_spacing);
 }
 
-pub fn css__set_word_spacing_from_hint(hint:&mut  css_hint, 
+pub fn css__set_word_spacing_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
 	match hint.hint_type {
 		HINT_LENGTH=>{
-			match hint.length {
-				Some(x)=>{
-					set_word_spacing(style, hint.status, x.value, x.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.length.is_some() {
+				set_word_spacing(style, hint.status, hint.length.get_ref().value, hint.length.get_ref().unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -7078,7 +7012,7 @@ pub fn css__cascade_cue_after(opv:u32 ,
 	return css__cascade_uri_none(opv, style, state, None);
 }
 
-pub fn css__set_cue_after_from_hint(_: &mut css_hint, 
+pub fn css__set_cue_after_from_hint(_: &mut ~css_hint, 
 								_:&mut css_computed_style) 
 								-> css_error {
 
@@ -7110,7 +7044,7 @@ pub fn css__cascade_cue_before(opv:u32 ,
 	return css__cascade_uri_none(opv, style, state, None);
 }
 
-pub fn css__set_cue_before_from_hint(_: &mut css_hint, 
+pub fn css__set_cue_before_from_hint(_: &mut ~css_hint, 
 								_:&mut css_computed_style) 
 								-> css_error {
 
@@ -7162,7 +7096,7 @@ pub fn css__cascade_z_index(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_z_index_from_hint(hint:&mut  css_hint, 
+pub fn css__set_z_index_from_hint(hint:&mut ~css_hint, 
 								style:&mut css_computed_style
 								) -> css_error {
 
@@ -7213,7 +7147,7 @@ pub fn css__cascade_counter_increment(opv:u32, style:&mut ~css_style,
 			set_counter_increment);
 }
 
-pub fn css__set_counter_increment_from_hint(hint:&mut  css_hint, 
+pub fn css__set_counter_increment_from_hint(hint:&mut ~css_hint, 
 											style:&mut css_computed_style
 											) -> css_error {
 
@@ -7283,7 +7217,7 @@ pub fn css__cascade_counter_reset(opv:u32, style:&mut ~css_style,
 			set_counter_reset);
 }
 
-pub fn css__set_counter_reset_from_hint(hint:&mut  css_hint, 
+pub fn css__set_counter_reset_from_hint(hint:&mut ~css_hint, 
 										style:&mut css_computed_style
 										) -> css_error {
 
@@ -7437,7 +7371,7 @@ pub fn css__cascade_cursor(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_cursor_from_hint(hint:&mut  css_hint, 
+pub fn css__set_cursor_from_hint(hint:&mut ~css_hint, 
 								style:&mut css_computed_style
 								) -> css_error {
 
@@ -7628,7 +7562,7 @@ pub fn css__cascade_content(opv:u32, style:&mut ~css_style,
 }
 
 
-pub fn css__set_content_from_hint(hint:&mut css_hint, 
+pub fn css__set_content_from_hint(hint:&mut ~css_hint, 
 								style:&mut css_computed_style) 
 								-> css_error{
 
@@ -7691,7 +7625,7 @@ pub fn css__cascade_column_span(opv:u32, _:&mut ~css_style,
   CSS_OK
 }
 
-pub fn css__set_column_span_from_hint(_:&mut css_hint, 
+pub fn css__set_column_span_from_hint(_:&mut ~css_hint, 
 									_:&mut css_computed_style)
 									-> css_error {
   // DO NOTHING
@@ -7744,7 +7678,7 @@ pub fn css__cascade_column_width(opv:u32, style:&mut ~css_style,
 	CSS_OK
 }
 
-pub fn css__set_column_width_from_hint(_:&mut css_hint, 
+pub fn css__set_column_width_from_hint(_:&mut ~css_hint, 
 									_:&mut css_computed_style) 
 									-> css_error{
 	//DO NOTHING
