@@ -43,7 +43,7 @@ pub fn ENSURE_PAGE ( style:&mut css_computed_style){
     match style.uncommon {
         Some(_)=>{},
         None=>{
-            let page_struct = @mut css_computed_page {
+            let page_struct = ~css_computed_page {
                 bits:~[ 
                         ( ((CSS_PAGE_BREAK_INSIDE_AUTO as u8) <<  6) | 
                           ((CSS_PAGE_BREAK_BEFORE_AUTO as u8) << 3) |

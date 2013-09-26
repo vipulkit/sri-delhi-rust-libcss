@@ -615,9 +615,9 @@ impl css_select_ctx {
             }
         }
           
-        let results = @mut css_select_font_faces_results{
-                    font_faces:~[]
-            };
+        let results = @mut css_select_font_faces_results {
+                font_faces:~[]
+        };
           
 		/* We found some matching faces.  Make a results structure with
 		 * the font faces in priority order. */
