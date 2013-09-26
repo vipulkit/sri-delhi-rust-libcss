@@ -838,16 +838,14 @@ pub fn css__set_background_position_from_hint(hint:&mut ~css_hint,
     //debug!("Entering: css__set_background_position_from_hint");
 	match hint.hint_type {
 		HINT_LENGTH_H_V=>{
-			match hint.position {
-				Some(x)=>{
-					set_background_position(style, hint.status, 
-						x.h.value, x.h.unit,
-						x.v.value, x.v.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.position.is_some() {
+				set_background_position(style, hint.status, 
+					hint.position.get_ref().h.value, hint.position.get_ref().h.unit,
+					hint.position.get_ref().v.value, hint.position.get_ref().v.unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -1768,16 +1766,14 @@ pub fn css__set_border_spacing_from_hint(hint:&mut ~css_hint,
 
 	match hint.hint_type {
 		HINT_LENGTH_H_V=>{
-			match hint.position {
-				Some(x)=>{
-					set_border_spacing(style, hint.status,
-										x.h.value, x.h.unit,
-										x.v.value, x.v.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.position.is_some() {
+				set_border_spacing(style, hint.status,
+									hint.position.get_ref().h.value, hint.position.get_ref().h.unit,
+									hint.position.get_ref().v.value, hint.position.get_ref().v.unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -7153,17 +7149,15 @@ pub fn css__set_counter_increment_from_hint(hint:&mut ~css_hint,
 
 	match hint.hint_type {
 		COUNTER=>{
-			match hint.counters.clone() {
-				Some(x)=>{
-					set_counter_increment(style, hint.status, x);
-					if hint.status == (CSS_COUNTER_INCREMENT_NAMED as u8) {
-						hint.counters = None ;
-					}
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
+			if hint.counters.is_some() {
+				set_counter_increment(style, hint.status, hint.counters.clone().unwrap());
+				if hint.status == (CSS_COUNTER_INCREMENT_NAMED as u8) {
+					hint.counters = None ;
 				}
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -7223,17 +7217,15 @@ pub fn css__set_counter_reset_from_hint(hint:&mut ~css_hint,
 
 	match hint.hint_type {
 		COUNTER=>{
-			match hint.counters.clone() {
-				Some(x)=>{
-					set_counter_reset(style, hint.status, x);
-					if hint.status == (CSS_COUNTER_INCREMENT_NAMED as u8) {
-						hint.counters = None ;
-					}
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
+			if hint.counters.is_some() {
+				set_counter_reset(style, hint.status, hint.counters.clone().unwrap());
+				if hint.status == (CSS_COUNTER_INCREMENT_NAMED as u8) {
+					hint.counters = None ;
 				}
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -7377,15 +7369,13 @@ pub fn css__set_cursor_from_hint(hint:&mut ~css_hint,
 
 	match hint.hint_type {
 		STRINGS_VECTOR=>{
-			match hint.strings.clone() {
-				Some(x)=>{
-					set_cursor(style, hint.status, x);
-					hint.counters = None ;
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.strings.is_some() {
+				set_cursor(style, hint.status, hint.strings.clone().unwrap());
+				hint.counters = None ;
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{

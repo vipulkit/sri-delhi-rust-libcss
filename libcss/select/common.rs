@@ -597,8 +597,8 @@ pub struct css_computed_style {
     quotes:~[uint],
 
     uncommon:Option<@mut css_computed_uncommon>, /**< Uncommon properties */
-    aural:Option<@mut css_aural>,         /*< Aural properties */
-    page:Option<@mut css_computed_page> /* *< Page properties */
+    aural:Option<~css_aural>,         /*< Aural properties */
+    page:Option<~css_computed_page> /* *< Page properties */
 
 }
 
@@ -640,7 +640,7 @@ pub struct css_hint {
     content:Option<~css_computed_content_item>,
     counters:Option<~[~css_computed_counter]>,
     length:Option<~css_hint_length>,
-    position:Option<@mut css_hint_length_hv>,
+    position:Option<~css_hint_length_hv>,
     color:u32,
     fixed:i32,
     integer:i32,

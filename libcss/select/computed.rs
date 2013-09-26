@@ -1366,48 +1366,42 @@ pub fn css_computed_text_align(style:&mut css_computed_style)
 pub fn css_computed_page_break_after(style:&mut css_computed_style)
                                         -> u8 {
 
-    match  style.page {
-        Some(computed_page)=>{
-            let mut bits : u8 = computed_page.bits[CSS_PAGE_BREAK_AFTER_INDEX];
-            bits = bits & (CSS_PAGE_BREAK_AFTER_MASK as u8);
-            bits = bits >> CSS_PAGE_BREAK_AFTER_SHIFT;   
-            bits
-        },
-        None=>{
-            (CSS_PAGE_BREAK_AFTER_AUTO as u8)
-        }
+    if style.page.is_some() {
+        let mut bits : u8 = style.page.get_ref().bits[CSS_PAGE_BREAK_AFTER_INDEX];
+        bits = bits & (CSS_PAGE_BREAK_AFTER_MASK as u8);
+        bits = bits >> CSS_PAGE_BREAK_AFTER_SHIFT;   
+        bits
+    }
+    else {
+        (CSS_PAGE_BREAK_AFTER_AUTO as u8)
     }
 }
 
 pub fn css_computed_page_break_before(style:&mut css_computed_style)
                                         -> u8 {
 
-    match  style.page {
-        Some(computed_page)=>{
-            let mut bits : u8 = computed_page.bits[CSS_PAGE_BREAK_BEFORE_INDEX];
-            bits = bits & (CSS_PAGE_BREAK_BEFORE_MASK as u8);
-            bits = bits >> CSS_PAGE_BREAK_BEFORE_SHIFT;   
-            bits
-        },
-        None=>{
-            (CSS_PAGE_BREAK_BEFORE_AUTO as u8)
-        }
+    if style.page.is_some() {
+        let mut bits : u8 = style.page.get_ref().bits[CSS_PAGE_BREAK_BEFORE_INDEX];
+        bits = bits & (CSS_PAGE_BREAK_BEFORE_MASK as u8);
+        bits = bits >> CSS_PAGE_BREAK_BEFORE_SHIFT;   
+        bits
+    }
+    else {
+        (CSS_PAGE_BREAK_BEFORE_AUTO as u8)
     }
 }
 
 pub fn css_computed_page_break_inside(style:&mut css_computed_style)
                                         -> u8 {
 
-    match  style.page {
-        Some(computed_page)=>{
-            let mut bits : u8 = computed_page.bits[CSS_PAGE_BREAK_INSIDE_INDEX];
-            bits = bits & (CSS_PAGE_BREAK_INSIDE_MASK as u8);
-            bits = bits >> CSS_PAGE_BREAK_INSIDE_SHIFT;   
-            bits
-        },
-        None=>{
-            (CSS_PAGE_BREAK_INSIDE_AUTO as u8)
-        }
+    if style.page.is_some() {
+        let mut bits : u8 = style.page.get_ref().bits[CSS_PAGE_BREAK_INSIDE_INDEX];
+        bits = bits & (CSS_PAGE_BREAK_INSIDE_MASK as u8);
+        bits = bits >> CSS_PAGE_BREAK_INSIDE_SHIFT;   
+        bits
+    }
+    else {
+        (CSS_PAGE_BREAK_INSIDE_AUTO as u8)
     }
 }
 
