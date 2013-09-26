@@ -819,7 +819,7 @@ pub fn run_test( ctx:@mut line_ctx, lwc_ref:~lwc, css_select_style_time:@mut u64
         let pw_ptr = ::cast::transmute(pw);
 
         let start_time = time::precise_time_ns();
-        let result = select.css_select_style(target,ctx.media as u64,None, select_handler,pw_ptr);
+        let result = select.css_select_style(target,ctx.media as u64,-1, select_handler,pw_ptr);
         let end_time = time::precise_time_ns();
 
         *css_select_style_time += (end_time - start_time);

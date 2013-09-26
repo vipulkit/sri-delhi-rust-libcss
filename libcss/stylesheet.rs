@@ -1088,38 +1088,41 @@ impl css_stylesheet {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css__stylesheet_remove_rule(sheet : @mut css_stylesheet,  lwc_ref:&mut ~lwc, css_rule : CSS_RULE_DATA_TYPE) 
+    pub fn css__stylesheet_remove_rule(sheet_index : int,  lwc_ref:&mut ~lwc, css_rule : CSS_RULE_DATA_TYPE) 
                                         -> css_error {
         //debug!("Entering: css__stylesheet_remove_rule");
-        match sheet._remove_selectors(lwc_ref, css_rule) {
-            CSS_OK=>{},
-            x =>return x 
-        }
-
-        let base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
-        match base_rule.next {
-            None=> {
-                sheet.last_rule = base_rule.prev;
-            },
-            Some(base_rule_next)=>{
-                let next_rule = css_stylesheet::css__stylesheet_get_base_rule(base_rule_next);
-                next_rule.prev = base_rule.prev;
+        unsafe
+        {
+            match vec_stylesheet.get_mut_ref()[sheet_index]._remove_selectors(lwc_ref, css_rule) {
+                CSS_OK=>{},
+                x =>return x 
             }
-        }
 
-        match base_rule.prev {
-            None=>{
-                sheet.rule_list = base_rule.next ;
-            },
-            Some(base_rule_prev)=>{
-                let prev_rule = css_stylesheet::css__stylesheet_get_base_rule(base_rule_prev);
-                prev_rule.next = base_rule.next ;
+            let base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
+            match base_rule.next {
+                None=> {
+                    vec_stylesheet.get_mut_ref()[sheet_index].last_rule = base_rule.prev;
+                },
+                Some(base_rule_next)=>{
+                    let next_rule = css_stylesheet::css__stylesheet_get_base_rule(base_rule_next);
+                    next_rule.prev = base_rule.prev;
+                }
             }
+
+            match base_rule.prev {
+                None=>{
+                    vec_stylesheet.get_mut_ref()[sheet_index].rule_list = base_rule.next ;
+                },
+                Some(base_rule_prev)=>{
+                    let prev_rule = css_stylesheet::css__stylesheet_get_base_rule(base_rule_prev);
+                    prev_rule.next = base_rule.next ;
+                }
+            }
+            base_rule.parent_rule = None ;
+            base_rule.parent_stylesheet_index = -1;
+            base_rule.next = None;
+            base_rule.prev = None ;
         }
-        base_rule.parent_rule = None ;
-        base_rule.parent_stylesheet_index = -1;
-        base_rule.next = None;
-        base_rule.prev = None ;
         CSS_OK
     }
 

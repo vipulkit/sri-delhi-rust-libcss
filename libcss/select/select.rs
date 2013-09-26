@@ -285,7 +285,7 @@ impl css_select_ctx {
     pub fn css_select_style(&mut self,
                                 node:*c_void,
                                 media:u64,
-                                inline_style:Option<@mut css_stylesheet>,
+                                inline_style_index:int,
                                 handler:@mut css_select_handler,
 								pw:*c_void) 
                                 -> (css_error,Option<@mut css_select_results>) {
@@ -408,43 +408,46 @@ impl css_select_ctx {
         }
        
 	   /* Consider any inline style for the node */
-        if (inline_style.is_some()) {
+        if (inline_style_index != -1) {
             //debug!(fmt!("css_select_style : considerng inline style")) ;
-            let sel = inline_style.unwrap().rule_list;
+            unsafe
+            {
+                let sel = vec_stylesheet.get_mut_ref()[inline_style_index].rule_list;
 
-            /* Sanity check style */
-            if (inline_style.unwrap().rule_count != 1 ){
-                 return (CSS_INVALID,None) ;
-            }
-            
-            match sel {
-                None=>{
+                /* Sanity check style */
+                if (vec_stylesheet.get_mut_ref()[inline_style_index].rule_count != 1 ){
                     return (CSS_INVALID,None) ;
-                },
-                Some(r) => {
-                    match r {
-                        RULE_SELECTOR(r_sel)=>{
-                            // Complete 
+                }
+            
+                match sel {
+                    None=>{
+                        return (CSS_INVALID,None) ;
+                    },
+                    Some(r) => {
+                        match r {
+                            RULE_SELECTOR(r_sel)=>{
+                                // Complete 
 
-                            /* No bytecode if input was empty or wholly invalid */
-                            if(r_sel.style.is_some()){
-                                /* Inline style applies to base element only */
-                                state.current_pseudo = CSS_PSEUDO_ELEMENT_NONE;
-                                state.computed = state.results.styles[
-                                        CSS_PSEUDO_ELEMENT_NONE as uint].unwrap();
+                                /* No bytecode if input was empty or wholly invalid */
+                                if(r_sel.style.is_some()){
+                                    /* Inline style applies to base element only */
+                                    state.current_pseudo = CSS_PSEUDO_ELEMENT_NONE;
+                                    state.computed = state.results.styles[
+                                            CSS_PSEUDO_ELEMENT_NONE as uint].unwrap();
 
-                                error = css_select_ctx::cascade_style(r_sel.style.unwrap(), 
-                                                        &mut state);
-                                match error {
-                                    CSS_OK=>{},
-                                    x =>  {
-                                        return (x,None) ;
+                                    error = css_select_ctx::cascade_style(r_sel.style.unwrap(), 
+                                                            &mut state);
+                                    match error {
+                                        CSS_OK=>{},
+                                        x =>  {
+                                            return (x,None) ;
+                                        }
                                     }
                                 }
+                            },
+                            _=>{
+                                return (CSS_INVALID,None) ;
                             }
-                        },
-                        _=>{
-                            return (CSS_INVALID,None) ;
                         }
                     }
                 }
