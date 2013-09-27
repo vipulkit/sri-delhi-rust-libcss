@@ -37,7 +37,7 @@ pub struct css_select_sheet {
 /*
  * CSS selection context
  */
-struct css_select_ctx {
+pub struct css_select_ctx {
     sheets:~[@mut css_select_sheet],
     /* Useful interned strings */
     lwc_ref: ~lwc,
