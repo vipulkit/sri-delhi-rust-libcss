@@ -430,7 +430,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
                     let val = strtoul(data.clone(),&mut len) ;
                     debug!( fmt!("Entering: else 2= %?=%?=%?=",data,len,val));
                     /* Append to bytecode */
-                    rule.expected.push(bytecode(val.unwrap_or_default(0) as u32)) ;
+                    rule.expected.push(bytecode(val.unwrap_or(0) as u32)) ;
                 }
             }
         }
@@ -528,7 +528,7 @@ pub fn run_test(ctx:@mut line_ctx) {
             _=>{false}
         } );
 
-        let url = o_str.unwrap_or_default(~"") ;
+        let url = o_str.unwrap_or(~"") ;
 
         match error {
             CSS_OK=> {

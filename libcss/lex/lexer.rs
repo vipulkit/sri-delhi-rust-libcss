@@ -1,5 +1,5 @@
 use std::char::*;
-use std::u32::*;
+use std::f32::*;
 use std::str::*;
 
 use parserutils::input::inputstream::*;
@@ -2108,7 +2108,7 @@ impl css_lexer {
                 let c = cptr[0 + counter] as char;
                 if c.is_digit_radix(16){
                     self.bytes_read_for_token += clen;
-                    ucs = (ucs << 4) | from_str_radix(from_char(cptr[0 + counter] as char), 16).unwrap();
+                    ucs = (ucs << 4) | (from_str_hex(from_char(cptr[0 + counter] as char)).unwrap() as u32);
                 }
                 else{
                     break;

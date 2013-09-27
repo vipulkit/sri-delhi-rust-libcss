@@ -173,7 +173,7 @@ impl lwc {
 } // impl wapcaplet
 
 
-fn lwc()->~lwc {
+pub fn lwc()->~lwc {
     return ~lwc {
         map: HashMap::new(),
         vect: ~[]
