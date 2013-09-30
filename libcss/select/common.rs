@@ -636,7 +636,7 @@ pub struct css_hint {
     status:u8,
 
     // types specifies , which data type is used from 10 types defined below
-    clip:Option<@mut css_computed_clip_rect>,
+    clip:Option<~ css_computed_clip_rect>,
     content:Option<~css_computed_content_item>,
     counters:Option<~[~css_computed_counter]>,
     length:Option<~css_hint_length>,

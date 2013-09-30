@@ -1895,14 +1895,29 @@ pub fn  compute_absolute_border_side_width(style: &mut css_computed_style,
 #[inline]
 pub fn compute_absolute_clip(style: &mut css_computed_style,
                     ex_size: &mut ~css_hint_length) -> css_error {
+    let mut rect = ~css_computed_clip_rect{
+            top:0,
+            right:0,
+            bottom:0,
+            left:0,
+            tunit:CSS_UNIT_PX,
+            runit:CSS_UNIT_PX,
+            bunit:CSS_UNIT_PX,
+            lunit:CSS_UNIT_PX,
+            top_auto:false,
+            right_auto:false,
+            bottom_auto:false,
+            left_auto:false};
 
-    let (result, orect) = css_computed_clip(style) ;
 
-    match orect {
-        None=> { 
+    let (result, flag) = css_computed_clip(style, &mut rect);
+    let _css_clip_auto = CSS_CLIP_AUTO as u8;
+   //let _bits_ = ((bits&0x3) as u8);
+    match flag {
+        false => { 
             return CSS_BADPARM ;
         },
-        Some(rect)=> {
+     true => {
             
             if ( result == (CSS_CLIP_RECT as u8) ) {
                 if (rect.top_auto == false) {
@@ -1945,7 +1960,7 @@ pub fn compute_absolute_clip(style: &mut css_computed_style,
                     }
                 }
 
-                set_clip(style, (CSS_CLIP_RECT as u8), rect);
+                set_clip(style, (CSS_CLIP_RECT as u8), &mut rect);
             }
         }
     }

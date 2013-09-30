@@ -1107,8 +1107,8 @@ pub fn css__compose_clear(parent:&mut css_computed_style,
 pub fn css__cascade_clip(opv:u32, style:&mut ~css_style, state:&mut ~css_select_state) -> css_error {
 
 	let mut value = CSS_CLIP_INHERIT;
-	let rect = 
-        @mut css_computed_clip_rect{
+	let mut rect = 
+          ~css_computed_clip_rect{
             top:0,
             right:0,
             bottom:0,
@@ -1179,7 +1179,7 @@ pub fn css__cascade_clip(opv:u32, style:&mut ~css_style, state:&mut ~css_select_
 
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
-			set_clip(state.computed, value as u8, rect)
+			set_clip(state.computed, value as u8, &mut rect)
 	}
 
 	CSS_OK
@@ -1187,13 +1187,13 @@ pub fn css__cascade_clip(opv:u32, style:&mut ~css_style, state:&mut ~css_select_
 			
 pub fn css__set_clip_from_hint(hint:&mut ~css_hint, style:&mut css_computed_style) 
 								-> css_error {
-	set_clip(style, hint.status, hint.clip.unwrap()) ;
+	set_clip(style, hint.status,  hint.clip.get_mut_ref()) ;
 	CSS_OK
 }
 
 pub fn css__initial_clip(state:&mut ~css_select_state) -> css_error{
 
-	let rect = @mut css_computed_clip_rect{
+	let mut rect = ~css_computed_clip_rect{
         top:0,
         right:0,
         bottom:0,
@@ -1208,7 +1208,7 @@ pub fn css__initial_clip(state:&mut ~css_select_state) -> css_error{
         left_auto:false
     };
 
-	set_clip(state.computed, CSS_CLIP_AUTO as u8, rect) ;
+	set_clip(state.computed, CSS_CLIP_AUTO as u8, &mut rect) ;
 	CSS_OK
 }
 
@@ -1217,10 +1217,22 @@ pub fn css__compose_clip(parent:&mut css_computed_style,
 						result:&mut css_computed_style) 
 						-> css_error {
 
-	
-	let (clip_type_, rect_) = css_computed_clip(child);
+        let mut rect_ = ~css_computed_clip_rect{
+            top:0,
+            right:0,
+            bottom:0,
+            left:0,
+            tunit:CSS_UNIT_PX,
+            runit:CSS_UNIT_PX,
+            bunit:CSS_UNIT_PX,
+            lunit:CSS_UNIT_PX,
+            top_auto:false,
+            right_auto:false,
+            bottom_auto:false,
+            left_auto:false};
+
+	let (clip_type_, _) = css_computed_clip(child, &mut rect_);
 	let mut clip_type = clip_type_;
-	let mut rect = rect_;
 	
 	if (match child.uncommon { None => true, _ => false} && match parent.uncommon { Some(_) => true,  None => false }) 
 		|| clip_type == CSS_CLIP_INHERIT as u8 || ( match child.uncommon {Some(_) => true, None => false} && 
@@ -1228,12 +1240,11 @@ pub fn css__compose_clip(parent:&mut css_computed_style,
 		
 		if (match child.uncommon { None => true, _ => false} && match parent.uncommon { Some(_) => true,  None => false }) || 
 		   clip_type == CSS_CLIP_INHERIT as u8 {
-			let (clip_type_ret, rect_ret) = css_computed_clip(parent);
+			let (clip_type_ret, _) = css_computed_clip(parent, &mut rect_);
 			clip_type = clip_type_ret;
-			rect = rect_ret
 		}
 
-		set_clip(result, clip_type, rect.unwrap());
+		set_clip(result, clip_type, &mut rect_);
 	}
 	CSS_OK
 }
