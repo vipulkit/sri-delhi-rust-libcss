@@ -544,8 +544,8 @@ pub fn dump_computed_style(style:@mut css_computed_style, lwc_ref:&mut ~lwc, buf
     }
 
     /* clip */
-	let mut rect : @mut css_computed_clip_rect = 
-        @mut css_computed_clip_rect{
+	let mut rect : ~ css_computed_clip_rect = 
+        ~ css_computed_clip_rect{
             top:0,
             right:0,
             bottom:0,
@@ -561,11 +561,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, lwc_ref:&mut ~lwc, buf
     } ;
 	
 	
-    let (val,rect_option) = css_computed_clip(style);
-	match rect_option{
-		Some(T) => {rect = T;}
-		None => {}
-	}
+    let (val, _) = css_computed_clip(style, &mut rect);
 
     let val_enum: css_clip_e =  unsafe {cast::transmute(val as uint)};
     match (val_enum) {

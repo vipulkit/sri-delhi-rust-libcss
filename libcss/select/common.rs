@@ -294,6 +294,15 @@ pub struct css_computed_counter {
     value:i32
 }
 
+impl Clone for css_computed_counter {  
+    fn clone(&self) -> css_computed_counter {     
+        css_computed_counter{  
+            name: self.name,  
+            value: self.value 
+        }  
+    }  
+}
+
 pub struct css_computed_content_item_counter {
     name:uint,
     sep:Option<uint>,
@@ -306,6 +315,16 @@ pub struct css_computed_content_item {
 
     data:Option<uint>,
     counters_data:Option<css_computed_content_item_counter>
+}
+
+impl Clone for css_computed_content_item {  
+    fn clone(&self) -> css_computed_content_item {     
+        css_computed_content_item{  
+            item_type: self.item_type,
+            data: self.data,
+            counters_data: self.counters_data 
+        }  
+    }  
 }
 
 pub struct css_computed_uncommon {
@@ -372,12 +391,12 @@ pub struct css_computed_uncommon {
 
     word_spacing:i32,
 
-    counter_increment:~[@mut css_computed_counter],
-    counter_reset:~[@mut css_computed_counter],
+    counter_increment:~[~css_computed_counter],
+    counter_reset:~[~css_computed_counter],
 
     cursor:~[uint],
 
-    content:~[@mut css_computed_content_item],
+    content:~[~css_computed_content_item],
 }
 
 pub struct css_computed_page {
@@ -578,8 +597,8 @@ pub struct css_computed_style {
     quotes:~[uint],
 
     uncommon:Option<@mut css_computed_uncommon>, /**< Uncommon properties */
-    aural:Option<@mut css_aural>,         /*< Aural properties */
-    page:Option<@mut css_computed_page> /* *< Page properties */
+    aural:Option<~css_aural>,         /*< Aural properties */
+    page:Option<~css_computed_page> /* *< Page properties */
 
 }
 
@@ -617,11 +636,11 @@ pub struct css_hint {
     status:u8,
 
     // types specifies , which data type is used from 10 types defined below
-    clip:Option<@mut css_computed_clip_rect>,
-    content:Option<@mut  css_computed_content_item>,
-    counters:Option<~[@mut css_computed_counter]>,
+    clip:Option<~ css_computed_clip_rect>,
+    content:Option<~css_computed_content_item>,
+    counters:Option<~[~css_computed_counter]>,
     length:Option<~css_hint_length>,
-    position:Option<@mut css_hint_length_hv>,
+    position:Option<~css_hint_length_hv>,
     color:u32,
     fixed:i32,
     integer:i32,

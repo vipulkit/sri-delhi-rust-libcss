@@ -157,7 +157,7 @@ pub fn css__to_css_unit(u:u32) -> css_unit {
  ******************************************************************************/
  #[inline]
 pub fn css__cascade_bg_border_color(opv:u32, style:&mut ~css_style, state:&mut ~css_select_state, 
-		 fun:@fn (&mut css_computed_style, u8, css_color)) -> css_error {
+		 fun:~fn (&mut css_computed_style, u8, css_color)) -> css_error {
 	
 	let mut value = CSS_BACKGROUND_COLOR_INHERIT;
 	let mut color:css_color= 0;
@@ -230,7 +230,7 @@ pub fn css__cascade_uri_none(opv:u32, style:&mut ~css_style, state:&mut ~css_sel
 
 #[inline]
 pub fn css__cascade_border_style(opv:u32, _:& ~css_style,	state:&mut ~css_select_state, 
-	fun:@fn (&mut css_computed_style, u8) ) -> css_error {
+	fun:~fn (&mut css_computed_style, u8) ) -> css_error {
 	
 	let mut value = CSS_BORDER_STYLE_INHERIT;
 
@@ -260,7 +260,7 @@ pub fn css__cascade_border_style(opv:u32, _:& ~css_style,	state:&mut ~css_select
 
 #[inline]
 pub fn css__cascade_border_width(opv:u32, style:&mut ~css_style, state:&mut ~css_select_state, 
-	fun:@fn (&mut css_computed_style, u8, css_fixed, css_unit)) -> css_error {
+	fun:~fn (&mut css_computed_style, u8, css_fixed, css_unit)) -> css_error {
 	
 	let mut value = CSS_BORDER_WIDTH_INHERIT;
 	let mut length = 0;
@@ -293,7 +293,7 @@ pub fn css__cascade_border_width(opv:u32, style:&mut ~css_style, state:&mut ~css
 
 #[inline]
 pub fn css__cascade_length_auto(opv:u32, style:&mut ~css_style, state:&mut ~css_select_state,
-	fun:@fn (&mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
+	fun:~fn (&mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 	
 	let mut value = CSS_BOTTOM_INHERIT;
 	let mut length = 0;
@@ -325,7 +325,7 @@ pub fn css__cascade_length_auto(opv:u32, style:&mut ~css_style, state:&mut ~css_
 
 #[inline]
 pub fn css__cascade_length_normal(opv:u32, style:&mut ~css_style, state:&mut ~css_select_state,
-	fun:@fn (&mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
+	fun:~fn (&mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 	
 	let mut value = CSS_LETTER_SPACING_INHERIT;
 	let mut length = 0;
@@ -356,7 +356,7 @@ pub fn css__cascade_length_normal(opv:u32, style:&mut ~css_style, state:&mut ~cs
 
 #[inline]
 pub fn css__cascade_length_none(opv:u32, style:&mut ~css_style, state:&mut ~css_select_state,
-	fun:@fn (&mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
+	fun:~fn (&mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 
 	let mut value = CSS_MAX_HEIGHT_INHERIT;
 	let mut length = 0;
@@ -387,7 +387,7 @@ pub fn css__cascade_length_none(opv:u32, style:&mut ~css_style, state:&mut ~css_
 
 #[inline]
 pub fn css__cascade_length(opv:u32, style:&mut ~css_style, state:&mut ~css_select_state,
-	fun:@fn (&mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
+	fun:~fn (&mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 
 	let mut value = CSS_MIN_HEIGHT_INHERIT;
 	let mut length = 0;
@@ -418,7 +418,7 @@ pub fn css__cascade_length(opv:u32, style:&mut ~css_style, state:&mut ~css_selec
 
 #[inline]
 pub fn css__cascade_number(opv:u32, style:&mut ~css_style, state:&mut ~css_select_state,
-	fun:Option<@fn (&mut css_computed_style, u8, css_fixed) -> css_error>) -> css_error {
+	fun:Option<~fn (&mut css_computed_style, u8, css_fixed) -> css_error>) -> css_error {
 
 	let mut value = 0;
 	let mut length = 0;
@@ -445,7 +445,7 @@ pub fn css__cascade_number(opv:u32, style:&mut ~css_style, state:&mut ~css_selec
 
 #[inline]
 pub fn css__cascade_page_break_after_before_inside(opv:u32, _:& ~css_style, state:&mut ~css_select_state,
-		fun:@fn (&mut css_computed_style, u8)) -> css_error {
+		fun:~fn (&mut css_computed_style, u8)) -> css_error {
 	
 	let mut value = CSS_PAGE_BREAK_AFTER_INHERIT;
 
@@ -475,10 +475,10 @@ pub fn css__cascade_page_break_after_before_inside(opv:u32, _:& ~css_style, stat
 
 #[inline]
 pub fn css__cascade_counter_increment_reset(opv:u32, style:&mut ~css_style, state:&mut ~css_select_state,
-	fun:@fn (&mut css_computed_style, u8, ~[@mut css_computed_counter]) ) -> css_error {
+	fun:~fn (&mut css_computed_style, u8, ~[~css_computed_counter]) ) -> css_error {
 
 	let mut value : uint = CSS_COUNTER_INCREMENT_INHERIT as uint;
-	let mut counters:~[@mut css_computed_counter] = ~[];
+	let mut counters:~[~css_computed_counter] = ~[];
 	
 	if !isInherit(opv) {
 		match getValue(opv) {
@@ -494,7 +494,7 @@ pub fn css__cascade_counter_increment_reset(opv:u32, style:&mut ~css_style, stat
 							let val = peek_bytecode(style);
 							advance_bytecode(style);
 
-							let temp = @mut css_computed_counter{name:name_option.unwrap(),value:val as i32};
+							let temp = ~css_computed_counter{name:name_option.unwrap(),value:val as i32};
 							counters.push(temp);
 
 							v = peek_bytecode(style);
@@ -684,12 +684,12 @@ pub fn css__compose_background_color(parent:&mut css_computed_style,
 
 	if (ftype == (CSS_BACKGROUND_COLOR_INHERIT as u8) ) {
 		let (ftype2,ocolor2) = css_computed_background_color(parent);
-		let color = ocolor2.unwrap_or_default( ocolor.unwrap_or_default(0) );
+		let color = ocolor2.unwrap_or( ocolor.unwrap_or(0) );
 		set_background_color(result, ftype2, color);
 		CSS_OK
 	}
 	else {
-		let color = ocolor.unwrap_or_default(0);
+		let color = ocolor.unwrap_or(0);
 		set_background_color(result, ftype, color);
 		CSS_OK
 	}
@@ -838,16 +838,14 @@ pub fn css__set_background_position_from_hint(hint:&mut ~css_hint,
     //debug!("Entering: css__set_background_position_from_hint");
 	match hint.hint_type {
 		HINT_LENGTH_H_V=>{
-			match hint.position {
-				Some(x)=>{
-					set_background_position(style, hint.status, 
-						x.h.value, x.h.unit,
-						x.v.value, x.v.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.position.is_some() {
+				set_background_position(style, hint.status, 
+					hint.position.get_ref().h.value, hint.position.get_ref().h.unit,
+					hint.position.get_ref().v.value, hint.position.get_ref().v.unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -1109,8 +1107,8 @@ pub fn css__compose_clear(parent:&mut css_computed_style,
 pub fn css__cascade_clip(opv:u32, style:&mut ~css_style, state:&mut ~css_select_state) -> css_error {
 
 	let mut value = CSS_CLIP_INHERIT;
-	let rect = 
-        @mut css_computed_clip_rect{
+	let mut rect = 
+          ~css_computed_clip_rect{
             top:0,
             right:0,
             bottom:0,
@@ -1181,7 +1179,7 @@ pub fn css__cascade_clip(opv:u32, style:&mut ~css_style, state:&mut ~css_select_
 
 
 	if css__outranks_existing(getOpcode(opv) as u16, isImportant(opv), state, isInherit(opv)) {
-			set_clip(state.computed, value as u8, rect)
+			set_clip(state.computed, value as u8, &mut rect)
 	}
 
 	CSS_OK
@@ -1189,13 +1187,13 @@ pub fn css__cascade_clip(opv:u32, style:&mut ~css_style, state:&mut ~css_select_
 			
 pub fn css__set_clip_from_hint(hint:&mut ~css_hint, style:&mut css_computed_style) 
 								-> css_error {
-	set_clip(style, hint.status, hint.clip.unwrap()) ;
+	set_clip(style, hint.status,  hint.clip.get_mut_ref()) ;
 	CSS_OK
 }
 
 pub fn css__initial_clip(state:&mut ~css_select_state) -> css_error{
 
-	let rect = @mut css_computed_clip_rect{
+	let mut rect = ~css_computed_clip_rect{
         top:0,
         right:0,
         bottom:0,
@@ -1210,7 +1208,7 @@ pub fn css__initial_clip(state:&mut ~css_select_state) -> css_error{
         left_auto:false
     };
 
-	set_clip(state.computed, CSS_CLIP_AUTO as u8, rect) ;
+	set_clip(state.computed, CSS_CLIP_AUTO as u8, &mut rect) ;
 	CSS_OK
 }
 
@@ -1219,10 +1217,22 @@ pub fn css__compose_clip(parent:&mut css_computed_style,
 						result:&mut css_computed_style) 
 						-> css_error {
 
-	
-	let (clip_type_, rect_) = css_computed_clip(child);
+        let mut rect_ = ~css_computed_clip_rect{
+            top:0,
+            right:0,
+            bottom:0,
+            left:0,
+            tunit:CSS_UNIT_PX,
+            runit:CSS_UNIT_PX,
+            bunit:CSS_UNIT_PX,
+            lunit:CSS_UNIT_PX,
+            top_auto:false,
+            right_auto:false,
+            bottom_auto:false,
+            left_auto:false};
+
+	let (clip_type_, _) = css_computed_clip(child, &mut rect_);
 	let mut clip_type = clip_type_;
-	let mut rect = rect_;
 	
 	if (match child.uncommon { None => true, _ => false} && match parent.uncommon { Some(_) => true,  None => false }) 
 		|| clip_type == CSS_CLIP_INHERIT as u8 || ( match child.uncommon {Some(_) => true, None => false} && 
@@ -1230,12 +1240,11 @@ pub fn css__compose_clip(parent:&mut css_computed_style,
 		
 		if (match child.uncommon { None => true, _ => false} && match parent.uncommon { Some(_) => true,  None => false }) || 
 		   clip_type == CSS_CLIP_INHERIT as u8 {
-			let (clip_type_ret, rect_ret) = css_computed_clip(parent);
+			let (clip_type_ret, _) = css_computed_clip(parent, &mut rect_);
 			clip_type = clip_type_ret;
-			rect = rect_ret
 		}
 
-		set_clip(result, clip_type, rect.unwrap());
+		set_clip(result, clip_type, &mut rect_);
 	}
 	CSS_OK
 }
@@ -1332,14 +1341,14 @@ pub fn css__compose_border_bottom_width(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_border_bottom_width(parent);
 		set_border_bottom_width(result, 
 								ftype2, 
-								olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-								ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+								olength2.unwrap_or( olength.unwrap_or(0) ), 
+								ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_border_bottom_width(result, ftype, 
-							olength.unwrap_or_default(0), 
-							ounit.unwrap_or_default(CSS_UNIT_PX));
+							olength.unwrap_or(0), 
+							ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -1552,14 +1561,14 @@ pub fn css__compose_border_left_width(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_border_left_width(parent);
 		set_border_left_width(result, 
 							ftype2, 
-							olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-							ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+							olength2.unwrap_or( olength.unwrap_or(0) ), 
+							ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_border_left_width(result, ftype, 
-			olength.unwrap_or_default(0), 
-			ounit.unwrap_or_default(CSS_UNIT_PX) );
+			olength.unwrap_or(0), 
+			ounit.unwrap_or(CSS_UNIT_PX) );
 		CSS_OK
 	}
 }
@@ -1705,14 +1714,14 @@ pub fn css__compose_border_right_width(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_border_right_width(parent);
 		set_border_right_width(result, 
 							ftype2, 
-							olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-							ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+							olength2.unwrap_or( olength.unwrap_or(0) ), 
+							ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_border_right_width(result, ftype, 
-			olength.unwrap_or_default(0), 
-			ounit.unwrap_or_default(CSS_UNIT_PX) );
+			olength.unwrap_or(0), 
+			ounit.unwrap_or(CSS_UNIT_PX) );
 		CSS_OK
 	}
 }	
@@ -1768,16 +1777,14 @@ pub fn css__set_border_spacing_from_hint(hint:&mut ~css_hint,
 
 	match hint.hint_type {
 		HINT_LENGTH_H_V=>{
-			match hint.position {
-				Some(x)=>{
-					set_border_spacing(style, hint.status,
-										x.h.value, x.h.unit,
-										x.v.value, x.v.unit);
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.position.is_some() {
+				set_border_spacing(style, hint.status,
+									hint.position.get_ref().h.value, hint.position.get_ref().h.unit,
+									hint.position.get_ref().v.value, hint.position.get_ref().v.unit);
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -1956,14 +1963,14 @@ pub fn css__compose_border_top_width(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_border_top_width(parent);
 		set_border_top_width(result, 
 							ftype2, 
-							olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-							ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+							olength2.unwrap_or( olength.unwrap_or(0) ), 
+							ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_border_top_width(result, ftype, 
-			olength.unwrap_or_default(0), 
-			ounit.unwrap_or_default(CSS_UNIT_PX) );
+			olength.unwrap_or(0), 
+			ounit.unwrap_or(CSS_UNIT_PX) );
 		CSS_OK
 	}
 }	
@@ -2015,14 +2022,14 @@ pub fn css__compose_bottom(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_bottom(parent);
 		set_bottom(result, 
 				ftype2, 
-				olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-				ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+				olength2.unwrap_or( olength.unwrap_or(0) ), 
+				ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_bottom(result, ftype, 
-			olength.unwrap_or_default(0), 
-			ounit.unwrap_or_default(CSS_UNIT_PX) );
+			olength.unwrap_or(0), 
+			ounit.unwrap_or(CSS_UNIT_PX) );
 		CSS_OK
 	}
 }	
@@ -2161,10 +2168,10 @@ pub fn css__compose_color(parent:&mut css_computed_style,
 	
 	if color_type == (CSS_COLOR_INHERIT as u8) {
 		let (p_color_type, p_color) = css_computed_color(parent);
-		set_color(result, p_color_type, p_color.unwrap_or_default(color.unwrap_or_default(0)));
+		set_color(result, p_color_type, p_color.unwrap_or(color.unwrap_or(0)));
 	}
 	else {
-		set_color(result, color_type, color.unwrap_or_default(0));
+		set_color(result, color_type, color.unwrap_or(0));
 	}
 	CSS_OK
 }
@@ -3190,15 +3197,15 @@ pub fn css__compose_font_size(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_font_size(parent);
 		set_font_size(result,
 					ftype2, 
-					olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-					ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+					olength2.unwrap_or( olength.unwrap_or(0) ), 
+					ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_font_size(result, 
 					ftype, 
-					olength.unwrap_or_default(0), 
-					ounit.unwrap_or_default(CSS_UNIT_PX));
+					olength.unwrap_or(0), 
+					ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -3465,15 +3472,15 @@ pub fn css__compose_height(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_height(parent);
 		set_height(result, 
 					ftype2, 
-					olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-					ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+					olength2.unwrap_or( olength.unwrap_or(0) ), 
+					ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_height(result, 
 					ftype, 
-					olength.unwrap_or_default(0), 
-					ounit.unwrap_or_default(CSS_UNIT_PX));
+					olength.unwrap_or(0), 
+					ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -3526,15 +3533,15 @@ pub fn css__compose_left(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_left(parent);
 		set_left(result, 
 				ftype2, 
-				olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-				ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+				olength2.unwrap_or( olength.unwrap_or(0) ), 
+				ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_left(result, 
 				ftype, 
-				olength.unwrap_or_default(0), 
-				ounit.unwrap_or_default(CSS_UNIT_PX));
+				olength.unwrap_or(0), 
+				ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -3593,15 +3600,15 @@ pub fn css__compose_letter_spacing(parent:&mut css_computed_style,
 				let (ftype2,olength2,ounit2) = css_computed_letter_spacing(parent);
 				set_letter_spacing(result, 
 								ftype2, 
-								olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-								ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+								olength2.unwrap_or( olength.unwrap_or(0) ), 
+								ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 			}
 			else {
 
 				set_letter_spacing(result, 
 									ftype, 
-									olength.unwrap_or_default(0), 
-									ounit.unwrap_or_default(CSS_UNIT_PX));
+									olength.unwrap_or(0), 
+									ounit.unwrap_or(CSS_UNIT_PX));
 			}
 	}
 	CSS_OK
@@ -3685,15 +3692,15 @@ pub fn css__compose_line_height(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_line_height(parent);
 		set_line_height(result, 
 						ftype2, 
-						olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-						ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+						olength2.unwrap_or( olength.unwrap_or(0) ), 
+						ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_line_height(result, 
 						ftype, 
-						olength.unwrap_or_default(0), 
-						ounit.unwrap_or_default(CSS_UNIT_PX));
+						olength.unwrap_or(0), 
+						ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -3972,15 +3979,15 @@ pub fn css__compose_margin_bottom(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_margin_bottom(parent);
 		set_margin_bottom(result, 
 						ftype2, 
-						olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-						ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+						olength2.unwrap_or( olength.unwrap_or(0) ), 
+						ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_margin_bottom(result, 
 						ftype, 
-						olength.unwrap_or_default(0), 
-						ounit.unwrap_or_default(CSS_UNIT_PX));
+						olength.unwrap_or(0), 
+						ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -4033,15 +4040,15 @@ pub fn css__compose_margin_left(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_margin_left(parent);
 		set_margin_left(result, 
 						ftype2, 
-						olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-						ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+						olength2.unwrap_or( olength.unwrap_or(0) ), 
+						ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_margin_left(result, 
 						ftype, 
-						olength.unwrap_or_default(0), 
-						ounit.unwrap_or_default(CSS_UNIT_PX));
+						olength.unwrap_or(0), 
+						ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -4094,15 +4101,15 @@ pub fn css__compose_margin_right(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_margin_right(parent);
 		set_margin_right(result, 
 						ftype2, 
-						olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-						ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+						olength2.unwrap_or( olength.unwrap_or(0) ), 
+						ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_margin_right(result, 
 						ftype, 
-						olength.unwrap_or_default(0), 
-						ounit.unwrap_or_default(CSS_UNIT_PX));
+						olength.unwrap_or(0), 
+						ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -4154,15 +4161,15 @@ pub fn css__compose_margin_top(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_margin_top(parent);
 		set_margin_top(result, 
 					ftype2, 
-					olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-					ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+					olength2.unwrap_or( olength.unwrap_or(0) ), 
+					ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_margin_top(result, 
 					ftype, 
-					olength.unwrap_or_default(0), 
-					ounit.unwrap_or_default(CSS_UNIT_PX));
+					olength.unwrap_or(0), 
+					ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -4215,15 +4222,15 @@ pub fn css__compose_max_height(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_max_height(parent);
 		set_max_height(result, 
 					ftype2, 
-					olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-					ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+					olength2.unwrap_or( olength.unwrap_or(0) ), 
+					ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_max_height(result, 
 					ftype, 
-					olength.unwrap_or_default(0), 
-					ounit.unwrap_or_default(CSS_UNIT_PX));
+					olength.unwrap_or(0), 
+					ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -4275,15 +4282,15 @@ pub fn css__compose_max_width(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_max_width(parent);
 		set_max_width(result, 
 					ftype2, 
-					olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-					ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+					olength2.unwrap_or( olength.unwrap_or(0) ), 
+					ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_max_width(result, 
 					ftype, 
-					olength.unwrap_or_default(0), 
-					ounit.unwrap_or_default(CSS_UNIT_PX));
+					olength.unwrap_or(0), 
+					ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -4336,15 +4343,15 @@ pub fn css__compose_min_height(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_min_height(parent);
 		set_min_height(result, 
 					ftype2, 
-					olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-					ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+					olength2.unwrap_or( olength.unwrap_or(0) ), 
+					ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_min_height(result, 
 					ftype, 
-					olength.unwrap_or_default(0), 
-					ounit.unwrap_or_default(CSS_UNIT_PX));
+					olength.unwrap_or(0), 
+					ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -4396,15 +4403,15 @@ pub fn css__compose_min_width(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_min_width(parent);
 		set_min_width(result, 
 					ftype2, 
-					olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-					ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+					olength2.unwrap_or( olength.unwrap_or(0) ), 
+					ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_min_width(result, 
 					ftype, 
-					olength.unwrap_or_default(0), 
-					ounit.unwrap_or_default(CSS_UNIT_PX));
+					olength.unwrap_or(0), 
+					ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -4465,13 +4472,13 @@ pub fn css__compose_opacity(parent:&mut css_computed_style,
 		let (ftype2,olength2) = css_computed_opacity(parent);
 		set_opacity(result, 
 					ftype2, 
-					olength2.unwrap_or_default( olength.unwrap_or_default(0) ) );
+					olength2.unwrap_or( olength.unwrap_or(0) ) );
 		CSS_OK
 	}
 	else {
 		set_opacity(result, 
 					ftype, 
-					olength.unwrap_or_default(0) );
+					olength.unwrap_or(0) );
 		CSS_OK
 	}
 }
@@ -4582,10 +4589,10 @@ pub fn css__compose_outline_color(parent:&mut css_computed_style,
 				let (ftype2,ocolor2) = css_computed_outline_color(parent);
 				set_outline_color(result, 
 								ftype2, 
-								ocolor2.unwrap_or_default( ocolor.unwrap_or_default(0) ) );
+								ocolor2.unwrap_or( ocolor.unwrap_or(0) ) );
 			}
 			else {
-				set_outline_color(result, ftype, ocolor.unwrap_or_default(0));
+				set_outline_color(result, ftype, ocolor.unwrap_or(0));
 			}
 	}
 	CSS_OK
@@ -4689,14 +4696,14 @@ pub fn css__compose_outline_width(parent:&mut css_computed_style,
 			let (ftype2,olength2,ounit2) = css_computed_outline_width(parent);
 			set_outline_width(result, 
 							ftype2, 
-							olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-							ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+							olength2.unwrap_or( olength.unwrap_or(0) ), 
+							ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		}
 		else {
 			set_outline_width(result, 
 							ftype, 
-							olength.unwrap_or_default(0), 
-							ounit.unwrap_or_default(CSS_UNIT_PX));
+							olength.unwrap_or(0), 
+							ounit.unwrap_or(CSS_UNIT_PX));
 		}
 	}
 	CSS_OK	
@@ -4819,15 +4826,15 @@ pub fn css__compose_padding_bottom(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_padding_bottom(parent);
 		set_padding_bottom(result, 
 					ftype2, 
-					olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-					ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+					olength2.unwrap_or( olength.unwrap_or(0) ), 
+					ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_padding_bottom(result, 
 					ftype, 
-					olength.unwrap_or_default(0), 
-					ounit.unwrap_or_default(CSS_UNIT_PX));
+					olength.unwrap_or(0), 
+					ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -4880,15 +4887,15 @@ pub fn css__compose_padding_left(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_padding_left(parent);
 		set_padding_left(result, 
 					ftype2, 
-					olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-					ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+					olength2.unwrap_or( olength.unwrap_or(0) ), 
+					ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_padding_left(result, 
 					ftype, 
-					olength.unwrap_or_default(0), 
-					ounit.unwrap_or_default(CSS_UNIT_PX));
+					olength.unwrap_or(0), 
+					ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -4941,15 +4948,15 @@ pub fn css__compose_padding_right(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_padding_right(parent);
 		set_padding_right(result, 
 					ftype2, 
-					olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-					ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+					olength2.unwrap_or( olength.unwrap_or(0) ), 
+					ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_padding_right(result, 
 					ftype, 
-					olength.unwrap_or_default(0), 
-					ounit.unwrap_or_default(CSS_UNIT_PX));
+					olength.unwrap_or(0), 
+					ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -5002,15 +5009,15 @@ pub fn css__compose_padding_top(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_padding_top(parent);
 		set_padding_top(result, 
 					ftype2, 
-					olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-					ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+					olength2.unwrap_or( olength.unwrap_or(0) ), 
+					ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_padding_top(result, 
 					ftype, 
-					olength.unwrap_or_default(0), 
-					ounit.unwrap_or_default(CSS_UNIT_PX));
+					olength.unwrap_or(0), 
+					ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -5161,7 +5168,7 @@ pub fn css__cascade_pause_after(opv:u32 ,
 
 
 //pub fn css__cascade_length(opv:u32, style:&mut ~css_style, state:&mut ~css_select_state,
-	//fun:@fn (&mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
+	//fun:~fn (&mut css_computed_style, u8, css_fixed, css_unit) ) -> css_error {
 
 	//let mut value = CSS_MIN_HEIGHT_INHERIT;
 	//let mut length = 0;
@@ -5678,15 +5685,15 @@ pub fn css__compose_right(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_right(parent);
 		set_right(result, 
 				ftype2, 
-				olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-				ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+				olength2.unwrap_or( olength.unwrap_or(0) ), 
+				ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_right(result, 
 				ftype, 
-				olength.unwrap_or_default(0), 
-				ounit.unwrap_or_default(CSS_UNIT_PX));
+				olength.unwrap_or(0), 
+				ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -6238,15 +6245,15 @@ pub fn css__compose_text_indent(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_text_indent(parent);
 		set_text_indent(result, 
 						ftype2, 
-						olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-						ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+						olength2.unwrap_or( olength.unwrap_or(0) ), 
+						ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_text_indent(result, 
 					ftype, 
-					olength.unwrap_or_default(0), 
-					ounit.unwrap_or_default(CSS_UNIT_PX));
+					olength.unwrap_or(0), 
+					ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -6366,15 +6373,15 @@ pub fn css__compose_top(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_top(parent);
 		set_top(result, 
 				ftype2, 
-				olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-				ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+				olength2.unwrap_or( olength.unwrap_or(0) ), 
+				ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_top(result, 
 				ftype, 
-				olength.unwrap_or_default(0), 
-				ounit.unwrap_or_default(CSS_UNIT_PX));
+				olength.unwrap_or(0), 
+				ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -6539,15 +6546,15 @@ pub fn css__compose_vertical_align(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_vertical_align(parent);
 		set_vertical_align(result, 
 						ftype2, 
-						olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-						ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+						olength2.unwrap_or( olength.unwrap_or(0) ), 
+						ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_vertical_align(result, 
 						ftype, 
-						olength.unwrap_or_default(0), 
-						ounit.unwrap_or_default(CSS_UNIT_PX));
+						olength.unwrap_or(0), 
+						ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -6890,14 +6897,14 @@ pub fn css__compose_width(parent:&mut css_computed_style,
 		let (ftype2,olength2,ounit2) = css_computed_width(parent);
 		set_width(result, 
 				ftype2, 
-				olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-				ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+				olength2.unwrap_or( olength.unwrap_or(0) ), 
+				ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 		CSS_OK
 	}
 	else {
 		set_width(result, ftype, 
-				olength.unwrap_or_default(0), 
-				ounit.unwrap_or_default(CSS_UNIT_PX));
+				olength.unwrap_or(0), 
+				ounit.unwrap_or(CSS_UNIT_PX));
 		CSS_OK
 	}
 }
@@ -6987,14 +6994,14 @@ pub fn css__compose_word_spacing(parent:&mut css_computed_style,
 				let (ftype2,olength2,ounit2) = css_computed_word_spacing(parent);
 				set_word_spacing(result, 
 								ftype2, 
-								olength2.unwrap_or_default( olength.unwrap_or_default(0) ), 
-								ounit2.unwrap_or_default( ounit.unwrap_or_default(CSS_UNIT_PX) ));
+								olength2.unwrap_or( olength.unwrap_or(0) ), 
+								ounit2.unwrap_or( ounit.unwrap_or(CSS_UNIT_PX) ));
 			}
 			else {
 				set_word_spacing(result, 
 								ftype, 
-								olength.unwrap_or_default(0), 
-								ounit.unwrap_or_default(CSS_UNIT_PX));
+								olength.unwrap_or(0), 
+								ounit.unwrap_or(CSS_UNIT_PX));
 			}
 	}
 	CSS_OK
@@ -7153,17 +7160,15 @@ pub fn css__set_counter_increment_from_hint(hint:&mut ~css_hint,
 
 	match hint.hint_type {
 		COUNTER=>{
-			match hint.counters.clone() {
-				Some(x)=>{
-					set_counter_increment(style, hint.status, x);
-					if hint.status == (CSS_COUNTER_INCREMENT_NAMED as u8) {
-						hint.counters = None ;
-					}
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
+			if hint.counters.is_some() {
+				set_counter_increment(style, hint.status, hint.counters.clone().unwrap());
+				if hint.status == (CSS_COUNTER_INCREMENT_NAMED as u8) {
+					hint.counters = None ;
 				}
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -7223,17 +7228,15 @@ pub fn css__set_counter_reset_from_hint(hint:&mut ~css_hint,
 
 	match hint.hint_type {
 		COUNTER=>{
-			match hint.counters.clone() {
-				Some(x)=>{
-					set_counter_reset(style, hint.status, x);
-					if hint.status == (CSS_COUNTER_INCREMENT_NAMED as u8) {
-						hint.counters = None ;
-					}
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
+			if hint.counters.is_some() {
+				set_counter_reset(style, hint.status, hint.counters.clone().unwrap());
+				if hint.status == (CSS_COUNTER_INCREMENT_NAMED as u8) {
+					hint.counters = None ;
 				}
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -7377,15 +7380,13 @@ pub fn css__set_cursor_from_hint(hint:&mut ~css_hint,
 
 	match hint.hint_type {
 		STRINGS_VECTOR=>{
-			match hint.strings.clone() {
-				Some(x)=>{
-					set_cursor(style, hint.status, x);
-					hint.counters = None ;
-					CSS_OK
-				},
-				None=>{
-					CSS_BADPARM
-				}
+			if hint.strings.is_some() {
+				set_cursor(style, hint.status, hint.strings.clone().unwrap());
+				hint.counters = None ;
+				CSS_OK
+			}
+			else {
+				CSS_BADPARM
 			}
 		},
 		_=>{
@@ -7416,10 +7417,10 @@ pub fn css__compose_cursor(parent:&mut css_computed_style,
 					ftype == (CSS_CURSOR_INHERIT as u8) ) {
 
 				let (ftype2,ourl2) = css_computed_cursor(parent);
-				set_cursor(result, ftype2, ourl2.unwrap_or_default( ourl.unwrap_or_default(~[]) ) );
+				set_cursor(result, ftype2, ourl2.unwrap_or( ourl.unwrap_or(~[]) ) );
 			}
 			else {
-				set_cursor(result, ftype, ourl.unwrap_or_default(~[]) );
+				set_cursor(result, ftype, ourl.unwrap_or(~[]) );
 			}
 	}
 	CSS_OK
@@ -7432,7 +7433,7 @@ pub fn css__cascade_content(opv:u32, style:&mut ~css_style,
     state:&mut ~css_select_state ) -> css_error {
 
     let mut value = CSS_CONTENT_INHERIT;
-    let mut content:~[@mut css_computed_content_item]=~[];
+    let mut content:~[~css_computed_content_item]=~[];
     // uint32_t n_contents = 0;
 
     if !isInherit(opv) {
@@ -7445,8 +7446,8 @@ pub fn css__cascade_content(opv:u32, style:&mut ~css_style,
                 
                 while (v != CONTENT_NORMAL) {
                     
-                    let temp:@mut css_computed_content_item=
-                     @mut css_computed_content_item{item_type:CSS_COMPUTED_CONTENT_NONE,data:None, counters_data:None};
+                    let mut temp =
+                     ~css_computed_content_item{item_type:CSS_COMPUTED_CONTENT_NONE,data:None, counters_data:None};
                        
                     let (result, he_option) = style.sheet.expect("").css__stylesheet_string_get(peek_bytecode(style) as uint);
                     
@@ -7469,7 +7470,7 @@ pub fn css__cascade_content(opv:u32, style:&mut ~css_style,
                                 style:(v >> CONTENT_COUNTER_STYLE_SHIFT) as u8
                             } );
                             
-                            content.push(temp)
+                            content.push(temp.clone())
                         },                          
                         CONTENT_COUNTERS => {
 
@@ -7549,7 +7550,7 @@ pub fn css__cascade_content(opv:u32, style:&mut ~css_style,
 
     /* If we have some content, terminate the array with a blank entry */
     if !content.is_empty() {
-        let temp = @mut css_computed_content_item{item_type:CSS_COMPUTED_CONTENT_NONE,data:None, counters_data:None};
+        let temp = ~css_computed_content_item{item_type:CSS_COMPUTED_CONTENT_NONE,data:None, counters_data:None};
         content.push(temp);
     }
 
@@ -7566,7 +7567,7 @@ pub fn css__set_content_from_hint(hint:&mut ~css_hint,
 								style:&mut css_computed_style) 
 								-> css_error{
 
-    set_content(style, hint.status, ~[hint.content.unwrap()]);
+    set_content(style, hint.status, ~[hint.content.clone().unwrap()]);
     CSS_OK
 }
 

@@ -37,7 +37,7 @@ pub struct css_select_sheet {
 /*
  * CSS selection context
  */
-struct css_select_ctx {
+pub struct css_select_ctx {
     sheets:~[@mut css_select_sheet],
     /* Useful interned strings */
     lwc_ref: ~lwc,
@@ -615,9 +615,9 @@ impl css_select_ctx {
             }
         }
           
-        let results = @mut css_select_font_faces_results{
-                    font_faces:~[]
-            };
+        let results = @mut css_select_font_faces_results {
+                font_faces:~[]
+        };
           
 		/* We found some matching faces.  Make a results structure with
 		 * the font faces in priority order. */

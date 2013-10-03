@@ -150,9 +150,9 @@ pub fn css_computed_word_spacing(
 
 pub fn css_computed_counter_increment(
                         style : &mut css_computed_style)
-                        -> (u8,~[@mut css_computed_counter]) {
+                        -> (u8,~[~css_computed_counter]) {
 
-    let mut counter : ~[@mut css_computed_counter] = ~[];
+    let mut counter : ~[~css_computed_counter] = ~[];
     match style.uncommon {
         None=>{
             (CSS_COUNTER_INCREMENT_NONE as u8,counter)
@@ -171,9 +171,9 @@ pub fn css_computed_counter_increment(
 
 pub fn css_computed_counter_reset(
                         style : &mut css_computed_style)
-                        -> (u8,~[@mut css_computed_counter]) {
+                        -> (u8,~[~css_computed_counter]) {
 
-    let mut counter : ~[@mut css_computed_counter] = ~[];
+    let mut counter : ~[~css_computed_counter] = ~[];
     match style.uncommon {
         None=>{
             (CSS_COUNTER_RESET_NONE as u8,counter)
@@ -212,28 +212,14 @@ pub fn css_computed_cursor(
 }
 
 pub fn css_computed_clip(
-            style : &mut css_computed_style) 
-            -> (u8,Option<@mut css_computed_clip_rect>) {
+            style : &mut css_computed_style,
+            result: &mut ~css_computed_clip_rect) 
+            -> (u8, bool) {
 
-    let result : @mut css_computed_clip_rect = 
-        @mut css_computed_clip_rect{
-            top:0,
-            right:0,
-            bottom:0,
-            left:0,
-            tunit:CSS_UNIT_PX,
-            runit:CSS_UNIT_PX,
-            bunit:CSS_UNIT_PX,
-            lunit:CSS_UNIT_PX,
-            top_auto:false,
-            right_auto:false,
-            bottom_auto:false,
-            left_auto:false
-    } ;
 
     match style.uncommon {
         None=>{
-            ((CSS_CLIP_AUTO as u8),None)
+            (CSS_CLIP_AUTO as u8, false)
         },
         Some(uncommon_struct)=>{
             let mut bits:u8= uncommon_struct.bits[CSS_CLIP_INDEX];
@@ -283,14 +269,14 @@ pub fn css_computed_clip(
                 result.lunit = unsafe { transmute((bits1 & 0xf)as int)} ;
             }
 
-            ((bits&0x3),Some(result))
+            ((bits&0x3), true)
         }
     }
 }
 
 pub fn css_computed_content(
                 style : &mut css_computed_style)
-                -> (u8,~[@mut css_computed_content_item]) {
+                -> (u8,~[~css_computed_content_item]) {
 
     match style.uncommon {
         None=>{
@@ -1366,48 +1352,42 @@ pub fn css_computed_text_align(style:&mut css_computed_style)
 pub fn css_computed_page_break_after(style:&mut css_computed_style)
                                         -> u8 {
 
-    match  style.page {
-        Some(computed_page)=>{
-            let mut bits : u8 = computed_page.bits[CSS_PAGE_BREAK_AFTER_INDEX];
-            bits = bits & (CSS_PAGE_BREAK_AFTER_MASK as u8);
-            bits = bits >> CSS_PAGE_BREAK_AFTER_SHIFT;   
-            bits
-        },
-        None=>{
-            (CSS_PAGE_BREAK_AFTER_AUTO as u8)
-        }
+    if style.page.is_some() {
+        let mut bits : u8 = style.page.get_ref().bits[CSS_PAGE_BREAK_AFTER_INDEX];
+        bits = bits & (CSS_PAGE_BREAK_AFTER_MASK as u8);
+        bits = bits >> CSS_PAGE_BREAK_AFTER_SHIFT;   
+        bits
+    }
+    else {
+        (CSS_PAGE_BREAK_AFTER_AUTO as u8)
     }
 }
 
 pub fn css_computed_page_break_before(style:&mut css_computed_style)
                                         -> u8 {
 
-    match  style.page {
-        Some(computed_page)=>{
-            let mut bits : u8 = computed_page.bits[CSS_PAGE_BREAK_BEFORE_INDEX];
-            bits = bits & (CSS_PAGE_BREAK_BEFORE_MASK as u8);
-            bits = bits >> CSS_PAGE_BREAK_BEFORE_SHIFT;   
-            bits
-        },
-        None=>{
-            (CSS_PAGE_BREAK_BEFORE_AUTO as u8)
-        }
+    if style.page.is_some() {
+        let mut bits : u8 = style.page.get_ref().bits[CSS_PAGE_BREAK_BEFORE_INDEX];
+        bits = bits & (CSS_PAGE_BREAK_BEFORE_MASK as u8);
+        bits = bits >> CSS_PAGE_BREAK_BEFORE_SHIFT;   
+        bits
+    }
+    else {
+        (CSS_PAGE_BREAK_BEFORE_AUTO as u8)
     }
 }
 
 pub fn css_computed_page_break_inside(style:&mut css_computed_style)
                                         -> u8 {
 
-    match  style.page {
-        Some(computed_page)=>{
-            let mut bits : u8 = computed_page.bits[CSS_PAGE_BREAK_INSIDE_INDEX];
-            bits = bits & (CSS_PAGE_BREAK_INSIDE_MASK as u8);
-            bits = bits >> CSS_PAGE_BREAK_INSIDE_SHIFT;   
-            bits
-        },
-        None=>{
-            (CSS_PAGE_BREAK_INSIDE_AUTO as u8)
-        }
+    if style.page.is_some() {
+        let mut bits : u8 = style.page.get_ref().bits[CSS_PAGE_BREAK_INSIDE_INDEX];
+        bits = bits & (CSS_PAGE_BREAK_INSIDE_MASK as u8);
+        bits = bits >> CSS_PAGE_BREAK_INSIDE_SHIFT;   
+        bits
+    }
+    else {
+        (CSS_PAGE_BREAK_INSIDE_AUTO as u8)
     }
 }
 

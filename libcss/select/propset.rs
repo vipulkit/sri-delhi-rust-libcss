@@ -43,7 +43,7 @@ pub fn ENSURE_PAGE ( style:&mut css_computed_style){
     match style.uncommon {
         Some(_)=>{},
         None=>{
-            let page_struct = @mut css_computed_page {
+            let page_struct = ~css_computed_page {
                 bits:~[ 
                         ( ((CSS_PAGE_BREAK_INSIDE_AUTO as u8) <<  6) | 
                           ((CSS_PAGE_BREAK_BEFORE_AUTO as u8) << 3) |
@@ -144,7 +144,7 @@ pub fn set_word_spacing(style:&mut css_computed_style,
 #[inline]
 pub fn set_counter_increment(style: &mut css_computed_style,
                             ftype:u8,
-                            counters:~[@mut css_computed_counter]) {
+                            counters:~[~css_computed_counter]) {
 
     ENSURE_UNCOMMON(style);
 
@@ -159,7 +159,7 @@ pub fn set_counter_increment(style: &mut css_computed_style,
 #[inline]
 pub fn set_counter_reset(style: &mut css_computed_style,
                         ftype:u8,
-                        counters:~[@mut css_computed_counter]) {
+                        counters:~[~css_computed_counter]) {
 
     ENSURE_UNCOMMON(style);
 
@@ -189,7 +189,7 @@ pub fn set_cursor(style:&mut css_computed_style,
 #[inline]
 pub fn set_clip(style: &mut css_computed_style,
                 ftype:u8, 
-                rect:@mut css_computed_clip_rect){
+                rect:&mut ~css_computed_clip_rect){
 
     ENSURE_UNCOMMON(style);
 
@@ -230,7 +230,7 @@ pub fn set_clip(style: &mut css_computed_style,
 #[inline]
 pub fn set_content(style: &mut css_computed_style,
                 ftype:u8, 
-                content:~[@mut css_computed_content_item]){
+                content:~[~css_computed_content_item]){
 
     ENSURE_UNCOMMON(style);
 
