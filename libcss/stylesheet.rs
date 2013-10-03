@@ -77,7 +77,7 @@ pub type css_fixed = i32;
 
 pub type css_url_resolution_fn = @extern fn (base:&str, rel:uint) -> (css_error,Option<uint>);
 pub type css_font_resolution_fn = @extern fn (name: uint) -> (css_error , Option<css_system_font>);
-pub type css_import_notification_fn =  @extern fn(url:&str, media:@mut u64) -> css_error;
+pub type css_import_notification_fn =  @extern fn(url:&str, media:&mut u64) -> css_error;
 pub type css_color_resolution_fn = @extern fn (name: uint) -> (Option<u32> , css_error);
 
 
@@ -149,7 +149,7 @@ pub struct css_stylesheet {
     import : Option<css_import_notification_fn>, // Import notification function */
     font : Option<css_font_resolution_fn>,   //Import font_resolution function
     color: Option<css_color_resolution_fn>,
-    
+    css_rule_list: ~[css_rule]
 }
 
 pub struct css_rule {
@@ -162,43 +162,43 @@ pub struct css_rule {
 }
 
 pub struct css_rule_selector {
-    base:@mut css_rule,
+    base:uint,
     selectors:~[@mut css_selector],
     style:Option<~css_style>
 } 
 
 pub struct css_rule_media {
-    base:@mut css_rule,
+    base:uint,
     media:u64,
     first_child:Option<CSS_RULE_DATA_TYPE>,                
     last_child:Option<CSS_RULE_DATA_TYPE>                
 } 
 
 pub struct css_rule_font_face {
-    base:@mut css_rule,
+    base:uint,
     font_face:Option<@mut css_font_face>
 } 
 
 pub struct css_rule_page {
-    base:@mut css_rule,
+    base:uint,
     selector:Option<@mut css_selector>,
     style:Option<~css_style>
 } 
 
 pub struct css_rule_import {
-    base:@mut css_rule,
+    base:uint,
     url:~str,
     media:u64,
     sheet:Option<@mut css_stylesheet>
 } 
 pub struct css_rule_charset {
-    base:@mut css_rule,
+    base:uint,
     encoding:~str   
 } 
 
 
 pub enum CSS_RULE_DATA_TYPE {
-    RULE_UNKNOWN(@mut css_rule),
+    RULE_UNKNOWN(uint),
     RULE_SELECTOR(@mut css_rule_selector),
     RULE_CHARSET(@mut css_rule_charset),
     RULE_IMPORT(@mut css_rule_import),
@@ -222,28 +222,28 @@ pub enum css_rule_type {
     CSS_RULE_PAGE
 }
 
-pub fn get_css_rule_next(rule: CSS_RULE_DATA_TYPE) -> Option<CSS_RULE_DATA_TYPE> {
+pub fn get_css_rule_next(&mut self, rule: CSS_RULE_DATA_TYPE) -> Option<CSS_RULE_DATA_TYPE> {
     match rule {
-        RULE_UNKNOWN(x) => x.next,
-        RULE_SELECTOR(x) => x.base.next,
-        RULE_CHARSET(x) => x.base.next,
-        RULE_IMPORT(x) => x.base.next,
-        RULE_MEDIA(x) => x.base.next,
-        RULE_FONT_FACE(x) => x.base.next,
-        RULE_PAGE(x) => x.base.next,
+        RULE_UNKNOWN(x) => self.css_rule_list[x].next,
+        RULE_SELECTOR(x) => self.css_rule_list[x.base].next,
+        RULE_CHARSET(x) => self.css_rule_list[x.base].next,
+        RULE_IMPORT(x) => self.css_rule_list[x.base].next,
+        RULE_MEDIA(x) => self.css_rule_list[x.base].next,
+        RULE_FONT_FACE(x) => self.css_rule_list[x.base].next,
+        RULE_PAGE(x) => self.css_rule_list[x.base].next,
     }
 }
 
-pub fn get_stylesheet_parent(rule: CSS_RULE_DATA_TYPE) -> Option<@mut css_stylesheet> {
+pub fn get_stylesheet_parent(&mut self, rule: CSS_RULE_DATA_TYPE) -> Option<@mut css_stylesheet> {
     
     match rule {
-        RULE_UNKNOWN(x) => x.parent_stylesheet,
-        RULE_SELECTOR(x) => x.base.parent_stylesheet,
-        RULE_CHARSET(x) => x.base.parent_stylesheet,
-        RULE_IMPORT(x) => x.base.parent_stylesheet,
-        RULE_MEDIA(x) => x.base.parent_stylesheet,
-        RULE_FONT_FACE(x) => x.base.parent_stylesheet,
-        RULE_PAGE(x) => x.base.parent_stylesheet,
+        RULE_UNKNOWN(x) => self.css_rule_list[x].parent_stylesheet,
+        RULE_SELECTOR(x) => self.css_rule_list[x.base].parent_stylesheet,
+        RULE_CHARSET(x) => self.css_rule_list[x.base].parent_stylesheet,
+        RULE_IMPORT(x) => self.css_rule_list[x.base].parent_stylesheet,
+        RULE_MEDIA(x) => self.css_rule_list[x.base].parent_stylesheet,
+        RULE_FONT_FACE(x) => self.css_rule_list[x.base].parent_stylesheet,
+        RULE_PAGE(x) => self.css_rule_list[x.base].parent_stylesheet,
     }
 }
 
