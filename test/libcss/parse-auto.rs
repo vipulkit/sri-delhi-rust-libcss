@@ -576,7 +576,7 @@ pub fn run_test(ctx:@mut line_ctx) {
                             report_fail(ctx.buf.clone(), ctx.exp[e].clone());
                             fail!(~"Validation of rule selector failed");
                         }
-                        ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
+                        ptr = css_instance.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(crule)].next; 
                         e += 1 ;
                         loop ;
                     },
@@ -588,7 +588,7 @@ pub fn run_test(ctx:@mut line_ctx) {
                         }
                         validate_rule_charset(rule,ctx.exp[e]);
                         
-                        ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
+                        ptr = css_instance.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(crule)].next; 
                         e += 1 ;
                         loop ;
                     },
@@ -600,34 +600,34 @@ pub fn run_test(ctx:@mut line_ctx) {
                         }
                         validate_rule_import(rule,ctx.exp[e]);
                         
-                        ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
+                        ptr = css_instance.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(crule)].next; 
                         e += 1 ;
                         loop ;
                     },
                     RULE_UNKNOWN(_)=>{
                         debug!(fmt!("Unhandled rule type %?", CSS_RULE_UNKNOWN)) ;
-                        ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
+                        ptr = css_instance.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(crule)].next; 
                         e += 1 ;
                         loop ;
 
                     },
                     RULE_MEDIA(_)=>{
                         debug!(fmt!("Unhandled rule type %?", CSS_RULE_MEDIA)) ;
-                        ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
+                        ptr = css_instance.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(crule)].next; 
                         e += 1 ;
                         loop ;
 
                     },
                     RULE_FONT_FACE(_)=>{
                         debug!(fmt!("Unhandled rule type %?", CSS_RULE_FONT_FACE)) ;
-                        ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
+                        ptr = css_instance.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(crule)].next; 
                         e += 1 ;
                         loop ;
 
                     },
                     RULE_PAGE(_)=>{
                         debug!(fmt!("Unhandled rule type %?", CSS_RULE_PAGE) ) ;
-                        ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
+                        ptr = css_instance.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(crule)].next; 
                         e += 1 ;
                         loop ;
 

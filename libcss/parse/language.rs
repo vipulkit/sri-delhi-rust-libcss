@@ -173,7 +173,7 @@ impl css_language {
             }
         }
         
-        let curRule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_SELECTOR);
+        let curRule = self.sheet.css_stylesheet_rule_create(CSS_RULE_SELECTOR);
         
         //if !vec::is_empty(*tokens) {
         match self.parseSelectorList(lwc_ref, propstrings_ref, tokens, curRule) {
@@ -275,7 +275,7 @@ impl css_language {
                     //token = &vector[*ctx]; Not used
                     *ctx += 1; //Iterate
                     
-                    let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_CHARSET);
+                    let temp_rule = self.sheet.css_stylesheet_rule_create(CSS_RULE_CHARSET);
                     
                     match css_stylesheet::css__stylesheet_rule_set_charset(temp_rule, lwc_ref.lwc_string_data(charset.idata.get_ref().clone())) {
                         CSS_OK => {},
@@ -327,7 +327,7 @@ impl css_language {
                 }
                 
                 /* Create rule */
-                let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_IMPORT);
+                let temp_rule = self.sheet.css_stylesheet_rule_create(CSS_RULE_IMPORT);
 
                 /* Resolve import URI */
                 match (*self.sheet.resolve)(self.sheet.url, uri.idata.get_ref().clone())
@@ -426,7 +426,7 @@ impl css_language {
                 error => return error
 		}
                 
-            let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_MEDIA);
+            let temp_rule = self.sheet.css_stylesheet_rule_create(CSS_RULE_MEDIA);
             
             match css_stylesheet::css__stylesheet_rule_set_media(temp_rule, *media){
                 CSS_OK => {},
@@ -449,7 +449,7 @@ impl css_language {
             self.state = HAD_RULE;
         }
         else if propstrings_ref.lwc_string_caseless_isequal(lwc_ref, atkeyword.idata.get_ref().clone(), FONT_FACE as uint) {
-            let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_FONT_FACE);
+            let temp_rule = self.sheet.css_stylesheet_rule_create(CSS_RULE_FONT_FACE);
             
             consumeWhitespace(vector, ctx);
 
@@ -469,7 +469,7 @@ impl css_language {
         else if propstrings_ref.lwc_string_caseless_isequal(lwc_ref, atkeyword.idata.get_ref().clone(), PAGE as uint) {
             
             /* any0 = (':' IDENT)? ws */
-            let temp_rule = css_stylesheet::css_stylesheet_rule_create(CSS_RULE_PAGE);
+            let temp_rule = self.sheet.css_stylesheet_rule_create(CSS_RULE_PAGE);
            
             consumeWhitespace(vector, ctx);
 
@@ -574,9 +574,9 @@ impl css_language {
                         Some(x) => { 
                             match x {
                                 RULE_SELECTOR(_) =>
-                                    match css_stylesheet::css__stylesheet_get_base_rule(x).parent_rule {
+                                    match self.sheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(x)].parent_rule {
                                         Some(pRule) => 
-                                            match css_stylesheet::css__stylesheet_get_parent_type(pRule) {
+                                            match self.sheet.css__stylesheet_get_parent_type(pRule) {
                                                 CSS_RULE_PARENT_STYLESHEET  => self.handleEndRuleset(),
                                                 _ => CSS_OK
                                             },

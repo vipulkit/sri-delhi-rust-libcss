@@ -169,33 +169,33 @@ pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc) -> ~str {
 
             RULE_SELECTOR(css_rule_selector_x)=>{
                 dump_rule_selector(css_rule_selector_x, lwc_ref, &mut ptr, 1);
-                rule = css_rule_selector_x.base.next;
+                rule = sheet.css_rule_list[css_rule_selector_x.base].next;
             },
             RULE_CHARSET(css_rule_charset_x)=>{
                 dump_rule_charset(css_rule_charset_x, &mut ptr);
-                rule = css_rule_charset_x.base.next;
+                rule = sheet.css_rule_list[css_rule_charset_x.base].next;
             },
             RULE_IMPORT(css_rule_import_x)=>{
                 dump_rule_import(css_rule_import_x, &mut ptr);
-                rule = css_rule_import_x.base.next;
+                rule = sheet.css_rule_list[css_rule_import_x.base].next;
             },
             RULE_MEDIA(css_rule_media_x)=>{
-                dump_rule_media(css_rule_media_x, lwc_ref, &mut ptr);
-                rule = css_rule_media_x.base.next;
+                dump_rule_media(sheet, css_rule_media_x, lwc_ref, &mut ptr);
+                rule = sheet.css_rule_list[css_rule_media_x.base].next;
             },
             RULE_FONT_FACE(css_rule_font_face_x)=>{
                 dump_rule_font_face(css_rule_font_face_x, lwc_ref, &mut ptr);
-                rule = css_rule_font_face_x.base.next;
+                rule = sheet.css_rule_list[css_rule_font_face_x.base].next;
             },
             RULE_PAGE(css_rule_page_x)=>{
                 dump_rule_page(css_rule_page_x, lwc_ref, &mut ptr);
-                rule = css_rule_page_x.base.next; 
+                rule = sheet.css_rule_list[css_rule_page_x.base].next; 
             },
             RULE_UNKNOWN(css_rule_x)=>{
                 ptr = ptr + &"Unhandled rule type ";
                 // add rule.type
                 ptr.push_char('\n');
-                rule = css_rule_x.next;
+                rule = sheet.css_rule_list[css_rule_x].next;
             }
         }
     }
@@ -254,7 +254,7 @@ fn dump_rule_import(s:@mut css_rule_import, ptr:&mut ~str){
 }
 
 // TODO
-fn dump_rule_media(s:@mut css_rule_media, lwc_ref:&mut ~lwc, ptr: &mut ~str) {
+fn dump_rule_media(sheet :@mut css_stylesheet, s:@mut css_rule_media, lwc_ref:&mut ~lwc, ptr: &mut ~str) {
     debug!("Entering: dump_rule_media");
     ptr.push_str( &"| @media ");
     ptr.push_char('\n');
@@ -266,7 +266,7 @@ fn dump_rule_media(s:@mut css_rule_media, lwc_ref:&mut ~lwc, ptr: &mut ~str) {
         match rule_type {
             RULE_SELECTOR(x) => {
                  dump_rule_selector(x, lwc_ref, ptr, 2);
-                 rule = x.base.next;
+                 rule = sheet.css_rule_list[x.base].next;
             },
             _ =>{
                 fail!(~"Only selector type expected");

@@ -149,7 +149,7 @@ pub struct css_stylesheet {
     import : Option<css_import_notification_fn>, // Import notification function */
     font : Option<css_font_resolution_fn>,   //Import font_resolution function
     color: Option<css_color_resolution_fn>,
-    css_rule_list: ~[css_rule]
+    css_rule_list: ~[~css_rule]
 }
 
 pub struct css_rule {
@@ -222,30 +222,6 @@ pub enum css_rule_type {
     CSS_RULE_PAGE
 }
 
-pub fn get_css_rule_next(&mut self, rule: CSS_RULE_DATA_TYPE) -> Option<CSS_RULE_DATA_TYPE> {
-    match rule {
-        RULE_UNKNOWN(x) => self.css_rule_list[x].next,
-        RULE_SELECTOR(x) => self.css_rule_list[x.base].next,
-        RULE_CHARSET(x) => self.css_rule_list[x.base].next,
-        RULE_IMPORT(x) => self.css_rule_list[x.base].next,
-        RULE_MEDIA(x) => self.css_rule_list[x.base].next,
-        RULE_FONT_FACE(x) => self.css_rule_list[x.base].next,
-        RULE_PAGE(x) => self.css_rule_list[x.base].next,
-    }
-}
-
-pub fn get_stylesheet_parent(&mut self, rule: CSS_RULE_DATA_TYPE) -> Option<@mut css_stylesheet> {
-    
-    match rule {
-        RULE_UNKNOWN(x) => self.css_rule_list[x].parent_stylesheet,
-        RULE_SELECTOR(x) => self.css_rule_list[x.base].parent_stylesheet,
-        RULE_CHARSET(x) => self.css_rule_list[x.base].parent_stylesheet,
-        RULE_IMPORT(x) => self.css_rule_list[x.base].parent_stylesheet,
-        RULE_MEDIA(x) => self.css_rule_list[x.base].parent_stylesheet,
-        RULE_FONT_FACE(x) => self.css_rule_list[x.base].parent_stylesheet,
-        RULE_PAGE(x) => self.css_rule_list[x.base].parent_stylesheet,
-    }
-}
 
 pub fn compare_css_rule_types(rule : Option<CSS_RULE_DATA_TYPE>, rule_type : css_rule_type) -> bool{
     
@@ -319,7 +295,7 @@ pub fn compare_css_rdt(rule1: Option<CSS_RULE_DATA_TYPE>, rule2: Option<CSS_RULE
                         None => false,
                         Some(T2) =>{
                             match  T2 {
-                                RULE_UNKNOWN(y) => mut_ptr_eq(x,y),
+                                RULE_UNKNOWN(y) => if x == y { true } else { false },
                                 _=> false,
                             }
                         }
@@ -397,6 +373,31 @@ pub fn compare_css_rdt(rule1: Option<CSS_RULE_DATA_TYPE>, rule2: Option<CSS_RULE
 }
 
 impl css_stylesheet {
+
+    pub fn get_css_rule_next(&mut self, rule: CSS_RULE_DATA_TYPE) -> Option<CSS_RULE_DATA_TYPE> {
+        match rule {
+            RULE_UNKNOWN(x) => self.css_rule_list[x].next,
+            RULE_SELECTOR(x) => self.css_rule_list[x.base].next,
+            RULE_CHARSET(x) => self.css_rule_list[x.base].next,
+            RULE_IMPORT(x) => self.css_rule_list[x.base].next,
+            RULE_MEDIA(x) => self.css_rule_list[x.base].next,
+            RULE_FONT_FACE(x) => self.css_rule_list[x.base].next,
+            RULE_PAGE(x) => self.css_rule_list[x.base].next,
+        }
+    }
+
+    pub fn get_stylesheet_parent(&mut self, rule: CSS_RULE_DATA_TYPE) -> Option<@mut css_stylesheet> {
+        
+        match rule {
+            RULE_UNKNOWN(x) => self.css_rule_list[x].parent_stylesheet,
+            RULE_SELECTOR(x) => self.css_rule_list[x.base].parent_stylesheet,
+            RULE_CHARSET(x) => self.css_rule_list[x.base].parent_stylesheet,
+            RULE_IMPORT(x) => self.css_rule_list[x.base].parent_stylesheet,
+            RULE_MEDIA(x) => self.css_rule_list[x.base].parent_stylesheet,
+            RULE_FONT_FACE(x) => self.css_rule_list[x.base].parent_stylesheet,
+            RULE_PAGE(x) => self.css_rule_list[x.base].parent_stylesheet,
+        }
+    }
 
     /**
     * #Description:
@@ -703,11 +704,11 @@ impl css_stylesheet {
     * #Return Value:
     *   'CSS_RULE_DATA_TYPE' - .
     */
-    pub fn css_stylesheet_rule_create(rule_type : css_rule_type ) -> CSS_RULE_DATA_TYPE  {
+    pub fn css_stylesheet_rule_create(&mut self, rule_type : css_rule_type ) -> CSS_RULE_DATA_TYPE  {
 
         //debug!("Entering: css_stylesheet_rule_create");
         
-        let base_rule = @mut css_rule{ 
+        let base_rule = ~css_rule{ 
             parent_rule:None,
             parent_stylesheet:None,
             next:None,
@@ -717,19 +718,21 @@ impl css_stylesheet {
 
         match rule_type {
             CSS_RULE_UNKNOWN=>  {   
-                let ret_rule = @mut css_rule{ 
+                let ret_rule = ~css_rule{ 
                     parent_rule:None,
                     parent_stylesheet:None,
                     next:None,
                     prev:None,
                     index:0
                 };
-                RULE_UNKNOWN(ret_rule) 
+                self.css_rule_list.push(ret_rule);
+                RULE_UNKNOWN(self.css_rule_list.len()-1) 
             },
 
             CSS_RULE_SELECTOR=> {   
+                self.css_rule_list.push(base_rule);
                 let ret_rule = @mut css_rule_selector{
-                    base:base_rule,
+                    base:self.css_rule_list.len()-1,
                     selectors:~[],
                     style:None
                 };  
@@ -738,16 +741,18 @@ impl css_stylesheet {
 
 
             CSS_RULE_CHARSET=>  {   
+                self.css_rule_list.push(base_rule);
                 let ret_rule = @mut css_rule_charset{
-                    base:base_rule,
+                    base:self.css_rule_list.len()-1,
                     encoding:~""
                 };  
                 RULE_CHARSET(ret_rule) 
             },
 
             CSS_RULE_IMPORT=>   {   
+                self.css_rule_list.push(base_rule);
                 let ret_rule = @mut css_rule_import{
-                    base:base_rule,
+                    base:self.css_rule_list.len()-1,
                     url:~"",
                     media:0,
                     sheet:None
@@ -756,8 +761,9 @@ impl css_stylesheet {
             },
 
             CSS_RULE_MEDIA=>    {   
+                self.css_rule_list.push(base_rule);
                 let ret_rule = @mut css_rule_media{ 
-                    base:base_rule,
+                    base:self.css_rule_list.len()-1,
                     media:0,
                     first_child:None,
                     last_child:None
@@ -766,16 +772,18 @@ impl css_stylesheet {
             },
 
             CSS_RULE_FONT_FACE=>{   
+                self.css_rule_list.push(base_rule);
                 let ret_rule = @mut css_rule_font_face{
-                    base:base_rule,
+                    base:self.css_rule_list.len()-1,
                     font_face:None
                 };  
                 RULE_FONT_FACE(ret_rule) 
             },
 
             CSS_RULE_PAGE=>     {   
+                self.css_rule_list.push(base_rule);
                 let ret_rule = @mut css_rule_page{
-                    base:base_rule,
+                    base:self.css_rule_list.len()-1,
                     selector:None,
                     style:None
                 };  
@@ -939,21 +947,21 @@ impl css_stylesheet {
         }
     }
     
-    pub fn css__stylesheet_get_parent_type(css_rule :  CSS_RULE_DATA_TYPE) -> CSS_RULE_PARENT_TYPE {
+    pub fn css__stylesheet_get_parent_type(&mut self, css_rule :  CSS_RULE_DATA_TYPE) -> CSS_RULE_PARENT_TYPE {
         
         let base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
 
-        if (base_rule.parent_rule.is_some() && base_rule.parent_stylesheet.is_none()) {
+        if (self.css_rule_list[base_rule].parent_rule.is_some() && self.css_rule_list[base_rule].parent_stylesheet.is_none()) {
             return CSS_RULE_PARENT_RULE;
         }
 
-        if (base_rule.parent_rule.is_none() && base_rule.parent_stylesheet.is_some()) {
+        if (self.css_rule_list[base_rule].parent_rule.is_none() && self.css_rule_list[base_rule].parent_stylesheet.is_some()) {
             return CSS_RULE_PARENT_STYLESHEET;
         }
 
         fail!(~"Parent type is ambiguous");
     }
-    pub fn css__stylesheet_get_base_rule(css_rule : CSS_RULE_DATA_TYPE) -> @mut css_rule {
+    pub fn css__stylesheet_get_base_rule(css_rule : CSS_RULE_DATA_TYPE) -> uint {
         
         match css_rule {
             RULE_UNKNOWN(r) => {
@@ -998,7 +1006,7 @@ impl css_stylesheet {
         //debug!("Entering: css__stylesheet_add_rule");
         let base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
 
-        base_rule.index = sheet.rule_count;
+        sheet.css_rule_list[base_rule].index = sheet.rule_count;
 
         match sheet._add_selectors(lwc_ref, css_rule) {
             CSS_OK => {},
@@ -1009,23 +1017,23 @@ impl css_stylesheet {
             Some(prule)=> {
                 match prule {
                     RULE_MEDIA(media_rule)=>{
-                        base_rule.parent_rule = parent_rule;
+                        sheet.css_rule_list[base_rule].parent_rule = parent_rule;
                         sheet.rule_count += 1;
                         //let mut base_media_prule = css_stylesheet::css__stylesheet_get_base_rule(prule);
 
 
                         match media_rule.last_child {
                             None=>{
-                                base_rule.next = None;
-                                base_rule.prev = None;
+                                sheet.css_rule_list[base_rule].next = None;
+                                sheet.css_rule_list[base_rule].prev = None;
                                 media_rule.first_child = Some(css_rule);
                                 media_rule.last_child = Some(css_rule);
                             },
                             Some(last_child)=>{
                                 let last_child_base_rule = css_stylesheet::css__stylesheet_get_base_rule(last_child);
-                                last_child_base_rule.next = Some(css_rule);
-                                base_rule.prev = Some(last_child) ;
-                                base_rule.next = None;
+                                sheet.css_rule_list[last_child_base_rule].next = Some(css_rule);
+                                sheet.css_rule_list[base_rule].prev = Some(last_child) ;
+                                sheet.css_rule_list[base_rule].next = None;
                                 media_rule.last_child = Some(css_rule);
                             }
                         }
@@ -1034,21 +1042,21 @@ impl css_stylesheet {
                 }
             },
             None=>{
-                base_rule.parent_stylesheet = Some(sheet);
+                sheet.css_rule_list[base_rule].parent_stylesheet = Some(sheet);
                 sheet.rule_count += 1 ;
 
                 match sheet.last_rule {
                     None=>{
-                        base_rule.prev = None;
-                        base_rule.next = None;
+                        sheet.css_rule_list[base_rule].prev = None;
+                        sheet.css_rule_list[base_rule].next = None;
                         sheet.rule_list = Some(css_rule);
                         sheet.last_rule = Some(css_rule);
                     },
                     Some(last_rule)=>{
                         let last_rule_base_rule = css_stylesheet::css__stylesheet_get_base_rule(last_rule);
-                        last_rule_base_rule.next = Some(css_rule);
-                        base_rule.prev = sheet.last_rule;
-                        base_rule.next = None;
+                        sheet.css_rule_list[last_rule_base_rule].next = Some(css_rule);
+                        sheet.css_rule_list[base_rule].prev = sheet.last_rule;
+                        sheet.css_rule_list[base_rule].next = None;
                         sheet.last_rule = Some(css_rule);
                     }
                 }
@@ -1077,29 +1085,29 @@ impl css_stylesheet {
         }
 
         let base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
-        match base_rule.next {
+        match sheet.css_rule_list[base_rule].next {
             None=> {
-                sheet.last_rule = base_rule.prev;
+                sheet.last_rule = sheet.css_rule_list[base_rule].prev;
             },
             Some(base_rule_next)=>{
                 let next_rule = css_stylesheet::css__stylesheet_get_base_rule(base_rule_next);
-                next_rule.prev = base_rule.prev;
+                sheet.css_rule_list[next_rule].prev = sheet.css_rule_list[base_rule].prev;
             }
         }
 
-        match base_rule.prev {
+        match sheet.css_rule_list[base_rule].prev {
             None=>{
-                sheet.rule_list = base_rule.next ;
+                sheet.rule_list = sheet.css_rule_list[base_rule].next ;
             },
             Some(base_rule_prev)=>{
                 let prev_rule = css_stylesheet::css__stylesheet_get_base_rule(base_rule_prev);
-                prev_rule.next = base_rule.next ;
+                sheet.css_rule_list[prev_rule].next = sheet.css_rule_list[base_rule].next ;
             }
         }
-        base_rule.parent_rule = None ;
-        base_rule.parent_stylesheet = None ;
-        base_rule.next = None;
-        base_rule.prev = None ;
+        sheet.css_rule_list[base_rule].parent_rule = None ;
+        sheet.css_rule_list[base_rule].parent_stylesheet = None ;
+        sheet.css_rule_list[base_rule].next = None;
+        sheet.css_rule_list[base_rule].prev = None ;
         CSS_OK
     }
 
@@ -1117,15 +1125,15 @@ impl css_stylesheet {
         //debug!("Entering: _add_selectors");
         match css_rule {
             RULE_SELECTOR(x) => {
-                if x.base.parent_rule.is_some() || 
-                        x.base.parent_stylesheet.is_some() {
+                if self.css_rule_list[x.base].parent_rule.is_some() || 
+                        self.css_rule_list[x.base].parent_stylesheet.is_some() {
                     return CSS_INVALID;
                 }
 
                 let mut i : int = 0 ;
                 let length = x.selectors.len() as int;
                 while (i< length ) {
-                    match self.selectors.css__selector_hash_insert(lwc_ref, x.selectors[i]) {
+                    match self.selectors.css__selector_hash_insert(&mut self.css_rule_list, lwc_ref, x.selectors[i]) {
                         CSS_OK=> { 
                             i += 1;
                             loop;
@@ -1147,8 +1155,8 @@ impl css_stylesheet {
                 CSS_OK
             },
             RULE_MEDIA(x) => {
-                if x.base.parent_rule.is_some() || 
-                        x.base.parent_stylesheet.is_some() {
+                if self.css_rule_list[x.base].parent_rule.is_some() || 
+                        self.css_rule_list[x.base].parent_stylesheet.is_some() {
                     return CSS_INVALID;
                 }
 
@@ -1162,12 +1170,12 @@ impl css_stylesheet {
                         
                             match self._add_selectors(lwc_ref, current_rule) {
                                 CSS_OK=>{
-                                    ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                                    ptr = self.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
                                     loop ;
                                 },
                                 x => {
                                     /* Failed, revert our changes */
-                                    ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).prev;
+                                    ptr = self.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].prev;
                                     loop {
                                         match ptr {
                                             None=>{
@@ -1175,7 +1183,7 @@ impl css_stylesheet {
                                             }
                                             Some(prev_rule)=>{
                                                 self._remove_selectors(lwc_ref, prev_rule) ;
-                                                ptr = css_stylesheet::css__stylesheet_get_base_rule(prev_rule).prev;
+                                                ptr = self.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(prev_rule)].prev;
                                                 loop ;
                                             }
                                         }
@@ -1233,7 +1241,7 @@ impl css_stylesheet {
                         Some(base_rule)=>{
                             match self._remove_selectors(lwc_ref, base_rule) {
                                 CSS_OK => {
-                                    ptr = css_stylesheet::css__stylesheet_get_base_rule(base_rule).next;
+                                    ptr = self.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(base_rule)].next;
                                 },
                                 x => { 
                                     return x ;
@@ -1390,7 +1398,7 @@ impl css_selector_hash {
     * #Return Value:
     *  'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css__selector_hash_insert(&mut self, lwc_ref:&mut ~lwc, selector : @mut css_selector) 
+    pub fn css__selector_hash_insert(&mut self, css_rule_list:&mut ~[~css_rule], lwc_ref:&mut ~lwc, selector : @mut css_selector) 
                                     -> css_error {
         //debug!("Entering: css__selector_hash_insert");
 
@@ -1406,7 +1414,7 @@ impl css_selector_hash {
                     //debug!("Entering: css__selector_hash_insert:: Named Element");
                     mask = self.default_slots-1 ;
                     index = css_selector_hash::_hash_name(selector.data[0].qname.name, lwc_ref) & mask ;
-                    return self._insert_into_chain(Element,index,selector);
+                    return self._insert_into_chain(css_rule_list,Element,index,selector);
             }
 
             // Named Class
@@ -1415,7 +1423,7 @@ impl css_selector_hash {
                 name = self._class_name(lwc_ref, selector);
                 mask = self.default_slots-1 ;
                 index = css_selector_hash::_hash_name(name, lwc_ref) & mask ;
-                return self._insert_into_chain(Class,index,selector);
+                return self._insert_into_chain(css_rule_list,Class,index,selector);
             }
 
             // Named Id
@@ -1424,16 +1432,16 @@ impl css_selector_hash {
                 name = self._id_name(lwc_ref, selector);
                 mask = self.default_slots-1 ;
                 index = css_selector_hash::_hash_name(name, lwc_ref) & mask ;
-                return self._insert_into_chain(Ids,index,selector);
+                return self._insert_into_chain(css_rule_list,Ids,index,selector);
             }
             else {
                 //debug!("Entering: css__selector_hash_insert:: else Universal");
-                return self._insert_into_chain(Universal,index,selector);
+                return self._insert_into_chain(css_rule_list,Universal,index,selector);
             }
         }
         // Universal Chain
         //debug!("Entering: css__selector_hash_insert:: Universal Chain");
-        return self._insert_into_chain(Universal,index,selector);
+        return self._insert_into_chain(css_rule_list, Universal,index,selector);
     }
 
     
@@ -1449,7 +1457,7 @@ impl css_selector_hash {
     * #Return Value:
     *  'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn _insert_into_chain(&mut self, 
+    pub fn _insert_into_chain(&mut self, css_rule_list:&mut ~[~css_rule],
                             hash_type : css_hash_type,
                             index:u32,
                             selector : @mut css_selector) 
@@ -1506,7 +1514,7 @@ impl css_selector_hash {
                         let base_search_rule = css_stylesheet::css__stylesheet_get_base_rule(search.selector.rule.expect(""));
                         let base_selector_rule = css_stylesheet::css__stylesheet_get_base_rule(selector.rule.expect(""));
 
-                        if base_search_rule.index > base_selector_rule.index {
+                        if css_rule_list[base_search_rule].index > css_rule_list[base_selector_rule].index {
                             break ;
                         }
                     }

@@ -90,7 +90,8 @@ impl css {
             resolve : params.resolve, 
             import : params.import, 
             font : params.font,   
-            color: params.color            
+            color: params.color,
+            css_rule_list : ~[]            
         };
 
         // create language
@@ -172,16 +173,16 @@ impl css {
                                 return CSS_IMPORTS_PENDING ;
                             }
                             else {
-                                ptr = css_stylesheet::css__stylesheet_get_base_rule(rule).next;
+                                ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(rule)].next;
                                 loop ;
                             }
                         },
                         RULE_UNKNOWN(_)=>{
-                            ptr = css_stylesheet::css__stylesheet_get_base_rule(rule).next;
+                            ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(rule)].next;
                             loop ;
                         },
                         RULE_CHARSET(_)=>{
-                            ptr = css_stylesheet::css__stylesheet_get_base_rule(rule).next;
+                            ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(rule)].next;
                             loop ;
                         },
                         _=>{
@@ -321,16 +322,16 @@ impl css {
                                 return (CSS_OK,Some(irule.url.clone()),Some(irule.media));
                             }
                             else {
-                                ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                                ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
                                 loop ;
                             }
                         },
                         RULE_CHARSET(_) =>{
-                            ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                            ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
                             loop;
                         },
                         RULE_UNKNOWN(_) =>{
-                            ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                            ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
                             loop;
                         },
                         _=> {
@@ -377,16 +378,16 @@ impl css {
                                 return CSS_OK ;
                             }
                             else {
-                                ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                                ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
                                 loop ;
                             }
                         },
                         RULE_CHARSET(_) =>{
-                            ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                            ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
                             loop;
                         },
                         RULE_UNKNOWN(_) =>{
-                            ptr = css_stylesheet::css__stylesheet_get_base_rule(current_rule).next;
+                            ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
                             loop;
                         },
                         _=> {
