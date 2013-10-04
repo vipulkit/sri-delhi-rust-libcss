@@ -572,7 +572,7 @@ pub fn run_test(ctx:@mut line_ctx) {
                                 ctx.exp[e].ftype , (CSS_RULE_SELECTOR as int)  )) ;
                             fail!(~"Expected type differs") ;
                         }
-                        if validate_rule_selector(rule, &mut lwc_ref, ctx.exp[e]) {
+                        if validate_rule_selector(css_instance.stylesheet, rule, &mut lwc_ref, ctx.exp[e]) {
                             report_fail(ctx.buf.clone(), ctx.exp[e].clone());
                             fail!(~"Validation of rule selector failed");
                         }
@@ -638,7 +638,7 @@ pub fn run_test(ctx:@mut line_ctx) {
     }
 }
 
-pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mut exp_entry ) -> bool {
+pub fn validate_rule_selector(sheet: @mut css_stylesheet, s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mut exp_entry ) -> bool {
 
     debug!("Entering: validate_rule_selector");
     let mut name : ~str = ~"" ;
@@ -651,7 +651,7 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, e:@mu
 	 let mut i : uint = 0;
 	 let length = s.selectors.len();
      while i < length {
-        dump_selector_list(s.selectors[i], lwc_ref, &mut ptr) ;
+        dump_selector_list(sheet, s.selectors[i], lwc_ref, &mut ptr) ;
         if ( i != (s.selectors.len()-1) ) {
             name = name + ptr + ", ";
             debug!(fmt!("if name == %?" , name));
@@ -773,11 +773,11 @@ pub fn validate_rule_import(s:@mut css_rule_import, e:@mut exp_entry) -> bool {
     true
 } 
 
-fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
-    if list.combinator.is_some() {
-        dump_selector_list(list.combinator.unwrap(), lwc_ref, ptr);
+fn dump_selector_list(sheet:@mut css_stylesheet, list:uint, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+    if sheet.css_selectors_list[list].combinator.is_some() {
+        dump_selector_list(sheet, sheet.css_selectors_list[list].combinator.unwrap(), lwc_ref, ptr);
     }
-    match list.data[0].combinator_type {
+    match sheet.css_selectors_list[list].data[0].combinator_type {
         CSS_COMBINATOR_NONE=> {
             
         },
@@ -804,10 +804,10 @@ fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
         }
 
     }
-    dump_selector(list, lwc_ref, ptr);
+    dump_selector(&mut sheet.css_selectors_list[list], lwc_ref, ptr);
 }
 
-fn dump_selector(selector:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+fn dump_selector(selector:&mut ~css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     let d:~[@mut css_selector_detail] = selector.data.clone();
     debug!(fmt!("Selector Data:%?",d));
   	let mut iter:uint = 0;

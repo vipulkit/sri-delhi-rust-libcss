@@ -91,7 +91,8 @@ impl css {
             import : params.import, 
             font : params.font,   
             color: params.color,
-            css_rule_list : ~[]            
+            css_rule_list : ~[],
+            css_selectors_list : ~[] 
         };
 
         // create language

@@ -168,7 +168,7 @@ pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc) -> ~str {
         match rule.expect(reason) {
 
             RULE_SELECTOR(css_rule_selector_x)=>{
-                dump_rule_selector(css_rule_selector_x, lwc_ref, &mut ptr, 1);
+                dump_rule_selector(sheet, css_rule_selector_x, lwc_ref, &mut ptr, 1);
                 rule = sheet.css_rule_list[css_rule_selector_x.base].next;
             },
             RULE_CHARSET(css_rule_charset_x)=>{
@@ -188,7 +188,7 @@ pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc) -> ~str {
                 rule = sheet.css_rule_list[css_rule_font_face_x.base].next;
             },
             RULE_PAGE(css_rule_page_x)=>{
-                dump_rule_page(css_rule_page_x, lwc_ref, &mut ptr);
+                dump_rule_page(sheet, css_rule_page_x, lwc_ref, &mut ptr);
                 rule = sheet.css_rule_list[css_rule_page_x.base].next; 
             },
             RULE_UNKNOWN(css_rule_x)=>{
@@ -205,7 +205,7 @@ pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc) -> ~str {
     ptr
 }
 
-fn dump_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32){
+fn dump_rule_selector(sheet : @mut css_stylesheet, s:@mut css_rule_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32){
     debug!("Entering: dump_rule_selector");
     let mut i = 0;
 
@@ -217,7 +217,7 @@ fn dump_rule_selector(s:@mut css_rule_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str
     
     i = 0;
     while i < s.selectors.len() {
-        dump_selector_list(s.selectors[i] , lwc_ref, ptr);
+        dump_selector_list(sheet, s.selectors[i], lwc_ref, ptr);
         if !(i == s.selectors.len() - 1) {
             ptr.push_char(',');
             ptr.push_char(' ');
@@ -265,7 +265,7 @@ fn dump_rule_media(sheet :@mut css_stylesheet, s:@mut css_rule_media, lwc_ref:&m
         let rule_type = rule.unwrap();
         match rule_type {
             RULE_SELECTOR(x) => {
-                 dump_rule_selector(x, lwc_ref, ptr, 2);
+                 dump_rule_selector(sheet, x, lwc_ref, ptr, 2);
                  rule = sheet.css_rule_list[x.base].next;
             },
             _ =>{
@@ -277,12 +277,12 @@ fn dump_rule_media(sheet :@mut css_stylesheet, s:@mut css_rule_media, lwc_ref:&m
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_rule_page(s:@ mut css_rule_page, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+fn dump_rule_page(sheet:@mut css_stylesheet, s:@ mut css_rule_page, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_rule_page");
     ptr.push_str( &"| @page ");
 
     if s.selector.is_some() {
-        dump_selector_list(s.selector.unwrap(), lwc_ref, ptr);
+        dump_selector_list(sheet, s.selector.unwrap(), lwc_ref, ptr);
     }
 
     ptr.push_char('\n');
@@ -305,12 +305,12 @@ fn dump_rule_font_face(s:@mut css_rule_font_face, lwc_ref:&mut ~lwc, ptr:&mut ~s
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+fn dump_selector_list(sheet:@mut css_stylesheet, list: uint, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_selector_list");
-    if list.combinator.is_some() {
-        dump_selector_list(list.combinator.unwrap(), lwc_ref, ptr);
+    if sheet.css_selectors_list[list].combinator.is_some() {
+        dump_selector_list(sheet, sheet.css_selectors_list[list].combinator.unwrap(), lwc_ref, ptr);
     }
-    match list.data[0].combinator_type {
+    match sheet.css_selectors_list[list].data[0].combinator_type {
         CSS_COMBINATOR_NONE=> {
             
         },
@@ -337,12 +337,12 @@ fn dump_selector_list(list:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
         }
 
     }
-    dump_selector(list, lwc_ref, ptr);
+    dump_selector(&mut sheet.css_selectors_list[list], lwc_ref, ptr);
 
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_selector(selector:@mut css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+fn dump_selector(selector:&mut ~css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_selector");
     let d:~[@mut css_selector_detail] = selector.data.clone();
     let mut iter:uint = 0;

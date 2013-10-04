@@ -21,13 +21,12 @@ pub type reserved_fn = @extern fn (strings:&css_propstrings, lwc_ref:&mut ~lwc, 
 pub type get_value_fn = @extern fn (strings: &css_propstrings , lwc_ref:&mut ~lwc, token: &~css_token , first: bool) -> u32;
 
 pub struct css_properties {
-    property_handlers: ~[handle],
-    sheet: @mut css_stylesheet
+    property_handlers: ~[handle]
 }
 
 impl css_properties {
 
-    pub fn css_properties(sheet_instance: @mut css_stylesheet) -> ~css_properties {
+    pub fn css_properties() -> ~css_properties {
         /*
          * Dispatch table of property handlers, indexed by property enum
          */
@@ -165,7 +164,7 @@ impl css_properties {
         
         ~css_properties{
             property_handlers: vec,
-            sheet: sheet_instance
+            //sheet: sheet_instance
         }
     }
 

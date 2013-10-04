@@ -809,7 +809,7 @@ impl css_select_ctx {
 
         loop{
             /* Find first non-charset rule, if we're at the list head */
-            if compare_css_rdt(rule, s.expect("").rule_list){
+            if compare_css_rdt(rule, s.unwrap().rule_list){
                 while rule.is_some() && compare_css_rule_types(rule, CSS_RULE_CHARSET) {
                     rule = sheet.get_css_rule_next(rule.expect(""));
                 }
@@ -853,7 +853,13 @@ impl css_select_ctx {
                         if sp > 0 {
                             sp -= 1;
                             rule = sheet.get_css_rule_next(import_stack[sp]);
-                            s = sheet.get_stylesheet_parent(import_stack[sp]);
+                            if sheet.get_stylesheet_parent(import_stack[sp]) {
+                                s = Some(sheet)
+                            }
+                            else {
+                                s = None
+                            }
+
                         }
                         else {
                             s = None;
@@ -894,7 +900,7 @@ impl css_select_ctx {
                                 return applies ;
                             }
 
-                            if sheet.css_rule_list[r.base].parent_stylesheet.is_none() {
+                            if !sheet.css_rule_list[r.base].parent_stylesheet {
                                 ancestor = sheet.css_rule_list[r.base].parent_rule ;
                             }
                             else {
@@ -904,7 +910,7 @@ impl css_select_ctx {
                         },
                         _ => {
                             let ancestor_base = css_stylesheet::css__stylesheet_get_base_rule(ancestor_rule);
-                            if sheet.css_rule_list[ancestor_base].parent_stylesheet.is_none() {
+                            if !sheet.css_rule_list[ancestor_base].parent_stylesheet {
                                 ancestor = sheet.css_rule_list[ancestor_base].parent_rule ;
                             }
                             else {
@@ -993,7 +999,7 @@ impl css_select_ctx {
                     if (sp > 0) {
                         sp -= 1;
                         ptr = sheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(import_stack[sp])].next;
-                        s = sheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(import_stack[sp])].parent_stylesheet;
+                        s = if sheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(import_stack[sp])].parent_stylesheet { Some(sheet)} else { None} ;
                     } 
                     else {
                         s = None;
@@ -1048,9 +1054,9 @@ impl css_select_ctx {
     }
 
     #[inline]
-    pub fn _selectors_pending(node: Option<@mut css_selector>, id: Option<@mut css_selector>,
-                classes: &~[Option<@mut css_selector>], 
-                univ: Option<@mut css_selector>) -> bool {
+    pub fn _selectors_pending(node: Option<uint>, id: Option<uint>,
+                classes: &~[Option<uint>], 
+                univ: Option<uint>) -> bool {
 
         //debug!(fmt!("Entering _selectors_pending")) ;
         let mut pending : bool = false;
@@ -1089,8 +1095,8 @@ impl css_select_ctx {
     }
 
     #[inline]
-    pub fn _selector_less_specific(sheet: @mut css_stylesheet, refer:Option<@mut css_selector>, 
-                                cand:Option<@mut css_selector>) 
+    pub fn _selector_less_specific(sheet: @mut css_stylesheet, refer:Option<uint>, 
+                                cand:Option<uint>) 
                                 -> bool {
 
         //debug!(fmt!("Entering _selector_less_specific")) ;
@@ -1105,19 +1111,19 @@ impl css_select_ctx {
         }
 
         /* Sort by specificity */
-        if (cand.expect("").specificity < refer.expect("").specificity) {
+        if (sheet.css_selectors_list[cand.unwrap()].specificity < sheet.css_selectors_list[refer.unwrap()].specificity) {
             result = true;
         } 
-        else if (refer.expect("").specificity < cand.expect("").specificity) {
+        else if (sheet.css_selectors_list[refer.unwrap()].specificity < sheet.css_selectors_list[cand.unwrap()].specificity) {
             result = false;
         } 
         else {
 
-            if( cand.expect("").rule.is_none() || refer.expect("").rule.is_none() ) {
+            if( sheet.css_selectors_list[cand.unwrap()].rule.is_none() || sheet.css_selectors_list[refer.unwrap()].rule.is_none() ) {
                 fail!(~"_selector_less_specific:Base rule cannot be null");
             }
-            let cand_base = css_stylesheet::css__stylesheet_get_base_rule(cand.expect("").rule.expect("")) ;
-            let refer_base = css_stylesheet::css__stylesheet_get_base_rule(refer.expect("").rule.expect("")) ;
+            let cand_base = css_stylesheet::css__stylesheet_get_base_rule(sheet.css_selectors_list[cand.unwrap()].rule.unwrap()) ;
+            let refer_base = css_stylesheet::css__stylesheet_get_base_rule(sheet.css_selectors_list[refer.unwrap()].rule.unwrap()) ;
             /* Then by rule index -- earliest wins */
             if (sheet.css_rule_list[cand_base].index < sheet.css_rule_list[refer_base].index) {
                 result = true;
@@ -1132,14 +1138,14 @@ impl css_select_ctx {
 
     #[inline]
     pub fn _selector_next(sheet: @mut css_stylesheet,
-                            node: Option<@mut css_selector>, 
-                            id: Option<@mut css_selector>,
-                            classes: &~[Option<@mut css_selector>], 
-                            univ: Option<@mut css_selector>) 
-                            -> Option<@mut css_selector> {
+                            node: Option<uint>, 
+                            id: Option<uint>,
+                            classes: &~[Option<uint>], 
+                            univ: Option<uint>) 
+                            -> Option<uint> {
 
         //debug!(fmt!("Entering _selector_next")) ;
-        let mut ret : Option<@mut css_selector> = None;
+        let mut ret : Option<uint> = None;
 
         if (css_select_ctx::_selector_less_specific(sheet, ret, node)) {
             ret = Some(node.expect(""));
@@ -1190,17 +1196,17 @@ impl css_select_ctx {
     
         //debug!(fmt!("Entering match_selectors_in_sheet")) ;
         let mut node_selectors_hash_entry : Option<@mut hash_entry> = None ;
-        let mut node_selectors_option : Option<@mut css_selector> = None ;
+        let mut node_selectors_option : Option<uint> = None ;
         let mut id_selectors_hash_entry : Option<@mut hash_entry> = None ;
-        let mut id_selectors_option : Option<@mut css_selector> = None ;
+        let mut id_selectors_option : Option<uint> = None ;
         let mut class_selectors_hash_entry : ~[Option<@mut hash_entry>] = ~[];
-        let mut class_selectors_option_list : ~[Option<@mut css_selector>] = ~[] ;
+        let mut class_selectors_option_list : ~[Option<uint>] = ~[] ;
         let mut univ_selectors_hash_entry : Option<@mut hash_entry> = None ;
-        let mut univ_selectors_option : Option<@mut css_selector> = None ;
+        let mut univ_selectors_option : Option<uint> = None ;
         //let mut error : css_error ;
 
         /* Find hash chain that applies to current node */
-        let (sel,error) = sheet.selectors.css__selector_hash_find(&mut self.lwc_ref, state.element.name);
+        let (sel,error) = sheet.selectors.css__selector_hash_find(sheet, &mut self.lwc_ref, state.element.name);
         match error {
             CSS_OK => {},
             err => {
@@ -1219,7 +1225,7 @@ impl css_select_ctx {
             let mut z = 0 ;
             let z_len = state.classes.len();
             while z<z_len {
-                let (sel_class,error) = sheet.selectors.css__selector_hash_find_by_class(&mut self.lwc_ref, state.classes[z]);
+                let (sel_class,error) = sheet.selectors.css__selector_hash_find_by_class(sheet, &mut self.lwc_ref, state.classes[z]);
                 match error {
                     CSS_OK => {},
                     err => {
@@ -1239,7 +1245,7 @@ impl css_select_ctx {
 				
         if ( self.lwc_ref.lwc_string_length(state.id) != 0 ) {
             /* Find hash chain for node ID */
-            let (sel_id,error) = sheet.selectors.css__selector_hash_find_by_id(&mut self.lwc_ref, state.id);
+            let (sel_id,error) = sheet.selectors.css__selector_hash_find_by_id(sheet, &mut self.lwc_ref, state.id);
             match error {
                 CSS_OK => {},
                 err => {
@@ -1270,7 +1276,7 @@ impl css_select_ctx {
                                                     id_selectors_option, 
                                                     &class_selectors_option_list,
                                                     univ_selectors_option) ) {
-            let mut selector : @mut css_selector ;
+            let mut selector : uint ;
 
             /*Selectors must be matched in ascending order of specificity
              * and rule index. (c.f. css__outranks_existing())
@@ -1291,8 +1297,8 @@ impl css_select_ctx {
             /* Ignore any selectors contained in rules which are a child 
              * of an @media block that doesn't match the current media 
              * requirements. */
-            if (css_select_ctx::_rule_applies_to_media(sheet, selector.rule, state.media)) {
-                let error = self.match_selector_chain(Some(selector), state);
+            if (css_select_ctx::_rule_applies_to_media(sheet, sheet.css_selectors_list[selector].rule, state.media)) {
+                let error = self.match_selector_chain(sheet, Some(selector), state);
                 match error {
                     CSS_OK => {},
                     err => {
@@ -1304,9 +1310,9 @@ impl css_select_ctx {
             /* Advance to next selector in whichever chain we extracted 
              * the processed selector from. */
             if ( node_selectors_option.is_some() &&
-                mut_ptr_eq( selector, node_selectors_option.expect("") ) ) {
+                selector == node_selectors_option.expect("") ) {
                 let (node_next_hash,error) = 
-                        sheet.selectors._iterate_elements(&mut self.lwc_ref, node_selectors_hash_entry.expect(""));
+                        sheet.selectors._iterate_elements(sheet, &mut self.lwc_ref, node_selectors_hash_entry.expect(""));
 
                 match error {
                     CSS_OK => {},
@@ -1324,9 +1330,9 @@ impl css_select_ctx {
                 }
             } 
             else if (   id_selectors_option.is_some() &&
-                        mut_ptr_eq(selector, id_selectors_option.expect("") ) ){
+                        selector ==  id_selectors_option.expect("") ){
                 let (id_next_hash,error) = 
-                            sheet.selectors._iterate_ids(&mut self.lwc_ref, id_selectors_hash_entry.expect(""));
+                            sheet.selectors._iterate_ids(sheet, &mut self.lwc_ref, id_selectors_hash_entry.expect(""));
 
                 match error {
                     CSS_OK => {},
@@ -1344,7 +1350,7 @@ impl css_select_ctx {
                 }
             } 
             else if (   univ_selectors_option.is_some() &&
-                        mut_ptr_eq(selector, univ_selectors_option.expect("") ) ){
+                        selector == univ_selectors_option.expect("") ){
                 let (univ_next_hash,error) = 
                             css_selector_hash::_iterate_universal(univ_selectors_hash_entry.expect(""));
 
@@ -1368,10 +1374,10 @@ impl css_select_ctx {
                 let n_classes = class_selectors_option_list.len()  ;
                 while i < n_classes  {
                     if ( class_selectors_option_list[i].is_some() &&
-                         mut_ptr_eq(selector, class_selectors_option_list[i].expect("")) ) {
+                         selector == class_selectors_option_list[i].expect("")) {
                         let (class_next_hash,error) = 
                                         sheet.selectors._iterate_classes(
-                                                    &mut self.lwc_ref, class_selectors_hash_entry[i].expect(""));
+                                                    sheet, &mut self.lwc_ref, class_selectors_hash_entry[i].expect(""));
 
                         match error {
                             CSS_OK => {},
@@ -1403,14 +1409,14 @@ impl css_select_ctx {
 
         CSS_OK
     }
-    pub fn update_reject_cache(state:&mut ~css_select_state, comb:css_combinator,
-                                s:@mut css_selector) {
+    pub fn update_reject_cache(sheet:@mut css_stylesheet, state:&mut ~css_select_state, comb:css_combinator,
+                                s:uint) {
 
         //debug!(fmt!("Entering update_reject_cache")) ;
         let mut  next_detail : Option<@mut css_selector_detail> = None;
 
-		if (s.data.len() > 1 ) {
-			next_detail = Some(s.data[1]);
+		if (sheet.css_selectors_list[s].data.len() > 1 ) {
+			next_detail = Some(sheet.css_selectors_list[s].data[1]);
 		}
 
 		if ( (state.next_reject < 0) ||
@@ -1424,7 +1430,7 @@ impl css_select_ctx {
 
 			(next_detail.is_none()) ||
 
-			(if (s.data.len() > 2) {
+			(if (sheet.css_selectors_list[s].data.len() > 2) {
 				true
 			} 
 			else {
@@ -1452,8 +1458,8 @@ impl css_select_ctx {
         state.next_reject -= 1;
     }
 
-    pub fn match_named_combinator(&mut self, combinator_type:css_combinator,
-        selector:@mut css_selector, state:&mut ~css_select_state, 
+    pub fn match_named_combinator(&mut self, sheet: &css_stylesheet, combinator_type:css_combinator,
+        selector:uint, state:&mut ~css_select_state, 
         node:*c_void, next_node:*mut *c_void) -> css_error {
 
         //debug!(fmt!("Entering match_named_combinator")) ;
@@ -1467,7 +1473,7 @@ impl css_select_ctx {
             match combinator_type {
                 CSS_COMBINATOR_ANCESTOR => {
                     error = (state.handler.get_ref().named_ancestor_node)( 
-                            &mut self.lwc_ref, n, selector.data[0].qname, &mut n);
+                            &mut self.lwc_ref, n, sheet.css_selectors_list[selector].data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1475,7 +1481,7 @@ impl css_select_ctx {
                 }   
                 CSS_COMBINATOR_PARENT => {
                     error = (state.handler.get_ref().named_parent_node)( 
-                            &mut self.lwc_ref, n, selector.data[0].qname, &mut n);
+                            &mut self.lwc_ref, n, sheet.css_selectors_list[selector].data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1483,7 +1489,7 @@ impl css_select_ctx {
                 }    
                 CSS_COMBINATOR_SIBLING => {
                     error = (state.handler.get_ref().named_sibling_node)( 
-                            &mut self.lwc_ref, n, selector.data[0].qname, &mut n);
+                            &mut self.lwc_ref, n, sheet.css_selectors_list[selector].data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1492,7 +1498,7 @@ impl css_select_ctx {
                     
                 CSS_COMBINATOR_GENERIC_SIBLING => {
                     error = (state.handler.get_ref().named_generic_sibling_node)(
-                            &mut self.lwc_ref, n, selector.data[0].qname, &mut n);
+                            &mut self.lwc_ref, n, sheet.css_selectors_list[selector].data[0].qname, &mut n);
                     match error {
                         CSS_OK => {},
                         err => return err
@@ -1505,7 +1511,7 @@ impl css_select_ctx {
             if n != null() {
                 /* Match its details */
                 //debug!("");
-                error = self.match_details(n, selector.data, state, match_result, None);
+                error = self.match_details(n, sheet.css_selectors_list[selector].data, state, match_result, None);
                 match error {
                     CSS_OK => {},
                     err => return err
@@ -1539,7 +1545,7 @@ impl css_select_ctx {
 
         return CSS_OK;
     }
-    pub fn match_selector_chain(&mut self, selector:Option<@mut css_selector>,
+    pub fn match_selector_chain(&mut self, sheet:@mut css_stylesheet, selector:Option<uint>,
                             state:&mut ~css_select_state) -> css_error {
 
         //debug!(fmt!("Entering match_selector_chain")) ;
@@ -1561,7 +1567,7 @@ impl css_select_ctx {
          * else.
          */
       
-        error = self.match_details(node, (s.expect("").data) , state, match_b, Some(pseudo) );
+        error = self.match_details(node, (sheet.css_selectors_list[s.expect("")].data) , state, match_b, Some(pseudo) );
        
         match error {
             CSS_OK => {},
@@ -1581,27 +1587,27 @@ impl css_select_ctx {
 			let mut next_node : *c_void = null();
 
 			/* Consider any combinator on this selector */
-			if ( (s.expect("").data.len() > 0 ) && 
-				 ( match s.expect("").data[0].combinator_type { 
+			if ( (sheet.css_selectors_list[s.expect("")].data.len() > 0 ) && 
+				 ( match sheet.css_selectors_list[s.expect("")].data[0].combinator_type { 
 					CSS_COMBINATOR_NONE=>{false},
 					_=>{true} }
 				 ) && 
-				 (s.expect("").combinator.is_some() ) &&
+				 (sheet.css_selectors_list[s.expect("")].combinator.is_some() ) &&
 				 (self.universal.is_some() ) &&
-				 (s.expect("").combinator.expect("").data[0].qname.name != 
+				 (sheet.css_selectors_list[sheet.css_selectors_list[s.expect("")].combinator.expect("")].data[0].qname.name != 
 				  universal_string) ) {
 
 				/* Named combinator */
 				
-					may_optimise &= match s.expect("").data[0].combinator_type {
+					may_optimise &= match sheet.css_selectors_list[s.expect("")].data[0].combinator_type {
 						CSS_COMBINATOR_ANCESTOR=> { true },
 						CSS_COMBINATOR_PARENT=>{ true },
 						_=>{ false }
 					} ;
 				
 
-				error = self.match_named_combinator(s.expect("").data[0].combinator_type, 
-					   s.expect("").combinator.expect(""), state, node, &mut next_node);
+				error = self.match_named_combinator(sheet, sheet.css_selectors_list[s.expect("")].data[0].combinator_type, 
+					   sheet.css_selectors_list[s.expect("")].combinator.expect(""), state, node, &mut next_node);
 				match error {
 					CSS_OK => {},
 					err => { 
@@ -1614,23 +1620,23 @@ impl css_select_ctx {
 					return CSS_OK;
 				}
 			} 
-			else if ( (s.expect("").data.len() > 0 ) &&
-					( match s.expect("").data[0].combinator_type { 
+			else if ( (sheet.css_selectors_list[s.expect("")].data.len() > 0 ) &&
+					( match sheet.css_selectors_list[s.expect("")].data[0].combinator_type { 
 						CSS_COMBINATOR_NONE=>{false},
 						_=>{true} }
 					) ) {
 
 				/* Universal combinator */
 				
-					may_optimise &= match s.expect("").data[0].combinator_type {
+					may_optimise &= match sheet.css_selectors_list[s.expect("")].data[0].combinator_type {
 						CSS_COMBINATOR_ANCESTOR=> { true },
 						CSS_COMBINATOR_PARENT=>{ true },
 						_=>{ false }
 					} ;
 				
 
-				error = self.match_universal_combinator(s.expect("").data[0].combinator_type, 
-												s.expect("").combinator.expect(""), state, node, 
+				error = self.match_universal_combinator(sheet, sheet.css_selectors_list[s.expect("")].data[0].combinator_type, 
+												sheet.css_selectors_list[s.expect("")].combinator.expect(""), state, node, 
 												may_optimise, rejected_by_cache,
 												&mut next_node);
 				match error {
@@ -1642,11 +1648,11 @@ impl css_select_ctx {
 
 				/* No match for combinator, so reject selector chain */
 				if (next_node == null()) {
-					if (may_optimise && mut_ptr_eq(s.expect(""),selector.expect("")) &&
+					if ( may_optimise && (s.expect("") == selector.expect("")) &&
 							*rejected_by_cache == false) {
-						css_select_ctx::update_reject_cache(state, 
-												s.expect("").data[0].combinator_type,
-												s.expect("").combinator.expect(""));
+						css_select_ctx::update_reject_cache(sheet, state, 
+												sheet.css_selectors_list[s.expect("")].data[0].combinator_type,
+												sheet.css_selectors_list[s.expect("")].combinator.expect(""));
 					}
 
 					return CSS_OK;
@@ -1654,7 +1660,7 @@ impl css_select_ctx {
 			}
 
 			/* Details matched, so progress to combining selector */
-			s = s.expect("").combinator;
+			s = sheet.css_selectors_list[s.expect("")].combinator;
 			node = next_node;
 
 			if s.is_none() {
@@ -1663,15 +1669,15 @@ impl css_select_ctx {
              
         }
         /* If we got here, then the entire selector chain matched, so cascade */
-        state.current_specificity = selector.expect("").specificity;
+        state.current_specificity = sheet.css_selectors_list[selector.expect("")].specificity;
 
         /* No bytecode if rule body is empty or wholly invalid */
-        if ( selector.expect("").rule.is_none() ) {
+        if ( sheet.css_selectors_list[selector.expect("")].rule.is_none() ) {
             return CSS_OK;
         }
 
          /* No bytecode if rule body is empty or wholly invalid */
-        let rule = match selector.expect("").rule.expect("") {
+        let rule = match sheet.css_selectors_list[selector.expect("")].rule.expect("") {
             RULE_SELECTOR(x)=>{
                 x
             },
@@ -1700,8 +1706,8 @@ impl css_select_ctx {
         css_select_ctx::cascade_style( rule.style.get_mut_ref() , state)
     }
 
-    pub fn match_universal_combinator(&mut self, combinator_type:css_combinator,
-        selector:&mut css_selector, state:&mut ~css_select_state,
+    pub fn match_universal_combinator(&mut self, sheet: &css_stylesheet, combinator_type:css_combinator,
+        selector:uint, state:&mut ~css_select_state,
         node:*c_void, may_optimise:bool, rejected_by_cache:&mut bool,
         next_node:*mut *c_void) -> css_error  {
         
@@ -1714,8 +1720,8 @@ impl css_select_ctx {
 		let mut next_detail:Option<@mut css_selector_detail> = None; 
         let mut error:css_error;
         
-        if (selector.data.len() > 1){
-            next_detail = Some(selector.data[1]);   
+        if (sheet.css_selectors_list[selector].data.len() > 1){
+            next_detail = Some(sheet.css_selectors_list[selector].data[1]);   
         }
             
         *rejected_by_cache = false;
@@ -1771,7 +1777,7 @@ impl css_select_ctx {
 
             if (n != null()) {
                 /* Match its details */
-                error = self.match_details(n, selector.data.slice(1,selector.data.len()), state, &mut match_result, None);
+                error = self.match_details(n, sheet.css_selectors_list[selector].data.slice(1,sheet.css_selectors_list[selector].data.len()), state, &mut match_result, None);
                 match error {
                     CSS_OK => {},
                     err => return err
