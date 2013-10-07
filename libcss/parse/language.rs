@@ -1208,7 +1208,7 @@ impl css_language {
     }   
 
 
-    pub fn parseSpecific(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, vector:&~[~css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn parseSpecific(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, vector:&~[~css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<~css_selector_detail>) {
         //debug!("Entering: parseSpecific");
         /* specific  -> [ HASH | class | attrib | pseudo ] */
 
@@ -1307,7 +1307,7 @@ impl css_language {
     /******************************************************************************
     * Selector list parsing functions                         *
     ******************************************************************************/
-    pub fn  parseClass(&mut self, lwc_ref:&mut ~lwc, vector:&~[~css_token], ctx:@mut uint) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn  parseClass(&mut self, lwc_ref:&mut ~lwc, vector:&~[~css_token], ctx:@mut uint) -> (css_error,Option<~css_selector_detail>) {
         //debug!("Entering: parseClass");
         let mut token: &~css_token;
         
@@ -1336,7 +1336,7 @@ impl css_language {
         }
     }
 
-    pub fn  parseAttrib(&mut self, lwc_ref:&mut ~lwc, vector:&~[~css_token], ctx:@mut uint) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn  parseAttrib(&mut self, lwc_ref:&mut ~lwc, vector:&~[~css_token], ctx:@mut uint) -> (css_error,Option<~css_selector_detail>) {
         //debug!("Entering: parseAttrib");
         let mut token: &~css_token;
         
@@ -1467,7 +1467,7 @@ impl css_language {
     }
 
 
-    pub fn parsePseudo(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, vector:&~[~css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn parsePseudo(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, vector:&~[~css_token], ctx:@mut uint, in_not:bool) -> (css_error,Option<~css_selector_detail>) {
         //debug!("Entering: parsePseudo");
         let mut token: &~css_token;
         //let mut tkn_type = CSS_SELECTOR_PSEUDO_CLASS;
@@ -1574,9 +1574,10 @@ impl css_language {
                 }, 
                 NTH_CHILD | NTH_LAST_CHILD  | NTH_OF_TYPE  | NTH_LAST_OF_TYPE  => {
                     /* an + b */
+                    let mut specific:~css_selector_detail;
                     match self.parseNth(lwc_ref, propstrings_ref, vector, ctx, qname) {
-                        (CSS_OK, Some(specific)) => {
-                            
+                        (CSS_OK, Some(specific_ret)) => {
+                            specific = specific_ret;
                             specific.selector_type = selector_type;
                             // Iterate to the next location
                             if *ctx >= vector.len() {
@@ -1626,9 +1627,10 @@ impl css_language {
                     } 
                     else {
                         /* specific */
-                        
+                        let mut specific:~css_selector_detail;
                         match self.parseSpecific(lwc_ref, propstrings_ref, vector, ctx, true) {
-                            (CSS_OK,Some(specific)) => {
+                            (CSS_OK,Some(specific_ret)) => {
+                                specific = specific_ret;
                                 specific.negate = true;
                                 consumeWhitespace(vector, ctx);
                                 if *ctx >= vector.len() {
@@ -1670,11 +1672,11 @@ impl css_language {
         return css_stylesheet::css__stylesheet_selector_detail_init(selector_type, qname, value_type, detail_value_string, None, negate);
     }
 
-    pub fn parseNth(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, vector:&~[~css_token], ctx:@mut uint, qname:~css_qname) -> (css_error,Option<@mut css_selector_detail>) {
+    pub fn parseNth(&mut self, lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, vector:&~[~css_token], ctx:@mut uint, qname:~css_qname) -> (css_error,Option<~css_selector_detail>) {
         //debug!("Entering: parseNth");
         let mut token: &~css_token;
 
-        let value: @mut css_selector_detail = @mut css_selector_detail{
+        let mut value: ~css_selector_detail = ~css_selector_detail{
             qname:qname,
             selector_type:CSS_SELECTOR_PSEUDO_CLASS,
             combinator_type:CSS_COMBINATOR_NONE,  

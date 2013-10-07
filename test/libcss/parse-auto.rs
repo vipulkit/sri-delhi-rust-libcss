@@ -807,18 +807,18 @@ fn dump_selector_list(sheet:@mut css_stylesheet, list:uint, lwc_ref:&mut ~lwc, p
     dump_selector(&mut sheet.css_selectors_list[list], lwc_ref, ptr);
 }
 
-fn dump_selector(selector:&mut ~css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
-    let d:~[@mut css_selector_detail] = selector.data.clone();
+fn dump_selector(selector:&~css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+    let d:&~[~css_selector_detail] = &selector.data;
     debug!(fmt!("Selector Data:%?",d));
   	let mut iter:uint = 0;
     while iter < d.len() {
 		debug!(fmt!("Selector Data len:%?, Iter:%?",d.len(), iter));
-        dump_selector_detail(d[iter], lwc_ref, ptr, (iter != d.len()-1) );
+        dump_selector_detail(&d[iter], lwc_ref, ptr, (iter != d.len()-1) );
         iter += 1;
     }   
 }
 
-fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut ~lwc, ptr: &mut ~str, detail_next:bool ) {
+fn dump_selector_detail(detail:&~css_selector_detail, lwc_ref:&mut ~lwc, ptr: &mut ~str, detail_next:bool ) {
 	debug!(fmt!("Detail == %?",detail));
     if detail.negate {
         str::push_str(ptr,&":not(");

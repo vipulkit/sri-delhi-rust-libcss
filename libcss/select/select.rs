@@ -1413,10 +1413,10 @@ impl css_select_ctx {
                                 s:uint) {
 
         //debug!(fmt!("Entering update_reject_cache")) ;
-        let mut  next_detail : Option<@mut css_selector_detail> = None;
+        let mut  next_detail : Option<& ~css_selector_detail> = None;
 
 		if (sheet.css_selectors_list[s].data.len() > 1 ) {
-			next_detail = Some(sheet.css_selectors_list[s].data[1]);
+			next_detail = Some(&sheet.css_selectors_list[s].data[1]);
 		}
 
 		if ( (state.next_reject < 0) ||
@@ -1458,7 +1458,7 @@ impl css_select_ctx {
         state.next_reject -= 1;
     }
 
-    pub fn match_named_combinator(&mut self, sheet: &css_stylesheet, combinator_type:css_combinator,
+    pub fn match_named_combinator(&mut self, sheet: &mut css_stylesheet, combinator_type:css_combinator,
         selector:uint, state:&mut ~css_select_state, 
         node:*c_void, next_node:*mut *c_void) -> css_error {
 
@@ -1706,7 +1706,7 @@ impl css_select_ctx {
         css_select_ctx::cascade_style( rule.style.get_mut_ref() , state)
     }
 
-    pub fn match_universal_combinator(&mut self, sheet: &css_stylesheet, combinator_type:css_combinator,
+    pub fn match_universal_combinator(&mut self, sheet: &mut css_stylesheet, combinator_type:css_combinator,
         selector:uint, state:&mut ~css_select_state,
         node:*c_void, may_optimise:bool, rejected_by_cache:&mut bool,
         next_node:*mut *c_void) -> css_error  {
@@ -1717,39 +1717,44 @@ impl css_select_ctx {
 		if ( n == null()){
 			//debug!("Node Is Null");
 		}
-		let mut next_detail:Option<@mut css_selector_detail> = None; 
+
         let mut error:css_error;
-        
-        if (sheet.css_selectors_list[selector].data.len() > 1){
-            next_detail = Some(sheet.css_selectors_list[selector].data[1]);   
-        }
+		//Block for handling css_selectors_list borrow
+        {
+            let mut next_detail:Option<&~css_selector_detail> = None; 
             
-        *rejected_by_cache = false;
+            
+            if (sheet.css_selectors_list[selector].data.len() > 1){
+                next_detail = Some(&sheet.css_selectors_list[selector].data[1]);   
+            }
+                
+            *rejected_by_cache = false;
 
-        /* Consult reject cache first */
-        if (may_optimise && 
-            (match combinator_type { CSS_COMBINATOR_ANCESTOR | CSS_COMBINATOR_PARENT => true, _ => false }) && 
-            match next_detail { Some(_) => true, None => false } &&
-            (match next_detail.expect("").selector_type { CSS_SELECTOR_CLASS | CSS_SELECTOR_ID => true, _ => false})) {
+            /* Consult reject cache first */
+            if (may_optimise && 
+                (match combinator_type { CSS_COMBINATOR_ANCESTOR | CSS_COMBINATOR_PARENT => true, _ => false }) && 
+                match next_detail { Some(_) => true, None => false } &&
+                (match next_detail.get_ref().selector_type { CSS_SELECTOR_CLASS | CSS_SELECTOR_ID => true, _ => false})) {
 
-            let mut reject = state.next_reject + 1;
-            let last : int = (state.reject_cache.len() -1) as int ;
+                let mut reject = state.next_reject + 1;
+                let last : int = (state.reject_cache.len() -1) as int ;
 
-            while (reject <= last) {
-                /* Perform pessimistic matching (may hurt quirks) */
-                if ((state.reject_cache[reject]).expect("").sel_type as uint == next_detail.expect("").selector_type as uint) &&
-                   ((state.reject_cache[reject]).expect("").value ==next_detail.expect("").qname.name ) {
-                    
-                    /* Found it: can't match */
-                    unsafe { *next_node = null() };
-                    *rejected_by_cache = true;
-                    return CSS_OK;
+                while (reject <= last) {
+                    /* Perform pessimistic matching (may hurt quirks) */
+                    if ((state.reject_cache[reject]).get_ref().sel_type as uint == next_detail.get_ref().selector_type as uint) &&
+                       ((state.reject_cache[reject]).get_ref().value ==next_detail.get_ref().qname.name ) {
+                        
+                        /* Found it: can't match */
+                        unsafe { *next_node = null() };
+                        *rejected_by_cache = true;
+                        return CSS_OK;
+                    }
+
+                    reject += 1;
                 }
-
-                reject += 1;
             }
         }
-
+            
         loop {
             let mut match_result = false;
 
@@ -1777,7 +1782,8 @@ impl css_select_ctx {
 
             if (n != null()) {
                 /* Match its details */
-                error = self.match_details(n, sheet.css_selectors_list[selector].data.slice(1,sheet.css_selectors_list[selector].data.len()), state, &mut match_result, None);
+                let length = sheet.css_selectors_list[selector].data.len();
+                error = self.match_details(n, sheet.css_selectors_list[selector].data.mut_slice(1,length), state, &mut match_result, None);
                 match error {
                     CSS_OK => {},
                     err => return err
@@ -1811,7 +1817,7 @@ impl css_select_ctx {
     }
 
     pub fn match_details(&mut self,  node:*c_void, 
-        detail :&[@mut css_selector_detail], state :&mut ~css_select_state, 
+        detail :&mut [~css_selector_detail], state :&mut ~css_select_state, 
         matched : &mut bool, pseudo_element : Option<@mut css_pseudo_element>) -> css_error {
 
         //debug!(fmt!("Entering match_details")) ;

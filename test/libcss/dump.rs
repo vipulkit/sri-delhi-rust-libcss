@@ -344,17 +344,17 @@ fn dump_selector_list(sheet:@mut css_stylesheet, list: uint, lwc_ref:&mut ~lwc, 
 
 fn dump_selector(selector:&mut ~css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_selector");
-    let d:~[@mut css_selector_detail] = selector.data.clone();
+    let d:&~[~css_selector_detail] = &selector.data;
     let mut iter:uint = 0;
     while iter < d.len() {
-        dump_selector_detail(d[iter], lwc_ref, ptr, (iter != (d.len() - 1)));
+        dump_selector_detail(&d[iter], lwc_ref, ptr, (iter != (d.len() - 1)));
         iter += 1;
     }   
 
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_selector_detail(detail:@mut css_selector_detail, lwc_ref:&mut ~lwc, ptr: &mut ~str, detail_next:bool ) {
+fn dump_selector_detail(detail:&~css_selector_detail, lwc_ref:&mut ~lwc, ptr: &mut ~str, detail_next:bool ) {
     debug!("Entering: dump_selector_detail");
     if detail.negate {
         ptr.push_str(&":not(");

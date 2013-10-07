@@ -109,7 +109,7 @@ pub struct css_selector {
     combinator:Option<uint>,   /**< Combining selector */
     rule:Option<CSS_RULE_DATA_TYPE>,        /**< Owning rule */
     specificity:uint,                       /**< Specificity of selector */ 
-    data:~[@mut css_selector_detail]        /* *< Selector data */
+    data:~[~css_selector_detail]        /* *< Selector data */
 }
 
 
@@ -553,7 +553,7 @@ impl css_stylesheet {
             data:~[]
         };
 
-        let sel_data = @mut css_selector_detail{
+        let sel_data = ~css_selector_detail{
             qname:qname,
             selector_type: CSS_SELECTOR_ELEMENT,
             combinator_type: CSS_COMBINATOR_NONE,
@@ -581,7 +581,7 @@ impl css_stylesheet {
     *  'negate' - Whether the detail match should be negated.
     
     * #Return Value:
-    *   '(css_error, Option<@mut css_selector_detail>)' - (CSS_OK,Some(css_selector_detail)).
+    *   '(css_error, Option<~css_selector_detail>)' - (CSS_OK,Some(css_selector_detail)).
     */
     pub fn css__stylesheet_selector_detail_init (
         sel_type: css_selector_type,
@@ -590,10 +590,10 @@ impl css_stylesheet {
         string_value : Option<uint> , 
         ab_value : Option<(i32,i32)>,
         negate:bool
-    )  -> (css_error, Option<@mut css_selector_detail>) 
+    )  -> (css_error, Option<~css_selector_detail>) 
     {
         //debug!("Entering: css__stylesheet_selector_detail_init");
-        let detail : @mut css_selector_detail = @mut css_selector_detail{
+        let mut detail : ~css_selector_detail = ~css_selector_detail{
             qname:qname,
             selector_type:sel_type,
             combinator_type:CSS_COMBINATOR_NONE,  
@@ -635,7 +635,7 @@ impl css_stylesheet {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css__stylesheet_selector_append_specific(&mut self, selector : uint, detail: @mut css_selector_detail)  -> css_error  {
+    pub fn css__stylesheet_selector_append_specific(&mut self, selector : uint, detail: ~css_selector_detail)  -> css_error  {
         //debug!("Entering: css__stylesheet_selector_append_specific");
         
         match detail.selector_type {
@@ -683,10 +683,11 @@ impl css_stylesheet {
             None=> {}
         };
 
-        for &detail in self.css_selectors_list[a].data.mut_iter() {
-            match detail.selector_type {
+        let mut counter_i = 0;
+        while counter_i < self.css_selectors_list[a].data.len() {
+            match self.css_selectors_list[a].data[counter_i].selector_type {
                 CSS_SELECTOR_PSEUDO_ELEMENT => return CSS_INVALID ,
-                _=> loop
+                _=> counter_i += 1
             };
         }
 
@@ -1319,14 +1320,16 @@ impl css_selector_hash {
     pub fn _class_name(&mut self , sheet: &mut css_stylesheet, lwc_ref:&mut ~lwc, selector : uint) 
                         -> uint {
 
-        for &element in sheet.css_selectors_list[selector].data.mut_iter() {
-            match element.selector_type {
+        let mut counter_i = 0;
+        while counter_i < sheet.css_selectors_list[selector].data.len() {
+            match sheet.css_selectors_list[selector].data[counter_i].selector_type {
                 CSS_SELECTOR_CLASS=>{
-                    if (element.negate == false) {
-                    return element.qname.name;
+                    if (sheet.css_selectors_list[selector].data[counter_i].negate == false) {
+                        return sheet.css_selectors_list[selector].data[counter_i].qname.name;
                     }
+                    counter_i +=1
                 },
-                _=>{}
+                _=> counter_i +=1
             }
         }
 
@@ -1348,14 +1351,16 @@ impl css_selector_hash {
     pub fn _id_name(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, selector : uint) 
                         -> uint {
 
-        for &element in sheet.css_selectors_list[selector].data.mut_iter() {
-            match element.selector_type {
+        let mut counter_i = 0;
+        while counter_i <  sheet.css_selectors_list[selector].data.len() {
+            match sheet.css_selectors_list[selector].data[counter_i].selector_type {
                 CSS_SELECTOR_ID=>{
-                    if (element.negate == false) {
-                    return element.qname.name;
+                    if (sheet.css_selectors_list[selector].data[counter_i].negate == false) {
+                        return sheet.css_selectors_list[selector].data[counter_i].qname.name;
                     }
+                    counter_i +=1
                 },
-                _=>{}
+                _=>counter_i +=1
             }
         }
 
