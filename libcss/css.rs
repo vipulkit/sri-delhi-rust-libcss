@@ -11,7 +11,7 @@ use utils::errors::*;
 use parse::propstrings::*;
 
 pub struct css {
-    stylesheet:@mut css_stylesheet,
+    stylesheet:uint,
     parser:~css_parser,
     // lwc_ref:Option<~lwc>,
 }
@@ -55,7 +55,7 @@ pub struct css_params {
 
 impl css {
 
-    pub fn css_create(params: &css_params) -> ~css {
+    pub fn css_create(stylesheet_vector:&mut ~[css_stylesheet], params: &css_params) -> ~css {
        
         // assert!(!(propstrings_instance.is_some());
         //assert!((propstrings_instance.is_none() || lwc_instance.is_none()));
@@ -74,7 +74,7 @@ impl css {
         let lexer = css_lexer::css__lexer_create(inputstream_option.unwrap());
 
         // create stylesheet
-        let stylesheet = @mut css_stylesheet {
+        let stylesheet = css_stylesheet {
             selectors:css_selector_hash::css__selector_hash_create(),       
             rule_count:0,                        
             rule_list:None,   
@@ -95,13 +95,15 @@ impl css {
             css_selectors_list : ~[] 
         };
 
+        stylesheet_vector.push(stylesheet);
+        let stylesheet_index = stylesheet_vector.len() -1;
         // create language
-        let language = css_language(stylesheet);
+        let language = css_language(stylesheet_index);
 
         // create parser
         let parser = match params.inline_style {
-            false => css_parser::css__parser_create(language, lexer),
-            true => css_parser::css__parser_create_for_inline_style(language, lexer)
+            false => css_parser::css__parser_create( language, lexer),
+            true => css_parser::css__parser_create_for_inline_style( language, lexer)
         }; 
 
         // let mut lwc_ref = if lwc_instance.is_none() {
@@ -118,14 +120,12 @@ impl css {
         //     propstrings_instance.unwrap()
         // };           
 
-        let css_instance = ~css {
+        ~css {
             parser:parser.unwrap(),
-            stylesheet:stylesheet,
+            stylesheet:stylesheet_index,
             // lwc_ref: Some(lwc_ref),
             // propstrings_ref : Some(propstrings_ref)   
-        };
-       
-        css_instance    
+        }
     }
 
     /**
@@ -138,8 +138,8 @@ impl css {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css_stylesheet_append_data(&mut self, lwc_ref : &mut ~lwc , propstrings_ref: &css_propstrings , data:~[u8]) -> css_error {
-        self.parser.css__parser_parse_chunk(lwc_ref, propstrings_ref, data)
+    pub fn css_stylesheet_append_data(&mut self, stylesheet_vector:&mut ~[css_stylesheet], lwc_ref : &mut ~lwc , propstrings_ref: &css_propstrings , data:~[u8]) -> css_error {
+        self.parser.css__parser_parse_chunk(stylesheet_vector, lwc_ref, propstrings_ref, data)
     }
 
     /**
@@ -151,8 +151,8 @@ impl css {
                       CSS_IMPORTS_PENDING if there are imports pending,
                       appropriate error otherwise.
     */
-    pub fn css_stylesheet_data_done(&mut self , lwc_ref: &mut ~lwc , propstrings_ref: &css_propstrings) -> css_error {
-        let error = self.parser.css__parser_completed(lwc_ref, propstrings_ref);
+    pub fn css_stylesheet_data_done(&mut self, stylesheet_vector:&mut ~[css_stylesheet],  lwc_ref: &mut ~lwc , propstrings_ref: &css_propstrings) -> css_error {
+        let error = self.parser.css__parser_completed(stylesheet_vector, lwc_ref, propstrings_ref);
         match error {
             CSS_OK=>{},
             err => {
@@ -161,7 +161,7 @@ impl css {
         }
 
 
-        let mut ptr = self.stylesheet.rule_list ;
+        let mut ptr = stylesheet_vector[self.stylesheet].rule_list ;
         loop {
             match ptr {
                 None=>{
@@ -174,16 +174,16 @@ impl css {
                                 return CSS_IMPORTS_PENDING ;
                             }
                             else {
-                                ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(rule)].next;
+                                ptr = stylesheet_vector[self.stylesheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(rule)].next;
                                 loop ;
                             }
                         },
                         RULE_UNKNOWN(_)=>{
-                            ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(rule)].next;
+                            ptr = stylesheet_vector[self.stylesheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(rule)].next;
                             loop ;
                         },
                         RULE_CHARSET(_)=>{
-                            ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(rule)].next;
+                            ptr = stylesheet_vector[self.stylesheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(rule)].next;
                             loop ;
                         },
                         _=>{
@@ -207,9 +207,9 @@ impl css {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css_stylesheet_set_disabled(&mut self, disabled:bool ) -> css_error {
+    pub fn css_stylesheet_set_disabled(&mut self, stylesheet_vector:&mut ~[css_stylesheet], disabled:bool ) -> css_error {
 
-        self.stylesheet.disabled = disabled;
+        stylesheet_vector[self.stylesheet].disabled = disabled;
         CSS_OK
     }
 
@@ -220,9 +220,9 @@ impl css {
     * #Return Value:
     *   '(css_error,~bool)' - (CSS_OK , disabled state flag).
     */
-    pub fn css_stylesheet_get_disabled(&mut self) -> (css_error,bool) {
+    pub fn css_stylesheet_get_disabled(&mut self, stylesheet_vector:&mut ~[css_stylesheet]) -> (css_error,bool) {
 
-        (CSS_OK,self.stylesheet.disabled)
+        (CSS_OK,stylesheet_vector[self.stylesheet].disabled)
     }
 
     /**
@@ -232,9 +232,9 @@ impl css {
     * #Return Value:
     *   '(css_error,~bool)' - (CSS_OK , quirks allowed flag).
     */
-    pub fn css_stylesheet_quirks_allowed(&mut self) -> (css_error,bool) {
+    pub fn css_stylesheet_quirks_allowed(&mut self, stylesheet_vector:&mut ~[css_stylesheet]) -> (css_error,bool) {
 
-        (CSS_OK,self.stylesheet.quirks_allowed)
+        (CSS_OK,stylesheet_vector[self.stylesheet].quirks_allowed)
     }
 
     /**
@@ -244,9 +244,9 @@ impl css {
     * #Return Value:
     *   '(css_error,~bool)' - (CSS_OK , quirks used flag).
     */
-    pub fn css_stylesheet_used_quirks(&mut self) -> (css_error,bool) {
+    pub fn css_stylesheet_used_quirks(&mut self, stylesheet_vector:&mut ~[css_stylesheet]) -> (css_error,bool) {
 
-        (CSS_OK,self.stylesheet.quirks_used)
+        (CSS_OK,stylesheet_vector[self.stylesheet].quirks_used)
     }
 
     /**
@@ -256,9 +256,9 @@ impl css {
     * #Return Value:
     *   '(css_error,~str)' - (CSS_OK , title).
     */
-    pub fn css_stylesheet_get_title(&mut self) -> (css_error,~str) {
+    pub fn css_stylesheet_get_title(&mut self, stylesheet_vector:&mut ~[css_stylesheet]) -> (css_error,~str) {
 
-        (CSS_OK,self.stylesheet.title.clone())
+        (CSS_OK,stylesheet_vector[self.stylesheet].title.clone())
     }
 
     /**
@@ -268,9 +268,9 @@ impl css {
     * #Return Value:
     *   '(css_error,~str)' - (CSS_OK , url).
     */
-    pub fn css_stylesheet_get_url(&mut self) -> (css_error,~str) {
+    pub fn css_stylesheet_get_url(&mut self, stylesheet_vector:&mut ~[css_stylesheet]) -> (css_error,~str) {
 
-        (CSS_OK,self.stylesheet.url.clone())
+        (CSS_OK,stylesheet_vector[self.stylesheet].url.clone())
     }
 
     /**
@@ -280,10 +280,10 @@ impl css {
     * #Return Value:
     *   '(css_error,css_language_level)' - (CSS_OK , level).
     */
-    pub fn css_stylesheet_get_language_level(&mut self) -> 
+    pub fn css_stylesheet_get_language_level(&mut self, stylesheet_vector:&mut ~[css_stylesheet]) -> 
                                     (css_error,css_language_level) {
 
-        (CSS_OK,self.stylesheet.level)  
+        (CSS_OK,stylesheet_vector[self.stylesheet].level)  
     }
 
     /**
@@ -307,10 +307,10 @@ impl css {
                                                         imported stylesheet) on success, 
                                                 (appropriate error, None, None) otherwise.
     */
-    pub fn css_stylesheet_next_pending_import(&mut self) -> 
+    pub fn css_stylesheet_next_pending_import(&mut self, stylesheet_vector:&mut ~[css_stylesheet]) -> 
                                 (css_error,Option<~str>,Option<u64>) {
 
-        let mut ptr = self.stylesheet.rule_list ;
+        let mut ptr = stylesheet_vector[self.stylesheet].rule_list ;
         loop {
             match ptr {
                 None=> {
@@ -323,16 +323,16 @@ impl css {
                                 return (CSS_OK,Some(irule.url.clone()),Some(irule.media));
                             }
                             else {
-                                ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
+                                ptr = stylesheet_vector[self.stylesheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
                                 loop ;
                             }
                         },
                         RULE_CHARSET(_) =>{
-                            ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
+                            ptr = stylesheet_vector[self.stylesheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
                             loop;
                         },
                         RULE_UNKNOWN(_) =>{
-                            ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
+                            ptr = stylesheet_vector[self.stylesheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
                             loop;
                         },
                         _=> {
@@ -355,7 +355,7 @@ impl css {
     * #Return Value:
     *   'css_error' - CSS_OK on success, CSS_INVALID if there are no outstanding imports, appropriate error otherwise.
     */
-    pub fn css_stylesheet_register_import(&mut self, import:Option<@mut css_stylesheet>) 
+    pub fn css_stylesheet_register_import(&mut self, stylesheet_vector:&mut ~[css_stylesheet], import:Option<uint>) 
         -> css_error {
             debug!("Entering: css_stylesheet_register_import");
 
@@ -364,7 +364,7 @@ impl css {
             return CSS_BADPARM ;
         }
 
-        let mut ptr = self.stylesheet.rule_list ;
+        let mut ptr = stylesheet_vector[self.stylesheet].rule_list ;
         loop {
             match ptr {
                 None=> {
@@ -379,16 +379,16 @@ impl css {
                                 return CSS_OK ;
                             }
                             else {
-                                ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
+                                ptr = stylesheet_vector[self.stylesheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
                                 loop ;
                             }
                         },
                         RULE_CHARSET(_) =>{
-                            ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
+                            ptr = stylesheet_vector[self.stylesheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
                             loop;
                         },
                         RULE_UNKNOWN(_) =>{
-                            ptr = self.stylesheet.css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
+                            ptr = stylesheet_vector[self.stylesheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
                             loop;
                         },
                         _=> {

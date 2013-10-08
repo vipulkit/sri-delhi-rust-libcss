@@ -31,9 +31,9 @@ fn fill_params() -> css_params {
     return css_param;
 }
 
-fn css_create_fn() -> ~css{
+fn css_create_fn(stylesheet_vector:&mut ~[css_stylesheet]) -> ~css{
     
-    let css = css::css_create( &fill_params());
+    let css = css::css_create(stylesheet_vector, &fill_params());
     css
 }
 
@@ -50,8 +50,9 @@ fn main() {
 }
 
 fn parse(file_name: ~str) {
+    let mut stylesheet_vector:~[css_stylesheet]=~[];
     let mut lwc = lwc();
-    let mut css = css_create_fn();
+    let mut css = css_create_fn(&mut stylesheet_vector);
     let propstring = css_propstrings::css_propstrings(&mut lwc);
     let r:@Reader = file_reader(&Path(file_name)).unwrap();
     let mut dataFlag = false;
@@ -82,13 +83,13 @@ fn parse(file_name: ~str) {
                 final_buf.push(i as u8);
             }
             final_buf.reverse();
-            let error = css.css_stylesheet_append_data(&mut lwc , &propstring , final_buf);
+            let error = css.css_stylesheet_append_data(&mut stylesheet_vector, &mut lwc , &propstring , final_buf);
             match error {
                 CSS_OK => {},
                 CSS_NEEDDATA => {},
                 _ => {assert!(false);}
             }
-            let error = css.css_stylesheet_data_done( &mut lwc , &propstring);
+            let error = css.css_stylesheet_data_done(&mut stylesheet_vector, &mut lwc , &propstring);
 
             match error {
                 CSS_OK => {},

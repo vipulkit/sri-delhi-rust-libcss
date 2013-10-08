@@ -134,33 +134,33 @@ pub fn opcode_names() -> ~[~str] {
 }
 
 
-pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc) -> ~str {
+pub fn dump_sheet(stylesheet_vector:&mut ~[css_stylesheet], sheet: uint, lwc_ref:&mut ~lwc) -> ~str {
     
     debug!("Entering: dump_sheet");
     let reason = "Function dump_sheet";
 
     
     // debug!("Entering: unsafe");
-    // // debug!(fmt!("sheet.selectors == %?" , sheet.selectors));
-    // debug!(fmt!("sheet.rule_count == %?" , sheet.rule_count));
-    // // debug!(fmt!("sheet.last_rule == %?" , sheet.last_rule));
-    // debug!(fmt!("sheet.disabled == %?" , sheet.disabled));
-    // debug!(fmt!("sheet.url == %?" , sheet.url));
-    // debug!(fmt!("sheet.title == %?" , sheet.title));
-    // debug!(fmt!("sheet.level == %?" , sheet.level));
-    // debug!(fmt!("sheet.quirks_allowed == %?" , sheet.quirks_allowed));
-    // debug!(fmt!("sheet.quirks_used == %?" , sheet.quirks_used));
-    // debug!(fmt!("sheet.inline_style == %?" , sheet.inline_style));
-    // debug!(fmt!("sheet.cached_style == %?" , sheet.cached_style));
-    // debug!(fmt!("sheet.string_vector == %?" , sheet.string_vector));
-    // debug!(fmt!("sheet.resolve == %?" , sheet.resolve));
-    // debug!(fmt!("sheet.import == %?" , sheet.import));
-    // debug!(fmt!("sheet.font == %?" , sheet.font));
-    // debug!(fmt!("sheet.color == %?" , sheet.color));
+    // // debug!(fmt!("stylesheet_vector[sheet].selectors == %?" , stylesheet_vector[sheet].selectors));
+    // debug!(fmt!("stylesheet_vector[sheet].rule_count == %?" , stylesheet_vector[sheet].rule_count));
+    // // debug!(fmt!("stylesheet_vector[sheet].last_rule == %?" , stylesheet_vector[sheet].last_rule));
+    // debug!(fmt!("stylesheet_vector[sheet].disabled == %?" , stylesheet_vector[sheet].disabled));
+    // debug!(fmt!("stylesheet_vector[sheet].url == %?" , stylesheet_vector[sheet].url));
+    // debug!(fmt!("stylesheet_vector[sheet].title == %?" , stylesheet_vector[sheet].title));
+    // debug!(fmt!("stylesheet_vector[sheet].level == %?" , stylesheet_vector[sheet].level));
+    // debug!(fmt!("stylesheet_vector[sheet].quirks_allowed == %?" , stylesheet_vector[sheet].quirks_allowed));
+    // debug!(fmt!("stylesheet_vector[sheet].quirks_used == %?" , stylesheet_vector[sheet].quirks_used));
+    // debug!(fmt!("stylesheet_vector[sheet].inline_style == %?" , stylesheet_vector[sheet].inline_style));
+    // debug!(fmt!("stylesheet_vector[sheet].cached_style == %?" , stylesheet_vector[sheet].cached_style));
+    // debug!(fmt!("stylesheet_vector[sheet].string_vector == %?" , stylesheet_vector[sheet].string_vector));
+    // debug!(fmt!("stylesheet_vector[sheet].resolve == %?" , stylesheet_vector[sheet].resolve));
+    // debug!(fmt!("stylesheet_vector[sheet].import == %?" , stylesheet_vector[sheet].import));
+    // debug!(fmt!("stylesheet_vector[sheet].font == %?" , stylesheet_vector[sheet].font));
+    // debug!(fmt!("stylesheet_vector[sheet].color == %?" , stylesheet_vector[sheet].color));
     
-    // debug!(fmt!("sheet.rule_list == %?" , sheet.rule_list));
+    // debug!(fmt!("stylesheet_vector[sheet].rule_list == %?" , stylesheet_vector[sheet].rule_list));
 
-    let mut rule: Option<CSS_RULE_DATA_TYPE> = sheet.rule_list ;
+    let mut rule: Option<CSS_RULE_DATA_TYPE> = stylesheet_vector[sheet].rule_list ;
     let mut ptr: ~str = ~"";
     //debug!(fmt!("rule == %?" , rule));
     while rule.is_some() {
@@ -168,34 +168,34 @@ pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc) -> ~str {
         match rule.expect(reason) {
 
             RULE_SELECTOR(css_rule_selector_x)=>{
-                dump_rule_selector(sheet, css_rule_selector_x, lwc_ref, &mut ptr, 1);
-                rule = sheet.css_rule_list[css_rule_selector_x.base].next;
+                dump_rule_selector(stylesheet_vector, sheet, css_rule_selector_x, lwc_ref, &mut ptr, 1);
+                rule = stylesheet_vector[sheet].css_rule_list[css_rule_selector_x.base].next;
             },
             RULE_CHARSET(css_rule_charset_x)=>{
                 dump_rule_charset(css_rule_charset_x, &mut ptr);
-                rule = sheet.css_rule_list[css_rule_charset_x.base].next;
+                rule = stylesheet_vector[sheet].css_rule_list[css_rule_charset_x.base].next;
             },
             RULE_IMPORT(css_rule_import_x)=>{
                 dump_rule_import(css_rule_import_x, &mut ptr);
-                rule = sheet.css_rule_list[css_rule_import_x.base].next;
+                rule = stylesheet_vector[sheet].css_rule_list[css_rule_import_x.base].next;
             },
             RULE_MEDIA(css_rule_media_x)=>{
-                dump_rule_media(sheet, css_rule_media_x, lwc_ref, &mut ptr);
-                rule = sheet.css_rule_list[css_rule_media_x.base].next;
+                dump_rule_media(stylesheet_vector, sheet, css_rule_media_x, lwc_ref, &mut ptr);
+                rule = stylesheet_vector[sheet].css_rule_list[css_rule_media_x.base].next;
             },
             RULE_FONT_FACE(css_rule_font_face_x)=>{
                 dump_rule_font_face(css_rule_font_face_x, lwc_ref, &mut ptr);
-                rule = sheet.css_rule_list[css_rule_font_face_x.base].next;
+                rule = stylesheet_vector[sheet].css_rule_list[css_rule_font_face_x.base].next;
             },
             RULE_PAGE(css_rule_page_x)=>{
-                dump_rule_page(sheet, css_rule_page_x, lwc_ref, &mut ptr);
-                rule = sheet.css_rule_list[css_rule_page_x.base].next; 
+                dump_rule_page(stylesheet_vector, sheet, css_rule_page_x, lwc_ref, &mut ptr);
+                rule = stylesheet_vector[sheet].css_rule_list[css_rule_page_x.base].next; 
             },
             RULE_UNKNOWN(css_rule_x)=>{
                 ptr = ptr + &"Unhandled rule type ";
                 // add rule.type
                 ptr.push_char('\n');
-                rule = sheet.css_rule_list[css_rule_x].next;
+                rule = stylesheet_vector[sheet].css_rule_list[css_rule_x].next;
             }
         }
     }
@@ -205,7 +205,7 @@ pub fn dump_sheet(sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc) -> ~str {
     ptr
 }
 
-fn dump_rule_selector(sheet : @mut css_stylesheet, s:@mut css_rule_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32){
+fn dump_rule_selector(stylesheet_vector:&mut ~[css_stylesheet], sheet : uint, s:@mut css_rule_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32){
     debug!("Entering: dump_rule_selector");
     let mut i = 0;
 
@@ -217,7 +217,7 @@ fn dump_rule_selector(sheet : @mut css_stylesheet, s:@mut css_rule_selector, lwc
     
     i = 0;
     while i < s.selectors.len() {
-        dump_selector_list(sheet, s.selectors[i], lwc_ref, ptr);
+        dump_selector_list(stylesheet_vector, sheet, s.selectors[i], lwc_ref, ptr);
         if !(i == s.selectors.len() - 1) {
             ptr.push_char(',');
             ptr.push_char(' ');
@@ -228,7 +228,7 @@ fn dump_rule_selector(sheet : @mut css_stylesheet, s:@mut css_rule_selector, lwc
     ptr.push_char('\n');
     if s.style.is_some() {
         debug!("Entering: dump_rule_selector :: if s.style.is_some()");
-        dump_bytecode(s.style.get_mut_ref() , lwc_ref, ptr,  depth +1);
+        dump_bytecode(stylesheet_vector, s.style.get_mut_ref() , lwc_ref, ptr,  depth +1);
     }
 
     debug!(fmt!("ptr == %?" , ptr));
@@ -254,7 +254,7 @@ fn dump_rule_import(s:@mut css_rule_import, ptr:&mut ~str){
 }
 
 // TODO
-fn dump_rule_media(sheet :@mut css_stylesheet, s:@mut css_rule_media, lwc_ref:&mut ~lwc, ptr: &mut ~str) {
+fn dump_rule_media(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, s:@mut css_rule_media, lwc_ref:&mut ~lwc, ptr: &mut ~str) {
     debug!("Entering: dump_rule_media");
     ptr.push_str( &"| @media ");
     ptr.push_char('\n');
@@ -265,8 +265,8 @@ fn dump_rule_media(sheet :@mut css_stylesheet, s:@mut css_rule_media, lwc_ref:&m
         let rule_type = rule.unwrap();
         match rule_type {
             RULE_SELECTOR(x) => {
-                 dump_rule_selector(sheet, x, lwc_ref, ptr, 2);
-                 rule = sheet.css_rule_list[x.base].next;
+                 dump_rule_selector(stylesheet_vector, sheet, x, lwc_ref, ptr, 2);
+                 rule = stylesheet_vector[sheet].css_rule_list[x.base].next;
             },
             _ =>{
                 fail!(~"Only selector type expected");
@@ -277,18 +277,18 @@ fn dump_rule_media(sheet :@mut css_stylesheet, s:@mut css_rule_media, lwc_ref:&m
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_rule_page(sheet:@mut css_stylesheet, s:@ mut css_rule_page, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+fn dump_rule_page(stylesheet_vector:&mut ~[css_stylesheet] , sheet:uint, s:@ mut css_rule_page, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_rule_page");
     ptr.push_str( &"| @page ");
 
     if s.selector.is_some() {
-        dump_selector_list(sheet, s.selector.unwrap(), lwc_ref, ptr);
+        dump_selector_list(stylesheet_vector, sheet, s.selector.unwrap(), lwc_ref, ptr);
     }
 
     ptr.push_char('\n');
 
     if s.style.is_some() {
-        dump_bytecode(s.style.get_ref() , lwc_ref, ptr, 2);
+        dump_bytecode(stylesheet_vector, s.style.get_ref() , lwc_ref, ptr, 2);
     }   
 
     debug!(fmt!("ptr == %?" , ptr));
@@ -305,12 +305,12 @@ fn dump_rule_font_face(s:@mut css_rule_font_face, lwc_ref:&mut ~lwc, ptr:&mut ~s
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_selector_list(sheet:@mut css_stylesheet, list: uint, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+fn dump_selector_list(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, list: uint, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_selector_list");
-    if sheet.css_selectors_list[list].combinator.is_some() {
-        dump_selector_list(sheet, sheet.css_selectors_list[list].combinator.unwrap(), lwc_ref, ptr);
+    if stylesheet_vector[sheet].css_selectors_list[list].combinator.is_some() {
+        dump_selector_list(stylesheet_vector, sheet, stylesheet_vector[sheet].css_selectors_list[list].combinator.unwrap(), lwc_ref, ptr);
     }
-    match sheet.css_selectors_list[list].data[0].combinator_type {
+    match stylesheet_vector[sheet].css_selectors_list[list].data[0].combinator_type {
         CSS_COMBINATOR_NONE=> {
             
         },
@@ -337,7 +337,7 @@ fn dump_selector_list(sheet:@mut css_stylesheet, list: uint, lwc_ref:&mut ~lwc, 
         }
 
     }
-    dump_selector(&mut sheet.css_selectors_list[list], lwc_ref, ptr);
+    dump_selector(&mut stylesheet_vector[sheet].css_selectors_list[list], lwc_ref, ptr);
 
     debug!(fmt!("ptr == %?" , ptr));
 }
@@ -478,7 +478,7 @@ fn dump_selector_detail(detail:&~css_selector_detail, lwc_ref:&mut ~lwc, ptr: &m
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_bytecode(style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32 ){
+fn dump_bytecode(stylesheet_vector:&mut ~[css_stylesheet], style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32 ){
     
     debug!("Entering: dump_bytecode");
     let bytecode = style.bytecode.clone();
@@ -623,7 +623,7 @@ fn dump_bytecode(style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32
                     
                     let snum = bytecode[iterator];
 
-                    let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                    let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
                     iterator += 1;
 
                     if option_string.is_some() {
@@ -1131,7 +1131,7 @@ fn dump_bytecode(style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32
 
                     if (value as int & 0xff) == CONTENT_COUNTER as int {
 
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
                         iterator += 1;
 
                         if option_string.is_some() {
@@ -1141,7 +1141,7 @@ fn dump_bytecode(style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32
                     }
                     else if (value as int & 0xff) == CONTENT_COUNTERS as int {
 
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
                         iterator += 1;
                         let sep = bytecode[iterator];
                         iterator += 1;
@@ -1153,7 +1153,7 @@ fn dump_bytecode(style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32
                     }
                     else if (value as int & 0xff) == CONTENT_URI as int || (value as int & 0xff) == CONTENT_ATTR as int || (value as int & 0xff) == CONTENT_STRING as int {
 
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
 
                         if value as int == CONTENT_URI as int {
                             ptr.push_str( &"url(");
@@ -1206,7 +1206,7 @@ fn dump_bytecode(style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32
                     while value as int != COUNTER_INCREMENT_NONE as int {
                         let snum = bytecode[iterator];
                         
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
 
                         iterator += 1;
                         
@@ -1237,7 +1237,7 @@ fn dump_bytecode(style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32
                 while value as int == CURSOR_URI as int {
                     let snum = bytecode[iterator];
                     iterator += 1;
-                    let(_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                    let(_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
 
                     if option_string.is_some() {
                         ptr.push_str( &"url('");
@@ -1422,7 +1422,7 @@ fn dump_bytecode(style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32
                     if value as int == FONT_FAMILY_STRING as int || value as int == FONT_FAMILY_IDENT_LIST as int {
                         let snum = bytecode[iterator];
                         iterator += 1;
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
                         
                         if option_string.is_some() {
                             ptr.push_char('\'');
@@ -1836,7 +1836,7 @@ fn dump_bytecode(style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32
                     
                     let snum = bytecode[iterator];
                     iterator += 1;
-                    let(_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                    let(_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
 
                     if option_string.is_some() {
                         ptr.push_char('\'');
@@ -1885,7 +1885,7 @@ fn dump_bytecode(style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32
                         
                         let snum = bytecode[iterator];
                         iterator += 1;
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
 
                         if option_string.is_some() {
                             ptr.push_str( &" '");
@@ -1893,7 +1893,7 @@ fn dump_bytecode(style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32
                             ptr.push_str( &"' ");
                         }
 
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
 
                         if option_string.is_some() {
                             ptr.push_str( &" '");
@@ -2124,7 +2124,7 @@ fn dump_bytecode(style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32
                         let snum = bytecode[iterator];
                         iterator += 1;
 
-                        let (_ , option_string) = style.sheet.unwrap().css__stylesheet_string_get(snum as uint);
+                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
 
                         if option_string.is_some() {
                             ptr.push_char('\'');

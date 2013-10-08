@@ -24,7 +24,7 @@ pub enum prop_group {
 }
 
 pub struct prop_table {
-    cascade : &'static fn (opv:u32, style:&mut ~css_style,
+    cascade : &'static fn (stylesheet_vector:&mut ~[css_stylesheet], opv:u32, style:&mut ~css_style,
                                 state:&mut ~css_select_state)-> css_error ,
     set_from_hint :  &'static fn (hint:&mut ~css_hint,
                                 style: &mut css_computed_style) -> css_error ,

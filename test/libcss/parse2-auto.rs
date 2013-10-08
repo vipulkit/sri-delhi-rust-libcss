@@ -73,9 +73,9 @@ fn main() {
     debug!("parse");
 }
 
-fn create_css() -> ~css{
+fn create_css(stylesheet_vector:&mut ~[css_stylesheet]) -> ~css{
     debug!("Entering: create_css");
-    let css = css::css_create( &css_create_params());
+    let css = css::css_create(stylesheet_vector, &css_create_params());
     css
 }
 
@@ -186,22 +186,23 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     // debug!("\n == data == %?" , str::from_bytes(data));
     let mut lwc_ref = lwc();
     let propstring = css_propstrings::css_propstrings(&mut lwc_ref);
-    let mut css = create_css();
+    let mut stylesheet_vector:~[css_stylesheet] = ~[];
+    let mut css = create_css(&mut stylesheet_vector);
     let mut buf: ~str;
-    let mut error = css.css_stylesheet_append_data(&mut lwc_ref , &propstring , data);
+    let mut error = css.css_stylesheet_append_data(&mut stylesheet_vector, &mut lwc_ref , &propstring , data);
     match error {
         CSS_OK | CSS_NEEDDATA => {},
         _ => {assert!(false);}
     }
 
-    error = css.css_stylesheet_data_done(&mut lwc_ref , &propstring);
+    error = css.css_stylesheet_data_done(&mut stylesheet_vector, &mut lwc_ref , &propstring);
     //debug!(fmt!("error from css_stylesheet_data_done: %?" , error));
     match error {
         CSS_OK => {},
         _ => {assert!(false);}
     }
 
-    buf = dump_sheet(css.stylesheet, &mut lwc_ref);
+    buf = dump_sheet(&mut stylesheet_vector, css.stylesheet, &mut lwc_ref);
     //debug!(fmt!("\n == sheet ==%?=" , buf));
     let mut dvec : ~[~[u8]] = ~[];
     for s in buf.any_line_iter() {

@@ -116,7 +116,7 @@ pub struct css_selector {
 pub struct css_style {
     bytecode:~[u32],
     used:uint,                
-    sheet:Option<@mut css_stylesheet>
+    sheet:Option<uint>
 }
 pub struct hash_entry {
     selector:uint,
@@ -190,7 +190,7 @@ pub struct css_rule_import {
     base:uint,
     url:~str,
     media:u64,
-    sheet:Option<@mut css_stylesheet>
+    sheet:Option<uint>
 } 
 pub struct css_rule_charset {
     base:uint,
@@ -478,7 +478,7 @@ impl css_stylesheet {
     * #Return Value:
     *  'css_style' - css_style.
     */
-    pub fn css__stylesheet_style_create(sheet : @mut css_stylesheet) -> ~css_style {
+    pub fn css__stylesheet_style_create(sheet : uint) -> ~css_style {
         ~css_style{ 
             bytecode:~[],
             used:0,
@@ -1003,15 +1003,15 @@ impl css_stylesheet {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css__stylesheet_add_rule(sheet : @mut css_stylesheet,  lwc_ref:&mut ~lwc, css_rule : CSS_RULE_DATA_TYPE,
+    pub fn css__stylesheet_add_rule(stylesheet_vector:&mut ~[css_stylesheet], sheet : uint,  lwc_ref:&mut ~lwc, css_rule : CSS_RULE_DATA_TYPE,
                                     parent_rule : Option<CSS_RULE_DATA_TYPE> ) -> css_error {
         
         //debug!("Entering: css__stylesheet_add_rule");
         let base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
 
-        sheet.css_rule_list[base_rule].index = sheet.rule_count;
+        stylesheet_vector[sheet].css_rule_list[base_rule].index = stylesheet_vector[sheet].rule_count;
 
-        match sheet._add_selectors(lwc_ref, css_rule) {
+        match stylesheet_vector[sheet]._add_selectors(lwc_ref, css_rule) {
             CSS_OK => {},
             x => return x
         }
@@ -1020,23 +1020,23 @@ impl css_stylesheet {
             Some(prule)=> {
                 match prule {
                     RULE_MEDIA(media_rule)=>{
-                        sheet.css_rule_list[base_rule].parent_rule = parent_rule;
-                        sheet.rule_count += 1;
+                        stylesheet_vector[sheet].css_rule_list[base_rule].parent_rule = parent_rule;
+                        stylesheet_vector[sheet].rule_count += 1;
                         //let mut base_media_prule = css_stylesheet::css__stylesheet_get_base_rule(prule);
 
 
                         match media_rule.last_child {
                             None=>{
-                                sheet.css_rule_list[base_rule].next = None;
-                                sheet.css_rule_list[base_rule].prev = None;
+                                stylesheet_vector[sheet].css_rule_list[base_rule].next = None;
+                                stylesheet_vector[sheet].css_rule_list[base_rule].prev = None;
                                 media_rule.first_child = Some(css_rule);
                                 media_rule.last_child = Some(css_rule);
                             },
                             Some(last_child)=>{
                                 let last_child_base_rule = css_stylesheet::css__stylesheet_get_base_rule(last_child);
-                                sheet.css_rule_list[last_child_base_rule].next = Some(css_rule);
-                                sheet.css_rule_list[base_rule].prev = Some(last_child) ;
-                                sheet.css_rule_list[base_rule].next = None;
+                                stylesheet_vector[sheet].css_rule_list[last_child_base_rule].next = Some(css_rule);
+                                stylesheet_vector[sheet].css_rule_list[base_rule].prev = Some(last_child) ;
+                                stylesheet_vector[sheet].css_rule_list[base_rule].next = None;
                                 media_rule.last_child = Some(css_rule);
                             }
                         }
@@ -1045,22 +1045,22 @@ impl css_stylesheet {
                 }
             },
             None=>{
-                sheet.css_rule_list[base_rule].parent_stylesheet = true;
-                sheet.rule_count += 1 ;
+                stylesheet_vector[sheet].css_rule_list[base_rule].parent_stylesheet = true;
+                stylesheet_vector[sheet].rule_count += 1 ;
 
-                match sheet.last_rule {
+                match stylesheet_vector[sheet].last_rule {
                     None=>{
-                        sheet.css_rule_list[base_rule].prev = None;
-                        sheet.css_rule_list[base_rule].next = None;
-                        sheet.rule_list = Some(css_rule);
-                        sheet.last_rule = Some(css_rule);
+                        stylesheet_vector[sheet].css_rule_list[base_rule].prev = None;
+                        stylesheet_vector[sheet].css_rule_list[base_rule].next = None;
+                        stylesheet_vector[sheet].rule_list = Some(css_rule);
+                        stylesheet_vector[sheet].last_rule = Some(css_rule);
                     },
                     Some(last_rule)=>{
                         let last_rule_base_rule = css_stylesheet::css__stylesheet_get_base_rule(last_rule);
-                        sheet.css_rule_list[last_rule_base_rule].next = Some(css_rule);
-                        sheet.css_rule_list[base_rule].prev = sheet.last_rule;
-                        sheet.css_rule_list[base_rule].next = None;
-                        sheet.last_rule = Some(css_rule);
+                        stylesheet_vector[sheet].css_rule_list[last_rule_base_rule].next = Some(css_rule);
+                        stylesheet_vector[sheet].css_rule_list[base_rule].prev = stylesheet_vector[sheet].last_rule;
+                        stylesheet_vector[sheet].css_rule_list[base_rule].next = None;
+                        stylesheet_vector[sheet].last_rule = Some(css_rule);
                     }
                 }
             }
@@ -1079,38 +1079,38 @@ impl css_stylesheet {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css__stylesheet_remove_rule(sheet : @mut css_stylesheet,  lwc_ref:&mut ~lwc, css_rule : CSS_RULE_DATA_TYPE) 
+    pub fn css__stylesheet_remove_rule(stylesheet_vector:&mut ~[css_stylesheet], sheet : uint,  lwc_ref:&mut ~lwc, css_rule : CSS_RULE_DATA_TYPE) 
                                         -> css_error {
         //debug!("Entering: css__stylesheet_remove_rule");
-        match sheet._remove_selectors(lwc_ref, css_rule) {
+        match stylesheet_vector[sheet]._remove_selectors(lwc_ref, css_rule) {
             CSS_OK=>{},
             x =>return x 
         }
 
         let base_rule = css_stylesheet::css__stylesheet_get_base_rule(css_rule);
-        match sheet.css_rule_list[base_rule].next {
+        match stylesheet_vector[sheet].css_rule_list[base_rule].next {
             None=> {
-                sheet.last_rule = sheet.css_rule_list[base_rule].prev;
+                stylesheet_vector[sheet].last_rule = stylesheet_vector[sheet].css_rule_list[base_rule].prev;
             },
             Some(base_rule_next)=>{
                 let next_rule = css_stylesheet::css__stylesheet_get_base_rule(base_rule_next);
-                sheet.css_rule_list[next_rule].prev = sheet.css_rule_list[base_rule].prev;
+                stylesheet_vector[sheet].css_rule_list[next_rule].prev = stylesheet_vector[sheet].css_rule_list[base_rule].prev;
             }
         }
 
-        match sheet.css_rule_list[base_rule].prev {
+        match stylesheet_vector[sheet].css_rule_list[base_rule].prev {
             None=>{
-                sheet.rule_list = sheet.css_rule_list[base_rule].next ;
+                stylesheet_vector[sheet].rule_list = stylesheet_vector[sheet].css_rule_list[base_rule].next ;
             },
             Some(base_rule_prev)=>{
                 let prev_rule = css_stylesheet::css__stylesheet_get_base_rule(base_rule_prev);
-                sheet.css_rule_list[prev_rule].next = sheet.css_rule_list[base_rule].next ;
+                stylesheet_vector[sheet].css_rule_list[prev_rule].next = stylesheet_vector[sheet].css_rule_list[base_rule].next ;
             }
         }
-        sheet.css_rule_list[base_rule].parent_rule = None ;
-        sheet.css_rule_list[base_rule].parent_stylesheet = false;
-        sheet.css_rule_list[base_rule].next = None;
-        sheet.css_rule_list[base_rule].prev = None ;
+        stylesheet_vector[sheet].css_rule_list[base_rule].parent_rule = None ;
+        stylesheet_vector[sheet].css_rule_list[base_rule].parent_stylesheet = false;
+        stylesheet_vector[sheet].css_rule_list[base_rule].next = None;
+        stylesheet_vector[sheet].css_rule_list[base_rule].prev = None ;
         CSS_OK
     }
 
@@ -1317,7 +1317,7 @@ impl css_selector_hash {
     */
 
     #[inline]
-    pub fn _class_name(&mut self , sheet: &mut css_stylesheet, lwc_ref:&mut ~lwc, selector : uint) 
+    pub fn _class_name(&mut self, sheet: &mut css_stylesheet, lwc_ref:&mut ~lwc, selector : uint) 
                         -> uint {
 
         let mut counter_i = 0;
@@ -1349,7 +1349,7 @@ impl css_selector_hash {
 
     #[inline]
     pub fn _id_name(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, selector : uint) 
-                        -> uint {
+         -> uint {
 
         let mut counter_i = 0;
         while counter_i <  sheet.css_selectors_list[selector].data.len() {
@@ -1681,7 +1681,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find(&mut self, sheet:@mut css_stylesheet, lwc_ref:&mut ~lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
         //debug!("Entering: css__selector_hash_find");
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(name, lwc_ref) & mask ; 
@@ -1727,7 +1727,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_class(&mut self, sheet:@mut css_stylesheet, lwc_ref:&mut ~lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_by_class(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
 
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(name, lwc_ref) & mask ; 
@@ -1771,7 +1771,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_id(&mut self, sheet:@mut css_stylesheet, lwc_ref:&mut ~lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_by_id(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
 
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(name, lwc_ref) & mask ; 
@@ -1835,7 +1835,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_elements(&mut self , sheet:@mut css_stylesheet, lwc_ref:&mut ~lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_elements(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
 
@@ -1872,7 +1872,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_classes(&mut self , sheet:@mut css_stylesheet, lwc_ref:&mut ~lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_classes(&mut self , sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
 
@@ -1908,7 +1908,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_ids(&mut self , sheet: @mut css_stylesheet, lwc_ref:&mut ~lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_ids(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
 
         let mut head = current;
 
