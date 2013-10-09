@@ -89,7 +89,7 @@ pub fn select_test(file:~str) {
     lwc_attr_class = Some(lwc_ref.lwc_intern_string(&"class"));
     lwc_attr_id = Some(lwc_ref.lwc_intern_string(&"id"));
     let propstring = css_propstrings::css_propstrings(&mut lwc_ref);
-    let ctx : @mut line_ctx = @mut line_ctx{
+    let ctx : &mut line_ctx = &mut line_ctx{
         //explen:0,
         //expused:0,
         exp:~"",
@@ -127,10 +127,10 @@ pub fn select_test(file:~str) {
         }
     }
 
-    let css_stylesheet_create_time = @mut 0;
-    let css_stylesheet_append_data_time = @mut 0;
-    let css_select_style_time = @mut 0;
-    let css_stylesheet_data_done_time= @mut 0f;
+    let css_stylesheet_create_time = &mut 0;
+    let css_stylesheet_append_data_time = &mut 0;
+    let css_select_style_time = &mut 0;
+    let css_stylesheet_data_done_time= &mut 0f;
     let mut stylesheet_vector:~[css_stylesheet]=~[];
 
     for line in file_content.any_line_iter() {
@@ -177,10 +177,10 @@ pub fn css_create_params() -> css_params {
      return css_param;
 }
 
-pub fn handle_line(stylesheet_vector:&mut ~[css_stylesheet], data:&mut ~str, lwc_ref:&mut ~lwc, propstring_ref: &css_propstrings , ctx:@mut line_ctx, css_stylesheet_create_time:@mut u64, 
-    css_stylesheet_append_data_time:@mut u64, 
-    css_select_style_time:@mut u64, 
-    css_stylesheet_data_done_time:@mut float
+pub fn handle_line(stylesheet_vector:&mut ~[css_stylesheet], data:&mut ~str, lwc_ref:&mut ~lwc, propstring_ref: &css_propstrings , ctx:&mut line_ctx, css_stylesheet_create_time:&mut u64, 
+    css_stylesheet_append_data_time:&mut u64, 
+    css_select_style_time:&mut u64, 
+    css_stylesheet_data_done_time:&mut float
     ) -> bool 
 {
     let mut error : css_error ;
@@ -309,7 +309,7 @@ pub fn handle_line(stylesheet_vector:&mut ~[css_stylesheet], data:&mut ~str, lwc
     true 
 }
 
-fn css__parse_expected(ctx: @mut line_ctx , data: &str) {
+fn css__parse_expected(ctx: &mut line_ctx , data: &str) {
 
     ctx.exp = ctx.exp + data;
 }
@@ -325,7 +325,7 @@ pub fn isspace (ch:u8)-> bool {
     } 
 }
 
-pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
+pub fn css__parse_tree(ctx:&mut line_ctx, data:&mut ~str, index:uint) {
 
     // debug!("\n Entering css__parse_tree ") ;
     let mut p = index;
@@ -359,7 +359,7 @@ pub fn css__parse_tree(ctx:@mut line_ctx, data:&mut ~str, index:uint) {
     }
 }
 
-pub fn css__parse_tree_data(ctx:@mut line_ctx, lwc_ref:&mut ~lwc, data:&str) {
+pub fn css__parse_tree_data(ctx:&mut line_ctx, lwc_ref:&mut ~lwc, data:&str) {
     
     // debug!("\n Entering css__parse_tree_data ") ;
     let mut p = 0;
@@ -426,7 +426,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, lwc_ref:&mut ~lwc, data:&str) {
     //debug!("\n Before 4  ") ;
     if (value.is_none() ) {
         /* We have an element, so create it */
-        let n : @mut node = @mut node {
+        let n : @mut node= @mut node{
             name:None,
             attrs:~[],
             parent:None,
@@ -451,22 +451,22 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, lwc_ref:&mut ~lwc, data:&str) {
             /* Find node to insert into */
             while (depth <= ctx.depth) {
                 ctx.depth -= 1;
-                ctx.current = ctx.current.expect(reason).parent;
+                ctx.current = ctx.current.get_ref().parent;
             }
             //let ctx_current = ctx.current.get();  
             //debug!("\n Before insert into current node  ") ;
             /* Insert into current node */
-            if (ctx.current.expect(reason).children.is_none()) {
+            if (ctx.current.get_ref().children.is_none()) {
                 //debug!("\n Before insert into current node == if statement ") ;
-                ctx.current.expect(reason).children = Some(n);
-                ctx.current.expect(reason).last_child = Some(n);
+                ctx.current.get_ref().children = Some(n);
+                ctx.current.get_ref().last_child = Some(n);
             } else {
                 //debug!("\n Before insert into current node == else statement ");
-                ctx.current.expect(reason).last_child.expect(reason).next = Some(n);
+                ctx.current.get_ref().last_child.expect(reason).next = Some(n);
                 //debug!("\n Before insert into current node == else statement 2") ;
-                n.prev = ctx.current.expect(reason).last_child;
+                n.prev = ctx.current.get_ref().last_child;
                 //debug!("\n Before insert into current node == else statement 3") ;
-                ctx.current.expect(reason).last_child = Some(n);
+                ctx.current.get_ref().last_child = Some(n);
             }
             //debug!("\n Before final updation  ") ;
             ctx.current = Some(ctx.current.expect(reason));  
@@ -496,7 +496,7 @@ pub fn css__parse_tree_data(ctx:@mut line_ctx, lwc_ref:&mut ~lwc, data:&str) {
 
 }
 
-pub fn css__parse_sheet(stylesheet_vector:&mut ~[css_stylesheet], ctx:@mut line_ctx , data:&mut ~str,index:uint, css_stylesheet_create_time:@mut u64){
+pub fn css__parse_sheet(stylesheet_vector:&mut ~[css_stylesheet], ctx:&mut line_ctx , data:&mut ~str,index:uint, css_stylesheet_create_time:&mut u64){
     
     // debug!("\n Entering css__parse_sheet ") ;
     let mut origin : css_origin = CSS_ORIGIN_AUTHOR;
@@ -644,7 +644,7 @@ pub fn css__parse_media_list(data:&mut ~str ,index:uint, media : &mut u64) -> ui
     len
 }
 
-pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:@mut line_ctx) -> uint {
+pub fn css__parse_pseudo_list(data:&mut ~str, index:uint,ctx:&mut line_ctx) -> uint {
     
     // debug!("\n Entering css__parse_pseudo_list ") ;
     let string = data.slice(index, data.len()).to_owned();
@@ -716,7 +716,7 @@ fn to_lower(string:&str) -> ~str {
     str::from_utf8(lower)
 }
 
-pub fn run_test(stylesheet_vector:&mut ~[css_stylesheet], ctx:@mut line_ctx, lwc_ref:~lwc, css_select_style_time:@mut u64) {
+pub fn run_test(stylesheet_vector:&mut ~[css_stylesheet], ctx:&mut line_ctx, lwc_ref:~lwc, css_select_style_time:&mut u64) {
     //debug!("\n Entering run test =%?=",ctx) ;
     let mut select: ~css_select_ctx;
     let mut results: ~css_select_results;
