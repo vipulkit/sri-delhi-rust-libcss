@@ -30,7 +30,7 @@ pub fn font_rule_font_family_reserved(strings:&css_propstrings, lwc_ref:&mut ~lw
     strings.lwc_string_caseless_isequal(lwc_ref, ident.idata.unwrap(), DEFAULT as uint)
 }
 
-pub fn font_face_parse_font_family(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, lwc_ref:&mut ~lwc, strings:&css_propstrings, vector:&~[~css_token], ctx:@mut uint, 
+pub fn font_face_parse_font_family(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, lwc_ref:&mut ~lwc, strings:&css_propstrings, vector:&~[~css_token], ctx:&mut uint, 
     font_face:&mut ~css_font_face) -> css_error {
     
     match css__ident_list_or_string_to_string(stylesheet_vector, sheet , lwc_ref, strings , vector, ctx, Some(@font_rule_font_family_reserved)) {
@@ -60,7 +60,7 @@ pub fn font_face_parse_font_family(stylesheet_vector:&mut ~[css_stylesheet], she
           CSS_INVALID on invalid syntax,
           appropriate error otherwise..
 */
-pub fn css__parse_font_descriptor(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, lwc_ref:&mut ~lwc, descriptor: &~css_token, strings:&css_propstrings, vector:&~[~css_token], ctx:@mut uint, 
+pub fn css__parse_font_descriptor(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, lwc_ref:&mut ~lwc, descriptor: &~css_token, strings:&css_propstrings, vector:&~[~css_token], ctx:&mut uint, 
     curRule:@mut css_rule_font_face) -> css_error {
     
     
@@ -92,7 +92,7 @@ pub fn css__parse_font_descriptor(stylesheet_vector:&mut ~[css_stylesheet], shee
 
 
 
-pub fn font_face_parse_src(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, lwc_ref:&mut ~lwc, strings:&css_propstrings, vector:&~[~css_token], ctx:@mut uint,
+pub fn font_face_parse_src(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, lwc_ref:&mut ~lwc, strings:&css_propstrings, vector:&~[~css_token], ctx:&mut uint,
     font_face:&mut ~css_font_face) -> css_error {
 
     let orig_ctx = *ctx;
@@ -150,7 +150,7 @@ pub fn font_face_parse_src(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint,
     
 }
 
-pub fn font_face_parse_font_style(strings:&css_propstrings, lwc_ref:&mut ~lwc, vector:&~[~css_token], ctx:@mut uint,
+pub fn font_face_parse_font_style(strings:&css_propstrings, lwc_ref:&mut ~lwc, vector:&~[~css_token], ctx:&mut uint,
     font_face:&mut ~css_font_face) -> css_error {
 
     let orig_ctx = *ctx;
@@ -185,7 +185,7 @@ pub fn font_face_parse_font_style(strings:&css_propstrings, lwc_ref:&mut ~lwc, v
     return CSS_OK;
 }
 
-pub fn font_face_parse_font_weight(strings:&css_propstrings, lwc_ref:&mut ~lwc, vector:&~[~css_token], ctx:@mut uint,
+pub fn font_face_parse_font_weight(strings:&css_propstrings, lwc_ref:&mut ~lwc, vector:&~[~css_token], ctx:&mut uint,
     font_face:&mut ~css_font_face) -> css_error {
 
     let orig_ctx = *ctx;
@@ -242,7 +242,7 @@ pub fn font_face_parse_font_weight(strings:&css_propstrings, lwc_ref:&mut ~lwc, 
     return CSS_OK;
 }
 
-pub fn font_face_src_parse_spec_or_name(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, lwc_ref:&mut ~lwc, strings:&css_propstrings, vector:&~[~css_token], ctx:@mut uint, 
+pub fn font_face_src_parse_spec_or_name(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, lwc_ref:&mut ~lwc, strings:&css_propstrings, vector:&~[~css_token], ctx:&mut uint, 
     location_type:&mut css_font_face_location_type, format:&mut css_font_face_format) -> (css_error, Option<uint>) {
 
 
@@ -358,7 +358,7 @@ pub fn css__font_face_set_font_family(font_face: &mut ~css_font_face, lwc_ref:&m
 
 
 
-pub fn font_face_src_parse_format(strings:&css_propstrings, lwc_ref:&mut ~lwc, vector:&~[~css_token], ctx:@mut uint, format:&mut css_font_face_format) -> css_error {
+pub fn font_face_src_parse_format(strings:&css_propstrings, lwc_ref:&mut ~lwc, vector:&~[~css_token], ctx:&mut uint, format:&mut css_font_face_format) -> css_error {
     
     let mut token: &~css_token;
 

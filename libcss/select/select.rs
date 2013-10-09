@@ -561,7 +561,7 @@ impl css_select_ctx {
 	* #Arguments:
 	*  'results' - Result set to destroy.
     */
-    pub fn css_select_results_destroy(results: &mut ~[@mut css_select_results] ) {
+    pub fn css_select_results_destroy(results: &mut ~[css_select_results] ) {
         //debug!(fmt!("Entering css_select_results_destroy")) ;
         results.clear() ;
         
@@ -588,7 +588,7 @@ impl css_select_ctx {
             return (CSS_BADPARM,None) ;
         }
 
-        let state = @mut css_select_font_faces_state {
+        let state = ~css_select_font_faces_state {
             font_family:Some(font_family),
             media:media,
 
@@ -1494,7 +1494,7 @@ impl css_select_ctx {
         let mut error:css_error;
 
         loop {
-            let match_result = @mut false;
+            let match_result = &mut false;
 
             /* Find candidate node */
             match combinator_type {
@@ -1578,10 +1578,10 @@ impl css_select_ctx {
         //debug!(fmt!("Entering match_selector_chain")) ;
         let mut s = selector;
         let mut node = state.node;
-        let match_b : &mut bool = @mut false;
+        let match_b : &mut bool = &mut false;
         let mut may_optimise = true;
-        let rejected_by_cache : &mut bool = @mut true ;
-        let pseudo : @mut css_pseudo_element = @mut CSS_PSEUDO_ELEMENT_NONE ;
+        let rejected_by_cache : &mut bool = &mut true ;
+        let mut pseudo : css_pseudo_element = CSS_PSEUDO_ELEMENT_NONE ;
         let mut error : css_error ;
         let universal_string = self.universal.expect("") ;
           
@@ -1594,7 +1594,7 @@ impl css_select_ctx {
          * else.
          */
       
-        error = self.match_details(node, (stylesheet_vector[sheet].css_selectors_list[s.expect("")].data) , state, match_b, Some(pseudo) );
+        error = self.match_details(node, (stylesheet_vector[sheet].css_selectors_list[s.unwrap()].data) , state, match_b, Some(&mut pseudo) );
        
         match error {
             CSS_OK => {},
@@ -1717,17 +1717,17 @@ impl css_select_ctx {
             return CSS_OK ;
         }
  
-		if( state.results.styles.len() <= *pseudo as uint ) {
+		if( state.results.styles.len() <= pseudo as uint ) {
 			return CSS_INVALID ;
 		}
 
 		/* Ensure that the appropriate computed style exists */
-		if ( state.results.styles[*pseudo as uint].is_none() ) {
-			state.results.styles[*pseudo as uint] = Some(css_computed_style_create()); 
+		if ( state.results.styles[pseudo as uint].is_none() ) {
+			state.results.styles[pseudo as uint] = Some(css_computed_style_create()); 
 		}
       
-        state.current_pseudo = *pseudo;
-        state.computed = state.results.styles[*pseudo as uint].expect("");
+        state.current_pseudo = pseudo;
+        state.computed = state.results.styles[pseudo as uint].expect("");
 
 
         css_select_ctx::cascade_style( stylesheet_vector, rule.style.get_mut_ref() , state)
@@ -1845,11 +1845,11 @@ impl css_select_ctx {
 
     pub fn match_details(&mut self,  node:*c_void, 
         detail :&mut [~css_selector_detail], state :&mut ~css_select_state, 
-        matched : &mut bool, pseudo_element : Option<@mut css_pseudo_element>) -> css_error {
+        matched : &mut bool, pseudo_element : Option<&mut css_pseudo_element>) -> css_error {
 
         //debug!(fmt!("Entering match_details")) ;
         let mut error : css_error ;
-        let pseudo : @mut css_pseudo_element = @mut CSS_PSEUDO_ELEMENT_NONE;
+        let mut pseudo : css_pseudo_element = CSS_PSEUDO_ELEMENT_NONE;
         let mut index:uint = 0;
 
         /* Skip the element selector detail, which is always first.
@@ -1874,7 +1874,7 @@ impl css_select_ctx {
         // * can be avoided unless absolutely necessary)? 
 
         while index != -1 {
-            error = self.match_detail(node, detail[index], state, matched, pseudo);
+            error = self.match_detail(node, detail[index], state, matched, &mut pseudo);
             match error {
                 CSS_OK => {}
                 _=> {
@@ -1897,7 +1897,7 @@ impl css_select_ctx {
         /* Return the applicable pseudo element, if required */
         match pseudo_element {
             Some(value) =>{
-                *value = *pseudo ;
+                *value = pseudo ;
             },
             None => {}
         }
@@ -1966,7 +1966,7 @@ impl css_select_ctx {
 				if (is_root == false && 
 					   self.lwc_ref.lwc_string_isequal(lwc_name , self.first_child.get_ref().clone() ) ) { 
 
-                    let num_before:@mut i32 =@mut 0;
+                    let num_before:&mut i32 =&mut 0;
 
                     error = (state.handler.get_ref().node_count_siblings)( 
                             &mut self.lwc_ref, node, false, false, num_before);
@@ -1986,7 +1986,7 @@ impl css_select_ctx {
                 else if (is_root == false && 
 							self.lwc_ref.lwc_string_isequal(lwc_name , self.nth_child.expect("") )
 					   ) { 
-                    let num_before:@mut i32 =@mut 0;
+                    let num_before:&mut i32 =&mut 0;
 
                     error = (state.handler.get_ref().node_count_siblings)( 
                             &mut self.lwc_ref, node, false, false, num_before);
