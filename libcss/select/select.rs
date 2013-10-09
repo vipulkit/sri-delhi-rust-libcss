@@ -76,9 +76,9 @@ pub struct css_select_font_faces_state {
     font_family:Option<uint>,
     media:u64,
 
-    ua_font_faces:@mut ~[@mut css_font_face],
-    user_font_faces:@mut ~[@mut css_font_face],
-    author_font_faces:@mut ~[@mut css_font_face]
+    ua_font_faces:~[~css_font_face],
+    user_font_faces:~[~css_font_face],
+    author_font_faces: ~[~css_font_face]
 }
 
 pub enum source_type {
@@ -581,7 +581,7 @@ impl css_select_ctx {
                                 stylesheet_vector:&mut ~[css_stylesheet],
                                 media:u64,
                                 font_family:uint) 
-                                -> (css_error,Option<@mut css_select_font_faces_results>) {
+                                -> (css_error,Option<~css_select_font_faces_results>) {
 
         //debug!(fmt!("Entering css_select_font_faces")) ;
         if( self.lwc_ref.lwc_string_length(font_family) == 0 ) {
@@ -592,11 +592,14 @@ impl css_select_ctx {
             font_family:Some(font_family),
             media:media,
 
-            ua_font_faces:@mut ~[],
-            user_font_faces:@mut ~[],
-            author_font_faces:@mut ~[]
+            ua_font_faces:~[],
+            user_font_faces:~[],
+            author_font_faces:~[]
         };
 
+        let mut ua_font_faces:~[~css_font_face] = ~[];
+        let mut user_font_faces:~[~css_font_face] = ~[];
+        let mut author_font_faces: ~[~css_font_face] = ~[];
         /* Iterate through the top-level stylesheets, selecting font-faces
          * from those which apply to our current media requirements and
          * are not disabled */
@@ -608,7 +611,12 @@ impl css_select_ctx {
                 (stylesheet_vector[self.sheets[i].sheet].disabled == false ) {
 
                 let error = self.select_font_faces_from_sheet(stylesheet_vector, self.sheets[i].sheet,
-                                                        self.sheets[i].origin,state);
+                                                        self.sheets[i].origin, 
+                                                        media, 
+                                                        font_family, 
+                                                        &mut ua_font_faces, 
+                                                        &mut user_font_faces,
+                                                        &mut author_font_faces);
                 match error {
                     CSS_OK=>{} ,
                     x => {
@@ -618,20 +626,20 @@ impl css_select_ctx {
             }
         }
           
-        let results = @mut css_select_font_faces_results {
+        let mut results = ~css_select_font_faces_results {
                 font_faces:~[]
         };
           
 		/* We found some matching faces.  Make a results structure with
 		 * the font faces in priority order. */
         if (state.ua_font_faces.len() > 0) {
-            results.font_faces.push(state.ua_font_faces); 
+            results.font_faces.push(ua_font_faces); 
         }
         if (state.user_font_faces.len() > 0) {
-		  results.font_faces.push(state.user_font_faces);
+		  results.font_faces.push(user_font_faces);
         }
         if (state.author_font_faces.len() > 0) {
-		  results.font_faces.push(state.author_font_faces);
+		  results.font_faces.push(author_font_faces);
         }
      
         (CSS_OK,Some(results))
@@ -931,31 +939,34 @@ impl css_select_ctx {
     pub fn _select_font_face_from_rule(&mut self, stylesheet_vector:&mut ~[css_stylesheet], sheet :uint,
                                     rule:@mut css_rule_font_face,
                                     origin: css_origin,
-                                    state:@mut css_select_font_faces_state) 
+                                    media: u64,
+                                    font_family: uint,
+                                    ua_font_faces:&mut ~[~css_font_face],
+                                    user_font_faces:&mut ~[~css_font_face],
+                                    author_font_faces:&mut ~[~css_font_face]) 
                                     -> css_error {
 
         //debug!(fmt!("Entering _select_font_face_from_rule")) ;                                
-        if ( css_select_ctx::_rule_applies_to_media(stylesheet_vector, sheet, Some(RULE_FONT_FACE(rule)), state.media) ) {
+        if ( css_select_ctx::_rule_applies_to_media(stylesheet_vector, sheet, Some(RULE_FONT_FACE(rule)), media) ) {
 
             if ( rule.font_face.is_none() || 
-                rule.font_face.expect("").font_family.is_none() || 
-                state.font_family.is_none() ) {
+                rule.font_face.get_ref().font_family.is_none()
+                ) {
                 return CSS_BADPARM ;
             }
 
-            let res : bool = self.lwc_ref.lwc_string_isequal(rule.font_face.expect("").font_family.expect(""),
-                                                    state.font_family.expect("") ) ;
+            let res : bool = self.lwc_ref.lwc_string_isequal(rule.font_face.get_ref().font_family.expect(""), font_family) ;
 
             if ( res ) {
 				match (origin) {
 					CSS_ORIGIN_UA => {
-						state.ua_font_faces.push(rule.font_face.expect(""));
+						ua_font_faces.push(rule.font_face.get_ref().clone());
 					},
 					CSS_ORIGIN_USER => {
-						state.user_font_faces.push(rule.font_face.expect(""));
+						user_font_faces.push(rule.font_face.get_ref().clone());
 					},
 					CSS_ORIGIN_AUTHOR => {
-						state.author_font_faces.push(rule.font_face.expect(""));
+						author_font_faces.push(rule.font_face.get_ref().clone());
 					}
 				}
             }
@@ -967,7 +978,11 @@ impl css_select_ctx {
                                         stylesheet_vector:&mut ~[css_stylesheet],
                                         sheet:uint,
                                         origin: css_origin,
-                                        state:@mut css_select_font_faces_state)
+                                        media: u64,
+                                        font_family: uint,
+                                        ua_font_faces:&mut ~[~css_font_face],
+                                        user_font_faces:&mut ~[~css_font_face],
+                                        author_font_faces:&mut ~[~css_font_face] )
                                         -> css_error {
 
         //debug!(fmt!("Entering select_font_faces_from_sheet")) ;
@@ -1017,7 +1032,7 @@ impl css_select_ctx {
                         RULE_IMPORT(x) => {
                             /* Current rule is an import */
                             if ( x.sheet.is_some() && 
-                                ((x.media & state.media) != 0) ) {
+                                ((x.media & media) != 0) ) {
                                 if ( sp >= IMPORT_STACK_SIZE as u32) {
                                     return CSS_NOMEM ;
                                 }
@@ -1037,7 +1052,12 @@ impl css_select_ctx {
                                                             sheet,
                                                             x,
                                                             origin,
-                                                            state);
+                                                            media,
+                                                            font_family,
+                                                            ua_font_faces,
+                                                            user_font_faces,
+                                                            author_font_faces
+                                                            );
                             match error {
                                 CSS_OK=>{},
                                 x => { 

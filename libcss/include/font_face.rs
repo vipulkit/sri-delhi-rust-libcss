@@ -34,6 +34,16 @@ pub struct css_font_face_src {
     bits:~[u8]
 }
 
+impl Clone for css_font_face_src {
+    #[inline]
+    fn clone(&self) -> css_font_face_src {
+        css_font_face_src{
+            location: Some(self.location.unwrap()),
+            bits: self.bits.clone()
+        }    
+    } 
+} 
+
 pub struct css_font_face {
     font_family:Option<uint>,
     srcs:~[~css_font_face_src],
@@ -45,4 +55,15 @@ pub struct css_font_face {
     */
     bits:~[u8]
 }
+
+impl Clone for css_font_face {
+    #[inline]
+    fn clone(&self) -> css_font_face {
+        css_font_face{
+            font_family: Some(self.font_family.unwrap()),
+            srcs: self.srcs.clone(),
+            bits: self.bits.clone()
+        }    
+    } 
+} 
 /* font face end */

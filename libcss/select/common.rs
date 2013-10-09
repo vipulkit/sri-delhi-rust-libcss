@@ -833,7 +833,7 @@ pub struct css_select_font_faces_results {
     /*
      * Array of pointers to computed font faces. 
      */
-    font_faces:~[@mut ~[@mut css_font_face]],
+    font_faces:~[~[~css_font_face]],
 }
 
 #[inline]

@@ -298,7 +298,7 @@ fn dump_rule_font_face(s:@mut css_rule_font_face, lwc_ref:&mut ~lwc, ptr:&mut ~s
     debug!("Entering: dump_rule_font_face");
     ptr.push_str( &"| @font-face ");
     if s.font_face.is_some() {
-        dump_font_face(s.font_face.unwrap(), lwc_ref, ptr);
+        dump_font_face(s.font_face.get_ref(), lwc_ref, ptr);
     }
     ptr.push_char('\n');
 
@@ -2360,7 +2360,7 @@ fn dump_unit(val: i32 , unit: u32 , ptr: &mut ~str) {
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_font_face(font_face: @mut css_font_face, lwc_ref:&mut ~lwc, ptr: &mut ~str){
+fn dump_font_face(font_face: &~css_font_face, lwc_ref:&mut ~lwc, ptr: &mut ~str){
     debug!("Entering: dump_font_face");
     let mut style: u8;
     let mut weight: u8;

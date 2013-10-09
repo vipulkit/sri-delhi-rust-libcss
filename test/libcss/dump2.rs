@@ -2307,7 +2307,7 @@ fn dump_unit(val: i32 , unit: u32 , ptr: &mut ~str) {
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_font_face(font_face: @mut css_font_face, ptr: &mut ~str){
+fn dump_font_face(font_face: ~css_font_face, ptr: &mut ~str){
     debug!("Entering: dump_font_face");
     let mut style: u8;
     let mut weight: u8;

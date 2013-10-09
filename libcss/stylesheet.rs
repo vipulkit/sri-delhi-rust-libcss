@@ -177,7 +177,7 @@ pub struct css_rule_media {
 
 pub struct css_rule_font_face {
     base:uint,
-    font_face:Option<@mut css_font_face>
+    font_face:Option<~css_font_face>
 } 
 
 pub struct css_rule_page {

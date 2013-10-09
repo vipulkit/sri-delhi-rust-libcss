@@ -643,7 +643,6 @@ pub fn validate_rule_selector(stylesheet_vector:&mut ~[css_stylesheet], sheet:ui
     debug!("Entering: validate_rule_selector");
     let mut name : ~str = ~"" ;
     let mut ptr : ~str = ~"" ;
-    let reason = "Function validate_rule_selector";
 
     // Build selector string
      debug!("Entering: validate_rule_selector: unsafe");
