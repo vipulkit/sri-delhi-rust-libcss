@@ -118,18 +118,22 @@ pub struct css_style {
     used:uint,                
     sheet:Option<uint>
 }
+
+type hash_entry_index = uint;
+
 pub struct hash_entry {
     selector:uint,
-    next:Option<@mut hash_entry>
+    next:Option<hash_entry_index>
 }
 
 /**< Hashtable of selectors */
 pub struct css_selector_hash {
     default_slots:u32,
-    elements:~[Option<@mut hash_entry>],
-    classes:~[Option<@mut hash_entry>],
-    ids:~[Option<@mut hash_entry>],
-    universal:~[Option<@mut hash_entry>],
+    elements:~[Option<hash_entry_index>],
+    classes:~[Option<hash_entry_index>],
+    ids:~[Option<hash_entry_index>],
+    universal:~[Option<hash_entry_index>],
+    hash_entry_list:~[~hash_entry]
 }
 
 pub struct css_stylesheet {
@@ -1287,6 +1291,7 @@ impl css_selector_hash {
                         classes:~[], 
                         ids:~[],
                         universal:~[],
+                        hash_entry_list:~[]
         };
         let size = hash.default_slots as uint;
         hash.elements.reserve(size);
@@ -1471,7 +1476,7 @@ impl css_selector_hash {
                             -> css_error {
         //debug!("Entering: _insert_into_chain");
         //debug!("_insert_into_chain:: hash_type == %?, index == %?", hash_type, index);
-        let mut hash_entry_list : &mut ~[Option<@mut hash_entry>];
+        let mut hash_entry_list : &mut ~[Option<hash_entry_index>];
 
         match hash_type {
             Element => {hash_entry_list = &mut self.elements} ,
@@ -1480,16 +1485,17 @@ impl css_selector_hash {
             Universal => {hash_entry_list = &mut self.universal} ,
         };
 
-        let entry = @mut hash_entry {
+        let entry = ~hash_entry {
                 selector:selector,
                 next:None
         };
-        //&~[Option<@mut hash_entry>] 
+        self.hash_entry_list.push(entry);
+        let entry_index = self.hash_entry_list.len() -1;
 
         match hash_entry_list[index] {
             None=> {
                 //debug!("Entering: match (*hash_entry_list)[index] => None");
-                hash_entry_list[index] = Some(entry);
+                hash_entry_list[index] = Some(entry_index);
                 //debug!("(*hash_entry_list)[index] == %?", (*hash_entry_list)[index]);
             },
             Some(index_element)=> {
@@ -1499,7 +1505,7 @@ impl css_selector_hash {
                 let mut first_pos : bool = true ;
                 loop {
 
-                    if (selector == search.selector) {
+                    if (selector == self.hash_entry_list[search].selector) {
                         // duplicate insert of same pointer css_selector should never occur,
                         // added , due to logical incompatibilty with "_remove_into_chain"
                         // in origical code , _remove_into_chain removes by comparing pointer values,
@@ -1508,17 +1514,17 @@ impl css_selector_hash {
                         return CSS_BADPARM;
                     }
 
-                    if sheet.css_selectors_list[search.selector].specificity> sheet.css_selectors_list[selector].specificity {
+                    if sheet.css_selectors_list[self.hash_entry_list[search].selector].specificity> sheet.css_selectors_list[selector].specificity {
                         break ;
                     }
 
-                    if sheet.css_selectors_list[search.selector].specificity == sheet.css_selectors_list[selector].specificity {
-                        if(sheet.css_selectors_list[search.selector].rule.is_none() || sheet.css_selectors_list[selector].rule.is_none() ){
+                    if sheet.css_selectors_list[self.hash_entry_list[search].selector].specificity == sheet.css_selectors_list[selector].specificity {
+                        if(sheet.css_selectors_list[self.hash_entry_list[search].selector].rule.is_none() || sheet.css_selectors_list[selector].rule.is_none() ){
                             //debug!("_insert_into_chain : error : rule is none  ") ;
                             return CSS_BADPARM ;
                         }
 
-                        let base_search_rule = css_stylesheet::css__stylesheet_get_base_rule(sheet.css_selectors_list[search.selector].rule.expect(""));
+                        let base_search_rule = css_stylesheet::css__stylesheet_get_base_rule(sheet.css_selectors_list[self.hash_entry_list[search].selector].rule.expect(""));
                         let base_selector_rule = css_stylesheet::css__stylesheet_get_base_rule(sheet.css_selectors_list[selector].rule.expect(""));
 
                         if sheet.css_rule_list[base_search_rule].index > sheet.css_rule_list[base_selector_rule].index {
@@ -1529,7 +1535,7 @@ impl css_selector_hash {
                     prev = search ;
                     first_pos = false ;
                     search = 
-                        match search.next {
+                        match self.hash_entry_list[search].next {
                             None=>{
                                 break ;
                             },
@@ -1540,13 +1546,13 @@ impl css_selector_hash {
                 }
                 if(first_pos){
                     //debug!("Entering: _insert_into_chain:: if(first_pos)");
-                    entry.next = Some(index_element);
-                    hash_entry_list[index] = Some(entry);
+                    self.hash_entry_list[entry_index].next = Some(index_element);
+                    hash_entry_list[index] = Some(entry_index);
                 }
                 else {
                     //debug!("Entering: _insert_into_chain:: if(first_pos)--else");
-                    entry.next=prev.next;
-                    prev.next= Some(entry);
+                    self.hash_entry_list[entry_index].next=self.hash_entry_list[prev].next;
+                    self.hash_entry_list[prev].next= Some(entry_index);
                 }
             }
         }
@@ -1622,7 +1628,7 @@ impl css_selector_hash {
                             selector : uint) 
                             -> css_error {
 
-        let mut hash_entry_list : &mut ~[Option<@mut hash_entry>];
+        let mut hash_entry_list : &mut ~[Option<uint>];
 
         match hash_type {
             Element => {hash_entry_list = &mut self.elements} ,
@@ -1644,13 +1650,13 @@ impl css_selector_hash {
 
                 loop {
 
-                    if (selector == search.selector) {
+                    if (selector == self.hash_entry_list[search].selector) {
                         break;
                     }
 
                     first_pos = false ;
                     search = 
-                        match search.next {
+                        match self.hash_entry_list[search].next {
                             None=>{
                                 return CSS_INVALID ;
                             },
@@ -1661,10 +1667,10 @@ impl css_selector_hash {
                     };
                 }
                 if(first_pos){
-                    hash_entry_list[index] = search.next;
+                    hash_entry_list[index] = self.hash_entry_list[search].next;
                 }
                 else {
-                    prev.next= search.next;
+                    self.hash_entry_list[prev].next= self.hash_entry_list[search].next;
                 }
             }
         }
@@ -1681,7 +1687,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, name : uint) -> (Option<uint>,css_error) {
         //debug!("Entering: css__selector_hash_find");
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(name, lwc_ref) & mask ; 
@@ -1696,18 +1702,18 @@ impl css_selector_hash {
                 Some(node_element)=>{
 
                     if lwc_ref.lwc_string_caseless_isequal(
-                                sheet.css_selectors_list[node_element.selector].data[0].qname.name,name)  {
+                                sheet.css_selectors_list[self.hash_entry_list[node_element].selector].data[0].qname.name,name)  {
                                 //debug!("Exiting: css__selector_hash_find (1)");
                                 return (head,CSS_OK);
                     }
 
-                    match node_element.next {
+                    match self.hash_entry_list[node_element].next {
                         None=> {
                             //debug!("Exiting: css__selector_hash_find (2)");
                             return (None,CSS_OK);
                         },
                         Some(_)=>{
-                            head = node_element.next ;
+                            head = self.hash_entry_list[node_element].next ;
                             loop ;
                         }
                     }
@@ -1727,7 +1733,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_class(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_by_class(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, name : uint) -> (Option<uint>,css_error) {
 
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(name, lwc_ref) & mask ; 
@@ -1741,18 +1747,18 @@ impl css_selector_hash {
                 },
                 Some(node_element)=>{
 
-                    let n = self._class_name(sheet, lwc_ref, node_element.selector);
+                    let n = self._class_name(sheet, lwc_ref, self.hash_entry_list[node_element].selector);
 
                     if lwc_ref.lwc_string_caseless_isequal(n, name) {
                         return (head,CSS_OK);
                     }
 
-                    match node_element.next {
+                    match self.hash_entry_list[node_element].next {
                         None=> {
                             return (None,CSS_OK);
                         },
                         Some(_)=>{
-                            head = node_element.next ;
+                            head = self.hash_entry_list[node_element].next ;
                             loop ;
                         }
                     }
@@ -1771,7 +1777,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_by_id(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, name : uint) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_by_id(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, name : uint) -> (Option<uint>,css_error) {
 
         let mask  = self.default_slots-1 ;
         let index = css_selector_hash::_hash_name(name, lwc_ref) & mask ; 
@@ -1784,18 +1790,18 @@ impl css_selector_hash {
                 },
                 Some(node_element)=>{
 
-                    let n = self._id_name(sheet, lwc_ref, node_element.selector);
+                    let n = self._id_name(sheet, lwc_ref, self.hash_entry_list[node_element].selector);
 
                     if lwc_ref.lwc_string_caseless_isequal(n, name) {
                         return (head,CSS_OK);
                     }
 
-                    match node_element.next {
+                    match self.hash_entry_list[node_element].next {
                         None=> {
                             return (None,CSS_OK);
                         },
                         Some(_)=>{
-                            head = node_element.next ;
+                            head = self.hash_entry_list[node_element].next ;
                             loop ;
                         }
                     }
@@ -1812,7 +1818,7 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (Some(hash_entry),CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn css__selector_hash_find_universal(&mut self) -> (Option<@mut hash_entry>,css_error) {
+    pub fn css__selector_hash_find_universal(&mut self) -> (Option<uint>,css_error) {
 
         let head = self.universal[0] ;
         match head {
@@ -1835,25 +1841,25 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_elements(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_elements(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, current : uint) -> (Option<uint>,css_error) {
 
         let mut head = current;
 
         loop {
-            match head.next {
+            match self.hash_entry_list[head].next {
                 None=>{
                     return (None,CSS_OK);
                 },
                 Some(next_entry)=>{
-                    if sheet.css_selectors_list[head.selector].data.len()==0 || 
-                        sheet.css_selectors_list[next_entry.selector].data.len()==0 {
+                    if sheet.css_selectors_list[self.hash_entry_list[head].selector].data.len()==0 || 
+                        sheet.css_selectors_list[self.hash_entry_list[next_entry].selector].data.len()==0 {
                         return (None,CSS_INVALID);
                     }
                     if lwc_ref.lwc_string_caseless_isequal(
-                        sheet.css_selectors_list[current.selector].data[0].qname.name,
-                        sheet.css_selectors_list[next_entry.selector].data[0].qname.name) {
+                        sheet.css_selectors_list[self.hash_entry_list[current].selector].data[0].qname.name,
+                        sheet.css_selectors_list[self.hash_entry_list[next_entry].selector].data[0].qname.name) {
 
-                        return (head.next,CSS_OK);
+                        return (self.hash_entry_list[head].next,CSS_OK);
                     }
                     head = next_entry ;
                     loop ;
@@ -1872,24 +1878,24 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_classes(&mut self , sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_classes(&mut self , sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, current : uint) -> (Option<uint>,css_error) {
 
         let mut head = current;
 
-        let current_refer = self._class_name(sheet, lwc_ref, current.selector);
+        let current_refer = self._class_name(sheet, lwc_ref, self.hash_entry_list[current].selector);
 
         loop {
-            match head.next {
+            match self.hash_entry_list[head].next {
                 None=>{
                     return (None,CSS_OK);
                 },
                 Some(next_entry)=>{
-                    let name = self._class_name(sheet, lwc_ref, next_entry.selector);
+                    let name = self._class_name(sheet, lwc_ref, self.hash_entry_list[next_entry].selector);
                     if( lwc_ref.lwc_string_length(name)==0){
                         loop;
                     }
                     if  lwc_ref.lwc_string_caseless_isequal(name,current_refer) {
-                        return (current.next,CSS_OK);
+                        return (self.hash_entry_list[current].next,CSS_OK);
                     }
                     head = next_entry ;
                     loop ;
@@ -1908,24 +1914,24 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_ids(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_ids(&mut self, sheet:&mut css_stylesheet, lwc_ref:&mut ~lwc, current : uint) -> (Option<uint>,css_error) {
 
         let mut head = current;
 
-        let current_refer = self._id_name(sheet, lwc_ref, current.selector);
+        let current_refer = self._id_name(sheet, lwc_ref, self.hash_entry_list[current].selector);
 
         loop {
-            match head.next {
+            match self.hash_entry_list[head].next {
                 None=>{
                     return (None,CSS_OK);
                 },
                 Some(next_entry)=>{
-                    let name = self._id_name(sheet, lwc_ref, next_entry.selector);
+                    let name = self._id_name(sheet, lwc_ref, self.hash_entry_list[next_entry].selector);
                     if( lwc_ref.lwc_string_length(name)==0){
                         loop;
                     }
                     if lwc_ref.lwc_string_caseless_isequal(name,current_refer)  {
-                        return (current.next,CSS_OK);
+                        return (self.hash_entry_list[current].next,CSS_OK);
                     }
                     head = next_entry ;
                     loop ;
@@ -1944,22 +1950,22 @@ impl css_selector_hash {
     * #Return Value:
     *  '(Option<@mut hash_entry>,css_error)' - (box to receive next item,CSS_OK) on success, otherwise (None, CSS_OK).
     */
-    pub fn _iterate_universal(current : @mut hash_entry) -> (Option<@mut hash_entry>,css_error) {
+    pub fn _iterate_universal(&mut self, current : uint) -> (Option<uint>,css_error) {
 
-        if current.next.is_some() {
-            return (current.next,CSS_OK);
+        if self.hash_entry_list[current].next.is_some() {
+            return (self.hash_entry_list[current].next,CSS_OK);
         }
         (None,CSS_OK)
     }
 
-    pub fn debug_print_vector_of_hash_entry_list(hash_vec : &[Option<@mut hash_entry>]) {
+    pub fn debug_print_vector_of_hash_entry_list(&mut self, hash_vec : &[Option<uint>]) {
 
         for &entry in hash_vec.iter() {
-            css_selector_hash::debug_print_hash_entry_list(entry) ;
+            self.debug_print_hash_entry_list(entry) ;
         }
     }
 
-    pub fn debug_print_hash_entry_list(current : Option<@mut hash_entry>) {
+    pub fn debug_print_hash_entry_list(&mut self, current : Option<uint>) {
 
         //debug!("Starting Printing hash_entry linked list ======");
         let mut ptr = current ;
@@ -1972,7 +1978,7 @@ impl css_selector_hash {
                 },
                 Some(x)=>{
                     //debug!("Selector:specificity=%?=,data=%?=",x.selector.specificity,x.selector.data);
-                    ptr = x.next ;
+                    ptr = self.hash_entry_list[x].next ;
                 }
             }
         }

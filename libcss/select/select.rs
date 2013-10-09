@@ -1221,13 +1221,13 @@ impl css_select_ctx {
                                     state :&mut ~css_select_state) -> css_error {
     
         //debug!(fmt!("Entering match_selectors_in_sheet")) ;
-        let mut node_selectors_hash_entry : Option<@mut hash_entry> = None ;
+        let mut node_selectors_hash_entry : Option<uint> = None ;
         let mut node_selectors_option : Option<uint> = None ;
-        let mut id_selectors_hash_entry : Option<@mut hash_entry> = None ;
+        let mut id_selectors_hash_entry : Option<uint> = None ;
         let mut id_selectors_option : Option<uint> = None ;
-        let mut class_selectors_hash_entry : ~[Option<@mut hash_entry>] = ~[];
+        let mut class_selectors_hash_entry : ~[Option<uint>] = ~[];
         let mut class_selectors_option_list : ~[Option<uint>] = ~[] ;
-        let mut univ_selectors_hash_entry : Option<@mut hash_entry> = None ;
+        let mut univ_selectors_hash_entry : Option<uint> = None ;
         let mut univ_selectors_option : Option<uint> = None ;
         //let mut error : css_error ;
 
@@ -1241,7 +1241,7 @@ impl css_select_ctx {
         }
         if sel.is_some() {
             node_selectors_hash_entry = sel;
-            node_selectors_option = Some(sel.expect("").selector) ;
+            node_selectors_option = Some(stylesheet_vector[sheet].selectors.hash_entry_list[sel.unwrap()].selector) ;
         }
 
         if ( state.classes.len() != 0 ) {
@@ -1261,7 +1261,7 @@ impl css_select_ctx {
 				
                 if sel_class.is_some() {
                     class_selectors_hash_entry.push(sel_class) ;
-                    class_selectors_option_list.push(Some(sel_class.expect("").selector)) ;
+                    class_selectors_option_list.push(Some(stylesheet_vector[sheet].selectors.hash_entry_list[sel_class.unwrap()].selector)) ;
                 }
                 z += 1;
             }
@@ -1280,7 +1280,7 @@ impl css_select_ctx {
             }
             if sel_id.is_some() {
                 id_selectors_hash_entry = sel_id ;
-                id_selectors_option = Some(sel_id.expect("").selector) ;
+                id_selectors_option = Some(stylesheet_vector[sheet].selectors.hash_entry_list[sel_id.unwrap()].selector) ;
             }
         }
 
@@ -1294,7 +1294,7 @@ impl css_select_ctx {
         }
         if sel_univ.is_some() {
             univ_selectors_hash_entry = sel_univ ;
-            univ_selectors_option = Some(sel_univ.expect("").selector) ;
+            univ_selectors_option = Some(stylesheet_vector[sheet].selectors.hash_entry_list[sel_univ.unwrap()].selector) ;
         }
 
         // /* Process matching selectors, if any */
@@ -1350,7 +1350,7 @@ impl css_select_ctx {
 
                 if node_next_hash.is_some() {
                     node_selectors_hash_entry = node_next_hash;
-                    node_selectors_option = Some(node_next_hash.expect("").selector) ;
+                    node_selectors_option = Some(stylesheet_vector[sheet].selectors.hash_entry_list[node_next_hash.unwrap()].selector) ;
                 }
                 else {
                     node_selectors_option = None ;
@@ -1370,7 +1370,7 @@ impl css_select_ctx {
 
                 if id_next_hash.is_some() {
                     id_selectors_hash_entry = id_next_hash;
-                    id_selectors_option = Some(id_next_hash.expect("").selector) ;
+                    id_selectors_option = Some(stylesheet_vector[sheet].selectors.hash_entry_list[id_next_hash.unwrap()].selector) ;
                 }
                 else {
                     id_selectors_option = None ;
@@ -1379,7 +1379,7 @@ impl css_select_ctx {
             else if (   univ_selectors_option.is_some() &&
                         selector == univ_selectors_option.expect("") ){
                 let (univ_next_hash,error) = 
-                            css_selector_hash::_iterate_universal(univ_selectors_hash_entry.expect(""));
+                            stylesheet_vector[sheet].selectors._iterate_universal(univ_selectors_hash_entry.unwrap());
 
                 match error {
                     CSS_OK => {},
@@ -1390,7 +1390,7 @@ impl css_select_ctx {
 
                 if univ_next_hash.is_some() {
                     univ_selectors_hash_entry = univ_next_hash;
-                    univ_selectors_option = Some(univ_next_hash.expect("").selector);
+                    univ_selectors_option = Some(stylesheet_vector[sheet].selectors.hash_entry_list[univ_next_hash.unwrap()].selector);
                 }
                 else {
                     univ_selectors_option = None ;
@@ -1404,7 +1404,7 @@ impl css_select_ctx {
                          selector == class_selectors_option_list[i].expect("")) {
                         let (class_next_hash,error) = 
                                         stylesheet_vector[sheet].selectors._iterate_classes(
-                                                    &mut stylesheet_vector[sheet], &mut self.lwc_ref, class_selectors_hash_entry[i].expect(""));
+                                                    &mut stylesheet_vector[sheet], &mut self.lwc_ref, class_selectors_hash_entry[i].unwrap());
 
                         match error {
                             CSS_OK => {},
@@ -1415,7 +1415,7 @@ impl css_select_ctx {
 
                         if class_next_hash.is_some() {
                             class_selectors_hash_entry[i] = class_next_hash;
-                            class_selectors_option_list[i] = Some(class_next_hash.expect("").selector);
+                            class_selectors_option_list[i] = Some(stylesheet_vector[sheet].selectors.hash_entry_list[class_next_hash.unwrap()].selector);
                         }
                         else {
                             class_selectors_option_list[i] = None;
