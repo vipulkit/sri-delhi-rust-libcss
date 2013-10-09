@@ -1232,7 +1232,7 @@ impl css_select_ctx {
         //let mut error : css_error ;
 
         /* Find hash chain that applies to current node */
-        let (sel,error) = stylesheet_vector[sheet].selectors.css__selector_hash_find(&mut stylesheet_vector[sheet], &mut self.lwc_ref, state.element.name);
+        let (sel,error) = stylesheet_vector[sheet].css__selector_hash_find(&mut self.lwc_ref, state.element.name);
         match error {
             CSS_OK => {},
             err => {
@@ -1251,7 +1251,7 @@ impl css_select_ctx {
             let mut z = 0 ;
             let z_len = state.classes.len();
             while z<z_len {
-                let (sel_class,error) = stylesheet_vector[sheet].selectors.css__selector_hash_find_by_class(&mut stylesheet_vector[sheet], &mut self.lwc_ref, state.classes[z]);
+                let (sel_class,error) = stylesheet_vector[sheet].css__selector_hash_find_by_class(&mut self.lwc_ref, state.classes[z]);
                 match error {
                     CSS_OK => {},
                     err => {
@@ -1271,7 +1271,7 @@ impl css_select_ctx {
 				
         if ( self.lwc_ref.lwc_string_length(state.id) != 0 ) {
             /* Find hash chain for node ID */
-            let (sel_id,error) = stylesheet_vector[sheet].selectors.css__selector_hash_find_by_id(&mut stylesheet_vector[sheet], &mut self.lwc_ref, state.id);
+            let (sel_id,error) = stylesheet_vector[sheet].css__selector_hash_find_by_id(&mut self.lwc_ref, state.id);
             match error {
                 CSS_OK => {},
                 err => {
@@ -1339,7 +1339,7 @@ impl css_select_ctx {
             if ( node_selectors_option.is_some() &&
                 selector == node_selectors_option.expect("") ) {
                 let (node_next_hash,error) = 
-                        stylesheet_vector[sheet].selectors._iterate_elements(&mut stylesheet_vector[sheet], &mut self.lwc_ref, node_selectors_hash_entry.expect(""));
+                        stylesheet_vector[sheet]._iterate_elements(&mut self.lwc_ref, node_selectors_hash_entry.expect(""));
 
                 match error {
                     CSS_OK => {},
@@ -1359,7 +1359,7 @@ impl css_select_ctx {
             else if (   id_selectors_option.is_some() &&
                         selector ==  id_selectors_option.expect("") ){
                 let (id_next_hash,error) = 
-                            stylesheet_vector[sheet].selectors._iterate_ids(&mut stylesheet_vector[sheet], &mut self.lwc_ref, id_selectors_hash_entry.expect(""));
+                            stylesheet_vector[sheet]._iterate_ids(&mut self.lwc_ref, id_selectors_hash_entry.expect(""));
 
                 match error {
                     CSS_OK => {},
@@ -1403,8 +1403,8 @@ impl css_select_ctx {
                     if ( class_selectors_option_list[i].is_some() &&
                          selector == class_selectors_option_list[i].expect("")) {
                         let (class_next_hash,error) = 
-                                        stylesheet_vector[sheet].selectors._iterate_classes(
-                                                    &mut stylesheet_vector[sheet], &mut self.lwc_ref, class_selectors_hash_entry[i].unwrap());
+                                        stylesheet_vector[sheet]._iterate_classes(
+                                                    &mut self.lwc_ref, class_selectors_hash_entry[i].unwrap());
 
                         match error {
                             CSS_OK => {},
