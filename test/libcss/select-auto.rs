@@ -832,7 +832,7 @@ pub fn run_test(stylesheet_vector:&mut ~[css_stylesheet], ctx:&mut line_ctx, lwc
     }
 
     assert!(results.styles[ctx.pseudo_element].is_some());
-    dump_computed_style(results.styles[ctx.pseudo_element].unwrap(),  &mut select.lwc_ref, &mut buf);
+    dump_computed_style(results.styles[ctx.pseudo_element].get_mut_ref(),  &mut select.lwc_ref, &mut buf);
 
 
     // debug!(fmt!(" CSS Selection result is =%?",results));

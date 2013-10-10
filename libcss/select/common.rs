@@ -680,7 +680,7 @@ pub struct css_select_results {
      // taking style as "@mut" type everywhere , because we need to pass
      // pointer everywhere, and modification will occour every-where.
      // size of this array to be preallocated is CSS_PSEUDO_ELEMENT_COUNT
-    styles:~[Option<@mut css_computed_style>]
+    styles:~[Option<~css_computed_style>]
 }
 
 pub struct reject_item {
@@ -802,8 +802,9 @@ pub struct css_select_state {
     node:*c_void,
     media:u64,         
     results:~css_select_results,
+    //result_styles: ~[~css_computed_style],
     current_pseudo:css_pseudo_element,  
-    computed:@mut css_computed_style,  
+    computed:uint,  
 
     handler:Option<~css_select_handler>,    
     pw:*c_void,
