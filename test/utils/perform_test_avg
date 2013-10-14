@@ -1,7 +1,5 @@
 #!/bin/bash
 
-export RUST_THREADS=1
-
 function Process1 {
 	rm  -rf r_output.txt c_output.txt ;
 	for i in {1..500}
@@ -16,4 +14,4 @@ Process1
 
 ./test_data_avg
 
-unset RUST_THREADS
+
