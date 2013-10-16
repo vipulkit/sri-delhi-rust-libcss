@@ -31,7 +31,7 @@ enum language_state {
 
 pub struct context_entry {
     event_type:css_parser_event,        /* < Type of entry */
-    data:Option<CSS_RULE_DATA_TYPE>     //< Data for context */
+    data:Option<css_rule_data_index>     //< Data for context */
 } 
 
 pub struct css_namespace {
@@ -39,7 +39,6 @@ pub struct css_namespace {
     uri:Option<uint>     //< Namespace URI */
 }
 
-	
 
 pub struct css_language {
     sheet:uint,
@@ -80,7 +79,7 @@ impl css_language {
 	* #Return Value:
 	*   'css_error' - CSS_OK on success, CSS_INVALID to indicate parse error.
 	*/
-    pub fn language_handle_event(&mut self,  stylesheet_vector:&mut ~[css_stylesheet], lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, event_type:css_parser_event, tokens:&~[~css_token])
+    pub fn language_handle_event(&mut self,  stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, event_type:css_parser_event, tokens:&~[~css_token])
         -> css_error {
 	let mut css_er:css_error;
         //debug!("Entering: language_handle_event");
@@ -95,7 +94,7 @@ impl css_language {
             }
             
             CSS_PARSER_START_RULESET=>{
-                css_er = self.handleStartRuleset(stylesheet_vector, lwc_ref, propstrings_ref, tokens);
+                css_er = self.handleStartRuleset(stylesheet_vector, css_rule_data_list, lwc_ref, propstrings_ref, tokens);
             }
             
             CSS_PARSER_END_RULESET=>{
@@ -103,7 +102,7 @@ impl css_language {
             }
             
             CSS_PARSER_START_ATRULE=>{
-                css_er = self.handleStartAtRule(stylesheet_vector, lwc_ref, propstrings_ref, tokens);
+                css_er = self.handleStartAtRule(stylesheet_vector, css_rule_data_list, lwc_ref, propstrings_ref, tokens);
             }
             
             CSS_PARSER_END_ATRULE=>{
@@ -116,15 +115,15 @@ impl css_language {
             }
             
             CSS_PARSER_END_BLOCK=>{
-                css_er = self.handleEndBlock(stylesheet_vector);
+                css_er = self.handleEndBlock(stylesheet_vector, css_rule_data_list);
             }
             
             CSS_PARSER_BLOCK_CONTENT=>{
-                css_er = self.handleBlockContent(stylesheet_vector, lwc_ref, propstrings_ref, tokens);
+                css_er = self.handleBlockContent(stylesheet_vector, css_rule_data_list, lwc_ref, propstrings_ref, tokens);
             }
             
             CSS_PARSER_DECLARATION=>{
-                css_er = self.handleDeclaration(stylesheet_vector, lwc_ref, propstrings_ref, tokens);
+                css_er = self.handleDeclaration(stylesheet_vector, css_rule_data_list, lwc_ref, propstrings_ref, tokens);
             }
         }
 	css_er
@@ -158,25 +157,24 @@ impl css_language {
         CSS_OK
     }
 
-    pub fn handleStartRuleset(&mut self, stylesheet_vector:&mut ~[css_stylesheet], lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, tokens:&~[~css_token]) ->css_error    {
+    pub fn handleStartRuleset(&mut self, stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, tokens:&~[~css_token]) ->css_error    {
         //debug!("Entering: handleStartRuleset");
 
-        let mut cur:context_entry ;
-        let mut parent_rule :Option<CSS_RULE_DATA_TYPE> = None ;
+        let mut parent_rule :Option<uint> = None ;
 
         /* Retrieve parent rule from stack, if any */
         if !self.context.is_empty() {
-            cur=self.context[self.context.len()-1];
+            let cur:&context_entry = &self.context[self.context.len()-1];
             match cur.event_type {
                 CSS_PARSER_START_STYLESHEET =>{},
                 _=>{parent_rule = cur.data;}
             }
         }
         
-        let curRule = stylesheet_vector[self.sheet].css_stylesheet_rule_create(CSS_RULE_SELECTOR);
+        let curRule = stylesheet_vector[self.sheet].css_stylesheet_rule_create(css_rule_data_list, CSS_RULE_SELECTOR);
         
         //if !vec::is_empty(*tokens) {
-        match self.parseSelectorList(stylesheet_vector, lwc_ref, propstrings_ref, tokens, curRule) {
+        match self.parseSelectorList(stylesheet_vector, css_rule_data_list, lwc_ref, propstrings_ref, tokens, curRule) {
             CSS_OK => {},
             x =>   return x  
 		  
@@ -190,7 +188,7 @@ impl css_language {
         self.context.push(entry);
 
     
-        match css_stylesheet::css__stylesheet_add_rule(stylesheet_vector, self.sheet, lwc_ref, curRule, parent_rule) {
+        match css_stylesheet::css__stylesheet_add_rule(stylesheet_vector, css_rule_data_list, self.sheet, lwc_ref, curRule, parent_rule) {
             CSS_OK =>   {},
             x      =>   {
                 self.context.pop();
@@ -226,12 +224,12 @@ impl css_language {
         }
     }
 
-    pub fn handleStartAtRule(&mut self, stylesheet_vector:&mut ~[css_stylesheet], lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, vector:&~[~css_token])->css_error {
+    pub fn handleStartAtRule(&mut self, stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, vector:&~[~css_token])->css_error {
         //debug!("Entering: handleStartAtRule");
        // context_entry entry = { CSS_PARSER_START_ATRULE, NULL };
             
         let ctx: &mut uint =&mut 0;
-        let mut curRule:Option<CSS_RULE_DATA_TYPE> = None;
+        let mut curRule:Option<uint> = None;
         let mut token: &~css_token; 
 
         /* vector contains: ATKEYWORD ws any0 */
@@ -275,14 +273,14 @@ impl css_language {
                     //token = &vector[*ctx]; Not used
                     *ctx += 1; //Iterate
                     
-                    let temp_rule = stylesheet_vector[self.sheet].css_stylesheet_rule_create(CSS_RULE_CHARSET);
+                    let temp_rule = stylesheet_vector[self.sheet].css_stylesheet_rule_create(css_rule_data_list, CSS_RULE_CHARSET);
                     
-                    match css_stylesheet::css__stylesheet_rule_set_charset(temp_rule, lwc_ref.lwc_string_data(charset.idata.get_ref().clone())) {
+                    match css_stylesheet::css__stylesheet_rule_set_charset(&mut css_rule_data_list[temp_rule], lwc_ref.lwc_string_data(charset.idata.get_ref().clone())) {
                         CSS_OK => {},
                         error => return error
                     }
                     
-                    match css_stylesheet::css__stylesheet_add_rule(stylesheet_vector, self.sheet, lwc_ref, temp_rule, None){
+                    match css_stylesheet::css__stylesheet_add_rule(stylesheet_vector, css_rule_data_list, self.sheet, lwc_ref, temp_rule, None){
                         CSS_OK => {},
                         error => return error
 
@@ -327,7 +325,7 @@ impl css_language {
                 }
                 
                 /* Create rule */
-                let temp_rule = stylesheet_vector[self.sheet].css_stylesheet_rule_create(CSS_RULE_IMPORT);
+                let temp_rule = stylesheet_vector[self.sheet].css_stylesheet_rule_create(css_rule_data_list, CSS_RULE_IMPORT);
 
                 /* Resolve import URI */
                 match (*stylesheet_vector[self.sheet].resolve)(stylesheet_vector[self.sheet].url, uri.idata.get_ref().clone())
@@ -338,7 +336,7 @@ impl css_language {
 
                
                 /* Inform rule of it */
-                match css_stylesheet::css__stylesheet_rule_set_nascent_import(temp_rule, url, *media){
+                match css_stylesheet::css__stylesheet_rule_set_nascent_import(&mut css_rule_data_list[temp_rule], url, *media){
                     CSS_OK => {},
                     error => return error 
                 }
@@ -355,7 +353,7 @@ impl css_language {
                 }
 
                 /* Add rule to sheet */
-                match css_stylesheet::css__stylesheet_add_rule(stylesheet_vector, self.sheet, lwc_ref, temp_rule, None){
+                match css_stylesheet::css__stylesheet_add_rule(stylesheet_vector, css_rule_data_list, self.sheet, lwc_ref, temp_rule, None){
                         CSS_OK => {},
                         error => return error
 				 
@@ -426,16 +424,16 @@ impl css_language {
                 error => return error
 		}
                 
-            let temp_rule = stylesheet_vector[self.sheet].css_stylesheet_rule_create(CSS_RULE_MEDIA);
+            let temp_rule = stylesheet_vector[self.sheet].css_stylesheet_rule_create(css_rule_data_list, CSS_RULE_MEDIA);
             
-            match css_stylesheet::css__stylesheet_rule_set_media(temp_rule, *media){
+            match css_stylesheet::css__stylesheet_rule_set_media(&mut css_rule_data_list[temp_rule], *media){
                 CSS_OK => {},
                 error => return error
 			 
             }
 
             
-            match css_stylesheet::css__stylesheet_add_rule(stylesheet_vector, self.sheet, lwc_ref, temp_rule, None){
+            match css_stylesheet::css__stylesheet_add_rule(stylesheet_vector, css_rule_data_list, self.sheet, lwc_ref, temp_rule, None){
                 CSS_OK => {},
                 error => return error   
 			 
@@ -449,11 +447,11 @@ impl css_language {
             self.state = HAD_RULE;
         }
         else if propstrings_ref.lwc_string_caseless_isequal(lwc_ref, atkeyword.idata.get_ref().clone(), FONT_FACE as uint) {
-            let temp_rule = stylesheet_vector[self.sheet].css_stylesheet_rule_create(CSS_RULE_FONT_FACE);
+            let temp_rule = stylesheet_vector[self.sheet].css_stylesheet_rule_create(css_rule_data_list, CSS_RULE_FONT_FACE);
             
             consumeWhitespace(vector, ctx);
 
-            match css_stylesheet::css__stylesheet_add_rule(stylesheet_vector, self.sheet, lwc_ref, temp_rule, None){
+            match css_stylesheet::css__stylesheet_add_rule(stylesheet_vector, css_rule_data_list, self.sheet, lwc_ref, temp_rule, None){
                 CSS_OK => {},
                 error => return error   
 			 
@@ -469,7 +467,7 @@ impl css_language {
         else if propstrings_ref.lwc_string_caseless_isequal(lwc_ref, atkeyword.idata.get_ref().clone(), PAGE as uint) {
             
             /* any0 = (':' IDENT)? ws */
-            let temp_rule = stylesheet_vector[self.sheet].css_stylesheet_rule_create(CSS_RULE_PAGE);
+            let temp_rule = stylesheet_vector[self.sheet].css_stylesheet_rule_create(css_rule_data_list, CSS_RULE_PAGE);
            
             consumeWhitespace(vector, ctx);
 
@@ -478,7 +476,7 @@ impl css_language {
                 
                 match self.parseSelector(stylesheet_vector, lwc_ref, propstrings_ref, vector, ctx) {
                     (CSS_OK, Some(selector)) => {
-                        match css_stylesheet::css__stylesheet_rule_set_page_selector(temp_rule, selector) {
+                        match css_stylesheet::css__stylesheet_rule_set_page_selector(&mut css_rule_data_list[temp_rule], selector) {
                             CSS_OK => {},
                             x => return x
                         }//End of match rule_set_page_selector
@@ -488,7 +486,7 @@ impl css_language {
                
             }
 
-            match css_stylesheet::css__stylesheet_add_rule(stylesheet_vector, self.sheet, lwc_ref, temp_rule, None){
+            match css_stylesheet::css__stylesheet_add_rule(stylesheet_vector, css_rule_data_list, self.sheet, lwc_ref, temp_rule, None){
                 CSS_OK => {},
                 error => return error   
 			 
@@ -556,7 +554,7 @@ impl css_language {
         CSS_OK  
     }
 
-    pub fn handleEndBlock(&mut self, stylesheet_vector:&mut ~[css_stylesheet])->css_error {
+    pub fn handleEndBlock(&mut self, stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type])->css_error {
         //debug!("Entering: handleEndBlock");
         let mut cur:context_entry;
         
@@ -569,22 +567,25 @@ impl css_language {
                     /* If the block we just popped off the stack was associated with a 
                     * non-block stack entry, and that entry is not a top-level statement,
                     * then report the end of that entry, too. */
-                    match curRule {
-                        None => CSS_OK,
-                        Some(x) => { 
-                            match x {
-                                RULE_SELECTOR(_) =>
-                                    match stylesheet_vector[self.sheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(x)].parent_rule {
-                                        Some(pRule) => 
-                                            match stylesheet_vector[self.sheet].css__stylesheet_get_parent_type(pRule) {
-                                                CSS_RULE_PARENT_STYLESHEET  => self.handleEndRuleset(),
-                                                _ => CSS_OK
-                                            },
-                                        None => CSS_OK                      
-                                    },
-                                _ =>    CSS_OK
-                            }
+                    if curRule.is_some()  {
+                        match css_rule_data_list[curRule.unwrap()].rule_type {
+                            CSS_RULE_SELECTOR => {
+                                let base_rule = css_rule_data_list[curRule.unwrap()].rule_selector.get_ref().base;
+                                match stylesheet_vector[self.sheet].css_rule_list[base_rule].parent_rule {
+                                    Some(pRule) => 
+                                        match stylesheet_vector[self.sheet].css__stylesheet_get_parent_type(css_rule_data_list, pRule) {
+                                            CSS_RULE_PARENT_STYLESHEET  => self.handleEndRuleset(),
+                                            _ => CSS_OK
+                                        },
+                                    None => CSS_OK                      
+                                }
+                            },
+                            _ =>    CSS_OK
+                        
                         }
+                    } 
+                    else {
+                        return CSS_OK;
                     }
                 },
                 _   =>  return CSS_INVALID
@@ -597,7 +598,7 @@ impl css_language {
     }
 
 
-    pub fn handleBlockContent(&mut self, stylesheet_vector:&mut ~[css_stylesheet], lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, tokens:&~[~css_token])-> css_error {
+    pub fn handleBlockContent(&mut self, stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, tokens:&~[~css_token])-> css_error {
         //debug!("Entering: handleBlockContent");
         // * Block content comprises either declarations (if the current block is
         // * associated with @page, @font-face or a selector), or rulesets (if the
@@ -609,14 +610,14 @@ impl css_language {
             match cur.data {
                 None => CSS_INVALID,
                 Some(curRule) => {
-                    match curRule {
-                        RULE_SELECTOR(_) | RULE_PAGE(_)  | RULE_FONT_FACE(_) => {                                   
+                    match css_rule_data_list[curRule].rule_type {
+                        CSS_RULE_SELECTOR | CSS_RULE_PAGE  | CSS_RULE_FONT_FACE => {                                   
                             //Expect declarations 
-                            return self.handleDeclaration(stylesheet_vector, lwc_ref, propstrings_ref, tokens);
+                            return self.handleDeclaration(stylesheet_vector, css_rule_data_list, lwc_ref, propstrings_ref, tokens);
                         },
-                        RULE_MEDIA(_) => {
+                        CSS_RULE_MEDIA => {
                             // Expect rulesets 
-                            return self.handleStartRuleset(stylesheet_vector, lwc_ref, propstrings_ref, tokens);
+                            return self.handleStartRuleset(stylesheet_vector, css_rule_data_list, lwc_ref, propstrings_ref, tokens);
                         },  
                         _ => return CSS_INVALID
 			    
@@ -630,7 +631,7 @@ impl css_language {
         
     }
 
-    pub fn handleDeclaration(&mut self, stylesheet_vector:&mut ~[css_stylesheet], lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, tokens:&~[~css_token])->css_error {
+    pub fn handleDeclaration(&mut self, stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, tokens:&~[~css_token])->css_error {
         //debug!("Entering: handleDeclaration");
         let ctx: &mut uint = &mut 0u;   
          // Locations where declarations are permitted:
@@ -647,8 +648,8 @@ impl css_language {
             match cur.data {
                 None => CSS_INVALID,
                 Some(curRule) => {
-                    match curRule {
-                        RULE_SELECTOR(_) | RULE_PAGE(_)  | RULE_FONT_FACE(_) => {                                   
+                    match css_rule_data_list[curRule].rule_type {
+                        CSS_RULE_SELECTOR | CSS_RULE_PAGE  | CSS_RULE_FONT_FACE => {                                   
                             // Strip any leading whitespace (can happen if in nested block) 
                             consumeWhitespace(tokens, ctx);
 
@@ -669,15 +670,15 @@ impl css_language {
                                         else {
                                             *ctx += 1;
                                             consumeWhitespace(tokens, ctx);
-                                            match curRule {
-                                                RULE_FONT_FACE(font_face_rule) =>  
+                                            match css_rule_data_list[curRule].rule_type {
+                                                CSS_RULE_FONT_FACE =>  
 							{
-								let css_er:css_error = css__parse_font_descriptor(stylesheet_vector, self.sheet, lwc_ref,  ident, propstrings_ref, tokens, ctx, font_face_rule);
+								let css_er:css_error = css__parse_font_descriptor(stylesheet_vector, self.sheet, lwc_ref,  ident, propstrings_ref, tokens, ctx, css_rule_data_list[curRule].rule_font_face.get_mut_ref());
 		        	                                return css_er;
 								 
 							},
                                                 _ =>   {
-							let css_er:css_error = self.parseProperty(stylesheet_vector, lwc_ref, propstrings_ref, ident, tokens, ctx, curRule) ;  
+							let css_er:css_error = self.parseProperty(stylesheet_vector, lwc_ref, propstrings_ref, ident, tokens, ctx, &mut css_rule_data_list[curRule]) ;  
 		                                        return css_er;
 						       }
                                             }
@@ -700,7 +701,7 @@ impl css_language {
         }       
     }
 
-    pub fn parseSelectorList(&mut self, stylesheet_vector:&mut ~[css_stylesheet], lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, tokens:&~[~css_token], curRule: CSS_RULE_DATA_TYPE) -> css_error {
+    pub fn parseSelectorList(&mut self, stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, tokens:&~[~css_token], curRule: css_rule_data_index) -> css_error {
         //debug!("Entering: parseSelectorList");
         let ctx: &mut uint = &mut 0u;
         //debug!(fmt!("parseSelectorList:: tokens == %?", tokens));
@@ -711,7 +712,7 @@ impl css_language {
             /* selector_list   -> selector [ ',' ws selector ]* */
             match self.parseSelector(stylesheet_vector, lwc_ref, propstrings_ref, tokens, ctx) {
                 (CSS_OK, Some(selector)) => {
-                    match stylesheet_vector[self.sheet].css__stylesheet_rule_add_selector(curRule, selector) {
+                    match stylesheet_vector[self.sheet].css__stylesheet_rule_add_selector(css_rule_data_list, curRule, selector) {
                         CSS_OK => {
                             if *ctx < tokens.len() {
                                 //Iterate over vector to check for invalid character
@@ -884,7 +885,9 @@ impl css_language {
      * Property parsing functions                             *
      ******************************************************************************/
 
-    pub fn parseProperty(&mut self , stylesheet_vector:&mut ~[css_stylesheet], lwc_ref:&mut ~lwc, propstrings_ref:& css_propstrings, property: &~css_token , vector: &~[~css_token], ctx:&mut uint, curRule: CSS_RULE_DATA_TYPE) -> css_error {
+    pub fn parseProperty(&mut self , stylesheet_vector:&mut ~[css_stylesheet], lwc_ref:&mut ~lwc, 
+                            propstrings_ref:& css_propstrings, property: &~css_token ,
+                            vector: &~[~css_token], ctx:&mut uint, curRule: &mut ~css_rule_data_type) -> css_error {
         //debug!("Entering: parseProperty");
         let mut style: ~css_style;
         let mut index = AZIMUTH as uint;

@@ -281,7 +281,8 @@ impl css_select_ctx {
 	* update the fully computed style for a node when layout changes.
 	*/
     pub fn css_select_style(&mut self,
-                                stylesheet_vector: &mut ~[css_stylesheet],
+                                stylesheet_vector: &mut ~[css_stylesheet], 
+                                css_rule_data_list:&mut ~[~css_rule_data_type],
                                 node:*c_void,
                                 media:u64,
                                 inline_style:Option<uint>,
@@ -389,7 +390,7 @@ impl css_select_ctx {
                 stylesheet_vector[self.sheets[i].sheet].disabled == false {
                     //debug!(fmt!("css_select_style : selecting from sheet ")) ;
                     
-				self.select_from_sheet(stylesheet_vector, self.sheets[i].sheet, self.sheets[i].origin, &mut state);  
+				self.select_from_sheet(stylesheet_vector, css_rule_data_list, self.sheets[i].sheet, self.sheets[i].origin, &mut state);  
 				match error {
 					CSS_OK=>{},
 					x =>  {
@@ -417,18 +418,18 @@ impl css_select_ctx {
                     return (CSS_INVALID,None) ;
                 },
                 Some(r) => {
-                    match r {
-                        RULE_SELECTOR(r_sel)=>{
+                    match css_rule_data_list[r].rule_type {
+                        CSS_RULE_SELECTOR=>{
                             // Complete 
 
                             /* No bytecode if input was empty or wholly invalid */
-                            if(r_sel.style.is_some()){
+                            if(css_rule_data_list[r].rule_selector.get_mut_ref().style.is_some()){
                                 /* Inline style applies to base element only */
                                 state.current_pseudo = CSS_PSEUDO_ELEMENT_NONE;
                                 state.computed = CSS_PSEUDO_ELEMENT_NONE as uint;
 
 
-                                error = css_select_ctx::cascade_style(stylesheet_vector, r_sel.style.get_mut_ref(), 
+                                error = css_select_ctx::cascade_style(stylesheet_vector, css_rule_data_list[r].rule_selector.get_mut_ref().style.get_mut_ref(), 
                                                         &mut state);
                                 match error {
                                     CSS_OK=>{},
@@ -575,6 +576,7 @@ impl css_select_ctx {
     */
     pub fn css_select_font_faces(&mut self,
                                 stylesheet_vector:&mut ~[css_stylesheet],
+                                css_rule_data_list:&mut ~[~css_rule_data_type],
                                 media:u64,
                                 font_family:uint) 
                                 -> (css_error,Option<~css_select_font_faces_results>) {
@@ -606,7 +608,7 @@ impl css_select_ctx {
             if ((self.sheets[i].media & media) != 0 ) && 
                 (stylesheet_vector[self.sheets[i].sheet].disabled == false ) {
 
-                let error = self.select_font_faces_from_sheet(stylesheet_vector, self.sheets[i].sheet,
+                let error = self.select_font_faces_from_sheet(stylesheet_vector, css_rule_data_list, self.sheets[i].sheet,
                                                         self.sheets[i].origin, 
                                                         media, 
                                                         font_family, 
@@ -807,29 +809,29 @@ impl css_select_ctx {
         CSS_OK
     }
 
-    pub fn select_from_sheet(&mut self, stylesheet_vector:&mut ~[css_stylesheet], sheet : uint, origin : css_origin, state :&mut ~css_select_state) -> css_error{
+    pub fn select_from_sheet(&mut self, stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], sheet : uint, origin : css_origin, state :&mut ~css_select_state) -> css_error{
 
         //debug!(fmt!("Entering select_from_sheet")) ;
         let mut s:Option<uint> = Some(sheet);
-        let mut rule : Option<CSS_RULE_DATA_TYPE> = stylesheet_vector[s.expect("")].rule_list;
+        let mut rule : Option<uint> = stylesheet_vector[s.expect("")].rule_list;
         let mut sp : u32 = 0;
-        let mut import_stack : ~[CSS_RULE_DATA_TYPE] = ~[];
+        let mut import_stack : ~[css_rule_data_index] = ~[];
 
         loop{
             /* Find first non-charset rule, if we're at the list head */
-            if compare_css_rdt(rule, stylesheet_vector[s.unwrap()].rule_list){
-                while rule.is_some() && compare_css_rule_types(rule, CSS_RULE_CHARSET) {
-                    rule = stylesheet_vector[sheet].get_css_rule_next(rule.expect(""));
+            if compare_css_rdt(rule, stylesheet_vector[s.unwrap()].rule_list) {
+                while rule.is_some() && compare_CSS_RULE_TYPEs(Some(&css_rule_data_list[rule.unwrap()]), CSS_RULE_CHARSET) {
+                    rule = stylesheet_vector[sheet].get_css_rule_next(css_rule_data_list, rule.expect(""));
                 }
             }
-            if rule.is_some() && compare_css_rule_types(rule, CSS_RULE_IMPORT) {
+            if rule.is_some() && compare_CSS_RULE_TYPEs(Some(&css_rule_data_list[rule.unwrap()]), CSS_RULE_IMPORT) {
                 /* Current rule is an import */
 		    let mut import_sheet : Option<uint> = None;
                 let mut import_media:u64 = 0;
-                match rule.expect("") {
-                    RULE_IMPORT(x) => {
-                        import_media = x.media;
-                        import_sheet = x.sheet;
+                match css_rule_data_list[rule.unwrap()].rule_type {
+                    CSS_RULE_IMPORT => {
+                        import_media = css_rule_data_list[rule.unwrap()].rule_import.get_mut_ref().media;
+                        import_sheet = css_rule_data_list[rule.unwrap()].rule_import.get_mut_ref().sheet;
                     },
                     _=> {},
                 }
@@ -837,14 +839,14 @@ impl css_select_ctx {
                 if import_sheet.is_some() && ((import_media & state.media) != 0) {
                     /* It's applicable, so process it */
 
-                    import_stack.push(rule.expect(""));
+                    import_stack.push(rule.unwrap());
 
                     s = import_sheet;
                     rule = stylesheet_vector[s.expect("")].rule_list;
                 }
                 else {
                     /* Not applicable; skip over it */
-                    rule = stylesheet_vector[sheet].get_css_rule_next(rule.expect(""));
+                    rule = stylesheet_vector[sheet].get_css_rule_next(css_rule_data_list, rule.expect(""));
                 }
             }
             else {
@@ -855,13 +857,13 @@ impl css_select_ctx {
                 state.sheet = s;
                 state.current_origin = origin;
 
-                error = self.match_selectors_in_sheet(stylesheet_vector, s.expect(""), state);
+                error = self.match_selectors_in_sheet(stylesheet_vector, css_rule_data_list, s.expect(""), state);
                 match error {
                     CSS_OK => {
                         if sp > 0 {
                             sp -= 1;
-                            rule = stylesheet_vector[sheet].get_css_rule_next(import_stack[sp]);
-                            if stylesheet_vector[sheet].get_stylesheet_parent(import_stack[sp]) {
+                            rule = stylesheet_vector[sheet].get_css_rule_next(css_rule_data_list, import_stack[sp]);
+                            if stylesheet_vector[sheet].get_stylesheet_parent(css_rule_data_list, import_stack[sp]) {
                                 s = Some(sheet)
                             }
                             else {
@@ -889,7 +891,7 @@ impl css_select_ctx {
     }
 
     #[inline]
-    pub fn _rule_applies_to_media(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, rule: Option<CSS_RULE_DATA_TYPE>, media:u64) -> bool {
+    pub fn _rule_applies_to_media(stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], sheet:uint, rule: Option<css_rule_data_index>, media:u64) -> bool {
 
         //debug!(fmt!("Entering _rule_applies_to_media")) ;
         let mut applies : bool = true;
@@ -901,15 +903,15 @@ impl css_select_ctx {
                     break ;
                 },
                 Some(ancestor_rule)=> {
-                    match ancestor_rule {
-                        RULE_MEDIA(r)=>{
-                            if( ( r.media & media ) == 0 ) {
+                    match css_rule_data_list[ancestor_rule].rule_type {
+                        CSS_RULE_MEDIA=>{
+                            if( ( css_rule_data_list[ancestor_rule].rule_media.get_mut_ref().media & media ) == 0 ) {
                                 applies = false ;
                                 return applies ;
                             }
 
-                            if !stylesheet_vector[sheet].css_rule_list[r.base].parent_stylesheet {
-                                ancestor = stylesheet_vector[sheet].css_rule_list[r.base].parent_rule ;
+                            if !stylesheet_vector[sheet].css_rule_list[css_rule_data_list[ancestor_rule].rule_media.get_mut_ref().base].parent_stylesheet {
+                                ancestor = stylesheet_vector[sheet].css_rule_list[css_rule_data_list[ancestor_rule].rule_media.get_mut_ref().base].parent_rule ;
                             }
                             else {
                                 ancestor = None ;
@@ -917,7 +919,7 @@ impl css_select_ctx {
                             loop ;
                         },
                         _ => {
-                            let ancestor_base = css_stylesheet::css__stylesheet_get_base_rule(ancestor_rule);
+                            let ancestor_base = stylesheet_vector[sheet].css__stylesheet_get_base_rule(css_rule_data_list, ancestor_rule);
                             if !stylesheet_vector[sheet].css_rule_list[ancestor_base].parent_stylesheet {
                                 ancestor = stylesheet_vector[sheet].css_rule_list[ancestor_base].parent_rule ;
                             }
@@ -933,8 +935,8 @@ impl css_select_ctx {
         applies
     }
 
-    pub fn _select_font_face_from_rule(&mut self, stylesheet_vector:&mut ~[css_stylesheet], sheet :uint,
-                                    rule:@mut css_rule_font_face,
+    pub fn _select_font_face_from_rule(&mut self, stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], sheet :uint,
+                                    rule:css_rule_data_index,
                                     origin: css_origin,
                                     media: u64,
                                     font_family: uint,
@@ -943,27 +945,28 @@ impl css_select_ctx {
                                     author_font_faces:&mut ~[~css_font_face]) 
                                     -> css_error {
 
-        //debug!(fmt!("Entering _select_font_face_from_rule")) ;                                
-        if ( css_select_ctx::_rule_applies_to_media(stylesheet_vector, sheet, Some(RULE_FONT_FACE(rule)), media) ) {
+        //debug!(fmt!("Entering _select_font_face_from_rule")) ;
 
-            if ( rule.font_face.is_none() || 
-                rule.font_face.get_ref().font_family.is_none()
+        if ( css_select_ctx::_rule_applies_to_media(stylesheet_vector, css_rule_data_list, sheet, Some(rule), media) ) {
+
+            if ( css_rule_data_list[rule].rule_font_face.get_ref().font_face.is_none() || 
+                css_rule_data_list[rule].rule_font_face.get_ref().font_face.get_ref().font_family.is_none()
                 ) {
                 return CSS_BADPARM ;
             }
 
-            let res : bool = self.lwc_ref.lwc_string_isequal(rule.font_face.get_ref().font_family.expect(""), font_family) ;
+            let res : bool = self.lwc_ref.lwc_string_isequal(css_rule_data_list[rule].rule_font_face.get_ref().font_face.get_ref().font_family.expect(""), font_family) ;
 
             if ( res ) {
 				match (origin) {
 					CSS_ORIGIN_UA => {
-						ua_font_faces.push(rule.font_face.get_ref().clone());
+						ua_font_faces.push(css_rule_data_list[rule].rule_font_face.get_ref().font_face.get_ref().clone());
 					},
 					CSS_ORIGIN_USER => {
-						user_font_faces.push(rule.font_face.get_ref().clone());
+						user_font_faces.push(css_rule_data_list[rule].rule_font_face.get_ref().font_face.get_ref().clone());
 					},
 					CSS_ORIGIN_AUTHOR => {
-						author_font_faces.push(rule.font_face.get_ref().clone());
+						author_font_faces.push(css_rule_data_list[rule].rule_font_face.get_ref().font_face.get_ref().clone());
 					}
 				}
             }
@@ -973,6 +976,7 @@ impl css_select_ctx {
 
     pub fn select_font_faces_from_sheet(&mut self,
                                         stylesheet_vector:&mut ~[css_stylesheet],
+                                        css_rule_data_list: &mut ~[~css_rule_data_type],
                                         sheet:uint,
                                         origin: css_origin,
                                         media: u64,
@@ -986,7 +990,7 @@ impl css_select_ctx {
         let mut s = Some(sheet) ;
         let mut rule = stylesheet_vector[s.expect("")].rule_list;
         let mut sp : u32 = 0 ;
-        let mut import_stack : ~[CSS_RULE_DATA_TYPE] = ~[];
+        let mut import_stack : ~[css_rule_data_index] = ~[];
         import_stack.reserve_at_least(IMPORT_STACK_SIZE as uint) ;
 
         let mut ptr = rule ;
@@ -997,9 +1001,9 @@ impl css_select_ctx {
                         break ;
                     },
                     Some(current_rule) => {
-                        match current_rule {
-                            RULE_CHARSET(_) =>{
-                                ptr = stylesheet_vector[sheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
+                        match css_rule_data_list[current_rule].rule_type {
+                            CSS_RULE_CHARSET =>{
+                                ptr = stylesheet_vector[sheet].css_rule_list[stylesheet_vector[sheet].css__stylesheet_get_base_rule(css_rule_data_list, current_rule)].next;
                                 loop;
                             },
                             _=> {
@@ -1014,40 +1018,41 @@ impl css_select_ctx {
                     /* Find next sheet to process */
                     if (sp > 0) {
                         sp -= 1;
-                        ptr = stylesheet_vector[sheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(import_stack[sp])].next;
-                        s = if stylesheet_vector[sheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(import_stack[sp])].parent_stylesheet { Some(sheet)} else { None} ;
+                        ptr = stylesheet_vector[sheet].css_rule_list[stylesheet_vector[sheet].css__stylesheet_get_base_rule(css_rule_data_list, import_stack[sp])].next;
+                        s = if stylesheet_vector[sheet].css_rule_list[stylesheet_vector[sheet].css__stylesheet_get_base_rule(css_rule_data_list, import_stack[sp])].parent_stylesheet { Some(sheet)} else { None} ;
                     } 
                     else {
                         s = None;
                     }
                 },
                 Some(current_rule) => {
-                    match current_rule {
-                        RULE_CHARSET(_) =>{
-                            ptr = stylesheet_vector[sheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
+                    match css_rule_data_list[current_rule].rule_type {
+                        CSS_RULE_CHARSET =>{
+                            ptr = stylesheet_vector[sheet].css_rule_list[stylesheet_vector[sheet].css__stylesheet_get_base_rule(css_rule_data_list, current_rule)].next;
                         },
-                        RULE_IMPORT(x) => {
+                        CSS_RULE_IMPORT => {
                             /* Current rule is an import */
-                            if ( x.sheet.is_some() && 
-                                ((x.media & media) != 0) ) {
+                            if ( css_rule_data_list[current_rule].rule_import.get_mut_ref().sheet.is_some() && 
+                                ((css_rule_data_list[current_rule].rule_import.get_mut_ref().media & media) != 0) ) {
                                 if ( sp >= IMPORT_STACK_SIZE as u32) {
                                     return CSS_NOMEM ;
                                 }
                                 import_stack[sp] = current_rule ;
                                 sp += 1;
-                                s = x.sheet ;
+                                s = css_rule_data_list[current_rule].rule_import.get_mut_ref().sheet ;
                                 rule = stylesheet_vector[s.expect("")].rule_list ;
                                 ptr = rule ;
                             }
                             else {
-                                ptr = stylesheet_vector[sheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
+                                ptr = stylesheet_vector[sheet].css_rule_list[stylesheet_vector[sheet].css__stylesheet_get_base_rule(css_rule_data_list, current_rule)].next;
                             }
                         },
-                        RULE_FONT_FACE(x) => {
+                        CSS_RULE_FONT_FACE => {
                             let error : css_error = self._select_font_face_from_rule(
                                                             stylesheet_vector,
+                                                            css_rule_data_list,
                                                             sheet,
-                                                            x,
+                                                            current_rule,
                                                             origin,
                                                             media,
                                                             font_family,
@@ -1062,10 +1067,10 @@ impl css_select_ctx {
                                 }
                             }
 
-                            ptr = stylesheet_vector[sheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
+                            ptr = stylesheet_vector[sheet].css_rule_list[stylesheet_vector[sheet].css__stylesheet_get_base_rule(css_rule_data_list, current_rule)].next;
                         },
                         _=> {
-                            ptr = stylesheet_vector[sheet].css_rule_list[css_stylesheet::css__stylesheet_get_base_rule(current_rule)].next;
+                            ptr = stylesheet_vector[sheet].css_rule_list[stylesheet_vector[sheet].css__stylesheet_get_base_rule(css_rule_data_list, current_rule)].next;
                         }
                     }
                 }
@@ -1117,7 +1122,7 @@ impl css_select_ctx {
     }
 
     #[inline]
-    pub fn _selector_less_specific(stylesheet_vector:&mut ~[css_stylesheet], sheet: uint, refer:Option<uint>, 
+    pub fn _selector_less_specific(stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list: &mut ~[~css_rule_data_type], sheet: uint, refer:Option<uint>, 
                                 cand:Option<uint>) 
                                 -> bool {
 
@@ -1144,8 +1149,8 @@ impl css_select_ctx {
             if( stylesheet_vector[sheet].css_selectors_list[cand.unwrap()].rule.is_none() || stylesheet_vector[sheet].css_selectors_list[refer.unwrap()].rule.is_none() ) {
                 fail!(~"_selector_less_specific:Base rule cannot be null");
             }
-            let cand_base = css_stylesheet::css__stylesheet_get_base_rule(stylesheet_vector[sheet].css_selectors_list[cand.unwrap()].rule.unwrap()) ;
-            let refer_base = css_stylesheet::css__stylesheet_get_base_rule(stylesheet_vector[sheet].css_selectors_list[refer.unwrap()].rule.unwrap()) ;
+            let cand_base = stylesheet_vector[sheet].css__stylesheet_get_base_rule(css_rule_data_list, stylesheet_vector[sheet].css_selectors_list[cand.unwrap()].rule.unwrap()) ;
+            let refer_base = stylesheet_vector[sheet].css__stylesheet_get_base_rule(css_rule_data_list, stylesheet_vector[sheet].css_selectors_list[refer.unwrap()].rule.unwrap()) ;
             /* Then by rule index -- earliest wins */
             if (stylesheet_vector[sheet].css_rule_list[cand_base].index < stylesheet_vector[sheet].css_rule_list[refer_base].index) {
                 result = true;
@@ -1160,6 +1165,7 @@ impl css_select_ctx {
 
     #[inline]
     pub fn _selector_next(stylesheet_vector:&mut ~[css_stylesheet], 
+                            css_rule_data_list: &mut ~[~css_rule_data_type],
                             sheet: uint,
                             node: Option<uint>, 
                             id: Option<uint>,
@@ -1170,22 +1176,22 @@ impl css_select_ctx {
         //debug!(fmt!("Entering _selector_next")) ;
         let mut ret : Option<uint> = None;
 
-        if (css_select_ctx::_selector_less_specific(stylesheet_vector, sheet, ret, node)) {
+        if (css_select_ctx::_selector_less_specific(stylesheet_vector, css_rule_data_list, sheet, ret, node)) {
             ret = Some(node.expect(""));
         }
 
-        if (css_select_ctx::_selector_less_specific(stylesheet_vector, sheet, ret, id)) {
+        if (css_select_ctx::_selector_less_specific(stylesheet_vector, css_rule_data_list, sheet, ret, id)) {
             ret = Some(id.expect(""));
         }
 
-        if (css_select_ctx::_selector_less_specific(stylesheet_vector, sheet, ret, univ)) {
+        if (css_select_ctx::_selector_less_specific(stylesheet_vector, css_rule_data_list, sheet, ret, univ)) {
             ret = Some(univ.expect(""));
         }
 
         let mut i : uint = 0;
 		let classes_len : uint = classes.len();
         while i < classes_len {
-            if (css_select_ctx::_selector_less_specific(stylesheet_vector, sheet, ret,classes[i])){
+            if (css_select_ctx::_selector_less_specific(stylesheet_vector, css_rule_data_list, sheet, ret,classes[i])){
                 ret = Some(classes[i].expect(""));
             }
             i += 1;
@@ -1214,7 +1220,7 @@ impl css_select_ctx {
         return true;
     }        
 
-    pub fn match_selectors_in_sheet(&mut self, stylesheet_vector:&mut ~[css_stylesheet], sheet : uint, 
+    pub fn match_selectors_in_sheet(&mut self, stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], sheet : uint, 
                                     state :&mut ~css_select_state) -> css_error {
     
         //debug!(fmt!("Entering match_selectors_in_sheet")) ;
@@ -1307,7 +1313,8 @@ impl css_select_ctx {
              * Pick the least specific/earliest occurring selector.
              */
             let o_selector = css_select_ctx::_selector_next(
-                                    stylesheet_vector,
+                                    stylesheet_vector, 
+                                    css_rule_data_list,
                                     sheet,
                                     node_selectors_option, 
                                     id_selectors_option,
@@ -1321,8 +1328,8 @@ impl css_select_ctx {
             /* Ignore any selectors contained in rules which are a child 
              * of an @media block that doesn't match the current media 
              * requirements. */
-            if (css_select_ctx::_rule_applies_to_media(stylesheet_vector, sheet, stylesheet_vector[sheet].css_selectors_list[selector].rule, state.media)) {
-                let error = self.match_selector_chain(stylesheet_vector, sheet, Some(selector), state);
+            if (css_select_ctx::_rule_applies_to_media(stylesheet_vector, css_rule_data_list, sheet, stylesheet_vector[sheet].css_selectors_list[selector].rule, state.media)) {
+                let error = self.match_selector_chain(stylesheet_vector, css_rule_data_list, sheet, Some(selector), state);
                 match error {
                     CSS_OK => {},
                     err => {
@@ -1569,7 +1576,7 @@ impl css_select_ctx {
 
         return CSS_OK;
     }
-    pub fn match_selector_chain(&mut self, stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, selector:Option<uint>,
+    pub fn match_selector_chain(&mut self, stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], sheet:uint, selector:Option<uint>,
                             state:&mut ~css_select_state) -> css_error {
 
         //debug!(fmt!("Entering match_selector_chain")) ;
@@ -1701,14 +1708,14 @@ impl css_select_ctx {
         }
 
          /* No bytecode if rule body is empty or wholly invalid */
-        let rule = match stylesheet_vector[sheet].css_selectors_list[selector.expect("")].rule.expect("") {
-            RULE_SELECTOR(x)=>{
-                x
-            },
-            _=> {
-                return CSS_OK ;
-            }
-        } ;
+        let x_rule = stylesheet_vector[sheet].css_selectors_list[selector.expect("")].rule.unwrap();
+        
+        if css_rule_data_list[x_rule].rule_type as uint != CSS_RULE_SELECTOR as uint {
+            return CSS_OK ;
+        }    
+        
+        let rule = css_rule_data_list[x_rule].rule_selector.get_mut_ref();
+
 
         if ( rule.style.is_none() ) {
             return CSS_OK ;

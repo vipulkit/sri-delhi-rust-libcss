@@ -46,6 +46,7 @@ fn main() {
 
 fn css(file_name: ~str) {
     let mut stylesheet_vector:~[css_stylesheet]=~[];
+    let mut css_rule_data_list:~[~css_rule_data_type]=~[];
     let mut lwc_ref = lwc();
     let propstring = css_propstrings::css_propstrings(&mut lwc_ref);
     let mut css = create_css(&mut stylesheet_vector);
@@ -59,20 +60,20 @@ fn css(file_name: ~str) {
     while len>CHUNK_SIZE {
         buf = r.read_bytes(CHUNK_SIZE as uint);
         len -= CHUNK_SIZE;
-        let error = css.css_stylesheet_append_data(&mut stylesheet_vector, &mut lwc_ref , &propstring , buf);
+        let error = css.css_stylesheet_append_data(&mut stylesheet_vector, &mut css_rule_data_list, &mut lwc_ref , &propstring , buf);
         match error {
             CSS_OK | CSS_NEEDDATA => {},
             _ => {assert!(false);}
         }
     }
     buf = r.read_bytes(len as uint);
-    let error = css.css_stylesheet_append_data(&mut stylesheet_vector, &mut lwc_ref ,&propstring , buf);
+    let error = css.css_stylesheet_append_data(&mut stylesheet_vector, &mut css_rule_data_list, &mut lwc_ref ,&propstring , buf);
     match error {
         CSS_OK | CSS_NEEDDATA => {},
         _ => {assert!(false);}
     }
 
-    let mut error = css.css_stylesheet_data_done(&mut stylesheet_vector, &mut lwc_ref , &propstring);
+    let mut error = css.css_stylesheet_data_done(&mut stylesheet_vector, &mut css_rule_data_list, &mut lwc_ref , &propstring);
 
 
     match error {
@@ -83,19 +84,19 @@ fn css(file_name: ~str) {
     loop {
         match error {
             CSS_IMPORTS_PENDING => {
-                let (error1 , option_url , _) = css.css_stylesheet_next_pending_import(&mut stylesheet_vector);
+                let (error1 , option_url , _) = css.css_stylesheet_next_pending_import(&mut stylesheet_vector, &mut css_rule_data_list);
                 match error1 {
                     CSS_OK => {
                                                                       
                         let mut params: css_params = css_create_params();
                         params.url = option_url.unwrap();
                         let mut css_import = create_css(&mut stylesheet_vector);
-                        let err = css_import.css_stylesheet_data_done(&mut stylesheet_vector, &mut lwc_ref , &propstring);
+                        let err = css_import.css_stylesheet_data_done(&mut stylesheet_vector, &mut css_rule_data_list, &mut lwc_ref , &propstring);
                         match err {
                             CSS_OK => {},
                             _ => {assert!(false);}
                         }
-                        let err_register = css.css_stylesheet_register_import(&mut stylesheet_vector, Some(css_import.stylesheet));
+                        let err_register = css.css_stylesheet_register_import(&mut stylesheet_vector, &mut css_rule_data_list, Some(css_import.stylesheet));
                         match err_register {
                             CSS_OK => {},
                             _ => {assert!(false);}

@@ -51,6 +51,7 @@ fn main() {
 
 fn parse(file_name: ~str) {
     let mut stylesheet_vector:~[css_stylesheet]=~[];
+    let mut css_rule_data_list:~[~css_rule_data_type]=~[];
     let mut lwc = lwc();
     let mut css = css_create_fn(&mut stylesheet_vector);
     let propstring = css_propstrings::css_propstrings(&mut lwc);
@@ -83,13 +84,13 @@ fn parse(file_name: ~str) {
                 final_buf.push(i as u8);
             }
             final_buf.reverse();
-            let error = css.css_stylesheet_append_data(&mut stylesheet_vector, &mut lwc , &propstring , final_buf);
+            let error = css.css_stylesheet_append_data(&mut stylesheet_vector, &mut css_rule_data_list, &mut lwc , &propstring , final_buf);
             match error {
                 CSS_OK => {},
                 CSS_NEEDDATA => {},
                 _ => {assert!(false);}
             }
-            let error = css.css_stylesheet_data_done(&mut stylesheet_vector, &mut lwc , &propstring);
+            let error = css.css_stylesheet_data_done(&mut stylesheet_vector, &mut css_rule_data_list, &mut lwc , &propstring);
 
             match error {
                 CSS_OK => {},

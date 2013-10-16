@@ -561,7 +561,7 @@ pub fn run_test(ctx:@mut line_ctx) {
             },
             Some(crule) => {
                 match crule {
-                    RULE_SELECTOR(rule) => {
+                    CSS_RULE_SELECTOR(rule) => {
                         if ( ctx.exp[e].ftype != (CSS_RULE_SELECTOR as int) ) {
                             debug!(fmt!("Got type %d , Expected %d ",
                                 ctx.exp[e].ftype , (CSS_RULE_SELECTOR as int)  )) ;
@@ -599,28 +599,28 @@ pub fn run_test(ctx:@mut line_ctx) {
                         e += 1 ;
                         loop ;
                     },
-                    RULE_UNKNOWN(_)=>{
+                    CSS_RULE_UNKNOWN=>{
                         debug!(fmt!("Unhandled rule type %?", CSS_RULE_UNKNOWN)) ;
                         ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next;
                         e += 1 ;
                         loop ;
 
                     },
-                    RULE_MEDIA(_)=>{
+                    CSS_RULE_MEDIA=>{
                         debug!(fmt!("Unhandled rule type %?", CSS_RULE_MEDIA)) ;
                         ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next;
                         e += 1 ;
                         loop ;
 
                     },
-                    RULE_FONT_FACE(_)=>{
+                    CSS_RULE_FONT_FACE(_)=>{
                         debug!(fmt!("Unhandled rule type %?", CSS_RULE_FONT_FACE)) ;
                         ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next;
                         e += 1 ;
                         loop ;
 
                     },
-                    RULE_PAGE(_)=>{
+                    CSS_RULE_PAGE(_)=>{
                         debug!(fmt!("Unhandled rule type %?", CSS_RULE_PAGE) ) ;
                         ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next;
                         e += 1 ;

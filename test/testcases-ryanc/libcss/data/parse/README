@@ -23,7 +23,7 @@ Format of rule list
   hexnum   ::= '0x' [0-9a-fA-F]+
   ptr      ::= 'PTR(' .* ')'
 
-Type corresponds to css_rule_type. Consult the library sources for the values.
+Type corresponds to CSS_RULE_TYPE. Consult the library sources for the values.
 
 Bytecode may be split over multiple lines for readability. All bytecode is
 associated with the most-recently-declared rule. Consult the bytecode

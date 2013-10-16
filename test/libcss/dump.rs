@@ -160,38 +160,38 @@ pub fn dump_sheet(stylesheet_vector:&mut ~[css_stylesheet], sheet: uint, lwc_ref
     
     // debug!(fmt!("stylesheet_vector[sheet].rule_list == %?" , stylesheet_vector[sheet].rule_list));
 
-    let mut rule: Option<CSS_RULE_DATA_TYPE> = stylesheet_vector[sheet].rule_list ;
+    let mut rule: Option<uint> = stylesheet_vector[sheet].rule_list ;
     let mut ptr: ~str = ~"";
     //debug!(fmt!("rule == %?" , rule));
     while rule.is_some() {
         //debug!(fmt!("rule == %?" , rule.unwrap()));
         match rule.expect(reason) {
 
-            RULE_SELECTOR(css_rule_selector_x)=>{
-                dump_rule_selector(stylesheet_vector, sheet, css_rule_selector_x, lwc_ref, &mut ptr, 1);
-                rule = stylesheet_vector[sheet].css_rule_list[css_rule_selector_x.base].next;
+            CSS_RULE_SELECTOR=>{
+                dump_rule_selector(stylesheet_vector, sheet, rule.rule_selector, lwc_ref, &mut ptr, 1);
+                rule = stylesheet_vector[sheet].css_rule_list[rule.rule_selector.base].next;
             },
-            RULE_CHARSET(css_rule_charset_x)=>{
+            CSS_RULE_CHARSET(css_rule_charset_x)=>{
                 dump_rule_charset(css_rule_charset_x, &mut ptr);
                 rule = stylesheet_vector[sheet].css_rule_list[css_rule_charset_x.base].next;
             },
-            RULE_IMPORT(css_rule_import_x)=>{
+            CSS_RULE_IMPORT(css_rule_import_x)=>{
                 dump_rule_import(css_rule_import_x, &mut ptr);
                 rule = stylesheet_vector[sheet].css_rule_list[css_rule_import_x.base].next;
             },
-            RULE_MEDIA(css_rule_media_x)=>{
+            CSS_RULE_MEDIA(css_rule_media_x)=>{
                 dump_rule_media(stylesheet_vector, sheet, css_rule_media_x, lwc_ref, &mut ptr);
                 rule = stylesheet_vector[sheet].css_rule_list[css_rule_media_x.base].next;
             },
-            RULE_FONT_FACE(css_rule_font_face_x)=>{
+            CSS_RULE_FONT_FACE(css_rule_font_face_x)=>{
                 dump_rule_font_face(css_rule_font_face_x, lwc_ref, &mut ptr);
                 rule = stylesheet_vector[sheet].css_rule_list[css_rule_font_face_x.base].next;
             },
-            RULE_PAGE(css_rule_page_x)=>{
+            CSS_RULE_PAGE(css_rule_page_x)=>{
                 dump_rule_page(stylesheet_vector, sheet, css_rule_page_x, lwc_ref, &mut ptr);
                 rule = stylesheet_vector[sheet].css_rule_list[css_rule_page_x.base].next; 
             },
-            RULE_UNKNOWN(css_rule_x)=>{
+            CSS_RULE_UNKNOWN(css_rule_x)=>{
                 ptr = ptr + &"Unhandled rule type ";
                 // add rule.type
                 ptr.push_char('\n');
@@ -264,7 +264,7 @@ fn dump_rule_media(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, s:@mut 
     while rule.is_some() {
         let rule_type = rule.unwrap();
         match rule_type {
-            RULE_SELECTOR(x) => {
+            CSS_RULE_SELECTOR(x) => {
                  dump_rule_selector(stylesheet_vector, sheet, x, lwc_ref, ptr, 2);
                  rule = stylesheet_vector[sheet].css_rule_list[x.base].next;
             },

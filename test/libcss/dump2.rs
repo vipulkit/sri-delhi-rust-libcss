@@ -138,14 +138,14 @@ pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
     
     debug!("Entering: dump_sheet");
 
-    let mut rule: Option<CSS_RULE_DATA_TYPE> = sheet.rule_list ;
+    let mut rule: Option<~css_rule_data_type> = sheet.rule_list ;
     let mut ptr: ~str = ~"";
     //debug!(fmt!("rule == %?" , rule));
     while rule.is_some() {
         //debug!(fmt!("rule == %?" , rule.unwrap()));
         match rule.unwrap() {
 
-            RULE_SELECTOR(css_rule_selector_x)=>{
+            CSS_RULE_SELECTOR(css_rule_selector_x)=>{
                 dump_rule_selector(css_rule_selector_x, &mut ptr, 1);
                 rule = css_rule_selector_x.base.next;
             },
@@ -161,11 +161,11 @@ pub fn dump_sheet(sheet: @mut css_stylesheet) -> ~str {
                 dump_rule_media(css_rule_media_x, &mut ptr);
                 rule = css_rule_media_x.base.next;
             },
-            RULE_FONT_FACE(css_rule_font_face_x)=>{
+            CSS_RULE_FONT_FACE(css_rule_font_face_x)=>{
                 dump_rule_font_face(css_rule_font_face_x, &mut ptr);
                 rule = css_rule_font_face_x.base.next;
             },
-            RULE_PAGE(css_rule_page_x)=>{
+            CSS_RULE_PAGE(css_rule_page_x)=>{
                 dump_rule_page(css_rule_page_x, &mut ptr);
                 rule = css_rule_page_x.base.next; 
             },
@@ -241,7 +241,7 @@ fn dump_rule_media(s:@mut css_rule_media, ptr: &mut ~str) {
     while rule.is_some() {
         let rule_type = rule.unwrap();
         match rule_type {
-            RULE_SELECTOR(x) => {
+            CSS_RULE_SELECTOR(x) => {
                  dump_rule_selector(x, ptr, 2);
                  rule = x.base.next;
             },

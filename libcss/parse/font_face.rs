@@ -61,7 +61,7 @@ pub fn font_face_parse_font_family(stylesheet_vector:&mut ~[css_stylesheet], she
           appropriate error otherwise..
 */
 pub fn css__parse_font_descriptor(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, lwc_ref:&mut ~lwc, descriptor: &~css_token, strings:&css_propstrings, vector:&~[~css_token], ctx:&mut uint, 
-    curRule:@mut css_rule_font_face) -> css_error {
+    curRule:&mut ~css_rule_font_face) -> css_error {
     
     
     if curRule.font_face.is_none() {

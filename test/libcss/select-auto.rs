@@ -132,12 +132,12 @@ pub fn select_test(file:~str) {
     let css_select_style_time = &mut 0;
     let css_stylesheet_data_done_time= &mut 0f;
     let mut stylesheet_vector:~[css_stylesheet]=~[];
-
+    let mut css_rule_data_list:~[~css_rule_data_type]=~[];
     for line in file_content.any_line_iter() {
         let mut line_string: ~str = line.to_str(); 
         line_string.push_char('\n');
         // debug!("Handling line =%?=",copy line_string);
-        handle_line(&mut stylesheet_vector, &mut line_string, &mut lwc_ref, &propstring , ctx, css_stylesheet_create_time, 
+        handle_line(&mut stylesheet_vector, &mut css_rule_data_list, &mut line_string, &mut lwc_ref, &propstring , ctx, css_stylesheet_create_time, 
                 css_stylesheet_append_data_time, 
                 css_select_style_time, 
                 css_stylesheet_data_done_time  );
@@ -145,7 +145,7 @@ pub fn select_test(file:~str) {
     }   
 
     if (ctx.tree.is_some() ) {
-        run_test(&mut stylesheet_vector, ctx, lwc_ref, css_select_style_time);
+        run_test(&mut stylesheet_vector, &mut css_rule_data_list, ctx, lwc_ref, css_select_style_time);
 
     }
 
@@ -177,7 +177,7 @@ pub fn css_create_params() -> css_params {
      return css_param;
 }
 
-pub fn handle_line(stylesheet_vector:&mut ~[css_stylesheet], data:&mut ~str, lwc_ref:&mut ~lwc, propstring_ref: &css_propstrings , ctx:&mut line_ctx, css_stylesheet_create_time:&mut u64, 
+pub fn handle_line(stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list: &mut ~[~css_rule_data_type], data:&mut ~str, lwc_ref:&mut ~lwc, propstring_ref: &css_propstrings , ctx:&mut line_ctx, css_stylesheet_create_time:&mut u64, 
     css_stylesheet_append_data_time:&mut u64, 
     css_select_style_time:&mut u64, 
     css_stylesheet_data_done_time:&mut float
@@ -211,7 +211,7 @@ pub fn handle_line(stylesheet_vector:&mut ~[css_stylesheet], data:&mut ~str, lwc
                 len = ctx.sheets.len() -1;
                 let start_time = time::precise_time_ns();
                 assert!( 
-                        match ctx.sheets[len].sheet.css_stylesheet_data_done(stylesheet_vector, lwc_ref , propstring_ref) {
+                        match ctx.sheets[len].sheet.css_stylesheet_data_done(stylesheet_vector, css_rule_data_list, lwc_ref , propstring_ref) {
                                 CSS_OK=>{true},
                                 _=>{false}
                         });
@@ -230,7 +230,7 @@ pub fn handle_line(stylesheet_vector:&mut ~[css_stylesheet], data:&mut ~str, lwc
                 len = ctx.sheets.len() -1;
                 let start_time = time::precise_time_ns();
                 assert!( 
-                        match ctx.sheets[len].sheet.css_stylesheet_data_done(stylesheet_vector, lwc_ref , propstring_ref) {
+                        match ctx.sheets[len].sheet.css_stylesheet_data_done(stylesheet_vector, css_rule_data_list, lwc_ref , propstring_ref) {
                             CSS_OK=>{true},
                             _=>{false}
                         });
@@ -243,7 +243,7 @@ pub fn handle_line(stylesheet_vector:&mut ~[css_stylesheet], data:&mut ~str, lwc
             else {
                 len = ctx.sheets.len() -1;
                 let start_time = time::precise_time_ns();
-                let error = ctx.sheets[len].sheet.css_stylesheet_append_data(stylesheet_vector, lwc_ref , propstring_ref , data.as_bytes().to_owned());
+                let error = ctx.sheets[len].sheet.css_stylesheet_append_data(stylesheet_vector, css_rule_data_list, lwc_ref , propstring_ref , data.as_bytes().to_owned());
                 let end_time = time::precise_time_ns();
                 *css_stylesheet_append_data_time += (end_time - start_time);
 
@@ -264,7 +264,7 @@ pub fn handle_line(stylesheet_vector:&mut ~[css_stylesheet], data:&mut ~str, lwc
         else if (ctx.inexp) {
             // debug!("in ctx inexp");
             /* This marks end of testcase, so run it */
-            run_test(stylesheet_vector, ctx, lwc_ref.clone(), css_select_style_time);
+            run_test(stylesheet_vector, css_rule_data_list, ctx, lwc_ref.clone(), css_select_style_time);
             //ctx.expused = 0;
 
             ctx.intree = false;
@@ -293,7 +293,7 @@ pub fn handle_line(stylesheet_vector:&mut ~[css_stylesheet], data:&mut ~str, lwc
         else if ( ctx.insheet ) {
             len = ctx.sheets.len() -1;
             let start_time = time::precise_time_ns();
-            error = ctx.sheets[len].sheet.css_stylesheet_append_data(stylesheet_vector, lwc_ref , propstring_ref , data.as_bytes().to_owned());
+            error = ctx.sheets[len].sheet.css_stylesheet_append_data(stylesheet_vector, css_rule_data_list, lwc_ref , propstring_ref , data.as_bytes().to_owned());
             let end_time = time::precise_time_ns();
             *css_stylesheet_append_data_time += (end_time - start_time);
             assert!( match error {
@@ -716,7 +716,7 @@ fn to_lower(string:&str) -> ~str {
     str::from_utf8(lower)
 }
 
-pub fn run_test(stylesheet_vector:&mut ~[css_stylesheet], ctx:&mut line_ctx, lwc_ref:~lwc, css_select_style_time:&mut u64) {
+pub fn run_test(stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], ctx:&mut line_ctx, lwc_ref:~lwc, css_select_style_time:&mut u64) {
     //debug!("\n Entering run test =%?=",ctx) ;
     let mut select: ~css_select_ctx;
     let mut results: ~css_select_results;
@@ -820,7 +820,7 @@ pub fn run_test(stylesheet_vector:&mut ~[css_stylesheet], ctx:&mut line_ctx, lwc
         let pw_ptr = ::cast::transmute(pw);
 
         let start_time = time::precise_time_ns();
-        let result = select.css_select_style(stylesheet_vector, target,ctx.media as u64,None, select_handler,pw_ptr);
+        let result = select.css_select_style(stylesheet_vector, css_rule_data_list, target,ctx.media as u64,None, select_handler,pw_ptr);
         let end_time = time::precise_time_ns();
 
         *css_select_style_time += (end_time - start_time);
