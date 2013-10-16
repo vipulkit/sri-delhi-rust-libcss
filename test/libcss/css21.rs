@@ -122,7 +122,7 @@ fn css(file_name: ~str) {
 
     let mut buf: ~str;
 
-    buf = dump_sheet(&mut stylesheet_vector, css.stylesheet, &mut lwc_ref );
+    buf = dump_sheet(&mut stylesheet_vector, css.stylesheet,&mut css_rule_data_list ,&mut lwc_ref );
     let outlen = buf.len();
     let written = outsize - outlen;
     // debug!(fmt!("written == %? , outsize - outlen == %?" , written , outsize-outlen));

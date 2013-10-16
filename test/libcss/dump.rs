@@ -134,7 +134,7 @@ pub fn opcode_names() -> ~[~str] {
 }
 
 
-pub fn dump_sheet(stylesheet_vector:&mut ~[css_stylesheet], sheet: uint, lwc_ref:&mut ~lwc) -> ~str {
+pub fn dump_sheet(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, css_rule_data_list:&mut ~[~css_rule_data_type], lwc_ref:&mut ~lwc) -> ~str {
     
     debug!("Entering: dump_sheet");
     let reason = "Function dump_sheet";
@@ -165,37 +165,37 @@ pub fn dump_sheet(stylesheet_vector:&mut ~[css_stylesheet], sheet: uint, lwc_ref
     //debug!(fmt!("rule == %?" , rule));
     while rule.is_some() {
         //debug!(fmt!("rule == %?" , rule.unwrap()));
-        match rule.expect(reason) {
+        match css_rule_data_list[rule.expect("")].rule_type {
 
             CSS_RULE_SELECTOR=>{
-                dump_rule_selector(stylesheet_vector, sheet, rule.rule_selector, lwc_ref, &mut ptr, 1);
-                rule = stylesheet_vector[sheet].css_rule_list[rule.rule_selector.base].next;
+                dump_rule_selector(stylesheet_vector, sheet,css_rule_data_list ,rule.expect(reason), lwc_ref, &mut ptr, 1);
+                rule = stylesheet_vector[sheet].css_rule_list[css_rule_data_list[rule.expect("")].rule_selector.get_mut_ref().base].next;
             },
-            CSS_RULE_CHARSET(css_rule_charset_x)=>{
-                dump_rule_charset(css_rule_charset_x, &mut ptr);
-                rule = stylesheet_vector[sheet].css_rule_list[css_rule_charset_x.base].next;
+            CSS_RULE_CHARSET=>{
+                dump_rule_charset(stylesheet_vector, sheet , css_rule_data_list,rule.expect(reason) , &mut ptr);
+                rule = stylesheet_vector[sheet].css_rule_list[css_rule_data_list[rule.expect("")].rule_charset.get_mut_ref().base].next;
             },
-            CSS_RULE_IMPORT(css_rule_import_x)=>{
-                dump_rule_import(css_rule_import_x, &mut ptr);
-                rule = stylesheet_vector[sheet].css_rule_list[css_rule_import_x.base].next;
+            CSS_RULE_IMPORT=>{
+                dump_rule_import(stylesheet_vector, sheet , css_rule_data_list,rule.expect(reason) , &mut ptr);
+                rule = stylesheet_vector[sheet].css_rule_list[css_rule_data_list[rule.expect("")].rule_import.get_mut_ref().base].next;
             },
-            CSS_RULE_MEDIA(css_rule_media_x)=>{
-                dump_rule_media(stylesheet_vector, sheet, css_rule_media_x, lwc_ref, &mut ptr);
-                rule = stylesheet_vector[sheet].css_rule_list[css_rule_media_x.base].next;
+            CSS_RULE_MEDIA=>{
+                dump_rule_media(stylesheet_vector, sheet , css_rule_data_list,rule.expect(reason) , lwc_ref,&mut ptr);
+                rule = stylesheet_vector[sheet].css_rule_list[css_rule_data_list[rule.expect("")].rule_media.get_mut_ref().base].next;
             },
-            CSS_RULE_FONT_FACE(css_rule_font_face_x)=>{
-                dump_rule_font_face(css_rule_font_face_x, lwc_ref, &mut ptr);
-                rule = stylesheet_vector[sheet].css_rule_list[css_rule_font_face_x.base].next;
+            CSS_RULE_FONT_FACE=>{
+                dump_rule_font_face(stylesheet_vector, sheet , css_rule_data_list,rule.expect(reason), lwc_ref, &mut ptr);
+                rule = stylesheet_vector[sheet].css_rule_list[css_rule_data_list[rule.expect("")].rule_font_face.get_mut_ref().base].next;
             },
-            CSS_RULE_PAGE(css_rule_page_x)=>{
-                dump_rule_page(stylesheet_vector, sheet, css_rule_page_x, lwc_ref, &mut ptr);
-                rule = stylesheet_vector[sheet].css_rule_list[css_rule_page_x.base].next; 
+            CSS_RULE_PAGE=>{
+                dump_rule_page(stylesheet_vector, sheet ,css_rule_data_list, rule.expect(reason), lwc_ref, &mut ptr);
+                rule = stylesheet_vector[sheet].css_rule_list[css_rule_data_list[rule.expect("")].rule_page.get_mut_ref().base].next; 
             },
-            CSS_RULE_UNKNOWN(css_rule_x)=>{
+            CSS_RULE_UNKNOWN=>{
                 ptr = ptr + &"Unhandled rule type ";
                 // add rule.type
                 ptr.push_char('\n');
-                rule = stylesheet_vector[sheet].css_rule_list[css_rule_x].next;
+                rule = stylesheet_vector[sheet].css_rule_list[css_rule_data_list[rule.expect("")].rule_unknown].next;
             }
         }
     }
@@ -204,8 +204,7 @@ pub fn dump_sheet(stylesheet_vector:&mut ~[css_stylesheet], sheet: uint, lwc_ref
 
     ptr
 }
-
-fn dump_rule_selector(stylesheet_vector:&mut ~[css_stylesheet], sheet : uint, s:@mut css_rule_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32){
+fn dump_rule_selector(stylesheet_vector:&mut ~[css_stylesheet], sheet : uint, css_rule_data_list:&mut ~[~css_rule_data_type],rule:uint, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32){
     debug!("Entering: dump_rule_selector");
     let mut i = 0;
 
@@ -216,9 +215,9 @@ fn dump_rule_selector(stylesheet_vector:&mut ~[css_stylesheet], sheet : uint, s:
     }
     
     i = 0;
-    while i < s.selectors.len() {
-        dump_selector_list(stylesheet_vector, sheet, s.selectors[i], lwc_ref, ptr);
-        if !(i == s.selectors.len() - 1) {
+    while i < css_rule_data_list[rule].rule_selector.get_mut_ref().selectors.len(){
+        dump_selector_list(stylesheet_vector, sheet, css_rule_data_list , rule ,i, lwc_ref, ptr,false);
+        if !(i == css_rule_data_list[rule].rule_selector.get_mut_ref().selectors.len() - 1) {
             ptr.push_char(',');
             ptr.push_char(' ');
         }
@@ -226,47 +225,46 @@ fn dump_rule_selector(stylesheet_vector:&mut ~[css_stylesheet], sheet : uint, s:
     } 
 
     ptr.push_char('\n');
-    if s.style.is_some() {
+    if css_rule_data_list[rule].rule_selector.get_mut_ref().style.is_some() {
         debug!("Entering: dump_rule_selector :: if s.style.is_some()");
-        dump_bytecode(stylesheet_vector, s.style.get_mut_ref() , lwc_ref, ptr,  depth +1);
+        dump_bytecode(stylesheet_vector, css_rule_data_list , rule ,lwc_ref, ptr,  depth +1);
     }
 
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_rule_charset(s:@mut css_rule_charset, ptr:&mut ~str) {
+fn dump_rule_charset(_:&mut ~[css_stylesheet], _ : uint, css_rule_data_list:&mut ~[~css_rule_data_type],rule:uint, ptr:&mut ~str) {
     debug!("Entering: dump_rule_charset");
     ptr.push_str(&"| @charset(");
-    ptr.push_str( s.encoding.clone());
+    ptr.push_str( css_rule_data_list[rule].rule_charset.get_mut_ref().encoding.clone());
     ptr.push_char(')');
     ptr.push_char('\n');
 
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_rule_import(s:@mut css_rule_import, ptr:&mut ~str){
+fn dump_rule_import(_:&mut ~[css_stylesheet], _ : uint, css_rule_data_list:&mut ~[~css_rule_data_type],rule:uint, ptr:&mut ~str){
     debug!("Entering: dump_rule_import");
     ptr.push_str( &"| @import url(");
-    ptr.push_str( s.url.clone());
+    ptr.push_str( css_rule_data_list[rule].rule_import.get_mut_ref().url.clone());
     ptr.push_char('\n');
 
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-// TODO
-fn dump_rule_media(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, s:@mut css_rule_media, lwc_ref:&mut ~lwc, ptr: &mut ~str) {
+fn dump_rule_media(stylesheet_vector:&mut ~[css_stylesheet], sheet : uint, css_rule_data_list:&mut ~[~css_rule_data_type],rule:uint, lwc_ref:&mut ~lwc, ptr: &mut ~str) {
     debug!("Entering: dump_rule_media");
     ptr.push_str( &"| @media ");
     ptr.push_char('\n');
 
-    let mut rule = s.first_child;
+    let mut rule = css_rule_data_list[rule].rule_media.get_mut_ref().first_child;
     
     while rule.is_some() {
-        let rule_type = rule.unwrap();
-        match rule_type {
-            CSS_RULE_SELECTOR(x) => {
-                 dump_rule_selector(stylesheet_vector, sheet, x, lwc_ref, ptr, 2);
-                 rule = stylesheet_vector[sheet].css_rule_list[x.base].next;
+        let rule_index = rule.unwrap();
+        match css_rule_data_list[rule_index].rule_type {
+            CSS_RULE_SELECTOR => {
+                 dump_rule_selector(stylesheet_vector, sheet, css_rule_data_list , rule_index, lwc_ref, ptr, 2);
+                 rule = stylesheet_vector[sheet].css_rule_list[css_rule_data_list[rule_index].rule_selector.get_mut_ref().base].next;
             },
             _ =>{
                 fail!(~"Only selector type expected");
@@ -277,38 +275,56 @@ fn dump_rule_media(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, s:@mut 
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_rule_page(stylesheet_vector:&mut ~[css_stylesheet] , sheet:uint, s:@ mut css_rule_page, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+fn dump_rule_page(stylesheet_vector:&mut ~[css_stylesheet], sheet : uint, css_rule_data_list:&mut ~[~css_rule_data_type],rule:uint, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_rule_page");
     ptr.push_str( &"| @page ");
 
-    if s.selector.is_some() {
-        dump_selector_list(stylesheet_vector, sheet, s.selector.unwrap(), lwc_ref, ptr);
+    if css_rule_data_list[rule].rule_page.get_mut_ref().selector.is_some() {
+        let i = css_rule_data_list[rule].rule_page.get_mut_ref().selector.unwrap();
+        dump_selector_list(stylesheet_vector, sheet, css_rule_data_list , rule, i,lwc_ref, ptr , false);
     }
 
     ptr.push_char('\n');
 
-    if s.style.is_some() {
-        dump_bytecode(stylesheet_vector, s.style.get_ref() , lwc_ref, ptr, 2);
+    if css_rule_data_list[rule].rule_page.get_mut_ref().style.is_some() {
+        dump_bytecode(stylesheet_vector ,css_rule_data_list ,rule,lwc_ref, ptr, 2);
     }   
 
-    debug!(fmt!("ptr == %?" , ptr));
+    // debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_rule_font_face(s:@mut css_rule_font_face, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+fn dump_rule_font_face(_:&mut ~[css_stylesheet], _ : uint, css_rule_data_list:&mut ~[~css_rule_data_type],rule:uint, lwc_ref:&mut ~lwc, ptr:&mut ~str){
     debug!("Entering: dump_rule_font_face");
     ptr.push_str( &"| @font-face ");
-    if s.font_face.is_some() {
-        dump_font_face(s.font_face.get_ref(), lwc_ref, ptr);
+    if css_rule_data_list[rule].rule_font_face.get_mut_ref().font_face.is_some() {
+        dump_font_face(css_rule_data_list[rule].rule_font_face.get_mut_ref().font_face.get_ref(), lwc_ref, ptr);
     }
     ptr.push_char('\n');
 
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_selector_list(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, list: uint, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+fn dump_selector_list(stylesheet_vector:&mut ~[css_stylesheet], sheet : uint, css_rule_data_list:&mut ~[~css_rule_data_type],rule:uint, index: uint ,lwc_ref:&mut ~lwc, ptr:&mut ~str , flag:bool){
     debug!("Entering: dump_selector_list");
+    let mut list: uint = 0;
+    if (!flag)
+    {
+        if css_rule_data_list[rule].rule_type as int == CSS_RULE_SELECTOR as int
+        {
+             list = css_rule_data_list[rule].rule_selector.get_mut_ref().selectors[index];
+        }
+        else if css_rule_data_list[rule].rule_type as int == CSS_RULE_PAGE as int
+        {
+            list = index;
+
+        }
+    }
+    else
+    {
+        list = index;
+    }
     if stylesheet_vector[sheet].css_selectors_list[list].combinator.is_some() {
-        dump_selector_list(stylesheet_vector, sheet, stylesheet_vector[sheet].css_selectors_list[list].combinator.unwrap(), lwc_ref, ptr);
+        dump_selector_list(stylesheet_vector, sheet, css_rule_data_list , rule,stylesheet_vector[sheet].css_selectors_list[list].combinator.unwrap(), lwc_ref, ptr , true);
     }
     match stylesheet_vector[sheet].css_selectors_list[list].data[0].combinator_type {
         CSS_COMBINATOR_NONE=> {
@@ -478,10 +494,23 @@ fn dump_selector_detail(detail:&~css_selector_detail, lwc_ref:&mut ~lwc, ptr: &m
     debug!(fmt!("ptr == %?" , ptr));
 }
 
-fn dump_bytecode(stylesheet_vector:&mut ~[css_stylesheet], style:& ~css_style, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32 ){
+fn dump_bytecode(stylesheet_vector:&mut ~[css_stylesheet],css_rule_data_list:&mut ~[~css_rule_data_type],rule:uint, lwc_ref:&mut ~lwc, ptr:&mut ~str, depth:u32 ){
     
     debug!("Entering: dump_bytecode");
-    let bytecode = style.bytecode.clone();
+    
+    let bytecode =  match css_rule_data_list[rule].rule_type
+            {  
+                CSS_RULE_SELECTOR =>
+                {       
+                    css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_mut_ref().bytecode.clone()
+                },
+                _ =>
+                {
+                    // ONLY CALLED FOR TWO RULE PAGE AND RULE SELECTOR
+                    css_rule_data_list[rule].rule_page.get_mut_ref().style.get_mut_ref().bytecode.clone()
+                }
+        };
+
     let mut op: css_properties_e;
     let mut value: u32;
     let opcode_names = opcode_names();
@@ -622,8 +651,19 @@ fn dump_bytecode(stylesheet_vector:&mut ~[css_stylesheet], style:& ~css_style, l
                 else if value as int == BACKGROUND_IMAGE_URI as int {
                     
                     let snum = bytecode[iterator];
-
-                    let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
+                    let index = match css_rule_data_list[rule].rule_type
+                                                   {  
+                                                       CSS_RULE_SELECTOR =>
+                                                       {       
+                                                           css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                       },
+                                                       _ =>
+                                                       {
+                                                           // ONLY CALLED FOR TWO RULE PAGE AND RULE SELECTOR
+                                                           css_rule_data_list[rule].rule_page.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                       }
+                                               };
+                    let (_ , option_string) = stylesheet_vector[index].css__stylesheet_string_get(snum as uint);
                     iterator += 1;
 
                     if option_string.is_some() {
@@ -1130,8 +1170,19 @@ fn dump_bytecode(stylesheet_vector:&mut ~[css_stylesheet], style:& ~css_style, l
                     let snum = bytecode[iterator];
 
                     if (value as int & 0xff) == CONTENT_COUNTER as int {
-
-                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
+                        let index = match css_rule_data_list[rule].rule_type
+                                                       {  
+                                                           CSS_RULE_SELECTOR =>
+                                                           {       
+                                                               css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                           },
+                                                           _ =>
+                                                           {
+                                                               // ONLY CALLED FOR TWO RULE PAGE AND RULE SELECTOR
+                                                               css_rule_data_list[rule].rule_page.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                           }
+                                                   };
+                        let (_ , option_string) = stylesheet_vector[index].css__stylesheet_string_get(snum as uint);
                         iterator += 1;
 
                         if option_string.is_some() {
@@ -1140,8 +1191,19 @@ fn dump_bytecode(stylesheet_vector:&mut ~[css_stylesheet], style:& ~css_style, l
                         }
                     }
                     else if (value as int & 0xff) == CONTENT_COUNTERS as int {
-
-                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
+                        let index = match css_rule_data_list[rule].rule_type
+                                                       {  
+                                                           CSS_RULE_SELECTOR =>
+                                                           {       
+                                                               css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                           },
+                                                           _ =>
+                                                           {
+                                                               // ONLY CALLED FOR TWO RULE PAGE AND RULE SELECTOR
+                                                               css_rule_data_list[rule].rule_page.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                           }
+                                                   };
+                        let (_ , option_string) = stylesheet_vector[index].css__stylesheet_string_get(snum as uint);
                         iterator += 1;
                         let sep = bytecode[iterator];
                         iterator += 1;
@@ -1152,8 +1214,19 @@ fn dump_bytecode(stylesheet_vector:&mut ~[css_stylesheet], style:& ~css_style, l
                         }
                     }
                     else if (value as int & 0xff) == CONTENT_URI as int || (value as int & 0xff) == CONTENT_ATTR as int || (value as int & 0xff) == CONTENT_STRING as int {
-
-                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
+                        let index = match css_rule_data_list[rule].rule_type
+                                                       {  
+                                                           CSS_RULE_SELECTOR =>
+                                                           {       
+                                                               css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                           },
+                                                           _ =>
+                                                           {
+                                                               // ONLY CALLED FOR TWO RULE PAGE AND RULE SELECTOR
+                                                               css_rule_data_list[rule].rule_page.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                           }
+                                                   };
+                        let (_ , option_string) = stylesheet_vector[index].css__stylesheet_string_get(snum as uint);
 
                         if value as int == CONTENT_URI as int {
                             ptr.push_str( &"url(");
@@ -1205,8 +1278,19 @@ fn dump_bytecode(stylesheet_vector:&mut ~[css_stylesheet], style:& ~css_style, l
 
                     while value as int != COUNTER_INCREMENT_NONE as int {
                         let snum = bytecode[iterator];
-                        
-                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
+                        let index = match css_rule_data_list[rule].rule_type
+                                                                           {  
+                                                                               CSS_RULE_SELECTOR =>
+                                                                               {       
+                                                                                   css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                                               },
+                                                                               _ =>
+                                                                               {
+                                                                                   // ONLY CALLED FOR TWO RULE PAGE AND RULE SELECTOR
+                                                                                   css_rule_data_list[rule].rule_page.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                                               }
+                                                                       };
+                        let (_ , option_string) = stylesheet_vector[index].css__stylesheet_string_get(snum as uint);
 
                         iterator += 1;
                         
@@ -1237,7 +1321,19 @@ fn dump_bytecode(stylesheet_vector:&mut ~[css_stylesheet], style:& ~css_style, l
                 while value as int == CURSOR_URI as int {
                     let snum = bytecode[iterator];
                     iterator += 1;
-                    let(_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
+                    let index = match css_rule_data_list[rule].rule_type
+                                                                       {  
+                                                                           CSS_RULE_SELECTOR =>
+                                                                           {       
+                                                                               css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                                           },
+                                                                           _ =>
+                                                                           {
+                                                                               // ONLY CALLED FOR TWO RULE PAGE AND RULE SELECTOR
+                                                                               css_rule_data_list[rule].rule_page.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                                           }
+                                                                   };
+                    let(_ , option_string) = stylesheet_vector[index].css__stylesheet_string_get(snum as uint);
 
                     if option_string.is_some() {
                         ptr.push_str( &"url('");
@@ -1422,7 +1518,19 @@ fn dump_bytecode(stylesheet_vector:&mut ~[css_stylesheet], style:& ~css_style, l
                     if value as int == FONT_FAMILY_STRING as int || value as int == FONT_FAMILY_IDENT_LIST as int {
                         let snum = bytecode[iterator];
                         iterator += 1;
-                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
+                        let index = match css_rule_data_list[rule].rule_type
+                                                       {  
+                                                           CSS_RULE_SELECTOR =>
+                                                           {       
+                                                               css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                           },
+                                                           _ =>
+                                                           {
+                                                               // ONLY CALLED FOR TWO RULE PAGE AND RULE SELECTOR
+                                                               css_rule_data_list[rule].rule_page.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                           }
+                                                   };
+                        let (_ , option_string) = stylesheet_vector[index].css__stylesheet_string_get(snum as uint);
                         
                         if option_string.is_some() {
                             ptr.push_char('\'');
@@ -1836,7 +1944,19 @@ fn dump_bytecode(stylesheet_vector:&mut ~[css_stylesheet], style:& ~css_style, l
                     
                     let snum = bytecode[iterator];
                     iterator += 1;
-                    let(_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
+                    let index = match css_rule_data_list[rule].rule_type
+                                                   {  
+                                                       CSS_RULE_SELECTOR =>
+                                                       {       
+                                                           css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                       },
+                                                       _ =>
+                                                       {
+                                                           // ONLY CALLED FOR TWO RULE PAGE AND RULE SELECTOR
+                                                           css_rule_data_list[rule].rule_page.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                       }
+                                               };
+                    let(_ , option_string) = stylesheet_vector[index].css__stylesheet_string_get(snum as uint);
 
                     if option_string.is_some() {
                         ptr.push_char('\'');
@@ -1885,15 +2005,38 @@ fn dump_bytecode(stylesheet_vector:&mut ~[css_stylesheet], style:& ~css_style, l
                         
                         let snum = bytecode[iterator];
                         iterator += 1;
-                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
+                        let index = match css_rule_data_list[rule].rule_type
+                                                   {  
+                                                       CSS_RULE_SELECTOR =>
+                                                       {       
+                                                           css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                       },
+                                                       _ =>
+                                                       {
+                                                           // ONLY CALLED FOR TWO RULE PAGE AND RULE SELECTOR
+                                                           css_rule_data_list[rule].rule_page.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                       }
+                                               };
+                        let (_ , option_string) = stylesheet_vector[index].css__stylesheet_string_get(snum as uint);
 
                         if option_string.is_some() {
                             ptr.push_str( &" '");
                             ptr.push_str( lwc_ref.lwc_string_data(option_string.unwrap()).to_owned() );
                             ptr.push_str( &"' ");
                         }
-
-                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
+                        let index = match css_rule_data_list[rule].rule_type
+                                                   {  
+                                                       CSS_RULE_SELECTOR =>
+                                                       {       
+                                                           css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                       },
+                                                       _ =>
+                                                       {
+                                                           // ONLY CALLED FOR TWO RULE PAGE AND RULE SELECTOR
+                                                           css_rule_data_list[rule].rule_page.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                       }
+                                               };
+                        let (_ , option_string) = stylesheet_vector[index].css__stylesheet_string_get(snum as uint);
 
                         if option_string.is_some() {
                             ptr.push_str( &" '");
@@ -2123,8 +2266,19 @@ fn dump_bytecode(stylesheet_vector:&mut ~[css_stylesheet], style:& ~css_style, l
                     if value as int == VOICE_FAMILY_STRING as int || value as int == VOICE_FAMILY_IDENT_LIST as int {
                         let snum = bytecode[iterator];
                         iterator += 1;
-
-                        let (_ , option_string) = stylesheet_vector[style.sheet.unwrap()].css__stylesheet_string_get(snum as uint);
+                        let index = match css_rule_data_list[rule].rule_type
+                                                   {  
+                                                       CSS_RULE_SELECTOR =>
+                                                       {       
+                                                           css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                       },
+                                                       _ =>
+                                                       {
+                                                           // ONLY CALLED FOR TWO RULE PAGE AND RULE SELECTOR
+                                                           css_rule_data_list[rule].rule_page.get_mut_ref().style.get_mut_ref().sheet.unwrap()
+                                                       }
+                                               };
+                        let (_ , option_string) = stylesheet_vector[index].css__stylesheet_string_get(snum as uint);
 
                         if option_string.is_some() {
                             ptr.push_char('\'');

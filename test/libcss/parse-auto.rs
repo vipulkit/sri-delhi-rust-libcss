@@ -453,6 +453,7 @@ pub fn run_test(ctx:@mut line_ctx) {
     debug!("Entering: run_test");
     let mut stylesheet_vector:~[css_stylesheet]=~[];
     let mut lwc_ref = lwc();
+    let mut css_rule_data_list: ~[~css_rule_data_type] = ~[];
     let propstring = css_propstrings::css_propstrings(&mut lwc_ref);
     let mut error : css_error ;
     let mut params = css_params {
@@ -493,7 +494,7 @@ pub fn run_test(ctx:@mut line_ctx) {
     let mut css_instance = css::css_create(&mut stylesheet_vector, &params) ;
 
 
-    error = css_instance.css_stylesheet_append_data(&mut stylesheet_vector, &mut lwc_ref , &propstring ,ctx.buf.clone());
+    error = css_instance.css_stylesheet_append_data(&mut stylesheet_vector, &mut css_rule_data_list ,&mut lwc_ref , &propstring ,ctx.buf.clone());
     match error {
         CSS_OK=>{},
         CSS_NEEDDATA=>{},
@@ -502,7 +503,7 @@ pub fn run_test(ctx:@mut line_ctx) {
         }
     }
 
-    error = css_instance.css_stylesheet_data_done(&mut stylesheet_vector, &mut lwc_ref , &propstring);
+    error = css_instance.css_stylesheet_data_done(&mut stylesheet_vector, &mut css_rule_data_list ,&mut lwc_ref , &propstring);
     let mut pending_imports = false ;
     assert!( match error {
                 CSS_OK=>{
