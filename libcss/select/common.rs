@@ -399,23 +399,6 @@ pub struct css_computed_uncommon {
     content:~[~css_computed_content_item],
 }
 
-impl Clone for css_computed_uncommon {  
-    fn clone(&self) -> css_computed_uncommon {     
-        css_computed_uncommon{  
-            bits: self.bits.clone(),
-            border_spacing: self.border_spacing.clone(),
-            clip: self.clip.clone(),
-            letter_spacing: self.letter_spacing,
-            outline_color: self.outline_color,
-            outline_width: self.outline_width,
-            word_spacing: self.word_spacing,
-            counter_increment: self.counter_increment.clone(),
-            counter_reset: self.counter_reset.clone(),
-            cursor: self.cursor.clone(),
-            content: self.content.clone()
-        }  
-    }  
-}
 
 pub struct css_computed_page {
 /*
