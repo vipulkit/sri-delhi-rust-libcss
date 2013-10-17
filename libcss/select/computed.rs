@@ -12,23 +12,23 @@ pub fn css_computed_letter_spacing(
 
     let mut length :Option<i32> = None;
     let mut unit : Option<css_unit>  = None;
-    match style.uncommon {
-        None=>{
-            (CSS_LETTER_SPACING_NORMAL as u8,length,unit)
-        },
-        Some(uncommon_struct)=>{
-            let mut bits:u8= uncommon_struct.bits[CSS_LETTER_SPACING_INDEX];
-            bits = bits & (CSS_LETTER_SPACING_MASK as u8);
-            bits = bits >> CSS_LETTER_SPACING_SHIFT;
-
-            if (bits&3) == (CSS_LETTER_SPACING_SET as u8) { 
-                length = Some(uncommon_struct.letter_spacing);
-                unit = Some(unsafe { transmute((bits >> 2)as int) }) ;
-            }
-
-            ((bits&3),length,unit)
-        }
+    
+    if style.uncommon.is_none() {
+        (CSS_LETTER_SPACING_NORMAL as u8,length,unit)
     }
+    else {
+        let mut bits:u8= style.uncommon.get_mut_ref().bits[CSS_LETTER_SPACING_INDEX];
+        bits = bits & (CSS_LETTER_SPACING_MASK as u8);
+        bits = bits >> CSS_LETTER_SPACING_SHIFT;
+
+        if (bits&3) == (CSS_LETTER_SPACING_SET as u8) { 
+            length = Some(style.uncommon.get_mut_ref().letter_spacing);
+            unit = Some(unsafe { transmute((bits >> 2)as int) }) ;
+        }
+
+        ((bits&3),length,unit)
+    }
+
 }
 
 pub fn css_computed_outline_color(
@@ -36,21 +36,20 @@ pub fn css_computed_outline_color(
                     -> (u8,Option<u32>) {
 
     let mut color : Option<u32> = None;
-    match style.uncommon {
-        None=>{
-            (CSS_OUTLINE_COLOR_INVERT as u8,color)
-        },
-        Some(uncommon_struct)=>{
-            let mut bits:u8= uncommon_struct.bits[CSS_OUTLINE_COLOR_INDEX];
-            bits = bits & (CSS_OUTLINE_COLOR_MASK as u8) ;
-            bits = bits >> CSS_OUTLINE_COLOR_SHIFT ;
 
-            if (bits&3) == (CSS_OUTLINE_COLOR_COLOR as u8) { 
-                color = Some(uncommon_struct.outline_color) ;
-            }
+    if style.uncommon.is_none() {
+        (CSS_OUTLINE_COLOR_INVERT as u8,color)
+    }
+    else {
+        let mut bits:u8= style.uncommon.get_mut_ref().bits[CSS_OUTLINE_COLOR_INDEX];
+        bits = bits & (CSS_OUTLINE_COLOR_MASK as u8) ;
+        bits = bits >> CSS_OUTLINE_COLOR_SHIFT ;
 
-            ((bits&3),color)
+        if (bits&3) == (CSS_OUTLINE_COLOR_COLOR as u8) { 
+            color = Some(style.uncommon.get_mut_ref().outline_color) ;
         }
+
+        ((bits&3),color)
     }
 }
 
@@ -61,25 +60,25 @@ pub fn css_computed_outline_width(
 
     let mut width :Option<i32> = None;
     let mut unit : Option<css_unit>  = None;
-    match style.uncommon {
-        None=>{
-            width = Some(css_int_to_fixed(2));
-            unit = Some(CSS_UNIT_PX);
-            (CSS_OUTLINE_WIDTH_WIDTH as u8,width,unit)
-        },
-        Some(uncommon_struct)=>{
-            let mut bits:u8= uncommon_struct.bits[CSS_OUTLINE_WIDTH_INDEX];
-            bits = bits & (CSS_OUTLINE_WIDTH_MASK as u8);
-            bits = bits >> CSS_OUTLINE_WIDTH_SHIFT;
-
-            if (bits&7) == (CSS_OUTLINE_WIDTH_WIDTH as u8) { 
-                width = Some(uncommon_struct.outline_width);
-                unit = Some(unsafe { transmute((bits >> 3)as int) }) ;
-            }
-
-            ((bits&3),width,unit)
-        }
+    
+    if style.uncommon.is_none() {
+        width = Some(css_int_to_fixed(2));
+        unit = Some(CSS_UNIT_PX);
+        (CSS_OUTLINE_WIDTH_WIDTH as u8,width,unit)
     }
+    else {
+        let mut bits:u8= style.uncommon.get_mut_ref().bits[CSS_OUTLINE_WIDTH_INDEX];
+        bits = bits & (CSS_OUTLINE_WIDTH_MASK as u8);
+        bits = bits >> CSS_OUTLINE_WIDTH_SHIFT;
+
+        if (bits&7) == (CSS_OUTLINE_WIDTH_WIDTH as u8) { 
+            width = Some(style.uncommon.get_mut_ref().outline_width);
+            unit = Some(unsafe { transmute((bits >> 3)as int) }) ;
+        }
+
+        ((bits&3),width,unit)
+    }
+
 }
 
 pub fn css_computed_border_spacing(
@@ -87,38 +86,36 @@ pub fn css_computed_border_spacing(
                     -> rect_result {
 
     let mut result = 
-            rect_result{
-                hlength:0,
-                vlength:0,
-                hunit:CSS_UNIT_PX,
-                vunit:CSS_UNIT_PX,
-                result:CSS_BORDER_SPACING_SET as u8
-            };
+        rect_result{
+            hlength:0,
+            vlength:0,
+            hunit:CSS_UNIT_PX,
+            vunit:CSS_UNIT_PX,
+            result:CSS_BORDER_SPACING_SET as u8
+    };
 
-    match style.uncommon {
-        None=>{
-            result
-        },
-        Some(uncommon_struct)=>{
-            let mut bits = uncommon_struct.bits[CSS_BORDER_SPACING_INDEX];
-            bits = bits & (CSS_BORDER_SPACING_MASK as u8);
-            bits = bits >> CSS_BORDER_SPACING_SHIFT ;
+    if style.uncommon.is_none() {
+        result
+    }
+    else {
+        let mut bits = style.uncommon.get_mut_ref().bits[CSS_BORDER_SPACING_INDEX];
+        bits = bits & (CSS_BORDER_SPACING_MASK as u8);
+        bits = bits >> CSS_BORDER_SPACING_SHIFT ;
 
-            if bits == (CSS_BORDER_SPACING_SET as u8) { 
-                let mut bits1 = uncommon_struct.bits[CSS_BORDER_SPACING_INDEX1];
-                bits1 = bits1 & (CSS_BORDER_SPACING_MASK1 as u8);
-                bits1 = bits1 >> CSS_BORDER_SPACING_SHIFT1 ;
+        if bits == (CSS_BORDER_SPACING_SET as u8) { 
+            let mut bits1 = style.uncommon.get_mut_ref().bits[CSS_BORDER_SPACING_INDEX1];
+            bits1 = bits1 & (CSS_BORDER_SPACING_MASK1 as u8);
+            bits1 = bits1 >> CSS_BORDER_SPACING_SHIFT1 ;
 
-                result.hlength = uncommon_struct.border_spacing[0];
-                result.hunit = unsafe { transmute((bits1 >> 4)as int) } ;
+            result.hlength = style.uncommon.get_mut_ref().border_spacing[0];
+            result.hunit = unsafe { transmute((bits1 >> 4)as int) } ;
 
-                result.vlength = uncommon_struct.border_spacing[1];
-                result.vunit = unsafe { transmute((bits1 & 0xf)as int) } ;
-            }
-
-            result.result = bits ;
-            result
+            result.vlength = style.uncommon.get_mut_ref().border_spacing[1];
+            result.vunit = unsafe { transmute((bits1 & 0xf)as int) } ;
         }
+
+        result.result = bits ;
+        result
     }
 }
 
@@ -128,24 +125,22 @@ pub fn css_computed_word_spacing(
 
     let mut length :Option<i32> = None;
     let mut unit : Option<css_unit>  = None;
-    match style.uncommon {
-        None=>{
-            (CSS_WORD_SPACING_NORMAL as u8,length,unit)
-        },
-        Some(uncommon_struct)=>{
-            let mut bits:u8= uncommon_struct.bits[CSS_WORD_SPACING_INDEX];
-            bits = bits & (CSS_WORD_SPACING_MASK as u8);
-            bits = bits >> CSS_WORD_SPACING_SHIFT;
 
-            if (bits&3) == (CSS_WORD_SPACING_SET as u8) { 
-                length = Some(uncommon_struct.word_spacing);
-                unit = Some(unsafe { transmute((bits >> 2)as int) }) ;
-            }
-
-            ((bits&3),length,unit)
-        }
+    if style.uncommon.is_none() {
+        (CSS_WORD_SPACING_NORMAL as u8,length,unit)
     }
+    else {
+        let mut bits:u8= style.uncommon.get_mut_ref().bits[CSS_WORD_SPACING_INDEX];
+        bits = bits & (CSS_WORD_SPACING_MASK as u8);
+        bits = bits >> CSS_WORD_SPACING_SHIFT;
 
+        if (bits&3) == (CSS_WORD_SPACING_SET as u8) { 
+            length = Some(style.uncommon.get_mut_ref().word_spacing);
+            unit = Some(unsafe { transmute((bits >> 2)as int) }) ;
+        }
+
+        ((bits&3),length,unit)
+    }
 }
 
 pub fn css_computed_counter_increment(
@@ -153,20 +148,19 @@ pub fn css_computed_counter_increment(
                         -> (u8,~[~css_computed_counter]) {
 
     let mut counter : ~[~css_computed_counter] = ~[];
-    match style.uncommon {
-        None=>{
-            (CSS_COUNTER_INCREMENT_NONE as u8,counter)
-        },
-        Some(uncommon_struct)=>{
-            let mut bits:u8= uncommon_struct.bits[CSS_COUNTER_INCREMENT_INDEX];
-            bits = bits & (CSS_COUNTER_INCREMENT_MASK as u8);
-            bits = bits >> CSS_COUNTER_INCREMENT_SHIFT;
+    
+    if style.uncommon.is_none() {
+        (CSS_COUNTER_INCREMENT_NONE as u8,counter)
+    }
+    else {
+        let mut bits:u8= style.uncommon.get_mut_ref().bits[CSS_COUNTER_INCREMENT_INDEX];
+        bits = bits & (CSS_COUNTER_INCREMENT_MASK as u8);
+        bits = bits >> CSS_COUNTER_INCREMENT_SHIFT;
 
-            counter = uncommon_struct.counter_increment.clone();
+        counter = style.uncommon.get_mut_ref().counter_increment.clone();
 
-            (bits,counter)
-        }
-    }  
+        (bits,counter)
+    }
 }
 
 pub fn css_computed_counter_reset(
@@ -174,20 +168,19 @@ pub fn css_computed_counter_reset(
                         -> (u8,~[~css_computed_counter]) {
 
     let mut counter : ~[~css_computed_counter] = ~[];
-    match style.uncommon {
-        None=>{
-            (CSS_COUNTER_RESET_NONE as u8,counter)
-        },
-        Some(uncommon_struct)=>{
-            let mut bits:u8= uncommon_struct.bits[CSS_COUNTER_RESET_INDEX];
-            bits = bits & (CSS_COUNTER_RESET_MASK as u8);
-            bits = bits >> CSS_COUNTER_RESET_SHIFT;
+   
+    if style.uncommon.is_none() {
+        (CSS_COUNTER_RESET_NONE as u8,counter)
+    }
+    else {
+        let mut bits:u8= style.uncommon.get_mut_ref().bits[CSS_COUNTER_RESET_INDEX];
+        bits = bits & (CSS_COUNTER_RESET_MASK as u8);
+        bits = bits >> CSS_COUNTER_RESET_SHIFT;
 
-            counter = uncommon_struct.counter_reset.clone();
+        counter = style.uncommon.get_mut_ref().counter_reset.clone();
 
-            (bits,counter)
-        }
-    }  
+        (bits,counter)
+    }
 }
 
 pub fn css_computed_cursor(
@@ -195,20 +188,19 @@ pub fn css_computed_cursor(
                 -> (u8,Option<~[uint]>) {
 
     let mut urls :Option<~[uint]> = None;
-    match style.uncommon {
-        None=>{
-            (CSS_CURSOR_AUTO as u8,urls)
-        },
-        Some(uncommon_struct)=>{
-            let mut bits:u8= uncommon_struct.bits[CSS_CURSOR_INDEX];
-            bits = bits & (CSS_CURSOR_MASK as u8);
-            bits = bits >> CSS_CURSOR_SHIFT;
 
-            urls = Some(uncommon_struct.cursor.clone());
+    if style.uncommon.is_none() {
+        (CSS_CURSOR_AUTO as u8,urls)
+    }
+    else {
+        let mut bits:u8= style.uncommon.get_mut_ref().bits[CSS_CURSOR_INDEX];
+        bits = bits & (CSS_CURSOR_MASK as u8);
+        bits = bits >> CSS_CURSOR_SHIFT;
 
-            (bits,urls)
-        }
-    }  
+        urls = Some(style.uncommon.get_mut_ref().cursor.clone());
+
+        (bits,urls)
+    }
 }
 
 pub fn css_computed_clip(
@@ -217,60 +209,58 @@ pub fn css_computed_clip(
             -> (u8, bool) {
 
 
-    match style.uncommon {
-        None=>{
-            (CSS_CLIP_AUTO as u8, false)
-        },
-        Some(uncommon_struct)=>{
-            let mut bits:u8= uncommon_struct.bits[CSS_CLIP_INDEX];
-            bits = bits & (CSS_CLIP_MASK as u8);
-            bits = bits >> CSS_CLIP_SHIFT;
+    if style.uncommon.is_none() {
+        (CSS_CLIP_AUTO as u8, false)
+    }
+    else {
+        let mut bits:u8= style.uncommon.get_mut_ref().bits[CSS_CLIP_INDEX];
+        bits = bits & (CSS_CLIP_MASK as u8);
+        bits = bits >> CSS_CLIP_SHIFT;
 
-            if (bits&0x3) == (CSS_CLIP_RECT as u8) {
-                let mut bits1 : u8 ;
+        if (bits&0x3) == (CSS_CLIP_RECT as u8) {
+            let mut bits1 : u8 ;
 
-                result.left_auto = (bits & 0x4)!=0;
-                result.bottom_auto = (bits & 0x8)!=0;
-                result.right_auto = (bits & 0x10)!=0;
-                result.top_auto = (bits & 0x20)!=0;
+            result.left_auto = (bits & 0x4)!=0;
+            result.bottom_auto = (bits & 0x8)!=0;
+            result.right_auto = (bits & 0x10)!=0;
+            result.top_auto = (bits & 0x20)!=0;
 
-                if (result.top_auto == false ||
-                        result.right_auto == false) {
-                    /* 8bits: ttttrrrr : top | right */
-                    bits1 = uncommon_struct.bits[CSS_CLIP_INDEX1];
-                    bits1 &= (CSS_CLIP_MASK1 as u8);
-                    bits1 >>= CSS_CLIP_SHIFT1;
-                } 
-                else {
-                    bits1 = 0;
-                }
-
-                result.top = uncommon_struct.clip[0];
-                result.tunit = unsafe { transmute((bits1 >> 4)as int)};
-
-                result.right = uncommon_struct.clip[1];
-                result.runit = unsafe { transmute((bits1 & 0xf)as int)};
-
-                if (result.bottom_auto == false ||
-                        result.left_auto == false) {
-                    /* 8bits: bbbbllll : bottom | left */
-                    bits1 = uncommon_struct.bits[CSS_CLIP_INDEX2];
-                    bits1 &= (CSS_CLIP_MASK2 as u8);
-                    bits1 >>= CSS_CLIP_SHIFT2;
-                } 
-                else {
-                    bits1 = 0;
-                }
-
-                result.bottom = uncommon_struct.clip[2];
-                result.bunit = unsafe { transmute((bits1 >> 4)as int)};
-
-                result.left = uncommon_struct.clip[3];
-                result.lunit = unsafe { transmute((bits1 & 0xf)as int)} ;
+            if (result.top_auto == false ||
+                    result.right_auto == false) {
+                /* 8bits: ttttrrrr : top | right */
+                bits1 = style.uncommon.get_mut_ref().bits[CSS_CLIP_INDEX1];
+                bits1 &= (CSS_CLIP_MASK1 as u8);
+                bits1 >>= CSS_CLIP_SHIFT1;
+            } 
+            else {
+                bits1 = 0;
             }
 
-            ((bits&0x3), true)
+            result.top = style.uncommon.get_mut_ref().clip[0];
+            result.tunit = unsafe { transmute((bits1 >> 4)as int)};
+
+            result.right = style.uncommon.get_mut_ref().clip[1];
+            result.runit = unsafe { transmute((bits1 & 0xf)as int)};
+
+            if (result.bottom_auto == false ||
+                    result.left_auto == false) {
+                /* 8bits: bbbbllll : bottom | left */
+                bits1 = style.uncommon.get_mut_ref().bits[CSS_CLIP_INDEX2];
+                bits1 &= (CSS_CLIP_MASK2 as u8);
+                bits1 >>= CSS_CLIP_SHIFT2;
+            } 
+            else {
+                bits1 = 0;
+            }
+
+            result.bottom = style.uncommon.get_mut_ref().clip[2];
+            result.bunit = unsafe { transmute((bits1 >> 4)as int)};
+
+            result.left = style.uncommon.get_mut_ref().clip[3];
+            result.lunit = unsafe { transmute((bits1 & 0xf)as int)} ;
         }
+
+        ((bits&0x3), true)
     }
 }
 
@@ -278,18 +268,16 @@ pub fn css_computed_content(
                 style : &mut ~css_computed_style)
                 -> (u8,~[~css_computed_content_item]) {
 
-    match style.uncommon {
-        None=>{
-            (CSS_CONTENT_NORMAL as u8,~[])
-        },
-        Some(uncommon_struct)=>{
-            let mut bits:u8= uncommon_struct.bits[CSS_CONTENT_INDEX];
-            bits = bits & (CSS_CONTENT_MASK as u8);
-            bits = bits >> CSS_CONTENT_SHIFT;
+    if style.uncommon.is_none() {
+        (CSS_CONTENT_NORMAL as u8,~[])
+    }
+    else {
+        let mut bits:u8= style.uncommon.get_mut_ref().bits[CSS_CONTENT_INDEX];
+        bits = bits & (CSS_CONTENT_MASK as u8);
+        bits = bits >> CSS_CONTENT_SHIFT;
 
-            (bits,uncommon_struct.content.clone())
-        }
-    }  
+        (bits,style.uncommon.get_mut_ref().content.clone())
+    }
 }
 
 pub fn css_computed_vertical_align(
