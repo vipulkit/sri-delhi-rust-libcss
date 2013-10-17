@@ -688,15 +688,15 @@ pub struct reject_item {
     sel_type:css_selector_type 
 } 
 
-impl Clone for reject_item {
-    #[inline]
-    fn clone(&self) -> reject_item {
-        reject_item {
-            value:self.value.clone(),
-            sel_type:self.sel_type
-        }
-    }
-}
+// impl Clone for reject_item {
+//     #[inline]
+//     fn clone(&self) -> reject_item {
+//         reject_item {
+//             value:self.value.clone(),
+//             sel_type:self.sel_type
+//         }
+//     }
+// }
 
 pub struct prop_state {
     specificity:uint,       /* Specificity of property in result */
@@ -711,7 +711,7 @@ impl Clone for prop_state {
     fn clone(&self) -> prop_state {
         prop_state {
             specificity: self.specificity,       /* Specificity of property in result */
-            set        : self.set,         /* Whether property is set in result */
+            set        : self.set,          /* Whether property is set in result */
             origin     : self.origin,         /* Origin of property in result */
             important  : self.important,         /* Importance of property in result */
             inherit    : self.inherit
@@ -823,7 +823,7 @@ pub struct css_select_state {
     reject_cache: ~[Option<reject_item>],     /* Reject cache (filled from end) */  
     next_reject:int,                        /* Next free slot in reject cache */
 
-    props: ~[~[prop_state]] 
+    props: ~[Option<~[prop_state]>] 
 } 
 
 /*

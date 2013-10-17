@@ -12,7 +12,7 @@ use utils::errors::*;
 use select::common::*;
 use select::propset::*;
 use select::computed::*;
-
+use std::vec::from_elem;
 //use extra::arc;
 
 /* HELPERS --- Useful helpers */
@@ -24,7 +24,19 @@ pub fn css__outranks_existing(op:u16,
 							important:bool, 
 							state: &mut ~css_select_state,
 							inherit:bool) -> bool {
-	let existing = &mut state.props[op][state.current_pseudo as uint];
+	if (state.props[op].is_none()) {
+        let pstate = prop_state{
+            specificity:0,
+            set:false,
+            origin:0,
+            important:false,
+            inherit:false    
+        };  
+        let prop_vec: ~[prop_state] = from_elem(CSS_PSEUDO_ELEMENT_COUNT as uint,pstate);
+        state.props[op] = Some(prop_vec);
+    }  
+    
+	let existing = &mut state.props[op].get_mut_ref()[state.current_pseudo as uint];
 	let mut outranks : bool = false;
 
 	/* Sorting on origin & importance gives the following:
