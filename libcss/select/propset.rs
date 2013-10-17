@@ -10,7 +10,7 @@ pub fn ENSURE_UNCOMMON ( style:&mut ~css_computed_style){
     match style.uncommon {
         Some(_)=>{},
         None=>{
-            let uncommon_struct = @mut css_computed_uncommon {
+            let uncommon_struct = ~css_computed_uncommon {
                 bits:~[ 
                         ((CSS_LETTER_SPACING_INHERIT as u8) << 2) | (CSS_OUTLINE_COLOR_INVERT as u8),
                         ((CSS_OUTLINE_WIDTH_MEDIUM as u8) << 1) | (CSS_BORDER_SPACING_INHERIT as u8),
@@ -62,12 +62,12 @@ pub fn set_letter_spacing(style:&mut ~css_computed_style,
 
     ENSURE_UNCOMMON(style);
 
-    {let bits = &mut style.uncommon.expect("").bits[CSS_LETTER_SPACING_INDEX];
+    {let bits = &mut style.uncommon.get_mut_ref().bits[CSS_LETTER_SPACING_INDEX];
         let mask_complement = (CSS_LETTER_SPACING_MASK as u8) ^ 0xff ;
         *bits = ( *bits & mask_complement ) |
                 ( ( (ftype & 0x3) | ( (unit as u8) << 2) ) << CSS_LETTER_SPACING_SHIFT);}
 
-    style.uncommon.expect("").letter_spacing = length;
+    style.uncommon.get_mut_ref().letter_spacing = length;
 }
 
 #[inline]
@@ -77,12 +77,12 @@ pub fn set_outline_color(style:&mut ~css_computed_style,
 
     ENSURE_UNCOMMON(style);
 
-    {let bits = &mut style.uncommon.expect("").bits[CSS_OUTLINE_COLOR_INDEX];
+    {let bits = &mut style.uncommon.get_mut_ref().bits[CSS_OUTLINE_COLOR_INDEX];
         let mask_complement = (CSS_OUTLINE_COLOR_MASK as u8) ^ 0xff ;
         *bits = ( *bits & mask_complement ) |
                 ( (ftype & 0x3)  << CSS_OUTLINE_COLOR_SHIFT);}
     
-    style.uncommon.expect("").outline_color = color;
+    style.uncommon.get_mut_ref().outline_color = color;
 }
 
 #[inline]
@@ -93,12 +93,12 @@ pub fn set_outline_width(style:&mut ~css_computed_style,
 
     ENSURE_UNCOMMON(style);
 
-    {let bits = &mut style.uncommon.expect("").bits[CSS_OUTLINE_WIDTH_INDEX];
+    {let bits = &mut style.uncommon.get_mut_ref().bits[CSS_OUTLINE_WIDTH_INDEX];
         let mask_complement = (CSS_OUTLINE_WIDTH_MASK as u8) ^ 0xff ;
         *bits = ( *bits & mask_complement ) |
                 ( ((ftype & 0x7)|((unit as u8)<<3))  << CSS_OUTLINE_WIDTH_SHIFT);}
 
-    style.uncommon.expect("").outline_width = length;
+    style.uncommon.get_mut_ref().outline_width = length;
 }
 
 #[inline]
@@ -111,18 +111,18 @@ pub fn set_border_spacing(style:&mut ~css_computed_style,
 
     ENSURE_UNCOMMON(style);
 
-    {let bits = &mut style.uncommon.expect("").bits[CSS_BORDER_SPACING_INDEX];
+    {let bits = &mut style.uncommon.get_mut_ref().bits[CSS_BORDER_SPACING_INDEX];
         let mask_complement = (CSS_BORDER_SPACING_MASK as u8) ^ 0xff ;
         *bits = ( *bits & mask_complement ) |
                 ( (ftype & 0x1)  << CSS_BORDER_SPACING_SHIFT);}
 
-    {let bits = &mut style.uncommon.expect("").bits[CSS_BORDER_SPACING_INDEX1];
+    {let bits = &mut style.uncommon.get_mut_ref().bits[CSS_BORDER_SPACING_INDEX1];
         let mask_complement = (CSS_BORDER_SPACING_MASK1 as u8) ^ 0xff ;
         *bits = ( *bits & mask_complement ) |
                 ( ( ( (hunit as u8) << 4)|(vunit as u8) )  << CSS_BORDER_SPACING_SHIFT1);}
 
-    style.uncommon.expect("").border_spacing[0] = hlength;
-    style.uncommon.expect("").border_spacing[1] = vlength;
+    style.uncommon.get_mut_ref().border_spacing[0] = hlength;
+    style.uncommon.get_mut_ref().border_spacing[1] = vlength;
 }
 
 #[inline]
@@ -133,12 +133,12 @@ pub fn set_word_spacing(style:&mut ~css_computed_style,
 
     ENSURE_UNCOMMON(style);
 
-    {let bits = &mut style.uncommon.expect("").bits[CSS_WORD_SPACING_INDEX];
+    {let bits = &mut style.uncommon.get_mut_ref().bits[CSS_WORD_SPACING_INDEX];
         let mask_complement = (CSS_WORD_SPACING_MASK as u8) ^ 0xff ;
         *bits = ( *bits & mask_complement ) |
                 ( ((ftype & 0x3)|((unit as u8)<<2))  << CSS_WORD_SPACING_SHIFT);}
 
-    style.uncommon.expect("").word_spacing = length;
+    style.uncommon.get_mut_ref().word_spacing = length;
 }
 
 #[inline]
@@ -148,12 +148,12 @@ pub fn set_counter_increment(style: &mut ~css_computed_style,
 
     ENSURE_UNCOMMON(style);
 
-    {let bits = &mut style.uncommon.expect("").bits[CSS_COUNTER_INCREMENT_INDEX];
+    {let bits = &mut style.uncommon.get_mut_ref().bits[CSS_COUNTER_INCREMENT_INDEX];
         let mask_complement = (CSS_COUNTER_INCREMENT_MASK as u8) ^ 0xff ;
         *bits = ( *bits & mask_complement ) |
                 ( (ftype & 0x1)  << CSS_COUNTER_INCREMENT_SHIFT);}
 
-    style.uncommon.expect("").counter_increment = counters ;
+    style.uncommon.get_mut_ref().counter_increment = counters ;
 }
 
 #[inline]
@@ -163,12 +163,12 @@ pub fn set_counter_reset(style: &mut ~css_computed_style,
 
     ENSURE_UNCOMMON(style);
 
-    {let bits = &mut style.uncommon.expect("").bits[CSS_COUNTER_RESET_INDEX];
+    {let bits = &mut style.uncommon.get_mut_ref().bits[CSS_COUNTER_RESET_INDEX];
         let mask_complement = (CSS_COUNTER_RESET_MASK as u8) ^ 0xff ;
         *bits = ( *bits & mask_complement ) |
                 ( (ftype & 0x1)  << CSS_COUNTER_RESET_SHIFT);}
 
-    style.uncommon.expect("").counter_reset = counters ;
+    style.uncommon.get_mut_ref().counter_reset = counters ;
 }
 
 #[inline]
@@ -178,12 +178,12 @@ pub fn set_cursor(style:&mut ~css_computed_style,
 
     ENSURE_UNCOMMON(style);
 
-    {let bits = &mut style.uncommon.expect("").bits[CSS_CURSOR_INDEX];
+    {let bits = &mut style.uncommon.get_mut_ref().bits[CSS_CURSOR_INDEX];
         let mask_complement = (CSS_CURSOR_MASK as u8) ^ 0xff ;
         *bits = ( *bits & mask_complement ) |
                 ( (ftype & 0x1f)  << CSS_CURSOR_SHIFT);}
 
-    style.uncommon.expect("").cursor = urls;
+    style.uncommon.get_mut_ref().cursor = urls;
 }
 
 #[inline]
@@ -193,13 +193,13 @@ pub fn set_clip(style: &mut ~css_computed_style,
 
     ENSURE_UNCOMMON(style);
 
-    {let bits = &mut style.uncommon.expect("").bits[CSS_CLIP_INDEX];
+    {let bits = &mut style.uncommon.get_mut_ref().bits[CSS_CLIP_INDEX];
         let mask_complement = (CSS_CLIP_MASK as u8) ^ 0xff ;
         *bits = ( *bits & mask_complement ) |
                 ( (ftype & 0x3)  << CSS_CLIP_SHIFT);}
 
     if ( ftype == (CSS_CLIP_RECT as u8) ){
-        {let bits = &mut style.uncommon.expect("").bits[CSS_CLIP_INDEX];
+        {let bits = &mut style.uncommon.get_mut_ref().bits[CSS_CLIP_INDEX];
                 *bits = *bits | 
                         ((
                         ( if (rect.top_auto   ) { 0x20 } else { 0 } ) |
@@ -208,22 +208,22 @@ pub fn set_clip(style: &mut ~css_computed_style,
                         ( if (rect.left_auto  ) { 0x4  } else { 0 } ) ) 
                         << CSS_CLIP_SHIFT );}
 
-        {let bits = &mut style.uncommon.expect("").bits[CSS_CLIP_INDEX1];
+        {let bits = &mut style.uncommon.get_mut_ref().bits[CSS_CLIP_INDEX1];
                 let mask_complement = (CSS_CLIP_MASK1 as u8) ^ 0xff ;
                 *bits = ( *bits & mask_complement ) |
                     ( (((rect.tunit as u8) << 4) | (rect.runit as u8) )  
                     << CSS_CLIP_SHIFT1);}
 
-        {let bits = &mut style.uncommon.expect("").bits[CSS_CLIP_INDEX2];
+        {let bits = &mut style.uncommon.get_mut_ref().bits[CSS_CLIP_INDEX2];
                 let mask_complement = (CSS_CLIP_MASK2 as u8) ^ 0xff ;
                 *bits = ( *bits & mask_complement ) |
                     ( (((rect.bunit as u8) << 4) | (rect.lunit as u8) )  
                     << CSS_CLIP_SHIFT2);}
 
-        style.uncommon.expect("").clip[0] = rect.top;
-        style.uncommon.expect("").clip[1] = rect.right;
-        style.uncommon.expect("").clip[2] = rect.bottom;
-        style.uncommon.expect("").clip[3] = rect.left;
+        style.uncommon.get_mut_ref().clip[0] = rect.top;
+        style.uncommon.get_mut_ref().clip[1] = rect.right;
+        style.uncommon.get_mut_ref().clip[2] = rect.bottom;
+        style.uncommon.get_mut_ref().clip[3] = rect.left;
     }
 }
 
@@ -234,12 +234,12 @@ pub fn set_content(style: &mut ~css_computed_style,
 
     ENSURE_UNCOMMON(style);
 
-    {let bits = &mut style.uncommon.expect("").bits[CSS_CONTENT_INDEX];
+    {let bits = &mut style.uncommon.get_mut_ref().bits[CSS_CONTENT_INDEX];
         let mask_complement = (CSS_CONTENT_MASK as u8) ^ 0xff ;
         *bits = ( *bits & mask_complement ) |
                 ( (ftype & 0x3)  << CSS_CONTENT_SHIFT);}
 
-    style.uncommon.expect("").content = content ;
+    style.uncommon.get_mut_ref().content = content ;
 }
 
 #[inline]

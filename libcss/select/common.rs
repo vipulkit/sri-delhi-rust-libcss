@@ -399,6 +399,7 @@ pub struct css_computed_uncommon {
     content:~[~css_computed_content_item],
 }
 
+
 pub struct css_computed_page {
 /*
  * page_break_after       3
@@ -596,7 +597,7 @@ pub struct css_computed_style {
     //quotes chaned from wapcaplet-strings to strings
     quotes:~[uint],
 
-    uncommon:Option<@mut css_computed_uncommon>, /**< Uncommon properties */
+    uncommon:Option<~css_computed_uncommon>, /**< Uncommon properties */
     aural:Option<~css_aural>,         /*< Aural properties */
     page:Option<~css_computed_page> /* *< Page properties */
 
@@ -636,7 +637,7 @@ pub struct css_hint {
     status:u8,
 
     // types specifies , which data type is used from 10 types defined below
-    clip:Option<~ css_computed_clip_rect>,
+    clip:Option<~css_computed_clip_rect>,
     content:Option<~css_computed_content_item>,
     counters:Option<~[~css_computed_counter]>,
     length:Option<~css_hint_length>,
