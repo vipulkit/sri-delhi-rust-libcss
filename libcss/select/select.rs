@@ -329,7 +329,7 @@ impl css_select_ctx {
             id:self.lwc_ref.lwc_intern_string(""),
             classes:~[],
             n_classes:0,             
-            reject_cache: from_elem(128,None),       
+            reject_cache:~[],       
             next_reject:128-1,             
             props: from_elem(CSS_N_PROPERTIES as uint, prop_vec) 
         };
