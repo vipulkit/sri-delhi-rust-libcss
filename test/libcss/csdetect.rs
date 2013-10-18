@@ -57,7 +57,7 @@ pub fn handle_line(data:~str, pw:LINE_CTX_DATA_TYPE)-> bool {
     else {
         if (ctx.indata) {
                 
-            ctx.buf = ctx.buf + data.to_str().as_bytes_with_null_consume();
+            ctx.buf = ctx.buf + data.to_str().into_bytes();
         }
         if (ctx.inenc) {
             ctx.enc = (data);

@@ -12,33 +12,30 @@ use dump::*;
 use wapcaplet::*;
 use css::parse::propstrings::*;
 
-pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
+pub fn resolve_url(_:&str, rel:uint) -> (css_error,Option<uint>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
-fn css_create_params(lwc_instance: @mut lwc , propstrings_instance: @css_propstrings) -> css_params {
+fn css_create_params() -> css_params {
     let css_param = css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
         charset : Some(~"UTF-8"),
-        url : @"foo",
-        title : @"",
+        url : ~"foo",
+        title : ~"",
         allow_quirks : false,
         inline_style : false,
         resolve : @resolve_url,
         import : None,
         color : None,
-        font : None,
-        lwc_instance: Some(lwc_instance),
-        propstrings_instance: Some(propstrings_instance)
+        font : None
     };
     return css_param;
 }
 
-fn create_css() -> @mut css{
-    let lwc_instance = lwc();
-    let propstrings_instance = css_propstrings::css_propstrings(lwc_instance);
-    let css = css::css_create( &css_create_params(lwc_instance , propstrings_instance));
+fn create_css(stylesheet_vector:&mut ~[css_stylesheet]) -> ~css{
+    
+    let css = css::css_create(stylesheet_vector, &css_create_params());
     css
 }
 
@@ -48,7 +45,11 @@ fn main() {
 }
 
 fn css(file_name: ~str) {
-    let css = create_css();
+    let mut stylesheet_vector:~[css_stylesheet]=~[];
+    let mut css_rule_data_list:~[~css_rule_data_type]=~[];
+    let mut lwc_ref = lwc();
+    let propstring = css_propstrings::css_propstrings(&mut lwc_ref);
+    let mut css = create_css(&mut stylesheet_vector);
     let CHUNK_SIZE = 4096;
     let mut buf: ~[u8];
     let r:@Reader = file_reader(&Path(file_name)).unwrap(); 
@@ -59,20 +60,20 @@ fn css(file_name: ~str) {
     while len>CHUNK_SIZE {
         buf = r.read_bytes(CHUNK_SIZE as uint);
         len -= CHUNK_SIZE;
-        let error = css.css_stylesheet_append_data(buf);
+        let error = css.css_stylesheet_append_data(&mut stylesheet_vector, &mut css_rule_data_list, &mut lwc_ref , &propstring , buf);
         match error {
             CSS_OK | CSS_NEEDDATA => {},
             _ => {assert!(false);}
         }
     }
     buf = r.read_bytes(len as uint);
-    let error = css.css_stylesheet_append_data(buf);
+    let error = css.css_stylesheet_append_data(&mut stylesheet_vector, &mut css_rule_data_list, &mut lwc_ref ,&propstring , buf);
     match error {
         CSS_OK | CSS_NEEDDATA => {},
         _ => {assert!(false);}
     }
 
-    let mut error = css.css_stylesheet_data_done();
+    let mut error = css.css_stylesheet_data_done(&mut stylesheet_vector, &mut css_rule_data_list, &mut lwc_ref , &propstring);
 
 
     match error {
@@ -83,20 +84,19 @@ fn css(file_name: ~str) {
     loop {
         match error {
             CSS_IMPORTS_PENDING => {
-                let (error1 , option_url , _) = css.css_stylesheet_next_pending_import();
+                let (error1 , option_url , _) = css.css_stylesheet_next_pending_import(&mut stylesheet_vector, &mut css_rule_data_list);
                 match error1 {
                     CSS_OK => {
-                        let lwc_instance = lwc();
-                        let propstrings_instance = css_propstrings::css_propstrings(lwc_instance);
-                        let mut params: css_params = css_create_params(lwc_instance , propstrings_instance);
+                                                                      
+                        let mut params: css_params = css_create_params();
                         params.url = option_url.unwrap();
-                        let css_import = create_css();
-                        let err = css_import.css_stylesheet_data_done();
+                        let mut css_import = create_css(&mut stylesheet_vector);
+                        let err = css_import.css_stylesheet_data_done(&mut stylesheet_vector, &mut css_rule_data_list, &mut lwc_ref , &propstring);
                         match err {
                             CSS_OK => {},
                             _ => {assert!(false);}
                         }
-                        let err_register = css.css_stylesheet_register_import(Some(css_import.stylesheet));
+                        let err_register = css.css_stylesheet_register_import(&mut stylesheet_vector, &mut css_rule_data_list, Some(css_import.stylesheet));
                         match err_register {
                             CSS_OK => {},
                             _ => {assert!(false);}
@@ -122,7 +122,7 @@ fn css(file_name: ~str) {
 
     let mut buf: ~str;
 
-    buf = dump_sheet(css.stylesheet);
+    buf = dump_sheet(&mut stylesheet_vector, css.stylesheet,&mut css_rule_data_list ,&mut lwc_ref );
     let outlen = buf.len();
     let written = outsize - outlen;
     // debug!(fmt!("written == %? , outsize - outlen == %?" , written , outsize-outlen));

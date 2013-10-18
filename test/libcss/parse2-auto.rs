@@ -10,6 +10,8 @@ use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use dump::*;
+use wapcaplet::*;
+use css::parse::propstrings::css_propstrings;
 
 pub struct line_ctx {
     buf:~[u8],
@@ -23,7 +25,7 @@ pub struct line_ctx {
     inrule: bool
 }
 
-pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
+pub fn resolve_url(_:&str, rel:uint) -> (css_error,Option<uint>) {
     return (CSS_OK,Some(rel.clone()));
 }
 
@@ -40,7 +42,7 @@ fn match_vec_u8(vector: &[u8] , string: &str) -> bool {
     }
 
 	let mut iter_both = vector.iter().zip(string_vector.iter());
-    for iter_both.advance() |(e , f)| {
+    for (e, f) in iter_both {
         if e != f {
             debug!("Exiting: match_vec_u8 (2)");
             return false;
@@ -55,16 +57,14 @@ pub fn css_create_params() -> css_params {
         params_version : CSS_PARAMS_VERSION_1,
         level: CSS_LEVEL_21,
         charset : Some(~"UTF-8"),
-        url : @"foo",
-        title : @"",
+        url : ~"foo",
+        title : ~"",
         allow_quirks : false,
         inline_style : false,
         resolve : @resolve_url,
         import : None,
         color : None,
         font : None,
-        lwc_instance: None,
-        propstrings_instance: None
     };
     return css_param;
 }
@@ -73,9 +73,9 @@ fn main() {
     debug!("parse");
 }
 
-fn create_css() -> @mut css{
+fn create_css(stylesheet_vector:&mut ~[css_stylesheet]) -> ~css{
     debug!("Entering: create_css");
-    let css = css::css_create( &(css_create_params()));
+    let css = css::css_create(stylesheet_vector, &css_create_params());
     css
 }
 
@@ -172,8 +172,8 @@ fn testMain(fileName: ~str) {
     }        
     let mut vec_lines = file_content.split_iter(check_newline) ;
 
-    for vec_lines.advance |each_line| {
-        handle_line(each_line,ctx);
+    for line in vec_lines {
+        handle_line(line,ctx);
     }
     
     if ctx.buf.len() > 0 {
@@ -184,26 +184,29 @@ fn testMain(fileName: ~str) {
 pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     debug!("Entering :: run_test");
     // debug!("\n == data == %?" , str::from_bytes(data));
-    
-    let css = create_css();
+    let mut lwc_ref = lwc();
+    let propstring = css_propstrings::css_propstrings(&mut lwc_ref);
+    let mut stylesheet_vector:~[css_stylesheet] = ~[];
+    let mut css_rule_data_list: ~[~css_rule_data_type] = ~[];
+    let mut css = create_css(&mut stylesheet_vector);
     let mut buf: ~str;
-    let mut error = css.css_stylesheet_append_data(data);
+    let mut error = css.css_stylesheet_append_data(&mut stylesheet_vector, &mut css_rule_data_list ,&mut lwc_ref , &propstring , data);
     match error {
         CSS_OK | CSS_NEEDDATA => {},
         _ => {assert!(false);}
     }
 
-    error = css.css_stylesheet_data_done();
+    error = css.css_stylesheet_data_done(&mut stylesheet_vector, &mut css_rule_data_list , &mut lwc_ref , &propstring);
     //debug!(fmt!("error from css_stylesheet_data_done: %?" , error));
     match error {
         CSS_OK => {},
         _ => {assert!(false);}
     }
 
-    buf = dump_sheet(css.stylesheet);
+    buf = dump_sheet(&mut stylesheet_vector, css.stylesheet, &mut css_rule_data_list, &mut lwc_ref);
     //debug!(fmt!("\n == sheet ==%?=" , buf));
     let mut dvec : ~[~[u8]] = ~[];
-    for buf.any_line_iter().advance |s| {
+    for s in buf.any_line_iter() {
         dvec.push(s.as_bytes().to_owned());
     }
     let a = vec::concat(dvec) ;
@@ -224,7 +227,7 @@ pub fn run_test(data:~[u8], exp:~[~[u8]]) {
     }
 
 	let mut iter_both = a.iter().zip(b.iter());
-    for iter_both.advance |(s,e)| {
+    for (s, e) in iter_both {
         if s != e {
             debug!("============================================================" );
             debug!(" == sheet ==%?=" , (a));

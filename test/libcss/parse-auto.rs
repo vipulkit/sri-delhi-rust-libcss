@@ -10,6 +10,7 @@ use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use wapcaplet::*;
+use css::parse::propstrings::css_propstrings;
 
 pub fn find_char_between(s: &str, c: char, start: uint, end: uint) -> Option<uint>{
 	let length = s.len();
@@ -25,7 +26,7 @@ pub fn find_char_between(s: &str, c: char, start: uint, end: uint) -> Option<uin
 	return None;
 }
 
-pub fn resolve_url(_:@str, rel:@mut wapcaplet::lwc_string) -> (css_error,Option<@mut wapcaplet::lwc_string>) {
+pub fn resolve_url(_:&str, rel:uint) -> (css_error,Option<uint>) {
     return (CSS_OK,Some(rel));
 }
 
@@ -50,8 +51,7 @@ pub struct line_ctx {
     inerrors:bool,
     inexp:bool,
 
-    inrule:bool,
-    lwc_instance:@mut lwc
+    inrule:bool
 }
 
 
@@ -63,29 +63,33 @@ pub fn is_string_caseless_equal(a : &str , b : &str ) -> bool {
     }
     
     let i :uint = a.len() ;
-    for uint::iterate(0,i) |e| {
+    let mut e = 0;
+    while (e < i)
+    { 
         if a[e] == b[e] {
-            loop;
+            e = e + 1;
         }
-
-        if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
+        else if (a[e] >= 'A' as u8  && a[e] <= 'Z'  as u8) {
             if (a[e]+32) == b[e] {
-                loop;
+               e = e + 1;
             }
             else {
                 return false ;
-            }
-        }
 
-        if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
+            }
+        }
+        else if (b[e] >= 'A'  as u8 && b[e] <= 'Z'  as u8) {
             if (b[e]+32) == a[e] {
-                loop;
+            e = e + 1;
             }
             else {
                 return false ;
             }
         }
-        return false ;
+        else
+        {
+	        return false ;
+        }
     }
     return true ;
 }
@@ -224,10 +228,10 @@ fn parse_auto(file: ~str) {
         inerrors:false,
         inexp:false,
         inrule:false,
-        lwc_instance:lwc()
+        // lwc_instance:Some(lwc())
     };
 
-    for file_content.any_line_iter().advance |line| {
+    for line in file_content.any_line_iter() {
         let mut line_string : ~str = line.to_str() ;
         line_string.push_char('\n') ;
         debug!(fmt!("Entering:v data is=%?=",line_string));
@@ -282,7 +286,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
         } 
         else if (ctx.indata) {
             //ctx.buf = ~[] ;
-            for data.iter().advance |ch| {
+            for ch in data.iter() {
                 ctx.buf.push(ch as u8);
             }
             debug!(fmt!("Buffer is 1= %?",ctx.buf.clone()));
@@ -296,7 +300,7 @@ pub fn handle_line(mut data:~str,ctx:@mut line_ctx) -> bool {
     else {
         if ctx.indata {
             //ctx.buf = ~[] ;
-            for data.iter().advance |ch| {
+            for ch in data.iter() {
                 ctx.buf.push(ch as u8);
             }
             debug!(fmt!("Buffer is 2= %?",ctx.buf.clone()));
@@ -320,6 +324,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
     let mut len : uint = 0 ;
     let mut _goto_start_rule : bool = true  ;
+    let reason = "Function css__parse_expected";
     if data.len()==0 || data[len] != ('|' as u8){
         return;
     }
@@ -350,7 +355,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
             let min = if (data.len()-len) <= 128 { (data.len()-len) } else { 128 } ;
 
             let entry = @mut exp_entry{
-                ftype: if num.is_some() { num.get() } 
+                ftype: if num.is_some() { num.expect(reason) } 
                     else {0} ,
                 name: data.slice(len,len+min).to_str() ,
                 expected: ~[]
@@ -398,14 +403,14 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
                         assert!(false);
                     }
 					
-                    len = start.get();
+                    len = start.expect(reason);
                     let end = find_char_between( data,')' ,len+1,data.len()) ;
                     if end.is_none() {
                         assert!(false);
                     }
 
-                    len = end.get()+1;  
-                    rule.expected.push(string(data.slice( start.get()+1,end.get() ).to_managed()));
+                    len = end.expect(reason)+1;  
+                    rule.expected.push(string(data.slice( start.expect(reason)+1,end.expect(reason) ).to_managed()));
                     if len == data.len() {
                         break ;
                     }
@@ -425,7 +430,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
                     let val = strtoul(data.clone(),&mut len) ;
                     debug!( fmt!("Entering: else 2= %?=%?=%?=",data,len,val));
                     /* Append to bytecode */
-                    rule.expected.push(bytecode(val.get_or_default(0) as u32)) ;
+                    rule.expected.push(bytecode(val.unwrap_or(0) as u32)) ;
                 }
             }
         }
@@ -435,10 +440,10 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
 
 pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
 
-    debug!(fmt!("Data == %? ", str::from_bytes(data)));
+    debug!(fmt!("Data == %? ", str::from_utf8(data)));
     debug!(fmt!("Expected entry type == %d, name == %s", e.ftype, e.name.clone()) );
     io::print(fmt!("Expected bytecode == ") );
-    for e.expected.mut_iter().advance |&expected| {
+    for &expected in e.expected.mut_iter() {
         io::print(fmt!("%? ", expected ));
     }
     debug!("\n")
@@ -446,7 +451,10 @@ pub fn report_fail(data:~[u8] , e:@mut exp_entry) {
 
 pub fn run_test(ctx:@mut line_ctx) {
     debug!("Entering: run_test");
-
+    let mut stylesheet_vector:~[css_stylesheet]=~[];
+    let mut lwc_ref = lwc();
+    let mut css_rule_data_list: ~[~css_rule_data_type] = ~[];
+    let propstring = css_propstrings::css_propstrings(&mut lwc_ref);
     let mut error : css_error ;
     let mut params = css_params {
         /* ABI version of this structure */
@@ -458,9 +466,9 @@ pub fn run_test(ctx:@mut line_ctx) {
         /* The charset of the stylesheet data, or NULL to detect */
         charset : Some(~"UTF-8"),
         /* URL of stylesheet */
-        url : @"foo",
+        url : ~"foo",
         /* Title of stylesheet */
-        title : @"",
+        title : ~"",
 
         /* Permit quirky parsing of stylesheet */
         allow_quirks : false,
@@ -478,16 +486,15 @@ pub fn run_test(ctx:@mut line_ctx) {
 
         /* Font resolution function */
         font : None,
-        lwc_instance: Some(ctx.lwc_instance),
-        propstrings_instance: None
+        
     };
 
     //let lwc_instance = lwc() ;
 
-    let css_instance = css::css_create( &params) ;
+    let mut css_instance = css::css_create(&mut stylesheet_vector, &params) ;
 
 
-    error = css_instance.css_stylesheet_append_data(ctx.buf.clone());
+    error = css_instance.css_stylesheet_append_data(&mut stylesheet_vector, &mut css_rule_data_list ,&mut lwc_ref , &propstring ,ctx.buf.clone());
     match error {
         CSS_OK=>{},
         CSS_NEEDDATA=>{},
@@ -496,7 +503,7 @@ pub fn run_test(ctx:@mut line_ctx) {
         }
     }
 
-    error = css_instance.css_stylesheet_data_done();
+    error = css_instance.css_stylesheet_data_done(&mut stylesheet_vector, &mut css_rule_data_list ,&mut lwc_ref , &propstring);
     let mut pending_imports = false ;
     assert!( match error {
                 CSS_OK=>{
@@ -511,7 +518,7 @@ pub fn run_test(ctx:@mut line_ctx) {
 
     while  pending_imports {
         
-        let (error,o_str,_) = css_instance.css_stylesheet_next_pending_import() ;
+        let (error,o_str,_) = css_instance.css_stylesheet_next_pending_import(&mut stylesheet_vector, &mut css_rule_data_list) ;
         assert!( match error {
             CSS_OK=>{
                 true
@@ -522,16 +529,16 @@ pub fn run_test(ctx:@mut line_ctx) {
             _=>{false}
         } );
 
-        let url = o_str.get_or_default(@"") ;
+        let url = o_str.unwrap_or(~"") ;
 
         match error {
             CSS_OK=> {
                 params.url = url.clone();
 
-                let import = css::css_create(&params) ;
+                let import = css::css_create(&mut stylesheet_vector, &params) ;
                 
                 assert!(    match css_instance.css_stylesheet_register_import(
-                                                        Some(import.stylesheet)) {
+                                                        &mut stylesheet_vector, &mut css_rule_data_list, Some(import.stylesheet)) {
                                 CSS_OK=>{true},
                                 _=>{false}
                             });
@@ -543,14 +550,14 @@ pub fn run_test(ctx:@mut line_ctx) {
     }
     let mut e : uint = 0;
 
-    if (css_instance.stylesheet.rule_count != ctx.exp.len() ) {
+    if (stylesheet_vector[css_instance.stylesheet].rule_count != ctx.exp.len() ) {
         debug!(fmt!("Got %u rules. Expected %u\n",
-                css_instance.stylesheet.rule_count , ctx.exp.len()) );
+                stylesheet_vector[css_instance.stylesheet].rule_count , ctx.exp.len()) );
         report_fail(ctx.buf.clone(), ctx.exp[e].clone());
         fail!(~"Unexpected number of rules ") ;
     }
 
-    let mut ptr = css_instance.stylesheet.rule_list ;
+    let mut ptr = stylesheet_vector[css_instance.stylesheet].rule_list ;
         
     loop {
         match ptr {
@@ -559,69 +566,78 @@ pub fn run_test(ctx:@mut line_ctx) {
                 return ;
             },
             Some(crule) => {
-                match crule {
-                    RULE_SELECTOR(rule) => {
+                match  css_rule_data_list[crule].rule_type {
+                    CSS_RULE_SELECTOR => {
                         if ( ctx.exp[e].ftype != (CSS_RULE_SELECTOR as int) ) {
                             debug!(fmt!("Got type %d , Expected %d ",
                                 ctx.exp[e].ftype , (CSS_RULE_SELECTOR as int)  )) ;
-                            fail!(~"Expected type differs") ;
+                            fail!(~"Expected type differs") ;   
                         }
-                        if validate_rule_selector(rule,ctx.exp[e]) {
+                        if validate_rule_selector(&mut stylesheet_vector, &mut css_rule_data_list, css_instance.stylesheet, crule, &mut lwc_ref, ctx.exp[e]) {
                             report_fail(ctx.buf.clone(), ctx.exp[e].clone());
                             fail!(~"Validation of rule selector failed");
                         }
-                        ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
+                        let index = stylesheet_vector[css_instance.stylesheet].css__stylesheet_get_base_rule(&mut css_rule_data_list, crule);
+                        ptr = stylesheet_vector[css_instance.stylesheet].css_rule_list[index].next; 
                         e += 1 ;
                         loop ;
                     },
-                    RULE_CHARSET(rule) => {
+                    CSS_RULE_CHARSET => {
                         if ( ctx.exp[e].ftype != (CSS_RULE_CHARSET as int) ) {
                             debug!( fmt!("Got type %d , Expected %d ",
                                 ctx.exp[e].ftype , (CSS_RULE_SELECTOR as int) )) ;
                             fail!(~"Expected type differs") ;
                         }
-                        validate_rule_charset(rule,ctx.exp[e]);
+                        validate_rule_charset(&mut css_rule_data_list, crule,ctx.exp[e]);
+                        let index = stylesheet_vector[css_instance.stylesheet].css__stylesheet_get_base_rule(&mut css_rule_data_list, crule);
                         
-                        ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
+                        ptr = stylesheet_vector[css_instance.stylesheet].css_rule_list[index].next; 
                         e += 1 ;
                         loop ;
                     },
-                    RULE_IMPORT(rule) => {
+                    CSS_RULE_IMPORT => {
                         if ( ctx.exp[e].ftype != (CSS_RULE_IMPORT as int) ) {
                             debug!( fmt!("Got type %d , Expected %d ",
                                 ctx.exp[e].ftype ,(CSS_RULE_SELECTOR as int)  ) );
                             fail!(~"Expected type differs") ;
                         }
-                        validate_rule_import(rule,ctx.exp[e]);
+                        validate_rule_import(&mut css_rule_data_list, crule, ctx.exp[e]);
+                        let index = stylesheet_vector[css_instance.stylesheet].css__stylesheet_get_base_rule(&mut css_rule_data_list, crule);
                         
-                        ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
+                        ptr = stylesheet_vector[css_instance.stylesheet].css_rule_list[index].next; 
                         e += 1 ;
                         loop ;
                     },
-                    RULE_UNKNOWN(_)=>{
+                    CSS_RULE_UNKNOWN=>{
                         debug!(fmt!("Unhandled rule type %?", CSS_RULE_UNKNOWN)) ;
-                        ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
+                        
+                        let index = stylesheet_vector[css_instance.stylesheet].css__stylesheet_get_base_rule(&mut css_rule_data_list, crule);
+
+                        ptr = stylesheet_vector[css_instance.stylesheet].css_rule_list[index].next; 
                         e += 1 ;
                         loop ;
 
                     },
-                    RULE_MEDIA(_)=>{
+                    CSS_RULE_MEDIA=>{
                         debug!(fmt!("Unhandled rule type %?", CSS_RULE_MEDIA)) ;
-                        ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
+                        let index = stylesheet_vector[css_instance.stylesheet].css__stylesheet_get_base_rule(&mut css_rule_data_list, crule);
+                        ptr = stylesheet_vector[css_instance.stylesheet].css_rule_list[index].next; 
                         e += 1 ;
                         loop ;
 
                     },
-                    RULE_FONT_FACE(_)=>{
+                    CSS_RULE_FONT_FACE =>{
                         debug!(fmt!("Unhandled rule type %?", CSS_RULE_FONT_FACE)) ;
-                        ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
+                        let index = stylesheet_vector[css_instance.stylesheet].css__stylesheet_get_base_rule(&mut css_rule_data_list, crule);
+                        ptr = stylesheet_vector[css_instance.stylesheet].css_rule_list[index].next; 
                         e += 1 ;
                         loop ;
 
                     },
-                    RULE_PAGE(_)=>{
+                    CSS_RULE_PAGE=>{
                         debug!(fmt!("Unhandled rule type %?", CSS_RULE_PAGE) ) ;
-                        ptr = css_stylesheet::css__stylesheet_get_base_rule(crule).next; 
+                        let index = stylesheet_vector[css_instance.stylesheet].css__stylesheet_get_base_rule(&mut css_rule_data_list, crule);
+                        ptr = stylesheet_vector[css_instance.stylesheet].css_rule_list[index].next; 
                         e += 1 ;
                         loop ;
 
@@ -632,20 +648,20 @@ pub fn run_test(ctx:@mut line_ctx) {
     }
 }
 
-pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bool {
+pub fn validate_rule_selector(stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list: &mut ~[~css_rule_data_type], sheet:uint, rule:uint, lwc_ref:&mut ~lwc, e:@mut exp_entry ) -> bool {
 
     debug!("Entering: validate_rule_selector");
     let mut name : ~str = ~"" ;
     let mut ptr : ~str = ~"" ;
-
+    // let s = css_rule_data_list[rule];
     // Build selector string
      debug!("Entering: validate_rule_selector: unsafe");
-     debug!(fmt!("Parsed Rule List:%?",s.selectors.len().clone()));
+     debug!(fmt!("Parsed Rule List:%?",css_rule_data_list[rule].rule_selector.get_mut_ref().selectors.len().clone()));
 	 let mut i : uint = 0;
-	 let length = s.selectors.len();
+	 let length = css_rule_data_list[rule].rule_selector.get_mut_ref().selectors.len();
      while i < length {
-        dump_selector_list(s.selectors[i],&mut ptr) ;
-        if ( i != (s.selectors.len()-1) ) {
+        dump_selector_list(stylesheet_vector, sheet, css_rule_data_list[rule].rule_selector.get_mut_ref().selectors[i], lwc_ref, &mut ptr) ;
+        if ( i != (css_rule_data_list[rule].rule_selector.get_mut_ref().selectors.len()-1) ) {
             name = name + ptr + ", ";
             debug!(fmt!("if name == %?" , name));
         }
@@ -659,24 +675,23 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 
     /* Compare with expected selector */
     if name != e.name {
-        debug!(fmt!("FAIL Mismatched names\n
+        println(fmt!("FAIL Mismatched names\n
                         Got name '%s'. Expected '%s'\n",name, e.name.clone()) );
         return true ;
     }
 
     // Now compare bytecode
-    if (e.expected.len() != 0 && s.style.is_none()) {
+    if (e.expected.len() != 0 && css_rule_data_list[rule].rule_selector.get_mut_ref().style.is_none()) {
         debug!("FAIL No bytecode\n    Expected bytecode but none created\n");
         return true;
     }
-    else if (e.expected.len() == 0 && s.style.is_some()) {
+    else if (e.expected.len() == 0 && css_rule_data_list[rule].rule_selector.get_mut_ref().style.is_some()) {
         debug!("FAIL Unexpected bytecode\n    No bytecode expected but some created\n");
         return true;
     }
-    else if (e.expected.len() != 0 && s.style.is_some()) {
-        let style = s.style.get() ;
-
-        if  style.bytecode.len() != e.expected.len()  {
+    else if (e.expected.len() != 0 && css_rule_data_list[rule].rule_selector.get_mut_ref().style.is_some()) {
+       
+        if  css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_ref().bytecode.len() != e.expected.len()  {
             debug!(fmt!("FAIL: bytecode length differs "));
             return true ;
         }
@@ -689,11 +704,11 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
 
             match e.expected[i] {
                 bytecode(b) => {
-                    if style.bytecode[i] != b {
+                    if css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_ref().bytecode[i] != b {
                         debug!(fmt!("FAIL Bytecode differs 
                                         Bytecode differs at %?", i) );
                         while (i < e.expected.len() ) {
-                            debug!(fmt!("%? ", style.bytecode[i].clone()));
+                            debug!(fmt!("%? ", css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_ref().bytecode[i].clone()));
                             i += 1;
                         }
                         return true;
@@ -702,26 +717,27 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
                     i += 1;
                 }
 
-                string(s) => {
+                string(st) => {
                     /* String */
-                    if( style.sheet.is_none() ) {
+                    if( css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_ref().sheet.is_none() ) {
                         debug!("\n Parent stylesheet not found in style , need sheet ");
                         return false ;
                     }
-
-                    let (res,op) = style.sheet.get().
-                                css__stylesheet_string_get(style.bytecode[i] as uint);
+                    let index = css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_ref().sheet.expect("");
+                    let byte_index = css_rule_data_list[rule].rule_selector.get_mut_ref().style.get_ref().bytecode[i] as uint;
+                    let (res,op) = stylesheet_vector[index].
+                                css__stylesheet_string_get(byte_index);
 
                     assert!(res as int == CSS_OK as int);
 
                     let p : @str = match (op) {
-                        Some(val) => lwc_string_data(val),
+                        Some(val) => lwc_ref.lwc_string_data(val).to_managed(),
                         None => @""
                     };
 
-                    if p != s {
+                    if p != st {
                         debug!(fmt!("FAIL: string differs got %?, expected %? ",
-                                p , s ) );
+                                p , st ) );
                         return true;
                     }
 
@@ -734,8 +750,8 @@ pub fn validate_rule_selector(s:@mut css_rule_selector, e:@mut exp_entry ) -> bo
     false
 }
 
-pub fn validate_rule_charset(s:@mut css_rule_charset, e:@mut exp_entry) -> bool {
-
+pub fn validate_rule_charset( css_rule_data_list: &mut ~[~css_rule_data_type],  rule:uint, e:@mut exp_entry) -> bool {
+let s = css_rule_data_list[rule].rule_charset.get_mut_ref();
     debug!(fmt!("Parsed Rule List:%?", s.encoding.clone()));
     if( e.name.len() != s.encoding.len() ) {
         return false ;
@@ -751,8 +767,9 @@ pub fn validate_rule_charset(s:@mut css_rule_charset, e:@mut exp_entry) -> bool 
     
 }
 
-pub fn validate_rule_import(s:@mut css_rule_import, e:@mut exp_entry) -> bool {
-
+pub fn validate_rule_import(css_rule_data_list: &mut ~[~css_rule_data_type],  rule:uint, e:@mut exp_entry) -> bool {
+    let s = css_rule_data_list[rule].rule_import.get_mut_ref();
+    
     debug!(fmt!("Parsed Rule List:%?", s.url.clone()));
     if( e.name.len() < s.url.len() ) {
         return false ;
@@ -767,11 +784,11 @@ pub fn validate_rule_import(s:@mut css_rule_import, e:@mut exp_entry) -> bool {
     true
 } 
 
-fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
-    if list.combinator.is_some() {
-        dump_selector_list(list.combinator.unwrap(),ptr);
+fn dump_selector_list(stylesheet_vector:&mut ~[css_stylesheet], sheet:uint, list:uint, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+    if stylesheet_vector[sheet].css_selectors_list[list].combinator.is_some() {
+        dump_selector_list(stylesheet_vector, sheet, stylesheet_vector[sheet].css_selectors_list[list].combinator.unwrap(), lwc_ref, ptr);
     }
-    match list.data[0].combinator_type {
+    match stylesheet_vector[sheet].css_selectors_list[list].data[0].combinator_type {
         CSS_COMBINATOR_NONE=> {
             
         },
@@ -798,66 +815,66 @@ fn dump_selector_list(list:@mut css_selector, ptr:&mut ~str){
         }
 
     }
-    dump_selector(list, ptr);
+    dump_selector(&mut stylesheet_vector[sheet].css_selectors_list[list], lwc_ref, ptr);
 }
 
-fn dump_selector(selector:@mut css_selector, ptr:&mut ~str){
-    let d:~[@mut css_selector_detail] = selector.data.clone();
+fn dump_selector(selector:&~css_selector, lwc_ref:&mut ~lwc, ptr:&mut ~str){
+    let d:&~[~css_selector_detail] = &selector.data;
     debug!(fmt!("Selector Data:%?",d));
   	let mut iter:uint = 0;
     while iter < d.len() {
 		debug!(fmt!("Selector Data len:%?, Iter:%?",d.len(), iter));
-        dump_selector_detail(d[iter], ptr, (iter != d.len()-1) );
+        dump_selector_detail(&d[iter], lwc_ref, ptr, (iter != d.len()-1) );
         iter += 1;
     }   
 }
 
-fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_next:bool ) {
+fn dump_selector_detail(detail:&~css_selector_detail, lwc_ref:&mut ~lwc, ptr: &mut ~str, detail_next:bool ) {
 	debug!(fmt!("Detail == %?",detail));
     if detail.negate {
         str::push_str(ptr,&":not(");
     }
     match detail.selector_type {
         CSS_SELECTOR_ELEMENT=>{
-            if lwc_string_length(detail.qname.name) == 1 && 
-                    lwc_string_data(detail.qname.name)[0] == ('*' as u8) && 
+            if lwc_ref.lwc_string_length(detail.qname.name) == 1 && 
+                    lwc_ref.lwc_string_data(detail.qname.name)[0] == ('*' as u8) && 
                     !detail_next {
               
-                str::push_str(ptr,lwc_string_data(detail.qname.name));
+                str::push_str(ptr,lwc_ref.lwc_string_data(detail.qname.name));
             }
-            else if lwc_string_length(detail.qname.name) != 1 ||
-                lwc_string_data(detail.qname.name)[0] != ('*' as u8) { 
-                str::push_str(ptr,lwc_string_data(detail.qname.name));
+            else if lwc_ref.lwc_string_length(detail.qname.name) != 1 ||
+                lwc_ref.lwc_string_data(detail.qname.name)[0] != ('*' as u8) { 
+                str::push_str(ptr,lwc_ref.lwc_string_data(detail.qname.name));
             }
         },
 
         CSS_SELECTOR_CLASS=> {
 
             ptr.push_char('.');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
         },
 
         CSS_SELECTOR_ID =>{
             
             ptr.push_char('#');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
         },
 
         CSS_SELECTOR_PSEUDO_CLASS | CSS_SELECTOR_PSEUDO_ELEMENT =>{
             ptr.push_char(':' );
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             match detail.value_type {
                 CSS_SELECTOR_DETAIL_VALUE_STRING=> {
                     if detail.string.is_some() {
                         ptr.push_char('(' );
                         //let String = copy detail.string;
-                        str::push_str(ptr, (lwc_string_data( detail.string.unwrap() )));
+                        str::push_str(ptr, (lwc_ref.lwc_string_data( detail.string.unwrap() )));
                         ptr.push_char(')' );
                     }
                 } ,
                 _=>{
                     ptr.push_char('(' );
-                    str::push_str(ptr,fmt!("%?n+%?", detail.a.clone(), detail.b.clone()));
+                    str::push_str(ptr,fmt!("%in+%i", detail.a.clone()as int, detail.b.clone() as int));
                     ptr.push_char(')' );
                 }
             }
@@ -865,65 +882,65 @@ fn dump_selector_detail(detail:@mut css_selector_detail, ptr: &mut ~str, detail_
 
         CSS_SELECTOR_ATTRIBUTE=>{
             ptr.push_char('[');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_EQUAL =>{
             ptr.push_char('[');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             ptr.push_char('=');
             ptr.push_char('"');
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(lwc_ref.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_DASHMATCH=>{
             ptr.push_char('[');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             ptr.push_char('|');
             ptr.push_char('=');
             ptr.push_char('"');
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(lwc_ref.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_INCLUDES=>{
             ptr.push_char('[');
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             ptr.push_char('~');
             ptr.push_char('=');
             ptr.push_char('"');
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(lwc_ref.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"');
             ptr.push_char(']');
         },
         CSS_SELECTOR_ATTRIBUTE_PREFIX=>{
             ptr.push_char('[' );
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             ptr.push_char('^' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(lwc_ref.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"' );
             ptr.push_char(']' );
         },
         CSS_SELECTOR_ATTRIBUTE_SUFFIX=>{
             ptr.push_char('[' );
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             ptr.push_char('$' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(lwc_ref.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"' );
             ptr.push_char(']' );
         },
         CSS_SELECTOR_ATTRIBUTE_SUBSTRING=>{
             ptr.push_char('[' );
-            str::push_str(ptr,lwc_string_data( detail.qname.name));
+            str::push_str(ptr,lwc_ref.lwc_string_data( detail.qname.name));
             ptr.push_char('*' );
             ptr.push_char('=' );
             ptr.push_char('"' );
-            str::push_str(ptr,(lwc_string_data( detail.string.unwrap() )));
+            str::push_str(ptr,(lwc_ref.lwc_string_data( detail.string.unwrap() )));
             ptr.push_char('"' );
             ptr.push_char(']' );
         }

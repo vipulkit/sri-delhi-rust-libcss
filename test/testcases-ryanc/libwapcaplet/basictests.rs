@@ -44,7 +44,7 @@ fn main() {
 fn lwc_string() -> @mut lwc_string {
     let s = @mut lwc_string {
         id:-1,
-        string: @"",
+        string: ~"",
         insensitive: None
     };
     return s;
@@ -53,40 +53,40 @@ fn lwc_string() -> @mut lwc_string {
 
 #[test]
 fn ops_with_a_context() {
-    let lwc = wapcaplet::lwc();
+    let mut lwc = wapcaplet::lwc();
     let empty = lwc_string();
 
     let s1 = lwc.lwc_intern_string("A");
-    assert!(!lwc.lwc_string_isequal(empty, s1));
+    assert!(!lwc.lwc_string_isequal(empty.id, s1));
 }
 
 #[test]
 fn lwc_intern_string_twice_ok() {
-    let lwc = wapcaplet::lwc();
+    let mut lwc = wapcaplet::lwc();
     let t1 = lwc_string();
     let t2 = lwc_string();
 
     let s1= lwc.lwc_intern_string("A");
     let s2= lwc.lwc_intern_string("B");
-    assert!(!lwc.lwc_string_isequal(s1,t1));
-    assert!(!lwc.lwc_string_isequal(s2,t2));
+    assert!(!lwc.lwc_string_isequal(s1,t1.id));
+    assert!(!lwc.lwc_string_isequal(s2,t2.id));
 }
 
 #[test]
 fn lwc_intern_string_twice_same_ok() {
-    let lwc = wapcaplet::lwc();
+    let mut lwc = wapcaplet::lwc();
     let t1 = lwc_string();
     let t2 = lwc_string();
 
     let s1= lwc.lwc_intern_string("A");
     let s2= lwc.lwc_intern_string("A");
-    assert!(!lwc.lwc_string_isequal(s1, t1));
-    assert!(!lwc.lwc_string_isequal(s2, t2));
+    assert!(!lwc.lwc_string_isequal(s1, t1.id));
+    assert!(!lwc.lwc_string_isequal(s2, t2.id));
 }
 
 #[test]
 fn ops_with_a_filled_context() {
-    let lwc = wapcaplet::lwc();
+    let mut lwc = wapcaplet::lwc();
 
         // with_filled_context_setup
         let intern_one = lwc.lwc_intern_string("one");

@@ -2,8 +2,9 @@ use include::types::*;
 use include::font_face::*;
 use stylesheet::*;
 use utils::errors::*;
-
+//use extra::arc;
 use wapcaplet::*;
+
 use std::clone::Clone;
 
 pub enum css_computed_content_item_type {
@@ -286,36 +287,45 @@ pub static CSS_PAGE_BREAK_INSIDE_SHIFT : int =  6;
 pub static CSS_PAGE_BREAK_INSIDE_MASK : int =  0xc0;
 
 /////////////////////////////////////////////
+
 pub struct attribute {
-    name:@mut lwc_string,
-    value:@mut lwc_string
+    name:uint,
+    value:uint
 }
 
 pub struct node {
-    name:Option<@mut lwc_string>,
+    name:Option<uint>,
     attrs:~[attribute],
 
     parent:Option<@mut node>,
     next:Option<@mut node>,
     prev:Option<@mut node>,
     children:Option<@mut node>,
-    last_child:Option<@mut node>,
-    lwc_instance: @mut lwc
+    last_child:Option<@mut node>
 }
 
-pub struct ctx_pw {
-    attr_class:@mut lwc_string,
-    attr_id:@mut lwc_string
-}   
 
+pub struct ctx_pw {
+    attr_class:uint,
+    attr_id:uint
+}    
 pub struct css_computed_counter {
-    name:@mut lwc_string ,
+    name:uint ,
     value:i32
 }
 
+impl Clone for css_computed_counter {  
+    fn clone(&self) -> css_computed_counter {     
+        css_computed_counter{  
+            name: self.name,  
+            value: self.value 
+        }  
+    }  
+}
+
 pub struct css_computed_content_item_counter {
-    name:@mut lwc_string,
-    sep:Option<@mut lwc_string>,
+    name:uint,
+    sep:Option<uint>,
     style:u8
 }
 
@@ -323,8 +333,18 @@ pub struct css_computed_content_item {
   
     item_type:css_computed_content_item_type,
 
-    data:Option<@mut lwc_string>,
+    data:Option<uint>,
     counters_data:Option<css_computed_content_item_counter>
+}
+
+impl Clone for css_computed_content_item {  
+    fn clone(&self) -> css_computed_content_item {     
+        css_computed_content_item{  
+            item_type: self.item_type,
+            data: self.data,
+            counters_data: self.counters_data 
+        }  
+    }  
 }
 
 pub struct css_computed_uncommon {
@@ -391,13 +411,14 @@ pub struct css_computed_uncommon {
 
     word_spacing:i32,
 
-    counter_increment:~[@mut css_computed_counter],
-    counter_reset:~[@mut css_computed_counter],
+    counter_increment:~[~css_computed_counter],
+    counter_reset:~[~css_computed_counter],
 
-    cursor:~[@mut lwc_string],
+    cursor:~[uint],
 
-    content:~[@mut css_computed_content_item],
+    content:~[~css_computed_content_item],
 }
+
 
 pub struct css_computed_page {
 /*
@@ -549,7 +570,7 @@ pub struct css_computed_style {
 
     background_color:u32,
 
-    background_image:Option<@mut lwc_string>,
+    background_image:Option<uint>,
 
     background_position:~[i32],
 
@@ -569,7 +590,7 @@ pub struct css_computed_style {
 
     line_height:i32,
 
-    list_style_image:Option<@mut lwc_string>,
+    list_style_image:Option<uint>,
 
     margin:~[i32],
 
@@ -591,14 +612,14 @@ pub struct css_computed_style {
 
     z_index:i32,
 
-    font_family:~[@mut lwc_string],
+    font_family:~[uint],
 
     //quotes chaned from wapcaplet-strings to strings
-    quotes:~[@mut lwc_string],
+    quotes:~[uint],
 
-    uncommon:Option<@mut css_computed_uncommon>, /**< Uncommon properties */
-    aural:Option<@mut css_aural>,         /*< Aural properties */
-    page:Option<@mut css_computed_page> /* *< Page properties */
+    uncommon:Option<~css_computed_uncommon>, /**< Uncommon properties */
+    aural:Option<~css_aural>,         /*< Aural properties */
+    page:Option<~css_computed_page> /* *< Page properties */
 
 }
 
@@ -636,16 +657,16 @@ pub struct css_hint {
     status:u8,
 
     // types specifies , which data type is used from 10 types defined below
-    clip:Option<@mut css_computed_clip_rect>,
-    content:Option<@mut css_computed_content_item>,
-    counters:Option<~[@mut css_computed_counter]>,
-    length:Option<@mut css_hint_length>,
-    position:Option<@mut css_hint_length_hv>,
-    color:Option<u32>,
-    fixed:Option<i32>,
-    integer:Option<i32>,
-    string:Option<@mut lwc_string>,
-    strings:Option<~[@mut lwc_string]>
+    clip:Option<~css_computed_clip_rect>,
+    content:Option<~css_computed_content_item>,
+    counters:Option<~[~css_computed_counter]>,
+    length:Option<~css_hint_length>,
+    position:Option<~css_hint_length_hv>,
+    color:u32,
+    fixed:i32,
+    integer:i32,
+    string:Option<uint>,
+    strings:Option<~[uint]>
 }
 
 pub struct rect_result {
@@ -680,23 +701,23 @@ pub struct css_select_results {
      // taking style as "@mut" type everywhere , because we need to pass
      // pointer everywhere, and modification will occour every-where.
      // size of this array to be preallocated is CSS_PSEUDO_ELEMENT_COUNT
-    styles:~[Option<@mut css_computed_style>]
+    styles:~[Option<~css_computed_style>]
 }
 
 pub struct reject_item {
-    value:@mut lwc_string,
+    value:uint,
     sel_type:css_selector_type 
 } 
 
-impl Clone for reject_item {
-    #[inline]
-    fn clone(&self) -> reject_item {
-        reject_item {
-            value:self.value,
-            sel_type:self.sel_type
-        }
-    }
-}
+// impl Clone for reject_item {
+//     #[inline]
+//     fn clone(&self) -> reject_item {
+//         reject_item {
+//             value:self.value.clone(),
+//             sel_type:self.sel_type
+//         }
+//     }
+// }
 
 pub struct prop_state {
     specificity:uint,       /* Specificity of property in result */
@@ -711,7 +732,7 @@ impl Clone for prop_state {
     fn clone(&self) -> prop_state {
         prop_state {
             specificity: self.specificity,       /* Specificity of property in result */
-            set        : self.set,         /* Whether property is set in result */
+            set        : self.set,          /* Whether property is set in result */
             origin     : self.origin,         /* Origin of property in result */
             important  : self.important,         /* Importance of property in result */
             inherit    : self.inherit
@@ -725,104 +746,105 @@ pub enum css_select_handler_version {
 
 pub struct css_select_handler {
 
-    node_name: @fn( node:Option<@mut node>, qname: &mut css_qname ) -> css_error,
+    node_name: extern fn( node:Option<@mut node>, qname: &mut css_qname ) -> css_error,
 
-    node_classes: @fn(pw:@mut ctx_pw, n:Option<@mut node>, classes: &mut ~[@mut lwc_string] ) -> css_error,
+    node_classes: extern fn(lwc_ref:&mut ~lwc, pw:@mut ctx_pw, n:Option<@mut node>, classes: &mut ~[uint] ) -> css_error,
 
-    node_id: @fn(pw:@mut ctx_pw, node:Option<@mut node>, id:&mut @mut lwc_string ) -> css_error,
+    node_id: extern fn(lwc_ref:&mut ~lwc, pw:@mut ctx_pw, node:Option<@mut node>, id:&mut uint ) -> css_error,
 
-    named_ancestor_node: @fn(node:Option<@mut node>, qname:&mut css_qname, ancestor:&mut Option<@mut node> ) -> css_error,
+    named_ancestor_node: extern fn(lwc_ref:&mut ~lwc, node:Option<@mut node>, qname:&mut css_qname, ancestor:&mut Option<@mut node>) -> css_error,
    
-    named_parent_node: @fn(node:Option<@mut node>, qname:&mut css_qname, parent:&mut Option<@mut node>) -> css_error,
+    named_parent_node: extern fn(lwc_ref:&mut ~lwc, node:Option<@mut node>, qname:&mut css_qname, parent:&mut Option<@mut node>) -> css_error,
     
-    named_sibling_node: @fn(node:Option<@mut node>, qname:&mut css_qname, sibling:&mut Option<@mut node>) -> css_error,
+    named_sibling_node: extern fn(lwc_ref:&mut ~lwc, node:Option<@mut node>, qname:&mut css_qname, sibling:&mut Option<@mut node>) -> css_error,
 
-    named_generic_sibling_node: @fn(node:Option<@mut node>, qname:&mut css_qname, sibling:&mut Option<@mut node>) -> css_error,
+    named_generic_sibling_node: extern fn(lwc_ref:&mut ~lwc, node:Option<@mut node>, qname:&mut css_qname, sibling:&mut Option<@mut node>) -> css_error,
     
-    parent_node: @fn(node:Option<@mut node>, parent:&mut Option<@mut node>) -> css_error,
+    parent_node: extern fn(node:Option<@mut node>, parent:&mut Option<@mut node>) -> css_error,
 
-    sibling_node: @fn(node:Option<@mut node>, sibling:&mut Option<@mut node>) -> css_error,
+    sibling_node: extern fn(node:Option<@mut node>, sibling:&mut Option<@mut node>) -> css_error,
 
-    node_has_name: @fn(pw:@mut ctx_pw,node:Option<@mut node>, qname:&css_qname, matched:@mut bool) -> css_error,
+    node_has_name: extern fn(lwc_ref:&mut ~lwc, pw:@mut ctx_pw,node:Option<@mut node>, qname:&css_qname, matched:&mut bool) -> css_error,
 
-    node_has_class: @fn(pw:@mut ctx_pw, node:Option<@mut node>, name:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_class: extern fn(lwc_ref:&mut ~lwc, pw:@mut ctx_pw, node:Option<@mut node>, name:uint, matched:&mut bool) -> css_error,
 
-    node_has_id: @fn(pw:@mut ctx_pw, node:Option<@mut node>, name:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_id: extern fn(lwc_ref:&mut ~lwc, pw:@mut ctx_pw, node:Option<@mut node>, name:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute: @fn(node:Option<@mut node>, name:&css_qname, matched:@mut bool) -> css_error,
+    node_has_attribute: extern fn(lwc_ref:&mut ~lwc, node:Option<@mut node>, name:&css_qname, matched:&mut bool) -> css_error,
     
-    node_has_attribute_equal: @fn(node:Option<@mut node>, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_equal: extern fn(lwc_ref:&mut ~lwc, node:Option<@mut node>, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
    
-    node_has_attribute_dashmatch: @fn(node:Option<@mut node>, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_dashmatch: extern fn(lwc_ref:&mut ~lwc, node:Option<@mut node>, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute_includes: @fn(node:Option<@mut node>, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_includes: extern fn(lwc_ref:&mut ~lwc, node:Option<@mut node>, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute_prefix: @fn(node:Option<@mut node>, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_prefix: extern fn(lwc_ref:&mut ~lwc, node:Option<@mut node>, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute_suffix: @fn(node:Option<@mut node>, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_suffix: extern fn(lwc_ref:&mut ~lwc, node:Option<@mut node>, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_has_attribute_substring: @fn(node:Option<@mut node>, qname:&css_qname,value:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_has_attribute_substring: extern fn(lwc_ref:&mut ~lwc, node:Option<@mut node>, qname:&css_qname,value:uint, matched:&mut bool) -> css_error,
 
-    node_is_root: @fn(node:Option<@mut node>, matched:@mut bool) -> css_error,
+    node_is_root: extern fn(node:Option<@mut node>, matched:&mut bool) -> css_error,
    
-    node_count_siblings: @fn(node:Option<@mut node>, same_name:bool, after:bool, count:@mut i32) -> css_error,
+    node_count_siblings: extern fn(lwc_ref:&mut ~lwc, node:Option<@mut node>, same_name:bool, after:bool, count:&mut i32) -> css_error,
     
-    node_is_empty: @fn(node:Option<@mut node>, matched:@mut bool) -> css_error,
+    node_is_empty: extern fn(node:Option<@mut node>, matched:&mut bool) -> css_error,
     
-    node_is_link: @fn(node:Option<@mut node>, matched:@mut bool) -> css_error,
+    node_is_link: extern fn(node:Option<@mut node>, matched:&mut bool) -> css_error,
 
-    node_is_visited: @fn(node:Option<@mut node>, matched:@mut bool) -> css_error,
+    node_is_visited: extern fn(node:Option<@mut node>, matched:&mut bool) -> css_error,
 
-    node_is_hover: @fn(node:Option<@mut node>, matched:@mut bool) -> css_error,
+    node_is_hover: extern fn(node:Option<@mut node>, matched:&mut bool) -> css_error,
 
-    node_is_active: @fn(node:Option<@mut node>, matched:@mut bool) -> css_error,
+    node_is_active: extern fn(node:Option<@mut node>, matched:&mut bool) -> css_error,
 
-    node_is_focus: @fn(node:Option<@mut node>, matched:@mut bool) -> css_error,
+    node_is_focus: extern fn(node:Option<@mut node>, matched:&mut bool) -> css_error,
 
-    node_is_enabled: @fn(node:Option<@mut node>, matched:@mut bool) -> css_error,
+    node_is_enabled: extern fn(node:Option<@mut node>, matched:&mut bool) -> css_error,
 
-    node_is_disabled: @fn(node:Option<@mut node>, matched:@mut bool) -> css_error,
+    node_is_disabled: extern fn(node:Option<@mut node>, matched:&mut bool) -> css_error,
 
-    node_is_checked: @fn(node:Option<@mut node>, matched:@mut bool) -> css_error,
+    node_is_checked: extern fn(node:Option<@mut node>, matched:&mut bool) -> css_error,
  
-    node_is_target: @fn(node:Option<@mut node>, matched:@mut bool) -> css_error,
+    node_is_target: extern fn(node:Option<@mut node>, matched:&mut bool) -> css_error,
 
-    node_is_lang: @fn(node:Option<@mut node>, lang:@mut lwc_string, matched:@mut bool) -> css_error,
+    node_is_lang: extern fn(node:Option<@mut node>, lang:uint, matched:&mut bool) -> css_error,
 
-    node_presentational_hint: @fn(node:Option<@mut node>, property:u32) -> 
-        (css_error,Option<@mut css_hint>),
+    node_presentational_hint: extern fn(node:Option<@mut node>, property:u32) -> 
+        (css_error,Option<~css_hint>),
 
-    compute_font_size: @fn(parent: Option<@mut css_hint>, size: Option<@mut css_hint>) -> css_error,
+    compute_font_size: extern fn(parent: Option<&mut ~css_hint>, size: Option<&mut ~css_hint>) -> css_error,
    
-    ua_default_for_property: @fn(property:u32, hint:@mut css_hint ) -> css_error,
+    ua_default_for_property: extern fn(property:u32, hint:&mut ~css_hint ) -> css_error,
     handler_version:uint
 }
 
 pub struct css_select_state {
     node:Option<@mut node>,
     media:u64,         
-    results:@mut css_select_results,
+    results:~css_select_results,
+    //result_styles: ~[~css_computed_style],
     current_pseudo:css_pseudo_element,  
-    computed:@mut css_computed_style,  
+    computed:uint,  
 
-    handler:Option<@mut css_select_handler>,    
+    handler:Option<~css_select_handler>,    
     pw:Option<@mut ctx_pw>,
-    sheet:Option<@mut css_stylesheet>,   
+    sheet:Option<uint>,   
 
     current_origin:css_origin, 
     current_specificity:uint,  
 
     element:css_qname,       
      //changed id from wapcaplet-string to string
-    id:@mut lwc_string,
+    id: uint,
      //changes classes from wapcaplet  to string
-    classes:~[@mut lwc_string],
+    classes:~[uint],
     n_classes:u32,           
 
     reject_cache: ~[Option<reject_item>],     /* Reject cache (filled from end) */  
     next_reject:int,                        /* Next free slot in reject cache */
 
-    props: ~[~[prop_state]] 
+    props: ~[Option<~[Option<~prop_state>]>] 
 } 
 
 /*
@@ -833,31 +855,31 @@ pub struct css_select_font_faces_results {
     /*
      * Array of pointers to computed font faces. 
      */
-    font_faces:~[@mut ~[@mut css_font_face]],
+    font_faces:~[~[~css_font_face]],
 }
 
 #[inline]
-pub fn advance_bytecode(style: @mut css_style) {
+pub fn advance_bytecode(style: &mut ~css_style) {
     
-	if (style.bytecode.len() - style.used > 0) {
+	// if (style.bytecode.len() - style.used > 0) {
 		style.used += 1 
-	}
-	else {
-		fail!(~"Advancing Bytecode vector after end index")
-	}
+	// }
+	// else {
+	// 	fail!(~"Advancing Bytecode vector after end index")
+	// }
     
 }   
 
 #[inline]
-pub fn peek_bytecode(style: @mut css_style) -> u32 {
+pub fn peek_bytecode(style: &mut ~css_style) -> u32 {
     
-	if style.bytecode.len() - style.used > 0 {
+	// if style.bytecode.len() - style.used > 0 {
 		//debug!(fmt!("bytecode=%?",style.bytecode)); 
 		style.bytecode[style.used] 
-	}
-	else {
-		fail!(~"Advancing Bytecode vector after end index")
-	}
+	// }
+	// else {
+	// 	fail!(~"Advancing Bytecode vector after end index")
+	// }
     
 }
 

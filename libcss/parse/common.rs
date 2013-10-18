@@ -15,7 +15,7 @@ pub enum css_parser_event {
     CSS_PARSER_DECLARATION
 }
 
-pub fn vector_peek<'r>(vector:&'r ~[@css_token], ctx: @mut uint) -> Option<&'r @css_token> {
+pub fn vector_peek<'r>(vector:&'r ~[@css_token], ctx: &mut uint) -> Option<&'r @css_token> {
     if (*ctx >= vector.len()) {
         None
     }
@@ -24,7 +24,7 @@ pub fn vector_peek<'r>(vector:&'r ~[@css_token], ctx: @mut uint) -> Option<&'r @
     }
 }
 
-pub fn vector_iterate<'r>(vector:&'r ~[@css_token], ctx: @mut uint) -> Option<&'r @css_token> {
+pub fn vector_iterate<'r>(vector:&'r ~[@css_token], ctx: &mut uint) -> Option<&'r @css_token> {
     if (*ctx >= vector.len()) {
         None
     }

@@ -68,7 +68,7 @@ fn dump_css_fixed(f: css_fixed , ptr: &mut ~str){
 fn dump_css_number(val: css_fixed , ptr: &mut ~str){
       debug!(fmt!("\n Entering dump_css_number ")) ;
     if css_int_to_fixed((val >> 10) as int) == val {
-        ptr.push_str( fmt!("%?" , val >> 10));
+        ptr.push_str( fmt!("%i" , (val as int >> 10 as int)));
     }
     else {
         dump_css_fixed(val , ptr);
@@ -132,10 +132,11 @@ fn dump_css_unit(val: css_fixed , unit: css_unit , ptr: &mut ~str) {
 }
 
 
-pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
+pub fn dump_computed_style(style:&mut ~css_computed_style, lwc_ref:&mut ~lwc, buf:&mut ~str) {
       debug!(fmt!("\n Entering dump_computed_style ")) ;
     let ptr = buf;
     let mut val:u8;
+    let reason = "Function dump_computed_style"; 
 
     /* background-attachment */
     val = css_computed_background_attachment(style);
@@ -169,7 +170,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     }
     else if (val == CSS_BACKGROUND_IMAGE_IMAGE as u8 && url.is_some()) {
         ptr.push_str(fmt!("background-image: url('%s')\n",
-                lwc_string_data(url.get())));
+                lwc_ref.lwc_string_data(url.expect(reason))));
     }
     else if (val == CSS_BACKGROUND_IMAGE_NONE as u8) {
         ptr.push_str("background-image: none\n");
@@ -543,8 +544,8 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     }
 
     /* clip */
-	let mut rect : @mut css_computed_clip_rect = 
-        @mut css_computed_clip_rect{
+	let mut rect : ~ css_computed_clip_rect = 
+        ~ css_computed_clip_rect{
             top:0,
             right:0,
             bottom:0,
@@ -560,11 +561,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     } ;
 	
 	
-    let (val,rect_option) = css_computed_clip(style);
-	match rect_option{
-		Some(T) => {rect = T;}
-		None => {}
-	}
+    let (val, _) = css_computed_clip(style, &mut rect);
 
     let val_enum: css_clip_e =  unsafe {cast::transmute(val as uint)};
     match (val_enum) {
@@ -642,32 +639,32 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
                         if (content[content_index].data.is_some()) {
                             ptr.push_str( fmt!(
                                 "\"%s\"",
-                                lwc_string_data( (content[content_index].data.get()) ).to_owned()));
+                                lwc_ref.lwc_string_data( (content[content_index].data.expect(reason)) )));
                         },
                     CSS_COMPUTED_CONTENT_URI =>
                         if (content[content_index].data.is_some()) {
                             ptr.push_str( fmt!(
                                 "uri(\"%s\")",
-                                lwc_string_data(content[content_index].data.get()).to_owned()));
+                                lwc_ref.lwc_string_data(content[content_index].data.expect(reason))));
                         },
                     CSS_COMPUTED_CONTENT_COUNTER =>
                         if (content[content_index].data.is_some()) {
                             ptr.push_str( fmt!(
                                 "counter(%s)",
-                                lwc_string_data( (content[content_index].counters_data.get().name) ))) ;
+                                lwc_ref.lwc_string_data( (content[content_index].counters_data.expect(reason).name) ))) ;
                         },
                     CSS_COMPUTED_CONTENT_COUNTERS =>
-                        if (content[content_index].data.is_some() && content[content_index].counters_data.get().sep.is_some() ) {
+                        if (content[content_index].data.is_some() && content[content_index].counters_data.expect(reason).sep.is_some() ) {
                             ptr.push_str( fmt!(
                                 "counters(%s, \"%s\")",
-                                lwc_string_data( (content[content_index].counters_data.get().name) ),
-                                lwc_string_data( (content[content_index].counters_data.get().sep.get()) ).to_owned())) ;
+                                lwc_ref.lwc_string_data( (content[content_index].counters_data.expect(reason).name) ),
+                                lwc_ref.lwc_string_data( (content[content_index].counters_data.expect(reason).sep.expect(reason)) ))) ;
                         },
                     CSS_COMPUTED_CONTENT_ATTR =>
                         if (content[content_index].data.is_some()) {
                             ptr.push_str( fmt!(
                                 "attr(%s)",
-                                lwc_string_data( (content[content_index].data.get()) ).to_owned()));
+                                lwc_ref.lwc_string_data( (content[content_index].data.expect(reason)) )));
                         },
                     CSS_COMPUTED_CONTENT_OPEN_QUOTE =>
                         ptr.push_str(
@@ -704,9 +701,9 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     else {
         ptr.push_str("counter-increment:");
     
-        while ( lwc_string_data(counter[counter_index].name) != @"") {
+        while ( lwc_ref.lwc_string_data(counter[counter_index].name) != ~"") {
             ptr.push_str(fmt!(" %s ",
-                lwc_string_data(counter[counter_index].name).to_owned()));
+                lwc_ref.lwc_string_data(counter[counter_index].name)));
             
             dump_css_fixed(counter[counter_index].value, ptr);
             
@@ -729,9 +726,9 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     else {
         ptr.push_str("counter-reset:");
     
-        while ( lwc_string_data(counter[counter_index].name) != @"") {
+        while ( lwc_ref.lwc_string_data(counter[counter_index].name) != ~"") {
             ptr.push_str(fmt!(" %s ",
-                lwc_string_data(counter[counter_index].name).to_owned()));
+                lwc_ref.lwc_string_data(counter[counter_index].name)));
             
             dump_css_fixed(counter[counter_index].value, ptr);
             
@@ -751,7 +748,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
 
         while (string_list_index < string_list.len()) {
             ptr.push_str(fmt!(" url('%s')",
-                    lwc_string_data(string_list[string_list_index]).to_owned()));
+                    lwc_ref.lwc_string_data(string_list[string_list_index])));
             string_list_index+=1;
         }
     }
@@ -894,7 +891,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
         if (string_list.len() != 0) {
             while (string_list_index <  string_list.len()) {
                 ptr.push_str(fmt!(" \"%s\"",
-                    lwc_string_data(string_list[string_list_index]).to_owned()));
+                    lwc_ref.lwc_string_data(string_list[string_list_index])));
 
                 string_list_index+=1;
             }
@@ -1089,8 +1086,8 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
     if (val == CSS_LIST_STYLE_IMAGE_INHERIT as u8) {
         ptr.push_str("list-style-image: inherit\n");
     }
-    else if (url.is_some() && lwc_string_data(url.get()) != @"") {
-        ptr.push_str(fmt!("list-style-image => url('%s')\n",lwc_string_data(url.get()).to_owned()));
+    else if (url.is_some() && lwc_ref.lwc_string_data(url.expect(reason)) != ~"") {
+        ptr.push_str(fmt!("list-style-image => url('%s')\n",lwc_ref.lwc_string_data(url.expect(reason))));
     }
     else if (val == CSS_LIST_STYLE_IMAGE_URI_OR_NONE as u8) {
         ptr.push_str("list-style-image: none\n");
@@ -1458,7 +1455,7 @@ pub fn dump_computed_style(style:@mut css_computed_style, buf:&mut ~str) {
         
         while (string_list_index < string_list.len()) {
             ptr.push_str(fmt!(" \"%s\"",
-                lwc_string_data(string_list[string_list_index]).to_owned()));
+                lwc_ref.lwc_string_data(string_list[string_list_index])));
         
             string_list_index += 1;
         }

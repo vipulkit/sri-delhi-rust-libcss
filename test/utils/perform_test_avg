@@ -1,13 +1,11 @@
 #!/bin/bash
 
-export RUST_THREADS=1
-
 function Process1 {
 	rm  -rf r_output.txt c_output.txt ;
 	for i in {1..500}
 	do
 	   ./select-auto >> r_output.txt
-	   ./test_select-auto data/select/tests1.dat >> c_output.txt
+	  ./test_select-auto data/select/tests1.dat >> c_output.txt
 	done
 }
 
@@ -16,4 +14,4 @@ Process1
 
 ./test_data_avg
 
-unset RUST_THREADS
+
