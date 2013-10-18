@@ -452,9 +452,9 @@ impl css_select_ctx {
             /* Apply presentational hints if the property is unset or 
              * the existing property value did not come from an author 
              * stylesheet or a user sheet using !important. */
-            if (state.props[i].is_none() || state.props[i].get_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].set == false ||
-                    (state.props[i].get_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].origin != (CSS_ORIGIN_AUTHOR as u8) &&
-                    state.props[i].get_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].important == false)) {
+            if (state.props[i].is_none() || state.props[i].get_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].get_ref().set == false ||
+                    (state.props[i].get_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].get_ref().origin != (CSS_ORIGIN_AUTHOR as u8) &&
+                    state.props[i].get_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].get_ref().important == false)) {
                 error = css_select_ctx::set_hint(&mut state, i as u32);
                 match error {
                     CSS_OK=>{},
@@ -467,9 +467,9 @@ impl css_select_ctx {
             /* If the property is still unset or it's set to inherit 
              * and we're the root element, then set it to its initial 
              * value. */
-            if ( state.props[i].is_none() || state.props[i].get_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].set == false || 
+            if ( state.props[i].is_none() || state.props[i].get_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].get_ref().set == false || 
                     (parent == null() && 
-                    state.props[i].get_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].inherit == true)) {
+                    state.props[i].get_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].get_ref().inherit == true)) {
                 error = css_select_ctx::set_initial(&mut state, i as uint, 
                         CSS_PSEUDO_ELEMENT_NONE, parent);
                 match error {
@@ -509,7 +509,7 @@ impl css_select_ctx {
                 //debug!(fmt!("css_select_style : property =%?=%?="j,i)) ;
                 /* If the property is still unset then set it 
                  * to its initial value. */
-                if (state.props[i].is_none() || state.props[i].get_ref()[j].set == false) {
+                if (state.props[i].is_none() || state.props[i].get_ref()[j].get_ref().set == false) {
                     error = css_select_ctx::set_initial(&mut state, i as uint, unsafe { transmute(j)}, parent);
                     match error {
                         CSS_OK=>{},
@@ -701,24 +701,25 @@ impl css_select_ctx {
         }
         
         if (state.props[prop].is_none()) {
-            let pstate = prop_state{
+            let pstate = ~prop_state{
                 specificity:0,
-                set:false,
-                origin:0,
+                set:true,
+                origin:CSS_ORIGIN_AUTHOR as u8,
                 important:false,
-                inherit:false    
+                inherit:(hint.status == 0)   
             };  
-            let prop_vec: ~[prop_state] = from_elem(CSS_PSEUDO_ELEMENT_COUNT as uint,pstate);
+            let mut prop_vec: ~[Option<~prop_state>] = from_elem(CSS_PSEUDO_ELEMENT_COUNT as uint,None);
+            prop_vec[CSS_PSEUDO_ELEMENT_NONE as uint] = Some(pstate);
             state.props[prop] = Some(prop_vec);
         }  
-             
-        /* Keep selection state in sync with reality */
-        state.props[prop].get_mut_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].set = true;
-        state.props[prop].get_mut_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].specificity = 0;
-        state.props[prop].get_mut_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].origin = CSS_ORIGIN_AUTHOR as u8;
-        state.props[prop].get_mut_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].important = false;
-        state.props[prop].get_mut_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].inherit = (hint.status == 0);
-        
+        else {
+            /* Keep selection state in sync with reality */
+            state.props[prop].get_mut_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].get_mut_ref().set = true;
+            state.props[prop].get_mut_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].get_mut_ref().specificity = 0;
+            state.props[prop].get_mut_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].get_mut_ref().origin = CSS_ORIGIN_AUTHOR as u8;
+            state.props[prop].get_mut_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].get_mut_ref().important = false;
+            state.props[prop].get_mut_ref()[CSS_PSEUDO_ELEMENT_NONE as uint].get_mut_ref().inherit = (hint.status == 0);
+        }
             
         return CSS_OK;
     }

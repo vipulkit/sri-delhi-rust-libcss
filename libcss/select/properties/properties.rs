@@ -25,14 +25,15 @@ pub fn css__outranks_existing(op:u16,
 							state: &mut ~css_select_state,
 							inherit:bool) -> bool {
 	if (state.props[op].is_none()) {
-        let pstate = prop_state{
+        let pstate = ~prop_state{
             specificity:0,
             set:false,
             origin:0,
             important:false,
             inherit:false    
         };  
-        let prop_vec: ~[prop_state] = from_elem(CSS_PSEUDO_ELEMENT_COUNT as uint,pstate);
+        let mut prop_vec: ~[Option<~prop_state>] = from_elem(CSS_PSEUDO_ELEMENT_COUNT as uint,None);
+        prop_vec[CSS_PSEUDO_ELEMENT_NONE as uint] = Some(pstate);
         state.props[op] = Some(prop_vec);
     }  
     
@@ -75,7 +76,7 @@ pub fn css__outranks_existing(op:u16,
 	 * is greater than or equal to that of the existing property.
 	 */
 
-	if !existing.set {
+	if !existing.get_ref().set {
 		/* Property hasn't been set before, new one wins */
 		outranks = true;
 	} 
@@ -83,36 +84,36 @@ pub fn css__outranks_existing(op:u16,
 		assert!( (CSS_ORIGIN_UA as uint) < (CSS_ORIGIN_USER as uint) );
 		assert!( (CSS_ORIGIN_USER as uint) < (CSS_ORIGIN_AUTHOR as uint) );
 
-		if (existing.origin < (state.current_origin as u8) ) {
+		if (existing.get_ref().origin < (state.current_origin as u8) ) {
 			/* New origin has more weight than existing one.
 			 * Thus, new property wins, except when the existing 
 			 * one is USER, i. */
-			if ( (existing.important == false) ||
-					(existing.origin != (CSS_ORIGIN_USER as u8) ) ) {
+			if ( (existing.get_ref().important == false) ||
+					(existing.get_ref().origin != (CSS_ORIGIN_USER as u8) ) ) {
 				outranks = true;
 			}
 		} 
-		else if (existing.origin == (state.current_origin as u8) ) {
+		else if (existing.get_ref().origin == (state.current_origin as u8) ) {
 			/* Origins are identical, consider importance, except 
 			 * for UA stylesheets, when specificity is always 
 			 * considered (as importance is meaningless) */
-			if (existing.origin == (CSS_ORIGIN_UA as u8) ) {
+			if (existing.get_ref().origin == (CSS_ORIGIN_UA as u8) ) {
 				if (state.current_specificity >=
-						existing.specificity) {
+						existing.get_ref().specificity) {
 					outranks = true;
 				}
 			} 
-			else if ((existing.important == false) && important) {
+			else if ((existing.get_ref().important == false) && important) {
 				/* New is more important than old. */
 				outranks = true;
 			} 
-			else if ( existing.important && (important == false)) {
+			else if ( existing.get_ref().important && (important == false)) {
 				/* Old is more important than new */
 			} 
 			else {
 				/* Same importance, consider specificity */
 				if (state.current_specificity >=
-						existing.specificity) {
+						existing.get_ref().specificity) {
 					outranks = true;
 				}
 			}
@@ -130,11 +131,11 @@ pub fn css__outranks_existing(op:u16,
 	if (outranks) {
 		/* The new property is about to replace the old one.
 		 * Update our state to reflect this. */
-		existing.set = true;
-		existing.specificity = state.current_specificity;
-		existing.origin = (state.current_origin as u8);
-		existing.important = important;
-		existing.inherit = inherit;
+		existing.get_mut_ref().set = true;
+		existing.get_mut_ref().specificity = state.current_specificity;
+		existing.get_mut_ref().origin = (state.current_origin as u8);
+		existing.get_mut_ref().important = important;
+		existing.get_mut_ref().inherit = inherit;
 	}
 
 	outranks
