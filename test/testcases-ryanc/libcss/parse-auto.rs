@@ -7,7 +7,7 @@ use std::arc;
 use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 use dump::*;
 
 pub fn resolve_url(_:@str, rel:arc::RWARC<~lwc_string>) -> (css_error,Option<arc::RWARC<~lwc_string>>) {

@@ -9,7 +9,7 @@ use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use dump::*;
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 use css::parse::propstrings::*;
 
 pub fn resolve_url(_:&str, rel:uint) -> (css_error,Option<uint>) {

@@ -10,7 +10,7 @@ use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use dump::*;
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 use css::parse::propstrings::css_propstrings;
 
 pub struct line_ctx {

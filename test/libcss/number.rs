@@ -3,7 +3,7 @@ extern mod css;
 extern mod wapcaplet;
 
 use css::parse::properties::common::*;
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 use std::io;
 
 fn main() {

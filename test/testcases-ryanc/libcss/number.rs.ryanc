@@ -21,7 +21,7 @@ extern mod wapcaplet;
 extern mod testutils;
 
 use css::parse::properties::common::*;
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 use testutils::*;
 
 fn main() {

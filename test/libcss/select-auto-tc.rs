@@ -6,7 +6,7 @@ extern mod dumpcomputed;
 // extern mod dump2;
 
 use css::css::*;
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 use std::cast;
 use std::libc;
 use std::ptr;

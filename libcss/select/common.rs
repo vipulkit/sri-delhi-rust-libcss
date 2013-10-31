@@ -3,7 +3,7 @@ use include::font_face::*;
 use stylesheet::*;
 use utils::errors::*;
 //use extra::arc;
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 use std::libc::*;
 use std::clone::Clone;
 

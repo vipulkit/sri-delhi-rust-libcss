@@ -1,4 +1,4 @@
-use std::{hashmap,io};
+use std::{hashmap,io , u16};
 
 pub struct alias_gen {
     // these two data structures together can be used for (mibenum -> canonical name) conversion
@@ -33,7 +33,7 @@ impl alias_gen {
                 //io::println(fmt!("canonical_name == %?", alias_entry_columns[0].to_lower()));
                 let canonical_name = alias_entry_columns[0].to_ascii().to_lower().to_str_ascii();
                 // second column is mibenum
-                let mibenum = from_str(alias_entry_columns[1]).unwrap();
+                let mibenum = u16::from_str(alias_entry_columns[1]).unwrap();
                 
                 // add the canonical name to the list of canonical names
                 self.canonical_name_list.push(canonical_name.clone());

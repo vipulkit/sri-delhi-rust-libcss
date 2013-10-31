@@ -8,7 +8,7 @@ use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
 use css::parse::propstrings::css_propstrings;
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 
 pub fn resolve_url(_:&str, rel:uint) -> (css_error,Option<uint>) {
     return (CSS_OK,Some(rel.clone()));

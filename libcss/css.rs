@@ -1,4 +1,4 @@
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 use parserutils::input::inputstream::*;
 
 // libcss uses
@@ -67,7 +67,7 @@ impl css {
                 Some(charset) => inputstream(Some(charset), Some(CSS_CHARSET_DICTATED as int), Some(@css__charset_extract))
             };
         
-
+        lwc();
 
         // create lexer
         
@@ -138,8 +138,8 @@ impl css {
     * #Return Value:
     *   'css_error' - CSS_OK on success, appropriate error otherwise.
     */
-    pub fn css_stylesheet_append_data(&mut self, stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], lwc_ref : &mut ~lwc , propstrings_ref: &css_propstrings , data:~[u8]) -> css_error {
-        self.parser.css__parser_parse_chunk(stylesheet_vector, css_rule_data_list, lwc_ref, propstrings_ref, data)
+    pub fn css_stylesheet_append_data(&mut self, stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type],  propstrings_ref: &css_propstrings , data:~[u8]) -> css_error {
+        self.parser.css__parser_parse_chunk(stylesheet_vector, css_rule_data_list, unsafe {lwc_ref.get_mut_ref()}, propstrings_ref, data)
     }
 
     /**
@@ -151,8 +151,8 @@ impl css {
                       CSS_IMPORTS_PENDING if there are imports pending,
                       appropriate error otherwise.
     */
-    pub fn css_stylesheet_data_done(&mut self, stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], lwc_ref: &mut ~lwc, propstrings_ref: &css_propstrings) -> css_error {
-        let error = self.parser.css__parser_completed(stylesheet_vector, css_rule_data_list, lwc_ref, propstrings_ref);
+    pub fn css_stylesheet_data_done(&mut self, stylesheet_vector:&mut ~[css_stylesheet], css_rule_data_list:&mut ~[~css_rule_data_type], propstrings_ref: &css_propstrings) -> css_error {
+        let error = self.parser.css__parser_completed(stylesheet_vector, css_rule_data_list, unsafe {lwc_ref.get_mut_ref()}, propstrings_ref);
         match error {
             CSS_OK=>{},
             err => {

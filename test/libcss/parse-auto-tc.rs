@@ -9,7 +9,7 @@ use std::str;
 use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 
 pub fn find_char_between(s: &str, c: char, start: uint, end: uint) -> Option<uint>{
 	let length = s.len();

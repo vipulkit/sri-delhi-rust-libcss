@@ -35,7 +35,7 @@ wapcaplet::lwc_string_hash_value(intern_one);
 extern mod std;
 extern mod wapcaplet;
 
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 
 fn main() {
     println(fmt!("libwapcaplet"));

@@ -19,7 +19,7 @@ use css::css::*;
 use css::css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 
 fn main() {
     io::println("css21");

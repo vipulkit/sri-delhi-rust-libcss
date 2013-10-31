@@ -2,7 +2,6 @@
 #[crate_type="lib"];
 
 extern mod css;
-extern mod wapcaplet;
 
 use css::select::common::*;
 use css::select::computed::*;
@@ -11,7 +10,7 @@ use css::include::types::*;
 use css::include::properties::*;
 use css::include::fpmath::*;
 use std::cast;
-use wapcaplet::*;
+use css::libwapcaplet::wapcaplet::*;
 
 fn dump_css_fixed(f: css_fixed , ptr: &mut ~str){
     debug!(fmt!("\n Entering dump_css_fixed ")) ;

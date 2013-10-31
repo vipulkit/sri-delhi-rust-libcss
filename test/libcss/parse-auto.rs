@@ -9,7 +9,7 @@ use std::str;
 use css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 use css::parse::propstrings::css_propstrings;
 
 pub fn find_char_between(s: &str, c: char, start: uint, end: uint) -> Option<uint>{
@@ -430,7 +430,7 @@ pub fn css__parse_expected(ctx:@mut line_ctx, data:~str) {
                     let val = strtoul(data.clone(),&mut len) ;
                     debug!( fmt!("Entering: else 2= %?=%?=%?=",data,len,val));
                     /* Append to bytecode */
-                    rule.expected.push(bytecode(val.unwrap_or(0) as u32)) ;
+                    rule.expected.push(bytecode(val.unwrap_or_default(0) as u32)) ;
                 }
             }
         }
@@ -529,7 +529,7 @@ pub fn run_test(ctx:@mut line_ctx) {
             _=>{false}
         } );
 
-        let url = o_str.unwrap_or(~"") ;
+        let url = o_str.unwrap_or_default(~"") ;
 
         match error {
             CSS_OK=> {

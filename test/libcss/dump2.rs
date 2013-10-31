@@ -11,7 +11,7 @@ use css::bytecode::opcodes::*;
 use css::include::font_face::*;
 use css::include::fpmath::*;
 use css::include::properties::*;
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 
 /**
  * Opcode names, indexed by opcode

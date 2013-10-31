@@ -2,7 +2,7 @@
 // CSS-FONT-FACE implementation/data-structs starts here 
 // ===========================================================================================================
 
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 
 use include::font_face::*;
 use include::properties::*;

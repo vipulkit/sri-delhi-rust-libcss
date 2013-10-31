@@ -1,4 +1,4 @@
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 
 use bytecode::bytecode::*;
 

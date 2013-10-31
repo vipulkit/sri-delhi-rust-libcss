@@ -5,8 +5,12 @@
 #[crate_type = "lib"];
 
 extern mod extra;
-extern mod wapcaplet;
+// extern mod wapcaplet;
 extern mod parserutils;
+
+pub mod libwapcaplet {
+    pub mod wapcaplet;
+}
 
 pub mod include {
     pub mod font_face;

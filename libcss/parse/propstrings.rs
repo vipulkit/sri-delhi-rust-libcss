@@ -1,5 +1,5 @@
 
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 use stylesheet::*;
 
 pub enum index_property {

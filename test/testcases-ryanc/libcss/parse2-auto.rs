@@ -8,7 +8,7 @@ use css::css::*;
 use css::css::css::*;
 use css::stylesheet::*;
 use css::utils::errors::*;
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 use dump::*;
 
 pub struct line_ctx {

@@ -5,7 +5,7 @@ use utils::errors::*;
 use parse::propstrings::*;
 use stylesheet::*;
 
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 //use std::cast::*;
 use std::str::*;
 

@@ -7,7 +7,7 @@ extern mod dump2;
 use std::arc;
 
 use css::css::*;
-use wapcaplet::*;
+use libwapcaplet::wapcaplet::*;
 
 use css::include::types::*;
 use css::utils::errors::*;
