@@ -2,9 +2,9 @@ use std::char::*;
 use std::f32::*;
 use std::str::*;
 
-use parserutils::input::inputstream::*;
-use parserutils::charset::encodings::utf8impl::*;
-use parserutils::utils::errors::*;
+use libparserutils::input::inputstream::*;
+use libparserutils::charset::encodings::utf8impl::*;
+use libparserutils::utils::errors::*;
 
 use utils::errors::*;
 use utils::parserutilserror::*;

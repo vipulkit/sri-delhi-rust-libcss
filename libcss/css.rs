@@ -1,5 +1,5 @@
 use libwapcaplet::wapcaplet::*;
-use parserutils::input::inputstream::*;
+use libparserutils::input::inputstream::*;
 
 // libcss uses
 use charset::csdetect::*;

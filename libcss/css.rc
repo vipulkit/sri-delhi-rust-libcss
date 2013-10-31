@@ -6,10 +6,29 @@
 
 extern mod extra;
 // extern mod wapcaplet;
-extern mod parserutils;
+// extern mod parserutils;
 
 pub mod libwapcaplet {
     pub mod wapcaplet;
+}
+
+pub mod libparserutils {
+    pub mod charset {
+        pub mod aliases;
+        pub mod encodings {
+            pub mod utf8impl;
+        }
+    }
+
+    pub mod input {
+        pub mod riconv;
+        pub mod parserutils_filter;
+        pub mod inputstream;
+    }
+
+    pub mod utils {
+        pub mod errors;
+    }
 }
 
 pub mod include {

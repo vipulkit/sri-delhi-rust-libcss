@@ -1,4 +1,4 @@
-use parserutils::utils::errors::*;
+use libparserutils::utils::errors::*;
 use utils::errors::*;
 
 pub fn css_error_from_parserutils_error(css_result : parserutils_error) -> css_error{

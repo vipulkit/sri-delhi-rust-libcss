@@ -1,5 +1,5 @@
-use parserutils::charset::aliases::*;
-use parserutils::utils::errors::*;
+use libparserutils::charset::aliases::*;
+use libparserutils::utils::errors::*;
 
 use std::str::*;
 use std::cast::*;
