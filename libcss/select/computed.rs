@@ -76,7 +76,7 @@ pub fn css_computed_outline_width(
             unit = Some(unsafe { transmute((bits >> 3)as int) }) ;
         }
 
-        ((bits&3),width,unit)
+        ((bits&7),width,unit)
     }
 
 }
